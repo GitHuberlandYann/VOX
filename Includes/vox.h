@@ -16,6 +16,12 @@
 # include <glm/gtc/matrix_transform.hpp>
 # include <glm/gtc/type_ptr.hpp>
 
+typedef struct {
+	unsigned char *content;
+	int width;
+	int height;
+}				t_tex;
+
 # include "utils.h"
 # include "OpenGL_Manager.hpp"
 

@@ -1,7 +1,7 @@
 #version 150 core
 
 // in vec3 Color;
-// in vec2 Texcoord;
+in vec2 Texcoord;
 // // in vec3 CamPos;
 // in vec3 LightPos;
 // in vec3 LightColor;
@@ -15,11 +15,11 @@
 
 out vec4 outColor;
 
-// uniform sampler2D tex0;
+uniform sampler2D tex0;
 
 void main()
 {
-	// outColor = texture(tex0, Texcoord);
+	outColor = texture(tex0, Texcoord);
 	
 	// if (Invert == 1) {
 	// 	outColor = vec4(1.0, 1.0, 1.0, 2.0) - outColor;
@@ -47,5 +47,5 @@ void main()
 		// vec3 tmpColor = (ambient + diffuse) * vec3(outColor);
 		// outColor = vec4(tmpColor, 1.0);
 	// }
-	outColor = vec4(1.0, 1.0, 1.0, 1.0);
+	// outColor = vec4(Color, 1.0);
 }

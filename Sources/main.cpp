@@ -2,10 +2,12 @@
 
 int main( int ac, char **av )
 {
-	if (ac > 1) {
+	std::string texture_file = "Resources/desert.png";
+	if (ac > 3) {
 		std::cerr << "vox doesn't take any parameter for now" << std::endl;
-		(void) av;
 		return (1);
+	} else if (ac == 2) {
+		texture_file = av[1];
 	}
 	std::cout << std::endl << " ---- Hello ----" << std::endl;
 
@@ -16,8 +18,7 @@ int main( int ac, char **av )
 	std::cout << std::endl;
 	render->create_shaders();
 	render->setup_communication_shaders();
-	// render->load_textures(parser, provided_tex);
-	// delete parser;
+	render->load_texture(texture_file);
 	std::cout << std::endl;
 	render->main_loop();
 

@@ -26,7 +26,7 @@ Project Requirements:
         - different biomes
 
 TODOS:
-    - ..
+    - use cam pos to only generate 3 rectangles by cube (tbd if improves speed)
 
 IN PROGRES:
     -

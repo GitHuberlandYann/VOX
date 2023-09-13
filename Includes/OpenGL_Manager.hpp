@@ -26,9 +26,10 @@ class OpenGL_Manager
 		// GLint _uniColorMode, _uniTexIndex, _uniInvert, _uniUseLight, _uniModel, _uniView, _uniProj, _uniScale, _uniLightPos, _uniLightColor;// , _uniCamPos
 		// GLint _nb_textures, _number_vertices, _section;
 		// bool _omore_tex, _can_light;
-		// GLuint *_textures;
+		GLuint *_textures;
+		t_tex *_texture;
 		glm::vec3 _background_color;
-		// t_vertex _rotation, _background_color;
+		// t_vertex _rotation;
 		// glm::vec3 _light_pos, _light_col;
 		// glm::vec2 _light_angles;
 		// GLfloat _rotation_speed, _zoom, _point_size;
@@ -51,7 +52,7 @@ class OpenGL_Manager
 		void setup_array_buffer( void );
 		void create_shaders( void );
 		void setup_communication_shaders( void );
-		// void load_textures( Parser *parser, t_tex *provided_tex );
+		void load_texture( std::string texture_file );
 		void main_loop( void );
 };
 

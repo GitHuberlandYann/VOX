@@ -1,16 +1,14 @@
 # include "vox.h"
 
 OpenGL_Manager::OpenGL_Manager( void )
-	: _window(NULL), _background_color(0.0f, 0.0f, 0.0f)
-	//_nb_textures(nb_textures + provided), _omore_tex(provided), _textures(NULL),
+	: _window(NULL), _textures(NULL), _texture(NULL), _background_color(0.0f, 0.0f, 0.0f)
+	//_nb_textures(nb_textures + provided), _omore_tex(provided),
 		// _rotation_speed(1.5f), _zoom(1.0f), _point_size(1.0f), _key_fill(0), _fill(FILL), _key_depth(0),
 		// _color_mode(DEFAULT), _key_color_mode(0), _key_section(0), _invert_col(0), _key_invert(0),
 		// _use_light(0), _key_use_light(0), _mouse_x(0), _mouse_y(0), _vtp_size(vert_tex_pair.size())
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
-	(void)_geometryShader;
 	// set_vertex(_rotation, -90.0f, 0.0f, 0.0f);
-	// set_vertex(_background_color, 0.5f, 0.5f, 0.5f);
 	// _light_col = glm::vec3(1.0f, 1.0f, 1.0f);
 	// _light_angles = glm::vec2(20.0f, 40.0f);
 	// _light_pos = 2.0f * glm::vec3(glm::cos(glm::radians(_light_angles.x)) + glm::cos(glm::radians(_light_angles.y)),
@@ -30,10 +28,11 @@ OpenGL_Manager::OpenGL_Manager( void )
 OpenGL_Manager::~OpenGL_Manager( void )
 {
 	std::cout << "Destructor of OpenGL_Manager called" << std::endl;
-	// glDeleteTextures(_nb_textures, _textures);
+	glDeleteTextures(1, _textures);
 
 	glDeleteProgram(_shaderProgram);
     glDeleteShader(_fragmentShader);
+    glDeleteShader(_geometryShader);
     glDeleteShader(_vertexShader);
 
 	glDeleteBuffers(1, &_vbo);
@@ -42,7 +41,11 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
 
-	// delete [] _textures;
+	delete [] _textures;
+	if (_texture) {
+		SOIL_free_image_data(_texture->content);
+	}
+	delete _texture;
 	// _vert_tex_pair.clear();
 }
 
@@ -118,10 +121,10 @@ void OpenGL_Manager::setup_array_buffer( void )
 
 	// GLfloat *vertices = new GLfloat[_number_vertices * 12]; // num, X Y Z, R G B, U V, nX nY nZ
 	GLfloat points[] = {
-		-0.45f,  0.45f,
-		0.45f,  0.45f,
-		0.45f, -0.45f,
-		-0.45f, -0.45f
+		-0.45f,  0.45f, 0.0f,
+		0.45f,  0.45f, 0.0f,
+		0.45f, -0.45f, 0.0f,
+		-0.45f, -0.45f, 0.0f
 	};
 	// std::cout << "total alloc of vertices: " << _number_vertices * 12 << std::endl;
 	// parser->fill_vertex_array(vertices);
@@ -144,6 +147,13 @@ void OpenGL_Manager::create_shaders( void )
 	glShaderSource(_vertexShader, 1, &vertexSource, NULL);
 	compile_shader(_vertexShader, "vertex");
 
+	std::string geometry_shader_data = get_file_content("Sources/Shaders/geometry.glsl");
+	char *geometrySource = &geometry_shader_data[0];
+
+	_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+	glShaderSource(_geometryShader, 1, &geometrySource, NULL);
+	compile_shader(_geometryShader, "geometry");
+
 	std::string fragment_shader_data = get_file_content("Sources/Shaders/fragment.glsl");
 	char *fragmentSource = &fragment_shader_data[0];
 
@@ -154,6 +164,7 @@ void OpenGL_Manager::create_shaders( void )
 	// Combining shaders into a program
 	_shaderProgram = glCreateProgram();
 	glAttachShader(_shaderProgram, _vertexShader);
+	glAttachShader(_shaderProgram, _geometryShader);
 	glAttachShader(_shaderProgram, _fragmentShader);
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
@@ -176,7 +187,7 @@ void OpenGL_Manager::setup_communication_shaders( void )
 {
 	// Specify layout of point data
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	check_glstate("posAttrib successfully set");
 
 	/*
@@ -242,45 +253,39 @@ void OpenGL_Manager::setup_communication_shaders( void )
 
 	check_glstate("Communication with shader program successfully established");
 }
-/*
-void OpenGL_Manager::load_textures( Parser *parser, t_tex *provided_tex )
+
+void OpenGL_Manager::load_texture( std::string texture_file )
 {
-	if (!_nb_textures) {
-		std::cout << "no texture to load on shader" << std::endl;
-		return ;
+	_textures = new GLuint[1];
+	glGenTextures(1, _textures);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, _textures[0]);
+
+	// load image
+	_texture = new t_tex;
+	_texture->content = SOIL_load_image(texture_file.c_str(), &_texture->width, &_texture->height, 0, SOIL_LOAD_RGB);
+	if (!_texture->content) {
+		std::cerr << "failed to load image " << texture_file << " because:" << std::endl << SOIL_last_result() << std::endl;
+		exit(1);
 	}
 
-	std::vector<t_tex *> ui_textures = parser->get_textures();
-	if (provided_tex) {
-		ui_textures.push_back(provided_tex);
-	}
+	// load image as texture
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texture->width, _texture->height,
+		0, GL_RGB, GL_UNSIGNED_BYTE, _texture->content);
 
-	_textures = new GLuint[_nb_textures];
-	glGenTextures(_nb_textures, _textures);
-	
-	for (GLint index = 0; index < _nb_textures; index++)
-	{
-		glActiveTexture(GL_TEXTURE0 + index);
-		glBindTexture(GL_TEXTURE_2D, _textures[index]);
+	// std::string tex_str = "tex" + std::to_string(index);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "tex0"), 0); // sampler2D #index in fragment shader
+			
+	// set settings for texture wraping and size modif
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		// load image as texture
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ui_textures[index]->width, ui_textures[index]->height,
-					0, GL_RGB, GL_UNSIGNED_BYTE, ui_textures[index]->texture);
-
-		std::string tex_str = "tex" + std::to_string(index);
-		glUniform1i(glGetUniformLocation(_shaderProgram, tex_str.c_str()), index); // sampler2D #index in fragment shader
-		
-		// set settings for texture wraping and size modif
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
-
-	std::string success_msg = "Succesfully loaded " + std::to_string(_nb_textures) + " textures to shader";
-	check_glstate(success_msg);
+	check_glstate("Succesfully loaded texture to shader");
 }
-*/
+
 void OpenGL_Manager::main_loop( void )
 {
 	check_glstate("setup done, entering main loop");
