@@ -4,7 +4,7 @@
 # include <iostream>
 # include <string>
 // # include <thread>
-// # include <fstream>
+# include <fstream>
 // # include <vector>
 // # include <math.h>
 
@@ -17,5 +17,6 @@
 # include <glm/gtc/type_ptr.hpp>
 
 # include "utils.h"
+# include "OpenGL_Manager.hpp"
 
 #endif
