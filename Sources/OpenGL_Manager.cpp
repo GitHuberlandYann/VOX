@@ -109,14 +109,14 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::setup_array_buffer( void )
 {
-	Chunk *newChunk = new Chunk();
+	Chunk *newChunk = new Chunk(glm::vec2(0.0f, 0.0f));
 
 	newChunk->setup_array_buffer(0.0f);
 	_chunks.push_back(newChunk);
 
-	newChunk = new Chunk();
+	newChunk = new Chunk(glm::vec2(0.0f, 17.0f));
 
-	newChunk->setup_array_buffer(2.0f);
+	newChunk->setup_array_buffer(0.0f);
 	_chunks.push_back(newChunk);
 	/*
 	// t_face_mode fm = parser->get_face_mode();

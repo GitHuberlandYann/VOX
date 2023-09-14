@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Chunk::Chunk( void )
+Chunk::Chunk( glm::vec2 start ) : _start(start)
 {
 
 }
@@ -12,6 +12,23 @@ Chunk::~Chunk( void )
 }
 
 // ************************************************************************** //
+//                                Private                                     //
+// ************************************************************************** //
+
+void Chunk::fill_vertex_array( GLfloat *vertices, GLfloat z )
+{
+	for (size_t row = 0; row < 16; row++) {
+		for (size_t col = 0; col < 16; col++) {
+			vertices[(row * 16 + col) * 5] = 1.0f;
+			vertices[(row * 16 + col) * 5 + 1] = 4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
+			vertices[(row * 16 + col) * 5 + 2] = _start.x + row;
+			vertices[(row * 16 + col) * 5 + 3] = _start.y + col;
+			vertices[(row * 16 + col) * 5 + 4] = z;
+		}
+	}
+}
+
+// ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
 
@@ -20,24 +37,22 @@ void Chunk::setup_array_buffer( GLfloat z )
     glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
-	// _number_vertices = parser->get_number_vertices();
-
-	// GLfloat *vertices = new GLfloat[_number_vertices * 12]; // num, X Y Z, R G B, U V, nX nY nZ
-	GLfloat points[] = {
-		1.0f, 8.0f, 0.0f,  0.0f, z, // blocktype, adjacents blocks, X Y Z
-		1.0f, 0.0f, 2.5f,  3.5f, z,
-		1.0f, 4.0f, 1.0f, 0.0f, z,
-		// 1.0f, -0.45f, -0.45f, 0.0f
-	};
+	GLfloat *vertices = new GLfloat[16 * 16 * 5]; // blocktype, adjacents blocks, X Y Z
+	// GLfloat points[] = {
+	// 	1.0f, 8.0f, 0.0f,  0.0f, z, // blocktype, adjacents blocks, X Y Z
+	// 	1.0f, 0.0f, 2.5f,  3.5f, z,
+	// 	1.0f, 4.0f, 1.0f, 0.0f, z,
+	// 	// 1.0f, -0.45f, -0.45f, 0.0f
+	// };
 	// std::cout << "total alloc of vertices: " << _number_vertices * 12 << std::endl;
-	// parser->fill_vertex_array(vertices);
+	fill_vertex_array(vertices, z);
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 16 * 16 * 5 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
 	// glBufferData(GL_ARRAY_BUFFER, _number_vertices * 12 * sizeof(float), vertices, GL_STATIC_DRAW);
 
-	// delete [] vertices;
+	delete [] vertices;
 	check_glstate("Vertex buffer successfully created");
 
 	glEnableVertexAttribArray(BLOCKATTRIB);
@@ -56,5 +71,5 @@ void Chunk::setup_array_buffer( GLfloat z )
 void Chunk::drawArray( void )
 {
     glBindVertexArray(_vao);
-	glDrawArrays(GL_POINTS, 0, 3);
+	glDrawArrays(GL_POINTS, 0, 16 * 16);
 }
