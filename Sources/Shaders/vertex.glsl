@@ -2,6 +2,7 @@
 
 // in float face_num;
 in float block_type;
+in float adj_blocks;
 in vec3 position;
 // in vec3 color;
 // in vec2 texcoord;
@@ -34,6 +35,12 @@ in vec3 position;
 // flat out int UseTex;
 // flat out int Tex_index;
 // flat out int Invert;
+
+out Prim
+{
+    int Block_type;
+	int Adj_blocks;
+};
 
 // vec3 gray()
 // {
@@ -87,4 +94,12 @@ void main()
 
 	// gl_Position = proj * view * model * scale * vec4(position, 1.0);
 	gl_Position = vec4(position, 1.0);
+	if (adj_blocks < 0.5) {
+		Adj_blocks = 0;
+	} else if (adj_blocks < 1.5) {
+		Adj_blocks = 1;
+	} else {
+		Adj_blocks = 2;
+	}
+	Adj_blocks = int(adj_blocks);
 }

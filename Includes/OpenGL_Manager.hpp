@@ -11,6 +11,7 @@
 
 enum {
 	BLOCKATTRIB,
+	ADJATTRIB,
 	POSATTRIB
 };
 

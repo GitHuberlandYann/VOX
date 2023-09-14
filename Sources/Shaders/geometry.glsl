@@ -8,6 +8,12 @@ uniform mat4 view;
 uniform mat4 proj;
 uniform mat4 scale;
 
+in Prim
+{
+    int Block_type;
+    int Adj_blocks;
+} vsData[];
+
 // out vec3 Color;
 out vec2 Texcoord;
 
@@ -53,11 +59,22 @@ void main()
     vec4 v6 = proj * view * model * scale * (gl_in[0].gl_Position + vec4(-0.5, 0.5, -0.5, 0.0));
     vec4 v7 = proj * view * model * scale * (gl_in[0].gl_Position + vec4(0.5, 0.5, -0.5, 0.0));
 
-    emitFace(v0, v1, v2, v3);
-    emitFace(v4, v5, v6, v7);
-    emitFace(v4, v0, v6, v2);
-    emitFace(v1, v5, v3, v7);
-    emitFace(v4, v5, v0, v1);
-    emitFace(v6, v7, v2, v3);
-
+    if ((vsData[0].Adj_blocks & 1) == 0) {
+        emitFace(v0, v1, v2, v3);
+    }
+    if ((vsData[0].Adj_blocks & 2) == 0) {
+        emitFace(v4, v5, v6, v7);
+    }
+    if ((vsData[0].Adj_blocks & 4) == 0) {
+        emitFace(v4, v0, v6, v2);
+    }
+    if ((vsData[0].Adj_blocks & 8) == 0) {
+        emitFace(v1, v5, v3, v7);
+    }
+    if ((vsData[0].Adj_blocks & 16) == 0) {
+        emitFace(v4, v5, v0, v1);
+    }
+    if ((vsData[0].Adj_blocks & 32) == 0) {
+        emitFace(v6, v7, v2, v3);
+    }
 }

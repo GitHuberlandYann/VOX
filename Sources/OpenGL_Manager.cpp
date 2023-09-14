@@ -123,9 +123,9 @@ void OpenGL_Manager::setup_array_buffer( void )
 
 	// GLfloat *vertices = new GLfloat[_number_vertices * 12]; // num, X Y Z, R G B, U V, nX nY nZ
 	GLfloat points[] = {
-		1.0f, 0.0f,  0.0f, 0.0f, // blocktype, X Y Z
-		1.0f, 2.5f,  3.5f, 0.0f,
-		1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 8.0f, 0.0f,  0.0f, 0.0f, // blocktype, adjacents blocks, X Y Z
+		1.0f, 0.0f, 2.5f,  3.5f, 0.0f,
+		1.0f, 4.0f, 1.0f, 0.0f, 0.0f,
 		// 1.0f, -0.45f, -0.45f, 0.0f
 	};
 	// std::cout << "total alloc of vertices: " << _number_vertices * 12 << std::endl;
@@ -172,6 +172,7 @@ void OpenGL_Manager::create_shaders( void )
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
 	glBindAttribLocation(_shaderProgram, BLOCKATTRIB, "block_type");
+	glBindAttribLocation(_shaderProgram, ADJATTRIB, "adj_blocks");
 	glBindAttribLocation(_shaderProgram, POSATTRIB, "position");
 
 	glLinkProgram(_shaderProgram);
@@ -184,11 +185,15 @@ void OpenGL_Manager::setup_communication_shaders( void )
 {
 	// Specify layout of point data
 	glEnableVertexAttribArray(BLOCKATTRIB);
-	glVertexAttribPointer(BLOCKATTRIB, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+	glVertexAttribPointer(BLOCKATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
 	check_glstate("blockAttrib successfully set");
+	
+	glEnableVertexAttribArray(ADJATTRIB);
+	glVertexAttribPointer(ADJATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(sizeof(GLfloat)));
+	check_glstate("adjAttrib successfully set");
 
 	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(sizeof(GLfloat)));
+	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
 	check_glstate("posAttrib successfully set");
 
 	/*
