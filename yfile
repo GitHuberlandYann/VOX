@@ -29,6 +29,7 @@ TODOS:
     - use cam pos to only generate 3 rectangles by cube (tbd if improves speed)
 
 IN PROGRES:
-    -
+    - https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
+    - https://stackoverflow.com/questions/54583368/how-to-draw-multiple-objects-in-opengl-using-multiple-vao-and-vbo
 
 DONE:

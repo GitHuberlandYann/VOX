@@ -47,22 +47,18 @@ OpenGL_Manager::~OpenGL_Manager( void )
 		SOIL_free_image_data(_texture->content);
 	}
 	delete _texture;
-	// _vert_tex_pair.clear();
+
+	std::vector<Chunk *>::iterator it = _chunks.begin();
+	std::vector<Chunk *>::iterator ite = _chunks.end();
+	for (; it != ite; it++) {
+		delete *it;
+	}
+	_chunks.clear();
 }
 
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
-
-void OpenGL_Manager::check_glstate( std::string str )
-{
-	GLenum error_check = glGetError();	
-	if (error_check) {
-		std::cerr << "glGetError set to " << error_check << ", quitting now" << std::endl;
-		exit(1);
-	}
-	std::cout << str << std::endl;
-}
 
 void OpenGL_Manager::compile_shader( GLuint ptrShader, std::string name )
 {
@@ -113,6 +109,16 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::setup_array_buffer( void )
 {
+	Chunk *newChunk = new Chunk();
+
+	newChunk->setup_array_buffer(0.0f);
+	_chunks.push_back(newChunk);
+
+	newChunk = new Chunk();
+
+	newChunk->setup_array_buffer(2.0f);
+	_chunks.push_back(newChunk);
+	/*
 	// t_face_mode fm = parser->get_face_mode();
 	// _can_light = (fm == VTN) || (fm == ONLY_VN);
 
@@ -137,7 +143,7 @@ void OpenGL_Manager::setup_array_buffer( void )
 	// glBufferData(GL_ARRAY_BUFFER, _number_vertices * 12 * sizeof(float), vertices, GL_STATIC_DRAW);
 
 	// delete [] vertices;
-	check_glstate("Vertex buffer successfully created");
+	check_glstate("Vertex buffer successfully created");*/
 }
 
 void OpenGL_Manager::create_shaders( void )
@@ -184,17 +190,17 @@ void OpenGL_Manager::create_shaders( void )
 void OpenGL_Manager::setup_communication_shaders( void )
 {
 	// Specify layout of point data
-	glEnableVertexAttribArray(BLOCKATTRIB);
-	glVertexAttribPointer(BLOCKATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
-	check_glstate("blockAttrib successfully set");
+	// glEnableVertexAttribArray(BLOCKATTRIB);
+	// glVertexAttribPointer(BLOCKATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+	// check_glstate("blockAttrib successfully set");
 	
-	glEnableVertexAttribArray(ADJATTRIB);
-	glVertexAttribPointer(ADJATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(sizeof(GLfloat)));
-	check_glstate("adjAttrib successfully set");
+	// glEnableVertexAttribArray(ADJATTRIB);
+	// glVertexAttribPointer(ADJATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(sizeof(GLfloat)));
+	// check_glstate("adjAttrib successfully set");
 
-	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
-	check_glstate("posAttrib successfully set");
+	// glEnableVertexAttribArray(POSATTRIB);
+	// glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
+	// check_glstate("posAttrib successfully set");
 
 	/*
 	// attributes
@@ -326,7 +332,11 @@ void OpenGL_Manager::main_loop( void )
 		// 	glDrawArrays(GL_TRIANGLES, start_index, _vert_tex_pair[_section].first);
 		// }
 
-		glDrawArrays(GL_POINTS, 0, 3);
+		std::vector<Chunk *>::iterator it = _chunks.begin();
+		std::vector<Chunk *>::iterator ite = _chunks.end();
+		for (; it != ite; it++) {
+			(*it)->drawArray();
+		}
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();

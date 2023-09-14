@@ -18,3 +18,13 @@ std::string get_file_content( std::string file_name )
 	indata.close();
 	return (data);
 }
+
+void check_glstate( std::string str )
+{
+	GLenum error_check = glGetError();	
+	if (error_check) {
+		std::cerr << "glGetError set to " << error_check << ", quitting now" << std::endl;
+		exit(1);
+	}
+	std::cout << str << std::endl;
+}

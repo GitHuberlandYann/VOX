@@ -44,8 +44,8 @@ class OpenGL_Manager
 		// GLdouble _mouse_x, _mouse_y;
 		// std::vector<std::pair<int, int> > _vert_tex_pair;
 		// size_t _vtp_size;
+		std::vector<Chunk *> _chunks;
 
-		void check_glstate( std::string str );
 		void compile_shader( GLuint ptrShader, std::string name );
 		void user_inputs( void );
 		void update_cam_view( void );

@@ -1,8 +1,6 @@
 #ifndef CAMERA_H
 # define CAMERA_H
 
-# include "vox.h"
-
 enum Camera_Movement {
     FORWARD,
     BACKWARD,

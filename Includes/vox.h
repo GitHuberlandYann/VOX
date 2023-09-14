@@ -5,7 +5,7 @@
 # include <string>
 // # include <thread>
 # include <fstream>
-// # include <vector>
+# include <vector>
 // # include <math.h>
 
 # define GLEW_STATIC
@@ -24,6 +24,7 @@ typedef struct {
 
 # include "utils.h"
 # include "Camera.hpp"
+# include "Chunk.hpp"
 # include "OpenGL_Manager.hpp"
 
 #endif
