@@ -43,9 +43,9 @@ void Camera::updateCameraVectors( void )
 
 glm::mat4 Camera::getPerspectiveMatrix( void )
 {
-	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 100.0f));
+	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.00001f, 100.0f));
 }
-/*
+
 void Camera::processKeyboard( Camera_Movement direction )
 {
 	if (direction == FORWARD)
@@ -61,7 +61,7 @@ void Camera::processKeyboard( Camera_Movement direction )
 	else if (direction == DOWN)
 		_position -= _up * _movement_speed;
 }
-
+/*
 void Camera::processMouseMovement( float x_offset, float y_offset )
 {
 	_yaw += x_offset * _mouse_sensitivity;

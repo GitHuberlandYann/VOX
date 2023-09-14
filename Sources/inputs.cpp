@@ -170,33 +170,33 @@ void OpenGL_Manager::user_inputs( void )
 		}
 	} else if (glfwGetKey(_window, GLFW_KEY_L) == GLFW_RELEASE)
 		_key_use_light = 0;
-	
+	*/
 	// camera and light work 
 	GLint key_cam_v = (glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS);
 	if (key_cam_v) {
-		if (!key_light) {
+		// if (!key_light) {
 			if (key_cam_v == 1)
 				camera.processKeyboard(FORWARD);
 			else
 				camera.processKeyboard(BACKWARD);
-		} else {
-			_light_angles.y = glm::clamp(_light_angles.y + key_cam_v * (_rotation_speed - 0.5f), -90.0f, 90.0f);
-		}
+		//} //else {
+			//_light_angles.y = glm::clamp(_light_angles.y + key_cam_v * (_rotation_speed - 0.5f), -90.0f, 90.0f);
+		// }
 	}
 	GLint key_cam_h = (glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS);
 	if (key_cam_h) {
-		if (!key_light) {
+		// if (!key_light) {
 			if (key_cam_h == 1)
 				camera.processKeyboard(LEFT);
 			else
 				camera.processKeyboard(RIGHT);
-		} else {
-			_light_angles.x += key_cam_h * (_rotation_speed - 0.5f);
-			if (_light_angles.x < 0.0f)
-				_light_angles.x = 359.0f;
-			else if (_light_angles.x > 360.0f)
-				_light_angles.x = 1.0f;
-		}
+		//}// else {
+		// 	_light_angles.x += key_cam_h * (_rotation_speed - 0.5f);
+		// 	if (_light_angles.x < 0.0f)
+		// 		_light_angles.x = 359.0f;
+		// 	else if (_light_angles.x > 360.0f)
+		// 		_light_angles.x = 1.0f;
+		// }
 	}
 	GLint key_cam_z = (glfwGetKey(_window, GLFW_KEY_KP_1) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_0) == GLFW_PRESS);
 	if (key_cam_z == 1)
@@ -204,11 +204,11 @@ void OpenGL_Manager::user_inputs( void )
 	else if (key_cam_z == -1)
 		camera.processKeyboard(DOWN);
 
-	if ((!key_light && (key_cam_v || key_cam_h)) || key_cam_z || camera._mouse_update)
+	if (((key_cam_v || key_cam_h)) || key_cam_z || camera._mouse_update)
 	{
 		update_cam_view();
 		camera._mouse_update = false;
-	}
+	}/*
 	if (camera._scroll_update) {
 		update_cam_perspective();
 		camera._scroll_update = false;

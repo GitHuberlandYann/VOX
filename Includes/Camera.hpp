@@ -44,7 +44,7 @@ class Camera
 
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
-		// void processKeyboard( Camera_Movement direction );
+		void processKeyboard( Camera_Movement direction );
 		// void processMouseMovement( float x_offset, float y_offset );
 		// void processMouseScroll( float offset );
 };

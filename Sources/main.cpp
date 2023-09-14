@@ -2,7 +2,7 @@
 
 int main( int ac, char **av )
 {
-	std::string texture_file = "Resources/desert.png";
+	std::string texture_file = "Resources/grass_block.png";
 	if (ac > 3) {
 		std::cerr << "vox doesn't take any parameter for now" << std::endl;
 		return (1);

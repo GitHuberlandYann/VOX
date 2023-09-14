@@ -124,8 +124,8 @@ void OpenGL_Manager::setup_array_buffer( void )
 	// GLfloat *vertices = new GLfloat[_number_vertices * 12]; // num, X Y Z, R G B, U V, nX nY nZ
 	GLfloat points[] = {
 		1.0f, 0.0f,  0.0f, 0.0f, // blocktype, X Y Z
-		// 1.0f, 0.45f,  0.45f, 0.0f,
-		// 1.0f, 0.45f, -0.45f, 0.0f,
+		1.0f, 2.5f,  3.5f, 0.0f,
+		1.0f, 1.0f, 0.0f, 0.0f,
 		// 1.0f, -0.45f, -0.45f, 0.0f
 	};
 	// std::cout << "total alloc of vertices: " << _number_vertices * 12 << std::endl;
@@ -229,7 +229,7 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	update_cam_perspective();
 
 	_uniScale = glGetUniformLocation(_shaderProgram, "scale");
-	glm::mat4 scale =  glm::mat4(1.0f);
+	glm::mat4 scale =  glm::scale(glm::mat4(1.0f), glm::vec3(0.1));
 	glUniformMatrix4fv(_uniScale, 1, GL_FALSE, glm::value_ptr(scale));
 /*
 	_uniLightPos = glGetUniformLocation(_shaderProgram, "lightPos");
@@ -321,7 +321,7 @@ void OpenGL_Manager::main_loop( void )
 		// 	glDrawArrays(GL_TRIANGLES, start_index, _vert_tex_pair[_section].first);
 		// }
 
-		glDrawArrays(GL_POINTS, 0, 1);
+		glDrawArrays(GL_POINTS, 0, 3);
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
