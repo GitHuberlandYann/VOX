@@ -1,6 +1,6 @@
 #include "vox.h"
-/*
-Camera camera(glm::vec3(0.0f, 2.0f, 0.0f));
+
+Camera camera(glm::vec3(0.0f, -2.0f, 0.0f));/*
 float lastX = WIN_WIDTH / 2.0f;
 float lastY = WIN_HEIGHT / 2.0f;
 bool first_mouse = true;
@@ -36,7 +36,7 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 
     camera.processMouseScroll(static_cast<float>(yoffset));
 }
-
+*/
 void OpenGL_Manager::update_cam_view( void )
 {
 	glm::mat4 view = camera.getViewMatrix();
@@ -50,7 +50,7 @@ void OpenGL_Manager::update_cam_perspective( void )
 	glm::mat4 proj = camera.getPerspectiveMatrix();
 	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 }
-*/
+
 void OpenGL_Manager::user_inputs( void )
 {
 	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -94,7 +94,7 @@ void OpenGL_Manager::user_inputs( void )
 			glEnable(GL_DEPTH_TEST);
 	} else if (glfwGetKey(_window, GLFW_KEY_B) == GLFW_RELEASE)
 		_key_depth = 0;
-
+*/
 	if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS && ++_key_fill == 1) {
 		++_fill;
 		if (_fill == F_LAST)
@@ -112,7 +112,7 @@ void OpenGL_Manager::user_inputs( void )
 		}
 	} else if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_RELEASE)
 		_key_fill = 0;
-	
+	/*
 	GLint key_point_size = (glfwGetKey(_window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS);
 	if (key_point_size && _point_size + 0.1f * key_point_size >= 1.0f && _point_size + 0.1f * key_point_size < 10.0f) {
 		_point_size += 0.1f * key_point_size;

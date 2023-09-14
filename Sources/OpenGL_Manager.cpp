@@ -1,9 +1,10 @@
 # include "vox.h"
 
 OpenGL_Manager::OpenGL_Manager( void )
-	: _window(NULL), _textures(NULL), _texture(NULL), _background_color(0.0f, 0.0f, 0.0f)
+	: _window(NULL), _textures(NULL), _texture(NULL), _background_color(0.0f, 0.0f, 0.0f),
+		_key_fill(0), _fill(FILL)
 	//_nb_textures(nb_textures + provided), _omore_tex(provided),
-		// _rotation_speed(1.5f), _zoom(1.0f), _point_size(1.0f), _key_fill(0), _fill(FILL), _key_depth(0),
+		// _rotation_speed(1.5f), _zoom(1.0f), _point_size(1.0f), , _key_depth(0),
 		// _color_mode(DEFAULT), _key_color_mode(0), _key_section(0), _invert_col(0), _key_invert(0),
 		// _use_light(0), _key_use_light(0), _mouse_x(0), _mouse_y(0), _vtp_size(vert_tex_pair.size())
 {
@@ -104,7 +105,8 @@ void OpenGL_Manager::setup_window( void )
 	glewExperimental = GL_TRUE;
 	glewInit();
 	
-	// glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
+	glPointSize(10);
 
 	check_glstate("Window successfully created");
 }
@@ -121,10 +123,10 @@ void OpenGL_Manager::setup_array_buffer( void )
 
 	// GLfloat *vertices = new GLfloat[_number_vertices * 12]; // num, X Y Z, R G B, U V, nX nY nZ
 	GLfloat points[] = {
-		-0.45f,  0.45f, 0.0f,
-		0.45f,  0.45f, 0.0f,
-		0.45f, -0.45f, 0.0f,
-		-0.45f, -0.45f, 0.0f
+		1.0f, 0.0f,  0.0f, 0.0f, // blocktype, X Y Z
+		// 1.0f, 0.45f,  0.45f, 0.0f,
+		// 1.0f, 0.45f, -0.45f, 0.0f,
+		// 1.0f, -0.45f, -0.45f, 0.0f
 	};
 	// std::cout << "total alloc of vertices: " << _number_vertices * 12 << std::endl;
 	// parser->fill_vertex_array(vertices);
@@ -169,13 +171,8 @@ void OpenGL_Manager::create_shaders( void )
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
-	glBindAttribLocation(_shaderProgram, 0, "position");
-
-	// glBindAttribLocation(_shaderProgram, NUMATTRIB, "face_num");
-	// glBindAttribLocation(_shaderProgram, POSATTRIB, "position");
-	// glBindAttribLocation(_shaderProgram, COLATTRIB, "color");
-	// glBindAttribLocation(_shaderProgram, TEXATTRIB, "texcoord");
-	// glBindAttribLocation(_shaderProgram, NORMATTRIB, "normal");
+	glBindAttribLocation(_shaderProgram, BLOCKATTRIB, "block_type");
+	glBindAttribLocation(_shaderProgram, POSATTRIB, "position");
 
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
@@ -186,8 +183,12 @@ void OpenGL_Manager::create_shaders( void )
 void OpenGL_Manager::setup_communication_shaders( void )
 {
 	// Specify layout of point data
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(BLOCKATTRIB);
+	glVertexAttribPointer(BLOCKATTRIB, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+	check_glstate("blockAttrib successfully set");
+
+	glEnableVertexAttribArray(POSATTRIB);
+	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(sizeof(GLfloat)));
 	check_glstate("posAttrib successfully set");
 
 	/*
@@ -199,18 +200,6 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	glEnableVertexAttribArray(POSATTRIB);
 	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (void *)(sizeof(GLfloat)));
 	check_glstate("posAttrib successfully set");
-
-	glEnableVertexAttribArray(COLATTRIB);
-	glVertexAttribPointer(COLATTRIB, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (void *)(4 * sizeof(GLfloat)));
-	check_glstate("colAttrib successfully set");
-
-	glEnableVertexAttribArray(TEXATTRIB);
-	glVertexAttribPointer(TEXATTRIB, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (void *)(7 * sizeof(GLfloat)));
-	check_glstate("texAttrib successfully set");
-
-	glEnableVertexAttribArray(NORMATTRIB);
-	glVertexAttribPointer(NORMATTRIB, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (void *)(9 * sizeof(GLfloat)));
-	check_glstate("normAttrib successfully set");
 
 	// uniforms
 	_uniColorMode = glGetUniformLocation(_shaderProgram, "color_mode");
@@ -227,11 +216,9 @@ void OpenGL_Manager::setup_communication_shaders( void )
 
 	_uniUseLight = glGetUniformLocation(_shaderProgram, "use_light");
 	glUniform1i(_uniUseLight, 0);
-
+*/
 	_uniModel = glGetUniformLocation(_shaderProgram, "model");
-	glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::rotate(model, glm::radians(_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(_rotation.x), glm::vec3(-1.0f, 0.0f, 0.0f));
+	glm::mat4 model = glm::mat4(1.0f);
 	glUniformMatrix4fv(_uniModel, 1, GL_FALSE, glm::value_ptr(model));
 
 	// _uniCamPos = glGetUniformLocation(_shaderProgram, "camPos");
@@ -242,9 +229,9 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	update_cam_perspective();
 
 	_uniScale = glGetUniformLocation(_shaderProgram, "scale");
-	glm::mat4 scale =  glm::scale(glm::mat4(1.0f), glm::vec3(_zoom));
+	glm::mat4 scale =  glm::mat4(1.0f);
 	glUniformMatrix4fv(_uniScale, 1, GL_FALSE, glm::value_ptr(scale));
-
+/*
 	_uniLightPos = glGetUniformLocation(_shaderProgram, "lightPos");
 	glUniform3fv(_uniLightPos, 1, glm::value_ptr(_light_pos));
 
@@ -314,7 +301,7 @@ void OpenGL_Manager::main_loop( void )
 
 		user_inputs();
 		
-		glClear(GL_COLOR_BUFFER_BIT);// | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// if (!_vtp_size) {
 		// 	glDrawArrays(GL_TRIANGLES, 0, _number_vertices);
@@ -334,7 +321,7 @@ void OpenGL_Manager::main_loop( void )
 		// 	glDrawArrays(GL_TRIANGLES, start_index, _vert_tex_pair[_section].first);
 		// }
 
-		glDrawArrays(GL_POINTS, 0, 4);
+		glDrawArrays(GL_POINTS, 0, 1);
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();

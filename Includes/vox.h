@@ -23,6 +23,7 @@ typedef struct {
 }				t_tex;
 
 # include "utils.h"
+# include "Camera.hpp"
 # include "OpenGL_Manager.hpp"
 
 #endif

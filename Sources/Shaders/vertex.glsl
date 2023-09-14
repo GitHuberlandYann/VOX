@@ -1,6 +1,7 @@
 #version 150 core
 
 // in float face_num;
+in float block_type;
 in vec3 position;
 // in vec3 color;
 // in vec2 texcoord;
