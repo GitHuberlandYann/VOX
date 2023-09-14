@@ -48,8 +48,8 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	}
 	delete _texture;
 
-	std::vector<Chunk *>::iterator it = _chunks.begin();
-	std::vector<Chunk *>::iterator ite = _chunks.end();
+	std::list<Chunk *>::iterator it = _chunks.begin();
+	std::list<Chunk *>::iterator ite = _chunks.end();
 	for (; it != ite; it++) {
 		delete *it;
 	}
@@ -114,7 +114,7 @@ void OpenGL_Manager::setup_array_buffer( void )
 	newChunk->setup_array_buffer(0.0f);
 	_chunks.push_back(newChunk);
 
-	newChunk = new Chunk(glm::vec2(0.0f, 17.0f));
+	newChunk = new Chunk(glm::vec2(0.0f, 16.0f));
 
 	newChunk->setup_array_buffer(0.0f);
 	_chunks.push_back(newChunk);
@@ -239,9 +239,10 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	_uniProj = glGetUniformLocation(_shaderProgram, "proj");
 	update_cam_perspective();
 
-	_uniScale = glGetUniformLocation(_shaderProgram, "scale");
-	glm::mat4 scale =  glm::scale(glm::mat4(1.0f), glm::vec3(0.1));
-	glUniformMatrix4fv(_uniScale, 1, GL_FALSE, glm::value_ptr(scale));
+	// _uniScale = glGetUniformLocation(_shaderProgram, "scale");
+	// // glm::mat4 scale =  glm::scale(glm::mat4(1.0f), glm::vec3(0.1));
+	// glm::mat4 scale =  glm::mat4(1.0f);
+	// glUniformMatrix4fv(_uniScale, 1, GL_FALSE, glm::value_ptr(scale));
 /*
 	_uniLightPos = glGetUniformLocation(_shaderProgram, "lightPos");
 	glUniform3fv(_uniLightPos, 1, glm::value_ptr(_light_pos));
@@ -332,8 +333,8 @@ void OpenGL_Manager::main_loop( void )
 		// 	glDrawArrays(GL_TRIANGLES, start_index, _vert_tex_pair[_section].first);
 		// }
 
-		std::vector<Chunk *>::iterator it = _chunks.begin();
-		std::vector<Chunk *>::iterator ite = _chunks.end();
+		std::list<Chunk *>::iterator it = _chunks.begin();
+		std::list<Chunk *>::iterator ite = _chunks.end();
 		for (; it != ite; it++) {
 			(*it)->drawArray();
 		}

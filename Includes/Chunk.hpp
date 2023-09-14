@@ -13,6 +13,7 @@ class Chunk
         Chunk( glm::vec2 start );
         ~Chunk( void );
 
+        bool isInChunk( glm::vec3 pos );
         void setup_array_buffer( GLfloat z );
         void drawArray( void );
 };

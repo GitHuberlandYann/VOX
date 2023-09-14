@@ -12,7 +12,7 @@ enum Camera_Movement {
 	// _cam_angles = glm::vec2(225.0f, -37.0f);
 # define YAW          90.0f
 # define PITCH        0.0f
-# define SPEED        0.01f
+# define SPEED        0.1f
 # define SENSITIVITY  0.001f
 # define FOV         40.0f // fov must be 80
 
@@ -43,6 +43,8 @@ class Camera
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
 		void processKeyboard( Camera_Movement direction );
+		void processPitch( GLint offset );
+		void processYaw( GLint offset );
 		// void processMouseMovement( float x_offset, float y_offset );
 		// void processMouseScroll( float offset );
 };

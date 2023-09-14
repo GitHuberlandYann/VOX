@@ -9,7 +9,6 @@ Camera::Camera( glm::vec3 position ) : _movement_speed(SPEED), _mouse_sensitivit
 	_mouse_update = false;
 	_scroll_update = false;
 	updateCameraVectors();
-	(void)_movement_speed;
 	(void)_mouse_sensitivity;
 }
 
@@ -43,7 +42,7 @@ void Camera::updateCameraVectors( void )
 
 glm::mat4 Camera::getPerspectiveMatrix( void )
 {
-	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.00001f, 100.0f));
+	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.05f, 100.0f));
 }
 
 void Camera::processKeyboard( Camera_Movement direction )
@@ -60,6 +59,30 @@ void Camera::processKeyboard( Camera_Movement direction )
 		_position += _up * _movement_speed;
 	else if (direction == DOWN)
 		_position -= _up * _movement_speed;
+}
+
+void Camera::processPitch( GLint offset )
+{
+	_pitch += offset;
+	if (_pitch > 90.0f) {
+		_pitch = 90.0f;
+	} else if (_pitch < -90.0f) {
+		_pitch = -90.0f;
+	}
+
+	updateCameraVectors();
+}
+
+void Camera::processYaw( GLint offset )
+{
+	_yaw += offset;
+	if (_yaw > 180.0f) {
+		_yaw -= 360.0f;
+	} else if (_yaw < -180.0f) {
+		_yaw += 360.0f;
+	}
+
+	updateCameraVectors();
 }
 /*
 void Camera::processMouseMovement( float x_offset, float y_offset )

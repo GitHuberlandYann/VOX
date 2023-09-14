@@ -2,7 +2,6 @@
 
 Chunk::Chunk( glm::vec2 start ) : _start(start)
 {
-
 }
 
 Chunk::~Chunk( void )
@@ -17,8 +16,8 @@ Chunk::~Chunk( void )
 
 void Chunk::fill_vertex_array( GLfloat *vertices, GLfloat z )
 {
-	for (size_t row = 0; row < 16; row++) {
-		for (size_t col = 0; col < 16; col++) {
+	for (int row = 0; row < 16; row++) {
+		for (int col = 0; col < 16; col++) {
 			vertices[(row * 16 + col) * 5] = 1.0f;
 			vertices[(row * 16 + col) * 5 + 1] = 4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
 			vertices[(row * 16 + col) * 5 + 2] = _start.x + row;
@@ -31,6 +30,12 @@ void Chunk::fill_vertex_array( GLfloat *vertices, GLfloat z )
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
+
+bool Chunk::isInChunk( glm::vec3 pos )
+{
+	// std::cout << "x: " << x << ", y: " << y << std::endl;
+	return (pos.x >= _start.x - 0.5f && pos.x < _start.x + 15.5f && pos.y >= _start.y - 0.5f && pos.y < _start.y + 15.5f);
+}
 
 void Chunk::setup_array_buffer( GLfloat z )
 {

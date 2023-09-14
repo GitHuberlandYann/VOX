@@ -51,6 +51,26 @@ void OpenGL_Manager::update_cam_perspective( void )
 	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 }
 
+void OpenGL_Manager::chunk_update( void )
+{
+	bool isInChunk = false;
+
+	std::list<Chunk *>::iterator it = _chunks.begin();
+	std::list<Chunk *>::iterator ite = _chunks.end();
+	for (; it != ite; it++) {
+		if ((*it)->isInChunk(camera._position)) {
+			isInChunk = true;
+			break ;
+		}
+	}
+
+	// std::cout << "x: " << camera._position.x << ", y: " << camera._position.y << std::endl;
+	if (!isInChunk) {
+		//create new chunk where player stands
+		// std::cout << "not in chunk" << std::endl;
+	}
+}
+
 void OpenGL_Manager::user_inputs( void )
 {
 	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -113,7 +133,7 @@ void OpenGL_Manager::user_inputs( void )
 	} else if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_RELEASE)
 		_key_fill = 0;
 	/*
-	GLint key_point_size = (glfwGetKey(_window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS);
+	GLint key_point_size = (glfwGetKey(_window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFTACKET) == GLFW_PRESS);
 	if (key_point_size && _point_size + 0.1f * key_point_size >= 1.0f && _point_size + 0.1f * key_point_size < 10.0f) {
 		_point_size += 0.1f * key_point_size;
 		glPointSize(_point_size);
@@ -172,43 +192,42 @@ void OpenGL_Manager::user_inputs( void )
 		_key_use_light = 0;
 	*/
 	// camera and light work 
-	GLint key_cam_v = (glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS);
+	GLint key_cam_v = (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS);
 	if (key_cam_v) {
-		// if (!key_light) {
-			if (key_cam_v == 1)
-				camera.processKeyboard(FORWARD);
-			else
-				camera.processKeyboard(BACKWARD);
-		//} //else {
-			//_light_angles.y = glm::clamp(_light_angles.y + key_cam_v * (_rotation_speed - 0.5f), -90.0f, 90.0f);
-		// }
+			(key_cam_v == 1)
+				? camera.processKeyboard(FORWARD)
+				: camera.processKeyboard(BACKWARD);
 	}
-	GLint key_cam_h = (glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS);
+	GLint key_cam_h = (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS);
 	if (key_cam_h) {
-		// if (!key_light) {
-			if (key_cam_h == 1)
-				camera.processKeyboard(LEFT);
-			else
-				camera.processKeyboard(RIGHT);
-		//}// else {
-		// 	_light_angles.x += key_cam_h * (_rotation_speed - 0.5f);
-		// 	if (_light_angles.x < 0.0f)
-		// 		_light_angles.x = 359.0f;
-		// 	else if (_light_angles.x > 360.0f)
-		// 		_light_angles.x = 1.0f;
-		// }
+			(key_cam_h == 1)
+				? camera.processKeyboard(LEFT)
+				: camera.processKeyboard(RIGHT);
 	}
-	GLint key_cam_z = (glfwGetKey(_window, GLFW_KEY_KP_1) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_0) == GLFW_PRESS);
+	GLint key_cam_z = (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS);
 	if (key_cam_z == 1)
 		camera.processKeyboard(UP);
 	else if (key_cam_z == -1)
 		camera.processKeyboard(DOWN);
 
-	if (((key_cam_v || key_cam_h)) || key_cam_z || camera._mouse_update)
+	GLint key_cam_yaw =  (glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS);
+	if (key_cam_yaw) {
+		camera.processYaw(key_cam_yaw);
+	}
+	GLint key_cam_pitch = (glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS);
+	if (key_cam_pitch) {
+		camera.processPitch(key_cam_pitch);
+	}
+	if (((key_cam_v || key_cam_h)) || key_cam_z || key_cam_pitch || key_cam_yaw)
 	{
 		update_cam_view();
 		camera._mouse_update = false;
-	}/*
+	}
+	
+	if (key_cam_v || key_cam_h) {
+		chunk_update();
+	}
+	/*
 	if (camera._scroll_update) {
 		update_cam_perspective();
 		camera._scroll_update = false;
