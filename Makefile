@@ -19,7 +19,7 @@ endif
 
 CC = clang++
 CPPFLAGS = -Wall -Wextra -Werror -O3
-SAN = #-fsanitize=address -g
+SAN = -fsanitize=address -g3
 INCLUDES	= -I Includes -I glm
 
 # ===---===---===---===---===---===---===---===---===---===---===---===---

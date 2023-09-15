@@ -42,7 +42,7 @@ void Camera::updateCameraVectors( void )
 
 glm::mat4 Camera::getPerspectiveMatrix( void )
 {
-	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.05f, 100.0f));
+	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.05f, 1000.0f));
 }
 
 void Camera::processKeyboard( Camera_Movement direction )
@@ -64,10 +64,8 @@ void Camera::processKeyboard( Camera_Movement direction )
 void Camera::processPitch( GLint offset )
 {
 	_pitch += offset;
-	if (_pitch > 90.0f) {
-		_pitch = 90.0f;
-	} else if (_pitch < -90.0f) {
-		_pitch = -90.0f;
+	if (_pitch > 85.0f || _pitch < -85.0f) {
+		_pitch -= offset;
 	}
 
 	updateCameraVectors();

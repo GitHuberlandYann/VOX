@@ -1,7 +1,7 @@
 # include "vox.h"
 
 OpenGL_Manager::OpenGL_Manager( void )
-	: _window(NULL), _textures(NULL), _texture(NULL), _background_color(0.0f, 0.0f, 0.0f),
+	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f), _render_distance(RENDER_DISTANCE),
 		_key_fill(0), _fill(FILL)
 	//_nb_textures(nb_textures + provided), _omore_tex(provided),
 		// _rotation_speed(1.5f), _zoom(1.0f), _point_size(1.0f), , _key_depth(0),
@@ -32,21 +32,15 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	glDeleteTextures(1, _textures);
 
 	glDeleteProgram(_shaderProgram);
-    glDeleteShader(_fragmentShader);
-    glDeleteShader(_geometryShader);
-    glDeleteShader(_vertexShader);
-
-	glDeleteBuffers(1, &_vbo);
-    glDeleteVertexArrays(1, &_vao);
 
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
 
 	delete [] _textures;
-	if (_texture) {
-		SOIL_free_image_data(_texture->content);
-	}
-	delete _texture;
+	// if (_texture) {
+	// 	SOIL_free_image_data(_texture->content);
+	// }
+	// delete _texture;
 
 	std::list<Chunk *>::iterator it = _chunks.begin();
 	std::list<Chunk *>::iterator ite = _chunks.end();
@@ -109,41 +103,16 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::setup_array_buffer( void )
 {
-	Chunk *newChunk = new Chunk(glm::vec2(0.0f, 0.0f));
+	chunk_update();
+	// Chunk *newChunk = new Chunk(glm::vec2(0.0f, 0.0f));
 
-	newChunk->setup_array_buffer(0.0f);
-	_chunks.push_back(newChunk);
+	// newChunk->setup_array_buffer(0.0f);
+	// _chunks.push_back(newChunk);
 
-	newChunk = new Chunk(glm::vec2(0.0f, 16.0f));
+	// newChunk = new Chunk(glm::vec2(0.0f, 16.0f));
 
-	newChunk->setup_array_buffer(0.0f);
-	_chunks.push_back(newChunk);
-	/*
-	// t_face_mode fm = parser->get_face_mode();
-	// _can_light = (fm == VTN) || (fm == ONLY_VN);
-
-	glGenVertexArrays(1, &_vao);
-	glBindVertexArray(_vao);
-
-	// _number_vertices = parser->get_number_vertices();
-
-	// GLfloat *vertices = new GLfloat[_number_vertices * 12]; // num, X Y Z, R G B, U V, nX nY nZ
-	GLfloat points[] = {
-		1.0f, 8.0f, 0.0f,  0.0f, 0.0f, // blocktype, adjacents blocks, X Y Z
-		1.0f, 0.0f, 2.5f,  3.5f, 0.0f,
-		1.0f, 4.0f, 1.0f, 0.0f, 0.0f,
-		// 1.0f, -0.45f, -0.45f, 0.0f
-	};
-	// std::cout << "total alloc of vertices: " << _number_vertices * 12 << std::endl;
-	// parser->fill_vertex_array(vertices);
-
-	glGenBuffers(1, &_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
-	// glBufferData(GL_ARRAY_BUFFER, _number_vertices * 12 * sizeof(float), vertices, GL_STATIC_DRAW);
-
-	// delete [] vertices;
-	check_glstate("Vertex buffer successfully created");*/
+	// newChunk->setup_array_buffer(0.0f);
+	// _chunks.push_back(newChunk);
 }
 
 void OpenGL_Manager::create_shaders( void )
@@ -183,6 +152,10 @@ void OpenGL_Manager::create_shaders( void )
 
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
+
+	glDeleteShader(_fragmentShader);
+    glDeleteShader(_geometryShader);
+    glDeleteShader(_vertexShader);
 
 	check_glstate("Shader program successfully created");
 }
@@ -262,16 +235,16 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	glBindTexture(GL_TEXTURE_2D, _textures[0]);
 
 	// load image
-	_texture = new t_tex;
-	_texture->content = SOIL_load_image(texture_file.c_str(), &_texture->width, &_texture->height, 0, SOIL_LOAD_RGB);
-	if (!_texture->content) {
+	t_tex *texture = new t_tex;
+	texture->content = SOIL_load_image(texture_file.c_str(), &texture->width, &texture->height, 0, SOIL_LOAD_RGB);
+	if (!texture->content) {
 		std::cerr << "failed to load image " << texture_file << " because:" << std::endl << SOIL_last_result() << std::endl;
 		exit(1);
 	}
 
 	// load image as texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texture->width, _texture->height,
-		0, GL_RGB, GL_UNSIGNED_BYTE, _texture->content);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height,
+		0, GL_RGB, GL_UNSIGNED_BYTE, texture->content);
 
 	// std::string tex_str = "tex" + std::to_string(index);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "tex0"), 0); // sampler2D #index in fragment shader
@@ -282,12 +255,17 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	if (texture) {
+		SOIL_free_image_data(texture->content);
+	}
+	delete texture;
+
 	check_glstate("Succesfully loaded texture to shader");
 }
 
 void OpenGL_Manager::main_loop( void )
 {
-	check_glstate("setup done, entering main loop");
+	check_glstate("setup done, entering main loop\n");
 
 	// std::cout << "number of vertices: " << _number_vertices << std::endl << std::endl;
 	
@@ -338,6 +316,7 @@ void OpenGL_Manager::main_loop( void )
 		for (; it != ite; it++) {
 			(*it)->drawArray();
 		}
+		// glBindVertexArray(0);
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();

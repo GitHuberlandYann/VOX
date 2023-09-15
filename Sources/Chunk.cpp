@@ -1,7 +1,20 @@
 #include "vox.h"
 
-Chunk::Chunk( glm::vec2 start ) : _start(start)
+Chunk::Chunk( glm::vec2 start ) : _isVisible(true)
 {
+	int posX = static_cast<int>(glm::floor(start.x));
+	int posY = static_cast<int>(glm::floor(start.y));
+
+	// std::cout << "start: " << start.x << ", " << start.y << ", posX: " << posX << ", posY: " << posY << std::endl;
+	(posX >= 0)
+		? posX -= posX % 16
+		: posX -= 16 + posX % 16;
+	(posY >= 0)
+		? posY -= posY % 16
+		: posY -= 16 + posY % 16;
+	// std::cout << "posX: " << posX << ", posY: " << posY << std::endl;
+	_start = glm::vec2(static_cast<float>(posX), static_cast<float>(posY));
+	std::cout << "new Chunk at [" << _start.x << ", " << _start.y << ']' << std::endl;
 }
 
 Chunk::~Chunk( void )
@@ -31,10 +44,16 @@ void Chunk::fill_vertex_array( GLfloat *vertices, GLfloat z )
 //                                Public                                      //
 // ************************************************************************** //
 
-bool Chunk::isInChunk( glm::vec3 pos )
+void Chunk::setVisibility( bool value )
 {
-	// std::cout << "x: " << x << ", y: " << y << std::endl;
-	return (pos.x >= _start.x - 0.5f && pos.x < _start.x + 15.5f && pos.y >= _start.y - 0.5f && pos.y < _start.y + 15.5f);
+	_isVisible = value;
+}
+
+bool Chunk::isInChunk( glm::vec2 pos )
+{
+	// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
+	// std::cout << "checking chunk " << _start.x << ", " << _start.y << std::endl;
+	return (pos.x >= _start.x && pos.x < _start.x + 16.0f && pos.y >= _start.y && pos.y < _start.y + 16.0f);
 }
 
 void Chunk::setup_array_buffer( GLfloat z )
@@ -58,23 +77,28 @@ void Chunk::setup_array_buffer( GLfloat z )
 	// glBufferData(GL_ARRAY_BUFFER, _number_vertices * 12 * sizeof(float), vertices, GL_STATIC_DRAW);
 
 	delete [] vertices;
-	check_glstate("Vertex buffer successfully created");
+	// check_glstate("Vertex buffer successfully created");
 
 	glEnableVertexAttribArray(BLOCKATTRIB);
 	glVertexAttribPointer(BLOCKATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
-	check_glstate("blockAttrib successfully set");
+	// check_glstate("blockAttrib successfully set");
 	
 	glEnableVertexAttribArray(ADJATTRIB);
 	glVertexAttribPointer(ADJATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(sizeof(GLfloat)));
-	check_glstate("adjAttrib successfully set");
+	// check_glstate("adjAttrib successfully set");
 
 	glEnableVertexAttribArray(POSATTRIB);
 	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
-	check_glstate("posAttrib successfully set");
+	// check_glstate("posAttrib successfully set");
+
+	check_glstate("chunk succesfully added");
 }
 
 void Chunk::drawArray( void )
 {
+	if (!_isVisible) {
+		return ;
+	}
     glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, 16 * 16);
 }

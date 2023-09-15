@@ -9,6 +9,8 @@
 #  define WIN_HEIGHT 1400
 # endif
 
+# define RENDER_DISTANCE 2
+
 enum {
 	BLOCKATTRIB,
 	ADJATTRIB,
@@ -26,20 +28,19 @@ class OpenGL_Manager
 {
 	private:
 		GLFWwindow* _window;
-		GLuint _vao, _vbo; // vertex array objects, vertex buffer objects
+		// GLuint _vao, _vbo; // vertex array objects, vertex buffer objects
 		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
 		GLint _uniModel, _uniView, _uniProj;
 		// GLint _uniColorMode, _uniTexIndex, _uniInvert, _uniUseLight,, _uniScale , _uniLightPos, _uniLightColor;// , _uniCamPos
 		// GLint _nb_textures, _number_vertices, _section;
 		// bool _omore_tex, _can_light;
 		GLuint *_textures;
-		t_tex *_texture;
 		glm::vec3 _background_color;
 		// t_vertex _rotation;
 		// glm::vec3 _light_pos, _light_col;
 		// glm::vec2 _light_angles;
 		// GLfloat _rotation_speed, _zoom, _point_size;
-		GLint _key_fill, _fill;
+		GLint _render_distance, _key_fill, _fill;
 		// GLint , _key_depth, _color_mode, _key_color_mode, _key_section, _invert_col, _key_invert, _use_light, _key_use_light;
 		// GLdouble _mouse_x, _mouse_y;
 		// std::vector<std::pair<int, int> > _vert_tex_pair;

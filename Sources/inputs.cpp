@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera camera(glm::vec3(0.0f, -2.0f, 0.0f));/*
+Camera camera(glm::vec3(1.0f, -2.0f, 0.0f));/*
 float lastX = WIN_WIDTH / 2.0f;
 float lastY = WIN_HEIGHT / 2.0f;
 bool first_mouse = true;
@@ -53,21 +53,34 @@ void OpenGL_Manager::update_cam_perspective( void )
 
 void OpenGL_Manager::chunk_update( void )
 {
-	bool isInChunk = false;
-
-	std::list<Chunk *>::iterator it = _chunks.begin();
 	std::list<Chunk *>::iterator ite = _chunks.end();
-	for (; it != ite; it++) {
-		if ((*it)->isInChunk(camera._position)) {
-			isInChunk = true;
-			break ;
-		}
+	for (std::list<Chunk *>::iterator it = _chunks.begin(); it != ite; it++) {
+		(*it)->setVisibility(false);
 	}
 
-	// std::cout << "x: " << camera._position.x << ", y: " << camera._position.y << std::endl;
-	if (!isInChunk) {
-		//create new chunk where player stands
-		// std::cout << "not in chunk" << std::endl;
+	for (int row = -_render_distance; row <= _render_distance; row++) {
+		for (int col = -_render_distance; col <= _render_distance; col++) {
+			glm::vec2 pos = glm::vec2(camera._position.x + row * 16, camera._position.y + col * 16);
+			bool isInChunk = false;
+		
+			for (std::list<Chunk *>::iterator it = _chunks.begin(); it != ite; it++) {
+				if ((*it)->isInChunk(pos)) {
+					isInChunk = true;
+					(*it)->setVisibility(true);
+					break ;
+				}
+			}
+
+			// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
+			if (!isInChunk) {
+				//create new chunk where player stands
+				Chunk *newChunk = new Chunk(pos);
+
+				newChunk->setup_array_buffer(0.0f);
+				_chunks.push_back(newChunk);
+				std::cout << "currently at " << _chunks.size() << " chunks" << std::endl;
+			}
+		}
 	}
 }
 

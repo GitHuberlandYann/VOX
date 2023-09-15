@@ -49,15 +49,15 @@ void emitFace(vec4 v0, vec4 v1, vec4 v2, vec4 v3)
 
 void main()
 {
-    vec4 v0 = proj * view * model * (gl_in[0].gl_Position + vec4(-0.5, -0.5, 0.5, 0.0));
-    vec4 v1 = proj * view * model * (gl_in[0].gl_Position + vec4(0.5, -0.5, 0.5, 0.0));
-    vec4 v2 = proj * view * model * (gl_in[0].gl_Position + vec4(-0.5, -0.5, -0.5, 0.0));
-    vec4 v3 = proj * view * model * (gl_in[0].gl_Position + vec4(0.5, -0.5, -0.5, 0.0));
+    vec4 v0 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 0.0, 1.0, 0.0));
+    vec4 v1 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 0.0, 1.0, 0.0));
+    vec4 v2 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 0.0, 0.0, 0.0));
+    vec4 v3 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 0.0, 0.0, 0.0));
 
-    vec4 v4 = proj * view * model * (gl_in[0].gl_Position + vec4(-0.5, 0.5, 0.5, 0.0));
-    vec4 v5 = proj * view * model * (gl_in[0].gl_Position + vec4(0.5, 0.5, 0.5, 0.0));
-    vec4 v6 = proj * view * model * (gl_in[0].gl_Position + vec4(-0.5, 0.5, -0.5, 0.0));
-    vec4 v7 = proj * view * model * (gl_in[0].gl_Position + vec4(0.5, 0.5, -0.5, 0.0));
+    vec4 v4 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 1.0, 1.0, 0.0));
+    vec4 v5 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 1.0, 1.0, 0.0));
+    vec4 v6 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 1.0, 0.0, 0.0));
+    vec4 v7 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
 
     if ((vsData[0].Adj_blocks & 1) == 0) {
         emitFace(v0, v1, v2, v3);

@@ -5,6 +5,7 @@ class Chunk
 {
     private:
         GLuint _vao, _vbo;
+        bool _isVisible;
         glm::vec2 _start;
 
         void fill_vertex_array( GLfloat *vertices, GLfloat z );
@@ -13,7 +14,8 @@ class Chunk
         Chunk( glm::vec2 start );
         ~Chunk( void );
 
-        bool isInChunk( glm::vec3 pos );
+        void setVisibility( bool value );
+        bool isInChunk( glm::vec2 pos );
         void setup_array_buffer( GLfloat z );
         void drawArray( void );
 };
