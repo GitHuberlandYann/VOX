@@ -28,13 +28,13 @@ class Camera
 		glm::vec3 _world_up;
 		float _yaw;
 		float _pitch;
-		float _movement_speed;
-		float _mouse_sensitivity;
+		// float _mouse_sensitivity;
 		float _fov;
     	void updateCameraVectors( void );
 	
 	public:
 		glm::vec3 _position;
+		float _movement_speed;
 		bool _mouse_update, _scroll_update;
 
 		Camera( glm::vec3 position );

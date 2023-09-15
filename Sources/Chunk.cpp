@@ -29,13 +29,16 @@ Chunk::~Chunk( void )
 
 void Chunk::fill_vertex_array( GLfloat *vertices, GLfloat z )
 {
+	const siv::PerlinNoise::seed_type seed = 123456u;
+	const siv::PerlinNoise perlin{ seed };
+
 	for (int row = 0; row < 16; row++) {
 		for (int col = 0; col < 16; col++) {
 			vertices[(row * 16 + col) * 5] = 1.0f;
-			vertices[(row * 16 + col) * 5 + 1] = 4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
+			vertices[(row * 16 + col) * 5 + 1] = 0.0f;//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
 			vertices[(row * 16 + col) * 5 + 2] = _start.x + row;
 			vertices[(row * 16 + col) * 5 + 3] = _start.y + col;
-			vertices[(row * 16 + col) * 5 + 4] = z;
+			vertices[(row * 16 + col) * 5 + 4] = glm::floor(z + (perlin.noise2D_01(double(_start.x + row) / 100, double(_start.y + col) / 100) - 0.5) * 100);
 		}
 	}
 }

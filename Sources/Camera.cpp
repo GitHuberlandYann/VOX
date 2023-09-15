@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _movement_speed(SPEED), _mouse_sensitivity(SENSITIVITY), _fov(FOV)
+Camera::Camera( glm::vec3 position ) : _fov(FOV), _movement_speed(SPEED)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -9,7 +9,7 @@ Camera::Camera( glm::vec3 position ) : _movement_speed(SPEED), _mouse_sensitivit
 	_mouse_update = false;
 	_scroll_update = false;
 	updateCameraVectors();
-	(void)_mouse_sensitivity;
+	// (void)_mouse_sensitivity;
 }
 
 Camera::~Camera( void )

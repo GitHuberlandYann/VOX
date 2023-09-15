@@ -30,10 +30,10 @@ $(OBJS_DIR):
 	@mkdir -p $(OBJS_DIR)
 
 $(NAME): $(OBJS)
-	$(CC) $(CPPFLAGS) $(SAN) $(INCLUDES) $(OBJS) -o $(NAME) $(LINKS)
+	$(CC) $(CPPFLAGS) $(SAN) $(INCLUDES) -std=c++17 $(OBJS) -o $(NAME) $(LINKS)
 
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.cpp
-	$(CC) $(CPPFLAGS) $(SAN) $(INCLUDES) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(SAN) $(INCLUDES) -std=c++17 -c $< -o $@
 
 clean:
 	rm -rf $(OBJS_DIR)

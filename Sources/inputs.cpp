@@ -101,11 +101,12 @@ void OpenGL_Manager::user_inputs( void )
 		model = glm::rotate(model, glm::radians(_rotation.x), glm::vec3(-1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(_uniModel, 1, GL_FALSE, glm::value_ptr(model));
 	}
-
-	GLint key_rotation_speed = (glfwGetKey(_window, GLFW_KEY_KP_ADD) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);
-	if (key_rotation_speed && _rotation_speed + 0.1f * key_rotation_speed >= 0)
-		_rotation_speed += 0.1f * key_rotation_speed;
-
+	*/
+	GLint key_cam_speed = (glfwGetKey(_window, GLFW_KEY_KP_ADD) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);
+	if (key_cam_speed && camera._movement_speed + 0.01f * key_cam_speed >= 0) {
+		camera._movement_speed += 0.01f * key_cam_speed;
+	}
+	/*
 	if (glfwGetKey(_window, GLFW_KEY_C) == GLFW_PRESS && ++_key_color_mode == 1) {
 		++_color_mode;
 		if (_color_mode == MATERIAL && !_vtp_size)
@@ -218,10 +219,11 @@ void OpenGL_Manager::user_inputs( void )
 				: camera.processKeyboard(RIGHT);
 	}
 	GLint key_cam_z = (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS);
-	if (key_cam_z == 1)
-		camera.processKeyboard(UP);
-	else if (key_cam_z == -1)
-		camera.processKeyboard(DOWN);
+	if (key_cam_z) {
+		(key_cam_z == 1)
+			? camera.processKeyboard(UP)
+			: camera.processKeyboard(DOWN);
+	}
 
 	GLint key_cam_yaw =  (glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS);
 	if (key_cam_yaw) {

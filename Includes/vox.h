@@ -26,5 +26,6 @@ typedef struct {
 # include "Camera.hpp"
 # include "Chunk.hpp"
 # include "OpenGL_Manager.hpp"
+# include "PerlinNoise.hpp"
 
 #endif
