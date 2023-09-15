@@ -15,6 +15,7 @@ class Chunk
         ~Chunk( void );
 
         void setVisibility( bool value );
+        bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( glm::vec2 pos );
         void setup_array_buffer( GLfloat z );
         void drawArray( void );

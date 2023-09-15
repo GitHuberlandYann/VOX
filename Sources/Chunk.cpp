@@ -14,7 +14,7 @@ Chunk::Chunk( glm::vec2 start ) : _isVisible(true)
 		: posY -= 16 + posY % 16;
 	// std::cout << "posX: " << posX << ", posY: " << posY << std::endl;
 	_start = glm::vec2(static_cast<float>(posX), static_cast<float>(posY));
-	std::cout << "new Chunk at [" << _start.x << ", " << _start.y << ']' << std::endl;
+	// std::cout << "new Chunk at [" << _start.x << ", " << _start.y << ']' << std::endl;
 }
 
 Chunk::~Chunk( void )
@@ -38,6 +38,9 @@ void Chunk::fill_vertex_array( GLfloat *vertices, GLfloat z )
 			vertices[(row * 16 + col) * 5 + 1] = 0.0f;//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
 			vertices[(row * 16 + col) * 5 + 2] = _start.x + row;
 			vertices[(row * 16 + col) * 5 + 3] = _start.y + col;
+			// (row == 0 && col == 0)
+			// 	? vertices[(row * 16 + col) * 5 + 4] = 20.0f
+				// : 
 			vertices[(row * 16 + col) * 5 + 4] = glm::floor(z + (perlin.noise2D_01(double(_start.x + row) / 100, double(_start.y + col) / 100) - 0.5) * 100);
 		}
 	}
@@ -50,6 +53,16 @@ void Chunk::fill_vertex_array( GLfloat *vertices, GLfloat z )
 void Chunk::setVisibility( bool value )
 {
 	_isVisible = value;
+}
+
+
+bool Chunk::shouldDelete( glm::vec3 pos, GLfloat dist )
+{
+	if (glm::distance(glm::vec2(pos.x, pos.y), _start) > dist) {
+		// std::cout << "deleting chunk at " << _start.x << ", " << _start.y << std::endl;
+		return (true);
+	}
+	return (false);
 }
 
 bool Chunk::isInChunk( glm::vec2 pos )
@@ -94,7 +107,7 @@ void Chunk::setup_array_buffer( GLfloat z )
 	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
 	// check_glstate("posAttrib successfully set");
 
-	check_glstate("chunk succesfully added");
+	check_glstate("NO");
 }
 
 void Chunk::drawArray( void )

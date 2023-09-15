@@ -22,26 +22,26 @@ vec2 top_right = vec2(1.0f, 0.0f);
 vec2 bottom_left = vec2(0.0f, 1.0f);
 vec2 bottom_right = vec2(1.0f, 1.0f);
 
-void emitFace(vec4 v0, vec4 v1, vec4 v2, vec4 v3)
+void emitFace(vec4 v0, vec4 v1, vec4 v2, vec4 v3, vec2 topL, vec2 topR, vec2 bottomL, vec2 bottomR)
 {
     gl_Position = v0;
-	Texcoord = top_left;
+	Texcoord = topL;
     EmitVertex();
     gl_Position = v1;
-	Texcoord = top_right;
+	Texcoord = topR;
     EmitVertex();
     gl_Position = v2;
-	Texcoord = bottom_left;
+	Texcoord = bottomL;
     EmitVertex();
 
     gl_Position = v1;
-	Texcoord = top_right;
+	Texcoord = topR;
     EmitVertex();
     gl_Position = v3;
-	Texcoord = bottom_right;
+	Texcoord = bottomR;
     EmitVertex();
     gl_Position = v2;
-	Texcoord = bottom_left;
+	Texcoord = bottomL;
     EmitVertex();
 
     EndPrimitive();
@@ -60,21 +60,21 @@ void main()
     vec4 v7 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
 
     if ((vsData[0].Adj_blocks & 1) == 0) {
-        emitFace(v0, v1, v2, v3);
+        emitFace(v0, v1, v2, v3, vec2(0.333587, 0.500214), vec2(0.666413, 0.500214), vec2(0.333587, 0.749833), vec2(0.666413, 0.749833));
     }
     if ((vsData[0].Adj_blocks & 2) == 0) {
-        emitFace(v4, v5, v6, v7);
+        emitFace(v4, v5, v6, v7, vec2(0.666413, 0.250594), vec2(0.333587, 0.250594), vec2(0.666413, 0.000975), vec2(0.333587, 0.000975));
     }
     if ((vsData[0].Adj_blocks & 4) == 0) {
-        emitFace(v4, v0, v6, v2);
+        emitFace(v4, v0, v6, v2, vec2(0.333587, 0.250594), vec2(0.333587, 0.500214), vec2(0.000761, 0.250594), vec2(0.000761, 0.500214));
     }
     if ((vsData[0].Adj_blocks & 8) == 0) {
-        emitFace(v1, v5, v3, v7);
+        emitFace(v1, v5, v3, v7, vec2(0.666413, 0.500214), vec2(0.666413, 0.250594), vec2(0.999239, 0.500214), vec2(0.999239, 0.250594));
     }
     if ((vsData[0].Adj_blocks & 16) == 0) {
-        emitFace(v4, v5, v0, v1);
+        emitFace(v4, v5, v0, v1, vec2(0.333587, 0.250594), vec2(0.666413, 0.250594), vec2(0.333587, 0.500214), vec2(0.666413, 0.500214));
     }
     if ((vsData[0].Adj_blocks & 32) == 0) {
-        emitFace(v6, v7, v2, v3);
+        emitFace(v6, v7, v2, v3, vec2(0.333587, 0.749833), vec2(0.666413, 0.749833), vec2(0.333587, 0.999452), vec2(0.666413, 0.999452));
     }
 }

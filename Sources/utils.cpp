@@ -26,5 +26,8 @@ void check_glstate( std::string str )
 		std::cerr << "glGetError set to " << error_check << ", quitting now" << std::endl;
 		exit(1);
 	}
+	if (str == "NO") {
+		return ;
+	}
 	std::cout << str << std::endl;
 }

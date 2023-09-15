@@ -56,6 +56,12 @@ void OpenGL_Manager::chunk_update( void )
 	std::list<Chunk *>::iterator ite = _chunks.end();
 	for (std::list<Chunk *>::iterator it = _chunks.begin(); it != ite; it++) {
 		(*it)->setVisibility(false);
+		if ((*it)->shouldDelete(camera._position, _render_distance * 2 * 16)) {
+			// delete *it;
+			std::list<Chunk *>::iterator tmp = it;
+			--it;
+			_chunks.erase(tmp);
+		}
 	}
 
 	for (int row = -_render_distance; row <= _render_distance; row++) {
@@ -78,7 +84,7 @@ void OpenGL_Manager::chunk_update( void )
 
 				newChunk->setup_array_buffer(0.0f);
 				_chunks.push_back(newChunk);
-				std::cout << "currently at " << _chunks.size() << " chunks" << std::endl;
+				// std::cout << "currently at " << _chunks.size() << " chunks" << std::endl;
 			}
 		}
 	}
