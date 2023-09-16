@@ -3,7 +3,7 @@
 layout(points) in;
 layout(triangle_strip, max_vertices = 36) out;
 
-uniform mat4 model;
+// uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
 // uniform mat4 scale;
@@ -52,15 +52,15 @@ void main()
 	if (vsData[0].Block_type == 0) {
 		return ;
 	}
-    vec4 v0 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 0.0, 1.0, 0.0));
-    vec4 v1 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 0.0, 1.0, 0.0));
-    vec4 v2 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 0.0, 0.0, 0.0));
-    vec4 v3 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 0.0, 0.0, 0.0));
+    vec4 v0 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 1.0, 0.0));
+    vec4 v1 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 0.0, 1.0, 0.0));
+    vec4 v2 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 0.0, 0.0));
+    vec4 v3 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 0.0, 0.0, 0.0));
 
-    vec4 v4 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 1.0, 1.0, 0.0));
-    vec4 v5 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 1.0, 1.0, 0.0));
-    vec4 v6 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 1.0, 0.0, 0.0));
-    vec4 v7 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
+    vec4 v4 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 1.0, 1.0, 0.0));
+    vec4 v5 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 1.0, 1.0, 0.0));
+    vec4 v6 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 1.0, 0.0, 0.0));
+    vec4 v7 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
 
 	if (vsData[0].Block_type == 1) {
 		if ((vsData[0].Adj_blocks & 1) == 0) {

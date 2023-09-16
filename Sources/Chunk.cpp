@@ -34,6 +34,27 @@ Chunk::~Chunk( void )
 //                                Private                                     //
 // ************************************************************************** //
 
+GLfloat Chunk::get_empty_faces( int row, int col, int level )
+{
+	GLfloat res = 0.0f;
+	res += !!_blocks[((row - 1) * 18 + col) * 256 + level] * 4;
+	res += !!_blocks[((row + 1) * 18 + col) * 256 + level] * 8;
+	res += !!_blocks[(row * 18 + col - 1) * 256 + level] * 1;
+	res += !!_blocks[(row * 18 + col + 1) * 256 + level] * 2;
+	switch (level) {
+		case 0:
+			res += !!_blocks[(row * 18 + col) * 256 + level + 1] * 16;
+			break ;
+		case 255:
+			res += !!_blocks[(row * 18 + col) * 256 + level - 1] * 32;
+			break ;
+		default:
+			res += !!_blocks[(row * 18 + col) * 256 + level - 1] * 32;
+			res += !!_blocks[(row * 18 + col) * 256 + level + 1] * 16;
+	}
+	return (res);
+}
+
 // takes a block and check if player can see it at some point
 bool Chunk::exposed_block( int row, int col, int level )
 {
@@ -67,6 +88,9 @@ void Chunk::generate_blocks( void )
 			int surface_level = glm::floor(SEA_LEVEL + (perlin.noise2D_01(double(_start.x - 1 + row) / 100, double(_start.y - 1 + col) / 100) - 0.5) * 100); 
 			for (int level = 0; level < 256; level++) {
 				_blocks[(row * 18 + col) * 256 + level] = (level < surface_level) * 2 + (level == surface_level);//+ (level > surface_level && level <= 64) * 3;
+				// if (row == 9 && col == 9 && level == surface_level + 5) {
+				// 	_blocks[(row * 18 + col) * 256 + level] = 1;
+				// }
 			}
 		}
 	}
@@ -93,7 +117,7 @@ void Chunk::fill_vertex_array( void )
 				GLint block_type = _blocks[((row + 1) * 18 + col + 1) * 256 + level];
 				if (block_type && block_type != 8) {
 					_vertices[index] = block_type;
-					_vertices[index + 1] = 0.0f;//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
+					_vertices[index + 1] = get_empty_faces(row + 1, col + 1, level);//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
 					_vertices[index + 2] = _start.x + row;
 					_vertices[index + 3] = _start.y + col;
 					_vertices[index + 4] = static_cast<GLfloat>(level);

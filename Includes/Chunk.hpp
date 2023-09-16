@@ -14,6 +14,7 @@ class Chunk
 		GLint _displayed_blocks;
 		std::thread _thread;
 
+		GLfloat get_empty_faces( int row, int col, int level );
 		bool exposed_block( int row, int col, int level );
 		void generate_blocks( void );
         void fill_vertex_array( void );

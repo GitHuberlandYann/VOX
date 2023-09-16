@@ -110,16 +110,8 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::setup_array_buffer( void )
 {
-	chunk_update();
-	// Chunk *newChunk = new Chunk(glm::vec2(0.0f, 0.0f));
-
-	// newChunk->setup_array_buffer(0.0f);
-	// _chunks.push_back(newChunk);
-
-	// newChunk = new Chunk(glm::vec2(0.0f, 16.0f));
-
-	// newChunk->setup_array_buffer(0.0f);
-	// _chunks.push_back(newChunk);
+	chunk_update(); //create chunks
+	chunk_update(); //display created chunks
 }
 
 void OpenGL_Manager::create_shaders( void )
@@ -208,9 +200,9 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	_uniUseLight = glGetUniformLocation(_shaderProgram, "use_light");
 	glUniform1i(_uniUseLight, 0);
 */
-	_uniModel = glGetUniformLocation(_shaderProgram, "model");
-	glm::mat4 model = glm::mat4(1.0f);
-	glUniformMatrix4fv(_uniModel, 1, GL_FALSE, glm::value_ptr(model));
+	// _uniModel = glGetUniformLocation(_shaderProgram, "model");
+	// glm::mat4 model = glm::mat4(1.0f);
+	// glUniformMatrix4fv(_uniModel, 1, GL_FALSE, glm::value_ptr(model));
 
 	// _uniCamPos = glGetUniformLocation(_shaderProgram, "camPos");
 	_uniView = glGetUniformLocation(_shaderProgram, "view");
@@ -282,22 +274,22 @@ void OpenGL_Manager::main_loop( void )
     // glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// std::cout << "60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame." << std::endl; 
-	// double lastTime = glfwGetTime();
-	// int nbFrames = 0;
+	double lastTime = glfwGetTime();
+	int nbFrames = 0;
 
 	// main loop cheking for inputs and rendering everything
 	while (!glfwWindowShouldClose(_window))
 	{
-		// double currentTime = glfwGetTime();
-		// nbFrames++;
-		// if ( currentTime - lastTime >= 1.0 ){
-		// 	std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
-		// 	nbFrames = 0;
-		// 	lastTime += 1.0;
-		// }
+		double currentTime = glfwGetTime();
+		nbFrames++;
+		if ( currentTime - lastTime >= 1.0 ){
+			std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
+			nbFrames = 0;
+			lastTime += 1.0;
+		}
 
 		user_inputs();
-		chunk_update();
+		// chunk_update(); may want to call this once player goes onto new chunk to improve performance
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
