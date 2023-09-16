@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Chunk::Chunk( glm::vec2 start ) : _isVisible(true)
+Chunk::Chunk( glm::vec2 start ) : _isVisible(true), _displayed_blocks(0)
 {
 	int posX = static_cast<int>(glm::floor(start.x));
 	int posY = static_cast<int>(glm::floor(start.y));
@@ -15,33 +15,89 @@ Chunk::Chunk( glm::vec2 start ) : _isVisible(true)
 	// std::cout << "posX: " << posX << ", posY: " << posY << std::endl;
 	_start = glm::vec2(static_cast<float>(posX), static_cast<float>(posY));
 	// std::cout << "new Chunk at [" << _start.x << ", " << _start.y << ']' << std::endl;
+
+	_blocks = new GLint[18 * 18 * 256];
+	generate_blocks();
 }
 
 Chunk::~Chunk( void )
 {
     glDeleteBuffers(1, &_vbo);
     glDeleteVertexArrays(1, &_vao);
+
+	delete [] _blocks;
 }
 
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
 
-void Chunk::fill_vertex_array( GLfloat *vertices, GLfloat z )
+// takes a block and check if player can see it at some point
+bool Chunk::exposed_block( int row, int col, int level )
+{
+	bool below = false;
+	bool above = false;
+	switch (level) {
+		case 0:
+			above = !_blocks[(row * 18 + col) * 256 + level + 1];
+			break ;
+		case 255:
+			below = !_blocks[(row * 18 + col) * 256 + level - 1];
+			break ;
+		default:
+			below = !_blocks[(row * 18 + col) * 256 + level - 1];
+			above = !_blocks[(row * 18 + col) * 256 + level + 1];
+	}
+	return (!_blocks[((row - 1) * 18 + col) * 256 + level]
+		|| !_blocks[((row + 1) * 18 + col) * 256 + level]
+		|| !_blocks[(row * 18 + col - 1) * 256 + level]
+		|| !_blocks[(row * 18 + col + 1) * 256 + level]
+		|| below || above);
+}
+
+void Chunk::generate_blocks( void )
 {
 	const siv::PerlinNoise::seed_type seed = 123456u;
 	const siv::PerlinNoise perlin{ seed };
 
+	for (int row = 0; row < 18; row++) {
+		for (int col = 0; col < 18; col++) {
+			int surface_level = glm::floor(SEA_LEVEL + (perlin.noise2D_01(double(_start.x - 1 + row) / 100, double(_start.y - 1 + col) / 100) - 0.5) * 100); 
+			for (int level = 0; level < 256; level++) {
+				_blocks[(row * 18 + col) * 256 + level] = (level < surface_level) * 2 + (level == surface_level);
+			}
+		}
+	}
+
+	for (int row = 1; row < 17; row++) {
+		for (int col = 1; col < 17; col++) {
+			for (int level = 0; level < 256; level++) {
+				if (_blocks[(row * 18 + col) * 256 + level]) {
+					(exposed_block(row, col, level))
+						? _displayed_blocks++
+						:_blocks[(row * 18 + col) * 256 + level] = 8;
+				}
+			}
+		}
+	}
+}
+
+void Chunk::fill_vertex_array( GLfloat *vertices )
+{
+	int index = 0;
 	for (int row = 0; row < 16; row++) {
 		for (int col = 0; col < 16; col++) {
-			vertices[(row * 16 + col) * 5] = 1.0f;
-			vertices[(row * 16 + col) * 5 + 1] = 0.0f;//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
-			vertices[(row * 16 + col) * 5 + 2] = _start.x + row;
-			vertices[(row * 16 + col) * 5 + 3] = _start.y + col;
-			// (row == 0 && col == 0)
-			// 	? vertices[(row * 16 + col) * 5 + 4] = 20.0f
-				// : 
-			vertices[(row * 16 + col) * 5 + 4] = glm::floor(z + (perlin.noise2D_01(double(_start.x + row) / 100, double(_start.y + col) / 100) - 0.5) * 100);
+			for (int level = 0; level < 256; level++) {
+				GLint block_type = _blocks[((row + 1) * 18 + col + 1) * 256 + level];
+				if (block_type && block_type != 8) {
+					vertices[index] = block_type;
+					vertices[index + 1] = 0.0f;//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
+					vertices[index + 2] = _start.x + row;
+					vertices[index + 3] = _start.y + col;
+					vertices[index + 4] = static_cast<GLfloat>(level);
+					index += 5;
+				}
+			}
 		}
 	}
 }
@@ -72,24 +128,24 @@ bool Chunk::isInChunk( glm::vec2 pos )
 	return (pos.x >= _start.x && pos.x < _start.x + 16.0f && pos.y >= _start.y && pos.y < _start.y + 16.0f);
 }
 
-void Chunk::setup_array_buffer( GLfloat z )
+void Chunk::setup_array_buffer( void )
 {
     glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
-	GLfloat *vertices = new GLfloat[16 * 16 * 5]; // blocktype, adjacents blocks, X Y Z
+	GLfloat *vertices = new GLfloat[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
 	// GLfloat points[] = {
 	// 	1.0f, 8.0f, 0.0f,  0.0f, z, // blocktype, adjacents blocks, X Y Z
 	// 	1.0f, 0.0f, 2.5f,  3.5f, z,
 	// 	1.0f, 4.0f, 1.0f, 0.0f, z,
 	// 	// 1.0f, -0.45f, -0.45f, 0.0f
 	// };
-	// std::cout << "total alloc of vertices: " << _number_vertices * 12 << std::endl;
-	fill_vertex_array(vertices, z);
+	// std::cout << "total alloc of vertices: " << _displayed_blocks << std::endl;
+	fill_vertex_array(vertices);
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, 16 * 16 * 5 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 5 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
 	// glBufferData(GL_ARRAY_BUFFER, _number_vertices * 12 * sizeof(float), vertices, GL_STATIC_DRAW);
 
 	delete [] vertices;
@@ -116,5 +172,5 @@ void Chunk::drawArray( void )
 		return ;
 	}
     glBindVertexArray(_vao);
-	glDrawArrays(GL_POINTS, 0, 16 * 16);
+	glDrawArrays(GL_POINTS, 0, _displayed_blocks);
 }

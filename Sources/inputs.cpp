@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera camera(glm::vec3(1.0f, -2.0f, 0.0f));/*
+Camera camera(glm::vec3(1.0f, -2.0f, 66.0f));/*
 float lastX = WIN_WIDTH / 2.0f;
 float lastY = WIN_HEIGHT / 2.0f;
 bool first_mouse = true;
@@ -60,6 +60,7 @@ void OpenGL_Manager::chunk_update( void )
 			// delete *it;
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
+			delete *tmp;
 			_chunks.erase(tmp);
 		}
 	}
@@ -82,7 +83,7 @@ void OpenGL_Manager::chunk_update( void )
 				//create new chunk where player stands
 				Chunk *newChunk = new Chunk(pos);
 
-				newChunk->setup_array_buffer(0.0f);
+				newChunk->setup_array_buffer();
 				_chunks.push_back(newChunk);
 				// std::cout << "currently at " << _chunks.size() << " chunks" << std::endl;
 			}

@@ -49,6 +49,9 @@ void emitFace(vec4 v0, vec4 v1, vec4 v2, vec4 v3, vec2 topL, vec2 topR, vec2 bot
 
 void main()
 {
+	if (vsData[0].Block_type == 0) {
+		return ;
+	}
     vec4 v0 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 0.0, 1.0, 0.0));
     vec4 v1 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 0.0, 1.0, 0.0));
     vec4 v2 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 0.0, 0.0, 0.0));
@@ -59,22 +62,43 @@ void main()
     vec4 v6 = proj * view * model * (gl_in[0].gl_Position + vec4(0.0, 1.0, 0.0, 0.0));
     vec4 v7 = proj * view * model * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
 
-    if ((vsData[0].Adj_blocks & 1) == 0) {
-        emitFace(v0, v1, v2, v3, vec2(0.333587, 0.500214), vec2(0.666413, 0.500214), vec2(0.333587, 0.749833), vec2(0.666413, 0.749833));
-    }
-    if ((vsData[0].Adj_blocks & 2) == 0) {
-        emitFace(v4, v5, v6, v7, vec2(0.666413, 0.250594), vec2(0.333587, 0.250594), vec2(0.666413, 0.000975), vec2(0.333587, 0.000975));
-    }
-    if ((vsData[0].Adj_blocks & 4) == 0) {
-        emitFace(v4, v0, v6, v2, vec2(0.333587, 0.250594), vec2(0.333587, 0.500214), vec2(0.000761, 0.250594), vec2(0.000761, 0.500214));
-    }
-    if ((vsData[0].Adj_blocks & 8) == 0) {
-        emitFace(v1, v5, v3, v7, vec2(0.666413, 0.500214), vec2(0.666413, 0.250594), vec2(0.999239, 0.500214), vec2(0.999239, 0.250594));
-    }
-    if ((vsData[0].Adj_blocks & 16) == 0) {
-        emitFace(v4, v5, v0, v1, vec2(0.333587, 0.250594), vec2(0.666413, 0.250594), vec2(0.333587, 0.500214), vec2(0.666413, 0.500214));
-    }
-    if ((vsData[0].Adj_blocks & 32) == 0) {
-        emitFace(v6, v7, v2, v3, vec2(0.333587, 0.749833), vec2(0.666413, 0.749833), vec2(0.333587, 0.999452), vec2(0.666413, 0.999452));
+	if (vsData[0].Block_type == 1) {
+		if ((vsData[0].Adj_blocks & 1) == 0) {
+			emitFace(v0, v1, v2, v3, vec2(0.333587, 0.500214), vec2(0.666413, 0.500214), vec2(0.333587, 0.749833), vec2(0.666413, 0.749833));
+		}
+		if ((vsData[0].Adj_blocks & 2) == 0) {
+			emitFace(v4, v5, v6, v7, vec2(0.666413, 0.250594), vec2(0.333587, 0.250594), vec2(0.666413, 0.000975), vec2(0.333587, 0.000975));
+		}
+		if ((vsData[0].Adj_blocks & 4) == 0) {
+			emitFace(v4, v0, v6, v2, vec2(0.333587, 0.250594), vec2(0.333587, 0.500214), vec2(0.000761, 0.250594), vec2(0.000761, 0.500214));
+		}
+		if ((vsData[0].Adj_blocks & 8) == 0) {
+			emitFace(v1, v5, v3, v7, vec2(0.666413, 0.500214), vec2(0.666413, 0.250594), vec2(0.999239, 0.500214), vec2(0.999239, 0.250594));
+		}
+		if ((vsData[0].Adj_blocks & 16) == 0) {
+			emitFace(v4, v5, v0, v1, vec2(0.333587, 0.250594), vec2(0.666413, 0.250594), vec2(0.333587, 0.500214), vec2(0.666413, 0.500214));
+		}
+		if ((vsData[0].Adj_blocks & 32) == 0) {
+			emitFace(v6, v7, v2, v3, vec2(0.333587, 0.749833), vec2(0.666413, 0.749833), vec2(0.333587, 0.999452), vec2(0.666413, 0.999452));
+		}
+	} else if (vsData[0].Block_type == 2) {
+		if ((vsData[0].Adj_blocks & 1) == 0) {
+			emitFace(v0, v1, v2, v3, vec2(0.333587, 0.749833), vec2(0.666413, 0.749833), vec2(0.333587, 0.999452), vec2(0.666413, 0.999452));
+		}
+		if ((vsData[0].Adj_blocks & 2) == 0) {
+			emitFace(v4, v5, v6, v7, vec2(0.333587, 0.749833), vec2(0.666413, 0.749833), vec2(0.333587, 0.999452), vec2(0.666413, 0.999452));
+		}
+		if ((vsData[0].Adj_blocks & 4) == 0) {
+			emitFace(v4, v0, v6, v2, vec2(0.333587, 0.749833), vec2(0.666413, 0.749833), vec2(0.333587, 0.999452), vec2(0.666413, 0.999452));
+		}
+		if ((vsData[0].Adj_blocks & 8) == 0) {
+			emitFace(v1, v5, v3, v7, vec2(0.333587, 0.749833), vec2(0.666413, 0.749833), vec2(0.333587, 0.999452), vec2(0.666413, 0.999452));
+		}
+		if ((vsData[0].Adj_blocks & 16) == 0) {
+			emitFace(v4, v5, v0, v1, vec2(0.333587, 0.749833), vec2(0.666413, 0.749833), vec2(0.333587, 0.999452), vec2(0.666413, 0.999452));
+		}
+		if ((vsData[0].Adj_blocks & 32) == 0) {
+			emitFace(v6, v7, v2, v3, vec2(0.333587, 0.749833), vec2(0.666413, 0.749833), vec2(0.333587, 0.999452), vec2(0.666413, 0.999452));
+		}
     }
 }

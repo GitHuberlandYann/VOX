@@ -94,12 +94,6 @@ void main()
 
 	// gl_Position = proj * view * model * scale * vec4(position, 1.0);
 	gl_Position = vec4(position, 1.0);
-	if (adj_blocks < 0.5) {
-		Adj_blocks = 0;
-	} else if (adj_blocks < 1.5) {
-		Adj_blocks = 1;
-	} else {
-		Adj_blocks = 2;
-	}
 	Adj_blocks = int(adj_blocks);
+	Block_type = int(block_type);
 }

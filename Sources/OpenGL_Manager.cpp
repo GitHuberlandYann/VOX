@@ -87,6 +87,12 @@ void OpenGL_Manager::setup_window( void )
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", nullptr, nullptr);
+	if (_window == NULL)
+    {
+        std::cerr << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        exit (1);
+    }
 
 	// activate opengl context
 	glfwMakeContextCurrent(_window);
