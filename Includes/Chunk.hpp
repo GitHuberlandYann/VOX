@@ -8,7 +8,7 @@ class Chunk
     private:
         GLuint _vao, _vbo;
         bool _isVisible, _vaoSet;
-        glm::vec2 _start;
+        GLint _startX, _startY;
 		GLint *_blocks;
 		GLfloat *_vertices;
 		GLint _displayed_blocks;
@@ -20,14 +20,14 @@ class Chunk
         void fill_vertex_array( void );
 
     public:
-        Chunk( glm::vec2 start );
+        Chunk( int posX, int posY );
         ~Chunk( void );
 
 		void generation( void );
 		void generate_chunk( std::list<Chunk *> *chunks );
-        void setVisibility( bool value );
+        void setVisibility( int posX, int posY, GLint render_dist );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
-        bool isInChunk( glm::vec2 pos );
+        bool isInChunk( int posX, int posY );
         void setup_array_buffer( void );
         void drawArray( void );
 };

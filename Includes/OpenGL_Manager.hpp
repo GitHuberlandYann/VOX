@@ -20,7 +20,7 @@ enum {
 enum {
 	FILL,
 	LINE,
-	POINT,
+	// POINT,
 	F_LAST
 };
 
@@ -31,6 +31,7 @@ class OpenGL_Manager
 		// GLuint _vao, _vbo; // vertex array objects, vertex buffer objects
 		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
 		GLint _uniView, _uniProj;
+		GLint _current_chunk[2];
 		// GLint _uniColorMode, _uniTexIndex, _uniInvert, _uniUseLight,, _uniScale , _uniLightPos, _uniLightColor;// , _uniCamPos
 		// GLint _nb_textures, _number_vertices, _section;
 		// bool _omore_tex, _can_light;
@@ -46,6 +47,7 @@ class OpenGL_Manager
 		// std::vector<std::pair<int, int> > _vert_tex_pair;
 		// size_t _vtp_size;
 		std::list<Chunk *> _chunks;
+		std::thread _thread;
 
 		void compile_shader( GLuint ptrShader, std::string name );
 		void chunk_update( void );

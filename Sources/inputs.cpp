@@ -61,56 +61,75 @@ void OpenGL_Manager::update_cam_perspective( void )
 // 	mtx.unlock();
 // }
 
-void OpenGL_Manager::chunk_update( void )
+static void thread_chunk_update( std::list<Chunk *> *chunks, GLint render_dist, int posX, int posY )
 {
 	mtx.lock();
-	std::list<Chunk *>::iterator ite = _chunks.end();
-	std::list<Chunk *>::iterator it = _chunks.begin();
+	std::list<Chunk *>::iterator ite = chunks->end();
+	std::list<Chunk *>::iterator it = chunks->begin();
 	mtx.unlock();
 	for (; it != ite; it++) {
-		(*it)->setVisibility(false);
-		if ((*it)->shouldDelete(camera._position, _render_distance * 2 * 16)) {
-			// delete *it;
+		(*it)->setVisibility(posX, posY, render_dist * 16);
+		if ((*it)->shouldDelete(camera._position, render_dist * 2 * 16)) {
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
 			delete *tmp;
 			mtx.lock();
-			_chunks.erase(tmp);
+			chunks->erase(tmp);
 			mtx.unlock();
 		}
 	}
 
-	for (int row = -_render_distance; row <= _render_distance; row++) {
-		for (int col = -_render_distance; col <= _render_distance; col++) {
-			glm::vec2 pos = glm::vec2(camera._position.x + row * 16, camera._position.y + col * 16);
+	for (int row = -render_dist; row <= render_dist; row++) {
+		for (int col = -render_dist; col <= render_dist; col++) {
+			// glm::vec2 pos = glm::vec2(camera._position.x + row * 16, camera._position.y + col * 16);
 			bool isInChunk = false;
 		
 			mtx.lock();
-			it = _chunks.begin();
+			it = chunks->begin();
 			mtx.unlock();
 			for (; it != ite; it++) {
 				mtx.lock();
-				bool checkIsInChunk = (*it)->isInChunk(pos);
-				mtx.unlock();
-				if (checkIsInChunk) {
-					isInChunk = true;
-					mtx.lock();
-					(*it)->setVisibility(true);
-					(*it)->setup_array_buffer();
+				if ((*it)->isInChunk(posX + row * 16, posY + col * 16)) {
 					mtx.unlock();
+					isInChunk = true;
 					break ;
 				}
+				mtx.unlock();
 			}
 
 			// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
 			if (!isInChunk) {
 				//create new chunk where player stands
-				// _threads.push_back(std::thread(thread_create_chunk, &_chunks, pos));
-				Chunk *newChunk = new Chunk(pos);
-				newChunk->generate_chunk(&_chunks);
+				Chunk *newChunk = new Chunk(posX + row * 16, posY + col * 16);
+				newChunk->generate_chunk(chunks);
 			}
 		}
 	}
+}
+
+void OpenGL_Manager::chunk_update( void )
+{
+	int posX = static_cast<int>(glm::floor(camera._position.x)); //TODO check what floor does on neg number
+	int posY = static_cast<int>(glm::floor(camera._position.y));
+
+	(posX >= 0)
+		? posX -= posX % 16
+		: posX -= 16 + posX % 16;
+	(posY >= 0)
+		? posY -= posY % 16
+		: posY -= 16 + posY % 16;
+	
+	if (posX == _current_chunk[0] && posY == _current_chunk[1]) {
+		return ;
+	}
+	// std::cout << "new chunk " << posX << ", " << posY << " !" << std::endl;
+	_current_chunk[0] = posX;
+	_current_chunk[1] = posY;
+
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+	_thread = std::thread(thread_chunk_update, &_chunks, _render_distance, posX, posY);
 }
 
 void OpenGL_Manager::user_inputs( void )
@@ -164,6 +183,7 @@ void OpenGL_Manager::user_inputs( void )
 		++_fill;
 		if (_fill == F_LAST)
 			_fill = FILL;
+		// std::cout << "fill mode: " << _fill << std::endl;
 		switch (_fill) {
 			case FILL:
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -171,9 +191,9 @@ void OpenGL_Manager::user_inputs( void )
 			case LINE:
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				break;
-			case POINT:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-				break;
+			// case POINT:
+			// 	glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+			// 	break;
 		}
 	} else if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_RELEASE)
 		_key_fill = 0;

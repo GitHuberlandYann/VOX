@@ -49,6 +49,10 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	}
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
 	_chunks.clear();
+
+	if (_thread.joinable()) {
+		_thread.join();
+	}
 }
 
 // ************************************************************************** //
@@ -110,7 +114,11 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::setup_array_buffer( void )
 {
+	_current_chunk[0] = -1;
+	_current_chunk[1] = -1;
 	chunk_update(); //create chunks
+	_current_chunk[0] = -1;
+	_current_chunk[1] = -1;
 	chunk_update(); //display created chunks
 }
 
@@ -289,7 +297,7 @@ void OpenGL_Manager::main_loop( void )
 		}
 
 		user_inputs();
-		// chunk_update(); may want to call this once player goes onto new chunk to improve performance
+		chunk_update(); //may want to call this once player goes onto new chunk to improve performance
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
