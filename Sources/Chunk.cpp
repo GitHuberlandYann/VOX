@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Chunk::Chunk( glm::vec2 start ) : _isVisible(true), _displayed_blocks(0)
+Chunk::Chunk( glm::vec2 start ) : _isVisible(true), _vaoSet(false), _blocks(NULL), _vertices(NULL), _displayed_blocks(0)
 {
 	int posX = static_cast<int>(glm::floor(start.x));
 	int posY = static_cast<int>(glm::floor(start.y));
@@ -15,9 +15,6 @@ Chunk::Chunk( glm::vec2 start ) : _isVisible(true), _displayed_blocks(0)
 	// std::cout << "posX: " << posX << ", posY: " << posY << std::endl;
 	_start = glm::vec2(static_cast<float>(posX), static_cast<float>(posY));
 	// std::cout << "new Chunk at [" << _start.x << ", " << _start.y << ']' << std::endl;
-
-	_blocks = new GLint[18 * 18 * 256];
-	generate_blocks();
 }
 
 Chunk::~Chunk( void )
@@ -26,6 +23,11 @@ Chunk::~Chunk( void )
     glDeleteVertexArrays(1, &_vao);
 
 	delete [] _blocks;
+	delete [] _vertices;
+
+	if (_thread.joinable()) {
+		_thread.join();
+	}
 }
 
 // ************************************************************************** //
@@ -64,7 +66,7 @@ void Chunk::generate_blocks( void )
 		for (int col = 0; col < 18; col++) {
 			int surface_level = glm::floor(SEA_LEVEL + (perlin.noise2D_01(double(_start.x - 1 + row) / 100, double(_start.y - 1 + col) / 100) - 0.5) * 100); 
 			for (int level = 0; level < 256; level++) {
-				_blocks[(row * 18 + col) * 256 + level] = (level < surface_level) * 2 + (level == surface_level);
+				_blocks[(row * 18 + col) * 256 + level] = (level < surface_level) * 2 + (level == surface_level);//+ (level > surface_level && level <= 64) * 3;
 			}
 		}
 	}
@@ -82,7 +84,7 @@ void Chunk::generate_blocks( void )
 	}
 }
 
-void Chunk::fill_vertex_array( GLfloat *vertices )
+void Chunk::fill_vertex_array( void )
 {
 	int index = 0;
 	for (int row = 0; row < 16; row++) {
@@ -90,11 +92,11 @@ void Chunk::fill_vertex_array( GLfloat *vertices )
 			for (int level = 0; level < 256; level++) {
 				GLint block_type = _blocks[((row + 1) * 18 + col + 1) * 256 + level];
 				if (block_type && block_type != 8) {
-					vertices[index] = block_type;
-					vertices[index + 1] = 0.0f;//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
-					vertices[index + 2] = _start.x + row;
-					vertices[index + 3] = _start.y + col;
-					vertices[index + 4] = static_cast<GLfloat>(level);
+					_vertices[index] = block_type;
+					_vertices[index + 1] = 0.0f;//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
+					_vertices[index + 2] = _start.x + row;
+					_vertices[index + 3] = _start.y + col;
+					_vertices[index + 4] = static_cast<GLfloat>(level);
 					index += 5;
 				}
 			}
@@ -105,6 +107,29 @@ void Chunk::fill_vertex_array( GLfloat *vertices )
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
+
+void thread_setup_chunk( std::list<Chunk *> *chunks, Chunk *current )
+{
+	// std::cout << "hello from thread" << std::endl;
+	current->generation();
+
+	mtx.lock();
+	chunks->push_back(current);
+	mtx.unlock();
+}
+
+void Chunk::generation( void )
+{
+	_blocks = new GLint[18 * 18 * 256];
+	generate_blocks();
+	_vertices = new GLfloat[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
+	fill_vertex_array();
+}
+
+void Chunk::generate_chunk( std::list<Chunk *> *chunks )
+{
+	_thread = std::thread(thread_setup_chunk, chunks, this);
+}
 
 void Chunk::setVisibility( bool value )
 {
@@ -130,10 +155,13 @@ bool Chunk::isInChunk( glm::vec2 pos )
 
 void Chunk::setup_array_buffer( void )
 {
+	if (_vaoSet) {
+		return ;
+	}
     glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
-	GLfloat *vertices = new GLfloat[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
+	// GLfloat *vertices = new GLfloat[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
 	// GLfloat points[] = {
 	// 	1.0f, 8.0f, 0.0f,  0.0f, z, // blocktype, adjacents blocks, X Y Z
 	// 	1.0f, 0.0f, 2.5f,  3.5f, z,
@@ -141,14 +169,16 @@ void Chunk::setup_array_buffer( void )
 	// 	// 1.0f, -0.45f, -0.45f, 0.0f
 	// };
 	// std::cout << "total alloc of vertices: " << _displayed_blocks << std::endl;
-	fill_vertex_array(vertices);
+	// fill_vertex_array(vertices);
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 5 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 5 * sizeof(GLfloat), _vertices, GL_STATIC_DRAW);
 	// glBufferData(GL_ARRAY_BUFFER, _number_vertices * 12 * sizeof(float), vertices, GL_STATIC_DRAW);
 
-	delete [] vertices;
+	delete [] _vertices;
+	_vertices = NULL;
+	_vaoSet = true;
 	// check_glstate("Vertex buffer successfully created");
 
 	glEnableVertexAttribArray(BLOCKATTRIB);
@@ -168,7 +198,7 @@ void Chunk::setup_array_buffer( void )
 
 void Chunk::drawArray( void )
 {
-	if (!_isVisible) {
+	if (!_isVisible || !_vaoSet) {
 		return ;
 	}
     glBindVertexArray(_vao);

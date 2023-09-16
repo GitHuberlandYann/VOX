@@ -1,5 +1,7 @@
 #include "vox.h"
 
+std::mutex mtx;
+
 int main( int ac, char **av )
 {
 	std::string texture_file = "Resources/Grass_Block_TEX.png";

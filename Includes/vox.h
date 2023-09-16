@@ -3,7 +3,8 @@
 
 # include <iostream>
 # include <string>
-// # include <thread>
+# include <thread>
+#include <mutex>
 # include <fstream>
 # include <list>
 // # include <math.h>
@@ -21,6 +22,8 @@ typedef struct {
 	int width;
 	int height;
 }				t_tex;
+
+extern std::mutex mtx;
 
 # include "utils.h"
 # include "Camera.hpp"

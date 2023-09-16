@@ -31,3 +31,13 @@ void check_glstate( std::string str )
 	}
 	std::cout << str << std::endl;
 }
+
+// void *thread_create_chunk(void *arg)
+// {
+// 	if (!arg) {
+// 		return (NULL);
+// 	}
+// 	std::list<Chunk *> *_chunks = arg;
+// 	std::cout << "hello from thread :)" << std::endl;
+// 	return (NULL);
+// }

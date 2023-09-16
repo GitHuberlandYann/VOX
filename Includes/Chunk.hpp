@@ -7,19 +7,23 @@ class Chunk
 {
     private:
         GLuint _vao, _vbo;
-        bool _isVisible;
+        bool _isVisible, _vaoSet;
         glm::vec2 _start;
 		GLint *_blocks;
+		GLfloat *_vertices;
 		GLint _displayed_blocks;
+		std::thread _thread;
 
 		bool exposed_block( int row, int col, int level );
 		void generate_blocks( void );
-        void fill_vertex_array( GLfloat *vertices );
+        void fill_vertex_array( void );
 
     public:
         Chunk( glm::vec2 start );
         ~Chunk( void );
 
+		void generation( void );
+		void generate_chunk( std::list<Chunk *> *chunks );
         void setVisibility( bool value );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( glm::vec2 pos );

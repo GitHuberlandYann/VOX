@@ -9,7 +9,7 @@
 #  define WIN_HEIGHT 1400
 # endif
 
-# define RENDER_DISTANCE 10
+# define RENDER_DISTANCE 20
 
 enum {
 	BLOCKATTRIB,

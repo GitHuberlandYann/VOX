@@ -47,6 +47,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	for (; it != ite; it++) {
 		delete *it;
 	}
+	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
 	_chunks.clear();
 }
 
@@ -296,6 +297,7 @@ void OpenGL_Manager::main_loop( void )
 		// }
 
 		user_inputs();
+		chunk_update();
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -317,8 +319,10 @@ void OpenGL_Manager::main_loop( void )
 		// 	glDrawArrays(GL_TRIANGLES, start_index, _vert_tex_pair[_section].first);
 		// }
 
+		mtx.lock();
 		std::list<Chunk *>::iterator it = _chunks.begin();
 		std::list<Chunk *>::iterator ite = _chunks.end();
+		mtx.unlock();
 		for (; it != ite; it++) {
 			(*it)->drawArray();
 		}

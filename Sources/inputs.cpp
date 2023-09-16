@@ -51,17 +51,32 @@ void OpenGL_Manager::update_cam_perspective( void )
 	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 }
 
+// void thread_create_chunk( std::list<Chunk *> *chunks, glm::vec2 pos )
+// {
+// 	// std::cout << "hello from thread" << std::endl;
+// 	Chunk *newChunk = new Chunk(pos);
+
+// 	mtx.lock();
+// 	chunks->push_back(newChunk);
+// 	mtx.unlock();
+// }
+
 void OpenGL_Manager::chunk_update( void )
 {
+	mtx.lock();
 	std::list<Chunk *>::iterator ite = _chunks.end();
-	for (std::list<Chunk *>::iterator it = _chunks.begin(); it != ite; it++) {
+	std::list<Chunk *>::iterator it = _chunks.begin();
+	mtx.unlock();
+	for (; it != ite; it++) {
 		(*it)->setVisibility(false);
 		if ((*it)->shouldDelete(camera._position, _render_distance * 2 * 16)) {
 			// delete *it;
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
 			delete *tmp;
+			mtx.lock();
 			_chunks.erase(tmp);
+			mtx.unlock();
 		}
 	}
 
@@ -70,10 +85,19 @@ void OpenGL_Manager::chunk_update( void )
 			glm::vec2 pos = glm::vec2(camera._position.x + row * 16, camera._position.y + col * 16);
 			bool isInChunk = false;
 		
-			for (std::list<Chunk *>::iterator it = _chunks.begin(); it != ite; it++) {
-				if ((*it)->isInChunk(pos)) {
+			mtx.lock();
+			it = _chunks.begin();
+			mtx.unlock();
+			for (; it != ite; it++) {
+				mtx.lock();
+				bool checkIsInChunk = (*it)->isInChunk(pos);
+				mtx.unlock();
+				if (checkIsInChunk) {
 					isInChunk = true;
+					mtx.lock();
 					(*it)->setVisibility(true);
+					(*it)->setup_array_buffer();
+					mtx.unlock();
 					break ;
 				}
 			}
@@ -81,11 +105,9 @@ void OpenGL_Manager::chunk_update( void )
 			// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
 			if (!isInChunk) {
 				//create new chunk where player stands
+				// _threads.push_back(std::thread(thread_create_chunk, &_chunks, pos));
 				Chunk *newChunk = new Chunk(pos);
-
-				newChunk->setup_array_buffer();
-				_chunks.push_back(newChunk);
-				// std::cout << "currently at " << _chunks.size() << " chunks" << std::endl;
+				newChunk->generate_chunk(&_chunks);
 			}
 		}
 	}
@@ -110,8 +132,10 @@ void OpenGL_Manager::user_inputs( void )
 	}
 	*/
 	GLint key_cam_speed = (glfwGetKey(_window, GLFW_KEY_KP_ADD) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);
-	if (key_cam_speed && camera._movement_speed + 0.01f * key_cam_speed >= 0) {
-		camera._movement_speed += 0.01f * key_cam_speed;
+	if (key_cam_speed) {
+		(key_cam_speed == 1)
+			? camera._movement_speed *= 1.2f
+			: camera._movement_speed *= 0.8f;
 	}
 	/*
 	if (glfwGetKey(_window, GLFW_KEY_C) == GLFW_PRESS && ++_key_color_mode == 1) {
@@ -245,10 +269,7 @@ void OpenGL_Manager::user_inputs( void )
 		update_cam_view();
 		camera._mouse_update = false;
 	}
-	
-	if (key_cam_v || key_cam_h) {
-		chunk_update();
-	}
+
 	/*
 	if (camera._scroll_update) {
 		update_cam_perspective();
