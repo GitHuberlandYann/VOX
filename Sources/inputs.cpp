@@ -132,7 +132,7 @@ void OpenGL_Manager::chunk_update( void )
 	_thread = std::thread(thread_chunk_update, &_chunks, _render_distance, posX, posY);
 }
 
-void OpenGL_Manager::user_inputs( void )
+void OpenGL_Manager::user_inputs( float deltaTime )
 {
 	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(_window, GL_TRUE);
@@ -245,17 +245,18 @@ void OpenGL_Manager::user_inputs( void )
 		_key_use_light = 0;
 	*/
 	// camera and light work 
+	camera.setDelta(deltaTime);
 	GLint key_cam_v = (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS);
 	if (key_cam_v) {
-			(key_cam_v == 1)
-				? camera.processKeyboard(FORWARD)
-				: camera.processKeyboard(BACKWARD);
+		(key_cam_v == 1)
+			? camera.processKeyboard(FORWARD)
+			: camera.processKeyboard(BACKWARD);
 	}
 	GLint key_cam_h = (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS);
 	if (key_cam_h) {
-			(key_cam_h == 1)
-				? camera.processKeyboard(LEFT)
-				: camera.processKeyboard(RIGHT);
+		(key_cam_h == 1)
+			? camera.processKeyboard(LEFT)
+			: camera.processKeyboard(RIGHT);
 	}
 	GLint key_cam_z = (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS);
 	if (key_cam_z) {

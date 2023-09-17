@@ -51,7 +51,7 @@ class OpenGL_Manager
 
 		void compile_shader( GLuint ptrShader, std::string name );
 		void chunk_update( void );
-		void user_inputs( void );
+		void user_inputs( float deltaTime );
 		void update_cam_view( void );
 		void update_cam_perspective( void );
 

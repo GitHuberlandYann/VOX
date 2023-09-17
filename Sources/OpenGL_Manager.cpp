@@ -286,6 +286,8 @@ void OpenGL_Manager::main_loop( void )
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
 
+	double previousFrame = glfwGetTime();
+
 	// main loop cheking for inputs and rendering everything
 	while (!glfwWindowShouldClose(_window))
 	{
@@ -293,12 +295,14 @@ void OpenGL_Manager::main_loop( void )
 		nbFrames++;
 		if ( currentTime - lastTime >= 1.0 ){
 			std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
+			// std::cout << "other math gives " << (currentTime - previousFrame) * 1000 << "ms/frame" << std::endl;
 			nbFrames = 0;
 			lastTime += 1.0;
 		}
 
-		user_inputs();
+		user_inputs(currentTime - previousFrame);
 		chunk_update(); //may want to call this once player goes onto new chunk to improve performance
+		previousFrame = currentTime;
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

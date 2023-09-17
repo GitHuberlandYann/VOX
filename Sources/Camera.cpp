@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _fov(FOV), _movement_speed(SPEED)
+Camera::Camera( glm::vec3 position ) : _speed_frame(0), _fov(FOV), _movement_speed(SPEED)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -45,27 +45,32 @@ glm::mat4 Camera::getPerspectiveMatrix( void )
 	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.05f, 1000.0f));
 }
 
+void Camera::setDelta( float deltaTime )
+{
+	_speed_frame = _movement_speed * deltaTime;
+}
+
 void Camera::processKeyboard( Camera_Movement direction )
 {
 	if (direction == FORWARD)
-		_position += _front * _movement_speed;
+		_position += _front * _speed_frame;
 	else if (direction == BACKWARD)
-		_position -= _front * _movement_speed;
+		_position -= _front * _speed_frame;
 	else if (direction == LEFT)
-		_position -= _right * _movement_speed;
+		_position -= _right * _speed_frame;
 	else if (direction == RIGHT)
-		_position += _right * _movement_speed;
+		_position += _right * _speed_frame;
 	else if (direction == UP)
-		_position += _up * _movement_speed;
+		_position += _up * _speed_frame;
 	else if (direction == DOWN)
-		_position -= _up * _movement_speed;
+		_position -= _up * _speed_frame;
 }
 
 void Camera::processPitch( GLint offset )
 {
-	_pitch += offset * (_movement_speed + 1 - SPEED);
+	_pitch += offset * _speed_frame;
 	if (_pitch > 85.0f || _pitch < -85.0f) {
-		_pitch -= offset * (_movement_speed + 1 - SPEED);
+		_pitch -= offset * _speed_frame;
 	}
 
 	updateCameraVectors();
@@ -73,7 +78,7 @@ void Camera::processPitch( GLint offset )
 
 void Camera::processYaw( GLint offset )
 {
-	_yaw += offset * (_movement_speed + 1 - SPEED);
+	_yaw += offset * _speed_frame;
 	if (_yaw > 180.0f) {
 		_yaw -= 360.0f;
 	} else if (_yaw < -180.0f) {
