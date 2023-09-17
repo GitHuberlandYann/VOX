@@ -85,9 +85,22 @@ void Chunk::generate_blocks( void )
 
 	for (int row = 0; row < 18; row++) {
 		for (int col = 0; col < 18; col++) {
-			int surface_level = glm::floor(SEA_LEVEL + (perlin.noise2D_01(double(_startX - 1 + row) / 100, double(_startY - 1 + col) / 100) - 0.5) * 100); 
+			// int surface_level = glm::floor(SEA_LEVEL + (perlin.noise2D_01(double(_startX - 1 + row) / 100, double(_startY - 1 + col) / 100) - 0.5) * 100); 
+			int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 100); 
+			// int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01(double(_startX - 1 + row) / 100, double(_startY - 1 + col) / 100, 4) - 0.5) * 50
+			// 			+ (perlin.noise2D_01(double(_startX - 1000 + row) / 1000, double(_startY - 1000 + col) / 1000) - 0.5) * 200);
 			for (int level = 0; level < 256; level++) {
-				_blocks[(row * 18 + col) * 256 + level] = (level < surface_level) * 2 + (level == surface_level);//+ (level > surface_level && level <= 64) * 3;
+				// double cave = perlin.noise3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 100.0f);
+				// (cave >= 0.5f && cave <= 0.51f)
+				// 	? _blocks[(row * 18 + col) * 256 + level] = 0
+				// 	: _blocks[(row * 18 + col) * 256 + level] = (level <= surface_level);
+				_blocks[(row * 18 + col) * 256 + level] = (level <= surface_level);
+				// GLfloat squashing_factor;
+				// (level < 64)
+				// 	? squashing_factor = (64 - level) / 64.0f
+				// 	: squashing_factor = -(level - 64) / 192.0f;
+				// // // std::cout << "squash at " << level << ": " << squashing_factor << std::endl;
+				// _blocks[(row * 18 + col) * 256 + level] = ((perlin.octave3D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, level / 20.0f, 4) + squashing_factor) > 0.5f);
 				// if (row == 9 && col == 9 && level == surface_level + 5) {
 				// 	_blocks[(row * 18 + col) * 256 + level] = 1;
 				// }
@@ -98,10 +111,16 @@ void Chunk::generate_blocks( void )
 	for (int row = 1; row < 17; row++) {
 		for (int col = 1; col < 17; col++) {
 			for (int level = 0; level < 256; level++) {
-				if (_blocks[(row * 18 + col) * 256 + level]) {
-					(exposed_block(row, col, level))
-						? _displayed_blocks++
-						:_blocks[(row * 18 + col) * 256 + level] = 8;
+				GLint value = _blocks[(row * 18 + col) * 256 + level];
+				if (value) {
+					if (exposed_block(row, col, level)) {
+						_displayed_blocks++;
+						if (value == 1 && level != 255 && _blocks[(row * 18 + col) * 256 + level + 1]) {
+							_blocks[(row * 18 + col) * 256 + level] = 2;
+						}
+					} else {
+						_blocks[(row * 18 + col) * 256 + level] = 8;
+					}
 				}
 			}
 		}
@@ -163,6 +182,9 @@ void Chunk::setVisibility( int posX, int posY, GLint render_dist )
 
 bool Chunk::shouldDelete( glm::vec3 pos, GLfloat dist )
 {
+	if (dist < 16 * 5) {
+		dist = 16 * 5;
+	}
 	return (glm::distance(glm::vec2(pos.x, pos.y), glm::vec2(_startX, _startY)) > dist);
 }
 

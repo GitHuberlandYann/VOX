@@ -1,7 +1,8 @@
 # include "vox.h"
 
 OpenGL_Manager::OpenGL_Manager( void )
-	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f), _render_distance(RENDER_DISTANCE),
+	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
+		_key_rdist(0), _render_distance(RENDER_DISTANCE),
 		_key_fill(0), _fill(FILL)
 	//_nb_textures(nb_textures + provided), _omore_tex(provided),
 		// _rotation_speed(1.5f), _zoom(1.0f), _point_size(1.0f), , _key_depth(0),
@@ -323,8 +324,11 @@ void OpenGL_Manager::main_loop( void )
 		std::list<Chunk *>::iterator it = _chunks.begin();
 		std::list<Chunk *>::iterator ite = _chunks.end();
 		mtx.unlock();
-		for (; it != ite; it++) {
+		for (; it != ite;) {
+			// mtx.lock();
 			(*it)->drawArray();
+			it++;
+			// mtx.unlock();
 		}
 		// glBindVertexArray(0);
 

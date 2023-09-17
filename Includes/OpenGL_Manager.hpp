@@ -41,7 +41,7 @@ class OpenGL_Manager
 		// glm::vec3 _light_pos, _light_col;
 		// glm::vec2 _light_angles;
 		// GLfloat _rotation_speed, _zoom, _point_size;
-		GLint _render_distance, _key_fill, _fill;
+		GLint _key_rdist, _render_distance, _key_fill, _fill;
 		// GLint , _key_depth, _color_mode, _key_color_mode, _key_section, _invert_col, _key_invert, _use_light, _key_use_light;
 		// GLdouble _mouse_x, _mouse_y;
 		// std::vector<std::pair<int, int> > _vert_tex_pair;
