@@ -61,15 +61,16 @@ void OpenGL_Manager::update_cam_perspective( void )
 // 	mtx.unlock();
 // }
 
-static void thread_chunk_update( std::list<Chunk *> *chunks, GLint render_dist, int posX, int posY )
+static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> *visible_chunks, GLint render_dist, glm::vec3 camPos, int posX, int posY )
 {
+	std::list<Chunk *> newvis_chunks;
 	mtx.lock();
 	std::list<Chunk *>::iterator ite = chunks->end();
 	std::list<Chunk *>::iterator it = chunks->begin();
 	mtx.unlock();
 	for (; it != ite; it++) {
-		(*it)->setVisibility(posX, posY, render_dist * 16);
-		if ((*it)->shouldDelete(camera._position, render_dist * 2 * 16)) {
+		(*it)->setVisibility(&newvis_chunks, posX, posY, render_dist * 16);
+		if ((*it)->shouldDelete(camPos, render_dist * 2 * 16)) {
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
 			mtx.lock();
@@ -78,10 +79,12 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, GLint render_dist, 
 			mtx.unlock();
 		}
 	}
+	mtx_visible_chunks.lock();
+	*visible_chunks = newvis_chunks;
+	mtx_visible_chunks.unlock();
 
 	for (int row = -render_dist; row <= render_dist; row++) {
 		for (int col = -render_dist; col <= render_dist; col++) {
-			// glm::vec2 pos = glm::vec2(camera._position.x + row * 16, camera._position.y + col * 16);
 			bool isInChunk = false;
 		
 			mtx.lock();
@@ -129,7 +132,7 @@ void OpenGL_Manager::chunk_update( void )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	_thread = std::thread(thread_chunk_update, &_chunks, _render_distance, posX, posY);
+	_thread = std::thread(thread_chunk_update, &_chunks, &_visible_chunks, _render_distance, camera._position, posX, posY);
 }
 
 void OpenGL_Manager::user_inputs( float deltaTime )

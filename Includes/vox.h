@@ -24,6 +24,7 @@ typedef struct {
 }				t_tex;
 
 extern std::mutex mtx;
+extern std::mutex mtx_visible_chunks;
 
 # include "utils.h"
 # include "Camera.hpp"

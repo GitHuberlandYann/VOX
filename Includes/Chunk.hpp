@@ -18,6 +18,7 @@ class Chunk
 		bool exposed_block( int row, int col, int level );
 		void generate_blocks( void );
         void fill_vertex_array( void );
+        void setup_array_buffer( void );
 
     public:
         Chunk( int posX, int posY );
@@ -25,10 +26,9 @@ class Chunk
 
 		void generation( void );
 		void generate_chunk( std::list<Chunk *> *chunks );
-        void setVisibility( int posX, int posY, GLint render_dist );
+        void setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
-        void setup_array_buffer( void );
         void drawArray( void );
 };
 

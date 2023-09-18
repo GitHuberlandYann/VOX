@@ -30,8 +30,11 @@ OpenGL_Manager::OpenGL_Manager( void )
 OpenGL_Manager::~OpenGL_Manager( void )
 {
 	std::cout << "Destructor of OpenGL_Manager called" << std::endl;
-	glDeleteTextures(1, _textures);
+	if (_thread.joinable()) {
+		_thread.join();
+	}
 
+	glDeleteTextures(1, _textures);
 	glDeleteProgram(_shaderProgram);
 
 	glfwMakeContextCurrent(NULL);
@@ -43,6 +46,10 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	// }
 	// delete _texture;
 
+	mtx_visible_chunks.lock();
+	_visible_chunks.clear();
+	mtx_visible_chunks.unlock();
+	mtx.lock();
 	std::list<Chunk *>::iterator it = _chunks.begin();
 	std::list<Chunk *>::iterator ite = _chunks.end();
 	for (; it != ite; it++) {
@@ -50,10 +57,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	}
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
 	_chunks.clear();
-
-	if (_thread.joinable()) {
-		_thread.join();
-	}
+	mtx.unlock();
 }
 
 // ************************************************************************** //
@@ -324,17 +328,16 @@ void OpenGL_Manager::main_loop( void )
 		// 	glDrawArrays(GL_TRIANGLES, start_index, _vert_tex_pair[_section].first);
 		// }
 
-		mtx.lock();
-		std::list<Chunk *>::iterator it = _chunks.begin();
-		std::list<Chunk *>::iterator ite = _chunks.end();
-		mtx.unlock();
+		mtx_visible_chunks.lock();
+		std::list<Chunk *>::iterator it = _visible_chunks.begin();
+		std::list<Chunk *>::iterator ite = _visible_chunks.end();
+		mtx_visible_chunks.unlock();
 		for (; it != ite;) {
-			// mtx.lock();
+			mtx_visible_chunks.lock();
 			(*it)->drawArray();
 			it++;
-			// mtx.unlock();
+			mtx_visible_chunks.unlock();
 		}
-		// glBindVertexArray(0);
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();

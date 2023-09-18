@@ -1,6 +1,7 @@
 #include "vox.h"
 
 std::mutex mtx;
+std::mutex mtx_visible_chunks;
 
 int main( int ac, char **av )
 {

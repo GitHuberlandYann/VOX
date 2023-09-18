@@ -47,6 +47,7 @@ class OpenGL_Manager
 		// std::vector<std::pair<int, int> > _vert_tex_pair;
 		// size_t _vtp_size;
 		std::list<Chunk *> _chunks;
+		std::list<Chunk *> _visible_chunks;
 		std::thread _thread;
 
 		void compile_shader( GLuint ptrShader, std::string name );

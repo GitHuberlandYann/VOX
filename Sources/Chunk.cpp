@@ -19,15 +19,15 @@ Chunk::Chunk( int posX, int posY ) : _isVisible(true), _vaoSet(false), _startX(p
 
 Chunk::~Chunk( void )
 {
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+
     glDeleteBuffers(1, &_vbo);
     glDeleteVertexArrays(1, &_vao);
 
 	delete [] _blocks;
 	delete [] _vertices;
-
-	if (_thread.joinable()) {
-		_thread.join();
-	}
 }
 
 // ************************************************************************** //
@@ -147,60 +147,15 @@ void Chunk::fill_vertex_array( void )
 	}
 }
 
-// ************************************************************************** //
-//                                Public                                      //
-// ************************************************************************** //
-
-void thread_setup_chunk( std::list<Chunk *> *chunks, Chunk *current )
-{
-	// std::cout << "hello from thread" << std::endl;
-	current->generation();
-
-	mtx.lock();
-	chunks->push_back(current);
-	mtx.unlock();
-}
-
-void Chunk::generation( void )
-{
-	_blocks = new GLint[18 * 18 * 256];
-	generate_blocks();
-	_vertices = new GLfloat[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
-	fill_vertex_array();
-}
-
-void Chunk::generate_chunk( std::list<Chunk *> *chunks )
-{
-	_thread = std::thread(thread_setup_chunk, chunks, this);
-}
-
-void Chunk::setVisibility( int posX, int posY, GLint render_dist )
-{
-	_isVisible = (_startX >= posX - render_dist && _startX <= posX + render_dist
-			&& _startY >= posY - render_dist && _startY <= posY + render_dist);
-}
-
-bool Chunk::shouldDelete( glm::vec3 pos, GLfloat dist )
-{
-	if (dist < 16 * 5) {
-		dist = 16 * 5;
-	}
-	return (glm::distance(glm::vec2(pos.x, pos.y), glm::vec2(_startX, _startY)) > dist);
-}
-
-bool Chunk::isInChunk( int posX, int posY )
-{
-	// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
-	// std::cout << "checking chunk " << _start.x << ", " << _start.y << std::endl;
-	// return (pos.x >= _start.x && pos.x < _start.x + 16.0f && pos.y >= _start.y && pos.y < _start.y + 16.0f);
-	return (posX == _startX && posY == _startY);
-}
-
 void Chunk::setup_array_buffer( void )
 {
 	if (_vaoSet) {
 		return ;
 	}
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+
     glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
@@ -239,11 +194,62 @@ void Chunk::setup_array_buffer( void )
 	check_glstate("NO");
 }
 
+// ************************************************************************** //
+//                                Public                                      //
+// ************************************************************************** //
+
+static void thread_setup_chunk( std::list<Chunk *> *chunks, Chunk *current )
+{
+	// std::cout << "hello from thread" << std::endl;
+	current->generation();
+
+	mtx.lock();
+	chunks->push_back(current);
+	mtx.unlock();
+}
+
+void Chunk::generation( void )
+{
+	_blocks = new GLint[18 * 18 * 256];
+	generate_blocks();
+	_vertices = new GLfloat[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
+	fill_vertex_array();
+}
+
+void Chunk::generate_chunk( std::list<Chunk *> *chunks )
+{
+	_thread = std::thread(thread_setup_chunk, chunks, this);
+}
+
+void Chunk::setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist )
+{
+	_isVisible = (_startX >= posX - render_dist && _startX <= posX + render_dist
+			&& _startY >= posY - render_dist && _startY <= posY + render_dist);
+	if (_isVisible) {
+		mtx.lock();
+		visible_chunks->push_back(this);
+		mtx.unlock();
+	}
+}
+
+bool Chunk::shouldDelete( glm::vec3 pos, GLfloat dist )
+{
+	if (dist < 16 * 5) {
+		dist = 16 * 5;
+	}
+	return (glm::distance(glm::vec2(pos.x, pos.y), glm::vec2(_startX, _startY)) > dist);
+}
+
+bool Chunk::isInChunk( int posX, int posY )
+{
+	// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
+	// std::cout << "checking chunk " << _start.x << ", " << _start.y << std::endl;
+	// return (pos.x >= _start.x && pos.x < _start.x + 16.0f && pos.y >= _start.y && pos.y < _start.y + 16.0f);
+	return (posX == _startX && posY == _startY);
+}
+
 void Chunk::drawArray( void )
 {
-	if (!_isVisible) {
-		return ;
-	}
 	if (!_vaoSet) {
 		setup_array_buffer();
 	}
