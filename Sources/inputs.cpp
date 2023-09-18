@@ -105,17 +105,17 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 		for (int col = -render_dist; col <= render_dist; col++) {
 			bool isInChunk = false;
 		
-			mtx.lock();
-			it = chunks->begin();
-			mtx.unlock();
-			for (; it != ite; it++) {
-				mtx.lock();
+			// mtx.lock();
+			it = newvis_chunks.begin();
+			// mtx.unlock();
+			for (; it != newvis_chunks.end(); it++) {
+				// mtx.lock();
 				if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
-					mtx.unlock();
+					// mtx.unlock();
 					isInChunk = true;
 					break ;
 				}
-				mtx.unlock();
+				// mtx.unlock();
 			}
 
 			// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;

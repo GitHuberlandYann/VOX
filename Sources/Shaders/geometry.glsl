@@ -18,10 +18,10 @@ in Prim
 // out vec3 Color;
 out vec2 Texcoord;
 
-// vec2 top_left = vec2(0.0f, 0.0f);
-// vec2 top_right = vec2(1.0f, 0.0f);
-// vec2 bottom_left = vec2(0.0f, 1.0f);
-// vec2 bottom_right = vec2(1.0f, 1.0f);
+// const vec2 top_left = vec2(0.0f, 0.0f);
+// const vec2 top_right = vec2(1.0f, 0.0f);
+// const vec2 bottom_left = vec2(0.0f, 1.0f);
+// const vec2 bottom_right = vec2(1.0f, 1.0f);
 
 const vec2 gb_0 = vec2(0.333587, 0.000975);
 const vec2 gb_1 = vec2(0.666413, 0.000975);
@@ -40,6 +40,10 @@ const vec2 gb_13 = vec2(0.666413, 0.999452);
 
 void emitFace(vec4 v0, vec4 v1, vec4 v2, vec4 v3, vec2 topL, vec2 topR, vec2 bottomL, vec2 bottomR)
 {
+	// topL = top_left;
+	// topR = top_right;
+	// bottomL = bottom_left;
+	// bottomR = bottom_right;
     gl_Position = v0;
 	Texcoord = topL;
     EmitVertex();

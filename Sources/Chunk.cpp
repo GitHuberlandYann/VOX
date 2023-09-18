@@ -90,8 +90,8 @@ void Chunk::generate_blocks( void )
 			// int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01(double(_startX - 1 + row) / 100, double(_startY - 1 + col) / 100, 4) - 0.5) * 50
 			// 			+ (perlin.noise2D_01(double(_startX - 1000 + row) / 1000, double(_startY - 1000 + col) / 1000) - 0.5) * 200);
 			for (int level = 0; level < 256; level++) {
-				// double cave = perlin.noise3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 100.0f);
-				// (cave >= 0.5f && cave <= 0.51f)
+				// double cave = perlin.octave3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 20.0f, 4);
+				// (level < surface_level - 5 && cave <= 0.2f)
 				// 	? _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = 0
 				// 	: _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = (level <= surface_level);
 				_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = (level <= surface_level);

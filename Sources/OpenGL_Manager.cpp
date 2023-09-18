@@ -31,8 +31,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	mtx_visible_chunks.unlock();
 	mtx.lock();
 	std::list<Chunk *>::iterator it = _chunks.begin();
-	std::list<Chunk *>::iterator ite = _chunks.end();
-	for (; it != ite; it++) {
+	for (; it != _chunks.end(); it++) {
 		delete *it;
 	}
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
@@ -93,6 +92,7 @@ void OpenGL_Manager::setup_window( void )
 	
 	glEnable(GL_DEPTH_TEST);
 	glPointSize(10);
+	glfwSwapInterval(1);
 
 	check_glstate("Window successfully created");
 }
@@ -240,8 +240,7 @@ void OpenGL_Manager::main_loop( void )
 
 		mtx_visible_chunks.lock();
 		std::list<Chunk *>::iterator it = _visible_chunks.begin();
-		std::list<Chunk *>::iterator ite = _visible_chunks.end();
-		for (; it != ite;) {
+		for (; it != _visible_chunks.end();) {
 			(*it)->drawArray();
 			it++;
 		}
