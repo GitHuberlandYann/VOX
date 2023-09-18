@@ -251,6 +251,17 @@ bool Chunk::isInChunk( int posX, int posY )
 	return (posX == _startX && posY == _startY);
 }
 
+// void Chunk::action_block( glm::vec3 pos, glm::vec3 front, int action)
+// {
+// 	(action == ADD_BLOCK)
+// 		? std::cout << "add block from " << pos.x << ", " << pos.y << ", " << pos.z << " in chunk " << _startX << ", " << _startY << std::endl
+// 		: std::cout << "rm block from " << pos.x << ", " << pos.y << ", " << pos.z << " in chunk " << _startX << ", " << _startY << std::endl;
+// 	float sideX = (front.x > 0) - glm::mod(pos.x, 1.0f);
+// 	float sideY = (front.y > 0) - glm::mod(pos.y, 1.0f);
+// 	float sideZ = (front.z > 0) - glm::mod(pos.z, 1.0f);
+// 	std::cout << "computed sides: " << sideX << ", " << sideY << ", " << sideZ << std::endl;
+// }
+
 void Chunk::drawArray( void )
 {
 	if (!_vaoSet) {

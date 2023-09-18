@@ -3,33 +3,17 @@
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE),
-		_key_fill(0), _fill(FILL)
-	//_nb_textures(nb_textures + provided), _omore_tex(provided),
-		// _rotation_speed(1.5f), _zoom(1.0f), _point_size(1.0f), , _key_depth(0),
-		// _color_mode(DEFAULT), _key_color_mode(0), _key_section(0), _invert_col(0), _key_invert(0),
-		// _use_light(0), _key_use_light(0), _mouse_x(0), _mouse_y(0), _vtp_size(vert_tex_pair.size())
+		_key_fill(0), _fill(FILL)//, _key_add_block(0)
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
-	// set_vertex(_rotation, -90.0f, 0.0f, 0.0f);
-	// _light_col = glm::vec3(1.0f, 1.0f, 1.0f);
-	// _light_angles = glm::vec2(20.0f, 40.0f);
-	// _light_pos = 2.0f * glm::vec3(glm::cos(glm::radians(_light_angles.x)) + glm::cos(glm::radians(_light_angles.y)),
-	// 							glm::sin(glm::radians(_light_angles.x)) + glm::cos(glm::radians(_light_angles.y)),
-	// 							glm::sin(glm::radians(_light_angles.y)));
-
-	// for (size_t index = 0; index < _vtp_size; index++) {
-	// 	size_t tex_index = *vert_tex_pair[index].second;
-	// 	int itex_index = -1;
-	// 	if (tex_index != std::string::npos)
-	// 		itex_index = (int)tex_index;
-	// 	_vert_tex_pair.push_back(std::pair<int, int>(vert_tex_pair[index].first, itex_index));
-	// }
-	// _section = _vtp_size;
 }
 
 OpenGL_Manager::~OpenGL_Manager( void )
 {
 	std::cout << "Destructor of OpenGL_Manager called" << std::endl;
+	// if (_thread_block.joinable()) {
+	// 	_thread_block.join();
+	// }
 	if (_thread.joinable()) {
 		_thread.join();
 	}
@@ -41,10 +25,6 @@ OpenGL_Manager::~OpenGL_Manager( void )
     glfwTerminate();
 
 	delete [] _textures;
-	// if (_texture) {
-	// 	SOIL_free_image_data(_texture->content);
-	// }
-	// delete _texture;
 
 	mtx_visible_chunks.lock();
 	_visible_chunks.clear();
@@ -257,24 +237,6 @@ void OpenGL_Manager::main_loop( void )
 		previousFrame = currentTime;
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// if (!_vtp_size) {
-		// 	glDrawArrays(GL_TRIANGLES, 0, _number_vertices);
-		// } else if (_section == (int)_vtp_size) {
-		// 	for (size_t index = 0, start_index = 0; index < _vtp_size; index++) {
-		// 		glUniform1i(_uniTexIndex, _vert_tex_pair[index].second);
-
-		// 		glDrawArrays(GL_TRIANGLES, start_index, _vert_tex_pair[index].first);
-		// 		start_index += _vert_tex_pair[index].first;
-		// 	}
-		// } else {
-		// 	int start_index = 0;
-		// 	for (int index = 0; index < _section; index++) {
-		// 		start_index += _vert_tex_pair[index].first;
-		// 	}
-		// 	glUniform1i(_uniTexIndex, _vert_tex_pair[_section].second);
-		// 	glDrawArrays(GL_TRIANGLES, start_index, _vert_tex_pair[_section].first);
-		// }
 
 		mtx_visible_chunks.lock();
 		std::list<Chunk *>::iterator it = _visible_chunks.begin();

@@ -4,6 +4,11 @@
 # define SEA_LEVEL 64
 # define CHUNK_SIZE 16
 
+// enum {
+// 	ADD_BLOCK,
+// 	RM_BLOCK
+// };
+
 class Chunk
 {
     private:
@@ -30,6 +35,7 @@ class Chunk
         void setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
+		// void action_block( glm::vec3 pos, glm::vec3 front, int action);
         void drawArray( void );
 };
 
