@@ -37,6 +37,15 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
     camera.processMouseScroll(static_cast<float>(yoffset));
 }
 */
+
+// void OpenGL_Manager::update_cam_matrix( void )
+// {
+// 	glm::mat4 proj = camera.getPerspectiveMatrix();
+// 	glm::mat4 view = camera.getViewMatrix();
+
+// 	glUniformMatrix4fv(_uniPV, 1, GL_FALSE, glm::value_ptr(proj * view));
+// }
+
 void OpenGL_Manager::update_cam_view( void )
 {
 	glm::mat4 view = camera.getViewMatrix();
@@ -69,14 +78,15 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 	std::list<Chunk *>::iterator it = chunks->begin();
 	mtx.unlock();
 	for (; it != ite; it++) {
-		(*it)->setVisibility(&newvis_chunks, posX, posY, render_dist * 16);
-		if ((*it)->shouldDelete(camPos, render_dist * 2 * 16)) {
+		if ((*it)->shouldDelete(camPos, render_dist * 2 * CHUNK_SIZE)) {
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
 			mtx.lock();
 			delete *tmp;
 			chunks->erase(tmp);
 			mtx.unlock();
+		} else {
+			(*it)->setVisibility(&newvis_chunks, posX, posY, render_dist * CHUNK_SIZE);
 		}
 	}
 	mtx_visible_chunks.lock();
@@ -92,7 +102,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 			mtx.unlock();
 			for (; it != ite; it++) {
 				mtx.lock();
-				if ((*it)->isInChunk(posX + row * 16, posY + col * 16)) {
+				if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
 					mtx.unlock();
 					isInChunk = true;
 					break ;
@@ -103,7 +113,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 			// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
 			if (!isInChunk) {
 				//create new chunk where player stands
-				Chunk *newChunk = new Chunk(posX + row * 16, posY + col * 16);
+				Chunk *newChunk = new Chunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE);
 				newChunk->generate_chunk(chunks);
 			}
 		}
@@ -116,11 +126,11 @@ void OpenGL_Manager::chunk_update( void )
 	int posY = static_cast<int>(glm::floor(camera._position.y));
 
 	(posX >= 0)
-		? posX -= posX % 16
-		: posX -= 16 + posX % 16;
+		? posX -= posX % CHUNK_SIZE
+		: posX -= CHUNK_SIZE + posX % CHUNK_SIZE;
 	(posY >= 0)
-		? posY -= posY % 16
-		: posY -= 16 + posY % 16;
+		? posY -= posY % CHUNK_SIZE
+		: posY -= CHUNK_SIZE + posY % CHUNK_SIZE;
 	
 	if (posX == _current_chunk[0] && posY == _current_chunk[1]) {
 		return ;
@@ -279,6 +289,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	if (((key_cam_v || key_cam_h)) || key_cam_z || key_cam_pitch || key_cam_yaw)
 	{
 		update_cam_view();
+		// update_cam_matrix();
 		camera._mouse_update = false;
 	}
 

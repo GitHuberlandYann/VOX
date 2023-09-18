@@ -2,6 +2,7 @@
 # define CHUNK_HPP
 
 # define SEA_LEVEL 64
+# define CHUNK_SIZE 16
 
 class Chunk
 {

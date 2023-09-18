@@ -12,7 +12,7 @@ enum Camera_Movement {
 	// _cam_angles = glm::vec2(225.0f, -37.0f);
 # define YAW          90.0f
 # define PITCH        0.0f
-# define SPEED        5
+# define SPEED        20
 # define SENSITIVITY  0.001f
 # define FOV         40.0f // fov must be 80
 

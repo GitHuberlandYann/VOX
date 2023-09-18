@@ -30,6 +30,7 @@ class OpenGL_Manager
 		GLFWwindow* _window;
 		// GLuint _vao, _vbo; // vertex array objects, vertex buffer objects
 		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
+		// GLint _uniPV;
 		GLint _uniView, _uniProj;
 		GLint _current_chunk[2];
 		// GLint _uniColorMode, _uniTexIndex, _uniInvert, _uniUseLight,, _uniScale , _uniLightPos, _uniLightColor;// , _uniCamPos
@@ -53,6 +54,7 @@ class OpenGL_Manager
 		void compile_shader( GLuint ptrShader, std::string name );
 		void chunk_update( void );
 		void user_inputs( float deltaTime );
+		// void update_cam_matrix( void );
 		void update_cam_view( void );
 		void update_cam_perspective( void );
 

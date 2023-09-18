@@ -174,66 +174,14 @@ void OpenGL_Manager::create_shaders( void )
 
 void OpenGL_Manager::setup_communication_shaders( void )
 {
-	// Specify layout of point data
-	// glEnableVertexAttribArray(BLOCKATTRIB);
-	// glVertexAttribPointer(BLOCKATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
-	// check_glstate("blockAttrib successfully set");
-	
-	// glEnableVertexAttribArray(ADJATTRIB);
-	// glVertexAttribPointer(ADJATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(sizeof(GLfloat)));
-	// check_glstate("adjAttrib successfully set");
-
-	// glEnableVertexAttribArray(POSATTRIB);
-	// glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
-	// check_glstate("posAttrib successfully set");
-
-	/*
-	// attributes
-	glEnableVertexAttribArray(NUMATTRIB);
-	glVertexAttribPointer(NUMATTRIB, 1, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), 0);
-	check_glstate("numAttrib successfully set");
-
-	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (void *)(sizeof(GLfloat)));
-	check_glstate("posAttrib successfully set");
-
-	// uniforms
-	_uniColorMode = glGetUniformLocation(_shaderProgram, "color_mode");
-	glUniform1i(_uniColorMode, _color_mode);
-	
-	_uniTexIndex = glGetUniformLocation(_shaderProgram, "tex_index");
-	glUniform1i(_uniTexIndex, -1);
-
-	GLint uniLastTex = glGetUniformLocation(_shaderProgram, "last_tex");
-	glUniform1i(uniLastTex, _nb_textures - 1 + !_nb_textures);
-
-	_uniInvert = glGetUniformLocation(_shaderProgram, "invert_color");
-	glUniform1i(_uniInvert, _invert_col);
-
-	_uniUseLight = glGetUniformLocation(_shaderProgram, "use_light");
-	glUniform1i(_uniUseLight, 0);
-*/
-	// _uniModel = glGetUniformLocation(_shaderProgram, "model");
-	// glm::mat4 model = glm::mat4(1.0f);
-	// glUniformMatrix4fv(_uniModel, 1, GL_FALSE, glm::value_ptr(model));
-
-	// _uniCamPos = glGetUniformLocation(_shaderProgram, "camPos");
 	_uniView = glGetUniformLocation(_shaderProgram, "view");
 	update_cam_view();
 
 	_uniProj = glGetUniformLocation(_shaderProgram, "proj");
 	update_cam_perspective();
 
-	// _uniScale = glGetUniformLocation(_shaderProgram, "scale");
-	// // glm::mat4 scale =  glm::scale(glm::mat4(1.0f), glm::vec3(0.1));
-	// glm::mat4 scale =  glm::mat4(1.0f);
-	// glUniformMatrix4fv(_uniScale, 1, GL_FALSE, glm::value_ptr(scale));
-/*
-	_uniLightPos = glGetUniformLocation(_shaderProgram, "lightPos");
-	glUniform3fv(_uniLightPos, 1, glm::value_ptr(_light_pos));
-
-	_uniLightColor = glGetUniformLocation(_shaderProgram, "lightColor");
-	glUniform3fv(_uniLightColor, 1, glm::value_ptr(_light_col));*/
+	// _uniPV = glGetUniformLocation(_shaderProgram, "pv");
+	// update_cam_matrix();
 
 	check_glstate("Communication with shader program successfully established");
 }
@@ -331,13 +279,11 @@ void OpenGL_Manager::main_loop( void )
 		mtx_visible_chunks.lock();
 		std::list<Chunk *>::iterator it = _visible_chunks.begin();
 		std::list<Chunk *>::iterator ite = _visible_chunks.end();
-		mtx_visible_chunks.unlock();
 		for (; it != ite;) {
-			mtx_visible_chunks.lock();
 			(*it)->drawArray();
 			it++;
-			mtx_visible_chunks.unlock();
 		}
+		mtx_visible_chunks.unlock();
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
