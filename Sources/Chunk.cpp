@@ -44,9 +44,9 @@ static int air_flower( int value )
 	return (value);
 }
 
-GLfloat Chunk::get_empty_faces( int row, int col, int level )
+GLint Chunk::get_empty_faces( int row, int col, int level )
 {
-	GLfloat res = 0.0f;
+	GLint res = 0;
 	res += !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * 256 + level]) * (1 << 2);
 	res += !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * 256 + level]) * (1 << 3);
 	res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * 256 + level]) * (1 << 0);
@@ -216,7 +216,7 @@ void Chunk::fill_vertex_array( void )
 					_vertices[index + 1] = get_empty_faces(row + 1, col + 1, level);//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
 					_vertices[index + 2] = _startX + row;
 					_vertices[index + 3] = _startY + col;
-					_vertices[index + 4] = static_cast<GLfloat>(level);
+					_vertices[index + 4] = level;
 					index += 5;
 				}
 			}
@@ -236,19 +236,9 @@ void Chunk::setup_array_buffer( void )
     glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
-	// GLfloat *vertices = new GLfloat[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
-	// GLfloat points[] = {
-	// 	1.0f, 8.0f, 0.0f,  0.0f, z, // blocktype, adjacents blocks, X Y Z
-	// 	1.0f, 0.0f, 2.5f,  3.5f, z,
-	// 	1.0f, 4.0f, 1.0f, 0.0f, z,
-	// 	// 1.0f, -0.45f, -0.45f, 0.0f
-	// };
-	// std::cout << "total alloc of vertices: " << _displayed_blocks << std::endl;
-	// fill_vertex_array(vertices);
-
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 5 * sizeof(GLfloat), _vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 5 * sizeof(GLint), _vertices, GL_STATIC_DRAW);
 	// glBufferData(GL_ARRAY_BUFFER, _number_vertices * 12 * sizeof(float), vertices, GL_STATIC_DRAW);
 
 	delete [] _vertices;
@@ -257,15 +247,15 @@ void Chunk::setup_array_buffer( void )
 	// check_glstate("Vertex buffer successfully created");
 
 	glEnableVertexAttribArray(BLOCKATTRIB);
-	glVertexAttribPointer(BLOCKATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+	glVertexAttribIPointer(BLOCKATTRIB, 1, GL_INT, 5 * sizeof(GLint), 0);
 	// check_glstate("blockAttrib successfully set");
 	
 	glEnableVertexAttribArray(ADJATTRIB);
-	glVertexAttribPointer(ADJATTRIB, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(sizeof(GLfloat)));
+	glVertexAttribIPointer(ADJATTRIB, 1, GL_INT, 5 * sizeof(GLint), (void *)(sizeof(GLint)));
 	// check_glstate("adjAttrib successfully set");
 
 	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
+	glVertexAttribIPointer(POSATTRIB, 3, GL_INT, 5 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
 	// check_glstate("posAttrib successfully set");
 
 	check_glstate("NO");
@@ -289,7 +279,7 @@ void Chunk::generation( void )
 {
 	_blocks = new GLint[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * 256];
 	generate_blocks();
-	_vertices = new GLfloat[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
+	_vertices = new GLint[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
 	fill_vertex_array();
 }
 

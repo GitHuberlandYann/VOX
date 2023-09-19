@@ -65,11 +65,11 @@ class Chunk
         bool _isVisible, _vaoSet;
         GLint _startX, _startY;
 		GLint *_blocks;
-		GLfloat *_vertices;
+		GLint *_vertices;
 		GLint _displayed_blocks;
 		std::thread _thread;
 
-		GLfloat get_empty_faces( int row, int col, int level );
+		GLint get_empty_faces( int row, int col, int level );
 		bool exposed_block( int row, int col, int level );
 		int get_block_type(siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,

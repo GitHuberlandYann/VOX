@@ -1,9 +1,9 @@
 #version 150 core
 
 // in float face_num;
-in float block_type;
-in float adj_blocks;
-in vec3 position;
+in int block_type;
+in int adj_blocks;
+in ivec3 position;
 // in vec3 color;
 // in vec2 texcoord;
 // in vec3 normal;
@@ -94,6 +94,6 @@ void main()
 
 	// gl_Position = proj * view * model * scale * vec4(position, 1.0);
 	gl_Position = vec4(position, 1.0);
-	Adj_blocks = int(adj_blocks);
-	Block_type = int(block_type);
+	Adj_blocks = adj_blocks;
+	Block_type = block_type;
 }
