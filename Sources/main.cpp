@@ -5,7 +5,7 @@ std::mutex mtx_visible_chunks;
 
 int main( int ac, char **av )
 {
-	std::string texture_file = "Resources/Grass_Block_TEX.png";
+	std::string texture_file = "Resources/blockAtlas.png";
 	if (ac > 3) {
 		std::cerr << "Error\nFormat required: ./vox [path-to-texture]" << std::endl;
 		return (1);

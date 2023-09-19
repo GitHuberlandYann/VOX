@@ -99,11 +99,11 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::initWorld( void )
 {
-	_current_chunk[0] = -1;
-	_current_chunk[1] = -1;
+	_current_chunk[0] = -10000;
+	_current_chunk[1] = -10000;
 	chunk_update(); //create chunks
-	_current_chunk[0] = -1;
-	_current_chunk[1] = -1;
+	_current_chunk[0] = -10000;
+	_current_chunk[1] = -10000;
 	chunk_update(); //display created chunks
 }
 
@@ -192,8 +192,8 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	// set settings for texture wraping and size modif
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	if (texture) {
 		SOIL_free_image_data(texture->content);

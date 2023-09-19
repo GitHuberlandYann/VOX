@@ -2,6 +2,7 @@
 
 // in vec3 Color;
 in vec2 Texcoord;
+in float FaceShadow;
 // // in vec3 CamPos;
 // in vec3 LightPos;
 // in vec3 LightColor;
@@ -19,7 +20,7 @@ uniform sampler2D tex0;
 
 void main()
 {
-	outColor = texture(tex0, Texcoord);
+	outColor = texture(tex0, Texcoord) * vec4(FaceShadow, FaceShadow, FaceShadow, 1.0);
 	
 	// if (Invert == 1) {
 	// 	outColor = vec4(1.0, 1.0, 1.0, 2.0) - outColor;

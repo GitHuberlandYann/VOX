@@ -94,7 +94,12 @@ void Chunk::generate_blocks( void )
 				// (level < surface_level - 5 && cave <= 0.2f)
 				// 	? _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = 0
 				// 	: _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = (level <= surface_level);
-				_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = (level <= surface_level);
+				int value = (level <= surface_level);
+				if (value) {
+					value += 2 * (level <= 45);
+					// value += 3 * (level >= 100);
+				}
+				_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = value;
 				// GLfloat squashing_factor;
 				// (level < 64)
 				// 	? squashing_factor = (64 - level) / 64.0f
