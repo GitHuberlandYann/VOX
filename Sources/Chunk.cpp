@@ -262,10 +262,17 @@ bool Chunk::isInChunk( int posX, int posY )
 // 	std::cout << "computed sides: " << sideX << ", " << sideY << ", " << sideZ << std::endl;
 // }
 
-void Chunk::drawArray( void )
+void Chunk::drawArray( GLint & counter )
 {
 	if (!_vaoSet) {
+		++counter;
+		// if (counter > 5) { // we don't load more than 5 new chunks per frame
+		// if (counter > 5 && counter < 50) { // we don't load more than 5 new chunks per frame, but if there's more than 50 to load, we take the hit
+		if (counter % 50 > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
+			return ;
+		}
 		setup_array_buffer();
+		// return ;// TODO decide if this changes something
 	}
     glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down
 	glDrawArrays(GL_POINTS, 0, _displayed_blocks);

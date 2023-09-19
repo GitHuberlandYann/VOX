@@ -36,7 +36,7 @@ class Chunk
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
 		// void action_block( glm::vec3 pos, glm::vec3 front, int action);
-        void drawArray( void );
+        void drawArray( GLint & counter );
 };
 
 #endif

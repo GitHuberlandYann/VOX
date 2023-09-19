@@ -50,7 +50,7 @@ class OpenGL_Manager
 		~OpenGL_Manager( void );
 
 		void setup_window( void );
-		void setup_array_buffer( void );
+		void initWorld( void );
 		void create_shaders( void );
 		void setup_communication_shaders( void );
 		void load_texture( std::string texture_file );

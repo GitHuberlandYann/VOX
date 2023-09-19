@@ -97,7 +97,7 @@ void OpenGL_Manager::setup_window( void )
 	check_glstate("Window successfully created");
 }
 
-void OpenGL_Manager::setup_array_buffer( void )
+void OpenGL_Manager::initWorld( void )
 {
 	_current_chunk[0] = -1;
 	_current_chunk[1] = -1;
@@ -238,17 +238,22 @@ void OpenGL_Manager::main_loop( void )
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		GLint newVaoCounter = 0;
 		mtx_visible_chunks.lock();
 		std::list<Chunk *>::iterator it = _visible_chunks.begin();
 		for (; it != _visible_chunks.end();) {
-			(*it)->drawArray();
+			(*it)->drawArray(newVaoCounter);
 			it++;
 		}
 		mtx_visible_chunks.unlock();
+
+		// if (newVaoCounter) {
+		// 	std::cout << "computed " << newVaoCounter << " new vao this frame" << std::endl;
+		// }
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
 	}
 
-	check_glstate("main loop successfully exited");
+	check_glstate("\nmain loop successfully exited");
 }
