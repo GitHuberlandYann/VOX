@@ -20,7 +20,12 @@ uniform sampler2D tex0;
 
 void main()
 {
-	outColor = texture(tex0, Texcoord) * vec4(FaceShadow, FaceShadow, FaceShadow, 1.0);
+	outColor = texture(tex0, Texcoord);
+	if(outColor.a < 0.01) {
+		discard;
+	} else {
+		outColor = outColor * vec4(FaceShadow, FaceShadow, FaceShadow, 1.0);
+	}
 	
 	// if (Invert == 1) {
 	// 	outColor = vec4(1.0, 1.0, 1.0, 2.0) - outColor;

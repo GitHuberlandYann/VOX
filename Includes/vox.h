@@ -29,9 +29,9 @@ extern std::mutex mtx_visible_chunks;
 
 # include "utils.h"
 # include "Camera.hpp"
+# include "PerlinNoise.hpp"
 # include "Chunk.hpp"
 # include "OpenGL_Manager.hpp"
-# include "PerlinNoise.hpp"
 
 extern const siv::PerlinNoise::seed_type perlin_seed;
 

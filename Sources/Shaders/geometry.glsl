@@ -27,7 +27,7 @@ const vec2 top_right = vec2(1.0f / 16.0f, 0.0f);
 const vec2 bottom_left = vec2(0.0f, 1.0f / 16.0f);
 const vec2 bottom_right = vec2(1.0f / 16.0f, 1.0f / 16.0f);
 
-void emitFace(vec4 v0, vec4 v1, vec4 v2, vec4 v3, vec2 start)
+void emitFace( vec4 v0, vec4 v1, vec4 v2, vec4 v3, vec2 start )
 {
     gl_Position = v0;
 	Texcoord = start + top_left;
@@ -52,9 +52,30 @@ void emitFace(vec4 v0, vec4 v1, vec4 v2, vec4 v3, vec2 start)
     EndPrimitive();
 }
 
+void cross_image( void )
+{
+	vec4 v0 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 1.0, 0.0));
+    vec4 v1 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 0.0, 1.0, 0.0));
+    vec4 v2 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 0.0, 0.0));
+    vec4 v3 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 0.0, 0.0, 0.0));
+
+    vec4 v4 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 1.0, 1.0, 0.0));
+    vec4 v5 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 1.0, 1.0, 0.0));
+    vec4 v6 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 1.0, 0.0, 0.0));
+    vec4 v7 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
+
+	vec2 start = vec2(4.0f / 16.0f, (vsData[0].Block_type - 17.0f) / 16.0f);
+	FaceShadow = 1.0;
+	emitFace(v1, v4, v3, v6, start);
+	emitFace(v0, v5, v2, v7, start);
+}
+
 void main()
 {
 	if (vsData[0].Block_type == 0) {
+		return ;
+	} else if (vsData[0].Block_type >= 17) { //flower
+		cross_image();
 		return ;
 	}
     vec4 v0 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 1.0, 0.0));

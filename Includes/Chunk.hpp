@@ -14,9 +14,9 @@ enum blocks {
 	GRASS_BLOCK,
 	GRASS_BLOCK_UNDER,
 	STONE,
+	SAND,
 	OAK_TRUNK,
 	OAK_LEAVES,
-	TBD6,
 	TBD7,
 	TBD8,
 	TBD9,
@@ -27,6 +27,12 @@ enum blocks {
 	TBD14,
 	TBD15,
 	BEDROCK,
+	POPPY,
+	DANDELION,
+	BLUE_ORCHID,
+	ALLIUM,
+	CORNFLOWER,
+	PINK_TULIP,
 	NOTVISIBLE = -1
 };
 
@@ -65,6 +71,9 @@ class Chunk
 
 		GLfloat get_empty_faces( int row, int col, int level );
 		bool exposed_block( int row, int col, int level );
+		int get_block_type(siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
+			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
+			bool tree_gen, std::vector<glm::vec3> & trees);
 		void generate_blocks( void );
         void fill_vertex_array( void );
         void setup_array_buffer( void );

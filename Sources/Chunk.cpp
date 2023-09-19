@@ -34,63 +34,91 @@ Chunk::~Chunk( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-GLfloat Chunk::get_empty_faces( int row, int col, int level ) // TODO adapt this to work with flowers and such
+// we simulate that flowers are air block in order to display adjacent blocks properly
+// also use this for all 'see-through' blocks like leaves, ..
+static int air_flower( int value )
+{
+	if (value > 16 || value == blocks::OAK_LEAVES) {
+		return (0);
+	}
+	return (value);
+}
+
+GLfloat Chunk::get_empty_faces( int row, int col, int level )
 {
 	GLfloat res = 0.0f;
-	res += !!_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * 256 + level] * (1 << 2);
-	res += !!_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * 256 + level] * (1 << 3);
-	res += !!_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * 256 + level] * (1 << 0);
-	res += !!_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * 256 + level] * (1 << 1);
+	res += !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * 256 + level]) * (1 << 2);
+	res += !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * 256 + level]) * (1 << 3);
+	res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * 256 + level]) * (1 << 0);
+	res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * 256 + level]) * (1 << 1);
 	switch (level) {
 		case 0:
 			res += (1 << 5);
-			res += !!_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1] * (1 << 4);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]) * (1 << 4);
 			break ;
 		case 255:
-			res += !!_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1] * (1 << 5);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1]) * (1 << 5);
 			res += (1 << 4);
 			break ;
 		default:
-			res += !!_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1] * (1 << 5);
-			res += !!_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1] * (1 << 4);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1]) * (1 << 5);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]) * (1 << 4);
 	}
 	return (res);
 }
 
 // takes a block and check if player can see it at some point
-bool Chunk::exposed_block( int row, int col, int level ) // TODO adapt this to work with flowers and such
+bool Chunk::exposed_block( int row, int col, int level )
 {
 	bool below = false;
 	bool above = false;
 	switch (level) {
 		case 0:
-			above = !_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1];
+			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]);
 			break ;
 		case 255:
-			below = !_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1];
+			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1]);
 			break ;
 		default:
-			below = !_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1];
-			above = !_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1];
+			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1]);
+			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]);
 	}
-	return (!_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * 256 + level]
-		|| !_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * 256 + level]
-		|| !_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * 256 + level]
-		|| !_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * 256 + level]
+	return (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * 256 + level])
+		|| !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * 256 + level])
+		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * 256 + level])
+		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * 256 + level])
 		|| below || above);
 }
 
-static int get_block_type(int row, int col, int level, int surface_level, bool tree_gen, std::vector<glm::vec3> & trees)
+int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
+	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
+	bool tree_gen, std::vector<glm::vec3> & trees)
 {
 	int value = (level <= surface_level);
 	if (value) {
 		if (level <= 64) {
-			value = blocks::STONE;
+			(perlin.noise2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f) < 0.55)
+				? value = blocks::STONE
+				: value = blocks::SAND;
 		}
 	} else if (tree_gen && surface_level > 65 && surface_level < 220 && level <= surface_level + 5) {
 		value = blocks::OAK_TRUNK;
 		if (level == surface_level + 5) {
 			trees.push_back(glm::vec3(row, col, level));
+		}
+	} else if (surface_level > 65 && surface_level < 220 && level == surface_level + 1) {
+		if (poppy) {
+			value = blocks::POPPY;
+		} else if (dandelion) {
+			value = blocks::DANDELION;
+		} else if (blue_orchid) {
+			value = blocks::BLUE_ORCHID;
+		} else if (allium) {
+			value = blocks::ALLIUM;
+		} else if (cornflower) {
+			value = blocks::CORNFLOWER;
+		} else if (pink_tulip) {
+			value = blocks::PINK_TULIP;
 		}
 	}
 	if (level == 0) {
@@ -102,10 +130,10 @@ static int get_block_type(int row, int col, int level, int surface_level, bool t
 void Chunk::generate_blocks( void )
 {
 	const siv::PerlinNoise perlin{ perlin_seed };
-
-	std::minstd_rand0  generator(_startX * 19516 + _startY * 56849);
+	// std::minstd_rand0  generator(_startX * 19516 + _startY * 56849);
+	std::minstd_rand0  generator((_startX * 19511 + _startY * 56844) * perlin_seed);
 	std::uniform_int_distribution<int> distribution(0, 1000);
-	// std::bernoulli_distribution distribution(0.98f);
+
 	std::vector<glm::vec3> trees;
 
 	// generating base terrain
@@ -116,12 +144,18 @@ void Chunk::generate_blocks( void )
 			// int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 50
 			// 			+ (perlin.noise2D_01((_startX - 1000 + row) / 1000.0f, (_startY - 1000 + col) / 1000.0f) - 0.5) * 200);
 			bool tree_gen = (distribution(generator) <= 2 && row > 2 && row < CHUNK_SIZE - 1 && col > 2 && col < CHUNK_SIZE - 1);
+			bool poppy = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
+			bool dandelion = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
+			bool blue_orchid = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
+			bool allium = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
+			bool cornflower = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
+			bool pink_tulip = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			for (int level = 0; level < 256; level++) {
 				// double cave = perlin.octave3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 20.0f, 4);
 				// (level < surface_level - 5 && cave <= 0.2f)
 				// 	? _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = 0
 				// 	: _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = (level <= surface_level);
-				_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(row, col, level, surface_level, tree_gen, trees);;
+				_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);;
 				// GLfloat squashing_factor;
 				// (level < 64)
 				// 	? squashing_factor = (64 - level) / 64.0f
@@ -155,9 +189,11 @@ void Chunk::generate_blocks( void )
 				if (value) {
 					if (exposed_block(row, col, level)) {
 						_displayed_blocks++;
-						if (value == blocks::GRASS_BLOCK && level != 255
-							&& _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]) {
-							_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::GRASS_BLOCK_UNDER;
+						if (value == blocks::GRASS_BLOCK && level != 255) {
+							int block_above = _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1];
+							if (block_above && block_above < 17) {
+								_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::GRASS_BLOCK_UNDER;
+							}
 						}
 					} else {
 						_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::NOTVISIBLE;

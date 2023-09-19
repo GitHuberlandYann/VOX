@@ -91,7 +91,6 @@ void OpenGL_Manager::setup_window( void )
 	glewInit();
 	
 	glEnable(GL_DEPTH_TEST);
-	glPointSize(10);
 	glfwSwapInterval(1);
 
 	check_glstate("Window successfully created");
@@ -176,17 +175,16 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 
 	// load image
 	t_tex *texture = new t_tex;
-	texture->content = SOIL_load_image(texture_file.c_str(), &texture->width, &texture->height, 0, SOIL_LOAD_RGB);
+	texture->content = SOIL_load_image(texture_file.c_str(), &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
 	if (!texture->content) {
 		std::cerr << "failed to load image " << texture_file << " because:" << std::endl << SOIL_last_result() << std::endl;
 		exit(1);
 	}
 
 	// load image as texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height,
-		0, GL_RGB, GL_UNSIGNED_BYTE, texture->content);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
 
-	// std::string tex_str = "tex" + std::to_string(index);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "tex0"), 0); // sampler2D #index in fragment shader
 			
 	// set settings for texture wraping and size modif
