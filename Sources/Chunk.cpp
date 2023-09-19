@@ -92,7 +92,7 @@ bool Chunk::exposed_block( int row, int col, int level )
 
 int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
-	bool tree_gen, std::vector<glm::vec3> & trees)
+	bool tree_gen, std::vector<glm::ivec3> & trees)
 {
 	int value = (level <= surface_level);
 	if (value) {
@@ -104,7 +104,7 @@ int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, 
 	} else if (tree_gen && surface_level > 65 && surface_level < 220 && level <= surface_level + 5) {
 		value = blocks::OAK_TRUNK;
 		if (level == surface_level + 5) {
-			trees.push_back(glm::vec3(row, col, level));
+			trees.push_back(glm::ivec3(row, col, level));
 		}
 	} else if (surface_level > 65 && surface_level < 220 && level == surface_level + 1) {
 		if (poppy) {
@@ -134,7 +134,7 @@ void Chunk::generate_blocks( void )
 	std::minstd_rand0  generator((_startX * 19511 + _startY * 56844) * perlin_seed);
 	std::uniform_int_distribution<int> distribution(0, 1000);
 
-	std::vector<glm::vec3> trees;
+	std::vector<glm::ivec3> trees;
 
 	// generating base terrain
 	for (int row = 0; row < (CHUNK_SIZE + 2); row++) {
@@ -170,12 +170,12 @@ void Chunk::generate_blocks( void )
 	}
 
 	// adding trees
-	std::vector<glm::vec3>::iterator it = trees.begin();
+	std::vector<glm::ivec3>::iterator it = trees.begin();
 	for (; it != trees.end(); it++) {
 		for (int index = 0; index < 61; index++) {
 			const GLint delta[3] = {oak_normal[index][0], oak_normal[index][1], oak_normal[index][2]};
-			if (_blocks[static_cast<int>((((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * 256 + (*it).z + delta[2])] == blocks::AIR) {
-				_blocks[static_cast<int>((((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * 256 + (*it).z + delta[2])] = blocks::OAK_LEAVES;
+			if (_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * 256 + (*it).z + delta[2]] == blocks::AIR) {
+				_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * 256 + (*it).z + delta[2]] = blocks::OAK_LEAVES;
 			}
 		}
 	}
@@ -303,9 +303,7 @@ void Chunk::setVisibility( std::list<Chunk *> *visible_chunks, int posX, int pos
 	_isVisible = (_startX >= posX - render_dist && _startX <= posX + render_dist
 			&& _startY >= posY - render_dist && _startY <= posY + render_dist);
 	if (_isVisible) {
-		mtx.lock();
 		visible_chunks->push_back(this);
-		mtx.unlock();
 	}
 }
 

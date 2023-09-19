@@ -85,8 +85,10 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 	std::list<Chunk *>::iterator ite = chunks->end();
 	std::list<Chunk *>::iterator it = chunks->begin();
 	mtx.unlock();
-	for (; it != ite; it++) {
+	for (; it != ite;) {
+		mtx.lock();
 		if ((*it)->shouldDelete(camPos, render_dist * 2 * CHUNK_SIZE)) {
+			mtx.unlock();
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
 			mtx.lock();
@@ -94,8 +96,14 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 			chunks->erase(tmp);
 			mtx.unlock();
 		} else {
+			mtx.unlock();
+			mtx.lock();
 			(*it)->setVisibility(&newvis_chunks, posX, posY, render_dist * CHUNK_SIZE);
+			mtx.unlock();
 		}
+		mtx.lock();
+		++it;
+		mtx.unlock();
 	}
 	mtx_visible_chunks.lock();
 	*visible_chunks = newvis_chunks;
