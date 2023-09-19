@@ -2,6 +2,7 @@
 
 std::mutex mtx;
 std::mutex mtx_visible_chunks;
+const siv::PerlinNoise::seed_type perlin_seed = 123456u;
 
 int main( int ac, char **av )
 {

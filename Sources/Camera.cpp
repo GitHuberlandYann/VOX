@@ -68,9 +68,9 @@ void Camera::processKeyboard( Camera_Movement direction )
 
 void Camera::processPitch( GLint offset )
 {
-	_pitch += offset * _speed_frame;
+	_pitch += offset * _speed_frame * 1.5f;
 	if (_pitch > 85.0f || _pitch < -85.0f) {
-		_pitch -= offset * _speed_frame;
+		_pitch -= offset * _speed_frame * 1.5f;
 	}
 
 	updateCameraVectors();
@@ -78,7 +78,7 @@ void Camera::processPitch( GLint offset )
 
 void Camera::processYaw( GLint offset )
 {
-	_yaw += offset * _speed_frame;
+	_yaw += offset * _speed_frame * 1.5f;
 	if (_yaw > 180.0f) {
 		_yaw -= 360.0f;
 	} else if (_yaw < -180.0f) {

@@ -4,9 +4,10 @@
 # include <iostream>
 # include <string>
 # include <thread>
-#include <mutex>
+# include <mutex>
 # include <fstream>
 # include <list>
+# include <random>
 // # include <math.h>
 
 # define GLEW_STATIC
@@ -31,5 +32,7 @@ extern std::mutex mtx_visible_chunks;
 # include "Chunk.hpp"
 # include "OpenGL_Manager.hpp"
 # include "PerlinNoise.hpp"
+
+extern const siv::PerlinNoise::seed_type perlin_seed;
 
 #endif

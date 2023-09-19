@@ -34,7 +34,7 @@ Chunk::~Chunk( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-GLfloat Chunk::get_empty_faces( int row, int col, int level )
+GLfloat Chunk::get_empty_faces( int row, int col, int level ) // TODO adapt this to work with flowers and such
 {
 	GLfloat res = 0.0f;
 	res += !!_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * 256 + level] * (1 << 2);
@@ -43,10 +43,12 @@ GLfloat Chunk::get_empty_faces( int row, int col, int level )
 	res += !!_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * 256 + level] * (1 << 1);
 	switch (level) {
 		case 0:
+			res += (1 << 5);
 			res += !!_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1] * (1 << 4);
 			break ;
 		case 255:
 			res += !!_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1] * (1 << 5);
+			res += (1 << 4);
 			break ;
 		default:
 			res += !!_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1] * (1 << 5);
@@ -56,7 +58,7 @@ GLfloat Chunk::get_empty_faces( int row, int col, int level )
 }
 
 // takes a block and check if player can see it at some point
-bool Chunk::exposed_block( int row, int col, int level )
+bool Chunk::exposed_block( int row, int col, int level ) // TODO adapt this to work with flowers and such
 {
 	bool below = false;
 	bool above = false;
@@ -78,28 +80,48 @@ bool Chunk::exposed_block( int row, int col, int level )
 		|| below || above);
 }
 
+static int get_block_type(int row, int col, int level, int surface_level, bool tree_gen, std::vector<glm::vec3> & trees)
+{
+	int value = (level <= surface_level);
+	if (value) {
+		if (level <= 64) {
+			value = blocks::STONE;
+		}
+	} else if (tree_gen && surface_level > 65 && surface_level < 220 && level <= surface_level + 5) {
+		value = blocks::OAK_TRUNK;
+		if (level == surface_level + 5) {
+			trees.push_back(glm::vec3(row, col, level));
+		}
+	}
+	if (level == 0) {
+		value = blocks::BEDROCK;
+	}
+	return (value);
+}
+
 void Chunk::generate_blocks( void )
 {
-	const siv::PerlinNoise::seed_type seed = 123456u;
-	const siv::PerlinNoise perlin{ seed };
+	const siv::PerlinNoise perlin{ perlin_seed };
 
+	std::minstd_rand0  generator(_startX * 19516 + _startY * 56849);
+	std::uniform_int_distribution<int> distribution(0, 1000);
+	// std::bernoulli_distribution distribution(0.98f);
+	std::vector<glm::vec3> trees;
+
+	// generating base terrain
 	for (int row = 0; row < (CHUNK_SIZE + 2); row++) {
 		for (int col = 0; col < (CHUNK_SIZE + 2); col++) {
-			// int surface_level = glm::floor(SEA_LEVEL + (perlin.noise2D_01(double(_startX - 1 + row) / 100, double(_startY - 1 + col) / 100) - 0.5) * 100); 
-			int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 100); 
-			// int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01(double(_startX - 1 + row) / 100, double(_startY - 1 + col) / 100, 4) - 0.5) * 50
-			// 			+ (perlin.noise2D_01(double(_startX - 1000 + row) / 1000, double(_startY - 1000 + col) / 1000) - 0.5) * 200);
+			// int surface_level = glm::floor(SEA_LEVEL + (perlin.noise2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f) - 0.5) * 100); 
+			int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 100);
+			// int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 50
+			// 			+ (perlin.noise2D_01((_startX - 1000 + row) / 1000.0f, (_startY - 1000 + col) / 1000.0f) - 0.5) * 200);
+			bool tree_gen = (distribution(generator) <= 2 && row > 2 && row < CHUNK_SIZE - 1 && col > 2 && col < CHUNK_SIZE - 1);
 			for (int level = 0; level < 256; level++) {
 				// double cave = perlin.octave3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 20.0f, 4);
 				// (level < surface_level - 5 && cave <= 0.2f)
 				// 	? _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = 0
 				// 	: _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = (level <= surface_level);
-				int value = (level <= surface_level);
-				if (value) {
-					value += 2 * (level <= 45);
-					// value += 3 * (level >= 100);
-				}
-				_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = value;
+				_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(row, col, level, surface_level, tree_gen, trees);;
 				// GLfloat squashing_factor;
 				// (level < 64)
 				// 	? squashing_factor = (64 - level) / 64.0f
@@ -113,6 +135,19 @@ void Chunk::generate_blocks( void )
 		}
 	}
 
+	// adding trees
+	std::vector<glm::vec3>::iterator it = trees.begin();
+	for (; it != trees.end(); it++) {
+		for (int index = 0; index < 61; index++) {
+			const GLint delta[3] = {oak_normal[index][0], oak_normal[index][1], oak_normal[index][2]};
+			if (_blocks[static_cast<int>((((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * 256 + (*it).z + delta[2])] == blocks::AIR) {
+				_blocks[static_cast<int>((((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * 256 + (*it).z + delta[2])] = blocks::OAK_LEAVES;
+			}
+		}
+	}
+	trees.clear();
+
+	// hiding unseen block
 	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
 		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
 			for (int level = 0; level < 256; level++) {
@@ -120,11 +155,12 @@ void Chunk::generate_blocks( void )
 				if (value) {
 					if (exposed_block(row, col, level)) {
 						_displayed_blocks++;
-						if (value == 1 && level != 255 && _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]) {
-							_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = 2;
+						if (value == blocks::GRASS_BLOCK && level != 255
+							&& _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]) {
+							_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::GRASS_BLOCK_UNDER;
 						}
 					} else {
-						_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = 8;
+						_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::NOTVISIBLE;
 					}
 				}
 			}
@@ -139,7 +175,7 @@ void Chunk::fill_vertex_array( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < 256; level++) {
 				GLint block_type = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * 256 + level];
-				if (block_type && block_type != 8) {
+				if (block_type && block_type != blocks::NOTVISIBLE) {
 					_vertices[index] = block_type;
 					_vertices[index + 1] = get_empty_faces(row + 1, col + 1, level);//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
 					_vertices[index + 2] = _startX + row;
