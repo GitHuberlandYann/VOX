@@ -1,6 +1,7 @@
 #include "vox.h"
 
-Chunk::Chunk( int posX, int posY ) : _isVisible(true), _vaoSet(false), _startX(posX), _startY(posY), _blocks(NULL), _vertices(NULL), _displayed_blocks(0)
+Chunk::Chunk( int posX, int posY ) : _isVisible(true), _vaoSet(false), _vaoReset(false), _startX(posX), _startY(posY),
+	_blocks(NULL), _vertices(NULL), _displayed_blocks(0)
 {
 }
 
@@ -238,23 +239,23 @@ void Chunk::fill_vertex_array( void )
 
 void Chunk::setup_array_buffer( void )
 {
-	if (_vaoSet) {
-		return ;
-	}
 	if (_thread.joinable()) {
 		_thread.join();
 	}
 
-    glGenVertexArrays(1, &_vao);
+	if (!_vaoSet) {
+		glGenVertexArrays(1, &_vao);
+		glGenBuffers(1, &_vbo);
+		_vaoSet = true;
+	}
 	glBindVertexArray(_vao);
 
-	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 5 * sizeof(GLint), _vertices, GL_STATIC_DRAW);
 
 	delete [] _vertices;
 	_vertices = NULL;
-	_vaoSet = true;
+	_vaoReset = true;
 	// check_glstate("Vertex buffer successfully created");
 
 	glEnableVertexAttribArray(BLOCKATTRIB);
@@ -302,7 +303,7 @@ void Chunk::regeneration( glm::ivec3 pos )
 	delete [] _vertices;
 	_vertices = new GLint[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
 	fill_vertex_array();
-	_vaoSet = false;
+	_vaoReset = false;
 }
 
 void Chunk::generate_chunk( std::list<Chunk *> *chunks )
@@ -379,7 +380,7 @@ void Chunk::handleHit( glm::ivec3 pos )
 
 void Chunk::drawArray( GLint & counter )
 {
-	if (!_vaoSet) {
+	if (!_vaoReset) {
 		++counter;
 		// if (counter > 5) { // we don't load more than 5 new chunks per frame
 		// if (counter > 5 && counter < 50) { // we don't load more than 5 new chunks per frame, but if there's more than 50 to load, we take the hit

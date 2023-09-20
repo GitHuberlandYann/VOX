@@ -66,7 +66,7 @@ class Chunk
 {
     private:
         GLuint _vao, _vbo;
-        bool _isVisible, _vaoSet;
+        bool _isVisible, _vaoSet, _vaoReset;
         GLint _startX, _startY;
 		GLint *_blocks;
 		GLint *_vertices;
