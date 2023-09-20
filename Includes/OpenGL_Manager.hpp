@@ -34,7 +34,7 @@ class OpenGL_Manager
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
 		glm::vec3 _background_color;
-		GLint _key_rdist, _render_distance, _key_fill, _fill, _key_add_block;
+		GLint _key_rdist, _render_distance, _key_fill, _fill, _key_add_block, _key_rm_block;
 		std::list<Chunk *> _chunks;
 		std::list<Chunk *> _visible_chunks;
 		std::list<Chunk *> _delete_chunks;
@@ -45,6 +45,7 @@ class OpenGL_Manager
 		void chunk_update( void );
 		void user_inputs( float deltaTime );
 		// void update_cam_matrix( void );
+		void handle_add_rm_block( bool adding );
 		void update_cam_view( void );
 		void update_cam_perspective( void );
 

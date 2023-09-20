@@ -196,7 +196,7 @@ void Chunk::remove_block( glm::ivec3 pos )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
-	if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] > blocks::AIR) {
+	if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] > blocks::AIR) { // if invisible block gets deleted, same amount of displayed_blocks
 		_displayed_blocks--;
 	}
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] = blocks::AIR;
@@ -208,6 +208,28 @@ void Chunk::remove_block( glm::ivec3 pos )
 			if (_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * 256 + pos.z + delta[2]] < blocks::AIR) {
 				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * 256 + pos.z + delta[2]] += blocks::NOTVISIBLE;
 				_displayed_blocks++;
+			}
+		}
+	}
+	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
+}
+
+void Chunk::add_block( glm::ivec3 pos )
+{
+	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
+	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] = blocks::OAK_TRUNK;
+	_displayed_blocks++;
+	for (int index = 0; index < 6; index++) {
+		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+
+		} else {
+			GLint value = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * 256 + pos.z + delta[2]];
+			if (value > blocks::AIR && !exposed_block(pos.x + delta[0] + 1, pos.y + delta[1] + 1, pos.z + delta[2] + 1)) {
+				// was exposed before, but isn't anymore
+				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * 256 + pos.z + delta[2]] -= blocks::NOTVISIBLE;
+				_displayed_blocks--;
 			}
 		}
 	}
@@ -294,12 +316,19 @@ void Chunk::generation( void )
 	fill_vertex_array();
 }
 
-void Chunk::regeneration( glm::ivec3 pos )
+void Chunk::regeneration( glm::ivec3 pos, bool adding )
 {
-	if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] == blocks::BEDROCK) { // upon destruction, whatch out when implement add
-		return ;
+	if (!adding) {
+		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] == blocks::BEDROCK) { // can't rm bedrock
+			return ;
+		}
+		remove_block(pos);
+	} else {
+		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] != blocks::AIR) { // can't replace block
+			return ;
+		}
+		add_block(pos);
 	}
-	remove_block(pos);
 	delete [] _vertices;
 	_vertices = new GLint[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
 	fill_vertex_array();
@@ -350,12 +379,12 @@ bool Chunk::isHit( glm::ivec3 pos )
 	return (_blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * 256 + chunk_pos.z]);
 }
 
-static void thread_modif_block( Chunk *current, glm::ivec3 pos )
+static void thread_modif_block( Chunk *current, glm::ivec3 pos, bool adding )
 {
-	current->regeneration(pos);
+	current->regeneration(pos, adding);
 }
 
-void Chunk::handleHit( glm::ivec3 pos )
+void Chunk::handleHit( glm::ivec3 pos, bool adding )
 {
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
 	// if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
@@ -364,7 +393,7 @@ void Chunk::handleHit( glm::ivec3 pos )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	_thread = std::thread(thread_modif_block, this, chunk_pos);
+	_thread = std::thread(thread_modif_block, this, chunk_pos, adding);
 }
 
 // void Chunk::action_block( glm::vec3 pos, glm::vec3 front, int action)

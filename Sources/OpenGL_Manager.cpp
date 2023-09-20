@@ -3,7 +3,7 @@
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE),
-		_key_fill(0), _fill(FILL), _key_add_block(0)
+		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0)
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_ui = new UI();

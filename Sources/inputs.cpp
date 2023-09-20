@@ -46,6 +46,65 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 // 	glUniformMatrix4fv(_uniPV, 1, GL_FALSE, glm::value_ptr(proj * view));
 // }
 
+void OpenGL_Manager::handle_add_rm_block( bool adding )
+{
+	std::vector<glm::ivec3> ids = camera.get_ray_casting(10);
+
+	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
+	glm::ivec3 player_pos, previous_block;
+	Chunk *chunk = NULL, *prev_chunk = NULL;
+	bool start = true;
+	for (auto& i : ids) {
+		if (start) {
+			player_pos = i;
+			start = false;
+		}
+		// std::cout << "checking > " << i.x << ", " << i.y << ", " << i.z << std::endl;
+		int posX = i.x;
+		int posY = i.y;
+
+		(posX >= 0 || !(posX % CHUNK_SIZE))
+			? posX -= posX % CHUNK_SIZE
+			: posX -= CHUNK_SIZE + posX % CHUNK_SIZE;
+		(posY >= 0 || !(posY % CHUNK_SIZE))
+			? posY -= posY % CHUNK_SIZE
+			: posY -= CHUNK_SIZE + posY % CHUNK_SIZE;
+		
+		if (!chunk || posX != current_chunk.x || posY != current_chunk.y) {
+			current_chunk = glm::ivec2(posX, posY);
+			for (auto& c : _visible_chunks) {
+				if (c->isInChunk(posX, posY)) {
+					prev_chunk = chunk;
+					chunk = c;
+					break ;
+				}
+			}
+			if (!chunk) {
+				std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
+				break ;
+			}
+		}
+		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
+		if (chunk->isHit(i)) {
+			// std::cout << "we have a hit ! " << i.x << ", " << i.y << ", " << i.z << ", " << std::endl;
+			if (i == player_pos || previous_block == player_pos) {
+				std::cout << "abort because hit is player pos" << std::endl;
+				break ;
+			}
+			if (adding && previous_chunk != current_chunk) {
+				prev_chunk->handleHit(previous_block, adding);
+				break ;
+			}
+			(adding)
+				? chunk->handleHit(previous_block, adding)
+				: chunk->handleHit(i, adding);
+			break ;
+		}
+		previous_block = i;
+		previous_chunk = current_chunk;
+	}
+}
+
 void OpenGL_Manager::update_cam_view( void )
 {
 	glm::mat4 view = camera.getViewMatrix();
@@ -172,59 +231,14 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 
 	// add and remove blocks
-	if ((glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) && ++_key_add_block == 1) {
-		// if (_thread_block.joinable()) {
-		// 	_thread_block.join();
-		// }
-		// _thread_block = std::thread(thread_block_update, &_visible_chunks, camera._position, camera._front, _current_chunk, ADD_BLOCK);
-		// std::cout << "add block" << std::endl;
-		std::vector<glm::ivec3> ids = camera.get_ray_casting(10);
-
-		glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
-		glm::ivec3 player_pos;
-		Chunk *chunk = NULL;
-		bool start = true;
-		for (auto& i : ids) {
-			if (start) {
-				player_pos = i;
-				start = false;
-			}
-			// std::cout << "checking > " << i.x << ", " << i.y << ", " << i.z << std::endl;
-			int posX = i.x;
-			int posY = i.y;
-
-			(posX >= 0 || !(posX % CHUNK_SIZE))
-				? posX -= posX % CHUNK_SIZE
-				: posX -= CHUNK_SIZE + posX % CHUNK_SIZE;
-			(posY >= 0 || !(posY % CHUNK_SIZE))
-				? posY -= posY % CHUNK_SIZE
-				: posY -= CHUNK_SIZE + posY % CHUNK_SIZE;
-			
-			if (!chunk || posX != current_chunk.x || posY != current_chunk.y) {
-				current_chunk = glm::ivec2(posX, posY);
-				for (auto& c : _visible_chunks) {
-					if (c->isInChunk(posX, posY)) {
-						chunk = c;
-						break ;
-					}
-				}
-				if (!chunk) {
-					std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
-					break ;
-				}
-			}
-			// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
-			if (chunk->isHit(i)) {
-				// std::cout << "we have a hit ! " << i.x << ", " << i.y << ", " << i.z << ", " << std::endl;
-				if (i == player_pos) {
-					// std::cout << "abort because hit is player pos" << std::endl;
-					break ;
-				}
-				chunk->handleHit(i);
-				break ;
-			}
-		}
+	if ((glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) && ++_key_rm_block == 1) {
+		handle_add_rm_block(false);
 	} else if ((glfwGetKey(_window, GLFW_KEY_Q) == GLFW_RELEASE)) {
+		_key_rm_block = 0;
+	}
+	if (_key_rm_block != 1 && (glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) && ++_key_add_block == 1) { // I don't want to try to del and add at the same time
+		handle_add_rm_block(true);
+	} else if ((glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE)) {
 		_key_add_block = 0;
 	}
 	/*
