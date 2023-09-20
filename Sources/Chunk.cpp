@@ -138,11 +138,11 @@ void Chunk::generate_blocks( void )
 			bool cornflower = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			bool pink_tulip = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			for (int level = 0; level < 256; level++) {
-				// double cave = perlin.octave3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 20.0f, 4);
-				// (level < surface_level - 5 && cave <= 0.2f && level > 0)
-				// 	? _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::AIR
-				// 	: _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
-				_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
+				double cave = perlin.octave3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 20.0f, 4);
+				(level < surface_level - 5 && cave <= 0.2f && level > 0)
+					? _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::AIR
+					: _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
+				// _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
 				// GLfloat squashing_factor;
 				// (level < 64)
 				// 	? squashing_factor = (64 - level) / 64.0f
@@ -174,21 +174,43 @@ void Chunk::generate_blocks( void )
 			for (int level = 0; level < 256; level++) {
 				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level];
 				if (value) {
+					if (value == blocks::GRASS_BLOCK && level != 255) {
+						int block_above = _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1];
+						if (block_above && block_above < 17) {
+							_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::GRASS_BLOCK_UNDER;
+						}
+					}
 					if (exposed_block(row, col, level)) {
 						_displayed_blocks++;
-						if (value == blocks::GRASS_BLOCK && level != 255) {
-							int block_above = _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1];
-							if (block_above && block_above < 17) {
-								_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::GRASS_BLOCK_UNDER;
-							}
-						}
 					} else {
-						_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::NOTVISIBLE;
+						_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] -= blocks::NOTVISIBLE;
 					}
 				}
 			}
 		}
 	}
+}
+
+void Chunk::remove_block( glm::ivec3 pos )
+{
+	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
+	if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] > blocks::AIR) {
+		_displayed_blocks--;
+	}
+	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] = blocks::AIR;
+	for (int index = 0; index < 6; index++) {
+		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+
+		} else {
+			if (_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * 256 + pos.z + delta[2]] < blocks::AIR) {
+				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * 256 + pos.z + delta[2]] += blocks::NOTVISIBLE;
+				_displayed_blocks++;
+			}
+		}
+	}
+	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
 void Chunk::fill_vertex_array( void )
@@ -198,7 +220,10 @@ void Chunk::fill_vertex_array( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < 256; level++) {
 				GLint block_type = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * 256 + level];
-				if (block_type && block_type != blocks::NOTVISIBLE) {
+				if (block_type > blocks::AIR) {
+					// if (index + 5 > _displayed_blocks * 5) {
+					// 	std::cout << "ERROR index is " << index / 5 << std::endl;
+					// }
 					_vertices[index] = block_type;
 					_vertices[index + 1] = get_empty_faces(row + 1, col + 1, level);
 					_vertices[index + 2] = _startX + row;
@@ -268,6 +293,18 @@ void Chunk::generation( void )
 	fill_vertex_array();
 }
 
+void Chunk::regeneration( glm::ivec3 pos )
+{
+	if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] == blocks::BEDROCK) { // upon destruction, whatch out when implement add
+		return ;
+	}
+	remove_block(pos);
+	delete [] _vertices;
+	_vertices = new GLint[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
+	fill_vertex_array();
+	_vaoSet = false;
+}
+
 void Chunk::generate_chunk( std::list<Chunk *> *chunks )
 {
 	_thread = std::thread(thread_setup_chunk, chunks, this);
@@ -296,6 +333,37 @@ bool Chunk::shouldDelete( glm::vec3 pos, GLfloat dist )
 bool Chunk::isInChunk( int posX, int posY )
 {
 	return (posX == _startX && posY == _startY);
+}
+
+bool Chunk::isHit( glm::ivec3 pos )
+{
+	// std::cout << "current_chunk is " << _startX << ", " << _startY << std::endl;
+	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
+	if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
+		std::cout << "ERROR block out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
+		return (false);
+	}
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+	return (_blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * 256 + chunk_pos.z]);
+}
+
+static void thread_modif_block( Chunk *current, glm::ivec3 pos )
+{
+	current->regeneration(pos);
+}
+
+void Chunk::handleHit( glm::ivec3 pos )
+{
+	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
+	// if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
+	// 	std::cout << "ERROR BLOCK OUT OF CHUNK " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
+	// }
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+	_thread = std::thread(thread_modif_block, this, chunk_pos);
 }
 
 // void Chunk::action_block( glm::vec3 pos, glm::vec3 front, int action)

@@ -143,22 +143,22 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 
 void OpenGL_Manager::chunk_update( void )
 {
-	int posX = static_cast<int>(glm::floor(camera._position.x)); //TODO check what floor does on neg number
+	int posX = static_cast<int>(glm::floor(camera._position.x));
 	int posY = static_cast<int>(glm::floor(camera._position.y));
 
-	(posX >= 0)
+	(posX >= 0 || !(posX % CHUNK_SIZE))
 		? posX -= posX % CHUNK_SIZE
 		: posX -= CHUNK_SIZE + posX % CHUNK_SIZE;
-	(posY >= 0)
+	(posY >= 0 || !(posY % CHUNK_SIZE))
 		? posY -= posY % CHUNK_SIZE
 		: posY -= CHUNK_SIZE + posY % CHUNK_SIZE;
 	
-	if (posX == _current_chunk[0] && posY == _current_chunk[1]) {
+	if (posX == _current_chunk.x && posY == _current_chunk.y) {
 		return ;
 	}
 	// std::cout << "new chunk " << posX << ", " << posY << " !" << std::endl;
-	_current_chunk[0] = posX;
-	_current_chunk[1] = posY;
+	_current_chunk.x = posX;
+	_current_chunk.y = posY;
 
 	if (_thread.joinable()) {
 		_thread.join();
@@ -172,16 +172,61 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 
 	// add and remove blocks
-	// GLint key_add_block = (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS);
-	// if (key_add_block && ++_key_add_block == 1) {
-	// 	if (_thread_block.joinable()) {
-	// 		_thread_block.join();
-	// 	}
-	// 	_thread_block = std::thread(thread_block_update, &_visible_chunks, camera._position, camera._front, _current_chunk, ADD_BLOCK);
-	// 	// std::cout << "add block" << std::endl;
-	// } else {
-	// 	_key_add_block = 0;
-	// }
+	if ((glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) && ++_key_add_block == 1) {
+		// if (_thread_block.joinable()) {
+		// 	_thread_block.join();
+		// }
+		// _thread_block = std::thread(thread_block_update, &_visible_chunks, camera._position, camera._front, _current_chunk, ADD_BLOCK);
+		// std::cout << "add block" << std::endl;
+		std::vector<glm::ivec3> ids = camera.get_ray_casting(10);
+
+		glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
+		glm::ivec3 player_pos;
+		Chunk *chunk = NULL;
+		bool start = true;
+		for (auto& i : ids) {
+			if (start) {
+				player_pos = i;
+				start = false;
+			}
+			// std::cout << "checking > " << i.x << ", " << i.y << ", " << i.z << std::endl;
+			int posX = i.x;
+			int posY = i.y;
+
+			(posX >= 0 || !(posX % CHUNK_SIZE))
+				? posX -= posX % CHUNK_SIZE
+				: posX -= CHUNK_SIZE + posX % CHUNK_SIZE;
+			(posY >= 0 || !(posY % CHUNK_SIZE))
+				? posY -= posY % CHUNK_SIZE
+				: posY -= CHUNK_SIZE + posY % CHUNK_SIZE;
+			
+			if (!chunk || posX != current_chunk.x || posY != current_chunk.y) {
+				current_chunk = glm::ivec2(posX, posY);
+				for (auto& c : _visible_chunks) {
+					if (c->isInChunk(posX, posY)) {
+						chunk = c;
+						break ;
+					}
+				}
+				if (!chunk) {
+					std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
+					break ;
+				}
+			}
+			// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
+			if (chunk->isHit(i)) {
+				// std::cout << "we have a hit ! " << i.x << ", " << i.y << ", " << i.z << ", " << std::endl;
+				if (i == player_pos) {
+					// std::cout << "abort because hit is player pos" << std::endl;
+					break ;
+				}
+				chunk->handleHit(i);
+				break ;
+			}
+		}
+	} else if ((glfwGetKey(_window, GLFW_KEY_Q) == GLFW_RELEASE)) {
+		_key_add_block = 0;
+	}
 	/*
 	if (glfwGetKey(_window, GLFW_KEY_C) == GLFW_PRESS && ++_key_color_mode == 1) {
 		++_color_mode;
@@ -277,9 +322,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 
 	GLint key_cam_speed = (glfwGetKey(_window, GLFW_KEY_KP_ADD) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);
 	if (key_cam_speed) {
-		(key_cam_speed == 1)
-			? camera._movement_speed *= 1.2f
-			: camera._movement_speed *= 0.8f;
+		camera.update_movement_speed(key_cam_speed);
 	}
 
 }

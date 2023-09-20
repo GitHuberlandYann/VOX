@@ -33,7 +33,11 @@ enum blocks {
 	ALLIUM,
 	CORNFLOWER,
 	PINK_TULIP,
-	NOTVISIBLE = -1
+	NOTVISIBLE = 1000
+};
+
+const GLint adj_blocks[6][3] = {
+	{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}
 };
 
 const GLint oak_normal[61][3] = {
@@ -75,6 +79,7 @@ class Chunk
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool tree_gen, std::vector<glm::ivec3> & trees);
 		void generate_blocks( void );
+		void remove_block( glm::ivec3 pos );
         void fill_vertex_array( void );
         void setup_array_buffer( void );
 
@@ -83,10 +88,13 @@ class Chunk
         ~Chunk( void );
 
 		void generation( void );
+		void regeneration( glm::ivec3 pos );
 		void generate_chunk( std::list<Chunk *> *chunks );
         void setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
+		bool isHit( glm::ivec3 pos );
+		void handleHit( glm::ivec3 pos );
 		// void action_block( glm::vec3 pos, glm::vec3 front, int action);
         void drawArray( GLint & counter );
 };

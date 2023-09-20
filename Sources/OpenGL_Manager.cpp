@@ -3,7 +3,7 @@
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE),
-		_key_fill(0), _fill(FILL)//, _key_add_block(0)
+		_key_fill(0), _fill(FILL), _key_add_block(0)
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 }
@@ -101,11 +101,9 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::initWorld( void )
 {
-	_current_chunk[0] = -10000;
-	_current_chunk[1] = -10000;
+	_current_chunk = glm::ivec2(-10000, -10000);
 	chunk_update(); //create chunks
-	_current_chunk[0] = -10000;
-	_current_chunk[1] = -10000;
+	_current_chunk = glm::ivec2(-10000, -10000);
 	chunk_update(); //display created chunks
 }
 

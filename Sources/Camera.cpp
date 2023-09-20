@@ -50,6 +50,13 @@ void Camera::setDelta( float deltaTime )
 	_speed_frame = _movement_speed * deltaTime;
 }
 
+void Camera::update_movement_speed( GLint key_cam_speed )
+{
+	if (_movement_speed + key_cam_speed >= 0) {
+		_movement_speed += key_cam_speed;
+	}
+}
+
 void Camera::processKeyboard( Camera_Movement direction )
 {
 	if (direction == FORWARD)
@@ -87,6 +94,12 @@ void Camera::processYaw( GLint offset )
 
 	updateCameraVectors();
 }
+
+std::vector<glm::ivec3> Camera::get_ray_casting( GLfloat radius )
+{
+	return (voxel_traversal(_position, _position + _front * radius));
+}
+
 /*
 void Camera::processMouseMovement( float x_offset, float y_offset )
 {

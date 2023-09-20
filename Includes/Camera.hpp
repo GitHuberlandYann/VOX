@@ -35,7 +35,7 @@ class Camera
 	
 	public:
 		glm::vec3 _position;
-		float _movement_speed;
+		int _movement_speed;
 		bool _mouse_update, _scroll_update;
 
 		Camera( glm::vec3 position );
@@ -44,9 +44,11 @@ class Camera
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
 		void setDelta( float deltaTime );
+		void update_movement_speed( GLint key_cam_speed );
 		void processKeyboard( Camera_Movement direction );
 		void processPitch( GLint offset );
 		void processYaw( GLint offset );
+		std::vector<glm::ivec3> get_ray_casting( GLfloat radius );
 		// void processMouseMovement( float x_offset, float y_offset );
 		// void processMouseScroll( float offset );
 };

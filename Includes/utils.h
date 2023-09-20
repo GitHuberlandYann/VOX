@@ -3,6 +3,6 @@
 
 std::string get_file_content( std::string file_name );
 void check_glstate( std::string str );
-// void *thread_create_chunk(void *arg);
+std::vector<glm::ivec3> voxel_traversal(glm::vec3 ray_start, glm::vec3 ray_end);
 
 #endif
