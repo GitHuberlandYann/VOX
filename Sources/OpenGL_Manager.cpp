@@ -29,6 +29,9 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	mtx_visible_chunks.lock();
 	_visible_chunks.clear();
 	mtx_visible_chunks.unlock();
+	mtx_delete_chunks.lock();
+	_delete_chunks.clear();
+	mtx_delete_chunks.unlock();
 	mtx.lock();
 	std::list<Chunk *>::iterator it = _chunks.begin();
 	for (; it != _chunks.end(); it++) {
@@ -239,15 +242,19 @@ void OpenGL_Manager::main_loop( void )
 		GLint newVaoCounter = 0;
 		mtx_visible_chunks.lock();
 		std::list<Chunk *>::iterator it = _visible_chunks.begin();
-		for (; it != _visible_chunks.end();) {
+		for (; it != _visible_chunks.end(); it++) {
 			(*it)->drawArray(newVaoCounter);
-			it++;
 		}
 		mtx_visible_chunks.unlock();
 
-		// if (newVaoCounter) {
-		// 	std::cout << "computed " << newVaoCounter << " new vao this frame" << std::endl;
-		// }
+		mtx_delete_chunks.lock();
+		std::list<Chunk *>::iterator d_it = _delete_chunks.begin();
+		for (; d_it != _delete_chunks.end(); d_it++) {
+			delete *d_it;
+		}
+		_delete_chunks.clear();
+		mtx_delete_chunks.unlock();
+		
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();

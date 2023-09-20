@@ -2,19 +2,6 @@
 
 Chunk::Chunk( int posX, int posY ) : _isVisible(true), _vaoSet(false), _startX(posX), _startY(posY), _blocks(NULL), _vertices(NULL), _displayed_blocks(0)
 {
-	// int posX = static_cast<int>(glm::floor(start.x));
-	// int posY = static_cast<int>(glm::floor(start.y));
-
-	// // std::cout << "start: " << start.x << ", " << start.y << ", posX: " << posX << ", posY: " << posY << std::endl;
-	// (posX >= 0)
-	// 	? posX -= posX % CHUNK_SIZE
-	// 	: posX -= CHUNK_SIZE + posX % CHUNK_SIZE;
-	// (posY >= 0)
-	// 	? posY -= posY % CHUNK_SIZE
-	// 	: posY -= CHUNK_SIZE + posY % CHUNK_SIZE;
-	// // std::cout << "posX: " << posX << ", posY: " << posY << std::endl;
-	// _start = glm::vec2(static_cast<float>(posX), static_cast<float>(posY));
-	// std::cout << "new Chunk at [" << _start.x << ", " << _start.y << ']' << std::endl;
 }
 
 Chunk::~Chunk( void )
@@ -23,8 +10,8 @@ Chunk::~Chunk( void )
 		_thread.join();
 	}
 
-    glDeleteBuffers(1, &_vbo);
-    glDeleteVertexArrays(1, &_vao);
+	glDeleteBuffers(1, &_vbo);
+	glDeleteVertexArrays(1, &_vao);
 
 	delete [] _blocks;
 	delete [] _vertices;
@@ -152,10 +139,10 @@ void Chunk::generate_blocks( void )
 			bool pink_tulip = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			for (int level = 0; level < 256; level++) {
 				// double cave = perlin.octave3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 20.0f, 4);
-				// (level < surface_level - 5 && cave <= 0.2f)
-				// 	? _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = 0
-				// 	: _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = (level <= surface_level);
-				_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);;
+				// (level < surface_level - 5 && cave <= 0.2f && level > 0)
+				// 	? _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::AIR
+				// 	: _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
+				_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
 				// GLfloat squashing_factor;
 				// (level < 64)
 				// 	? squashing_factor = (64 - level) / 64.0f
@@ -213,7 +200,7 @@ void Chunk::fill_vertex_array( void )
 				GLint block_type = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * 256 + level];
 				if (block_type && block_type != blocks::NOTVISIBLE) {
 					_vertices[index] = block_type;
-					_vertices[index + 1] = get_empty_faces(row + 1, col + 1, level);//4.0f * (row != 0) + 8.0f * (row != 15) + 2.0f * (col != 15) + 1.0f * (col != 0);
+					_vertices[index + 1] = get_empty_faces(row + 1, col + 1, level);
 					_vertices[index + 2] = _startX + row;
 					_vertices[index + 3] = _startY + col;
 					_vertices[index + 4] = level;
@@ -239,7 +226,6 @@ void Chunk::setup_array_buffer( void )
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 5 * sizeof(GLint), _vertices, GL_STATIC_DRAW);
-	// glBufferData(GL_ARRAY_BUFFER, _number_vertices * 12 * sizeof(float), vertices, GL_STATIC_DRAW);
 
 	delete [] _vertices;
 	_vertices = NULL;
@@ -267,7 +253,6 @@ void Chunk::setup_array_buffer( void )
 
 static void thread_setup_chunk( std::list<Chunk *> *chunks, Chunk *current )
 {
-	// std::cout << "hello from thread" << std::endl;
 	current->generation();
 
 	mtx.lock();
@@ -310,9 +295,6 @@ bool Chunk::shouldDelete( glm::vec3 pos, GLfloat dist )
 
 bool Chunk::isInChunk( int posX, int posY )
 {
-	// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
-	// std::cout << "checking chunk " << _start.x << ", " << _start.y << std::endl;
-	// return (pos.x >= _start.x && pos.x < _start.x + CHUNK_SIZE.0f && pos.y >= _start.y && pos.y < _start.y + CHUNK_SIZE.0f);
 	return (posX == _startX && posY == _startY);
 }
 

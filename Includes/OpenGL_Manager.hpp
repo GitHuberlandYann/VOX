@@ -36,6 +36,7 @@ class OpenGL_Manager
 		GLint _key_rdist, _render_distance, _key_fill, _fill;//, _key_add_block;
 		std::list<Chunk *> _chunks;
 		std::list<Chunk *> _visible_chunks;
+		std::list<Chunk *> _delete_chunks;
 		std::thread _thread;//, _thread_block;
 
 		void compile_shader( GLuint ptrShader, std::string name );
