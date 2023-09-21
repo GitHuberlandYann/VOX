@@ -104,7 +104,7 @@ void UI::setup_shader( void )
 	check_glstate("UI_Shader program successfully created\n");
 }
 
-void UI::drawUserInterface( int fps )
+void UI::drawUserInterface( std::string str )
 {
 	if (!_vaoSet) {
 		setup_array_buffer();
@@ -113,5 +113,5 @@ void UI::drawUserInterface( int fps )
     glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	_text->displayText(12, 24, 24, "FPS: " + std::to_string(fps));
+	_text->displayText(12, 24, 24, str);
 }

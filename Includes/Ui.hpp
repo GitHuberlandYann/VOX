@@ -24,7 +24,7 @@ class UI
         ~UI( void );
 
         void setup_shader( void );
-        void drawUserInterface( int fps );
+        void drawUserInterface( std::string str );
 };
 
 #endif

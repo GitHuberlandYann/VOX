@@ -235,6 +235,13 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	// 	std::cout << "cam pos is " << camera._position.x << ",  " << camera._position.y << ", " << camera._position.z << std::endl;
 	// }
 
+	// toggle debug mode on off
+	if ((glfwGetKey(_window, GLFW_KEY_H) == GLFW_PRESS) && ++_key_h == 1) {
+		_debug_mode = !_debug_mode;
+	} else if (glfwGetKey(_window, GLFW_KEY_H) == GLFW_RELEASE) {
+		_key_h = 0;
+	}
+
 	// add and remove blocks
 	if ((glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) && ++_key_rm_block == 1) {
 		handle_add_rm_block(false);

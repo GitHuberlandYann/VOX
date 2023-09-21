@@ -49,7 +49,11 @@ void check_glstate( std::string str )
 	}
 	std::cout << str << std::endl;
 }
-
+// # include <glm/glm.hpp>
+// # include <glm/gtc/matrix_transform.hpp>
+// # include <glm/gtc/type_ptr.hpp>
+// # include <iostream>
+// # include <vector>
 float _bin_size = 1;
 
 /**
@@ -79,17 +83,23 @@ std::vector<glm::ivec3> voxel_traversal(glm::vec3 ray_start, glm::vec3 ray_end) 
 
   // Compute normalized ray direction.
   glm::vec3 ray = ray_end - ray_start;
+//   ray = glm::normalize(ray);
   //ray.normalize();
 
   // In which direction the voxel ids are incremented.
-  float stepX = (ray.x >= 0) ? 1 : -1; // correct
-  float stepY = (ray.y >= 0) ? 1 : -1; // correct
-  float stepZ = (ray.z >= 0) ? 1 : -1; // correct
+  int stepX = (ray.x >= 0) ? 1 : -1; // correct
+  int stepY = (ray.y >= 0) ? 1 : -1; // correct
+  int stepZ = (ray.z >= 0) ? 1 : -1; // correct
 
   // Distance along the ray to the next voxel border from the current position (tMaxX, tMaxY, tMaxZ).
   float next_voxel_boundary_x = (current_voxel.x + stepX) * _bin_size; // correct
   float next_voxel_boundary_y = (current_voxel.y + stepY) * _bin_size; // correct
   float next_voxel_boundary_z = (current_voxel.z + stepZ) * _bin_size; // correct
+
+	// we do this because if we are in x = 1.7 and go to x--, dist to next block is 0.7 and not 1.7
+  if (current_voxel.x != last_voxel.x && ray.x < 0) { ++next_voxel_boundary_x; }
+  if (current_voxel.y != last_voxel.y && ray.y < 0) { ++next_voxel_boundary_y; }
+  if (current_voxel.z != last_voxel.z && ray.z < 0) { ++next_voxel_boundary_z; }
 
   // tMaxX, tMaxY, tMaxZ -- distance until next intersection with voxel-border
   // the value of t at which the ray crosses the first vertical voxel boundary
@@ -105,17 +115,7 @@ std::vector<glm::ivec3> voxel_traversal(glm::vec3 ray_start, glm::vec3 ray_end) 
   float tDeltaY = (ray.y != 0) ? _bin_size / ray.y * stepY : FLT_MAX;
   float tDeltaZ = (ray.z != 0) ? _bin_size / ray.z * stepZ : FLT_MAX;
 
-  glm::ivec3 diff(0, 0, 0);
-  bool neg_ray=false;
-  if (current_voxel.x != last_voxel.x && ray.x < 0) { diff.x--; neg_ray=true; }
-  if (current_voxel.y != last_voxel.y && ray.y < 0) { diff.y--; neg_ray=true; }
-  if (current_voxel.z != last_voxel.z && ray.z < 0) { diff.z--; neg_ray=true; }
   visited_voxels.push_back(current_voxel);
-  if (neg_ray) {
-    current_voxel += diff;
-    visited_voxels.push_back(current_voxel);
-  }
-
   while(last_voxel != current_voxel) {
     if (tMaxX < tMaxY) {
       if (tMaxX < tMaxZ) {
@@ -227,9 +227,10 @@ std::vector<glm::ivec3> voxel_traversal(glm::vec3 ray_start, glm::vec3 ray_end) 
 //   return visited_voxels;
 // }
 
-
-// glm::vec3 ray_start(0, 0, 0);
-// 	glm::vec3 ray_end(0, 0, 20);
+// int main( void )
+// {
+// 	glm::vec3 ray_start(0.6, 0.75, 0.92468);
+// 	glm::vec3 ray_end(-10.75, -10.75, 10.91693);
 // 	std::cout << "Voxel size: 1" << std::endl;
 // 	std::cout << "Starting position: " << ray_start.x << ", " << ray_start.y << ", " << ray_start.z << std::endl;
 // 	std::cout << "Ending position: " << ray_end.x << ", " << ray_end.y << ", " << ray_end.z << std::endl;
@@ -240,3 +241,4 @@ std::vector<glm::ivec3> voxel_traversal(glm::vec3 ray_start, glm::vec3 ray_end) 
 // 		std::cout << "> " << i.x << ", " << i.y << ", " << i.z << std::endl;
 // 	}
 // 	std::cout << "Total number of traversed voxels: " << ids.size() << std::endl;
+// }

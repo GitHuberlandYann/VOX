@@ -33,7 +33,8 @@ class OpenGL_Manager
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
 		glm::vec3 _background_color;
-		GLint _key_rdist, _render_distance, _key_fill, _fill, _key_add_block, _key_rm_block;
+		GLint _key_rdist, _render_distance, _key_fill, _fill, _key_add_block, _key_rm_block, _key_h;
+		bool _debug_mode;
 		std::list<Chunk *> _chunks;
 		std::list<Chunk *> _visible_chunks;
 		std::list<Chunk *> _delete_chunks;

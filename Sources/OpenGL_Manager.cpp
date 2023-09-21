@@ -1,9 +1,12 @@
 # include "vox.h"
 
+extern Camera camera;
+
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE),
-		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0)
+		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0),
+		_key_h(0), _debug_mode(true)
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_ui = new UI();
@@ -218,8 +221,10 @@ void OpenGL_Manager::main_loop( void )
 		double currentTime = glfwGetTime();
 		nbFrames++;
 		if ( currentTime - lastTime >= 1.0 ){
-			// std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
-			// std::cout << "other math gives " << (currentTime - previousFrame) * 1000 << "ms/frame" << std::endl;
+			if (!_debug_mode) {
+				std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
+				// std::cout << "other math gives " << (currentTime - previousFrame) * 1000 << "ms/frame" << std::endl;
+			}
 			nbFramesLastSecond = nbFrames;
 			nbFrames = 0;
 			lastTime += 1.0;
@@ -240,7 +245,11 @@ void OpenGL_Manager::main_loop( void )
 		mtx_visible_chunks.unlock();
 
 		glClear(GL_DEPTH_BUFFER_BIT);
-		_ui->drawUserInterface(nbFramesLastSecond);
+		std::string str = (_debug_mode)
+			? "FPS: " + std::to_string(nbFramesLastSecond) + "\nx: " + std::to_string(camera._position.x)
+				+ " y: " + std::to_string(camera._position.y) + " z: " + std::to_string(camera._position.z)
+			: "";
+		_ui->drawUserInterface(str);
 		glUseProgram(_shaderProgram);
 
 		mtx_delete_chunks.lock();
