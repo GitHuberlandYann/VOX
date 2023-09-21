@@ -19,16 +19,17 @@ OpenGL_Manager::~OpenGL_Manager( void )
 		_thread.join();
 	}
 
-	glDeleteTextures(1, _textures);
+	if (_textures) {
+		glDeleteTextures(1, _textures);
+		delete [] _textures;
+	}
 	glDeleteProgram(_shaderProgram);
-	glDeleteProgram(_ui_shaderProgram);
 
 	delete _ui;
 
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
 
-	delete [] _textures;
 
 	mtx_visible_chunks.lock();
 	_visible_chunks.clear();
@@ -49,23 +50,6 @@ OpenGL_Manager::~OpenGL_Manager( void )
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
-
-void OpenGL_Manager::compile_shader( GLuint ptrShader, std::string name )
-{
-	glCompileShader(ptrShader);
-
-    GLint status;
-    glGetShaderiv(ptrShader, GL_COMPILE_STATUS, &status);
-	if (status) {
-		std::cout << name << " shader compiled successfully" << std::endl;
-	} else {
-		char buffer[512];
-		glGetShaderInfoLog(ptrShader, 512, NULL, buffer);
-
-		std::cerr << name << " shader did not compile, error log:" << std::endl << buffer << std::endl;
-		exit(1);
-	}
-}
 
 // ************************************************************************** //
 //                                Public                                      //
@@ -113,51 +97,10 @@ void OpenGL_Manager::initWorld( void )
 
 void OpenGL_Manager::create_shaders( void )
 {
-	// first I setup the ui shader
-	_ui->setup();
-	std::string ui_vertex_shader_data = get_file_content("Sources/Shaders/ui_vertex.glsl");
-	char *ui_vertexSource = &ui_vertex_shader_data[0];
-
-	_ui_vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(_ui_vertexShader, 1, &ui_vertexSource, NULL);
-	compile_shader(_ui_vertexShader, "ui_vertex");
-
-	std::string ui_geometry_shader_data = get_file_content("Sources/Shaders/ui_geometry.glsl");
-	char *ui_geometrySource = &ui_geometry_shader_data[0];
-
-	_ui_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
-	glShaderSource(_ui_geometryShader, 1, &ui_geometrySource, NULL);
-	compile_shader(_ui_geometryShader, "ui_geometry");
-
-	std::string ui_fragment_shader_data = get_file_content("Sources/Shaders/ui_fragment.glsl");
-	char *ui_fragmentSource = &ui_fragment_shader_data[0];
-
-	_ui_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(_ui_fragmentShader, 1, &ui_fragmentSource, NULL);
-	compile_shader(_ui_fragmentShader, "ui_fragment");
-
-	// Combining shaders into a program
-	_ui_shaderProgram = glCreateProgram();
-	glAttachShader(_ui_shaderProgram, _ui_vertexShader);
-	glAttachShader(_ui_shaderProgram, _ui_geometryShader);
-	glAttachShader(_ui_shaderProgram, _ui_fragmentShader);
-
-	glBindFragDataLocation(_ui_shaderProgram, 0, "outColor");
-
-	glBindAttribLocation(_ui_shaderProgram, UI_POSATTRIB, "position");
-	glBindAttribLocation(_ui_shaderProgram, UI_SIZEATTRIB, "size");
-	glBindAttribLocation(_ui_shaderProgram, UI_COLORATTRIB, "color");
-
-	glLinkProgram(_ui_shaderProgram);
-	glUseProgram(_ui_shaderProgram);
-
-	glDeleteShader(_ui_fragmentShader);
-	glDeleteShader(_ui_geometryShader);
-    glDeleteShader(_ui_vertexShader);
-
-	check_glstate("UI_Shader program successfully created\n");
+	// first setup the ui shader
+	_ui->setup_shader();
 	
-	// now we setup the main shader
+	// then setup the main shader
 	std::string vertex_shader_data = get_file_content("Sources/Shaders/vertex.glsl");
 	char *vertexSource = &vertex_shader_data[0];
 
@@ -265,6 +208,7 @@ void OpenGL_Manager::main_loop( void )
 	// std::cout << "60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame." << std::endl; 
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
+	int nbFramesLastSecond = 0;
 
 	double previousFrame = glfwGetTime();
 
@@ -274,14 +218,15 @@ void OpenGL_Manager::main_loop( void )
 		double currentTime = glfwGetTime();
 		nbFrames++;
 		if ( currentTime - lastTime >= 1.0 ){
-			std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
+			// std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
 			// std::cout << "other math gives " << (currentTime - previousFrame) * 1000 << "ms/frame" << std::endl;
+			nbFramesLastSecond = nbFrames;
 			nbFrames = 0;
 			lastTime += 1.0;
 		}
 
 		user_inputs(currentTime - previousFrame);
-		chunk_update(); //may want to call this once player goes onto new chunk to improve performance
+		chunk_update();
 		previousFrame = currentTime;
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -295,8 +240,7 @@ void OpenGL_Manager::main_loop( void )
 		mtx_visible_chunks.unlock();
 
 		glClear(GL_DEPTH_BUFFER_BIT);
-		glUseProgram(_ui_shaderProgram);
-		_ui->drawUserInterface();
+		_ui->drawUserInterface(nbFramesLastSecond);
 		glUseProgram(_shaderProgram);
 
 		mtx_delete_chunks.lock();

@@ -11,8 +11,11 @@ class UI
 {
     private:
         GLuint _vao, _vbo;
+		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
 		GLfloat *_vertices;
         GLint _nb_points;
+		bool _vaoSet;
+		Text *_text;
 
         void setup_array_buffer( void );
 
@@ -20,8 +23,8 @@ class UI
         UI( void );
         ~UI( void );
 
-        void setup( void );
-        void drawUserInterface( void );
+        void setup_shader( void );
+        void drawUserInterface( int fps );
 };
 
 #endif

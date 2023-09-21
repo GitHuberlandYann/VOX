@@ -227,18 +227,23 @@ void OpenGL_Manager::chunk_update( void )
 
 void OpenGL_Manager::user_inputs( float deltaTime )
 {
-	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
+	}
+	
+	// if (glfwGetKey(_window, GLFW_KEY_P) == GLFW_PRESS) {
+	// 	std::cout << "cam pos is " << camera._position.x << ",  " << camera._position.y << ", " << camera._position.z << std::endl;
+	// }
 
 	// add and remove blocks
 	if ((glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) && ++_key_rm_block == 1) {
 		handle_add_rm_block(false);
-	} else if ((glfwGetKey(_window, GLFW_KEY_Q) == GLFW_RELEASE)) {
+	} else if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_RELEASE) {
 		_key_rm_block = 0;
 	}
 	if (_key_rm_block != 1 && (glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) && ++_key_add_block == 1) { // I don't want to try to del and add at the same time
 		handle_add_rm_block(true);
-	} else if ((glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE)) {
+	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
 		_key_add_block = 0;
 	}
 	/*

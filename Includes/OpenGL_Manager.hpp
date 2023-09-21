@@ -28,7 +28,6 @@ class OpenGL_Manager
 	private:
 		GLFWwindow* _window;
 		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
-		GLuint _ui_shaderProgram, _ui_vertexShader, _ui_geometryShader, _ui_fragmentShader;
 		// GLint _uniPV;
 		GLint _uniView, _uniProj;
 		glm::ivec2 _current_chunk;
@@ -41,7 +40,6 @@ class OpenGL_Manager
 		std::thread _thread;//, _thread_block;
 		UI *_ui;
 
-		void compile_shader( GLuint ptrShader, std::string name );
 		void chunk_update( void );
 		void user_inputs( float deltaTime );
 		// void update_cam_matrix( void );

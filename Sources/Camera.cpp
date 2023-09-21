@@ -42,7 +42,7 @@ void Camera::updateCameraVectors( void )
 
 glm::mat4 Camera::getPerspectiveMatrix( void )
 {
-	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.05f, 1000.0f));
+	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
 }
 
 void Camera::setDelta( float deltaTime )

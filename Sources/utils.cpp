@@ -19,6 +19,24 @@ std::string get_file_content( std::string file_name )
 	return (data);
 }
 
+
+void compile_shader( GLuint ptrShader, std::string name )
+{
+	glCompileShader(ptrShader);
+
+    GLint status;
+    glGetShaderiv(ptrShader, GL_COMPILE_STATUS, &status);
+	if (status) {
+		std::cout << name << " shader compiled successfully" << std::endl;
+	} else {
+		char buffer[512];
+		glGetShaderInfoLog(ptrShader, 512, NULL, buffer);
+
+		std::cerr << name << " shader did not compile, error log:" << std::endl << buffer << std::endl;
+		exit(1);
+	}
+}
+
 void check_glstate( std::string str )
 {
 	GLenum error_check = glGetError();	

@@ -1,14 +1,17 @@
 #include "vox.h"
 
-UI::UI( void ) : _vertices(NULL)
+UI::UI( void ) : _vertices(NULL), _vaoSet(false)
 {
-
+	_text = new Text();
 }
 
 UI::~UI( void )
 {
     glDeleteBuffers(1, &_vbo);
 	glDeleteVertexArrays(1, &_vao);
+	glDeleteProgram(_shaderProgram);
+
+	delete _text;
 }
 
 // ************************************************************************** //
@@ -22,12 +25,15 @@ void UI::setup_array_buffer( void )
     // delete [] _vertices;
     // _vertices = new GLfloat[_nb_points * 7];
     GLfloat vertices[] = { // pos x y size x y color r g b
-        -0.01f, 0.002f, 0.02f, 0.004f, 1.0f, 0.0f, 0.0f,
-        -0.001f, 0.02f, 0.002f, 0.04f, 1.0f, 0.0f, 0.0f
+        -0.01f, -0.002f, 0.02f, 0.004f, 1.0f, 0.0f, 0.0f,
+        -0.001f, -0.02f, 0.002f, 0.04f, 1.0f, 0.0f, 0.0f
     };
 
+	glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
+	_vaoSet = true;
 
+	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferData(GL_ARRAY_BUFFER, _nb_points * 7 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
 
@@ -50,18 +56,62 @@ void UI::setup_array_buffer( void )
 //                                Public                                      //
 // ************************************************************************** //
 
-void UI::setup( void )
+void UI::setup_shader( void )
 {
-    glGenVertexArrays(1, &_vao);
-	glBindVertexArray(_vao);
+	_text->setup_shader();
+	_text->load_texture();
 
-	glGenBuffers(1, &_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+	std::string vertex_shader_data = get_file_content("Sources/Shaders/ui_vertex.glsl");
+	char *vertexSource = &vertex_shader_data[0];
+
+	_vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(_vertexShader, 1, &vertexSource, NULL);
+	compile_shader(_vertexShader, "ui_vertex");
+
+	std::string geometry_shader_data = get_file_content("Sources/Shaders/ui_geometry.glsl");
+	char *geometrySource = &geometry_shader_data[0];
+
+	_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+	glShaderSource(_geometryShader, 1, &geometrySource, NULL);
+	compile_shader(_geometryShader, "ui_geometry");
+
+	std::string fragment_shader_data = get_file_content("Sources/Shaders/ui_fragment.glsl");
+	char *fragmentSource = &fragment_shader_data[0];
+
+	_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(_fragmentShader, 1, &fragmentSource, NULL);
+	compile_shader(_fragmentShader, "ui_fragment");
+
+	// Combining shaders into a program
+	_shaderProgram = glCreateProgram();
+	glAttachShader(_shaderProgram, _vertexShader);
+	glAttachShader(_shaderProgram, _geometryShader);
+	glAttachShader(_shaderProgram, _fragmentShader);
+
+	glBindFragDataLocation(_shaderProgram, 0, "outColor");
+
+	glBindAttribLocation(_shaderProgram, UI_POSATTRIB, "position");
+	glBindAttribLocation(_shaderProgram, UI_SIZEATTRIB, "size");
+	glBindAttribLocation(_shaderProgram, UI_COLORATTRIB, "color");
+
+	glLinkProgram(_shaderProgram);
+	glUseProgram(_shaderProgram);
+
+	glDeleteShader(_fragmentShader);
+	glDeleteShader(_geometryShader);
+    glDeleteShader(_vertexShader);
+
+	check_glstate("UI_Shader program successfully created\n");
 }
 
-void UI::drawUserInterface( void )
+void UI::drawUserInterface( int fps )
 {
-    setup_array_buffer();
-    glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down
+	if (!_vaoSet) {
+		setup_array_buffer();
+	}
+	glUseProgram(_shaderProgram);
+    glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
+
+	_text->displayText(12, 24, 24, "FPS: " + std::to_string(fps));
 }
