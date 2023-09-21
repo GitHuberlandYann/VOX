@@ -87,8 +87,8 @@ void OpenGL_Manager::handle_add_rm_block( bool adding )
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		if (chunk->isHit(i)) {
 			// std::cout << "we have a hit ! " << i.x << ", " << i.y << ", " << i.z << ", " << std::endl;
-			if (i == player_pos || previous_block == player_pos) {
-				std::cout << "abort because hit is player pos" << std::endl;
+			if (adding && (i == player_pos || previous_block == player_pos)) {
+				// std::cout << "abort because hit is player pos" << std::endl;
 				break ;
 			}
 			if (adding && previous_chunk != current_chunk) {

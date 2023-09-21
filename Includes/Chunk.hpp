@@ -3,6 +3,7 @@
 
 # define SEA_LEVEL 64
 # define CHUNK_SIZE 16
+# define WORLD_HEIGHT 256
 
 // enum {
 // 	ADD_BLOCK,
@@ -12,22 +13,17 @@
 enum blocks {
 	AIR,
 	GRASS_BLOCK,
-	GRASS_BLOCK_UNDER,
+	OAK_TRUNK,
+	BEDROCK = 16,
+	DIRT_BLOCK,
 	STONE,
 	SAND,
-	OAK_TRUNK,
+	GRAVEL,
 	OAK_LEAVES,
-	TBD7,
-	TBD8,
-	TBD9,
-	TBD10,
-	TBD11,
-	TBD12,
-	TBD13,
-	TBD14,
-	TBD15,
-	BEDROCK,
-	POPPY,
+	COAL_ORE = 32,
+	IRON_ORE,
+	DIAMOND_ORE,
+	POPPY = 48,
 	DANDELION,
 	BLUE_ORCHID,
 	ALLIUM,
@@ -73,6 +69,7 @@ class Chunk
 		GLint _displayed_blocks;
 		std::thread _thread;
 
+		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		GLint get_empty_faces( int row, int col, int level );
 		bool exposed_block( int row, int col, int level );
 		int get_block_type(siv::PerlinNoise perlin, int row, int col, int level, int surface_level,

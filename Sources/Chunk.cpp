@@ -22,11 +22,30 @@ Chunk::~Chunk( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-// we simulate that flowers are air block in order to display adjacent blocks properly
-// also use this for all 'see-through' blocks like leaves, ..
+void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir)
+{
+	if (!row || !col || !level || !blob_size
+		|| row == CHUNK_SIZE + 1 || col == CHUNK_SIZE + 1 || level == WORLD_HEIGHT
+		|| _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] != blocks::STONE) {
+		return ;
+	}
+	_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = ore_type;
+	--blob_size;
+	for (int i = 0; i < 6; i++) {
+		if (dir == 6) {
+			dir = 0;
+		}
+		const GLint delta[3] = {adj_blocks[dir][0], adj_blocks[dir][1], adj_blocks[dir][2]};
+		++dir;
+		gen_ore_blob(ore_type, row + delta[0], col + delta[1], level + delta[2], blob_size, dir);
+	}
+}
+
+/* * we simulate that flowers are air block in order to display adjacent blocks properly
+   * also use this for all 'see-through' blocks like leaves, water..*/
 static int air_flower( int value )
 {
-	if (value > 16 || value == blocks::OAK_LEAVES) {
+	if (value >= blocks::POPPY || value == blocks::OAK_LEAVES) {
 		return (0);
 	}
 	return (value);
@@ -34,23 +53,22 @@ static int air_flower( int value )
 
 GLint Chunk::get_empty_faces( int row, int col, int level )
 {
-	GLint res = 0;
-	res += !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * 256 + level]) * (1 << 2);
-	res += !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * 256 + level]) * (1 << 3);
-	res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * 256 + level]) * (1 << 0);
-	res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * 256 + level]) * (1 << 1);
+	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level]) * (1 << 2)
+				+ !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level]) * (1 << 3)
+				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level]) * (1 << 0)
+				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level]) * (1 << 1);
 	switch (level) {
 		case 0:
 			res += (1 << 5);
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]) * (1 << 4);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1]) * (1 << 4);
 			break ;
 		case 255:
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1]) * (1 << 5);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1]) * (1 << 5);
 			res += (1 << 4);
 			break ;
 		default:
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1]) * (1 << 5);
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]) * (1 << 4);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1]) * (1 << 5);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1]) * (1 << 4);
 	}
 	return (res);
 }
@@ -62,19 +80,19 @@ bool Chunk::exposed_block( int row, int col, int level )
 	bool above = false;
 	switch (level) {
 		case 0:
-			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]);
+			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1]);
 			break ;
 		case 255:
-			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1]);
+			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1]);
 			break ;
 		default:
-			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level - 1]);
-			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1]);
+			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1]);
+			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1]);
 	}
-	return (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * 256 + level])
-		|| !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * 256 + level])
-		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * 256 + level])
-		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * 256 + level])
+	return (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level])
+		|| !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level])
+		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level])
+		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level])
 		|| below || above);
 }
 
@@ -82,19 +100,21 @@ int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, 
 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 	bool tree_gen, std::vector<glm::ivec3> & trees)
 {
-	int value = (level <= surface_level);
+	if (level == 0) {
+		return (blocks::BEDROCK);
+	}
+	int value = (level > surface_level) ? blocks::AIR : (level < surface_level - 2 || level <= 64) ? blocks::STONE : blocks::GRASS_BLOCK;
 	if (value) {
-		if (level <= 64) {
-			(perlin.noise2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f) < 0.55)
-				? value = blocks::STONE
-				: value = blocks::SAND;
+		if (value == blocks::STONE) {
+			double undergound = perlin.noise3D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, level / 100.0f);
+			(undergound < 0.55) ? : value = blocks::SAND;
 		}
-	} else if (tree_gen && surface_level > 65 && surface_level < 220 && level <= surface_level + 5) {
+	} else if (tree_gen && surface_level > 65 && level <= surface_level + 5 && surface_level < 220) {
 		value = blocks::OAK_TRUNK;
 		if (level == surface_level + 5) {
 			trees.push_back(glm::ivec3(row, col, level));
 		}
-	} else if (surface_level > 65 && surface_level < 220 && level == surface_level + 1) {
+	} else if (level == surface_level + 1 && surface_level > 65 && surface_level < 220) {
 		if (poppy) {
 			value = blocks::POPPY;
 		} else if (dandelion) {
@@ -108,9 +128,6 @@ int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, 
 		} else if (pink_tulip) {
 			value = blocks::PINK_TULIP;
 		}
-	}
-	if (level == 0) {
-		value = blocks::BEDROCK;
 	}
 	return (value);
 }
@@ -138,53 +155,89 @@ void Chunk::generate_blocks( void )
 			bool allium = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			bool cornflower = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			bool pink_tulip = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
-			for (int level = 0; level < 256; level++) {
-				double cave = perlin.octave3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 20.0f, 4);
-				(level < surface_level - 5 && cave <= 0.2f && level > 0)
-					? _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::AIR
-					: _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
-				// _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
+			for (int level = 0; level < WORLD_HEIGHT; level++) {
+				// double cave = perlin.octave3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 20.0f, 4);
+				// (level < surface_level - 5 && cave <= 0.2f && level > 0)
+				// 	? _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR
+				// 	: _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
+				_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
 				// GLfloat squashing_factor;
 				// (level < 64)
 				// 	? squashing_factor = (64 - level) / 64.0f
 				// 	: squashing_factor = -(level - 64) / 192.0f;
 				// // // std::cout << "squash at " << level << ": " << squashing_factor << std::endl;
-				// _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = ((perlin.octave3D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, level / 20.0f, 4) + squashing_factor) > 0.5f);
+				// _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = ((perlin.octave3D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, level / 20.0f, 4) + squashing_factor) > 0.5f);
 				// if (row == 9 && col == 9 && level == surface_level + 5) {
-				// 	_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = 1;
+				// 	_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = 1;
 				// }
 			}
 		}
 	}
 
-	// adding trees
+	// adding leaves to trees
 	std::vector<glm::ivec3>::iterator it = trees.begin();
 	for (; it != trees.end(); it++) {
 		for (int index = 0; index < 61; index++) {
 			const GLint delta[3] = {oak_normal[index][0], oak_normal[index][1], oak_normal[index][2]};
-			if (_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * 256 + (*it).z + delta[2]] == blocks::AIR) {
-				_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * 256 + (*it).z + delta[2]] = blocks::OAK_LEAVES;
+			if (_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * WORLD_HEIGHT + (*it).z + delta[2]] == blocks::AIR) {
+				_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * WORLD_HEIGHT + (*it).z + delta[2]] = blocks::OAK_LEAVES;
 			}
 		}
 	}
 	trees.clear();
 
-	// hiding unseen block
+	// generating ores
+	bool gravel_blob = false;
+	int coal_blobs = 0, iron_blobs = 0, diamond_blobs = 0;
 	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
 		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
-			for (int level = 0; level < 256; level++) {
-				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level];
-				if (value) {
-					if (value == blocks::GRASS_BLOCK && level != 255) {
-						int block_above = _blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level + 1];
-						if (block_above && block_above < 17) {
-							_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] = blocks::GRASS_BLOCK_UNDER;
-						}
+			for (int level = 0; level < WORLD_HEIGHT; level++) {
+				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
+				if (value == blocks::STONE) {
+					if (coal_blobs < 20 && distribution(generator) <= 80) {
+						int size = (distribution(generator) + 3) / 30;
+						gen_ore_blob(blocks::COAL_ORE, row, col, level, size, 0);
+						coal_blobs++;
+					} else if (iron_blobs < 10 && (level <= 56 || level > 80) && distribution(generator) <= 80) {
+						int size = (distribution(generator) + 3) / 60;
+						gen_ore_blob(blocks::IRON_ORE, row, col, level, size, 0);
+						iron_blobs++;
+					} else if (!gravel_blob && distribution(generator) <= 10) {
+						int size = 60;
+						gen_ore_blob(blocks::GRAVEL, row, col, level, size, 0);
+						gravel_blob = true;
+					} else if (diamond_blobs < 7 && level < 15 && distribution(generator) <= 60) {
+						int size = (distribution(generator) + 5) / 200;
+						gen_ore_blob(blocks::DIAMOND_ORE, row, col, level, size, 0);
+						diamond_blobs++;
 					}
+				}
+				// turning grass into dirt if under other block
+				if (value == blocks::GRASS_BLOCK && level != 255) {
+					int block_above = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1];
+					if (block_above && block_above < blocks::POPPY) {
+						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::DIRT_BLOCK;
+					}
+				}
+			}
+		}
+	}
+
+
+	// hiding unseen blocks
+	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
+		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
+			for (int level = 0; level < WORLD_HEIGHT; level++) {
+				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
+				if (value) {
 					if (exposed_block(row, col, level)) {
 						_displayed_blocks++;
+						// reverting ores back to stone if they are exposed
+						if (value == blocks::IRON_ORE && distribution(generator) < 500) {
+							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::STONE;
+						}
 					} else {
-						_blocks[(row * (CHUNK_SIZE + 2) + col) * 256 + level] -= blocks::NOTVISIBLE;
+						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
 					}
 				}
 			}
@@ -196,17 +249,17 @@ void Chunk::remove_block( glm::ivec3 pos )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
-	if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] > blocks::AIR) { // if invisible block gets deleted, same amount of displayed_blocks
+	if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] > blocks::AIR) { // if invisible block gets deleted, same amount of displayed_blocks
 		_displayed_blocks--;
 	}
-	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] = blocks::AIR;
+	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
 
 		} else {
-			if (_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * 256 + pos.z + delta[2]] < blocks::AIR) {
-				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * 256 + pos.z + delta[2]] += blocks::NOTVISIBLE;
+			if (_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] < blocks::AIR) {
+				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] += blocks::NOTVISIBLE;
 				_displayed_blocks++;
 			}
 		}
@@ -218,17 +271,17 @@ void Chunk::add_block( glm::ivec3 pos )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
-	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] = blocks::OAK_TRUNK;
+	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::DIAMOND_ORE;
 	_displayed_blocks++;
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
 
 		} else {
-			GLint value = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * 256 + pos.z + delta[2]];
+			GLint value = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
 			if (value > blocks::AIR && !exposed_block(pos.x + delta[0] + 1, pos.y + delta[1] + 1, pos.z + delta[2] + 1)) {
 				// was exposed before, but isn't anymore
-				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * 256 + pos.z + delta[2]] -= blocks::NOTVISIBLE;
+				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] -= blocks::NOTVISIBLE;
 				_displayed_blocks--;
 			}
 		}
@@ -241,8 +294,8 @@ void Chunk::fill_vertex_array( void )
 	int index = 0;
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
-			for (int level = 0; level < 256; level++) {
-				GLint block_type = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * 256 + level];
+			for (int level = 0; level < WORLD_HEIGHT; level++) {
+				GLint block_type = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level];
 				if (block_type > blocks::AIR) {
 					// if (index + 5 > _displayed_blocks * 5) {
 					// 	std::cout << "ERROR index is " << index / 5 << std::endl;
@@ -310,7 +363,7 @@ static void thread_setup_chunk( std::list<Chunk *> *chunks, Chunk *current )
 
 void Chunk::generation( void )
 {
-	_blocks = new GLint[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * 256];
+	_blocks = new GLint[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT];
 	generate_blocks();
 	_vertices = new GLint[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
 	fill_vertex_array();
@@ -319,12 +372,12 @@ void Chunk::generation( void )
 void Chunk::regeneration( glm::ivec3 pos, bool adding )
 {
 	if (!adding) {
-		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] == blocks::BEDROCK) { // can't rm bedrock
+		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] == blocks::BEDROCK) { // can't rm bedrock
 			return ;
 		}
 		remove_block(pos);
 	} else {
-		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * 256 + pos.z] != blocks::AIR) { // can't replace block
+		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] != blocks::AIR) { // can't replace block
 			return ;
 		}
 		add_block(pos);
@@ -376,7 +429,7 @@ bool Chunk::isHit( glm::ivec3 pos )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	return (_blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * 256 + chunk_pos.z]);
+	return (_blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * WORLD_HEIGHT + chunk_pos.z]);
 }
 
 static void thread_modif_block( Chunk *current, glm::ivec3 pos, bool adding )

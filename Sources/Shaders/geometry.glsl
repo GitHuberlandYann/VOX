@@ -64,18 +64,62 @@ void cross_image( void )
     vec4 v6 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 1.0, 0.0, 0.0));
     vec4 v7 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
 
-	vec2 start = vec2(4.0f / 16.0f, (vsData[0].Block_type - 17.0f) / 16.0f);
+	vec2 start = vec2(6.0f / 16.0f, (vsData[0].Block_type - 48.0f) / 16.0f);
 	FaceShadow = 1.0;
 	emitFace(v1, v4, v3, v6, start);
 	emitFace(v0, v5, v2, v7, start);
 }
 
-void main()
+void default_block( bool ores )
+{
+	vec4 v0 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 1.0, 0.0));
+    vec4 v1 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 0.0, 1.0, 0.0));
+    vec4 v2 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 0.0, 0.0));
+    vec4 v3 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 0.0, 0.0, 0.0));
+
+    vec4 v4 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 1.0, 1.0, 0.0));
+    vec4 v5 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 1.0, 1.0, 0.0));
+    vec4 v6 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 1.0, 0.0, 0.0));
+    vec4 v7 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
+
+	vec2 start = (ores) ? vec2(5.0f / 16.0f, (vsData[0].Block_type - 32.0f) / 16.0f)
+						: vec2(4.0f / 16.0f, (vsData[0].Block_type - 16.0f) / 16.0f);
+	
+	if ((vsData[0].Adj_blocks & (1 << 4)) == 0) {
+		FaceShadow = 1.0;
+		emitFace(v4, v5, v0, v1, start);
+	}
+	if ((vsData[0].Adj_blocks & (1 << 0)) == 0) {
+		FaceShadow = 0.92;
+		emitFace(v0, v1, v2, v3, start);
+	}
+	if ((vsData[0].Adj_blocks & (1 << 1)) == 0) {
+		FaceShadow = 0.88;
+		emitFace(v4, v5, v6, v7, start);
+	}
+	if ((vsData[0].Adj_blocks & (1 << 2)) == 0) {
+		FaceShadow = 0.84;
+		emitFace(v4, v0, v6, v2, start);
+	}
+	if ((vsData[0].Adj_blocks & (1 << 3)) == 0) {
+		FaceShadow = 0.80;
+		emitFace(v1, v5, v3, v7, start);
+	}
+	if ((vsData[0].Adj_blocks & (1 << 5)) == 0) {
+		FaceShadow = 0.74;
+		emitFace(v6, v7, v2, v3, start);
+	}
+}
+
+void main( void )
 {
 	if (vsData[0].Block_type == 0) {
 		return ;
-	} else if (vsData[0].Block_type >= 17) { //flower
+	} else if ((vsData[0].Block_type & 48) == 48) { // flower
 		cross_image();
+		return ;
+	} else if (vsData[0].Block_type >= 16) { // same texture on 4 faces
+		default_block((vsData[0].Block_type & 32) == 32);
 		return ;
 	}
     vec4 v0 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 1.0, 0.0));
@@ -88,7 +132,7 @@ void main()
     vec4 v6 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 1.0, 0.0, 0.0));
     vec4 v7 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
 
-	vec2 start = vec2(0.0f, (vsData[0].Block_type - 1.0f) / 16.0f);
+	vec2 start = vec2(0.0f, vsData[0].Block_type / 16.0f);
 	
 	if ((vsData[0].Adj_blocks & (1 << 4)) == 0) {
 		FaceShadow = 1.0;
