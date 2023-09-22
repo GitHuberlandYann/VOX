@@ -3,7 +3,7 @@ Project Requirements:
     DONE - RENDER MUST BE SMOOTH. Avoid the freeze frames at all cost
 	DONE - user should be able to visit at least 16384*256*16384 cubes
 	- Your program must be able to run for hours without eating the whole memory or slowing down
-    - Your program will have to run in full screen mode
+    DONE - Your program will have to run in full screen mode
 	- generate terrains such as hills, mountains or caves when the user goes underground
     DONE - This generation has to be determinist
     - Each visited piece of terrain must be saved in the memory up to some limit you will set yourself and after which you can start deleting cubes from the memory
@@ -13,7 +13,7 @@ Project Requirements:
     - set up a skybox
 
     - camera
-        - mouse must be able to control it on 2 axis
+        DONE - mouse must be able to control it on 2 axis
         DONE - 4 keys that will make it go forth, back, right and left in according to the camera rotation
         DONE - camera speed should be set around 1 cube/second
         DONE - key that will multiply this speed by 20
@@ -27,11 +27,9 @@ Project Requirements:
 
 TODOS:
 	- water if air && level < 64
-    - obstacle detection for physics + game mode
     - better caves
     - biomes
     - chunk border fix
-    - inventory
     - skybox
     - save block changed
     - main menu
@@ -44,6 +42,7 @@ TODOS:
         - quit
 
 IN PROGRES:
+    - obstacle detection for physics + game mode
     - https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
     - https://stackoverflow.com/questions/54583368/how-to-draw-multiple-objects-in-opengl-using-multiple-vao-and-vbo
 
@@ -53,6 +52,7 @@ DONE:
     - better spacing between characters displayed
     - full screen mode
     - mouse movements
+    - inventory
 
 
 Some info:

@@ -245,12 +245,14 @@ void Chunk::generate_blocks( void )
 	}
 }
 
-void Chunk::remove_block( glm::ivec3 pos )
+void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
-	if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] > blocks::AIR) { // if invisible block gets deleted, same amount of displayed_blocks
+	int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
+	if (value > blocks::AIR) { // if invisible block gets deleted, same amount of displayed_blocks
 		_displayed_blocks--;
+		inventory->addBlock(value);
 	}
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	for (int index = 0; index < 6; index++) {
@@ -267,11 +269,11 @@ void Chunk::remove_block( glm::ivec3 pos )
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
-void Chunk::add_block( glm::ivec3 pos )
+void Chunk::add_block( glm::ivec3 pos, int type )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
-	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::DIAMOND_ORE;
+	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
 	_displayed_blocks++;
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
@@ -369,18 +371,20 @@ void Chunk::generation( void )
 	fill_vertex_array();
 }
 
-void Chunk::regeneration( glm::ivec3 pos, bool adding )
+void Chunk::regeneration( Inventory *inventory, glm::ivec3 pos, bool adding )
 {
 	if (!adding) {
 		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] == blocks::BEDROCK) { // can't rm bedrock
 			return ;
 		}
-		remove_block(pos);
+		remove_block(inventory, pos);
 	} else {
-		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] != blocks::AIR) { // can't replace block
+		int type = inventory->getCurrentSlot();
+		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] != blocks::AIR || type == blocks::AIR) { // can't replace block
 			return ;
 		}
-		add_block(pos);
+		add_block(pos, type);
+		inventory->removeBlock();
 	}
 	delete [] _vertices;
 	_vertices = new GLint[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
@@ -432,13 +436,14 @@ bool Chunk::isHit( glm::ivec3 pos )
 	return (_blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * WORLD_HEIGHT + chunk_pos.z]);
 }
 
-static void thread_modif_block( Chunk *current, glm::ivec3 pos, bool adding )
+static void thread_modif_block( Chunk *current, Inventory *inventory, glm::ivec3 pos, bool adding )
 {
-	current->regeneration(pos, adding);
+	current->regeneration(inventory, pos, adding);
 }
 
-void Chunk::handleHit( glm::ivec3 pos, bool adding )
+void Chunk::handleHit( Inventory *inventory, glm::ivec3 pos, bool adding )
 {
+
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
 	// if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
 	// 	std::cout << "ERROR BLOCK OUT OF CHUNK " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
@@ -446,7 +451,7 @@ void Chunk::handleHit( glm::ivec3 pos, bool adding )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	_thread = std::thread(thread_modif_block, this, chunk_pos, adding);
+	_thread = std::thread(thread_modif_block, this, inventory, chunk_pos, adding);
 }
 
 // void Chunk::action_block( glm::vec3 pos, glm::vec3 front, int action)

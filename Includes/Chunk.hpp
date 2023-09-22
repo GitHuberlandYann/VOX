@@ -76,8 +76,8 @@ class Chunk
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool tree_gen, std::vector<glm::ivec3> & trees);
 		void generate_blocks( void );
-		void add_block( glm::ivec3 pos );
-		void remove_block( glm::ivec3 pos );
+		void add_block( glm::ivec3 pos, int type );
+		void remove_block( Inventory *inventory, glm::ivec3 pos );
         void fill_vertex_array( void );
         void setup_array_buffer( void );
 
@@ -86,13 +86,13 @@ class Chunk
         ~Chunk( void );
 
 		void generation( void );
-		void regeneration( glm::ivec3 pos, bool adding );
+		void regeneration( Inventory *inventory, glm::ivec3 pos, bool adding );
 		void generate_chunk( std::list<Chunk *> *chunks );
         void setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
 		bool isHit( glm::ivec3 pos );
-		void handleHit( glm::ivec3 pos, bool adding );
+		void handleHit( Inventory *inventory, glm::ivec3 pos, bool adding );
 		// void action_block( glm::vec3 pos, glm::vec3 front, int action);
         void drawArray( GLint & counter );
 };

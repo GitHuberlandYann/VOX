@@ -37,6 +37,10 @@ void OpenGL_Manager::update_cam_matrix( void )
 
 void OpenGL_Manager::handle_add_rm_block( bool adding )
 {
+	if (adding && _inventory->getCurrentSlot() == blocks::AIR) {
+		// std::cout << "can't add block if no object in inventory" << std::endl;
+		return ;
+	}
 	std::vector<glm::ivec3> ids = camera.get_ray_casting(10);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
@@ -81,12 +85,12 @@ void OpenGL_Manager::handle_add_rm_block( bool adding )
 				break ;
 			}
 			if (adding && previous_chunk != current_chunk) {
-				prev_chunk->handleHit(previous_block, adding);
+				prev_chunk->handleHit(_inventory, previous_block, adding);
 				break ;
 			}
 			(adding)
-				? chunk->handleHit(previous_block, adding)
-				: chunk->handleHit(i, adding);
+				? chunk->handleHit(_inventory, previous_block, adding)
+				: chunk->handleHit(_inventory, i, adding);
 			break ;
 		}
 		previous_block = i;
@@ -214,16 +218,18 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 	}
-	
-	// if (glfwGetKey(_window, GLFW_KEY_P) == GLFW_PRESS) {
-	// 	std::cout << "cam pos is " << camera._position.x << ",  " << camera._position.y << ", " << camera._position.z << std::endl;
-	// }
 
 	// toggle debug mode on off
 	if ((glfwGetKey(_window, GLFW_KEY_H) == GLFW_PRESS) && ++_key_h == 1) {
 		_debug_mode = !_debug_mode;
 	} else if (glfwGetKey(_window, GLFW_KEY_H) == GLFW_RELEASE) {
 		_key_h = 0;
+	}
+	// toggle game mode
+	if ((glfwGetKey(_window, GLFW_KEY_G) == GLFW_PRESS) && ++_key_g == 1) {
+		_game_mode = !_game_mode;
+	} else if (glfwGetKey(_window, GLFW_KEY_G) == GLFW_RELEASE) {
+		_key_g = 0;
 	}
 
 	// add and remove blocks
@@ -237,29 +243,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_key_add_block = 0;
 	}
-	/*
-	if (glfwGetKey(_window, GLFW_KEY_C) == GLFW_PRESS && ++_key_color_mode == 1) {
-		++_color_mode;
-		if (_color_mode == MATERIAL && !_vtp_size)
-			++_color_mode;
-		if (_color_mode == TEXTURE && (!_nb_textures || _nb_textures == _omore_tex))
-			++_color_mode;
-		if (_color_mode == PROVIDED && !_omore_tex)
-			++_color_mode;
-		if (_color_mode == LAST)
-			_color_mode = DEFAULT;
-		glUniform1i(_uniColorMode, _color_mode);
-	} else if (glfwGetKey(_window, GLFW_KEY_C) == GLFW_RELEASE)
-		_key_color_mode = 0;
 
-	if (glfwGetKey(_window, GLFW_KEY_B) == GLFW_PRESS && ++_key_depth == 1) {
-		if (glIsEnabled(GL_DEPTH_TEST))
-			glDisable(GL_DEPTH_TEST);
-		else
-			glEnable(GL_DEPTH_TEST);
-	} else if (glfwGetKey(_window, GLFW_KEY_B) == GLFW_RELEASE)
-		_key_depth = 0;
-*/
 	if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS && ++_key_fill == 1) {
 		++_fill;
 		if (_fill == F_LAST)
@@ -279,7 +263,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	GLint key_render_dist = (glfwGetKey(_window, GLFW_KEY_EQUAL) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_MINUS) == GLFW_PRESS);
 	if (key_render_dist && ++_key_rdist == 1 && _render_distance + key_render_dist > 0) {
 		_render_distance += key_render_dist;
-		std::cout << "render distance set to " << _render_distance << std::endl;
+		// std::cout << "render distance set to " << _render_distance << std::endl;
 	} else if (!key_render_dist) {
 		_key_rdist = 0;
 	}
@@ -326,7 +310,6 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	if (key_cam_v || key_cam_h || key_cam_z || key_cam_pitch || key_cam_yaw || camera._mouse_update)
 	{
 		update_cam_view();
-		// update_cam_matrix();
 		camera._mouse_update = false;
 	}
 
@@ -335,4 +318,50 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		camera.update_movement_speed(key_cam_speed);
 	}
 
+	// inventory slot selection
+	if ((glfwGetKey(_window, GLFW_KEY_1) == GLFW_PRESS) && ++_key_1 == 1) {
+		_inventory->setSlot(0);
+	} else if (glfwGetKey(_window, GLFW_KEY_1) == GLFW_RELEASE) {
+		_key_1 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_2) == GLFW_PRESS) && ++_key_2 == 1) {
+		_inventory->setSlot(1);
+	} else if (glfwGetKey(_window, GLFW_KEY_2) == GLFW_RELEASE) {
+		_key_2 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_3) == GLFW_PRESS) && ++_key_3 == 1) {
+		_inventory->setSlot(2);
+	} else if (glfwGetKey(_window, GLFW_KEY_3) == GLFW_RELEASE) {
+		_key_3 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_4) == GLFW_PRESS) && ++_key_4 == 1) {
+		_inventory->setSlot(3);
+	} else if (glfwGetKey(_window, GLFW_KEY_4) == GLFW_RELEASE) {
+		_key_4 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_5) == GLFW_PRESS) && ++_key_5 == 1) {
+		_inventory->setSlot(4);
+	} else if (glfwGetKey(_window, GLFW_KEY_5) == GLFW_RELEASE) {
+		_key_5 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_6) == GLFW_PRESS) && ++_key_6 == 1) {
+		_inventory->setSlot(5);
+	} else if (glfwGetKey(_window, GLFW_KEY_6) == GLFW_RELEASE) {
+		_key_6 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_7) == GLFW_PRESS) && ++_key_7 == 1) {
+		_inventory->setSlot(6);
+	} else if (glfwGetKey(_window, GLFW_KEY_7) == GLFW_RELEASE) {
+		_key_7 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_8) == GLFW_PRESS) && ++_key_8 == 1) {
+		_inventory->setSlot(7);
+	} else if (glfwGetKey(_window, GLFW_KEY_8) == GLFW_RELEASE) {
+		_key_8 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_9) == GLFW_PRESS) && ++_key_9 == 1) {
+		_inventory->setSlot(8);
+	} else if (glfwGetKey(_window, GLFW_KEY_9) == GLFW_RELEASE) {
+		_key_9 = 0;
+	}
 }

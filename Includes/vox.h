@@ -31,6 +31,7 @@ extern std::mutex mtx_delete_chunks;
 # include "utils.h"
 # include "Camera.hpp"
 # include "PerlinNoise.hpp"
+# include "Inventory.hpp"
 # include "Chunk.hpp"
 # include "Text.hpp"
 # include "Ui.hpp"
