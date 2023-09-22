@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _speed_frame(0), _fov(FOV), _movement_speed(SPEED)
+Camera::Camera( glm::vec3 position ) : _speed_frame(0), _fov(FOV), _fall_speed(0), _movement_speed(SPEED)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -89,18 +89,31 @@ void Camera::processKeyboard( Camera_Movement direction, bool game_mode )
 
 void Camera::fall( bool real_fall )
 {
-	_mouse_update = true;
+	float deltaTime = _speed_frame / _movement_speed;
+	if (_fall_speed + 1 < FALL_SPEED) {
+		_fall_speed++;
+	}
 	// std::cout << "fall " << real_fall << std::endl;
 	if (real_fall) { // empty block bellow
-		_position.z -= _speed_frame / _movement_speed * 4;
-	} else if (_position.z - int(_position.z) > 0.62f) {
-		float new_z = _position.z - _speed_frame / _movement_speed * 4;
-		if (new_z - int(new_z) > 0.62f) {
-			_position.z -= _speed_frame / _movement_speed * 4;
+		_position.z -= deltaTime * _fall_speed;
+		_mouse_update = true;
+	} else {//if (_position.z - int(_position.z) > 0.62f) {
+		float new_z = _position.z - deltaTime * _fall_speed;
+		if (new_z - int(_position.z) > 0.62f) {
+			_position.z = new_z;
+			_mouse_update = true;
 		} else {
-			_position.z -= (_position.z - int(_position.z) - 0.62f);
+			_position.z = int(_position.z) + 0.62f;
+			_mouse_update = true;
+			touchGround();
 		}
 	}
+}
+
+void Camera::touchGround( void )
+{
+	// std::cout << "TOUCH GROUND AT " << _fall_speed << std::endl;
+	_fall_speed = 1;
 }
 
 void Camera::processPitch( GLint offset )
@@ -160,3 +173,11 @@ void Camera::processMouseScroll( float offset )
 	_scroll_update = true;
 }
 */
+
+std::string Camera::getCamString( void )
+{
+	return ("\nPos > x: " + std::to_string(_position.x)
+				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
+				+ "\nSpeed > " + std::to_string(_movement_speed)
+				+ "\nFall > " + std::to_string(_fall_speed));
+}

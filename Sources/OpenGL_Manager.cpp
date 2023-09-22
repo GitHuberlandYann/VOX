@@ -260,9 +260,7 @@ void OpenGL_Manager::main_loop( void )
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 		std::string str = (_debug_mode)
-			? "FPS: " + std::to_string(nbFramesLastSecond) + "\nPos > x: " + std::to_string(camera._position.x)
-				+ " y: " + std::to_string(camera._position.y) + " z: " + std::to_string(camera._position.z)
-				+ "\nSpeed > " + std::to_string(camera._movement_speed)
+			? "FPS: " + std::to_string(nbFramesLastSecond) + camera.getCamString()
 				+ "\nChunk > x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				+ "\nRender Distance > " + std::to_string(_render_distance)
 				+ "\nGame mode > " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")

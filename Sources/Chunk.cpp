@@ -466,7 +466,17 @@ bool Chunk::collision( glm::vec3 & pos, Camera &cam )
 		return (true);
 	}
 	if (!_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 2]) { // falling
+		glm::vec3 save_pos = pos;
+		// std::cout << "before fall: " << pos.z << " vs " << save_pos.z << std::endl;
 		cam.fall(true);
+		// std::cout << "after fall: " << pos.z << " vs " << save_pos.z << std::endl;
+		for (int index = save_pos.z - 2; index >= ((pos.z > 2) ? pos.z : 2); index--) {
+			if (_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + index]) {
+				pos.z = index + 2.62f;
+				cam.touchGround();
+				return (false);
+			}
+		}
 	} else {
 		cam.fall(false);
 	}
