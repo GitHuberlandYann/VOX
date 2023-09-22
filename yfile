@@ -1,33 +1,47 @@
 Project Requirements:
-    - create procedural terain in openGL
-    - RENDER MUST BE SMOOTH. Avoid the freeze frames at all cost
-	- user should be able to visit at least 16384*256*16384 cubes
+    DONE - create procedural terain in openGL
+    DONE - RENDER MUST BE SMOOTH. Avoid the freeze frames at all cost
+	DONE - user should be able to visit at least 16384*256*16384 cubes
 	- Your program must be able to run for hours without eating the whole memory or slowing down
     - Your program will have to run in full screen mode
 	- generate terrains such as hills, mountains or caves when the user goes underground
-    - This generation has to be determinist
+    DONE - This generation has to be determinist
     - Each visited piece of terrain must be saved in the memory up to some limit you will set yourself and after which you can start deleting cubes from the memory
-    - In the open, minimal distance render will be 160 cube
-    - at least 2 different textures and 2 different types of cube
-    - FoV must be 80 degrees
+    DONE - In the open, minimal distance render will be 160 cube
+    DONE - at least 2 different textures and 2 different types of cube
+    DONE - FoV must be 80 degrees
     - set up a skybox
 
     - camera
         - mouse must be able to control it on 2 axis
-        - 4 keys that will make it go forth, back, right and left in according to the camera rotation
-        - camera speed should be set around 1 cube/second
-        - key that will multiply this speed by 20
+        DONE - 4 keys that will make it go forth, back, right and left in according to the camera rotation
+        DONE - camera speed should be set around 1 cube/second
+        DONE - key that will multiply this speed by 20
     
     - BONUS
-        - Have a render distance always higher than 14 ??? guess 1 is 16 blocs
-        - fps counter is displayed (UI)
-        - Render is smooth and doesn’t freeze, event at x20 speed
+        DONE - Have a render distance always higher than 14 ??? guess 1 is 16 blocs
+        DONE - fps counter is displayed (UI)
+        DONE - Render is smooth and doesn’t freeze, event at x20 speed
         - Being able to delete blocks with the mouse (+put some down I want)
         - different biomes
 
 TODOS:
-	- write stuff on screen
 	- water if air && level < 64
+    - obstacle detection for physics + game mode
+    - better caves
+    - biomes
+    - chunk border fix
+    - inventory
+    - skybox
+    - save block changed
+    - main menu
+        - play
+            - random seed / custom seed
+        - load -> save world in json
+        - settings
+            - render dist
+            - speed
+        - quit
 
 IN PROGRES:
     - https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
@@ -35,6 +49,10 @@ IN PROGRES:
 
 DONE:
 	- pthread chunk creation
+	- write stuff on screen
+    - better spacing between characters displayed
+    - full screen mode
+    - mouse movements
 
 
 Some info:

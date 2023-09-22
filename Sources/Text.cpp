@@ -135,7 +135,16 @@ void Text::displayText( int posX, int posY, int font_size, std::string str )
 			vertices[index + 2] = font_size;
 			vertices[index + 3] = str[i];
 			index += 4;
-			posX += font_size;
+			char c = str[i];
+			if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') {
+				posX += font_size * 0.5;
+			} else if (c == 'I' || c == '[' || c == ']' || c == '"' || c == '*') {
+				posX += font_size * 0.6;	
+			} else if (c == 'l' || c == 't' || c == '(' || c == ')' || c == '<' || c == '>' || c == '{' || c == '}') {
+				posX += font_size * 0.7;
+			} else {
+				posX += font_size;
+			}
 		}
 	}
 

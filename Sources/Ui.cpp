@@ -113,5 +113,5 @@ void UI::drawUserInterface( std::string str )
     glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	_text->displayText(12, 24, 24, str);
+	_text->displayText(12, 24, 12, str);
 }

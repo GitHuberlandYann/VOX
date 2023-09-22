@@ -1,6 +1,7 @@
 # include "vox.h"
 
 extern Camera camera;
+// OpenGL_Manager *render = NULL;
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
@@ -10,6 +11,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_ui = new UI();
+	// render = this;
 }
 
 OpenGL_Manager::~OpenGL_Manager( void )
@@ -48,6 +50,8 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
 	_chunks.clear();
 	mtx.unlock();
+
+	check_glstate("OpengGL_Manager destructed");
 }
 
 // ************************************************************************** //
@@ -67,9 +71,10 @@ void OpenGL_Manager::setup_window( void )
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE); // doesn't seem to work in full sreen mode
+	// glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE); // doesn't seem to work in windowed mode
 
-	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", nullptr, nullptr);
+	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", glfwGetPrimaryMonitor(), nullptr);
 	if (_window == NULL)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -77,15 +82,17 @@ void OpenGL_Manager::setup_window( void )
         exit (1);
     }
 
+	// int width, height;
+	// glfwGetWindowSize(_window, &width, &height);
+	// std::cout << "size is " << width << ", " << height << std::endl;
+
 	// activate opengl context
 	glfwMakeContextCurrent(_window);
+
 
 	// glew is there to use the correct version for all functions
 	glewExperimental = GL_TRUE;
 	glewInit();
-	
-	glEnable(GL_DEPTH_TEST);
-	glfwSwapInterval(1);
 
 	check_glstate("Window successfully created");
 }
@@ -198,15 +205,18 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 }
 
 void OpenGL_Manager::main_loop( void )
-{
-	check_glstate("setup done, entering main loop\n");
-
-	// std::cout << "number of vertices: " << _number_vertices << std::endl << std::endl;
-	
+{	
+	glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	if (glfwRawMouseMotionSupported()) {
+		glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+	}
+	glEnable(GL_DEPTH_TEST);
+	glfwSwapInterval(1);
 	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
-	// glfwSetCursorPosCallback(_window, cursor_position_callback);
+	glfwSetCursorPosCallback(_window, cursor_position_callback);
     // glfwSetScrollCallback(_window, scroll_callback);
-    // glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	check_glstate("setup done, entering main loop\n");
 
 	// std::cout << "60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame." << std::endl; 
 	double lastTime = glfwGetTime();
@@ -246,8 +256,11 @@ void OpenGL_Manager::main_loop( void )
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 		std::string str = (_debug_mode)
-			? "FPS: " + std::to_string(nbFramesLastSecond) + "\nx: " + std::to_string(camera._position.x)
+			? "FPS: " + std::to_string(nbFramesLastSecond) + "\nPos > x: " + std::to_string(camera._position.x)
 				+ " y: " + std::to_string(camera._position.y) + " z: " + std::to_string(camera._position.z)
+				+ "\nSpeed > " + std::to_string(camera._movement_speed)
+				+ "\nChunk > x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
+				+ "\nRender Distance > " + std::to_string(_render_distance)
 			: "";
 		_ui->drawUserInterface(str);
 		glUseProgram(_shaderProgram);

@@ -1,34 +1,24 @@
 #include "vox.h"
 
-Camera camera(glm::vec3(1.0f, -2.0f, 66.0f));/*
-float lastX = WIN_WIDTH / 2.0f;
-float lastY = WIN_HEIGHT / 2.0f;
-bool first_mouse = true;
+// extern OpenGL_Manager *render;
+Camera camera(glm::vec3(1.0f, -2.0f, 66.0f));
+double lastX = WIN_WIDTH / 2.0f;
+double lastY = WIN_HEIGHT / 2.0f;
 
 void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
 {
 	(void)window;
 
-	float x_pos = static_cast<float>(xpos);
-    float y_pos = static_cast<float>(ypos);
+    double x_offset = xpos - lastX;
+    double y_offset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	// std::cout << "x " << xpos << "\t\ty " << ypos << "\t\tx_offset: " << x_offset << "\t\ty_offset: " << y_offset << std::endl;
 
-    if (first_mouse)
-    {
-        lastX = x_pos;
-        lastY = y_pos;
-        first_mouse = false;
-    }
+    lastX = xpos;
+    lastY = ypos;
 
-    float x_offset = x_pos - lastX;
-    float y_offset = lastY - y_pos; // reversed since y-coordinates go from bottom to top
-	// std::cout << "x " << x_pos << "\t\ty " << y_pos << "\t\tx_offset: " << x_offset << "\t\ty_offset: " << y_offset << std::endl;
-
-    lastX = x_pos;
-    lastY = y_pos;
-
-    camera.processMouseMovement(x_offset / 10, y_offset / 10);
+    camera.processMouseMovement(-x_offset / 10, y_offset / 10);
 }
-
+/*
 void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 {
 	(void)window;
@@ -36,15 +26,14 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 
     camera.processMouseScroll(static_cast<float>(yoffset));
 }
-*/
 
-// void OpenGL_Manager::update_cam_matrix( void )
-// {
-// 	glm::mat4 proj = camera.getPerspectiveMatrix();
-// 	glm::mat4 view = camera.getViewMatrix();
+void OpenGL_Manager::update_cam_matrix( void )
+{
+	glm::mat4 proj = camera.getPerspectiveMatrix();
+	glm::mat4 view = camera.getViewMatrix();
 
-// 	glUniformMatrix4fv(_uniPV, 1, GL_FALSE, glm::value_ptr(proj * view));
-// }
+	glUniformMatrix4fv(_uniPV, 1, GL_FALSE, glm::value_ptr(proj * view));
+}*/
 
 void OpenGL_Manager::handle_add_rm_block( bool adding )
 {
@@ -177,17 +166,12 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 		for (int col = -render_dist; col <= render_dist; col++) {
 			bool isInChunk = false;
 		
-			// mtx.lock();
 			it = newvis_chunks.begin();
-			// mtx.unlock();
 			for (; it != newvis_chunks.end(); it++) {
-				// mtx.lock();
 				if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
-					// mtx.unlock();
 					isInChunk = true;
 					break ;
 				}
-				// mtx.unlock();
 			}
 
 			// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
@@ -243,14 +227,14 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	}
 
 	// add and remove blocks
-	if ((glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) && ++_key_rm_block == 1) {
+	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && ++_key_rm_block == 1) {
 		handle_add_rm_block(false);
-	} else if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_RELEASE) {
+	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 		_key_rm_block = 0;
 	}
-	if (_key_rm_block != 1 && (glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) && ++_key_add_block == 1) { // I don't want to try to del and add at the same time
+	if (_key_rm_block != 1 && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) && ++_key_add_block == 1) { // I don't want to try to del and add at the same time
 		handle_add_rm_block(true);
-	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
+	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_key_add_block = 0;
 	}
 	/*
@@ -339,7 +323,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	if (key_cam_pitch) {
 		camera.processPitch(key_cam_pitch);
 	}
-	if (key_cam_v || key_cam_h || key_cam_z || key_cam_pitch || key_cam_yaw)
+	if (key_cam_v || key_cam_h || key_cam_z || key_cam_pitch || key_cam_yaw || camera._mouse_update)
 	{
 		update_cam_view();
 		// update_cam_matrix();

@@ -23,6 +23,8 @@ enum {
 	F_LAST
 };
 
+void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
+
 class OpenGL_Manager
 {
 	private:

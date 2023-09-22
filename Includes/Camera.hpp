@@ -13,8 +13,10 @@ enum Camera_Movement {
 # define YAW          90.0f
 # define PITCH        0.0f
 # define SPEED        20
-# define SENSITIVITY  0.001f
-# define FOV         40.0f // fov must be 80
+// # define WALK_SPEED   4.317
+// # define RUN_SPEED    5.612
+// # define SENSITIVITY  0.001f
+# define FOV          40.0f // fov must be 80
 
 // void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
 // void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
@@ -28,7 +30,7 @@ class Camera
 		glm::vec3 _world_up;
 		float _yaw;
 		float _pitch;
-		// float _mouse_sensitivity;
+		// double _mouse_sensitivity;
 		float _speed_frame;
 		float _fov;
     	void updateCameraVectors( void );
@@ -49,7 +51,7 @@ class Camera
 		void processPitch( GLint offset );
 		void processYaw( GLint offset );
 		std::vector<glm::ivec3> get_ray_casting( GLfloat radius );
-		// void processMouseMovement( float x_offset, float y_offset );
+		void processMouseMovement( float x_offset, float y_offset );
 		// void processMouseScroll( float offset );
 };
 
