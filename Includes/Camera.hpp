@@ -15,7 +15,8 @@ enum Camera_Movement {
 # define SPEED        20
 // # define WALK_SPEED   4.317
 // # define RUN_SPEED    5.612
-// # define SENSITIVITY  0.001f
+# define EYE_LEVEL    1.62f
+# define FALL_SPEED   77.71f
 # define FOV          40.0f // fov must be 80
 
 // void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
@@ -47,7 +48,8 @@ class Camera
 		glm::mat4 getPerspectiveMatrix( void );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );
-		void processKeyboard( Camera_Movement direction );
+		void processKeyboard( Camera_Movement direction, bool game_mode );
+		void fall( bool real_fall );
 		void processPitch( GLint offset );
 		void processYaw( GLint offset );
 		std::vector<glm::ivec3> get_ray_casting( GLfloat radius );

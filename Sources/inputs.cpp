@@ -2,6 +2,7 @@
 
 // extern OpenGL_Manager *render;
 Camera camera(glm::vec3(1.0f, -2.0f, 66.0f));
+Chunk *current_chunk_ptr = NULL;
 double lastX = WIN_WIDTH / 2.0f;
 double lastY = WIN_HEIGHT / 2.0f;
 
@@ -153,6 +154,9 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 			mtx.unlock();
 			mtx.lock();
 			(*it)->setVisibility(&newvis_chunks, posX, posY, render_dist * CHUNK_SIZE);
+			if ((*it)->isInChunk(posX, posY)) {
+					current_chunk_ptr = *it;
+			}
 			mtx.unlock();
 		}
 		mtx.lock();
@@ -283,22 +287,23 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	GLint key_cam_v = (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS);
 	if (key_cam_v) {
 		(key_cam_v == 1)
-			? camera.processKeyboard(FORWARD)
-			: camera.processKeyboard(BACKWARD);
+			? camera.processKeyboard(FORWARD, _game_mode)
+			: camera.processKeyboard(BACKWARD, _game_mode);
 	}
 	GLint key_cam_h = (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS);
 	if (key_cam_h) {
 		(key_cam_h == 1)
-			? camera.processKeyboard(LEFT)
-			: camera.processKeyboard(RIGHT);
+			? camera.processKeyboard(LEFT, _game_mode)
+			: camera.processKeyboard(RIGHT, _game_mode);
 	}
 	GLint key_cam_z = (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS);
 	if (key_cam_z) {
 		(key_cam_z == 1)
-			? camera.processKeyboard(UP)
-			: camera.processKeyboard(DOWN);
+			? camera.processKeyboard(UP, _game_mode)
+			: camera.processKeyboard(DOWN, _game_mode);
 	}
 
+	// this will be commented at some point
 	GLint key_cam_yaw = (glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS);
 	if (key_cam_yaw) {
 		camera.processYaw(key_cam_yaw);
@@ -307,6 +312,28 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	if (key_cam_pitch) {
 		camera.processPitch(key_cam_pitch);
 	}
+
+	// we update the current chunk before we update cam view, because we check in new chunk for collision
+	chunk_update();
+	if (_game_mode == SURVIVAL) {
+		mtx.lock();
+		if (current_chunk_ptr->collision(camera._position, camera)) {
+			mtx.unlock();
+			if (key_cam_v) {
+				(key_cam_v == 1)
+					? camera.processKeyboard(BACKWARD, _game_mode) // if collision after movement, undo movement
+					: camera.processKeyboard(FORWARD, _game_mode);
+			}
+			if (key_cam_h) {
+				(key_cam_h == 1)
+					? camera.processKeyboard(RIGHT, _game_mode)
+					: camera.processKeyboard(LEFT, _game_mode);
+			}
+			mtx.lock();
+		}
+		mtx.unlock();
+	}
+
 	if (key_cam_v || key_cam_h || key_cam_z || key_cam_pitch || key_cam_yaw || camera._mouse_update)
 	{
 		update_cam_view();

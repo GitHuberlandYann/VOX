@@ -454,16 +454,24 @@ void Chunk::handleHit( Inventory *inventory, glm::ivec3 pos, bool adding )
 	_thread = std::thread(thread_modif_block, this, inventory, chunk_pos, adding);
 }
 
-// void Chunk::action_block( glm::vec3 pos, glm::vec3 front, int action)
-// {
-// 	(action == ADD_BLOCK)
-// 		? std::cout << "add block from " << pos.x << ", " << pos.y << ", " << pos.z << " in chunk " << _startX << ", " << _startY << std::endl
-// 		: std::cout << "rm block from " << pos.x << ", " << pos.y << ", " << pos.z << " in chunk " << _startX << ", " << _startY << std::endl;
-// 	float sideX = (front.x > 0) - glm::mod(pos.x, 1.0f);
-// 	float sideY = (front.y > 0) - glm::mod(pos.y, 1.0f);
-// 	float sideZ = (front.z > 0) - glm::mod(pos.z, 1.0f);
-// 	std::cout << "computed sides: " << sideX << ", " << sideY << ", " << sideZ << std::endl;
-// }
+bool Chunk::collision( glm::vec3 & pos, Camera &cam )
+{
+	glm::ivec3 ipos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
+	if (ipos.x < 0 || ipos.x >= CHUNK_SIZE || ipos.y < 0 || ipos.y >= CHUNK_SIZE || ipos.z < 2 || ipos.z > 255) {
+		std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK" << ipos.x << ", " << ipos.y << ", " << ipos.z << std::endl;
+		return (false);
+	}
+	if (_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z]
+		|| _blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 1]) { // body in block
+		return (true);
+	}
+	if (!_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 2]) { // falling
+		cam.fall(true);
+	} else {
+		cam.fall(false);
+	}
+	return (false);
+}
 
 void Chunk::drawArray( GLint & counter )
 {

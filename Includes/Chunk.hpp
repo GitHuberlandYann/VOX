@@ -93,7 +93,7 @@ class Chunk
         bool isInChunk( int posX, int posY );
 		bool isHit( glm::ivec3 pos );
 		void handleHit( Inventory *inventory, glm::ivec3 pos, bool adding );
-		// void action_block( glm::vec3 pos, glm::vec3 front, int action);
+		bool collision( glm::vec3 & pos, Camera &cam );
         void drawArray( GLint & counter );
 };
 

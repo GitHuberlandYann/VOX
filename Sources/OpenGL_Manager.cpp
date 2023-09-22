@@ -245,7 +245,7 @@ void OpenGL_Manager::main_loop( void )
 		}
 
 		user_inputs(currentTime - previousFrame);
-		chunk_update();
+		// chunk_update(); moved this into user_inputs for collision detection purposes
 		previousFrame = currentTime;
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

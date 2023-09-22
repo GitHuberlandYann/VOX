@@ -56,20 +56,51 @@ void Camera::update_movement_speed( GLint key_cam_speed )
 	}
 }
 
-void Camera::processKeyboard( Camera_Movement direction )
+void Camera::processKeyboard( Camera_Movement direction, bool game_mode )
 {
-	if (direction == FORWARD)
-		_position += _front * _speed_frame;
-	else if (direction == BACKWARD)
-		_position -= _front * _speed_frame;
-	else if (direction == LEFT)
-		_position -= _right * _speed_frame;
-	else if (direction == RIGHT)
-		_position += _right * _speed_frame;
-	else if (direction == UP)
-		_position += _up * _speed_frame;
-	else if (direction == DOWN)
-		_position -= _up * _speed_frame;
+	if (game_mode == CREATIVE) {
+		if (direction == FORWARD)
+			_position += _front * _speed_frame;
+		else if (direction == BACKWARD)
+			_position -= _front * _speed_frame;
+		else if (direction == LEFT)
+			_position -= _right * _speed_frame;
+		else if (direction == RIGHT)
+			_position += _right * _speed_frame;
+		else if (direction == UP)
+			_position += _up * _speed_frame;
+		else if (direction == DOWN)
+			_position -= _up * _speed_frame;
+	} else {
+		if (direction == FORWARD)
+			_position += glm::vec3(_front.x, _front.y, 0.0f) * _speed_frame;
+		else if (direction == BACKWARD)
+			_position -= glm::vec3(_front.x, _front.y, 0.0f) * _speed_frame;
+		else if (direction == LEFT)
+			_position -= glm::vec3(_right.x, _right.y, 0.0f) * _speed_frame;
+		else if (direction == RIGHT)
+			_position += glm::vec3(_right.x, _right.y, 0.0f) * _speed_frame;
+		// else if (direction == UP)
+		// 	_position += glm::vec3(_up.x, _up.y, 0.0f) * _speed_frame;
+		// else if (direction == DOWN)
+		// 	_position -= glm::vec3(_up.x, _up.y, 0.0f) * _speed_frame;
+	}
+}
+
+void Camera::fall( bool real_fall )
+{
+	_mouse_update = true;
+	// std::cout << "fall " << real_fall << std::endl;
+	if (real_fall) { // empty block bellow
+		_position.z -= _speed_frame / _movement_speed * 4;
+	} else if (_position.z - int(_position.z) > 0.62f) {
+		float new_z = _position.z - _speed_frame / _movement_speed * 4;
+		if (new_z - int(new_z) > 0.62f) {
+			_position.z -= _speed_frame / _movement_speed * 4;
+		} else {
+			_position.z -= (_position.z - int(_position.z) - 0.62f);
+		}
+	}
 }
 
 void Camera::processPitch( GLint offset )
