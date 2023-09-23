@@ -10,14 +10,14 @@ void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
 {
 	(void)window;
 
-    double x_offset = xpos - lastX;
-    double y_offset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    double x_offset = lastX - xpos;
+    double y_offset = lastY - ypos;
 	// std::cout << "x " << xpos << "\t\ty " << ypos << "\t\tx_offset: " << x_offset << "\t\ty_offset: " << y_offset << std::endl;
 
     lastX = xpos;
     lastY = ypos;
 
-    camera.processMouseMovement(-x_offset / 10, y_offset / 10);
+    camera.processMouseMovement(x_offset / 10, y_offset / 10);
 }
 /*
 void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
@@ -334,10 +334,9 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		mtx.unlock();
 	}
 
-	if (key_cam_v || key_cam_h || key_cam_z || key_cam_pitch || key_cam_yaw || camera._mouse_update)
+	if (camera._update)
 	{
 		update_cam_view();
-		camera._mouse_update = false;
 	}
 
 	GLint key_cam_speed = (glfwGetKey(_window, GLFW_KEY_KP_ADD) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);

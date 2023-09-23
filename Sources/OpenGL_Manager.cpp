@@ -212,6 +212,7 @@ void OpenGL_Manager::main_loop( void )
 {	
 	glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	if (glfwRawMouseMotionSupported()) {
+		// std::cout << "RAW MOUSE MOTION ENABLED" << std::endl;
 		glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 	}
 	glEnable(GL_DEPTH_TEST);
@@ -227,7 +228,7 @@ void OpenGL_Manager::main_loop( void )
 	int nbFrames = 0;
 	int nbFramesLastSecond = 0;
 
-	double previousFrame = glfwGetTime();
+	double previousFrame = lastTime;
 
 	// main loop cheking for inputs and rendering everything
 	while (!glfwWindowShouldClose(_window))

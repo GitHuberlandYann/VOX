@@ -43,9 +43,9 @@ void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int & blob_
 
 /* * we simulate that flowers are air block in order to display adjacent blocks properly
    * also use this for all 'see-through' blocks like leaves, water..*/
-static int air_flower( int value )
+static int air_flower( int value, bool air_leaves )
 {
-	if (value >= blocks::POPPY || value == blocks::OAK_LEAVES) {
+	if (value >= blocks::POPPY || (air_leaves && value == blocks::OAK_LEAVES)) {
 		return (0);
 	}
 	return (value);
@@ -53,22 +53,22 @@ static int air_flower( int value )
 
 GLint Chunk::get_empty_faces( int row, int col, int level )
 {
-	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level]) * (1 << 2)
-				+ !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level]) * (1 << 3)
-				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level]) * (1 << 0)
-				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level]) * (1 << 1);
+	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true) * (1 << 2)
+				+ !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true) * (1 << 3)
+				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true) * (1 << 0)
+				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], true) * (1 << 1);
 	switch (level) {
 		case 0:
 			res += (1 << 5);
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1]) * (1 << 4);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], true) * (1 << 4);
 			break ;
 		case 255:
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1]) * (1 << 5);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true) * (1 << 5);
 			res += (1 << 4);
 			break ;
 		default:
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1]) * (1 << 5);
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1]) * (1 << 4);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true) * (1 << 5);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], true) * (1 << 4);
 	}
 	return (res);
 }
@@ -80,19 +80,19 @@ bool Chunk::exposed_block( int row, int col, int level )
 	bool above = false;
 	switch (level) {
 		case 0:
-			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1]);
+			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], true);
 			break ;
 		case 255:
-			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1]);
+			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true);
 			break ;
 		default:
-			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1]);
-			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1]);
+			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true);
+			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], true);
 	}
-	return (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level])
-		|| !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level])
-		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level])
-		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level])
+	return (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true)
+		|| !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true)
+		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true)
+		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], true)
 		|| below || above);
 }
 
@@ -458,20 +458,22 @@ bool Chunk::collision( glm::vec3 & pos, Camera &cam )
 {
 	glm::ivec3 ipos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
 	if (ipos.x < 0 || ipos.x >= CHUNK_SIZE || ipos.y < 0 || ipos.y >= CHUNK_SIZE || ipos.z < 2 || ipos.z > 255) {
-		std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK" << ipos.x << ", " << ipos.y << ", " << ipos.z << std::endl;
-		return (false);
-	}
-	if (_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z]
-		|| _blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 1]) { // body in block
+		std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK " << ipos.x << ", " << ipos.y << ", " << ipos.z << std::endl;
+		// std::cout << "\treal pos " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+		// std::cout << "\tchunk pos " << _startX << ", " << _startY << std::endl;
 		return (true);
 	}
-	if (!_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 2]) { // falling
+	if (air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z], false)
+		|| air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 1], false)) { // body in block
+		return (true);
+	}
+	if (!air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 2], false)) { // falling
 		glm::vec3 save_pos = pos;
 		// std::cout << "before fall: " << pos.z << " vs " << save_pos.z << std::endl;
 		cam.fall(true);
 		// std::cout << "after fall: " << pos.z << " vs " << save_pos.z << std::endl;
 		for (int index = save_pos.z - 2; index >= ((pos.z > 2) ? pos.z : 2); index--) {
-			if (_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + index]) {
+			if (air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + index], false)) {
 				pos.z = index + 2.62f;
 				cam.touchGround();
 				return (false);

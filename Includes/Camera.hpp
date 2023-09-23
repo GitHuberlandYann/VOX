@@ -13,8 +13,8 @@ enum Camera_Movement {
 # define YAW          90.0f
 # define PITCH        0.0f
 # define SPEED        20
-// # define WALK_SPEED   4.317
-// # define RUN_SPEED    5.612
+# define WALK_SPEED   4.317
+# define RUN_SPEED    5.612
 # define EYE_LEVEL    1.62f
 # define FALL_SPEED   77 //77.71f
 # define FOV          40.0f // fov must be 80
@@ -32,7 +32,7 @@ class Camera
 		float _yaw;
 		float _pitch;
 		// double _mouse_sensitivity;
-		float _speed_frame;
+		float _deltaTime;
 		float _fov;
 		float _fall_speed;
     	void updateCameraVectors( void );
@@ -40,7 +40,7 @@ class Camera
 	public:
 		glm::vec3 _position;
 		int _movement_speed;
-		bool _mouse_update, _scroll_update;
+		bool _update;
 
 		Camera( glm::vec3 position );
 		~Camera( void );

@@ -2,11 +2,11 @@
 # define OPENGL_MANAGER_HPP
 
 # if __linux__
-#  define WIN_WIDTH 1800
-#  define WIN_HEIGHT 900
+#  define WIN_WIDTH 1920
+#  define WIN_HEIGHT 1080
 # else
 #  define WIN_WIDTH 2560
-#  define WIN_HEIGHT 1400
+#  define WIN_HEIGHT 1440
 # endif
 
 # define RENDER_DISTANCE 20

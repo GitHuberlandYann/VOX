@@ -1,13 +1,12 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _speed_frame(0), _fov(FOV), _fall_speed(0), _movement_speed(SPEED)
+Camera::Camera( glm::vec3 position ) : _fov(FOV), _fall_speed(0), _movement_speed(SPEED)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
 	_yaw = YAW;
 	_pitch = PITCH;
-	_mouse_update = false;
-	_scroll_update = false;
+	_update = false;
 	updateCameraVectors();
 }
 
@@ -21,6 +20,7 @@ Camera::~Camera( void )
 
 void Camera::updateCameraVectors( void )
 {
+	_update = true;
 	glm::vec3 front;
 	front.x = cos(glm::radians(_yaw)) * cos(glm::radians(_pitch));
 	front.y = sin(glm::radians(_yaw)) * cos(glm::radians(_pitch));
@@ -36,6 +36,7 @@ void Camera::updateCameraVectors( void )
 
  glm::mat4 Camera::getViewMatrix( void )
 {
+	_update = false;
 	return (glm::lookAt(_position, _position + _front, _up));
 }
 
@@ -46,7 +47,8 @@ glm::mat4 Camera::getPerspectiveMatrix( void )
 
 void Camera::setDelta( float deltaTime )
 {
-	_speed_frame = _movement_speed * deltaTime;
+	// _speed_frame = _movement_speed * deltaTime;
+	_deltaTime = deltaTime;
 }
 
 void Camera::update_movement_speed( GLint key_cam_speed )
@@ -58,53 +60,51 @@ void Camera::update_movement_speed( GLint key_cam_speed )
 
 void Camera::processKeyboard( Camera_Movement direction, bool game_mode )
 {
+	_update = true;
 	if (game_mode == CREATIVE) {
+		float speed_frame = _deltaTime * _movement_speed;
 		if (direction == FORWARD)
-			_position += _front * _speed_frame;
+			_position += _front * speed_frame;
 		else if (direction == BACKWARD)
-			_position -= _front * _speed_frame;
+			_position -= _front * speed_frame;
 		else if (direction == LEFT)
-			_position -= _right * _speed_frame;
+			_position -= _right * speed_frame;
 		else if (direction == RIGHT)
-			_position += _right * _speed_frame;
+			_position += _right * speed_frame;
 		else if (direction == UP)
-			_position += _up * _speed_frame;
+			_position += _up * speed_frame;
 		else if (direction == DOWN)
-			_position -= _up * _speed_frame;
+			_position -= _up * speed_frame;
 	} else {
+		float speed_frame = _deltaTime * WALK_SPEED;
 		if (direction == FORWARD)
-			_position += glm::vec3(_front.x, _front.y, 0.0f) * _speed_frame;
+			_position += glm::vec3(_front.x, _front.y, 0.0f) * speed_frame;
 		else if (direction == BACKWARD)
-			_position -= glm::vec3(_front.x, _front.y, 0.0f) * _speed_frame;
+			_position -= glm::vec3(_front.x, _front.y, 0.0f) * speed_frame;
 		else if (direction == LEFT)
-			_position -= glm::vec3(_right.x, _right.y, 0.0f) * _speed_frame;
+			_position -= glm::vec3(_right.x, _right.y, 0.0f) * speed_frame;
 		else if (direction == RIGHT)
-			_position += glm::vec3(_right.x, _right.y, 0.0f) * _speed_frame;
-		// else if (direction == UP)
-		// 	_position += glm::vec3(_up.x, _up.y, 0.0f) * _speed_frame;
-		// else if (direction == DOWN)
-		// 	_position -= glm::vec3(_up.x, _up.y, 0.0f) * _speed_frame;
+			_position += glm::vec3(_right.x, _right.y, 0.0f) * speed_frame;
 	}
 }
 
 void Camera::fall( bool real_fall )
 {
-	float deltaTime = _speed_frame / _movement_speed;
 	if (_fall_speed + 1 < FALL_SPEED) {
 		_fall_speed++;
 	}
 	// std::cout << "fall " << real_fall << std::endl;
 	if (real_fall) { // empty block bellow
-		_position.z -= deltaTime * _fall_speed;
-		_mouse_update = true;
+		_position.z -= _deltaTime * _fall_speed;
+		_update = true;
 	} else {//if (_position.z - int(_position.z) > 0.62f) {
-		float new_z = _position.z - deltaTime * _fall_speed;
+		float new_z = _position.z - _deltaTime * _fall_speed;
 		if (new_z - int(_position.z) > 0.62f) {
 			_position.z = new_z;
-			_mouse_update = true;
+			_update = true;
 		} else {
 			_position.z = int(_position.z) + 0.62f;
-			_mouse_update = true;
+			_update = true;
 			touchGround();
 		}
 	}
@@ -118,9 +118,9 @@ void Camera::touchGround( void )
 
 void Camera::processPitch( GLint offset )
 {
-	_pitch += offset * _speed_frame * 1.5f;
+	_pitch += offset * _deltaTime * _movement_speed * 1.5f;
 	if (_pitch > 85.0f || _pitch < -85.0f) {
-		_pitch -= offset * _speed_frame * 1.5f;
+		_pitch -= offset * _deltaTime * _movement_speed * 1.5f;
 	}
 
 	updateCameraVectors();
@@ -128,7 +128,7 @@ void Camera::processPitch( GLint offset )
 
 void Camera::processYaw( GLint offset )
 {
-	_yaw += offset * _speed_frame * 1.5f;
+	_yaw += offset * _deltaTime * _movement_speed * 1.5f;
 	if (_yaw > 180.0f) {
 		_yaw -= 360.0f;
 	} else if (_yaw < -180.0f) {
@@ -156,11 +156,10 @@ void Camera::processMouseMovement( float x_offset, float y_offset )
 		_yaw += 360.0f;
 	}
 	if (_pitch > 85.0f || _pitch < -85.0f) {
-		_pitch -= y_offset * _speed_frame * 1.5f;
+		_pitch -= y_offset;
 	}
 
 	updateCameraVectors();
-	_mouse_update = true;
 }
 /*
 void Camera::processMouseScroll( float offset )
