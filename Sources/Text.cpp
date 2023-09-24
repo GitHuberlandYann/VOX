@@ -113,7 +113,7 @@ void Text::displayText( int posX, int posY, int font_size, std::string str )
 {
 	int nb_points = str.size();
 	for (size_t index = 0; index < str.size(); index++) {
-		if (str[index] == '\n' || str[index] == ' ') {
+		if (str[index] == '\n' || str[index] == ' ' || str[index] == '\t') {
 			nb_points--;
 		}
 	}
@@ -123,12 +123,18 @@ void Text::displayText( int posX, int posY, int font_size, std::string str )
 
 	int startX = posX;
 	GLint *vertices = new GLint[nb_points * 4];
-	for (size_t i = 0, index = 0; i < str.size(); i++) {
+	for (size_t i = 0, charLine = 0, index = 0; i < str.size(); i++) {
 		if (str[i] == '\n') {
 			posY += 1.2f * font_size;
 			posX = startX;
+			charLine = 0;
 		} else if (str[i] == ' ') {
 			posX += font_size;
+			++charLine;
+		} else if (str[i] == '\t') {
+			int currentTab = 1 + charLine / 4;
+			posX = startX + (currentTab * 4) * font_size;
+			charLine += 4 - charLine % 4;
 		} else {
 			vertices[index] = posX;
 			vertices[index + 1] = posY;
@@ -145,6 +151,7 @@ void Text::displayText( int posX, int posY, int font_size, std::string str )
 			} else {
 				posX += font_size;
 			}
+			++charLine;
 		}
 	}
 

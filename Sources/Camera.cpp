@@ -174,8 +174,10 @@ void Camera::processMouseMovement( float x_offset, float y_offset )
 
 std::string Camera::getCamString( void )
 {
-	return ("\nPos   > x: " + std::to_string(_position.x)
+	return ("\nPos\t\t> x: " + std::to_string(_position.x)
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
-				+ "\nSpeed > " + std::to_string(_movement_speed)
-				+ "\nFall   > " + std::to_string(_fall_speed));
+				+ "\nDir\t\t> x: " + std::to_string(_front.x)
+				+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
+				+ "\nSpeed\t> " + std::to_string(_movement_speed)
+				+ "\nFall\t> " + std::to_string(_fall_speed));
 }

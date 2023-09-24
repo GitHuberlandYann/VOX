@@ -13,7 +13,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_inventory = new Inventory();
-	_ui = new UI();
+	_ui = new UI(*_inventory);
 	// render = this;
 }
 
@@ -276,12 +276,12 @@ void OpenGL_Manager::main_loop( void )
 		glDisable(GL_DEPTH_TEST);
 		std::string str = (_debug_mode)
 			? "FPS: " + std::to_string(nbFramesLastSecond) + camera.getCamString()
-				+ "\nChunk > x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
+				+ "\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				+ "\nRender Distance > " + std::to_string(_render_distance)
 				+ "\nGame mode > " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
-				+ _inventory->getInventoryString()
+				// + _inventory->getInventoryString()
 			: "";
-		_ui->drawUserInterface(str, _game_mode, _inventory->getSlot());
+		_ui->drawUserInterface(str, _game_mode);
 		glEnable(GL_DEPTH_TEST);
 		glUseProgram(_shaderProgram);
 
