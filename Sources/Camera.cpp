@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _fov(FOV), _fall_speed(0), _movement_speed(SPEED)
+Camera::Camera( glm::vec3 position ) : _fall_time(0), _fov(FOV), _fall_speed(0), _movement_speed(SPEED), _inJump(false), _touchGround(false)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -85,26 +85,31 @@ void Camera::processKeyboard( Camera_Movement direction, bool game_mode )
 			_position -= glm::vec3(_right.x, _right.y, 0.0f) * speed_frame;
 		else if (direction == RIGHT)
 			_position += glm::vec3(_right.x, _right.y, 0.0f) * speed_frame;
+		else if (direction == UP && _touchGround)
+			_inJump = true;
 	}
 }
 
 void Camera::fall( bool real_fall )
 {
-	if (_fall_speed + 1 < FALL_SPEED) {
-		_fall_speed++;
+	_touchGround = false;
+	_fall_time += _deltaTime;
+	if (_inJump) {
+		if (INITIAL_JUMP + STANDARD_GRAVITY * _fall_time * _fall_time < FALL_SPEED) {
+			_fall_speed = INITIAL_JUMP + STANDARD_GRAVITY * _fall_time * _fall_time;
+		}
+	} else if (INITIAL_FALL + STANDARD_GRAVITY * _fall_time * _fall_time < FALL_SPEED) {
+		_fall_speed = INITIAL_FALL + STANDARD_GRAVITY * _fall_time * _fall_time;
 	}
 	// std::cout << "fall " << real_fall << std::endl;
 	if (real_fall) { // empty block bellow
 		_position.z -= _deltaTime * _fall_speed;
-		_update = true;
 	} else {//if (_position.z - int(_position.z) > 0.62f) {
 		float new_z = _position.z - _deltaTime * _fall_speed;
 		if (new_z - int(_position.z) > 0.62f) {
 			_position.z = new_z;
-			_update = true;
 		} else {
 			_position.z = int(_position.z) + 0.62f;
-			_update = true;
 			touchGround();
 		}
 	}
@@ -113,7 +118,12 @@ void Camera::fall( bool real_fall )
 void Camera::touchGround( void )
 {
 	// std::cout << "TOUCH GROUND AT " << _fall_speed << std::endl;
-	_fall_speed = 1;
+	if (_inJump && _fall_speed < 0) {
+		return ;
+	}
+	_fall_time = 0;
+	_touchGround = true;
+	_inJump = false;
 }
 
 void Camera::processPitch( GLint offset )
@@ -161,22 +171,11 @@ void Camera::processMouseMovement( float x_offset, float y_offset )
 
 	updateCameraVectors();
 }
-/*
-void Camera::processMouseScroll( float offset )
-{
-	_zoom -= offset;
-	if (_zoom < 1.0f)
-		_zoom = 1.0f;
-	if (_zoom > 45.0f)
-		_zoom = 45.0f;
-	_scroll_update = true;
-}
-*/
 
 std::string Camera::getCamString( void )
 {
-	return ("\nPos > x: " + std::to_string(_position.x)
+	return ("\nPos   > x: " + std::to_string(_position.x)
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 				+ "\nSpeed > " + std::to_string(_movement_speed)
-				+ "\nFall > " + std::to_string(_fall_speed));
+				+ "\nFall   > " + std::to_string(_fall_speed));
 }

@@ -19,9 +19,15 @@ Inventory::~Inventory( void )
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
+
 int Inventory::getCurrentSlot( void )
 {
     return (_content[_slot].x);
+}
+
+int Inventory::getSlot( void )
+{
+	return (_slot);
 }
 
 void Inventory::setSlot( int value )

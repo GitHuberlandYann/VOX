@@ -12,6 +12,7 @@ class Inventory
         ~Inventory( void );
 
         int getCurrentSlot( void );
+		int getSlot( void );
         void setSlot( int value );
         void addBlock( int type );
         void removeBlock( void );

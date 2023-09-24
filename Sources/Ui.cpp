@@ -1,6 +1,6 @@
 #include "vox.h"
 
-UI::UI( void ) : _vertices(NULL), _vaoSet(false)
+UI::UI( void ) : _textures(NULL), _vaoSet(false)
 {
 	_text = new Text();
 }
@@ -9,6 +9,12 @@ UI::~UI( void )
 {
     glDeleteBuffers(1, &_vbo);
 	glDeleteVertexArrays(1, &_vao);
+	
+	if (_textures) {
+		glDeleteTextures(1, _textures);
+		delete [] _textures;
+	}
+	
 	glDeleteProgram(_shaderProgram);
 
 	delete _text;
@@ -18,15 +24,97 @@ UI::~UI( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-void UI::setup_array_buffer( void )
+void UI::load_texture( void )
 {
-    _nb_points = 2;
-    (void)_vertices;
-    // delete [] _vertices;
-    // _vertices = new GLfloat[_nb_points * 7];
-    GLfloat vertices[] = { // pos x y size x y color r g b
-        -0.01f, -0.002f, 0.02f, 0.004f, 1.0f, 0.0f, 0.0f,
-        -0.001f, -0.02f, 0.002f, 0.04f, 1.0f, 0.0f, 0.0f
+	_textures = new GLuint[1];
+	glGenTextures(1, _textures);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, _textures[0]);
+
+	// load image
+	t_tex *texture = new t_tex;
+	texture->content = SOIL_load_image("Resources/uiAtlas.png", &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
+	if (!texture->content) {
+		std::cerr << "failed to load image " << "Resources/uiAtlas.png" << " because:" << std::endl << SOIL_last_result() << std::endl;
+		exit(1);
+	}
+
+	// load image as texture
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
+
+	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
+	glUniform1i(glGetUniformLocation(_shaderProgram, "uiAtlas"), 2); // sampler2D #index in fragment shader
+			
+	// set settings for texture wraping and size modif
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	if (texture) {
+		SOIL_free_image_data(texture->content);
+	}
+	delete texture;
+
+	check_glstate("Succesfully loaded Resources/uiAtlas.png to shader\n");
+
+}
+
+void UI::setup_array_buffer( int slot )
+{
+    _nb_points = 3 + 10 + 8 + 10 + 4 + 10 + 2;
+	int mult = 4;
+    GLint vertices[] = { // pos: x y width height textcoord: x y width height
+        WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16, // crosshair
+		(WIN_WIDTH - (182 * mult)) / 2, WIN_HEIGHT - (22 * mult) * 2, 182 * mult, 22 * mult, 0, 25, 182, 22,  // hot bar
+		(WIN_WIDTH - (182 * mult)) / 2 + (20 * slot * mult) - mult, WIN_HEIGHT - (22 * mult) * 2 - mult, 24 * mult, 24 * mult, 0, 47, 24, 24,  // slot select
+		(WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,  // hearts
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (4 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (5 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (6 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (8 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (9 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,  // filling hearts
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (4 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (5 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (6 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,  // armor
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (4 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (5 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (6 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (8 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (9 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 36, 16, 9, 9,  // filling armor
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 36, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 36, 16, 9, 9,
+		(WIN_WIDTH - (182 * mult)) / 2 + mult + (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 45, 16, 9, 9,
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,  // food
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (4 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (5 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (6 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (8 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (9 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (10 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 63, 16, 9, 9,  // filling food
+		(WIN_WIDTH + (182 * mult)) / 2 - mult - (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 72, 16, 9, 9,
+
     };
 
 	glGenVertexArrays(1, &_vao);
@@ -35,19 +123,15 @@ void UI::setup_array_buffer( void )
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _nb_points * 7 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _nb_points * 8 * sizeof(GLint), vertices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(UI_POSATTRIB);
-	glVertexAttribPointer(UI_POSATTRIB, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), 0);
+	glVertexAttribIPointer(UI_POSATTRIB, 4, GL_INT, 8 * sizeof(GLint), 0);
 	// check_glstate("blockAttrib successfully set");
 	
-	glEnableVertexAttribArray(UI_SIZEATTRIB);
-	glVertexAttribPointer(UI_SIZEATTRIB, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(UI_TEXATTRIB);
+	glVertexAttribIPointer(UI_TEXATTRIB, 4, GL_INT, 8 * sizeof(GLint), (void *)(4 * sizeof(GLint)));
 	// check_glstate("adjAttrib successfully set");
-
-	glEnableVertexAttribArray(UI_COLORATTRIB);
-	glVertexAttribPointer(UI_COLORATTRIB, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void *)(4 * sizeof(GLfloat)));
-	// check_glstate("posAttrib successfully set");
 
 	check_glstate("NO");
 }
@@ -90,9 +174,8 @@ void UI::setup_shader( void )
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
-	glBindAttribLocation(_shaderProgram, UI_POSATTRIB, "position");
-	glBindAttribLocation(_shaderProgram, UI_SIZEATTRIB, "size");
-	glBindAttribLocation(_shaderProgram, UI_COLORATTRIB, "color");
+	glBindAttribLocation(_shaderProgram, UI_POSATTRIB, "pos");
+	glBindAttribLocation(_shaderProgram, UI_TEXATTRIB, "textcoord");
 
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
@@ -102,16 +185,22 @@ void UI::setup_shader( void )
     glDeleteShader(_vertexShader);
 
 	check_glstate("UI_Shader program successfully created\n");
+
+	glUniform1i(glGetUniformLocation(_shaderProgram, "window_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "window_height"), WIN_HEIGHT);
+	load_texture();
 }
 
-void UI::drawUserInterface( std::string str )
+void UI::drawUserInterface( std::string str, bool game_mode, int slot )
 {
 	if (!_vaoSet) {
-		setup_array_buffer();
+		setup_array_buffer(slot);
 	}
 	glUseProgram(_shaderProgram);
     glBindVertexArray(_vao);
-	glDrawArrays(GL_POINTS, 0, _nb_points);
+	(game_mode == SURVIVAL)
+		? glDrawArrays(GL_POINTS, 0, _nb_points)
+		: glDrawArrays(GL_POINTS, 0, 3);
 
 	_text->displayText(12, 24, 12, str);
 }

@@ -63,70 +63,67 @@ void check_glstate( std::string str )
  *
  * J. Amanatides, A. Woo. A Fast Voxel Traversal Algorithm for Ray Tracing. Eurographics '87
  */
-
 std::vector<glm::ivec3> voxel_traversal(glm::vec3 ray_start, glm::vec3 ray_end) {
-  std::vector<glm::ivec3> visited_voxels;
+	std::vector<glm::ivec3> visited_voxels;
 
-  // This id of the first/current voxel hit by the ray.
-  // Using floor (round down) is actually very important,
-  // the implicit int-casting will round up for negative numbers.
-  glm::ivec3 current_voxel(std::floor(ray_start.x),
-                            std::floor(ray_start.y),
-                            std::floor(ray_start.z));
+	// This id of the first/current voxel hit by the ray.
+	// Using floor (round down) is actually very important,
+	// the implicit int-casting will round up for negative numbers.
+	glm::ivec3 current_voxel(std::floor(ray_start.x),
+								std::floor(ray_start.y),
+								std::floor(ray_start.z));
 
-  // The id of the last voxel hit by the ray.
-  // TODO: what happens if the end point is on a border?
-  glm::ivec3 last_voxel(std::floor(ray_end.x),
-                            std::floor(ray_end.y),
-                            std::floor(ray_end.z));
+	// The id of the last voxel hit by the ray.
+	glm::ivec3 last_voxel(std::floor(ray_end.x),
+								std::floor(ray_end.y),
+								std::floor(ray_end.z));
 
-  // Compute ray direction.
-  glm::vec3 ray = ray_end - ray_start;
+	// Compute ray direction.
+	glm::vec3 ray = ray_end - ray_start;
 
-  // In which direction the voxel ids are incremented.
-  int stepX = (ray.x >= 0) ? 1 : -1;
-  int stepY = (ray.y >= 0) ? 1 : -1;
-  int stepZ = (ray.z >= 0) ? 1 : -1;
+	// In which direction the voxel ids are incremented.
+	int stepX = (ray.x >= 0) ? 1 : -1;
+	int stepY = (ray.y >= 0) ? 1 : -1;
+	int stepZ = (ray.z >= 0) ? 1 : -1;
 
-  // Distance along the ray to the next voxel border from the current position (tMaxX, tMaxY, tMaxZ).
-  float next_voxel_boundary_x = current_voxel.x + stepX;
-  float next_voxel_boundary_y = current_voxel.y + stepY;
-  float next_voxel_boundary_z = current_voxel.z + stepZ;
+	// Distance along the ray to the next voxel border from the current position.
+	float next_voxel_boundary_x = current_voxel.x + stepX;
+	float next_voxel_boundary_y = current_voxel.y + stepY;
+	float next_voxel_boundary_z = current_voxel.z + stepZ;
 
 	// we do this because if we are in x = 1.7 and go to x--, dist to next block is 0.7 and not 1.7
-  if (current_voxel.x != last_voxel.x && ray.x < 0) { ++next_voxel_boundary_x; }
-  if (current_voxel.y != last_voxel.y && ray.y < 0) { ++next_voxel_boundary_y; }
-  if (current_voxel.z != last_voxel.z && ray.z < 0) { ++next_voxel_boundary_z; }
+	if (current_voxel.x != last_voxel.x && ray.x < 0) { ++next_voxel_boundary_x; }
+	if (current_voxel.y != last_voxel.y && ray.y < 0) { ++next_voxel_boundary_y; }
+	if (current_voxel.z != last_voxel.z && ray.z < 0) { ++next_voxel_boundary_z; }
 
-  // tMaxX, tMaxY, tMaxZ -- distance until next intersection with voxel-border
-  // the value of t at which the ray crosses the first vertical voxel boundary
-  float tMaxX = (ray.x != 0) ? (next_voxel_boundary_x - ray_start.x) / ray.x : FLT_MAX; //
-  float tMaxY = (ray.y != 0) ? (next_voxel_boundary_y - ray_start.y) / ray.y : FLT_MAX; //
-  float tMaxZ = (ray.z != 0) ? (next_voxel_boundary_z - ray_start.z) / ray.z : FLT_MAX; //
+	// tMaxX, tMaxY, tMaxZ -- time until next intersection with voxel-border
+	// the value of t at which the ray crosses the first vertical voxel boundary
+	float tMaxX = (ray.x != 0) ? (next_voxel_boundary_x - ray_start.x) / ray.x : FLT_MAX; //
+	float tMaxY = (ray.y != 0) ? (next_voxel_boundary_y - ray_start.y) / ray.y : FLT_MAX; //
+	float tMaxZ = (ray.z != 0) ? (next_voxel_boundary_z - ray_start.z) / ray.z : FLT_MAX; //
 
-  // tDeltaX, tDeltaY, tDeltaZ --
-  // how far along the ray we must move for the horizontal component to equal the width of a voxel
-  // the direction in which we traverse the grid
-  // can only be FLT_MAX if we never go in that direction
-  float tDeltaX = (ray.x != 0) ? 1.0f / ray.x * stepX : FLT_MAX;
-  float tDeltaY = (ray.y != 0) ? 1.0f / ray.y * stepY : FLT_MAX;
-  float tDeltaZ = (ray.z != 0) ? 1.0f / ray.z * stepZ : FLT_MAX;
+	// tDeltaX, tDeltaY, tDeltaZ --
+	// time it takes to travel a distance of 1! voxel in a given direction
+	// can only be FLT_MAX if we never go in that direction
+	float tDeltaX = (ray.x != 0) ? 1.0f / ray.x * stepX : FLT_MAX;
+	float tDeltaY = (ray.y != 0) ? 1.0f / ray.y * stepY : FLT_MAX;
+	float tDeltaZ = (ray.z != 0) ? 1.0f / ray.z * stepZ : FLT_MAX;
 
-  visited_voxels.push_back(current_voxel);
-  while(last_voxel != current_voxel) {
-    if (tMaxX < tMaxY && tMaxX < tMaxZ) { // x will reach border before others
-	  current_voxel.x += stepX;
-      tMaxX += tDeltaX;
-	} else if (tMaxY < tMaxZ) { // y will reach border before others
-	  current_voxel.y += stepY;
-      tMaxY += tDeltaY;
-	} else { // z will reach border before others
-	  current_voxel.z += stepZ;
-      tMaxZ += tDeltaZ;
+	visited_voxels.push_back(current_voxel);
+	while(last_voxel != current_voxel) {
+		if (tMaxX < tMaxY && tMaxX < tMaxZ) { // x will reach border before others
+		current_voxel.x += stepX;
+		tMaxX += tDeltaX;
+		} else if (tMaxY < tMaxZ) { // y will reach border before others
+		current_voxel.y += stepY;
+		tMaxY += tDeltaY;
+		} else { // z will reach border before others
+		current_voxel.z += stepZ;
+		tMaxZ += tDeltaZ;
+		}
+		visited_voxels.push_back(current_voxel);
 	}
-    visited_voxels.push_back(current_voxel);
-  }
-  return visited_voxels;
+	return (visited_voxels);
 }
 // double _bin_size = 1;
 

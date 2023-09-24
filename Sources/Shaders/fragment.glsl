@@ -16,11 +16,11 @@ in float FaceShadow;
 
 out vec4 outColor;
 
-uniform sampler2D tex0;
+uniform sampler2D blockAtlas;
 
 void main()
 {
-	outColor = texture(tex0, Texcoord);
+	outColor = texture(blockAtlas, Texcoord);
 	if(outColor.a < 0.01) {
 		discard;
 	} else {

@@ -329,6 +329,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 					? camera.processKeyboard(RIGHT, _game_mode)
 					: camera.processKeyboard(LEFT, _game_mode);
 			}
+			current_chunk_ptr->collision(camera._position, camera);
 			mtx.lock();
 		}
 		mtx.unlock();
@@ -346,46 +347,55 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 
 	// inventory slot selection
 	if ((glfwGetKey(_window, GLFW_KEY_1) == GLFW_PRESS) && ++_key_1 == 1) {
+		_ui->_vaoSet = false;
 		_inventory->setSlot(0);
 	} else if (glfwGetKey(_window, GLFW_KEY_1) == GLFW_RELEASE) {
 		_key_1 = 0;
 	}
 	if ((glfwGetKey(_window, GLFW_KEY_2) == GLFW_PRESS) && ++_key_2 == 1) {
+		_ui->_vaoSet = false;
 		_inventory->setSlot(1);
 	} else if (glfwGetKey(_window, GLFW_KEY_2) == GLFW_RELEASE) {
 		_key_2 = 0;
 	}
 	if ((glfwGetKey(_window, GLFW_KEY_3) == GLFW_PRESS) && ++_key_3 == 1) {
+		_ui->_vaoSet = false;
 		_inventory->setSlot(2);
 	} else if (glfwGetKey(_window, GLFW_KEY_3) == GLFW_RELEASE) {
 		_key_3 = 0;
 	}
 	if ((glfwGetKey(_window, GLFW_KEY_4) == GLFW_PRESS) && ++_key_4 == 1) {
+		_ui->_vaoSet = false;
 		_inventory->setSlot(3);
 	} else if (glfwGetKey(_window, GLFW_KEY_4) == GLFW_RELEASE) {
 		_key_4 = 0;
 	}
 	if ((glfwGetKey(_window, GLFW_KEY_5) == GLFW_PRESS) && ++_key_5 == 1) {
+		_ui->_vaoSet = false;
 		_inventory->setSlot(4);
 	} else if (glfwGetKey(_window, GLFW_KEY_5) == GLFW_RELEASE) {
 		_key_5 = 0;
 	}
 	if ((glfwGetKey(_window, GLFW_KEY_6) == GLFW_PRESS) && ++_key_6 == 1) {
+		_ui->_vaoSet = false;
 		_inventory->setSlot(5);
 	} else if (glfwGetKey(_window, GLFW_KEY_6) == GLFW_RELEASE) {
 		_key_6 = 0;
 	}
 	if ((glfwGetKey(_window, GLFW_KEY_7) == GLFW_PRESS) && ++_key_7 == 1) {
+		_ui->_vaoSet = false;
 		_inventory->setSlot(6);
 	} else if (glfwGetKey(_window, GLFW_KEY_7) == GLFW_RELEASE) {
 		_key_7 = 0;
 	}
 	if ((glfwGetKey(_window, GLFW_KEY_8) == GLFW_PRESS) && ++_key_8 == 1) {
+		_ui->_vaoSet = false;
 		_inventory->setSlot(7);
 	} else if (glfwGetKey(_window, GLFW_KEY_8) == GLFW_RELEASE) {
 		_key_8 = 0;
 	}
 	if ((glfwGetKey(_window, GLFW_KEY_9) == GLFW_PRESS) && ++_key_9 == 1) {
+		_ui->_vaoSet = false;
 		_inventory->setSlot(8);
 	} else if (glfwGetKey(_window, GLFW_KEY_9) == GLFW_RELEASE) {
 		_key_9 = 0;

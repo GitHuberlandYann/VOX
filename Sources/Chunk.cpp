@@ -392,7 +392,9 @@ void Chunk::regeneration( Inventory *inventory, glm::ivec3 pos, bool adding )
 	delete [] _vertices;
 	_vertices = new GLint[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
 	fill_vertex_array();
+	_mtx.lock();
 	_vaoReset = false;
+	_mtx.unlock();
 }
 
 void Chunk::generate_chunk( std::list<Chunk *> *chunks )
@@ -470,8 +472,8 @@ bool Chunk::collision( glm::vec3 & pos, Camera &cam )
 		|| air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 1], false)) { // body in block
 		return (true);
 	}
+	glm::vec3 save_pos = pos;
 	if (!air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 2], false)) { // falling
-		glm::vec3 save_pos = pos;
 		// std::cout << "before fall: " << pos.z << " vs " << save_pos.z << std::endl;
 		cam.fall(true);
 		// std::cout << "after fall: " << pos.z << " vs " << save_pos.z << std::endl;
@@ -479,18 +481,24 @@ bool Chunk::collision( glm::vec3 & pos, Camera &cam )
 			if (air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + index], false)) {
 				pos.z = index + 2.62f;
 				cam.touchGround();
+				cam._update = true;
 				return (false);
 			}
 		}
 	} else {
 		cam.fall(false);
 	}
+	if (save_pos.z != pos.z) {
+		cam._update = true;
+	}
 	return (false);
 }
 
 void Chunk::drawArray( GLint & counter )
 {
+	_mtx.lock();
 	if (!_vaoReset) {
+		_mtx.unlock();
 		++counter;
 		// if (counter > 5) { // we don't load more than 5 new chunks per frame
 		// if (counter > 5 && counter < 50) { // we don't load more than 5 new chunks per frame, but if there's more than 50 to load, we take the hit
@@ -499,7 +507,9 @@ void Chunk::drawArray( GLint & counter )
 		}
 		setup_array_buffer();
 		// return ;// TODO decide if this changes something
+		_mtx.lock();
 	}
+	_mtx.unlock();
     glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down
 	glDrawArrays(GL_POINTS, 0, _displayed_blocks);
 }

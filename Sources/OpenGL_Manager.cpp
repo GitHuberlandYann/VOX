@@ -203,7 +203,7 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
 		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
 
-	glUniform1i(glGetUniformLocation(_shaderProgram, "tex0"), 0); // sampler2D #index in fragment shader
+	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // sampler2D #index in fragment shader
 			
 	// set settings for texture wraping and size modif
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -227,6 +227,8 @@ void OpenGL_Manager::main_loop( void )
 		glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 	}
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glfwSwapInterval(1);
 	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
 	// glfwSetCursorPosCallback(_window, cursor_position_callback); // doesn't work on wsl
@@ -270,7 +272,8 @@ void OpenGL_Manager::main_loop( void )
 		}
 		mtx_visible_chunks.unlock();
 
-		glClear(GL_DEPTH_BUFFER_BIT);
+		// glClear(GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
 		std::string str = (_debug_mode)
 			? "FPS: " + std::to_string(nbFramesLastSecond) + camera.getCamString()
 				+ "\nChunk > x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
@@ -278,7 +281,8 @@ void OpenGL_Manager::main_loop( void )
 				+ "\nGame mode > " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				+ _inventory->getInventoryString()
 			: "";
-		_ui->drawUserInterface(str);
+		_ui->drawUserInterface(str, _game_mode, _inventory->getSlot());
+		glEnable(GL_DEPTH_TEST);
 		glUseProgram(_shaderProgram);
 
 		mtx_delete_chunks.lock();

@@ -69,6 +69,7 @@ class Chunk
 		GLint *_vertices;
 		GLint _displayed_blocks;
 		std::thread _thread;
+		std::mutex _mtx;
 
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		GLint get_empty_faces( int row, int col, int level );
