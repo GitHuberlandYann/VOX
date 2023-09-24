@@ -43,13 +43,14 @@ class Camera
 	public:
 		glm::vec3 _position;
 		int _movement_speed;
-		bool _update, _inJump, _touchGround;
+		bool _update, _turnUpdate, _inJump, _touchGround;
 
 		Camera( glm::vec3 position );
 		~Camera( void );
 
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
+		bool chunkInFront( int posX, int posY );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );
 		void processKeyboard( Camera_Movement direction, bool game_mode );

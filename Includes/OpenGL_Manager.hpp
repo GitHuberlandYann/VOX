@@ -49,6 +49,7 @@ class OpenGL_Manager
 		Inventory *_inventory;
 		UI *_ui;
 
+		void update_visible_chunks( void );
 		void chunk_update( void );
 		void user_inputs( float deltaTime );
 		// void update_cam_matrix( void );

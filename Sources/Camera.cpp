@@ -7,6 +7,7 @@ Camera::Camera( glm::vec3 position ) : _fall_time(0), _fov(FOV), _fall_speed(0),
 	_yaw = YAW;
 	_pitch = PITCH;
 	_update = false;
+	_turnUpdate = false;
 	updateCameraVectors();
 }
 
@@ -21,6 +22,7 @@ Camera::~Camera( void )
 void Camera::updateCameraVectors( void )
 {
 	_update = true;
+	_turnUpdate = true;
 	glm::vec3 front;
 	front.x = cos(glm::radians(_yaw)) * cos(glm::radians(_pitch));
 	front.y = sin(glm::radians(_yaw)) * cos(glm::radians(_pitch));
@@ -43,6 +45,14 @@ void Camera::updateCameraVectors( void )
 glm::mat4 Camera::getPerspectiveMatrix( void )
 {
 	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
+}
+
+bool Camera::chunkInFront( int posX, int posY )
+{
+	// (void)posX;
+	// (void)posY;
+	// return (true);
+	return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
 }
 
 void Camera::setDelta( float deltaTime )
@@ -108,7 +118,7 @@ void Camera::fall( bool real_fall )
 		float new_z = _position.z - _deltaTime * _fall_speed;
 		if (new_z - int(_position.z) > 0.62f) {
 			_position.z = new_z;
-		} else {
+		} else if (_fall_speed > 0) { // don't wan't to get a boost on jump
 			_position.z = int(_position.z) + 0.62f;
 			touchGround();
 		}
@@ -179,5 +189,7 @@ std::string Camera::getCamString( void )
 				+ "\nDir\t\t> x: " + std::to_string(_front.x)
 				+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
 				+ "\nSpeed\t> " + std::to_string(_movement_speed)
-				+ "\nFall\t> " + std::to_string(_fall_speed));
+				+ "\nFall\t> " + std::to_string(_fall_speed)
+				+ "\nGounded\t> " + ((_touchGround) ? "true" : "false")
+				+ "\nJumping\t> " + ((_inJump) ? "true" : "false"));
 }

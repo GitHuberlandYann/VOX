@@ -87,6 +87,8 @@ class Chunk
         Chunk( int posX, int posY );
         ~Chunk( void );
 
+		GLint getStartX( void );
+		GLint getStartY( void );
 		void generation( void );
 		void regeneration( Inventory *inventory, glm::ivec3 pos, bool adding );
 		void generate_chunk( std::list<Chunk *> *chunks );

@@ -357,6 +357,16 @@ void Chunk::setup_array_buffer( void )
 //                                Public                                      //
 // ************************************************************************** //
 
+GLint Chunk::getStartX( void )
+{
+	return (_startX);	
+}
+
+GLint Chunk::getStartY( void )
+{
+	return (_startY);
+}
+
 static void thread_setup_chunk( std::list<Chunk *> *chunks, Chunk *current )
 {
 	current->generation();
@@ -459,7 +469,7 @@ void Chunk::handleHit( Inventory *inventory, glm::ivec3 pos, bool adding )
 	_thread = std::thread(thread_modif_block, this, inventory, chunk_pos, adding);
 }
 
-bool Chunk::collision( glm::vec3 & pos, Camera &cam )
+bool Chunk::collision( glm::vec3 &pos, Camera &cam )
 {
 	glm::ivec3 ipos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
 	if (ipos.x < 0 || ipos.x >= CHUNK_SIZE || ipos.y < 0 || ipos.y >= CHUNK_SIZE || ipos.z < 2 || ipos.z > 255) {
@@ -477,7 +487,7 @@ bool Chunk::collision( glm::vec3 & pos, Camera &cam )
 		// std::cout << "before fall: " << pos.z << " vs " << save_pos.z << std::endl;
 		cam.fall(true);
 		// std::cout << "after fall: " << pos.z << " vs " << save_pos.z << std::endl;
-		for (int index = save_pos.z - 2; index >= ((pos.z > 2) ? pos.z : 2); index--) {
+		for (int index = save_pos.z; index >= ((pos.z > 2) ? pos.z : 2); index--) {
 			if (air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + index], false)) {
 				pos.z = index + 2.62f;
 				cam.touchGround();
@@ -488,6 +498,15 @@ bool Chunk::collision( glm::vec3 & pos, Camera &cam )
 	} else {
 		cam.fall(false);
 	}
+	// cam.fall(true);
+	// for (int index = save_pos.z - 1; index >= ((pos.z > 2) ? pos.z : 2); index--) {
+	// 	if (air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + index], false)) {
+	// 		pos.z = index + 2.62f;
+	// 		cam.touchGround();
+	// 		cam._update = true;
+	// 		return (false);
+	// 	}
+	// }
 	if (save_pos.z != pos.z) {
 		cam._update = true;
 	}

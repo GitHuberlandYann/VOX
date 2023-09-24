@@ -131,8 +131,28 @@ void OpenGL_Manager::update_cam_perspective( void )
 // 	}
 // }
 
+void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread ?
+{
+	std::list<Chunk *> newvis_chunks;
+	mtx.lock();
+	std::list<Chunk *>::iterator ite = _chunks.end();
+	std::list<Chunk *>::iterator it = _chunks.begin();
+	mtx.unlock();
+	for (; it != ite;) {
+		mtx.lock();
+		if (camera.chunkInFront((*it)->getStartX(), (*it)->getStartY())) {
+			(*it)->setVisibility(&newvis_chunks, _current_chunk.x, _current_chunk.y, _render_distance * CHUNK_SIZE);
+		}
+		++it;
+		mtx.unlock();
+	}
+	mtx_visible_chunks.lock();
+	_visible_chunks = newvis_chunks;
+	mtx_visible_chunks.unlock();
+}
+
 static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> *visible_chunks, std::list<Chunk *> *delete_chunks,
-								 GLint render_dist, glm::vec3 camPos, int posX, int posY )
+								 GLint render_dist, int posX, int posY )
 {
 	std::list<Chunk *> newvis_chunks;
 	std::list<Chunk *> newdel_chunks;
@@ -142,7 +162,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 	mtx.unlock();
 	for (; it != ite;) {
 		mtx.lock();
-		if ((*it)->shouldDelete(camPos, render_dist * 2 * CHUNK_SIZE)) {
+		if ((*it)->shouldDelete(camera._position, render_dist * 2 * CHUNK_SIZE)) {
 			mtx.unlock();
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
@@ -153,9 +173,11 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 		} else {
 			mtx.unlock();
 			mtx.lock();
-			(*it)->setVisibility(&newvis_chunks, posX, posY, render_dist * CHUNK_SIZE);
-			if ((*it)->isInChunk(posX, posY)) {
-					current_chunk_ptr = *it;
+			if (camera.chunkInFront((*it)->getStartX(), (*it)->getStartY())) {
+				(*it)->setVisibility(&newvis_chunks, posX, posY, render_dist * CHUNK_SIZE);
+				if ((*it)->isInChunk(posX, posY)) {
+						current_chunk_ptr = *it;
+				}
 			}
 			mtx.unlock();
 		}
@@ -172,22 +194,38 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 
 	for (int row = -render_dist; row <= render_dist; row++) {
 		for (int col = -render_dist; col <= render_dist; col++) {
-			bool isInChunk = false;
-		
-			it = newvis_chunks.begin();
-			for (; it != newvis_chunks.end(); it++) {
-				if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
-					isInChunk = true;
-					break ;
+			// if (camera.chunkInFront(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
+				bool isInChunk = false;
+			
+				// it = newvis_chunks.begin();
+				// for (; it != newvis_chunks.end(); it++) {
+				// 	if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
+				// 		isInChunk = true;
+				// 		break ;
+				// 	}
+				// }
+				mtx.lock();
+				ite = chunks->end();
+				it = chunks->begin();
+				mtx.unlock();
+				for (; it != ite;) {
+					mtx.lock();
+					if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
+						isInChunk = true;
+						mtx.unlock();
+						break ;
+					}
+					it++;
+					mtx.unlock();
 				}
-			}
 
-			// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
-			if (!isInChunk) {
-				//create new chunk where player stands
-				Chunk *newChunk = new Chunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE);
-				newChunk->generate_chunk(chunks);
-			}
+				// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
+				if (!isInChunk) {
+					//create new chunk where player stands
+					Chunk *newChunk = new Chunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE);
+					newChunk->generate_chunk(chunks);
+				}
+			// }
 		}
 	}
 }
@@ -214,7 +252,7 @@ void OpenGL_Manager::chunk_update( void )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	_thread = std::thread(thread_chunk_update, &_chunks, &_visible_chunks, &_delete_chunks, _render_distance, camera._position, posX, posY);
+	_thread = std::thread(thread_chunk_update, &_chunks, &_visible_chunks, &_delete_chunks, _render_distance, posX, posY);
 }
 
 void OpenGL_Manager::user_inputs( float deltaTime )
@@ -338,6 +376,10 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	if (camera._update)
 	{
 		update_cam_view();
+		if (camera._turnUpdate) {
+			update_visible_chunks();
+			camera._turnUpdate = false;
+		}
 	}
 
 	GLint key_cam_speed = (glfwGetKey(_window, GLFW_KEY_KP_ADD) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);
