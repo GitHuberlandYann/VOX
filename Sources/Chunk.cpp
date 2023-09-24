@@ -98,7 +98,7 @@ bool Chunk::exposed_block( int row, int col, int level )
 
 int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
-	bool tree_gen, std::vector<glm::ivec3> & trees)
+	bool grass, bool tree_gen, std::vector<glm::ivec3> & trees)
 {
 	if (level == 0) {
 		return (blocks::BEDROCK);
@@ -127,6 +127,8 @@ int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, 
 			value = blocks::CORNFLOWER;
 		} else if (pink_tulip) {
 			value = blocks::PINK_TULIP;
+		} else if (grass) {
+			value = blocks::GRASS;
 		}
 	}
 	return (value);
@@ -155,12 +157,13 @@ void Chunk::generate_blocks( void )
 			bool allium = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			bool cornflower = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			bool pink_tulip = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
+			bool grass = (distribution(generator) <= 100 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				// double cave = perlin.octave3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 20.0f, 4);
 				// (level < surface_level - 5 && cave <= 0.2f && level > 0)
 				// 	? _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR
 				// 	: _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
-				_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, tree_gen, trees);
+				_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
 				// GLfloat squashing_factor;
 				// (level < 64)
 				// 	? squashing_factor = (64 - level) / 64.0f

@@ -29,6 +29,7 @@ enum blocks {
 	ALLIUM,
 	CORNFLOWER,
 	PINK_TULIP,
+	GRASS,
 	NOTVISIBLE = 1000
 };
 
@@ -74,7 +75,7 @@ class Chunk
 		bool exposed_block( int row, int col, int level );
 		int get_block_type(siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
-			bool tree_gen, std::vector<glm::ivec3> & trees);
+			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees);
 		void generate_blocks( void );
 		void add_block( glm::ivec3 pos, int type );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );

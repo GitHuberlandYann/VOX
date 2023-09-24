@@ -66,12 +66,23 @@ OpenGL_Manager::~OpenGL_Manager( void )
 //                                Public                                      //
 // ************************************************************************** //
 
+void error_callback( int error, const char *msg ) {
+    std::string s;
+    s = " [" + std::to_string(error) + "] " + msg + '\n';
+    std::cerr << s << std::endl;
+}
+
 void OpenGL_Manager::setup_window( void )
 {
-	glfwInit();
+	glfwSetErrorCallback( error_callback );
+	if (!glfwInit()) {
+    	std::cerr << "glfwInit failure" << std::endl;
+        exit(1);
+    }
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE );
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -218,7 +229,7 @@ void OpenGL_Manager::main_loop( void )
 	glEnable(GL_DEPTH_TEST);
 	glfwSwapInterval(1);
 	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
-	glfwSetCursorPosCallback(_window, cursor_position_callback);
+	// glfwSetCursorPosCallback(_window, cursor_position_callback); // doesn't work on wsl
     // glfwSetScrollCallback(_window, scroll_callback);
 
 	check_glstate("setup done, entering main loop\n");

@@ -60,3 +60,4 @@ Some info:
   - render dist 20, fsan, no move, seed 123456u, 2fps, 1fps, 31fps, 17fps, 34fps, 33fps..
   - all I need is here https://mcasset.cloud
   - ray casting in voxel grid: http://www.cse.yorku.ca/~amana/research/grid.pdf
+  - how to fix broken everything in wsl: https://stackoverflow.com/questions/66497147/cant-run-opengl-on-wsl2/66506098#66506098
