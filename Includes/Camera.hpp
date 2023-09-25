@@ -36,7 +36,7 @@ class Camera
 		float _yaw;
 		float _pitch;
 		// double _mouse_sensitivity;
-		float _deltaTime, _fall_time;
+		float _deltaTime, _fall_time, _fall_distance;
 		float _fov;
 		float _fall_speed;
 		bool _isRunning, _healthUpdate;

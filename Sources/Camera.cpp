@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _fall_time(0), _fov(FOV), _fall_speed(0), _isRunning(false), _movement_speed(SPEED), _health_points(19), _inJump(false), _touchGround(false)
+Camera::Camera( glm::vec3 position ) : _fall_time(0), _fall_distance(0), _fov(FOV), _fall_speed(0), _isRunning(false), _movement_speed(SPEED), _health_points(19), _inJump(false), _touchGround(false)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -129,6 +129,7 @@ void Camera::fall( bool real_fall )
 	// std::cout << "fall " << real_fall << std::endl;
 	if (real_fall) { // empty block bellow
 		_position.z -= _deltaTime * _fall_speed;
+		_fall_distance += _deltaTime * _fall_speed;
 	} else {//if (_position.z - int(_position.z) > 0.62f) {
 		float new_z = _position.z - _deltaTime * _fall_speed;
 		if (new_z - int(_position.z) > EYE_LEVEL) {
@@ -136,6 +137,8 @@ void Camera::fall( bool real_fall )
 		} else if (_fall_speed > 0) { // don't wan't to get a boost on jump
 			_position.z = int(_position.z) + EYE_LEVEL;
 			touchGround();
+		} else {
+			_position.z = new_z; // jump
 		}
 	}
 }
@@ -152,6 +155,7 @@ void Camera::touchGround( void )
 		_health_points = 0;
 	}
 	_fall_time = 0;
+	_fall_distance = 0;
 	_touchGround = true;
 	_inJump = false;
 }
@@ -225,7 +229,8 @@ std::string Camera::getCamString( bool game_mode )
 			+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
 			+ "\nSpeed\t> " + ((_isRunning) ? std::to_string(RUN_SPEED) : std::to_string(WALK_SPEED))
 			+ "\nFall\t> " + std::to_string(_fall_speed)
-			+ "\nhealth\t> " + std::to_string(_health_points)
+			+ "\nFall Distance\t> " + std::to_string(_fall_distance)
+			+ "\nHealth\t> " + std::to_string(_health_points)
 			+ "\nGounded\t> " + ((_touchGround) ? "true" : "false")
 			+ "\nJumping\t> " + ((_inJump) ? "true" : "false"));
 }
