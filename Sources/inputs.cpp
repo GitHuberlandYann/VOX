@@ -323,6 +323,9 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	// camera work 
 	camera.setDelta(deltaTime);
 	camera.setRun(glfwGetKey(_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS);
+	if (camera._fovUpdate) {
+		update_cam_perspective();
+	}
 	GLint key_cam_v = (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS);
 	if (key_cam_v) {
 		(key_cam_v == 1)

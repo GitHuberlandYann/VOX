@@ -41,7 +41,7 @@ TODOS:
             - speed
         - quit
     - better fall damage
-    - inventory block count
+    - sand falls if nothing under, even in caves
     - nether
 
 IN PROGRES:
@@ -57,8 +57,12 @@ DONE:
     - mouse movements
     - inventory
     - player gravity
-    - sand falls if nothing under
+    - placing sand = gravity
+    - flower on grass only
     - flowers destroyed if block underneath destroyed
+    - leaves touchy
+    - inventory block count
+    - FOV changed on isRunning change
 
 
 Some info:

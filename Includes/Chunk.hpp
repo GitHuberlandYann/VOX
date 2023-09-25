@@ -72,15 +72,15 @@ class Chunk
 		std::mutex _mtx;
 
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
-		GLint get_empty_faces( int row, int col, int level );
-		bool exposed_block( int row, int col, int level );
+		GLint get_empty_faces( int row, int col, int level, bool isNotLeaves );
+		bool exposed_block( int row, int col, int level, bool isNotLeaves );
 		int get_block_type(siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees);
 		void generate_blocks( void );
 		int sand_fall_endz( glm::ivec3 pos );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
-		void add_block( glm::ivec3 pos, int type );
+		void add_block( Inventory *inventory, glm::ivec3 pos, int type );
         void fill_vertex_array( void );
         void setup_array_buffer( void );
 

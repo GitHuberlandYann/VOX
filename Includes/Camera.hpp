@@ -15,13 +15,13 @@ enum Camera_Movement {
 # define SPEED        20
 # define WALK_SPEED   4.317
 # define RUN_SPEED    5.612
-# define EYE_LEVEL    1.62f
+# define EYE_LEVEL    0.62f
 # define INITIAL_JUMP -9.317f
 # define INITIAL_FALL 6.605f
 # define STANDARD_GRAVITY 9.81f
 # define PLAYER_MASS 10
 # define FALL_SPEED   77.71f //77.71f
-# define FOV          40.0f // fov must be 80
+# define FOV          45.0f // fov must be 80, but this is vertical fov/2
 
 // void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
 // void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
@@ -45,7 +45,7 @@ class Camera
 	public:
 		glm::vec3 _position;
 		int _movement_speed, _health_points;
-		bool _update, _turnUpdate, _inJump, _touchGround;
+		bool _update, _turnUpdate, _fovUpdate, _inJump, _touchGround;
 
 		Camera( glm::vec3 position );
 		~Camera( void );

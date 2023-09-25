@@ -21,6 +21,7 @@ class UI
 
 		void load_texture( void );
         void setup_array_buffer( void );
+        void display_slot_value( int index );
 
     public:
         UI( Inventory & inventory, Camera &camera );

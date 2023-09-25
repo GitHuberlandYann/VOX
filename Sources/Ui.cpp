@@ -161,6 +161,17 @@ void UI::setup_array_buffer( void )
 	check_glstate("NO");
 }
 
+void UI::display_slot_value( int index )
+{
+	if (index < 0 || index >= 9) {
+		return ;
+	}
+	int mult = 4, value = _inventory.getSlotBlock(index).y;
+	if (value > 1) {
+		_text->displayText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 3 - 12 - 4 * (value > 9), WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 3 - 6, 12, std::to_string(value));
+	}
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -230,4 +241,7 @@ void UI::drawUserInterface( std::string str, bool game_mode )
 		: glDrawArrays(GL_POINTS, 0, 12);
 
 	_text->displayText(12, 24, 12, str);
+	for (int index = 0; index < 9; index++) {
+		display_slot_value(index);
+	}
 }

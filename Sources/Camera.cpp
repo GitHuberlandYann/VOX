@@ -8,6 +8,7 @@ Camera::Camera( glm::vec3 position ) : _fall_time(0), _fov(FOV), _fall_speed(0),
 	_pitch = PITCH;
 	_update = false;
 	_turnUpdate = false;
+	_fovUpdate = false;
 	updateCameraVectors();
 }
 
@@ -61,6 +62,12 @@ bool Camera::chunkInFront( int posX, int posY )
 void Camera::setRun( bool value )
 {
 	_isRunning = value;
+	if (_isRunning) {
+		_fov = FOV + 1;
+	} else {
+		_fov = FOV;
+	}
+	_fovUpdate = true;
 }
 
 void Camera::setDelta( float deltaTime )
@@ -124,10 +131,10 @@ void Camera::fall( bool real_fall )
 		_position.z -= _deltaTime * _fall_speed;
 	} else {//if (_position.z - int(_position.z) > 0.62f) {
 		float new_z = _position.z - _deltaTime * _fall_speed;
-		if (new_z - int(_position.z) > 0.62f) {
+		if (new_z - int(_position.z) > EYE_LEVEL) {
 			_position.z = new_z;
 		} else if (_fall_speed > 0) { // don't wan't to get a boost on jump
-			_position.z = int(_position.z) + 0.62f;
+			_position.z = int(_position.z) + EYE_LEVEL;
 			touchGround();
 		}
 	}
