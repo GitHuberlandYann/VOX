@@ -84,10 +84,11 @@ void OpenGL_Manager::setup_window( void )
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE); // doesn't seem to work in full sreen mode
+	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // doesn't seem to work in full sreen mode
 	// glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE); // doesn't seem to work in windowed mode
 
-	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", glfwGetPrimaryMonitor(), nullptr);
+	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << std::endl; 
+	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", nullptr, nullptr); // glfwGetPrimaryMonitor()
 	if (_window == NULL)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -97,7 +98,7 @@ void OpenGL_Manager::setup_window( void )
 
 	// int width, height;
 	// glfwGetWindowSize(_window, &width, &height);
-	// std::cout << "size is " << width << ", " << height << std::endl;
+	// std::cout << "window size is " << width << ", " << height << std::endl;
 
 	// activate opengl context
 	glfwMakeContextCurrent(_window);
@@ -219,18 +220,18 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 
 void OpenGL_Manager::main_loop( void )
 {	
-	glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	if (glfwRawMouseMotionSupported()) {
-		// std::cout << "RAW MOUSE MOTION ENABLED" << std::endl;
-		glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-	}
+	// glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// if (glfwRawMouseMotionSupported()) {
+	// 	// std::cout << "RAW MOUSE MOTION ENABLED" << std::endl;
+	// 	glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+	// }
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glfwSwapInterval(1);
 	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
-	glfwSetCursorPosCallback(_window, cursor_position_callback); // doesn't work on wsl
-    glfwSetScrollCallback(_window, scroll_callback);
+	// glfwSetCursorPosCallback(_window, cursor_position_callback); // doesn't work on wsl
+    // glfwSetScrollCallback(_window, scroll_callback);
 
 	check_glstate("setup done, entering main loop\n");
 

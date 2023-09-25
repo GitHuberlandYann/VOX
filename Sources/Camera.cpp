@@ -149,8 +149,8 @@ void Camera::touchGround( void )
 	if (_inJump && _fall_speed < 0) {
 		return ;
 	}
-	_healthUpdate = (static_cast<int>(_fall_speed / 30) == 0);
-	_health_points -= static_cast<int>(_fall_speed) / 30; // TODO use fall time instead, but if _inJump do something diff
+	_healthUpdate = (glm::max(0.0f, _fall_distance - 3) != 0);
+	_health_points -= glm::max(0.0f, _fall_distance - 3);
 	if (_health_points < 0) {
 		_health_points = 0;
 	}

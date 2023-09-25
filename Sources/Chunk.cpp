@@ -262,6 +262,12 @@ int Chunk::sand_fall_endz( glm::ivec3 pos )
 	return (1);
 }
 
+static bool isSandOrGravel( int type )
+{
+	return (type == blocks::SAND || (type < blocks::AIR && type + blocks::NOTVISIBLE == blocks::SAND)
+		|| type == blocks::GRAVEL || (type < blocks::AIR && type + blocks::NOTVISIBLE == blocks::GRAVEL));
+}
+
 void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
@@ -274,11 +280,12 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	mtx_inventory.unlock();
 	int endZ = -1;
 	int block_above = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z + 1];
-	if (pos.z < 255 && (block_above == blocks::SAND || (block_above < blocks::AIR && block_above + blocks::NOTVISIBLE == blocks::SAND))) { // sand falls if block underneath deleted
+	if (pos.z < 255 && isSandOrGravel(block_above)) { // sand falls if block underneath deleted
 		_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 		endZ = sand_fall_endz(pos);
+		int above_value = (block_above == blocks::SAND || block_above + blocks::NOTVISIBLE == blocks::SAND) ? blocks::SAND : blocks::GRAVEL;
 		if (endZ == pos.z) {
-			_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::SAND;
+			_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = above_value;
 			if (block_above < 0) {
 				_mtx.lock();
 				++_displayed_blocks;
@@ -286,7 +293,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 			}
 			return (remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1)));
 		} else {
-			add_block(NULL, glm::ivec3(pos.x, pos.y, endZ), blocks::SAND);
+			add_block(NULL, glm::ivec3(pos.x, pos.y, endZ), above_value);
 		}
 	}
 	if (value > blocks::AIR) { // if invisible block gets deleted, same amount of displayed_blocks
@@ -330,7 +337,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
 		inventory->removeBlock();
 	}
 	mtx_inventory.unlock();
-	if (type == blocks::SAND) {
+	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		pos.z = sand_fall_endz(pos);
 	}
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;

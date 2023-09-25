@@ -40,9 +40,8 @@ TODOS:
             - render dist
             - speed
         - quit
-    - better fall damage
-    - make gravel behave like sand
     - block break animation
+    - items on ground after break
     - nether
 
 IN PROGRES:
@@ -58,8 +57,10 @@ DONE:
     - mouse movements
     - inventory
     - player gravity
+    - better fall damage
     - placing sand = gravity
     - sand falls if nothing under, even in caves
+    - make gravel behave like sand
     - flower on grass only
     - flowers destroyed if block underneath destroyed
     - leaves touchy
