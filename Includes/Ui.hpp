@@ -28,7 +28,7 @@ class UI
         ~UI( void );
 
         void setup_shader( void );
-        void drawUserInterface( std::string str, bool game_mode );
+        void drawUserInterface( std::string str, bool game_mode, bool f5_mode );
 };
 
 #endif

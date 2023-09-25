@@ -87,7 +87,7 @@ void Camera::processKeyboard( Camera_Movement direction, bool game_mode )
 {
 	_update = true;
 	if (game_mode == CREATIVE) {
-		float speed_frame = _deltaTime * _movement_speed;
+		float speed_frame = (_isRunning) ?  _deltaTime * _movement_speed * 2: _deltaTime * _movement_speed;
 		if (direction == FORWARD)
 			_position += _front * speed_frame;
 		else if (direction == BACKWARD)
@@ -217,7 +217,7 @@ std::string Camera::getCamString( bool game_mode )
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 				+ "\nDir\t\t> x: " + std::to_string(_front.x)
 				+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
-				+ "\nSpeed\t> " + std::to_string(_movement_speed));
+				+ "\nSpeed\t> " + ((_isRunning) ? std::to_string(_movement_speed * 2) : std::to_string(_movement_speed)));
 	}
 	return ("\nPos\t\t> x: " + std::to_string(_position.x)
 			+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)

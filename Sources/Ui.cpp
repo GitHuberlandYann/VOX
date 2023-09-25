@@ -79,6 +79,7 @@ void UI::setup_array_buffer( void )
 {
     _nb_points = 3 + 9 + 10 + 10 + 10 + 4 + 10 + 2;
 	int mult = 4;
+	mtx_inventory.lock();
     GLint vertices[] = { // pos: x y width height textcoord: x y width height
         1, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16, // crosshair
 		1, (WIN_WIDTH - (182 * mult)) / 2, WIN_HEIGHT - (22 * mult) * 2, 182 * mult, 22 * mult, 0, 25, 182, 22,  // hot bar
@@ -140,6 +141,7 @@ void UI::setup_array_buffer( void )
 		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 72, 16, 9, 9,
 
     };
+	mtx_inventory.unlock();
 
 	glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
@@ -228,12 +230,19 @@ void UI::setup_shader( void )
 	load_texture();
 }
 
-void UI::drawUserInterface( std::string str, bool game_mode )
+void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 {
+	if (f5_mode) {
+		return (_text->displayText(12, 24, 12, str));
+	}
+	mtx_inventory.lock();
 	if (!_vaoSet || _inventory.getModif() || _camera.getModif()) {
+		mtx_inventory.unlock();
 		setup_array_buffer();
 		_inventory.setModif(false);
+		mtx_inventory.lock();
 	}
+	mtx_inventory.unlock();
 	glUseProgram(_shaderProgram);
     glBindVertexArray(_vao);
 	(game_mode == SURVIVAL)

@@ -267,20 +267,32 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
-	inventory->addBlock(value + (value < 0) * blocks::NOTVISIBLE);
+	mtx_inventory.lock();
+	if (inventory) {
+		inventory->addBlock(value + (value < 0) * blocks::NOTVISIBLE);
+	}
+	mtx_inventory.unlock();
 	int endZ = -1;
-	if (pos.z < 255 && _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z + 1] == blocks::SAND) { // sand falls if block underneath deleted
+	int block_above = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z + 1];
+	if (pos.z < 255 && (block_above == blocks::SAND || (block_above < blocks::AIR && block_above + blocks::NOTVISIBLE == blocks::SAND))) { // sand falls if block underneath deleted
 		_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 		endZ = sand_fall_endz(pos);
 		if (endZ == pos.z) {
 			_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::SAND;
-			return (remove_block(inventory, glm::ivec3(pos.x, pos.y, pos.z + 1)));
+			if (block_above < 0) {
+				_mtx.lock();
+				++_displayed_blocks;
+				_mtx.unlock();
+			}
+			return (remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1)));
 		} else {
-			add_block(inventory, glm::ivec3(pos.x, pos.y, endZ), blocks::SAND);
+			add_block(NULL, glm::ivec3(pos.x, pos.y, endZ), blocks::SAND);
 		}
 	}
 	if (value > blocks::AIR) { // if invisible block gets deleted, same amount of displayed_blocks
+		_mtx.lock();
 		_displayed_blocks--;
+		_mtx.unlock();
 	}
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	for (int index = 0; index < 6; index++) {
@@ -288,14 +300,17 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
 
 		} else {
-			if (_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] < blocks::AIR) {
+			int adj = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
+			if (adj < blocks::AIR) {
 				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] += blocks::NOTVISIBLE;
+				_mtx.lock();
 				_displayed_blocks++;
+				_mtx.unlock();
 			}
 		}
 	}
-	if (endZ != -1 || (pos.z < 255 && _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z + 1] >= blocks::POPPY)) { // del flower if block underneath deleted
-		remove_block(inventory, glm::ivec3(pos.x, pos.y, pos.z + 1));
+	if (endZ != -1 || (pos.z < 255 && block_above >= blocks::POPPY)) { // del flower if block underneath deleted
+		remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1));
 	}
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
@@ -310,22 +325,30 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
 			return ; // can't place flower on something else than grass/dirt block
 		}
 	}
-	inventory->removeBlock();
+	mtx_inventory.lock();
+	if (inventory) {
+		inventory->removeBlock();
+	}
+	mtx_inventory.unlock();
 	if (type == blocks::SAND) {
 		pos.z = sand_fall_endz(pos);
 	}
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
+	_mtx.lock();
 	_displayed_blocks++;
+	_mtx.unlock();
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
 
 		} else {
 			GLint value = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
-			if (value > blocks::AIR && !exposed_block(pos.x + delta[0] + 1, pos.y + delta[1] + 1, pos.z + delta[2] + 1, _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2] + 1] != blocks::OAK_LEAVES)) {
+			if (value > blocks::AIR && !exposed_block(pos.x + delta[0] + 1, pos.y + delta[1] + 1, pos.z + delta[2], _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2] + 1] != blocks::OAK_LEAVES)) {
 				// was exposed before, but isn't anymore
 				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] -= blocks::NOTVISIBLE;
+				_mtx.lock();
 				_displayed_blocks--;
+				_mtx.unlock();
 			}
 		}
 	}
@@ -430,7 +453,9 @@ void Chunk::regeneration( Inventory *inventory, glm::ivec3 pos, bool adding )
 		}
 		remove_block(inventory, pos);
 	} else {
+		mtx_inventory.lock();
 		int type = inventory->getCurrentSlot();
+		mtx_inventory.unlock();
 		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] != blocks::AIR || type == blocks::AIR) { // can't replace block
 			return ;
 		}
@@ -446,6 +471,9 @@ void Chunk::regeneration( Inventory *inventory, glm::ivec3 pos, bool adding )
 
 void Chunk::generate_chunk( std::list<Chunk *> *chunks )
 {
+	if (_thread.joinable()) {
+		_thread.join();
+	}
 	_thread = std::thread(thread_setup_chunk, chunks, this);
 }
 
@@ -565,7 +593,7 @@ void Chunk::drawArray( GLint & counter )
 		// return ;// TODO decide if this changes something
 		_mtx.lock();
 	}
-	_mtx.unlock();
     glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down
 	glDrawArrays(GL_POINTS, 0, _displayed_blocks);
+	_mtx.unlock();
 }

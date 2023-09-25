@@ -41,7 +41,7 @@ TODOS:
             - speed
         - quit
     - better fall damage
-    - sand falls if nothing under, even in caves
+    - make gravel behave like sand
     - nether
 
 IN PROGRES:
@@ -58,6 +58,7 @@ DONE:
     - inventory
     - player gravity
     - placing sand = gravity
+    - sand falls if nothing under, even in caves
     - flower on grass only
     - flowers destroyed if block underneath destroyed
     - leaves touchy

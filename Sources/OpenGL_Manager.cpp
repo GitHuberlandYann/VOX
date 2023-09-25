@@ -7,9 +7,9 @@ OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE),
 		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0),
-		_key_h(0), _key_g(0), _key_1(0), _key_2(0), _key_3(0),
+		_key_h(0), _key_g(0), _key_j(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
-		_debug_mode(true), _game_mode(CREATIVE)
+		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false)
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_inventory = new Inventory();
@@ -20,9 +20,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 OpenGL_Manager::~OpenGL_Manager( void )
 {
 	std::cout << "Destructor of OpenGL_Manager called" << std::endl;
-	// if (_thread_block.joinable()) {
-	// 	_thread_block.join();
-	// }
+
 	if (_thread.joinable()) {
 		_thread.join();
 	}
@@ -49,7 +47,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	mtx.lock();
 	std::list<Chunk *>::iterator it = _chunks.begin();
 	for (; it != _chunks.end(); it++) {
-		delete *it;
+		delete (*it);
 	}
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
 	_chunks.clear();
@@ -232,7 +230,7 @@ void OpenGL_Manager::main_loop( void )
 	glfwSwapInterval(1);
 	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
 	glfwSetCursorPosCallback(_window, cursor_position_callback); // doesn't work on wsl
-    // glfwSetScrollCallback(_window, scroll_callback);
+    glfwSetScrollCallback(_window, scroll_callback);
 
 	check_glstate("setup done, entering main loop\n");
 
@@ -274,6 +272,8 @@ void OpenGL_Manager::main_loop( void )
 
 		// glClear(GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
+		mtx.lock();
+		mtx_visible_chunks.lock();
 		std::string str = (_debug_mode)
 			? "FPS: " + std::to_string(nbFramesLastSecond) + camera.getCamString(_game_mode)
 				+ "\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
@@ -283,7 +283,9 @@ void OpenGL_Manager::main_loop( void )
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				// + _inventory->getInventoryString()
 			: "";
-		_ui->drawUserInterface(str, _game_mode);
+		mtx_visible_chunks.unlock();
+		mtx.unlock();
+		_ui->drawUserInterface(str, _game_mode, _f5_mode);
 		glEnable(GL_DEPTH_TEST);
 		glUseProgram(_shaderProgram);
 

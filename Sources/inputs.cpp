@@ -3,6 +3,7 @@
 // extern OpenGL_Manager *render;
 Camera camera(glm::vec3(1.0f, -2.0f, 66.0f));
 Chunk *current_chunk_ptr = NULL;
+Inventory *scroll_inventory = NULL;
 double lastX = WIN_WIDTH / 2.0f;
 double lastY = WIN_HEIGHT / 2.0f;
 
@@ -19,15 +20,23 @@ void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
 
     camera.processMouseMovement(x_offset / 10, y_offset / 10);
 }
-/*
+
 void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 {
 	(void)window;
 	(void)xoffset;
 
-    camera.processMouseScroll(static_cast<float>(yoffset));
-}
+	if (!scroll_inventory) {
+		return ;
+	}
 
+	if (yoffset > 0) {
+		scroll_inventory->setSlot(scroll_inventory->getSlot() + 1);
+	} else if (yoffset < 0) {
+		scroll_inventory->setSlot(scroll_inventory->getSlot() - 1);
+	}
+}
+/*
 void OpenGL_Manager::update_cam_matrix( void )
 {
 	glm::mat4 proj = camera.getPerspectiveMatrix();
@@ -112,24 +121,6 @@ void OpenGL_Manager::update_cam_perspective( void )
 	glm::mat4 proj = camera.getPerspectiveMatrix();
 	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 }
-
-// void thread_block_update( std::list<Chunk *> *chunks, glm::vec3 camPos, glm::vec3 camFront, GLint current_chunk[2], int action )
-// {
-// 	mtx_visible_chunks.lock();
-// 	std::list<Chunk *>::iterator ite = chunks->end();
-// 	std::list<Chunk *>::iterator it = chunks->begin();
-// 	mtx_visible_chunks.unlock();
-// 	for (; it != ite;) {
-// 		mtx_visible_chunks.lock();
-// 		if ((*it)->isInChunk(current_chunk[0], current_chunk[1])) {
-// 			(*it)->action_block(camPos, camFront, action); // for now, can't access neighbouring chunks
-// 			mtx_visible_chunks.unlock();
-// 			return ;
-// 		}
-// 		it++;
-// 		mtx_visible_chunks.unlock();
-// 	}
-// }
 
 void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread ?
 {
@@ -257,6 +248,10 @@ void OpenGL_Manager::chunk_update( void )
 
 void OpenGL_Manager::user_inputs( float deltaTime )
 {
+	if (!scroll_inventory) {
+		scroll_inventory = _inventory;
+	}
+
 	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 	}
@@ -273,6 +268,12 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	} else if (glfwGetKey(_window, GLFW_KEY_G) == GLFW_RELEASE) {
 		_key_g = 0;
 	}
+	// toggle F5 mode
+	if ((glfwGetKey(_window, GLFW_KEY_J) == GLFW_PRESS) && ++_key_j == 1) {
+		_f5_mode = !_f5_mode;
+	} else if (glfwGetKey(_window, GLFW_KEY_J) == GLFW_RELEASE) {
+		_key_j = 0;
+	}
 
 	// add and remove blocks
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && ++_key_rm_block == 1) {
@@ -284,6 +285,9 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		handle_add_rm_block(true);
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_key_add_block = 0;
+	}
+	if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
+		_inventory->removeBlock();
 	}
 
 	if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS && ++_key_fill == 1) {
