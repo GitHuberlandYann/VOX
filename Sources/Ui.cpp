@@ -1,6 +1,6 @@
 #include "vox.h"
 
-UI::UI( Inventory & inventory ) : _textures(NULL), _inventory(inventory), _vaoSet(false)
+UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _inventory(inventory), _camera(camera), _vaoSet(false)
 {
 	_text = new Text();
 }
@@ -77,7 +77,7 @@ static int b( int block ) // y coord in blockAtlas in pxl
 
 void UI::setup_array_buffer( void )
 {
-    _nb_points = 3 + 9 + 10 + 8 + 10 + 4 + 10 + 2;
+    _nb_points = 3 + 9 + 10 + 10 + 10 + 4 + 10 + 2;
 	int mult = 4;
     GLint vertices[] = { // pos: x y width height textcoord: x y width height
         1, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16, // crosshair
@@ -102,14 +102,16 @@ void UI::setup_array_buffer( void )
 		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
 		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (8 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
 		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (9 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,  // filling hearts
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (4 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (5 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (6 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 9, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18, 16, 9, 9,
+		1, (WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 1) + 9 * (_camera._health_points > 1), 16, 9, 9,  // filling hearts
+		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 3) + 9 * (_camera._health_points > 3), 16, 9, 9,
+		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 5) + 9 * (_camera._health_points > 5), 16, 9, 9,
+		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 7) + 9 * (_camera._health_points > 7), 16, 9, 9,
+		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (4 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 9) + 9 * (_camera._health_points > 9), 16, 9, 9,
+		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (5 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 11) + 9 * (_camera._health_points > 11), 16, 9, 9,
+		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (6 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 13) + 9 * (_camera._health_points > 13), 16, 9, 9,
+		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 15) + 9 * (_camera._health_points > 15), 16, 9, 9,
+		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (8 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 17) + 9 * (_camera._health_points > 17), 16, 9, 9,
+		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (9 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 19) + 9 * (_camera._health_points > 19), 16, 9, 9,
 		1, (WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,  // armor
 		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
 		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
@@ -217,7 +219,7 @@ void UI::setup_shader( void )
 
 void UI::drawUserInterface( std::string str, bool game_mode )
 {
-	if (!_vaoSet || _inventory.getModif()) {
+	if (!_vaoSet || _inventory.getModif() || _camera.getModif()) {
 		setup_array_buffer();
 		_inventory.setModif(false);
 	}

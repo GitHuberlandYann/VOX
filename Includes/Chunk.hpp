@@ -78,8 +78,9 @@ class Chunk
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees);
 		void generate_blocks( void );
-		void add_block( glm::ivec3 pos, int type );
+		int sand_fall_endz( glm::ivec3 pos );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
+		void add_block( glm::ivec3 pos, int type );
         void fill_vertex_array( void );
         void setup_array_buffer( void );
 

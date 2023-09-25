@@ -16,13 +16,14 @@ class UI
         GLint _nb_points;
 		Text *_text;
 		Inventory &_inventory;
+        Camera &_camera;
 		bool _vaoSet;
 
 		void load_texture( void );
         void setup_array_buffer( void );
 
     public:
-        UI( Inventory & inventory );
+        UI( Inventory & inventory, Camera &camera );
         ~UI( void );
 
         void setup_shader( void );

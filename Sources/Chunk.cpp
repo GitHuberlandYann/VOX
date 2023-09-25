@@ -248,14 +248,35 @@ void Chunk::generate_blocks( void )
 	}
 }
 
+int Chunk::sand_fall_endz( glm::ivec3 pos )
+{
+	for (int level = pos.z - 1; level > 0; level--) {
+		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + level] != blocks::AIR) {
+			return (level + 1);
+		}
+	}
+	return (1);
+}
+
 void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
+	inventory->addBlock(value);
+	int endZ = -1;
+	if (pos.z < 255 && _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z + 1] == blocks::SAND) { // sand falls if block underneath deleted
+		_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
+		endZ = sand_fall_endz(pos);
+		if (endZ == pos.z) {
+			_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::SAND;
+			return (remove_block(inventory, glm::ivec3(pos.x, pos.y, pos.z + 1)));
+		} else {
+			add_block(glm::ivec3(pos.x, pos.y, endZ), blocks::SAND);
+		}
+	}
 	if (value > blocks::AIR) { // if invisible block gets deleted, same amount of displayed_blocks
 		_displayed_blocks--;
-		inventory->addBlock(value);
 	}
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	for (int index = 0; index < 6; index++) {
@@ -268,6 +289,9 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 				_displayed_blocks++;
 			}
 		}
+	}
+	if ((endZ > 0 && endZ != pos.z) || (pos.z < 255 && _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z + 1] >= blocks::POPPY)) { // del flower if block underneath deleted
+		remove_block(inventory, glm::ivec3(pos.x, pos.y, pos.z + 1));
 	}
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }

@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _fall_time(0), _fov(FOV), _fall_speed(0), _movement_speed(SPEED), _inJump(false), _touchGround(false)
+Camera::Camera( glm::vec3 position ) : _fall_time(0), _fov(FOV), _fall_speed(0), _isRunning(false), _movement_speed(SPEED), _health_points(19), _inJump(false), _touchGround(false)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -52,7 +52,15 @@ bool Camera::chunkInFront( int posX, int posY )
 	// (void)posX;
 	// (void)posY;
 	// return (true);
+	if (_front.z <= -0.85f || _front.z >= 0.85f) {
+		return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * glm::sign(_front.x) - _position.x, posY + 2 * CHUNK_SIZE * glm::sign(_front.y) - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
+	}
 	return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
+}
+
+void Camera::setRun( bool value )
+{
+	_isRunning = value;
 }
 
 void Camera::setDelta( float deltaTime )
@@ -86,7 +94,7 @@ void Camera::processKeyboard( Camera_Movement direction, bool game_mode )
 		else if (direction == DOWN)
 			_position -= _up * speed_frame;
 	} else {
-		float speed_frame = _deltaTime * WALK_SPEED;
+		float speed_frame = (_isRunning) ?  _deltaTime * RUN_SPEED : _deltaTime * WALK_SPEED;
 		if (direction == FORWARD)
 			_position += glm::vec3(_front.x, _front.y, 0.0f) * speed_frame;
 		else if (direction == BACKWARD)
@@ -105,11 +113,11 @@ void Camera::fall( bool real_fall )
 	_touchGround = false;
 	_fall_time += _deltaTime;
 	if (_inJump) {
-		if (INITIAL_JUMP + STANDARD_GRAVITY * _fall_time * _fall_time < FALL_SPEED) {
-			_fall_speed = INITIAL_JUMP + STANDARD_GRAVITY * _fall_time * _fall_time;
+		if (INITIAL_JUMP + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time < FALL_SPEED) {
+			_fall_speed = INITIAL_JUMP + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time;
 		}
-	} else if (INITIAL_FALL + STANDARD_GRAVITY * _fall_time * _fall_time < FALL_SPEED) {
-		_fall_speed = INITIAL_FALL + STANDARD_GRAVITY * _fall_time * _fall_time;
+	} else if (INITIAL_FALL + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time < FALL_SPEED) {
+		_fall_speed = INITIAL_FALL + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time;
 	}
 	// std::cout << "fall " << real_fall << std::endl;
 	if (real_fall) { // empty block bellow
@@ -131,9 +139,22 @@ void Camera::touchGround( void )
 	if (_inJump && _fall_speed < 0) {
 		return ;
 	}
+	_healthUpdate = (static_cast<int>(_fall_speed / 30) == 0);
+	_health_points -= static_cast<int>(_fall_speed) / 30; // TODO use fall time instead, but if _inJump do something diff
+	if (_health_points < 0) {
+		_health_points = 0;
+	}
 	_fall_time = 0;
 	_touchGround = true;
 	_inJump = false;
+}
+
+
+bool Camera::getModif( void )
+{
+	bool res = _healthUpdate;
+	_healthUpdate = false;
+	return (res);
 }
 
 void Camera::processPitch( GLint offset )
@@ -182,14 +203,22 @@ void Camera::processMouseMovement( float x_offset, float y_offset )
 	updateCameraVectors();
 }
 
-std::string Camera::getCamString( void )
+std::string Camera::getCamString( bool game_mode )
 {
-	return ("\nPos\t\t> x: " + std::to_string(_position.x)
+	if (game_mode == CREATIVE) {
+		return ("\nPos\t\t> x: " + std::to_string(_position.x)
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 				+ "\nDir\t\t> x: " + std::to_string(_front.x)
 				+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
-				+ "\nSpeed\t> " + std::to_string(_movement_speed)
-				+ "\nFall\t> " + std::to_string(_fall_speed)
-				+ "\nGounded\t> " + ((_touchGround) ? "true" : "false")
-				+ "\nJumping\t> " + ((_inJump) ? "true" : "false"));
+				+ "\nSpeed\t> " + std::to_string(_movement_speed));
+	}
+	return ("\nPos\t\t> x: " + std::to_string(_position.x)
+			+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
+			+ "\nDir\t\t> x: " + std::to_string(_front.x)
+			+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
+			+ "\nSpeed\t> " + ((_isRunning) ? std::to_string(RUN_SPEED) : std::to_string(WALK_SPEED))
+			+ "\nFall\t> " + std::to_string(_fall_speed)
+			+ "\nhealth\t> " + std::to_string(_health_points)
+			+ "\nGounded\t> " + ((_touchGround) ? "true" : "false")
+			+ "\nJumping\t> " + ((_inJump) ? "true" : "false"));
 }

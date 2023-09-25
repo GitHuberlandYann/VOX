@@ -40,6 +40,9 @@ TODOS:
             - render dist
             - speed
         - quit
+    - better fall damage
+    - inventory block count
+    - nether
 
 IN PROGRES:
     - obstacle detection for physics + game mode
@@ -53,6 +56,9 @@ DONE:
     - full screen mode
     - mouse movements
     - inventory
+    - player gravity
+    - sand falls if nothing under
+    - flowers destroyed if block underneath destroyed
 
 
 Some info:

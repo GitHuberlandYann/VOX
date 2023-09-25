@@ -13,7 +13,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_inventory = new Inventory();
-	_ui = new UI(*_inventory);
+	_ui = new UI(*_inventory, camera);
 	// render = this;
 }
 
@@ -231,7 +231,7 @@ void OpenGL_Manager::main_loop( void )
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glfwSwapInterval(1);
 	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
-	// glfwSetCursorPosCallback(_window, cursor_position_callback); // doesn't work on wsl
+	glfwSetCursorPosCallback(_window, cursor_position_callback); // doesn't work on wsl
     // glfwSetScrollCallback(_window, scroll_callback);
 
 	check_glstate("setup done, entering main loop\n");
@@ -275,12 +275,12 @@ void OpenGL_Manager::main_loop( void )
 		// glClear(GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 		std::string str = (_debug_mode)
-			? "FPS: " + std::to_string(nbFramesLastSecond) + camera.getCamString()
+			? "FPS: " + std::to_string(nbFramesLastSecond) + camera.getCamString(_game_mode)
 				+ "\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				+ "\nDisplayed chunks > " + std::to_string(_visible_chunks.size())
 				+ '/' + std::to_string(_chunks.size())
-				+ "\nRender Distance > " + std::to_string(_render_distance)
-				+ "\nGame mode > " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
+				+ "\nRender Distance\t> " + std::to_string(_render_distance)
+				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				// + _inventory->getInventoryString()
 			: "";
 		_ui->drawUserInterface(str, _game_mode);

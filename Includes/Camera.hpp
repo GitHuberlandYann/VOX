@@ -14,11 +14,12 @@ enum Camera_Movement {
 # define PITCH        0.0f
 # define SPEED        20
 # define WALK_SPEED   4.317
-// # define RUN_SPEED    5.612
+# define RUN_SPEED    5.612
 # define EYE_LEVEL    1.62f
-# define INITIAL_JUMP -3.317f
+# define INITIAL_JUMP -9.317f
 # define INITIAL_FALL 6.605f
 # define STANDARD_GRAVITY 9.81f
+# define PLAYER_MASS 10
 # define FALL_SPEED   77.71f //77.71f
 # define FOV          40.0f // fov must be 80
 
@@ -38,11 +39,12 @@ class Camera
 		float _deltaTime, _fall_time;
 		float _fov;
 		float _fall_speed;
+		bool _isRunning, _healthUpdate;
     	void updateCameraVectors( void );
 	
 	public:
 		glm::vec3 _position;
-		int _movement_speed;
+		int _movement_speed, _health_points;
 		bool _update, _turnUpdate, _inJump, _touchGround;
 
 		Camera( glm::vec3 position );
@@ -51,17 +53,19 @@ class Camera
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
 		bool chunkInFront( int posX, int posY );
+		void setRun( bool value );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );
 		void processKeyboard( Camera_Movement direction, bool game_mode );
 		void fall( bool real_fall );
 		void touchGround( void );
+		bool getModif( void );
 		void processPitch( GLint offset );
 		void processYaw( GLint offset );
 		std::vector<glm::ivec3> get_ray_casting( GLfloat radius );
 		void processMouseMovement( float x_offset, float y_offset );
 		// void processMouseScroll( float offset );
-		std::string getCamString( void );
+		std::string getCamString( bool game_mode );
 };
 
 #endif
