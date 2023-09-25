@@ -10,6 +10,13 @@
 // 	RM_BLOCK
 // };
 
+const std::string block_names[64] = {
+	"AIR", "GRASS_BLOCK", "OAK_TRUNK", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR",
+	"BEDROCK", "DIRT_BLOCK", "STONE", "SAND", "GRAVEL", "OAK_LEAVES", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR",
+	"COAL_ORE", "IRON_ORE", "DIAMOND_ORE", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR",
+	"POPPY", "DANDELION", "BLUE_ORCHID", "ALLIUM", "CORNFLOWER", "PINK_TULIP", "GRASS", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR", "ERR"
+};
+
 enum blocks {
 	AIR,
 	GRASS_BLOCK,
@@ -96,7 +103,7 @@ class Chunk
         void setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
-		bool isHit( glm::ivec3 pos );
+		int isHit( glm::ivec3 pos );
 		void handleHit( Inventory *inventory, glm::ivec3 pos, bool adding );
 		bool collision( glm::vec3 & pos, Camera &cam );
         void drawArray( GLint & counter );

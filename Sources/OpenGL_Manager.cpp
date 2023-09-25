@@ -9,7 +9,8 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0),
 		_key_h(0), _key_g(0), _key_j(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
-		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false)
+		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false),
+		_block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_inventory = new Inventory();
@@ -258,6 +259,7 @@ void OpenGL_Manager::main_loop( void )
 		}
 
 		user_inputs(currentTime - previousFrame);
+		_block_hit = get_block_hit();
 		// chunk_update(); moved this into user_inputs for collision detection purposes
 		previousFrame = currentTime;
 		
@@ -277,6 +279,8 @@ void OpenGL_Manager::main_loop( void )
 		mtx_visible_chunks.lock();
 		std::string str = (_debug_mode)
 			? "FPS: " + std::to_string(nbFramesLastSecond) + camera.getCamString(_game_mode)
+				+ "\nBlock\t> " + ((_block_hit.w >= blocks::AIR) ? block_names[_block_hit.w] : block_names[_block_hit.w + blocks::NOTVISIBLE])
+				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
 				+ "\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				+ "\nDisplayed chunks > " + std::to_string(_visible_chunks.size())
 				+ '/' + std::to_string(_chunks.size())

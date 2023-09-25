@@ -47,6 +47,7 @@ class OpenGL_Manager
 		std::list<Chunk *> _visible_chunks;
 		std::list<Chunk *> _delete_chunks;
 		std::thread _thread;
+		glm::ivec4 _block_hit;
 		Inventory *_inventory;
 		UI *_ui;
 
@@ -54,6 +55,7 @@ class OpenGL_Manager
 		void chunk_update( void );
 		void user_inputs( float deltaTime );
 		// void update_cam_matrix( void );
+		glm::ivec4 get_block_hit( void );
 		void handle_add_rm_block( bool adding );
 		void update_cam_view( void );
 		void update_cam_perspective( void );

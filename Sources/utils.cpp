@@ -49,6 +49,15 @@ void check_glstate( std::string str )
 	}
 	std::cout << str << std::endl;
 }
+
+int chunk_pos( int pos )
+{
+	(pos >= 0 || !(pos % CHUNK_SIZE))
+			? pos -= pos % CHUNK_SIZE
+			: pos -= CHUNK_SIZE + pos % CHUNK_SIZE;
+	return (pos);
+}
+
 // # include <glm/glm.hpp>
 // # include <glm/gtc/matrix_transform.hpp>
 // # include <glm/gtc/type_ptr.hpp>

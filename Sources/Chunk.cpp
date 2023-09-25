@@ -285,8 +285,8 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		endZ = sand_fall_endz(pos);
 		int above_value = (block_above == blocks::SAND || block_above + blocks::NOTVISIBLE == blocks::SAND) ? blocks::SAND : blocks::GRAVEL;
 		if (endZ == pos.z) {
-			_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = above_value;
-			if (block_above < 0) {
+			_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = above_value - (value < 0) * blocks::NOTVISIBLE;
+			if (block_above < 0 && value > 0) {
 				_mtx.lock();
 				++_displayed_blocks;
 				_mtx.unlock();
@@ -509,13 +509,13 @@ bool Chunk::isInChunk( int posX, int posY )
 	return (posX == _startX && posY == _startY);
 }
 
-bool Chunk::isHit( glm::ivec3 pos )
+int Chunk::isHit( glm::ivec3 pos )
 {
 	// std::cout << "current_chunk is " << _startX << ", " << _startY << std::endl;
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
 	if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
 		std::cout << "ERROR block out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
-		return (false);
+		return (blocks::AIR);
 	}
 	if (_thread.joinable()) {
 		_thread.join();
@@ -532,6 +532,7 @@ void Chunk::handleHit( Inventory *inventory, glm::ivec3 pos, bool adding )
 {
 
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
+	// std::cout << "handle hit at pos " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 	// if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
 	// 	std::cout << "ERROR BLOCK OUT OF CHUNK " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 	// }

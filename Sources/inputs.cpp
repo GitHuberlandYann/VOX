@@ -45,9 +45,69 @@ void OpenGL_Manager::update_cam_matrix( void )
 	glUniformMatrix4fv(_uniPV, 1, GL_FALSE, glm::value_ptr(proj * view));
 }*/
 
+glm::ivec4 OpenGL_Manager::get_block_hit( void )
+{
+	std::vector<glm::ivec3> ids = camera.get_ray_casting(10);
+
+	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
+	glm::ivec3 player_pos;
+	Chunk *chunk = NULL, *prev_chunk = NULL;
+	bool start = true;
+	for (auto& i : ids) {
+		if (start) {
+			player_pos = i;
+			start = false;
+		}
+		// std::cout << "checking > " << i.x << ", " << i.y << ", " << i.z << std::endl;
+		int posX = chunk_pos(i.x);
+		int posY = chunk_pos(i.y);
+		
+		if (!chunk || posX != current_chunk.x || posY != current_chunk.y) {
+			current_chunk = glm::ivec2(posX, posY);
+			for (auto& c : _visible_chunks) {
+				if (c->isInChunk(posX, posY)) {
+					prev_chunk = chunk;
+					chunk = c;
+					break ;
+				}
+			}
+			if (!chunk) {
+				std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
+				break ;
+			}
+		}
+		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
+		int value = chunk->isHit(i);
+		if (value) {
+			return (glm::ivec4(i, (value > 0) ? value : value + blocks::NOTVISIBLE));
+		}
+		previous_chunk = current_chunk;
+	}
+	return (glm::ivec4(0, 0, 0, blocks::AIR));
+}
+
 void OpenGL_Manager::handle_add_rm_block( bool adding )
 {
-	if (adding && _inventory->getCurrentSlot() == blocks::AIR) {
+	if (_block_hit.w == blocks::AIR) {
+		return ;
+	}
+	if (!adding) {
+		int posX = chunk_pos(_block_hit.x);
+		int posY = chunk_pos(_block_hit.y);
+		
+		for (auto& c : _visible_chunks) {
+			if (c->isInChunk(posX, posY)) {
+				Chunk *chunk = c;
+				// std::cout << "handle hit at pos " << _block_hit.x << ", " << _block_hit.y << ", " << _block_hit.z << std::endl;
+				chunk->handleHit(_inventory, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding);
+				return ;
+			}
+		}
+		std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
+		return ;
+	}
+	// from now on adding = true
+	if (_inventory->getCurrentSlot() == blocks::AIR) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
 	}
@@ -63,15 +123,8 @@ void OpenGL_Manager::handle_add_rm_block( bool adding )
 			start = false;
 		}
 		// std::cout << "checking > " << i.x << ", " << i.y << ", " << i.z << std::endl;
-		int posX = i.x;
-		int posY = i.y;
-
-		(posX >= 0 || !(posX % CHUNK_SIZE))
-			? posX -= posX % CHUNK_SIZE
-			: posX -= CHUNK_SIZE + posX % CHUNK_SIZE;
-		(posY >= 0 || !(posY % CHUNK_SIZE))
-			? posY -= posY % CHUNK_SIZE
-			: posY -= CHUNK_SIZE + posY % CHUNK_SIZE;
+		int posX = chunk_pos(i.x);
+		int posY = chunk_pos(i.y);
 		
 		if (!chunk || posX != current_chunk.x || posY != current_chunk.y) {
 			current_chunk = glm::ivec2(posX, posY);
@@ -90,18 +143,16 @@ void OpenGL_Manager::handle_add_rm_block( bool adding )
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		if (chunk->isHit(i)) {
 			// std::cout << "we have a hit ! " << i.x << ", " << i.y << ", " << i.z << ", " << std::endl;
-			if (adding && (i == player_pos || previous_block == player_pos)) {
+			if (i == player_pos || previous_block == player_pos) {
 				// std::cout << "abort because hit is player pos" << std::endl;
-				break ;
+				return ;
 			}
-			if (adding && previous_chunk != current_chunk) {
+			if (previous_chunk != current_chunk) {
 				prev_chunk->handleHit(_inventory, previous_block, adding);
-				break ;
+				return ;
 			}
-			(adding)
-				? chunk->handleHit(_inventory, previous_block, adding)
-				: chunk->handleHit(_inventory, i, adding);
-			break ;
+			chunk->handleHit(_inventory, previous_block, adding);
+			return ;
 		}
 		previous_block = i;
 		previous_chunk = current_chunk;
@@ -223,15 +274,8 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 
 void OpenGL_Manager::chunk_update( void )
 {
-	int posX = static_cast<int>(glm::floor(camera._position.x));
-	int posY = static_cast<int>(glm::floor(camera._position.y));
-
-	(posX >= 0 || !(posX % CHUNK_SIZE))
-		? posX -= posX % CHUNK_SIZE
-		: posX -= CHUNK_SIZE + posX % CHUNK_SIZE;
-	(posY >= 0 || !(posY % CHUNK_SIZE))
-		? posY -= posY % CHUNK_SIZE
-		: posY -= CHUNK_SIZE + posY % CHUNK_SIZE;
+	int posX = chunk_pos(static_cast<int>(glm::floor(camera._position.x)));
+	int posY = chunk_pos(static_cast<int>(glm::floor(camera._position.y)));
 	
 	if (posX == _current_chunk.x && posY == _current_chunk.y) {
 		return ;
