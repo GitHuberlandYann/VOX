@@ -223,7 +223,7 @@ void Chunk::generate_blocks( void )
 				if (value == blocks::GRASS_BLOCK && level != 255) {
 					int block_above = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1];
 					if (block_above && block_above < blocks::POPPY) {
-						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::DIRT_BLOCK;
+						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::DIRT;
 					}
 				}
 			}
@@ -316,8 +316,12 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 			}
 		}
 	}
-	if (endZ != -1 || (pos.z < 255 && block_above >= blocks::POPPY)) { // del flower if block underneath deleted
+	if (endZ != -1) { // sand fall
 		remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1));
+	} else if (pos.z < 255 && block_above >= blocks::POPPY) { // del flower if block underneath deleted
+		(block_above == blocks::GRASS)
+			? remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1)) // if grass above breaked block, don't collect it
+			: remove_block(inventory, glm::ivec3(pos.x, pos.y, pos.z + 1));
 	}
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
@@ -328,7 +332,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	if (type >= blocks::POPPY && pos.z - 1 > 0) {
 		int block_below = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z - 1];
-		if (block_below != blocks::GRASS_BLOCK && block_below != blocks::DIRT_BLOCK && block_below != blocks::SAND) {
+		if (block_below != blocks::GRASS_BLOCK && block_below != blocks::DIRT && block_below != blocks::SAND) {
 			return ; // can't place flower on something else than grass/dirt block
 		}
 	}
@@ -374,11 +378,12 @@ void Chunk::fill_vertex_array( void )
 					// 	std::cout << "ERROR index is " << index / 5 << std::endl;
 					// }
 					_vertices[index] = block_type;
-					_vertices[index + 1] = get_empty_faces(row + 1, col + 1, level, block_type != blocks::OAK_LEAVES);
-					_vertices[index + 2] = _startX + row;
-					_vertices[index + 3] = _startY + col;
-					_vertices[index + 4] = level;
-					index += 5;
+					_vertices[index + 1] = 0;
+					_vertices[index + 2] = get_empty_faces(row + 1, col + 1, level, block_type != blocks::OAK_LEAVES);
+					_vertices[index + 3] = _startX + row;
+					_vertices[index + 4] = _startY + col;
+					_vertices[index + 5] = level;
+					index += 6;
 				}
 			}
 		}
@@ -399,24 +404,23 @@ void Chunk::setup_array_buffer( void )
 	glBindVertexArray(_vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 5 * sizeof(GLint), _vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 6 * sizeof(GLint), _vertices, GL_STATIC_DRAW);
 
-	delete [] _vertices;
-	_vertices = NULL;
+	// delete [] _vertices;
+	// _vertices = NULL;
 	_vaoReset = true;
-	// check_glstate("Vertex buffer successfully created");
 
 	glEnableVertexAttribArray(BLOCKATTRIB);
-	glVertexAttribIPointer(BLOCKATTRIB, 1, GL_INT, 5 * sizeof(GLint), 0);
-	// check_glstate("blockAttrib successfully set");
+	glVertexAttribIPointer(BLOCKATTRIB, 1, GL_INT, 6 * sizeof(GLint), 0);
+	
+	glEnableVertexAttribArray(BREAKATTRIB);
+	glVertexAttribIPointer(BREAKATTRIB, 1, GL_INT, 6 * sizeof(GLint), (void *)(sizeof(GLint)));
 	
 	glEnableVertexAttribArray(ADJATTRIB);
-	glVertexAttribIPointer(ADJATTRIB, 1, GL_INT, 5 * sizeof(GLint), (void *)(sizeof(GLint)));
-	// check_glstate("adjAttrib successfully set");
+	glVertexAttribIPointer(ADJATTRIB, 1, GL_INT, 6 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
 
 	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribIPointer(POSATTRIB, 3, GL_INT, 5 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
-	// check_glstate("posAttrib successfully set");
+	glVertexAttribIPointer(POSATTRIB, 3, GL_INT, 6 * sizeof(GLint), (void *)(3 * sizeof(GLint)));
 
 	check_glstate("NO");
 }
@@ -448,11 +452,11 @@ void Chunk::generation( void )
 {
 	_blocks = new GLint[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT];
 	generate_blocks();
-	_vertices = new GLint[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
+	_vertices = new GLint[_displayed_blocks * 6]; // blocktype, adjacents blocks, X Y Z
 	fill_vertex_array();
 }
 
-void Chunk::regeneration( Inventory *inventory, glm::ivec3 pos, bool adding )
+void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding )
 {
 	if (!adding) {
 		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] == blocks::BEDROCK) { // can't rm bedrock
@@ -460,16 +464,13 @@ void Chunk::regeneration( Inventory *inventory, glm::ivec3 pos, bool adding )
 		}
 		remove_block(inventory, pos);
 	} else {
-		mtx_inventory.lock();
-		int type = inventory->getCurrentSlot();
-		mtx_inventory.unlock();
 		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] != blocks::AIR || type == blocks::AIR) { // can't replace block
 			return ;
 		}
 		add_block(inventory, pos, type);
 	}
 	delete [] _vertices;
-	_vertices = new GLint[_displayed_blocks * 5]; // blocktype, adjacents blocks, X Y Z
+	_vertices = new GLint[_displayed_blocks * 6]; // blocktype, adjacents blocks, X Y Z
 	fill_vertex_array();
 	_mtx.lock();
 	_vaoReset = false;
@@ -523,12 +524,12 @@ int Chunk::isHit( glm::ivec3 pos )
 	return (_blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * WORLD_HEIGHT + chunk_pos.z]);
 }
 
-static void thread_modif_block( Chunk *current, Inventory *inventory, glm::ivec3 pos, bool adding )
+static void thread_modif_block( Chunk *current, Inventory *inventory, int type, glm::ivec3 pos, bool adding )
 {
-	current->regeneration(inventory, pos, adding);
+	current->regeneration(inventory, type, pos, adding);
 }
 
-void Chunk::handleHit( Inventory *inventory, glm::ivec3 pos, bool adding )
+void Chunk::handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding )
 {
 
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
@@ -539,7 +540,29 @@ void Chunk::handleHit( Inventory *inventory, glm::ivec3 pos, bool adding )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	_thread = std::thread(thread_modif_block, this, inventory, chunk_pos, adding);
+	_thread = std::thread(thread_modif_block, this, inventory, type, chunk_pos, adding);
+}
+
+void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
+{
+	glm::ivec3 chunk_pos = glm::ivec3(block_hit.x - _startX, block_hit.y - _startY, block_hit.z);
+	if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
+		std::cout << "ERROR block hit out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
+		return ;
+	}
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+	for (int index = 0; index < _displayed_blocks * 6; index += 6) {
+		_mtx.lock();
+		if (_vertices[index + 3] == block_hit.x && _vertices[index + 4] == block_hit.y && _vertices[index + 5] == block_hit.z) {
+			_vaoReset = false;
+			_vertices[index + 1] = frame;
+			_mtx.unlock();
+			return ;
+		}
+		_mtx.unlock();
+	}
 }
 
 bool Chunk::collision( glm::vec3 &pos, Camera &cam )
@@ -598,7 +621,6 @@ void Chunk::drawArray( GLint & counter )
 			return ;
 		}
 		setup_array_buffer();
-		// return ;// TODO decide if this changes something
 		_mtx.lock();
 	}
     glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down

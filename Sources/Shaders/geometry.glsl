@@ -12,11 +12,13 @@ uniform mat4 proj;
 in Prim
 {
     int Block_type;
+	int Break_frame;
     int Adj_blocks;
 } vsData[];
 
 // out vec3 Color;
 out vec2 Texcoord;
+out vec3 Breakcoord;
 out float FaceShadow;
 
 const vec2 top = vec2(1.0f / 16.0f, 0.0f);
@@ -29,24 +31,31 @@ const vec2 bottom_right = vec2(1.0f / 16.0f, 1.0f / 16.0f);
 
 void emitFace( vec4 v0, vec4 v1, vec4 v2, vec4 v3, vec2 start )
 {
+	vec2 breakStart = vec2(15.0f / 16.0f, vsData[0].Break_frame / 16.0f);
     gl_Position = v0;
 	Texcoord = start + top_left;
+	Breakcoord = vec3(breakStart + top_left, vsData[0].Break_frame);
     EmitVertex();
     gl_Position = v1;
 	Texcoord = start + top_right;
+	Breakcoord = vec3(breakStart + top_right, vsData[0].Break_frame);
     EmitVertex();
     gl_Position = v2;
 	Texcoord = start + bottom_left;
+	Breakcoord = vec3(breakStart + bottom_left, vsData[0].Break_frame);
     EmitVertex();
 
     gl_Position = v1;
 	Texcoord = start + top_right;
+	Breakcoord = vec3(breakStart + top_right, vsData[0].Break_frame);
     EmitVertex();
     gl_Position = v3;
 	Texcoord = start + bottom_right;
+	Breakcoord = vec3(breakStart + bottom_right, vsData[0].Break_frame);
     EmitVertex();
     gl_Position = v2;
 	Texcoord = start + bottom_left;
+	Breakcoord = vec3(breakStart + bottom_left, vsData[0].Break_frame);
     EmitVertex();
 
     EndPrimitive();

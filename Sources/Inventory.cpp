@@ -59,6 +59,9 @@ void Inventory::setModif( bool value )
 
 void Inventory::addBlock( int type )
 {
+	if (type == blocks::GRASS_BLOCK) {
+		type = blocks::DIRT;
+	}
     glm::ivec2 current = _content[_slot];
     if ((current.x == blocks::AIR || current.x == type) && current.y != 64) {
         _content[_slot].x = type;
@@ -97,4 +100,10 @@ std::string Inventory::getInventoryString( void )
         res += "\nslot " + std::to_string(index) + '<' + std::to_string(current.x) + "> times " + std::to_string(current.y);
     }
     return (res);
+}
+
+void Inventory::replaceSlot( int type )
+{
+	_content[_slot] = glm::ivec2(type, 1);
+	_modif = true;
 }

@@ -3,6 +3,7 @@
 // extern OpenGL_Manager *render;
 Camera camera(glm::vec3(1.0f, -2.0f, 66.0f));
 Chunk *current_chunk_ptr = NULL;
+Chunk *chunk_hit = NULL;
 Inventory *scroll_inventory = NULL;
 double lastX = WIN_WIDTH / 2.0f;
 double lastY = WIN_HEIGHT / 2.0f;
@@ -79,6 +80,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		int value = chunk->isHit(i);
 		if (value) {
+			chunk_hit = chunk;
 			return (glm::ivec4(i, (value > 0) ? value : value + blocks::NOTVISIBLE));
 		}
 		previous_chunk = current_chunk;
@@ -100,8 +102,8 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 				Chunk *chunk = c;
 				// std::cout << "handle hit at pos " << _block_hit.x << ", " << _block_hit.y << ", " << _block_hit.z << std::endl;
 				(collect)
-					? chunk->handleHit(_inventory, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding)
-					: chunk->handleHit(NULL, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding);
+					? chunk->handleHit(_inventory, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding)
+					: chunk->handleHit(NULL, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding);
 				return ;
 			}
 		}
@@ -109,7 +111,8 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	// from now on adding = true
-	if (_inventory->getCurrentSlot() == blocks::AIR) {
+	int type = _inventory->getCurrentSlot();
+	if (type == blocks::AIR) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
 	}
@@ -150,10 +153,14 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 				return ;
 			}
 			if (previous_chunk != current_chunk) {
-				prev_chunk->handleHit(_inventory, previous_block, adding);
+				(collect)
+						? prev_chunk->handleHit(_inventory, type, previous_block, adding)
+						: prev_chunk->handleHit(NULL, type, previous_block, adding);
 				return ;
 			}
-			chunk->handleHit(_inventory, previous_block, adding);
+			(collect)
+					? chunk->handleHit(_inventory, type, previous_block, adding)
+					: chunk->handleHit(NULL, type, previous_block, adding);
 			return ;
 		}
 		previous_block = i;
@@ -327,21 +334,51 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 			_break_time += deltaTime;
 			if (_block_hit.w != blocks::AIR && _break_time >= s_blocks[_block_hit.w].break_time_hand) {
 				handle_add_rm_block(false, s_blocks[_block_hit.w].byHand); // collect in inventory if byhand allowed, will later use tools
+			} else {
+				int break_frame = static_cast<int>(10 * _break_time / s_blocks[_block_hit.w].break_time_hand) + 1;
+				if (_break_frame != break_frame) {
+					if (chunk_hit) {
+						chunk_hit->updateBreak(_block_hit, break_frame);
+					}
+					_break_frame = break_frame;
+				}
 			}
 		} else if (++_key_rm_block == 1) {
-			handle_add_rm_block(false, true);
+			handle_add_rm_block(false, false);
 		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 		_key_rm_block = 0;
 		_break_time = 0;
+		if (_break_frame && chunk_hit) {
+			chunk_hit->updateBreak(_block_hit, 0);
+		}
+		_break_frame = 0;
 	}
 	if (_key_rm_block != 1 && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) && ++_key_add_block == 1) { // I don't want to try to del and add at the same time
-		handle_add_rm_block(true, true);
+		handle_add_rm_block(true, _game_mode == SURVIVAL);
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_key_add_block = 0;
 	}
 	if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
 		_inventory->removeBlock();
+	}
+	if (_game_mode == CREATIVE && _block_hit.w != blocks::AIR && _key_rm_block != 1 && _key_add_block != 1
+		&& glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_MIDDLE) && ++_key_pick_block == 1) { // pick up in creative mode
+		_inventory->replaceSlot(_block_hit.w);
+	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_RELEASE) {
+		_key_pick_block = 0;
+	}
+
+	// update block hit
+	Chunk *save_chunk = chunk_hit;
+	glm::ivec4 block_hit = get_block_hit();
+	if (_block_hit != block_hit) {
+		if (_break_frame && save_chunk) {
+			save_chunk->updateBreak(_block_hit, 0);
+		}
+		_block_hit = block_hit;
+		_break_time = 0;
+		_break_frame = 0;
 	}
 
 	if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS && ++_key_fill == 1) {

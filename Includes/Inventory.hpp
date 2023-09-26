@@ -20,6 +20,7 @@ class Inventory
 		void setModif( bool value );
         void addBlock( int type );
         void removeBlock( void );
+		void replaceSlot( int type );
 
         std::string getInventoryString( void );
 };

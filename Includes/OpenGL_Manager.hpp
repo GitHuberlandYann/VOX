@@ -13,6 +13,7 @@
 
 enum {
 	BLOCKATTRIB,
+	BREAKATTRIB,
 	ADJATTRIB,
 	POSATTRIB
 };
@@ -41,9 +42,10 @@ class OpenGL_Manager
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
 		glm::vec3 _background_color;
-		GLint _key_rdist, _render_distance, _key_fill, _fill, _key_add_block, _key_rm_block, _key_h, _key_g, _key_j, _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9;
+		GLint _key_rdist, _render_distance, _key_fill, _fill, _key_add_block, _key_rm_block, _key_pick_block, _key_h, _key_g, _key_j, _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9;
 		bool _debug_mode, _game_mode, _f5_mode;
 		float _break_time;
+		int _break_frame;
 		std::list<Chunk *> _chunks;
 		std::list<Chunk *> _visible_chunks;
 		std::list<Chunk *> _delete_chunks;

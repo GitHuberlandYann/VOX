@@ -22,7 +22,7 @@ enum blocks {
 	GRASS_BLOCK,
 	OAK_TRUNK,
 	BEDROCK = 16,
-	DIRT_BLOCK,
+	DIRT,
 	STONE,
 	SAND,
 	GRAVEL,
@@ -98,13 +98,14 @@ class Chunk
 		GLint getStartX( void );
 		GLint getStartY( void );
 		void generation( void );
-		void regeneration( Inventory *inventory, glm::ivec3 pos, bool adding );
+		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( std::list<Chunk *> *chunks );
         void setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
 		int isHit( glm::ivec3 pos );
-		void handleHit( Inventory *inventory, glm::ivec3 pos, bool adding );
+		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
+		void updateBreak( glm::ivec4 block_hit, int frame );
 		bool collision( glm::vec3 & pos, Camera &cam );
         void drawArray( GLint & counter );
 };

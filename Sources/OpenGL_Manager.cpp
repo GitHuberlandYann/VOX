@@ -6,11 +6,11 @@ extern Camera camera;
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE),
-		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0),
+		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0),
 		_key_h(0), _key_g(0), _key_j(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false),
-		_break_time(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
+		_break_time(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_inventory = new Inventory();
@@ -156,6 +156,7 @@ void OpenGL_Manager::create_shaders( void )
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
 	glBindAttribLocation(_shaderProgram, BLOCKATTRIB, "block_type");
+	glBindAttribLocation(_shaderProgram, BREAKATTRIB, "break_frame");
 	glBindAttribLocation(_shaderProgram, ADJATTRIB, "adj_blocks");
 	glBindAttribLocation(_shaderProgram, POSATTRIB, "position");
 
@@ -259,11 +260,6 @@ void OpenGL_Manager::main_loop( void )
 		}
 
 		user_inputs(currentTime - previousFrame);
-		glm::ivec4 block_hit = get_block_hit();
-		if (_block_hit != block_hit) {
-			_block_hit = block_hit;
-			_break_time = 0;
-		}
 		// chunk_update(); moved this into user_inputs for collision detection purposes
 		previousFrame = currentTime;
 		
@@ -285,7 +281,7 @@ void OpenGL_Manager::main_loop( void )
 			? "FPS: " + std::to_string(nbFramesLastSecond) + camera.getCamString(_game_mode)
 				+ "\nBlock\t> " + ((_block_hit.w >= blocks::AIR) ? s_blocks[_block_hit.w].name : s_blocks[_block_hit.w + blocks::NOTVISIBLE].name)
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
-				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) : "")
+				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "")
 				+ "\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				+ "\nDisplayed chunks > " + std::to_string(_visible_chunks.size())
 				+ '/' + std::to_string(_chunks.size())

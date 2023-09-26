@@ -2,6 +2,7 @@
 
 // in float face_num;
 in int block_type;
+in int break_frame;
 in int adj_blocks;
 in ivec3 position;
 // in vec3 color;
@@ -39,6 +40,7 @@ in ivec3 position;
 out Prim
 {
     int Block_type;
+	int Break_frame;
 	int Adj_blocks;
 };
 
@@ -94,6 +96,7 @@ void main()
 
 	// gl_Position = proj * view * model * scale * vec4(position, 1.0);
 	gl_Position = vec4(position, 1.0);
-	Adj_blocks = adj_blocks;
 	Block_type = block_type;
+	Break_frame = break_frame;
+	Adj_blocks = adj_blocks;
 }

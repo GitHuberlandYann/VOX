@@ -2,6 +2,7 @@
 
 // in vec3 Color;
 in vec2 Texcoord;
+in vec3 Breakcoord;
 in float FaceShadow;
 // // in vec3 CamPos;
 // in vec3 LightPos;
@@ -21,6 +22,12 @@ uniform sampler2D blockAtlas;
 void main()
 {
 	outColor = texture(blockAtlas, Texcoord);
+	if (Breakcoord.z != 0) {
+		vec4 break_ = texture(blockAtlas, Breakcoord.xy);
+		if (break_.a > 0.01) {
+			outColor = outColor * break_;
+		}
+	}
 	if(outColor.a < 0.01) {
 		discard;
 	} else {
