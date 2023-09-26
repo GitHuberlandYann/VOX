@@ -79,7 +79,7 @@ bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves )
 {
 	// isNotLeaves = true;
 	if (!isNotLeaves) {
-		return (true);
+		return (true); // TODO this is some shinanigans
 	}
 	bool below, above;
 	switch (level) {
@@ -268,6 +268,51 @@ static bool isSandOrGravel( int type )
 		|| type == blocks::GRAVEL || (type < blocks::AIR && type + blocks::NOTVISIBLE == blocks::GRAVEL));
 }
 
+void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
+{
+	if (type == blocks::AIR) {
+		return ;
+	}
+	if (!pos.x) {
+		// std::cout << std::endl << _startX << ", " << _startY << ": at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+		// std::cout << "pos.x is 0!! gogo neighbour" << std::endl;
+		for (auto& c : _vis_chunks) {
+			if (c->isInChunk(_startX - CHUNK_SIZE, _startY)) {
+				c->update_border(CHUNK_SIZE + 1, pos.y + 1, pos.z, adding);
+				break ;
+			}
+		}
+	} else if (pos.x == CHUNK_SIZE - 1) {
+		// std::cout << std::endl << _startX << ", " << _startY << ": at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+		// std::cout << "pos.x is 15 gogo neighbour" << std::endl;
+		for (auto& c : _vis_chunks) {
+			if (c->isInChunk(_startX + CHUNK_SIZE, _startY)) {
+				c->update_border(0, pos.y + 1, pos.z, adding);
+				break ;
+			}
+		}
+	}
+	if (!pos.y) {
+		// std::cout << std::endl << _startX << ", " << _startY << ": at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+		// std::cout << "pos.y is 0!! gogo neighbour" << std::endl;
+		for (auto& c : _vis_chunks) {
+			if (c->isInChunk(_startX, _startY - CHUNK_SIZE)) {
+				c->update_border(pos.x + 1, CHUNK_SIZE + 1, pos.z, adding);
+				break ;
+			}
+		}
+	} else if (pos.y == CHUNK_SIZE - 1) {
+		// std::cout << std::endl << _startX << ", " << _startY << ": at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+		// std::cout << "pos.y is 15 gogo neighbour" << std::endl;
+		for (auto& c : _vis_chunks) {
+			if (c->isInChunk(_startX, _startY + CHUNK_SIZE)) {
+				c->update_border(pos.x + 1, 0, pos.z, adding);
+				break ;
+			}
+		}
+	}
+}
+
 void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
@@ -301,6 +346,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		_displayed_blocks--;
 		_mtx.unlock();
 	}
+	handle_border_block(pos, air_flower(value, true), false); // if block at border of chunk gets deleted, we update neighbours
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
@@ -529,7 +575,7 @@ static void thread_modif_block( Chunk *current, Inventory *inventory, int type, 
 	current->regeneration(inventory, type, pos, adding);
 }
 
-void Chunk::handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding )
+void Chunk::handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding, std::list<Chunk *> vis_chunks )
 {
 
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
@@ -540,6 +586,7 @@ void Chunk::handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool addi
 	if (_thread.joinable()) {
 		_thread.join();
 	}
+	_vis_chunks = vis_chunks;
 	_thread = std::thread(thread_modif_block, this, inventory, type, chunk_pos, adding);
 }
 
@@ -565,6 +612,65 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 			return ;
 		}
 		_mtx.unlock();
+	}
+}
+
+// called by neighbour chunk if block change at border
+// posX and posY in [0; CHUNK_SIZE + 1] === _blocks compatible
+void Chunk::update_border(int posX, int posY, int level, bool adding)
+{
+	// std::cout << "got into update border of chunk " << _startX << ", " << _startY << std::endl;
+	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << adding << std::endl;
+	if (!(!posX || !posY || posX == CHUNK_SIZE + 1 || posY == CHUNK_SIZE + 1)) {
+		std::cout << "ERROR update_border not border block " << posX << ", " << posY << std::endl;
+		return ;
+	}
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+	if (adding) {
+		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::STONE;
+		// TODO hide block if no longer visible
+	} else {
+		glm::ivec2 target;
+		if (!posX) {
+			target = glm::ivec2(1, posY);
+		} else if (posX == CHUNK_SIZE + 1) {
+			target = glm::ivec2(CHUNK_SIZE, posY);
+		} else if (!posY) {
+			target = glm::ivec2(posX, 1);
+		} else if (posY == CHUNK_SIZE + 1) {
+			target = glm::ivec2(posX, CHUNK_SIZE);
+		}
+		if (exposed_block(target.x, target.y, level, true)) { // block was already exposed, no change in displayed_blocks, only in visible faces
+			// std::cout << "displayed blocks same" << std::endl;
+			// std::cout << "empty faces before: " << get_empty_faces(target.x, target.y, level, true) << std::endl;
+			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
+			// std::cout << "empty faces after: " << get_empty_faces(target.x, target.y, level, true) << std::endl;
+			for (int index = 0; index < _displayed_blocks * 6; index += 6) {
+				_mtx.lock();
+				if (_vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1 && _vertices[index + 5] == level) {
+					_vertices[index + 2] = get_empty_faces(target.x, target.y, level, true);
+					_vaoReset = false;
+					_mtx.unlock();
+					return ;
+				}
+				_mtx.unlock();
+			}
+		} else { // we need to redo it all because one new exposed block
+			// std::cout << "redo it all" << std::endl;
+			// std::cout << "empty faces before: " << get_empty_faces(target.x, target.y, level, true) << std::endl;
+			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] += blocks::NOTVISIBLE;
+			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
+			// std::cout << "empty faces after: " << get_empty_faces(target.x, target.y, level, true) << std::endl;
+			delete [] _vertices;
+			_displayed_blocks++;
+			_vertices = new GLint[_displayed_blocks * 6]; // blocktype, adjacents blocks, X Y Z
+			fill_vertex_array();
+			_mtx.lock();
+			_vaoReset = false;
+			_mtx.unlock();
+		}
 	}
 }
 
@@ -616,6 +722,7 @@ void Chunk::drawArray( GLint & counter )
 {
 	_mtx.lock();
 	if (!_vaoReset) {
+		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		_mtx.unlock();
 		++counter;
 		// if (counter > 5) { // we don't load more than 5 new chunks per frame

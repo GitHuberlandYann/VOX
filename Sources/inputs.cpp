@@ -100,11 +100,10 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		
 		for (auto& c : _visible_chunks) {
 			if (c->isInChunk(posX, posY)) {
-				Chunk *chunk = c;
 				// std::cout << "handle hit at pos " << _block_hit.x << ", " << _block_hit.y << ", " << _block_hit.z << std::endl;
 				(collect)
-					? chunk->handleHit(_inventory, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding)
-					: chunk->handleHit(NULL, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding);
+					? c->handleHit(_inventory, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding, _visible_chunks)
+					: c->handleHit(NULL, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding, _visible_chunks);
 				return ;
 			}
 		}
@@ -155,13 +154,13 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			}
 			if (previous_chunk != current_chunk) {
 				(collect)
-						? prev_chunk->handleHit(_inventory, type, previous_block, adding)
-						: prev_chunk->handleHit(NULL, type, previous_block, adding);
+						? prev_chunk->handleHit(_inventory, type, previous_block, adding, _visible_chunks)
+						: prev_chunk->handleHit(NULL, type, previous_block, adding, _visible_chunks);
 				return ;
 			}
 			(collect)
-					? chunk->handleHit(_inventory, type, previous_block, adding)
-					: chunk->handleHit(NULL, type, previous_block, adding);
+					? chunk->handleHit(_inventory, type, previous_block, adding, _visible_chunks)
+					: chunk->handleHit(NULL, type, previous_block, adding, _visible_chunks);
 			return ;
 		}
 		previous_block = i;

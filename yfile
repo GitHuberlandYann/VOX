@@ -22,14 +22,13 @@ Project Requirements:
         DONE - Have a render distance always higher than 14 ??? guess 1 is 16 blocs
         DONE - fps counter is displayed (UI)
         DONE - Render is smooth and doesn’t freeze, event at x20 speed
-        - Being able to delete blocks with the mouse (+put some down I want)
+        DONE - Being able to delete blocks with the mouse (+put some down I want)
         - different biomes
 
 TODOS:
 	- water if air && level < 64
     - better caves
     - biomes
-    - chunk border fix
     - skybox
     - save block changed
     - main menu
@@ -41,6 +40,8 @@ TODOS:
             - speed
         - quit
     - items on ground after break
+    - Sound https://www.ambiera.com/irrklang/tutorials.html
+    - hitbox around player for collisions
     - nether
 
 IN PROGRES:
@@ -65,6 +66,7 @@ DONE:
     - leaves touchy
     - inventory block count
     - block break animation
+    - chunk border fix
     - FOV changed on isRunning change
 
 

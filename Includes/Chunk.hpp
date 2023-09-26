@@ -75,6 +75,7 @@ class Chunk
 		GLint *_blocks;
 		GLint *_vertices;
 		GLint _displayed_blocks;
+		std::list<Chunk *> _vis_chunks;
 		std::thread _thread;
 		std::mutex _mtx;
 
@@ -86,6 +87,7 @@ class Chunk
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees);
 		void generate_blocks( void );
 		int sand_fall_endz( glm::ivec3 pos );
+		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
 		void add_block( Inventory *inventory, glm::ivec3 pos, int type );
         void fill_vertex_array( void );
@@ -104,8 +106,9 @@ class Chunk
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
 		int isHit( glm::ivec3 pos );
-		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
+		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding, std::list<Chunk *> vis_chunks );
 		void updateBreak( glm::ivec4 block_hit, int frame );
+		void update_border(int posX, int posY, int level, bool adding);
 		bool collision( glm::vec3 & pos, Camera &cam );
         void drawArray( GLint & counter );
 };
