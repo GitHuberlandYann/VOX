@@ -65,7 +65,7 @@ GLint Chunk::get_empty_faces( int row, int col, int level, bool isNotLeaves )
 			break ;
 		case 255:
 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves) * (1 << 5);
-			res += (1 << 4);
+			// res += (1 << 4); // don't wan't to hide face from above, because we can be at pos 257 and looking at block 255
 			break ;
 		default:
 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves) * (1 << 5);
@@ -84,10 +84,12 @@ bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves )
 	bool below, above;
 	switch (level) {
 		case 0:
+			below = false;
 			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves);
 			break ;
 		case 255:
 			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves);
+			above = true;
 			break ;
 		default:
 			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves);
@@ -560,7 +562,10 @@ int Chunk::isHit( glm::ivec3 pos )
 {
 	// std::cout << "current_chunk is " << _startX << ", " << _startY << std::endl;
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
-	if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
+	if (chunk_pos.z < 0 || chunk_pos.z > 255) {
+		return (blocks::AIR);
+	}
+	if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE) {
 		std::cout << "ERROR block out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 		return (blocks::AIR);
 	}

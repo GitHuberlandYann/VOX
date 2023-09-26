@@ -39,6 +39,6 @@ extern std::mutex mtx_inventory;
 # include "Ui.hpp"
 # include "OpenGL_Manager.hpp"
 
-extern const siv::PerlinNoise::seed_type perlin_seed;
+extern siv::PerlinNoise::seed_type perlin_seed;
 
 #endif

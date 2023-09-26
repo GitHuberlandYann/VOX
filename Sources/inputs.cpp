@@ -3,6 +3,7 @@
 // extern OpenGL_Manager *render;
 Camera camera(glm::vec3(1.0f, -2.0f, 66.0f));
 Chunk *current_chunk_ptr = NULL;
+Chunk *prev_chunk_ptr = NULL;
 Chunk *chunk_hit = NULL;
 Inventory *scroll_inventory = NULL;
 double lastX = WIN_WIDTH / 2.0f;
@@ -73,9 +74,8 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 			}
 		}
 		if (first_loop) {
-			if (current_chunk_ptr != chunk) {
-				current_chunk_ptr = chunk;
-			}
+			(current_chunk_ptr) ? prev_chunk_ptr = current_chunk_ptr : prev_chunk_ptr = chunk;
+			current_chunk_ptr = chunk;
 			first_loop = false;
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
@@ -320,6 +320,8 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		if (_game_mode == SURVIVAL) {
 			_break_time += deltaTime;
 			if (_block_hit.w != blocks::AIR && _break_time >= s_blocks[_block_hit.w].break_time_hand) {
+				_break_time = 0;
+				_break_frame = 0;
 				handle_add_rm_block(false, s_blocks[_block_hit.w].byHand); // collect in inventory if byhand allowed, will later use tools
 			} else {
 				int break_frame = static_cast<int>(10 * _break_time / s_blocks[_block_hit.w].break_time_hand) + 1;
@@ -452,7 +454,8 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 					? camera.processKeyboard(RIGHT, _game_mode)
 					: camera.processKeyboard(LEFT, _game_mode);
 			}
-			current_chunk_ptr->collision(camera._position, camera);
+			prev_chunk_ptr->collision(camera._position, camera);
+			current_chunk_ptr = prev_chunk_ptr;
 			mtx.lock();
 		}
 		mtx.unlock();

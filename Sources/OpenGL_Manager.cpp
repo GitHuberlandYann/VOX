@@ -86,10 +86,12 @@ void OpenGL_Manager::setup_window( void )
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // doesn't seem to work in full sreen mode
-	// glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE); // doesn't seem to work in windowed mode
+	glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE); // doesn't seem to work in windowed mode
 
-	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << std::endl; 
-	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", nullptr, nullptr); // glfwGetPrimaryMonitor()
+	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << std::endl;
+	(__linux__)
+		? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", nullptr, nullptr)
+		: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", glfwGetPrimaryMonitor(), nullptr);
 	if (_window == NULL)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -122,7 +124,7 @@ void OpenGL_Manager::initWorld( void )
 
 void OpenGL_Manager::create_shaders( void )
 {
-	// first setup the ui shader
+	// first setup the ui and text shaders
 	_ui->setup_shader();
 	
 	// then setup the main shader
@@ -222,18 +224,19 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 
 void OpenGL_Manager::main_loop( void )
 {	
-	// glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	// if (glfwRawMouseMotionSupported()) {
-	// 	// std::cout << "RAW MOUSE MOTION ENABLED" << std::endl;
-	// 	glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-	// }
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glfwSwapInterval(1);
 	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
-	// glfwSetCursorPosCallback(_window, cursor_position_callback); // doesn't work on wsl
-    // glfwSetScrollCallback(_window, scroll_callback);
+	if (!__linux__) {
+		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		if (glfwRawMouseMotionSupported()) {
+			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+		}
+		glfwSetCursorPosCallback(_window, cursor_position_callback);
+		glfwSetScrollCallback(_window, scroll_callback);
+	}
 
 	check_glstate("setup done, entering main loop\n");
 
