@@ -545,6 +545,9 @@ void Chunk::handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool addi
 
 void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 {
+	if (block_hit.w == blocks::AIR) {
+		return ;
+	}
 	glm::ivec3 chunk_pos = glm::ivec3(block_hit.x - _startX, block_hit.y - _startY, block_hit.z);
 	if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
 		std::cout << "ERROR block hit out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;

@@ -51,14 +51,9 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 	std::vector<glm::ivec3> ids = camera.get_ray_casting(10);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
-	glm::ivec3 player_pos;
 	Chunk *chunk = NULL, *prev_chunk = NULL;
-	bool start = true;
+	bool first_loop = true;
 	for (auto& i : ids) {
-		if (start) {
-			player_pos = i;
-			start = false;
-		}
 		// std::cout << "checking > " << i.x << ", " << i.y << ", " << i.z << std::endl;
 		int posX = chunk_pos(i.x);
 		int posY = chunk_pos(i.y);
@@ -76,6 +71,12 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 				std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
 				break ;
 			}
+		}
+		if (first_loop) {
+			if (current_chunk_ptr != chunk) {
+				current_chunk_ptr = chunk;
+			}
+			first_loop = false;
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		int value = chunk->isHit(i);
@@ -226,9 +227,6 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 			mtx.lock();
 			if (camera.chunkInFront((*it)->getStartX(), (*it)->getStartY())) {
 				(*it)->setVisibility(&newvis_chunks, posX, posY, render_dist * CHUNK_SIZE);
-				if ((*it)->isInChunk(posX, posY)) {
-						current_chunk_ptr = *it;
-				}
 			}
 			mtx.unlock();
 		}
@@ -245,38 +243,28 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 
 	for (int row = -render_dist; row <= render_dist; row++) {
 		for (int col = -render_dist; col <= render_dist; col++) {
-			// if (camera.chunkInFront(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
-				bool isInChunk = false;
+			bool isInChunk = false;
 			
-				// it = newvis_chunks.begin();
-				// for (; it != newvis_chunks.end(); it++) {
-				// 	if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
-				// 		isInChunk = true;
-				// 		break ;
-				// 	}
-				// }
+			mtx.lock();
+			ite = chunks->end();
+			it = chunks->begin();
+			mtx.unlock();
+			for (; it != ite;) {
 				mtx.lock();
-				ite = chunks->end();
-				it = chunks->begin();
-				mtx.unlock();
-				for (; it != ite;) {
-					mtx.lock();
-					if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
-						isInChunk = true;
-						mtx.unlock();
-						break ;
-					}
-					it++;
+				if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
+					isInChunk = true;
 					mtx.unlock();
+					break ;
 				}
+				it++;
+				mtx.unlock();
+			}
 
-				// std::cout << "x: " << pos.x << ", y: " << pos.y << std::endl;
-				if (!isInChunk) {
-					//create new chunk where player stands
-					Chunk *newChunk = new Chunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE);
-					newChunk->generate_chunk(chunks);
-				}
-			// }
+			if (!isInChunk) {
+				//create new chunk where player stands
+				Chunk *newChunk = new Chunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE);
+				newChunk->generate_chunk(chunks);
+			}
 		}
 	}
 }
@@ -369,18 +357,6 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		_key_pick_block = 0;
 	}
 
-	// update block hit
-	Chunk *save_chunk = chunk_hit;
-	glm::ivec4 block_hit = get_block_hit();
-	if (_block_hit != block_hit) {
-		if (_break_frame && save_chunk) {
-			save_chunk->updateBreak(_block_hit, 0);
-		}
-		_block_hit = block_hit;
-		_break_time = 0;
-		_break_frame = 0;
-	}
-
 	if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS && ++_key_fill == 1) {
 		++_fill;
 		if (_fill == F_LAST)
@@ -450,8 +426,19 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		camera.processPitch(key_cam_pitch);
 	}
 
-	// we update the current chunk before we update cam view, because we check in new chunk for collision
-	chunk_update();
+	// we update the current chunk before we update cam view, because we check in current chunk for collision
+	// update block hit
+	Chunk *save_chunk = chunk_hit;
+	glm::ivec4 block_hit = get_block_hit();
+	if (_block_hit != block_hit) {
+		if (_break_frame && save_chunk) {
+			save_chunk->updateBreak(_block_hit, 0);
+		}
+		_block_hit = block_hit;
+		_break_time = 0;
+		_break_frame = 0;
+	}
+
 	if (_game_mode == SURVIVAL) {
 		mtx.lock();
 		if (current_chunk_ptr->collision(camera._position, camera)) {

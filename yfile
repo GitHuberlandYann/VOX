@@ -40,12 +40,10 @@ TODOS:
             - render dist
             - speed
         - quit
-    - block break animation
     - items on ground after break
     - nether
 
 IN PROGRES:
-    - obstacle detection for physics + game mode
     - https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
     - https://stackoverflow.com/questions/54583368/how-to-draw-multiple-objects-in-opengl-using-multiple-vao-and-vbo
 
@@ -56,6 +54,7 @@ DONE:
     - full screen mode
     - mouse movements
     - inventory
+    - obstacle detection for physics + game mode
     - player gravity
     - better fall damage
     - placing sand = gravity
@@ -65,6 +64,7 @@ DONE:
     - flowers destroyed if block underneath destroyed
     - leaves touchy
     - inventory block count
+    - block break animation
     - FOV changed on isRunning change
 
 
