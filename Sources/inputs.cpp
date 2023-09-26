@@ -86,7 +86,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 	return (glm::ivec4(0, 0, 0, blocks::AIR));
 }
 
-void OpenGL_Manager::handle_add_rm_block( bool adding )
+void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 {
 	if (_block_hit.w == blocks::AIR) {
 		return ;
@@ -99,7 +99,9 @@ void OpenGL_Manager::handle_add_rm_block( bool adding )
 			if (c->isInChunk(posX, posY)) {
 				Chunk *chunk = c;
 				// std::cout << "handle hit at pos " << _block_hit.x << ", " << _block_hit.y << ", " << _block_hit.z << std::endl;
-				chunk->handleHit(_inventory, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding);
+				(collect)
+					? chunk->handleHit(_inventory, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding)
+					: chunk->handleHit(NULL, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding);
 				return ;
 			}
 		}
@@ -320,13 +322,21 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	}
 
 	// add and remove blocks
-	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && ++_key_rm_block == 1) {
-		handle_add_rm_block(false);
+	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		if (_game_mode == SURVIVAL) {
+			_break_time += deltaTime;
+			if (_block_hit.w != blocks::AIR && _break_time >= s_blocks[_block_hit.w].break_time_hand) {
+				handle_add_rm_block(false, s_blocks[_block_hit.w].byHand); // collect in inventory if byhand allowed, will later use tools
+			}
+		} else if (++_key_rm_block == 1) {
+			handle_add_rm_block(false, true);
+		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 		_key_rm_block = 0;
+		_break_time = 0;
 	}
 	if (_key_rm_block != 1 && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) && ++_key_add_block == 1) { // I don't want to try to del and add at the same time
-		handle_add_rm_block(true);
+		handle_add_rm_block(true, true);
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_key_add_block = 0;
 	}

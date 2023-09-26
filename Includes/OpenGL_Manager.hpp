@@ -43,6 +43,7 @@ class OpenGL_Manager
 		glm::vec3 _background_color;
 		GLint _key_rdist, _render_distance, _key_fill, _fill, _key_add_block, _key_rm_block, _key_h, _key_g, _key_j, _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9;
 		bool _debug_mode, _game_mode, _f5_mode;
+		float _break_time;
 		std::list<Chunk *> _chunks;
 		std::list<Chunk *> _visible_chunks;
 		std::list<Chunk *> _delete_chunks;
@@ -56,7 +57,7 @@ class OpenGL_Manager
 		void user_inputs( float deltaTime );
 		// void update_cam_matrix( void );
 		glm::ivec4 get_block_hit( void );
-		void handle_add_rm_block( bool adding );
+		void handle_add_rm_block( bool adding, bool collect );
 		void update_cam_view( void );
 		void update_cam_perspective( void );
 

@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _fall_time(0), _fall_distance(0), _fov(FOV), _fall_speed(0), _isRunning(false), _movement_speed(SPEED), _health_points(19), _inJump(false), _touchGround(false)
+Camera::Camera( glm::vec3 position ) : _fall_time(0), _fall_distance(0), _fov(FOV), _fall_speed(0), _isRunning(false), _movement_speed(SPEED), _health_points(20), _inJump(false), _touchGround(false)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
