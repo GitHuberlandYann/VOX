@@ -5,41 +5,6 @@
 # define CHUNK_SIZE 16
 # define WORLD_HEIGHT 256
 
-// enum {
-// 	ADD_BLOCK,
-// 	RM_BLOCK
-// };
-
-// const std::string block_names[64] = {
-// 	"AIR", "GRASS_BLOCK", "OAK_TRUNK", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD",
-// 	"BEDROCK", "DIRT_BLOCK", "STONE", "SAND", "GRAVEL", "OAK_LEAVES", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD",
-// 	"COAL_ORE", "IRON_ORE", "DIAMOND_ORE", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD",
-// 	"POPPY", "DANDELION", "BLUE_ORCHID", "ALLIUM", "CORNFLOWER", "PINK_TULIP", "GRASS", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD", "TBD"
-// };
-
-enum blocks {
-	AIR,
-	GRASS_BLOCK,
-	OAK_TRUNK,
-	BEDROCK = 16,
-	DIRT,
-	STONE,
-	SAND,
-	GRAVEL,
-	OAK_LEAVES,
-	COAL_ORE = 32,
-	IRON_ORE,
-	DIAMOND_ORE,
-	POPPY = 48,
-	DANDELION,
-	BLUE_ORCHID,
-	ALLIUM,
-	CORNFLOWER,
-	PINK_TULIP,
-	GRASS,
-	NOTVISIBLE = 1000
-};
-
 const GLint adj_blocks[6][3] = {
 	{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}
 };

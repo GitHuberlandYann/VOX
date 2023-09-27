@@ -1,9 +1,32 @@
 #ifndef BLOCKS_HPP
 # define BLOCKS_HPP
 
+enum blocks {
+	AIR,
+	GRASS_BLOCK,
+	OAK_TRUNK,
+	BEDROCK = 16,
+	DIRT,
+	STONE,
+	SAND,
+	GRAVEL,
+	OAK_LEAVES,
+	COAL_ORE = 32,
+	IRON_ORE,
+	DIAMOND_ORE,
+	POPPY = 48,
+	DANDELION,
+	BLUE_ORCHID,
+	ALLIUM,
+	CORNFLOWER,
+	PINK_TULIP,
+	GRASS,
+	NOTVISIBLE = 1000
+};
+
 struct Block {
 	public:
-		std::string name = "BLOCK";
+		std::string name = "DEFAULT";
 		bool byHand = false;
 		float break_time_hand = FLT_MAX;
 };
