@@ -89,7 +89,7 @@ void OpenGL_Manager::setup_window( void )
 	glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE); // doesn't seem to work in windowed mode
 
 	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << std::endl;
-	(__linux__)
+	(IS_LINUX)
 		? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", nullptr, nullptr)
 		: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", glfwGetPrimaryMonitor(), nullptr);
 	if (_window == NULL)
@@ -229,7 +229,7 @@ void OpenGL_Manager::main_loop( void )
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glfwSwapInterval(1);
 	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
-	if (!__linux__) {
+	if (!IS_LINUX) {
 		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		if (glfwRawMouseMotionSupported()) {
 			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);

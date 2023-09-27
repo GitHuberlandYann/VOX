@@ -4,9 +4,11 @@
 # if __linux__
 #  define WIN_WIDTH 1540//1920
 #  define WIN_HEIGHT 845//1080
+#  define IS_LINUX true
 # else
 #  define WIN_WIDTH 2560
 #  define WIN_HEIGHT 1440
+#  define IS_LINUX false
 # endif
 
 # define RENDER_DISTANCE 20

@@ -63,9 +63,15 @@ void Camera::setRun( bool value )
 {
 	_isRunning = value;
 	if (_isRunning) {
-		_fov = FOV + 1;
+		_fov += 1.0f;
+		if (_fov > FOV + 2) {
+			_fov = FOV + 2;
+		}
 	} else {
-		_fov = FOV;
+		_fov -= 1.0f;
+		if (_fov < FOV) {
+			_fov = FOV;
+		}
 	}
 	_fovUpdate = true;
 }

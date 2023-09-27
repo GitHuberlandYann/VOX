@@ -49,7 +49,7 @@ void OpenGL_Manager::update_cam_matrix( void )
 
 glm::ivec4 OpenGL_Manager::get_block_hit( void )
 {
-	std::vector<glm::ivec3> ids = camera.get_ray_casting(10);
+	std::vector<glm::ivec3> ids = camera.get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : 10);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
 	Chunk *chunk = NULL, *prev_chunk = NULL;
@@ -116,7 +116,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
 	}
-	std::vector<glm::ivec3> ids = camera.get_ray_casting(10);
+	std::vector<glm::ivec3> ids = camera.get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : 10);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
 	glm::ivec3 player_pos, previous_block;
