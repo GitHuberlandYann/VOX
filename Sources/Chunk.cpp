@@ -143,8 +143,8 @@ int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, 
 void Chunk::generate_blocks( void )
 {
 	const siv::PerlinNoise perlin{ perlin_seed };
-	// std::minstd_rand0  generator(_startX * 19516 + _startY * 56849);
-	std::minstd_rand0  generator((_startX * 19511 + _startY * 56844) * perlin_seed);
+	std::minstd_rand0  generator((_startX * 19516 + _startY * 56849) * perlin_seed);
+	// std::minstd_rand0  generator(perlin.noise2D(_startX * _startX, _startY * _startY) * perlin_seed);
 	std::uniform_int_distribution<int> distribution(0, 1000);
 
 	std::vector<glm::ivec3> trees;
@@ -172,9 +172,6 @@ void Chunk::generate_blocks( void )
 				// double cheese = perlin.octave3D_01((_startX + row) / 100.0f, (_startY + col) / 100.0f, (level) / 100.0f, 4);
 				double bridge = perlin.noise2D_01((_startX + row) / 60.0f, (level) / 15.0f);
 				double obridge = perlin.noise2D_01((_startY + col) / 60.0f, (level) / 15.0f);
-				if (level < 10) {
-					cave = (cave - 0.5) * (13 - 10 * (level / 10.0f)) + 0.5;
-				} 
 				// (level < surface_level - 5 && cave <= 0.2f && level > 0) //  * (1 - (0.5 + glm::abs(level - surface_level / 2) / surface_level))
 				(level < surface_level - 5 && ((cave >= 0.459 && cave <= 0.551f) && !(pillar < 0.3f - 0.7f * (surface_level / 2 - glm::abs(level - surface_level / 2)) / (5.0f * surface_level)) && !(bridge < 0.2f) && !(obridge < 0.2f)) && level > ground_cave)
 					? _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR
@@ -213,19 +210,19 @@ void Chunk::generate_blocks( void )
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
 				if (value == blocks::STONE) {
-					if (coal_blobs < 20 && distribution(generator) <= 80) {
+					if (coal_blobs < 20 && distribution(generator) <= 1) {
 						int size = (distribution(generator) + 3) / 30;
 						gen_ore_blob(blocks::COAL_ORE, row, col, level, size, 0);
 						coal_blobs++;
-					} else if (iron_blobs < 10 && (level <= 56 || level > 80) && distribution(generator) <= 80) {
+					} else if (iron_blobs < 10 && (level <= 56 || level > 80) && distribution(generator) <= 1) {
 						int size = (distribution(generator) + 3) / 60;
 						gen_ore_blob(blocks::IRON_ORE, row, col, level, size, 0);
 						iron_blobs++;
-					} else if (!gravel_blob && distribution(generator) <= 10) {
+					} else if (!gravel_blob && distribution(generator) <= 1) {
 						int size = 60;
 						gen_ore_blob(blocks::GRAVEL, row, col, level, size, 0);
 						gravel_blob = true;
-					} else if (diamond_blobs < 7 && level < 15 && distribution(generator) <= 60) {
+					} else if (diamond_blobs < 7 && level < 15 && distribution(generator) <= 1) {
 						int size = (distribution(generator) + 5) / 200;
 						gen_ore_blob(blocks::DIAMOND_ORE, row, col, level, size, 0);
 						diamond_blobs++;
@@ -257,6 +254,8 @@ void Chunk::generate_blocks( void )
 						} else if (value == blocks::GRAVEL && distribution(generator) < 100) {
 							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::STONE;
 						} else if (value == blocks::DIAMOND_ORE && distribution(generator) < 900) {
+							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::STONE;
+						} else if (value == blocks::COAL_ORE && distribution(generator) < 200) {
 							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::STONE;
 						} 
 					} else {

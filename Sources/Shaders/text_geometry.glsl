@@ -15,9 +15,9 @@ out vec2 Texcoord;
 // const vec2 bottom = vec2(2.0f / 16.0f, 0.0f);
 
 const vec2 top_left = vec2(0.0f, 0.0f);
-const vec2 top_right = vec2(1.0f / 16.0f, 0.0f);
-const vec2 bottom_left = vec2(0.0f, 1.0f / 8.0f);
-const vec2 bottom_right = vec2(1.0f / 16.0f, 1.0f / 8.0f);
+const vec2 top_right = vec2(0.99f / 16.0f, 0.0f);
+const vec2 bottom_left = vec2(0.0f, 0.99f / 8.0f);
+const vec2 bottom_right = vec2(0.99f / 16.0f, 0.99f / 8.0f);
 
 void emitFace( vec4 v0, vec4 v1, vec4 v2, vec4 v3 )
 {

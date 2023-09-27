@@ -54,9 +54,14 @@ bool Camera::chunkInFront( int posX, int posY )
 	// (void)posY;
 	// return (true);
 	if (_front.z <= -0.85f || _front.z >= 0.85f) {
-		return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * glm::sign(_front.x) - _position.x, posY + 2 * CHUNK_SIZE * glm::sign(_front.y) - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
+		return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * glm::sign(_front.x) - _position.x, posY + 2 * CHUNK_SIZE * glm::sign(_front.y) - _position.y), glm::vec2(_front.x, _front.y)) >= 0
+			&& glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * glm::sign(_front.x) - _position.x, posY + 2 * CHUNK_SIZE * glm::sign(_front.y) - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
+	} else if (_front.z <= -0.45f || _front.z >= 0.45f) {
+		return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0
+			&& glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
 	}
-	return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
+	return (glm::dot(glm::vec2(posX + 1 * CHUNK_SIZE * (_front.x + _right.x) - _position.x, posY + 1 * CHUNK_SIZE * (_front.y + _right.y) - _position.y), glm::vec2((_front.x + _right.x), (_front.y + _right.y))) >= 0
+		&& glm::dot(glm::vec2(posX + 1 * CHUNK_SIZE * (_front.x - _right.x) - _position.x, posY + 1 * CHUNK_SIZE * (_front.y - _right.y) - _position.y), glm::vec2((_front.x - _right.x), (_front.y - _right.y))) >= 0);
 }
 
 void Camera::setRun( bool value )

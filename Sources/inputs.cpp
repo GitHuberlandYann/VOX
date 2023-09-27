@@ -52,7 +52,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 	std::vector<glm::ivec3> ids = camera.get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : 10);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
-	Chunk *chunk = NULL, *prev_chunk = NULL;
+	Chunk *chunk = NULL;
 	bool first_loop = true;
 	for (auto& i : ids) {
 		// std::cout << "checking > " << i.x << ", " << i.y << ", " << i.z << std::endl;
@@ -63,7 +63,6 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 			current_chunk = glm::ivec2(posX, posY);
 			for (auto& c : _visible_chunks) {
 				if (c->isInChunk(posX, posY)) {
-					prev_chunk = chunk;
 					chunk = c;
 					break ;
 				}

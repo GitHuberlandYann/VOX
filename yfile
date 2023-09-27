@@ -26,7 +26,7 @@ Project Requirements:
         - different biomes
 
 TODOS:
-	- water if air && level < 64
+	- water if air && level > surface_level && level < 64
     - biomes
     - skybox
     - save block changed
@@ -41,6 +41,7 @@ TODOS:
     - items on ground after break
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - hitbox around player for collisions
+    - hide faces not oriented towards us
     - nether
 
 IN PROGRES:
@@ -49,6 +50,7 @@ IN PROGRES:
 
 DONE:
 	- pthread chunk creation
+    - only display chunks in fieldview + little offset
 	- write stuff on screen
     - better spacing between characters displayed
     - full screen mode
