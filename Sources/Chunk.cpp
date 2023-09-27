@@ -113,7 +113,7 @@ int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, 
 	if (value) {
 		if (value == blocks::STONE) {
 			double undergound = perlin.noise3D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, level / 100.0f);
-			(undergound < 0.55) ? : value = blocks::SAND;
+			(undergound < 0.55) ? : value = blocks::GRAVEL;//blocks::SAND;
 		}
 	} else if (tree_gen && surface_level > 65 && level <= surface_level + 5 && surface_level < 220) {
 		value = blocks::OAK_TRUNK;
@@ -164,12 +164,22 @@ void Chunk::generate_blocks( void )
 			bool cornflower = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			bool pink_tulip = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
 			bool grass = (distribution(generator) <= 100 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
+			double pillar = perlin.noise2D_01((_startX + row) / 20.0f, (_startY + col) / 20.0f);
+			int ground_cave = 7 + perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) * 14;
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
-				// double cave = perlin.octave3D_01((_startX - 1000 + row) / 100.0f, (_startY - 1000 + col) / 100.0f, (level) / 20.0f, 4);
-				// (level < surface_level - 5 && cave <= 0.2f && level > 0)
-				// 	? _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR
-				// 	: _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
-				_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
+				// double cave = perlin.octave3D_01((_startX + row) / 100.0f, (_startY + col) / 100.0f, (level) / 100.0f, 4);
+				double cave = perlin.octave3D_01((_startX + row) / 750.0f, (_startY + col) / 750.0f, (level) / 750.0f, 4); // big holes
+				// double cheese = perlin.octave3D_01((_startX + row) / 100.0f, (_startY + col) / 100.0f, (level) / 100.0f, 4);
+				double bridge = perlin.noise2D_01((_startX + row) / 60.0f, (level) / 15.0f);
+				double obridge = perlin.noise2D_01((_startY + col) / 60.0f, (level) / 15.0f);
+				if (level < 10) {
+					cave = (cave - 0.5) * (13 - 10 * (level / 10.0f)) + 0.5;
+				} 
+				// (level < surface_level - 5 && cave <= 0.2f && level > 0) //  * (1 - (0.5 + glm::abs(level - surface_level / 2) / surface_level))
+				(level < surface_level - 5 && ((cave >= 0.459 && cave <= 0.551f) && !(pillar < 0.3f - 0.7f * (surface_level / 2 - glm::abs(level - surface_level / 2)) / (5.0f * surface_level)) && !(bridge < 0.2f) && !(obridge < 0.2f)) && level > ground_cave)
+					? _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR
+					: _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
+				// _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
 				// GLfloat squashing_factor;
 				// (level < 64)
 				// 	? squashing_factor = (64 - level) / 64.0f
@@ -244,7 +254,11 @@ void Chunk::generate_blocks( void )
 						// reverting ores back to stone if they are exposed
 						if (value == blocks::IRON_ORE && distribution(generator) < 500) {
 							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::STONE;
-						}
+						} else if (value == blocks::GRAVEL && distribution(generator) < 100) {
+							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::STONE;
+						} else if (value == blocks::DIAMOND_ORE && distribution(generator) < 900) {
+							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::STONE;
+						} 
 					} else {
 						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
 					}
@@ -723,7 +737,7 @@ bool Chunk::collision( glm::vec3 &pos, Camera &cam )
 	return (false);
 }
 
-void Chunk::drawArray( GLint & counter )
+void Chunk::drawArray( GLint & counter, GLint &block_counter )
 {
 	_mtx.lock();
 	if (!_vaoReset) {
@@ -740,5 +754,6 @@ void Chunk::drawArray( GLint & counter )
 	}
     glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down
 	glDrawArrays(GL_POINTS, 0, _displayed_blocks);
+	block_counter += _displayed_blocks;
 	_mtx.unlock();
 }

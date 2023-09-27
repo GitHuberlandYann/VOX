@@ -27,7 +27,6 @@ Project Requirements:
 
 TODOS:
 	- water if air && level < 64
-    - better caves
     - biomes
     - skybox
     - save block changed
@@ -55,6 +54,7 @@ DONE:
     - full screen mode
     - mouse movements
     - inventory
+    - better caves
     - obstacle detection for physics + game mode
     - player gravity
     - better fall damage

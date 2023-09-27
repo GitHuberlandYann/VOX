@@ -268,11 +268,11 @@ void OpenGL_Manager::main_loop( void )
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		GLint newVaoCounter = 0;
+		GLint newVaoCounter = 0, blockCounter = 0;
 		mtx_visible_chunks.lock();
 		std::list<Chunk *>::iterator it = _visible_chunks.begin();
 		for (; it != _visible_chunks.end(); it++) {
-			(*it)->drawArray(newVaoCounter);
+			(*it)->drawArray(newVaoCounter, blockCounter);
 		}
 		mtx_visible_chunks.unlock();
 
@@ -286,8 +286,9 @@ void OpenGL_Manager::main_loop( void )
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
 				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "")
 				+ "\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
-				+ "\nDisplayed chunks > " + std::to_string(_visible_chunks.size())
+				+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size())
 				+ '/' + std::to_string(_chunks.size())
+				+ "\nDisplayed blocks\t> " + std::to_string(blockCounter)
 				+ "\nRender Distance\t> " + std::to_string(_render_distance)
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				// + _inventory->getInventoryString()

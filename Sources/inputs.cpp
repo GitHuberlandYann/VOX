@@ -377,6 +377,10 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	GLint key_render_dist = (glfwGetKey(_window, GLFW_KEY_EQUAL) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_MINUS) == GLFW_PRESS);
 	if (key_render_dist && ++_key_rdist == 1 && _render_distance + key_render_dist > 0) {
 		_render_distance += key_render_dist;
+		if (_thread.joinable()) {
+			_thread.join();
+		}
+		_thread = std::thread(thread_chunk_update, &_chunks, &_visible_chunks, &_delete_chunks, _render_distance, _current_chunk.x, _current_chunk.y);
 		// std::cout << "render distance set to " << _render_distance << std::endl;
 	} else if (!key_render_dist) {
 		_key_rdist = 0;
