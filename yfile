@@ -27,7 +27,6 @@ Project Requirements:
 
 TODOS:
 	- water if air && level > surface_level && level < 64
-    - biomes
     - skybox
     - save block changed
     - main menu
@@ -42,11 +41,11 @@ TODOS:
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - hitbox around player for collisions
     - player arm in survival mode
-    - stop fov run if player idle
-    - hide faces not oriented towards us
+    - hide faces not oriented towards us // face culling ..
     - nether
 
 IN PROGRES:
+    - biomes
     - https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
     - https://stackoverflow.com/questions/54583368/how-to-draw-multiple-objects-in-opengl-using-multiple-vao-and-vbo
 
@@ -72,6 +71,7 @@ DONE:
     - block break animation
     - chunk border fix
     - FOV changed on isRunning change
+    - stop fov run if player idle
 
 
 Some info:

@@ -5,6 +5,16 @@
 # define CHUNK_SIZE 16
 # define WORLD_HEIGHT 256
 
+enum cont {
+	CONT_MUSHROOM_FIELDS,
+	CONT_DEEP_OCEAN,
+	CONT_OCEAN,
+	CONT_COAST,
+	CONT_NEAR_INLAND,
+	CONT_MID_INLAND,
+	CONT_FAR_INLAND
+};
+
 const GLint adj_blocks[6][3] = {
 	{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}
 };
@@ -37,6 +47,7 @@ class Chunk
         GLuint _vao, _vbo;
         bool _isVisible, _vaoSet, _vaoReset;
         GLint _startX, _startY;
+		GLint _continent;
 		GLint *_blocks;
 		GLint *_vertices;
 		GLint _displayed_blocks;
@@ -47,9 +58,13 @@ class Chunk
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		GLint get_empty_faces( int row, int col, int level, bool isNotLeaves );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves );
-		int get_block_type(siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
+		int get_block_type_cave( int row, int col, int level, int ground_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
-			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees);
+			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
+		int get_block_type( siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
+			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
+			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
+		int surfaceLevel( int row, int col, siv::PerlinNoise perlin );
 		void generate_blocks( void );
 		int sand_fall_endz( glm::ivec3 pos );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );

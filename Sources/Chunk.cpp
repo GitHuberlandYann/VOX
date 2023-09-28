@@ -45,7 +45,7 @@ void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int & blob_
    * also use this for all 'see-through' blocks like leaves, water..*/
 static int air_flower( int value, bool air_leaves )
 {
-	if (value >= blocks::POPPY || (air_leaves && value == blocks::OAK_LEAVES)) {
+	if (value >= blocks::POPPY || value == blocks::CACTUS || (air_leaves && value == blocks::OAK_LEAVES)) {
 		return (0);
 	}
 	return (value);
@@ -102,18 +102,67 @@ bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves )
 		|| below || above);
 }
 
-int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
+int Chunk::get_block_type_cave( int row, int col, int level, int ground_level,
 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
-	bool grass, bool tree_gen, std::vector<glm::ivec3> & trees)
+	bool grass, bool tree_gen, std::vector<glm::ivec3> & trees )
+{
+	int value = blocks::AIR;
+	if (level == ground_level + 1 && ground_level > 9) {
+		value = blocks::GRASS_BLOCK;
+	} else if (tree_gen && level <= ground_level + 6 && ground_level > 9) {
+		value = blocks::OAK_TRUNK;
+		if (level == ground_level + 6) {
+			trees.push_back(glm::ivec3(row, col, level));
+		}
+	} else if (level == ground_level + 2 && ground_level > 9) {
+		if (pink_tulip) {
+			value = blocks::POPPY;
+		} else if (blue_orchid) {
+			value = blocks::DANDELION;
+		} else if (dandelion) {
+			value = blocks::BLUE_ORCHID;
+		} else if (cornflower) {
+			value = blocks::ALLIUM;
+		} else if (allium) {
+			value = blocks::CORNFLOWER;
+		} else if (poppy) {
+			value = blocks::PINK_TULIP;
+		} else if (grass) {
+			value = blocks::GRASS;
+		}
+	}
+	return (value);
+}
+
+int Chunk::get_block_type( siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
+	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
+	bool grass, bool tree_gen, std::vector<glm::ivec3> & trees )
 {
 	if (level == 0) {
 		return (blocks::BEDROCK);
 	}
-	int value = (level > surface_level) ? blocks::AIR : (level < surface_level - 2 || level <= 64) ? blocks::STONE : blocks::GRASS_BLOCK;
+	int value = (level > surface_level) ? blocks::AIR : (level < surface_level - 2 || level < SEA_LEVEL) ? blocks::STONE : blocks::GRASS_BLOCK;
 	if (value) {
+		if (_continent == cont::CONT_MUSHROOM_FIELDS) {
+			return (DIAMOND_ORE);
+		}
 		if (value == blocks::STONE) {
 			double undergound = perlin.noise3D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, level / 100.0f);
 			(undergound < 0.55) ? : value = blocks::GRAVEL;//blocks::SAND;
+		} else if (value == blocks::GRASS_BLOCK && _continent <= cont::CONT_COAST) {
+			value = blocks::SAND;
+		}
+	} else if (_continent <= cont::CONT_COAST) {
+		if (surface_level >= SEA_LEVEL && level <= surface_level + 3) {
+			if (tree_gen) {
+				value = blocks::CACTUS;
+			} else if (dandelion && surface_level == SEA_LEVEL) {
+				value = blocks::SUGAR_CANE;
+			} else if (level == surface_level + 1) {
+				if (poppy) {
+					value = blocks::DEAD_BUSH;
+				}
+			}
 		}
 	} else if (tree_gen && surface_level > 65 && level <= surface_level + 5 && surface_level < 220) {
 		value = blocks::OAK_TRUNK;
@@ -140,6 +189,61 @@ int Chunk::get_block_type(siv::PerlinNoise perlin, int row, int col, int level, 
 	return (value);
 }
 
+int Chunk::surfaceLevel( int row, int col, siv::PerlinNoise perlin )
+{
+	_continent = cont::CONT_MID_INLAND;
+	// return glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 100);
+	double continentalness = (perlin.octave2D_01((_startX - 1 + row) / 1000.0f, (_startY - 1 + col) / 1000.0f, 2) - 0.5) * 2 * 3.80;
+	int offset;
+	if (continentalness < -2.05) {//-1.05) {
+		offset = 50;	// mushroom
+		_continent = cont::CONT_MUSHROOM_FIELDS;
+	} else if (continentalness < -0.455) {
+		// offset = -20;	// deep ocean
+		offset = gradient(continentalness, -1.05, -0.455, -40, -10);
+		_continent = cont::CONT_DEEP_OCEAN;
+	} else if (continentalness < -0.19) {
+		// offset = -10;	// ocean
+		offset = gradient(continentalness, -0.455, -0.19, -10, 0);
+		_continent = cont::CONT_OCEAN;
+	} else if (continentalness < -0.11) {
+		// offset = 0;	// coast
+		offset = gradient(continentalness, -0.19, -0.11, 0, 10);
+		_continent = cont::CONT_COAST;
+	} else if (continentalness < 0.03) {
+		// offset = 10; // near inland
+		offset = gradient(continentalness, -0.11, 0.03, 10, 30);
+		_continent = cont::CONT_NEAR_INLAND;
+	} else if (continentalness < 0.3) {
+		// offset = 20;	// mid inland
+		offset = gradient(continentalness, 0.03, 0.3, 30, 40);
+		_continent = cont::CONT_MID_INLAND;
+	} else if (continentalness < 0.4) {
+		// high diff in short span
+		offset = gradient(continentalness, 0.3, 0.4, 40, 80);
+		_continent = cont::CONT_FAR_INLAND;
+	} else {
+		offset = 80;	// far-inland
+		// offset = gradient(continentalness, 0.3, 3.80, 80, 110);
+		_continent = cont::CONT_FAR_INLAND;
+	}
+	// if (continentalness > -0.11) { // inland
+		// double weirdness = (perlin.octave2D_01((_startX - 1 + row) / 200.0f, (_startY - 1 + col) / 200.0f, 4) - 0.5) * 2 * 2.97;
+		// if (weirdness > -1.0 && weirdness < 1.0) {
+			// double peaks_valleys = 1 - glm::abs(3 * glm::abs(weirdness) - 2);
+			double peaks_valleys = (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 2 * 2.97;
+			offset += 4 * peaks_valleys;
+		// }
+	// }
+
+	if (_continent == cont::CONT_MUSHROOM_FIELDS) { // no rivers in mushroom biomes
+		return (SEA_LEVEL + offset);
+	}
+	double erosion = glm::abs(perlin.octave2D_01((_startX - 1000 + row) / 1000.0f, (_startY - 1000 + col) / 1000.0f, 3) - 0.5);
+	return (gradient(erosion, 0, 0.05, SEA_LEVEL - 6, SEA_LEVEL + offset));
+	// return (SEA_LEVEL + offset);
+}
+
 void Chunk::generate_blocks( void )
 {
 	const siv::PerlinNoise perlin{ perlin_seed };
@@ -152,18 +256,16 @@ void Chunk::generate_blocks( void )
 	// generating base terrain
 	for (int row = 0; row < (CHUNK_SIZE + 2); row++) {
 		for (int col = 0; col < (CHUNK_SIZE + 2); col++) {
-			// int surface_level = glm::floor(SEA_LEVEL + (perlin.noise2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f) - 0.5) * 100); 
-			int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 100);
-			// int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 50
-			// 			+ (perlin.noise2D_01((_startX - 1000 + row) / 1000.0f, (_startY - 1000 + col) / 1000.0f) - 0.5) * 200);
+			// int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 100);
+			int surface_level = surfaceLevel(row, col, perlin);
 			bool tree_gen = (distribution(generator) <= 2 && row > 2 && row < CHUNK_SIZE - 1 && col > 2 && col < CHUNK_SIZE - 1);
-			bool poppy = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
-			bool dandelion = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
-			bool blue_orchid = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
-			bool allium = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
-			bool cornflower = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
-			bool pink_tulip = (distribution(generator) <= 2 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
-			bool grass = (distribution(generator) <= 100 && row > 1 && row < CHUNK_SIZE && col > 1 && col < CHUNK_SIZE);
+			bool poppy = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
+			bool dandelion = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
+			bool blue_orchid = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
+			bool allium = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
+			bool cornflower = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
+			bool pink_tulip = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
+			bool grass = (distribution(generator) <= 100 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
 			double pillar = perlin.noise2D_01((_startX + row) / 20.0f, (_startY + col) / 20.0f);
 			int ground_cave = 7 + perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) * 14;
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
@@ -175,7 +277,7 @@ void Chunk::generate_blocks( void )
 				// // (level < surface_level - 5 && cave <= 0.2f && level > 0) //  * (1 - (0.5 + glm::abs(level - surface_level / 2) / surface_level))
 				double cave = perlin.octave3D_01((_startX + row) / 750.0f, (_startY + col) / 750.0f, (level) / 750.0f, 4); // big holes
 				(level < surface_level - 5 && ((cave >= 0.459 && cave <= 0.551f) && !(pillar < 0.3f - 0.7f * (surface_level / 2 - glm::abs(level - surface_level / 2)) / (5.0f * surface_level))) && level > ground_cave)
-					? _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR
+					? _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type_cave(row, col, level, ground_cave, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees)
 					: _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
 				// _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
 				// GLfloat squashing_factor;

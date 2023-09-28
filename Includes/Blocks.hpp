@@ -5,6 +5,7 @@ enum blocks {
 	AIR,
 	GRASS_BLOCK,
 	OAK_TRUNK,
+	CACTUS,
 	BEDROCK = 16,
 	DIRT,
 	STONE,
@@ -21,6 +22,8 @@ enum blocks {
 	CORNFLOWER,
 	PINK_TULIP,
 	GRASS,
+	SUGAR_CANE,
+	DEAD_BUSH,
 	NOTVISIBLE = 1000
 };
 
@@ -60,6 +63,15 @@ struct OakTrunk : Block {
 			name = "OAK_TRUNK";
 			byHand = true;
 			break_time_hand = 3.0f;
+		}
+};
+
+struct Cactus : Block {
+	public:
+		Cactus() {
+			name = "CACTUS";
+			byHand = true;
+			break_time_hand = 0.6f;
 		}
 };
 
@@ -206,11 +218,29 @@ struct Grass : Block {
 		}
 };
 
+struct SugarCane : Block {
+	public:
+		SugarCane() {
+			name = "SUGAR_CANE";
+			byHand = true;
+			break_time_hand = 0.2f;
+		}
+};
+
+struct DeadBush : Block {
+	public:
+		DeadBush() {
+			name = "DEAD_BUSH";
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
 const Block s_blocks[64] = {
-	Air(), GrassBlock(), OakTrunk(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Air(), GrassBlock(), OakTrunk(), Cactus(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Bedrock(), Dirt(), Stone(), Sand(), Gravel(), OakLeaves(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD()
+	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD()
 };
 
 #endif
