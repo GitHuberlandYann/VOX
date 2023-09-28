@@ -42,11 +42,11 @@ void emitFace( vec4 v0, vec4 v1, vec4 v2, vec4 v3 )
     gl_Position = v1;
 	Texcoord = start + top_right;
     EmitVertex();
-    gl_Position = v3;
-	Texcoord = start + bottom_right;
-    EmitVertex();
     gl_Position = v2;
 	Texcoord = start + bottom_left;
+    EmitVertex();
+    gl_Position = v3;
+	Texcoord = start + bottom_right;
     EmitVertex();
 
     EndPrimitive();

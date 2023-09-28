@@ -51,13 +51,13 @@ void emitFace( vec4 v0, vec4 v1, vec4 v2, vec4 v3, vec2 start )
 	Texcoord = start + top_right;
 	Breakcoord = vec3(breakStart + top_right, vsData[0].Break_frame);
     EmitVertex();
+    gl_Position = v2; // might want to put this back in v1 - v3 - v2 disposition ..
+	Texcoord = start + bottom_left;
+	Breakcoord = vec3(breakStart + bottom_left, vsData[0].Break_frame);
+    EmitVertex();
     gl_Position = v3;
 	Texcoord = start + bottom_right;
 	Breakcoord = vec3(breakStart + bottom_right, vsData[0].Break_frame);
-    EmitVertex();
-    gl_Position = v2;
-	Texcoord = start + bottom_left;
-	Breakcoord = vec3(breakStart + bottom_left, vsData[0].Break_frame);
     EmitVertex();
 
     EndPrimitive();

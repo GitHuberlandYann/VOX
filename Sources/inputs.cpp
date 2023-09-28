@@ -291,8 +291,19 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		scroll_inventory = _inventory;
 	}
 
-	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		_paused = true;
+		_esc_released = false;
+		glfwSetCursorPosCallback(_window, cursor_position_callback);
+		glfwSetScrollCallback(_window, scroll_callback);
+		return ;
+	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
+		_esc_released = true;
+	}
+
+	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
+		return ;
 	}
 
 	// toggle debug mode on off

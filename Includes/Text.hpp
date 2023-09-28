@@ -12,6 +12,7 @@ class Text
 	private:
         GLuint _vao, _vbo;
 		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
+		GLint _uniColor;
 		GLuint *_textures;
 
         void setup_array_buffer( void );
@@ -22,7 +23,7 @@ class Text
 
         void setup_shader( void );
 		void load_texture( void );
-        void displayText( int posX, int posY, int font_size, std::string str );
+        void displayText( int posX, int posY, int font_size, glm::vec3 color, std::string str );
 };
 
 #endif

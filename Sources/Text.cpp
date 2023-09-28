@@ -71,6 +71,8 @@ void Text::setup_shader( void )
 
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_height"), WIN_HEIGHT);
+
+	_uniColor = glGetUniformLocation(_shaderProgram, "color");
 }
 
 void Text::load_texture( void )
@@ -109,7 +111,7 @@ void Text::load_texture( void )
 	check_glstate("Succesfully loaded Resources/asciiAtlas.png to shader\n");
 }
 
-void Text::displayText( int posX, int posY, int font_size, std::string str )
+void Text::displayText( int posX, int posY, int font_size, glm::vec3 color ,std::string str )
 {
 	int nb_points = str.size();
 	for (size_t index = 0; index < str.size(); index++) {
@@ -178,5 +180,7 @@ void Text::displayText( int posX, int posY, int font_size, std::string str )
 	check_glstate("NO");
 
 	glUseProgram(_shaderProgram);
+	GLfloat vecptr[3] = {color.x, color.y, color.z};
+	glUniform3fv(_uniColor, 1, vecptr);
 	glDrawArrays(GL_POINTS, 0, nb_points);
 }

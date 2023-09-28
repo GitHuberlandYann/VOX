@@ -38,6 +38,7 @@ extern std::mutex mtx_inventory;
 # include "Chunk.hpp"
 # include "Text.hpp"
 # include "Ui.hpp"
+# include "Menu.hpp"
 # include "OpenGL_Manager.hpp"
 
 extern siv::PerlinNoise::seed_type perlin_seed;

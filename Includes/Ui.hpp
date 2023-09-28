@@ -27,6 +27,7 @@ class UI
         UI( Inventory & inventory, Camera &camera );
         ~UI( void );
 
+		Text *getTextPtr( void );
         void setup_shader( void );
         void drawUserInterface( std::string str, bool game_mode, bool f5_mode );
 };

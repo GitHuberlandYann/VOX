@@ -9,12 +9,13 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0),
 		_key_h(0), _key_g(0), _key_j(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
-		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false),
+		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _paused(false), _esc_released(true),
 		_break_time(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_inventory = new Inventory();
 	_ui = new UI(*_inventory, camera);
+	_menu = new Menu(_ui->getTextPtr());
 	// render = this;
 }
 
@@ -34,6 +35,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 
 	delete _inventory;
 	delete _ui;
+	delete _menu;
 
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
@@ -273,8 +275,10 @@ void OpenGL_Manager::main_loop( void )
 			lastTime += 1.0;
 		}
 
-		user_inputs(currentTime - previousFrame);
-		chunk_update();
+		if (!_paused) {
+			user_inputs(currentTime - previousFrame);
+			chunk_update();
+		}
 		previousFrame = currentTime;
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -307,6 +311,15 @@ void OpenGL_Manager::main_loop( void )
 		mtx_visible_chunks.unlock();
 		mtx.unlock();
 		_ui->drawUserInterface(str, _game_mode, _f5_mode);
+		if (_paused) {
+			if (_menu->pause_menu(_window)) {
+				if (!IS_LINUX) {
+					glfwSetCursorPosCallback(_window, cursor_position_callback);
+					glfwSetScrollCallback(_window, scroll_callback);
+				}
+				_paused = false;
+			}
+		}
 		glEnable(GL_DEPTH_TEST);
 		glUseProgram(_shaderProgram);
 
