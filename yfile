@@ -21,7 +21,7 @@ Project Requirements:
     - BONUS
         DONE - Have a render distance always higher than 14 ??? guess 1 is 16 blocs
         DONE - fps counter is displayed (UI)
-        DONE - Render is smooth and doesn’t freeze, event at x20 speed
+        DONE - Render is smooth and doesn’t freeze, even at x20 speed
         DONE - Being able to delete blocks with the mouse (+put some down I want)
         - different biomes
 
@@ -41,6 +41,8 @@ TODOS:
     - items on ground after break
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - hitbox around player for collisions
+    - player arm in survival mode
+    - stop fov run if player idle
     - hide faces not oriented towards us
     - nether
 

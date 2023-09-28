@@ -357,6 +357,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		_key_pick_block = 0;
 	}
 
+	// toggle polygon mode fill / lines
 	if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS && ++_key_fill == 1) {
 		++_fill;
 		if (_fill == F_LAST)
@@ -373,6 +374,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	} else if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_RELEASE)
 		_key_fill = 0;
 
+	// change render dist
 	GLint key_render_dist = (glfwGetKey(_window, GLFW_KEY_EQUAL) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_MINUS) == GLFW_PRESS);
 	if (key_render_dist && ++_key_rdist == 1 && _render_distance + key_render_dist > 0) {
 		_render_distance += key_render_dist;
@@ -385,6 +387,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		_key_rdist = 0;
 	}
 
+	// change background color
 	GLint key_col_r = (glfwGetKey(_window, GLFW_KEY_KP_7) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_4) == GLFW_PRESS);
 	GLint key_col_g = (glfwGetKey(_window, GLFW_KEY_KP_8) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_5) == GLFW_PRESS);
 	GLint key_col_b = (glfwGetKey(_window, GLFW_KEY_KP_9) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_6) == GLFW_PRESS);
@@ -468,7 +471,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	{
 		update_cam_view();
 		if (camera._turnUpdate) {
-			update_visible_chunks();
+			update_visible_chunks(); // might do this on every frame to remove it from chunk update, tbd
 			camera._turnUpdate = false;
 		}
 	}

@@ -21,6 +21,8 @@ uniform sampler2D blockAtlas;
 
 void main()
 {
+	if (gl_FrontFacing) // this works but doesn't gain fps
+		discard ;
 	outColor = texture(blockAtlas, Texcoord);
 	if (Breakcoord.z != 0) {
 		vec4 break_ = texture(blockAtlas, Breakcoord.xy);
@@ -29,7 +31,7 @@ void main()
 		}
 	}
 	if(outColor.a < 0.01) {
-		discard;
+		discard ;
 	} else {
 		outColor = outColor * vec4(FaceShadow, FaceShadow, FaceShadow, 1.0);
 	}

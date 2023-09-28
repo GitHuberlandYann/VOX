@@ -67,6 +67,7 @@ bool Camera::chunkInFront( int posX, int posY )
 void Camera::setRun( bool value )
 {
 	_isRunning = value;
+	float save_fov = _fov;
 	if (_isRunning) {
 		_fov += 1.0f;
 		if (_fov > FOV + 2) {
@@ -78,7 +79,7 @@ void Camera::setRun( bool value )
 			_fov = FOV;
 		}
 	}
-	_fovUpdate = true;
+	_fovUpdate = save_fov != _fov;
 }
 
 void Camera::setDelta( float deltaTime )

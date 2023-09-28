@@ -45,6 +45,8 @@ void emitFace( vec4 v0, vec4 v1, vec4 v2, vec4 v3, vec2 start )
 	Breakcoord = vec3(breakStart + bottom_left, vsData[0].Break_frame);
     EmitVertex();
 
+    EndPrimitive();
+
     gl_Position = v1;
 	Texcoord = start + top_right;
 	Breakcoord = vec3(breakStart + top_right, vsData[0].Break_frame);
@@ -104,7 +106,7 @@ void default_block( bool ores )
 	}
 	if ((vsData[0].Adj_blocks & (1 << 1)) == 0) {
 		FaceShadow = 0.88;
-		emitFace(v4, v5, v6, v7, start);
+		emitFace(v5, v4, v7, v6, start);
 	}
 	if ((vsData[0].Adj_blocks & (1 << 2)) == 0) {
 		FaceShadow = 0.84;
@@ -116,7 +118,7 @@ void default_block( bool ores )
 	}
 	if ((vsData[0].Adj_blocks & (1 << 5)) == 0) {
 		FaceShadow = 0.74;
-		emitFace(v6, v7, v2, v3, start);
+		emitFace(v2, v3, v6, v7, start);
 	}
 }
 
@@ -153,7 +155,7 @@ void main( void )
 	}
 	if ((vsData[0].Adj_blocks & (1 << 1)) == 0) {
 		FaceShadow = 0.88;
-		emitFace(v4, v5, v6, v7, start);
+		emitFace(v5, v4, v7, v6, start);
 	}
 	if ((vsData[0].Adj_blocks & (1 << 2)) == 0) {
 		FaceShadow = 0.84;
@@ -165,6 +167,6 @@ void main( void )
 	}
 	if ((vsData[0].Adj_blocks & (1 << 5)) == 0) {
 		FaceShadow = 0.74;
-		emitFace(v6, v7, v2, v3, start + bottom);
+		emitFace(v2, v3, v6, v7, start + bottom);
 	}
 }
