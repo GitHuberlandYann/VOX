@@ -90,6 +90,7 @@ class Chunk
 		void updateBreak( glm::ivec4 block_hit, int frame );
 		void update_border(int posX, int posY, int level, bool adding);
 		bool collision( glm::vec3 & pos, Camera &cam );
+		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &block_counter );
 };
 

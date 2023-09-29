@@ -9,6 +9,7 @@ enum blocks {
 	BEDROCK = 16,
 	DIRT,
 	STONE,
+	COBBLESTONE,
 	SAND,
 	GRAVEL,
 	OAK_LEAVES,
@@ -98,6 +99,15 @@ struct Stone : Block {
 			name = "STONE";
 			byHand = false;
 			break_time_hand = 7.5f;
+		}
+};
+
+struct Cobblestone : Block {
+	public:
+		Cobblestone() {
+			name = "COBBLESTONE";
+			byHand = false;
+			break_time_hand = 10.0f;
 		}
 };
 
@@ -238,7 +248,7 @@ struct DeadBush : Block {
 
 const Block s_blocks[64] = {
 	Air(), GrassBlock(), OakTrunk(), Cactus(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	Bedrock(), Dirt(), Stone(), Sand(), Gravel(), OakLeaves(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Bedrock(), Dirt(), Stone(), Cobblestone(), Sand(), Gravel(), OakLeaves(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD()
 };

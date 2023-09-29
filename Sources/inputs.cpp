@@ -244,8 +244,9 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		_paused = true;
 		_esc_released = false;
-		set_cursor_position_callback( _menu );
-		set_scroll_callback( NULL );
+		_menu->setState(PAUSE_MENU);
+		set_cursor_position_callback(NULL, _menu);
+		set_scroll_callback(NULL);
 		return ;
 	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;

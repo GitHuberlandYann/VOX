@@ -839,6 +839,21 @@ bool Chunk::collision( glm::vec3 &pos, Camera &cam )
 	return (false);
 }
 
+int Chunk::isLoaded( GLint &counter )
+{
+	_mtx.lock();
+	if (!_vaoSet) {
+		_mtx.unlock();
+		++counter;
+		if (counter % 50 <= 5) {
+			setup_array_buffer();
+		}
+		return (0);
+	}
+	_mtx.unlock();
+	return (1);
+}
+
 void Chunk::drawArray( GLint & counter, GLint &block_counter )
 {
 	_mtx.lock();

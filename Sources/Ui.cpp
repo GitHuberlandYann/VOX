@@ -183,6 +183,11 @@ Text *UI::getTextPtr( void )
 	return (_text);
 }
 
+GLuint UI::getShaderProgram( void )
+{
+	return (_shaderProgram);
+}
+
 void UI::setup_shader( void )
 {
 	_text->setup_shader();
@@ -258,5 +263,4 @@ void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 	for (int index = 0; index < 9; index++) {
 		display_slot_value(index);
 	}
-	glUseProgram(_shaderProgram); // binding program for menu to use
 }

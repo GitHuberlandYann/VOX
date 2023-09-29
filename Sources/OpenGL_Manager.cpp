@@ -6,7 +6,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0),
 		_key_h(0), _key_g(0), _key_j(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
-		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _paused(false), _esc_released(true),
+		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _paused(true), _esc_released(true),
 		_break_time(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
@@ -31,7 +31,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	}
 	glDeleteProgram(_shaderProgram);
 
-	set_cursor_position_callback(NULL);
+	set_cursor_position_callback(NULL, NULL);
 	set_scroll_callback(NULL);
 	delete _camera;
 	delete _inventory;
@@ -117,15 +117,16 @@ void OpenGL_Manager::setup_window( void )
 void OpenGL_Manager::initWorld( void )
 {
 	_current_chunk = glm::ivec2(-10000, -10000);
-	chunk_update(); //create chunks
+	chunk_update();
 	_current_chunk = glm::ivec2(-10000, -10000);
-	chunk_update(); //display created chunks
+	// chunk_update();
 }
 
 void OpenGL_Manager::create_shaders( void )
 {
 	// first setup the ui and text shaders
 	_ui->setup_shader();
+	_menu->setShaderProgram(_ui->getShaderProgram());
 	
 	// then setup the main shader
 	std::string vertex_shader_data = get_file_content("Sources/Shaders/vertex.glsl");
@@ -246,7 +247,7 @@ void OpenGL_Manager::main_loop( void )
 			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 		}
 	}
-	set_cursor_position_callback( _camera );
+	set_cursor_position_callback( NULL, _menu );
 	set_scroll_callback(_inventory);
 	glfwSetCursorPosCallback(_window, cursor_position_callback);
 	glfwSetScrollCallback(_window, scroll_callback);
@@ -259,6 +260,7 @@ void OpenGL_Manager::main_loop( void )
 	int nbFramesLastSecond = 0;
 
 	double previousFrame = lastTime;
+	int backFromMenu = 0;
 
 	// main loop cheking for inputs and rendering everything
 	while (!glfwWindowShouldClose(_window))
@@ -276,7 +278,9 @@ void OpenGL_Manager::main_loop( void )
 		}
 
 		if (!_paused) {
-			user_inputs(currentTime - previousFrame);
+			if (++backFromMenu != 1) {
+				user_inputs(currentTime - previousFrame);
+			}
 			chunk_update();
 		}
 		previousFrame = currentTime;
@@ -306,12 +310,18 @@ void OpenGL_Manager::main_loop( void )
 				// + _inventory->getInventoryString()
 			: "";
 		mtx.unlock();
-		_ui->drawUserInterface(str, _game_mode, _f5_mode);
+		if (_menu->getState() == PAUSE_MENU) {
+			_ui->drawUserInterface(str, _game_mode, _f5_mode);
+		}
 		if (_paused) {
-			if (_menu->pause_menu(_window)) {
-				set_cursor_position_callback( _camera );
+			int menu_ret = _menu->run(_window, _chunks, _render_distance);
+			if (menu_ret == 2) {
+				initWorld();
+			} else if (menu_ret == 1) {
+				set_cursor_position_callback( _camera, NULL );
 				set_scroll_callback(_inventory);
 				_paused = false;
+				backFromMenu = 0;
 			}
 		}
 		glEnable(GL_DEPTH_TEST);

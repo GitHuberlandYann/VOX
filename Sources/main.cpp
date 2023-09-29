@@ -22,7 +22,6 @@ int main( int ac, char **av )
 	std::string texture_file = (ac == 2) ? av[1] : "Resources/blockAtlas.png";
 
 	render->setup_window();
-	render->initWorld();
 	std::cout << std::endl;
 	render->create_shaders();
 	render->setup_communication_shaders();

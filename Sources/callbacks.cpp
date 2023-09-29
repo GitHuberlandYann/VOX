@@ -6,15 +6,10 @@ Inventory *scroll_inventory = NULL;
 
 double lastX = WIN_WIDTH / 2.0f, lastY = WIN_HEIGHT / 2.0f;
 
-void set_cursor_position_callback( void *ptr )
+void set_cursor_position_callback( Camera *cam, Menu *men )
 {
-	if (!camera) {
-		camera = static_cast<Camera *>(ptr);
-		menu = NULL;
-	} else {
-		camera = NULL;
-		menu = static_cast<Menu *>(ptr);
-	}
+	camera = cam;
+	menu = men;
 }
 
 void set_scroll_callback( void *ptr )
