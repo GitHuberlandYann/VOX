@@ -70,6 +70,19 @@ double gradient( double value, double start, double end, double value_start, dou
 	return (value_start + progress * (value_end - value_start));
 }
 
+int blockAtlasX( int block ) // x coord in blockAtlas in pxl
+{
+	if (block < 16) {
+		return (0);
+	}
+	return ((3 + block / 16) * 16);
+}
+
+int blockAtlasY( int block ) // y coord in blockAtlas in pxl
+{
+	return ((block % 16) * 16);
+}
+
 // # include <glm/glm.hpp>
 // # include <glm/gtc/matrix_transform.hpp>
 // # include <glm/gtc/type_ptr.hpp>

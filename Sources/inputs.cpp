@@ -251,6 +251,16 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;
 	}
+	if (_e_released && glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
+		_paused = true;
+		_e_released = false;
+		_menu->setState(INVENTORY_MENU);
+		set_cursor_position_callback(NULL, _menu);
+		set_scroll_callback(NULL);
+		return ;
+	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
+		_e_released = true;
+	}
 
 	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);

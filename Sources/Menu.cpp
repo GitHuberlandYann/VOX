@@ -1,7 +1,8 @@
 #include "vox.h"
 
-Menu::Menu( Text *text ) : _state(MAIN_MENU), _vaoSet(false), _esc_released(false), _text(text)
+Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _vaoSet(false), _esc_released(false), _e_released(false), _inventory(inventory), _text(text)
 {
+	(void)_inventory;
 }
 
 Menu::~Menu( void )
@@ -131,6 +132,33 @@ int Menu::pause_menu( GLFWwindow* window )
 	return (0);
 }
 
+int Menu::inventory_menu( GLFWwindow* window )
+{
+	if (_esc_released && glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		_state = PAUSE_MENU;
+		_selection = 0;
+		_esc_released = false;
+		_e_released = false;
+		return (3);
+	} else if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
+		_esc_released = true;
+	}
+	if (_e_released && glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+		_selection = 0;
+		_esc_released = false;
+		_e_released = false;
+		return (1);
+	} else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE) {
+		_e_released = true;
+	}
+
+	setup_array_buffer_inventory();
+	glUseProgram(_shaderProgram);
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_POINTS, 0, _nb_points);
+	return (0);
+}
+
 void Menu::setup_array_buffer_main( void )
 {
 	_nb_points = 8;
@@ -243,6 +271,45 @@ void Menu::setup_array_buffer_pause( void )
 	setup_shader(vertices);
 }
 
+void Menu::add_slot_value( GLint *vertices, int mult, int index )
+{
+	vertices[(1 + index) * 9 + 0] = 0;
+	vertices[(1 + index) * 9 + 1] = (WIN_WIDTH - (166 * mult)) / 2 + (18 * index * mult) + mult * 3;
+	vertices[(1 + index) * 9 + 2] = WIN_HEIGHT / 2 - 83 * mult + (142) * mult;
+	vertices[(1 + index) * 9 + 3] = 16 * mult;
+	vertices[(1 + index) * 9 + 4] = 16 * mult;
+	mtx_inventory.lock();
+	vertices[(1 + index) * 9 + 5] = blockAtlasX(_inventory.getSlotBlock(index).x);
+	vertices[(1 + index) * 9 + 6] = blockAtlasY(_inventory.getSlotBlock(index).x);
+	mtx_inventory.unlock();
+	vertices[(1 + index) * 9 + 7] = 16;
+	vertices[(1 + index) * 9 + 8] = 16;
+}
+
+void Menu::setup_array_buffer_inventory( void )
+{
+	_nb_points = 1 + 10;
+	int mult = 3;
+    GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
+
+	vertices[0] = 2;
+	vertices[1] = WIN_WIDTH / 2 - 88 * mult;
+	vertices[2] = WIN_HEIGHT / 2 - 83 * mult;
+	vertices[3] = 176 * mult;
+	vertices[4] = 166 * mult;
+	vertices[5] = 0;
+	vertices[6] = 0;
+	vertices[7] = 128; // textcoord are in 256*256
+	vertices[8] = 128;
+
+	for (int index = 0; index < 10; index++) {
+		add_slot_value(vertices, mult, index);
+	}
+
+	setup_shader(vertices);
+	delete [] vertices;
+}
+
 void Menu::setup_shader( GLint *vertices )
 {
 	glGenVertexArrays(1, &_vao);
@@ -269,26 +336,27 @@ void Menu::setup_shader( GLint *vertices )
 //                                Public                                      //
 // ************************************************************************** //
 
+static bool inRectangle( float posX, float posY, int rx, int ry, int width, int height )
+{
+	return (posX >= rx && posX <= rx + width && posY >= ry && posY <= ry + height);
+}
+
 void Menu::processMouseMovement( float posX, float posY )
 {
 	if (_state == MAIN_MENU) {
 		int mult = 3;
-		if (posX >= WIN_WIDTH / 2 - 100 * mult && posX <= WIN_WIDTH / 2 - 100 * mult + 200 * mult
-			&& posY >= WIN_HEIGHT / 2 - 10 * mult && posY <= WIN_HEIGHT / 2 - 10 * mult + 20 * mult) {
+		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 10 * mult, 200 * mult, 20 * mult)) {
 			_selection = 1;
-		} else if (posX >= WIN_WIDTH / 2 + 5 * mult && posX <= WIN_WIDTH / 2 + 5 * mult + 95 * mult
-			&& posY >= WIN_HEIGHT / 2 + 80 * mult && posY <= WIN_HEIGHT / 2 + 80 * mult + 20 * mult) {
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 80 * mult, 95 * mult, 20 * mult)) {
 			_selection = 6;
 		} else {
 			_selection = 0;
 		}
 	} else if (_state == PAUSE_MENU) {
 		int mult = 3;
-		if (posX >= WIN_WIDTH / 2 - 100 * mult && posX <= WIN_WIDTH / 2 - 100 * mult + 200 * mult
-			&& posY >= WIN_HEIGHT / 2 - 60 * mult && posY <= WIN_HEIGHT / 2 - 60 * mult + 20 * mult) {
+		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 60 * mult, 200 * mult, 20 * mult)) {
 			_selection = 1;
-		} else if (posX >= WIN_WIDTH / 2 - 100 * mult && posX <= WIN_WIDTH / 2 - 100 * mult + 200 * mult
-			&& posY >= WIN_HEIGHT / 2 + 40 * mult && posY <= WIN_HEIGHT / 2 + 40 * mult + 20 * mult) {
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 40 * mult, 200 * mult, 20 * mult)) {
 			_selection = 8;
 		} else {
 			_selection = 0;
@@ -325,6 +393,8 @@ int Menu::run( GLFWwindow* window, std::list<Chunk *> chunks, GLint render_dist 
 			return (loading_screen(chunks, render_dist));
 		case PAUSE_MENU:
 			return (pause_menu(window));
+		case INVENTORY_MENU:
+			return (inventory_menu(window));
 		default:
 			return (1);
 	}

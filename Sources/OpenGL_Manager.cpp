@@ -6,14 +6,15 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0),
 		_key_h(0), _key_g(0), _key_j(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
-		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _paused(true), _esc_released(true),
+		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _paused(true),
+		_esc_released(true), _e_released(true),
 		_break_time(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_camera = new Camera(glm::vec3(1.0f, -2.0f, 66.0f));
 	_inventory = new Inventory();
 	_ui = new UI(*_inventory, *_camera);
-	_menu = new Menu(_ui->getTextPtr());
+	_menu = new Menu(*_inventory, _ui->getTextPtr());
 	// render = this;
 }
 
@@ -310,7 +311,7 @@ void OpenGL_Manager::main_loop( void )
 				// + _inventory->getInventoryString()
 			: "";
 		mtx.unlock();
-		if (_menu->getState() == PAUSE_MENU) {
+		if (_menu->getState() >= PAUSE_MENU) {
 			_ui->drawUserInterface(str, _game_mode, _f5_mode);
 		}
 		if (_paused) {

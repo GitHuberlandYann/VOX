@@ -11,7 +11,7 @@ UI::~UI( void )
 	glDeleteVertexArrays(1, &_vao);
 	
 	if (_textures) {
-		glDeleteTextures(1, _textures);
+		glDeleteTextures(2, _textures);
 		delete [] _textures;
 	}
 	
@@ -24,19 +24,16 @@ UI::~UI( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-void UI::load_texture( void )
+void UI::load_texture( std::string texstr, std::string shname, int index )
 {
-	_textures = new GLuint[1];
-	glGenTextures(1, _textures);
-
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, _textures[0]);
+	glActiveTexture(GL_TEXTURE0 + index);
+	glBindTexture(GL_TEXTURE_2D, _textures[index - 2]);
 
 	// load image
 	t_tex *texture = new t_tex;
-	texture->content = SOIL_load_image("Resources/uiAtlas.png", &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
+	texture->content = SOIL_load_image(texstr.c_str(), &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
 	if (!texture->content) {
-		std::cerr << "failed to load image " << "Resources/uiAtlas.png" << " because:" << std::endl << SOIL_last_result() << std::endl;
+		std::cerr << "failed to load image " << texstr << " because:" << std::endl << SOIL_last_result() << std::endl;
 		exit(1);
 	}
 
@@ -44,8 +41,7 @@ void UI::load_texture( void )
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
 		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
 
-	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
-	glUniform1i(glGetUniformLocation(_shaderProgram, "uiAtlas"), 2); // sampler2D #index in fragment shader
+	glUniform1i(glGetUniformLocation(_shaderProgram, shname.c_str()), index); // sampler2D #index in fragment shader
 			
 	// set settings for texture wraping and size modif
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -58,7 +54,7 @@ void UI::load_texture( void )
 	}
 	delete texture;
 
-	check_glstate("Succesfully loaded Resources/uiAtlas.png to shader\n");
+	check_glstate("Succesfully loaded " + texstr + " to shader\n");
 
 }
 
@@ -237,7 +233,12 @@ void UI::setup_shader( void )
 
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_height"), WIN_HEIGHT);
-	load_texture();
+
+	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
+	_textures = new GLuint[2];
+	glGenTextures(2, _textures);
+	load_texture("Resources/uiAtlas.png", "uiAtlas", 2);
+	load_texture("Resources/containersAtlas.png", "containerAtlas", 3);
 }
 
 void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )

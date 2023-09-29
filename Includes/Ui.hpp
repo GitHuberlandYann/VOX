@@ -19,7 +19,7 @@ class UI
         Camera &_camera;
 		bool _vaoSet;
 
-		void load_texture( void );
+		void load_texture( std::string texstr, std::string shname, int index );
         void setup_array_buffer( void );
         void display_slot_value( int index );
 
