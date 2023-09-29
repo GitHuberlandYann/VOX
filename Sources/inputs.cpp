@@ -1,55 +1,21 @@
 #include "vox.h"
 
-// extern OpenGL_Manager *render;
-Camera camera(glm::vec3(1.0f, -2.0f, 66.0f));
 Chunk *current_chunk_ptr = NULL;
 Chunk *prev_chunk_ptr = NULL;
 Chunk *chunk_hit = NULL;
-Inventory *scroll_inventory = NULL;
-double lastX = WIN_WIDTH / 2.0f;
-double lastY = WIN_HEIGHT / 2.0f;
 
-void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
-{
-	(void)window;
-
-    double x_offset = lastX - xpos;
-    double y_offset = lastY - ypos;
-	// std::cout << "x " << xpos << "\t\ty " << ypos << "\t\tx_offset: " << x_offset << "\t\ty_offset: " << y_offset << std::endl;
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.processMouseMovement(x_offset / 10, y_offset / 10);
-}
-
-void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
-{
-	(void)window;
-	(void)xoffset;
-
-	if (!scroll_inventory) {
-		return ;
-	}
-
-	if (yoffset > 0) {
-		scroll_inventory->setSlot(scroll_inventory->getSlot() + 1);
-	} else if (yoffset < 0) {
-		scroll_inventory->setSlot(scroll_inventory->getSlot() - 1);
-	}
-}
 /*
 void OpenGL_Manager::update_cam_matrix( void )
 {
-	glm::mat4 proj = camera.getPerspectiveMatrix();
-	glm::mat4 view = camera.getViewMatrix();
+	glm::mat4 proj = _camera->getPerspectiveMatrix();
+	glm::mat4 view = _camera->getViewMatrix();
 
 	glUniformMatrix4fv(_uniPV, 1, GL_FALSE, glm::value_ptr(proj * view));
 }*/
 
 glm::ivec4 OpenGL_Manager::get_block_hit( void )
 {
-	std::vector<glm::ivec3> ids = camera.get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : 10);
+	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : 10);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
 	Chunk *chunk = NULL;
@@ -115,7 +81,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
 	}
-	std::vector<glm::ivec3> ids = camera.get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : 10);
+	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : 10);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
 	glm::ivec3 player_pos, previous_block;
@@ -169,15 +135,15 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 
 void OpenGL_Manager::update_cam_view( void )
 {
-	glm::mat4 view = camera.getViewMatrix();
+	glm::mat4 view = _camera->getViewMatrix();
 	glUniformMatrix4fv(_uniView, 1, GL_FALSE, glm::value_ptr(view));
 
-	// glUniform3fv(_uniCamPos, 1, glm::value_ptr(camera._position));
+	// glUniform3fv(_uniCamPos, 1, glm::value_ptr(_camera->_position));
 }
 
 void OpenGL_Manager::update_cam_perspective( void )
 {
-	glm::mat4 proj = camera.getPerspectiveMatrix();
+	glm::mat4 proj = _camera->getPerspectiveMatrix();
 	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 }
 
@@ -190,21 +156,18 @@ void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread
 	mtx.unlock();
 	for (; it != ite;) {
 		mtx.lock();
-		if (camera.chunkInFront((*it)->getStartX(), (*it)->getStartY())) {
+		if (_camera->chunkInFront((*it)->getStartX(), (*it)->getStartY())) {
 			(*it)->setVisibility(&newvis_chunks, _current_chunk.x, _current_chunk.y, _render_distance * CHUNK_SIZE);
 		}
 		++it;
 		mtx.unlock();
 	}
-	mtx_visible_chunks.lock();
 	_visible_chunks = newvis_chunks;
-	mtx_visible_chunks.unlock();
 }
 
-static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> *visible_chunks, std::list<Chunk *> *delete_chunks,
-								 GLint render_dist, int posX, int posY )
+static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> *delete_chunks,
+								 Camera *camera, GLint render_dist, int posX, int posY )
 {
-	std::list<Chunk *> newvis_chunks;
 	std::list<Chunk *> newdel_chunks;
 	mtx.lock();
 	std::list<Chunk *>::iterator ite = chunks->end();
@@ -212,29 +175,19 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 	mtx.unlock();
 	for (; it != ite;) {
 		mtx.lock();
-		if ((*it)->shouldDelete(camera._position, render_dist * 2 * CHUNK_SIZE)) {
+		if ((*it)->shouldDelete(camera->_position, render_dist * 2 * CHUNK_SIZE)) {
 			mtx.unlock();
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
 			newdel_chunks.push_back(*tmp);
 			mtx.lock();
 			chunks->erase(tmp);
-			mtx.unlock();
-		} else {
-			mtx.unlock();
-			mtx.lock();
-			if (camera.chunkInFront((*it)->getStartX(), (*it)->getStartY())) {
-				(*it)->setVisibility(&newvis_chunks, posX, posY, render_dist * CHUNK_SIZE);
-			}
-			mtx.unlock();
 		}
+		mtx.unlock();
 		mtx.lock();
 		++it;
 		mtx.unlock();
 	}
-	mtx_visible_chunks.lock();
-	*visible_chunks = newvis_chunks;
-	mtx_visible_chunks.unlock();
 	mtx_delete_chunks.lock();
 	*delete_chunks = newdel_chunks;
 	mtx_delete_chunks.unlock();
@@ -269,8 +222,8 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 
 void OpenGL_Manager::chunk_update( void )
 {
-	int posX = chunk_pos(static_cast<int>(glm::floor(camera._position.x)));
-	int posY = chunk_pos(static_cast<int>(glm::floor(camera._position.y)));
+	int posX = chunk_pos(static_cast<int>(glm::floor(_camera->_position.x)));
+	int posY = chunk_pos(static_cast<int>(glm::floor(_camera->_position.y)));
 	
 	if (posX == _current_chunk.x && posY == _current_chunk.y) {
 		return ;
@@ -282,20 +235,17 @@ void OpenGL_Manager::chunk_update( void )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	_thread = std::thread(thread_chunk_update, &_chunks, &_visible_chunks, &_delete_chunks, _render_distance, posX, posY);
+	_thread = std::thread(thread_chunk_update, &_chunks, &_delete_chunks, _camera, _render_distance, posX, posY);
+	update_visible_chunks();
 }
 
 void OpenGL_Manager::user_inputs( float deltaTime )
 {
-	if (!scroll_inventory) {
-		scroll_inventory = _inventory;
-	}
-
 	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		_paused = true;
 		_esc_released = false;
-		glfwSetCursorPosCallback(_window, cursor_position_callback);
-		glfwSetScrollCallback(_window, scroll_callback);
+		set_cursor_position_callback( _menu );
+		set_scroll_callback( NULL );
 		return ;
 	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;
@@ -392,7 +342,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 		if (_thread.joinable()) {
 			_thread.join();
 		}
-		_thread = std::thread(thread_chunk_update, &_chunks, &_visible_chunks, &_delete_chunks, _render_distance, _current_chunk.x, _current_chunk.y);
+		_thread = std::thread(thread_chunk_update, &_chunks, &_delete_chunks, _camera, _render_distance, _current_chunk.x, _current_chunk.y);
 		// std::cout << "render distance set to " << _render_distance << std::endl;
 	} else if (!key_render_dist) {
 		_key_rdist = 0;
@@ -410,39 +360,39 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	}
 
 	// camera work 
-	camera.setDelta(deltaTime);
-	camera.setRun(glfwGetKey(_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS);
+	_camera->setDelta(deltaTime);
+	_camera->setRun(glfwGetKey(_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS);
 	GLint key_cam_v = (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS);
 	if (key_cam_v) {
 		(key_cam_v == 1)
-			? camera.processKeyboard(FORWARD, _game_mode)
-			: camera.processKeyboard(BACKWARD, _game_mode);
+			? _camera->processKeyboard(FORWARD, _game_mode)
+			: _camera->processKeyboard(BACKWARD, _game_mode);
 	}
 	GLint key_cam_h = (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS);
 	if (key_cam_h) {
 		(key_cam_h == 1)
-			? camera.processKeyboard(LEFT, _game_mode)
-			: camera.processKeyboard(RIGHT, _game_mode);
+			? _camera->processKeyboard(LEFT, _game_mode)
+			: _camera->processKeyboard(RIGHT, _game_mode);
 	}
 	GLint key_cam_z = (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS);
 	if (key_cam_z) {
 		(key_cam_z == 1)
-			? camera.processKeyboard(UP, _game_mode)
-			: camera.processKeyboard(DOWN, _game_mode);
+			? _camera->processKeyboard(UP, _game_mode)
+			: _camera->processKeyboard(DOWN, _game_mode);
 	}
 
 	// this will be commented at some point
 	GLint key_cam_yaw = (glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS);
 	if (key_cam_yaw) {
-		camera.processYaw(key_cam_yaw);
+		_camera->processYaw(key_cam_yaw);
 	}
 	GLint key_cam_pitch = (glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS);
 	if (key_cam_pitch) {
-		camera.processPitch(key_cam_pitch);
+		_camera->processPitch(key_cam_pitch);
 	}
 
 	if (!key_cam_v && !key_cam_h) {
-		camera.setRun(false);
+		_camera->setRun(false);
 	}
 
 	// we update the current chunk before we update cam view, because we check in current chunk for collision
@@ -460,41 +410,41 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 
 	if (_game_mode == SURVIVAL) {
 		mtx.lock();
-		if (current_chunk_ptr->collision(camera._position, camera)) {
+		if (current_chunk_ptr->collision(_camera->_position, *_camera)) {
 			mtx.unlock();
 			if (key_cam_v) {
 				(key_cam_v == 1)
-					? camera.processKeyboard(BACKWARD, _game_mode) // if collision after movement, undo movement
-					: camera.processKeyboard(FORWARD, _game_mode);
+					? _camera->processKeyboard(BACKWARD, _game_mode) // if collision after movement, undo movement
+					: _camera->processKeyboard(FORWARD, _game_mode);
 			}
 			if (key_cam_h) {
 				(key_cam_h == 1)
-					? camera.processKeyboard(RIGHT, _game_mode)
-					: camera.processKeyboard(LEFT, _game_mode);
+					? _camera->processKeyboard(RIGHT, _game_mode)
+					: _camera->processKeyboard(LEFT, _game_mode);
 			}
-			prev_chunk_ptr->collision(camera._position, camera);
+			prev_chunk_ptr->collision(_camera->_position, *_camera);
 			current_chunk_ptr = prev_chunk_ptr;
-			camera.setRun(false);
+			_camera->setRun(false);
 			mtx.lock();
 		}
 		mtx.unlock();
 	}
 
-	if (camera._fovUpdate) {
+	if (_camera->_fovUpdate) {
 		update_cam_perspective();
 	}
-	if (camera._update)
+	if (_camera->_update)
 	{
 		update_cam_view();
-		if (camera._turnUpdate) {
+		if (_camera->_turnUpdate) {
 			update_visible_chunks(); // might do this on every frame to remove it from chunk update, tbd
-			camera._turnUpdate = false;
+			_camera->_turnUpdate = false;
 		}
 	}
 
 	GLint key_cam_speed = (glfwGetKey(_window, GLFW_KEY_KP_ADD) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);
 	if (key_cam_speed) {
-		camera.update_movement_speed(key_cam_speed);
+		_camera->update_movement_speed(key_cam_speed);
 	}
 
 	// inventory slot selection

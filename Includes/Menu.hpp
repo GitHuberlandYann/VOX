@@ -16,6 +16,7 @@ class Menu
 		Menu( Text *text );
 		~Menu( void );
 
+		void processMouseMovement( float x_offset, float y_offset );
 		int pause_menu( GLFWwindow* window );
 };
 

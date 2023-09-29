@@ -1,8 +1,5 @@
 # include "vox.h"
 
-extern Camera camera;
-// OpenGL_Manager *render = NULL;
-
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE),
@@ -13,8 +10,9 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_break_time(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
+	_camera = new Camera(glm::vec3(1.0f, -2.0f, 66.0f));
 	_inventory = new Inventory();
-	_ui = new UI(*_inventory, camera);
+	_ui = new UI(*_inventory, *_camera);
 	_menu = new Menu(_ui->getTextPtr());
 	// render = this;
 }
@@ -33,6 +31,9 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	}
 	glDeleteProgram(_shaderProgram);
 
+	set_cursor_position_callback(NULL);
+	set_scroll_callback(NULL);
+	delete _camera;
 	delete _inventory;
 	delete _ui;
 	delete _menu;
@@ -40,10 +41,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
 
-
-	mtx_visible_chunks.lock();
 	_visible_chunks.clear();
-	mtx_visible_chunks.unlock();
 	mtx_delete_chunks.lock();
 	_delete_chunks.clear();
 	mtx_delete_chunks.unlock();
@@ -92,8 +90,8 @@ void OpenGL_Manager::setup_window( void )
 
 	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << std::endl;
 	(IS_LINUX)
-		? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", nullptr, nullptr)
-		: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineThemeGraphed", glfwGetPrimaryMonitor(), nullptr);
+		? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", nullptr, nullptr)
+		: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr);
 	if (_window == NULL)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -247,9 +245,11 @@ void OpenGL_Manager::main_loop( void )
 		if (glfwRawMouseMotionSupported()) {
 			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 		}
-		glfwSetCursorPosCallback(_window, cursor_position_callback);
-		glfwSetScrollCallback(_window, scroll_callback);
 	}
+	set_cursor_position_callback( _camera );
+	set_scroll_callback(_inventory);
+	glfwSetCursorPosCallback(_window, cursor_position_callback);
+	glfwSetScrollCallback(_window, scroll_callback);
 
 	check_glstate("setup done, entering main loop\n");
 
@@ -284,19 +284,16 @@ void OpenGL_Manager::main_loop( void )
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		GLint newVaoCounter = 0, blockCounter = 0;
-		mtx_visible_chunks.lock();
 		std::list<Chunk *>::iterator it = _visible_chunks.begin();
 		for (; it != _visible_chunks.end(); it++) {
 			(*it)->drawArray(newVaoCounter, blockCounter);
 		}
-		mtx_visible_chunks.unlock();
 
 		// glClear(GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 		mtx.lock();
-		mtx_visible_chunks.lock();
 		std::string str = (_debug_mode)
-			? "FPS: " + std::to_string(nbFramesLastSecond) + camera.getCamString(_game_mode)
+			? "FPS: " + std::to_string(nbFramesLastSecond) + _camera->getCamString(_game_mode)
 				+ "\nBlock\t> " + ((_block_hit.w >= blocks::AIR) ? s_blocks[_block_hit.w].name : s_blocks[_block_hit.w + blocks::NOTVISIBLE].name)
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
 				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "")
@@ -308,15 +305,12 @@ void OpenGL_Manager::main_loop( void )
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				// + _inventory->getInventoryString()
 			: "";
-		mtx_visible_chunks.unlock();
 		mtx.unlock();
 		_ui->drawUserInterface(str, _game_mode, _f5_mode);
 		if (_paused) {
 			if (_menu->pause_menu(_window)) {
-				if (!IS_LINUX) {
-					glfwSetCursorPosCallback(_window, cursor_position_callback);
-					glfwSetScrollCallback(_window, scroll_callback);
-				}
+				set_cursor_position_callback( _camera );
+				set_scroll_callback(_inventory);
 				_paused = false;
 			}
 		}

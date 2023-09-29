@@ -25,7 +25,6 @@ typedef struct {
 }				t_tex;
 
 extern std::mutex mtx;
-extern std::mutex mtx_visible_chunks;
 extern std::mutex mtx_delete_chunks;
 extern std::mutex mtx_inventory;
 
@@ -39,6 +38,7 @@ extern std::mutex mtx_inventory;
 # include "Text.hpp"
 # include "Ui.hpp"
 # include "Menu.hpp"
+# include "callbacks.hpp"
 # include "OpenGL_Manager.hpp"
 
 extern siv::PerlinNoise::seed_type perlin_seed;

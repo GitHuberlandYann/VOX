@@ -31,9 +31,6 @@ enum {
 	SURVIVAL = true
 };
 
-void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
-void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
-
 class OpenGL_Manager
 {
 	private:
@@ -53,6 +50,7 @@ class OpenGL_Manager
 		std::list<Chunk *> _delete_chunks;
 		std::thread _thread;
 		glm::ivec4 _block_hit;
+		Camera *_camera;
 		Inventory *_inventory;
 		UI *_ui;
 		Menu *_menu;

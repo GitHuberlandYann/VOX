@@ -54,6 +54,12 @@ void Menu::setup_array_buffer( void )
 //                                Public                                      //
 // ************************************************************************** //
 
+void Menu::processMouseMovement( float x_offset, float y_offset )
+{
+	(void)x_offset;
+	(void)y_offset;
+}
+
 int Menu::pause_menu( GLFWwindow* window )
 {
 	if (_esc_released && glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
