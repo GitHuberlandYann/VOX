@@ -30,7 +30,7 @@ void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
 	if (camera) {
 		camera->processMouseMovement(x_offset / 10, y_offset / 10);
 	} else if (menu) {
-		menu->processMouseMovement(x_offset / 10, y_offset / 10);
+		menu->processMouseMovement(xpos, ypos);
 	}
 }
 

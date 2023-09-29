@@ -15,12 +15,42 @@ Menu::~Menu( void )
 
 int Menu::main_menu( GLFWwindow *window )
 {
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		if (_selection == 1) { //singleplayer
+			_state = LOAD_MENU;
+			_selection = 0;
+			return (2);
+		} else if (_selection == 6) { //quit game
+			glfwSetWindowShouldClose(window, GL_TRUE);
+			return (-1);
+		}
+	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		_state = LOAD_MENU;
+		_selection = 0;
 		return (2);
 	}
 
-	_text->displayText(WIN_WIDTH / 2 - 200, WIN_HEIGHT / 2 - 40, 24, glm::vec3(1.0f, 1.0f, 1.0f), "Press space to start");
+	setup_array_buffer_main();
+	glUseProgram(_shaderProgram);
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_POINTS, 0, _nb_points);
+
+	_text->displayText(WIN_WIDTH / 2 - 220, WIN_HEIGHT / 2 - 120 * 3, 24, glm::vec3(1.0f, 1.0f, 1.0f), "Press space to start");
+
+	int mult = 3;
+	// shadows
+	_text->displayText(WIN_WIDTH / 2 - 110 + mult, WIN_HEIGHT / 2 - 10 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Singleplayer");
+	_text->displayText(WIN_WIDTH / 2 - 100 + mult, WIN_HEIGHT / 2 + 15 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Multiplayer");
+	_text->displayText(WIN_WIDTH / 2 - 150 + mult, WIN_HEIGHT / 2 + 40 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Minecraft Realms");
+	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 80 + mult, WIN_HEIGHT / 2 + 80 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Options...");
+	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 75 + mult, WIN_HEIGHT / 2 + 80 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Quit Game");
+	// white
+	_text->displayText(WIN_WIDTH / 2 - 110, WIN_HEIGHT / 2 - 10 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Singleplayer");
+	_text->displayText(WIN_WIDTH / 2 - 100, WIN_HEIGHT / 2 + 15 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Multiplayer");
+	_text->displayText(WIN_WIDTH / 2 - 150, WIN_HEIGHT / 2 + 40 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Minecraft Realms");
+	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 80, WIN_HEIGHT / 2 + 80 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Options...");
+	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 75, WIN_HEIGHT / 2 + 80 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Quit Game");
 	return (0);
 }
 
@@ -53,6 +83,17 @@ int Menu::loading_screen( std::list<Chunk *> chunks, GLint render_dist )
 
 int Menu::pause_menu( GLFWwindow* window )
 {
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		if (_selection == 1) { //Back to Game
+			_esc_released = false;
+			_selection = 0;
+			return (1);
+		} else if (_selection == 8) { //Save and Quit to Title
+			_state = MAIN_MENU;
+			_selection = 0;
+			return (3);
+		}
+	}
 	if (_esc_released && glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		_esc_released = false;
 		return (1);
@@ -60,16 +101,14 @@ int Menu::pause_menu( GLFWwindow* window )
 		_esc_released = true;
 	}
 
-	if (!_vaoSet) {
-		setup_array_buffer();
-	}
+	setup_array_buffer_pause();
 	glUseProgram(_shaderProgram);
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
 	int mult = 3;
 	// first draw text shadow
-	_text->displayText(WIN_WIDTH / 2 - 100 + mult, WIN_HEIGHT / 2 - 60 * mult - 40 + mult, 24, glm::vec3(0.0f, 0.0f, 0.0f), "Game Menu");
+	// _text->displayText(WIN_WIDTH / 2 - 100 + mult, WIN_HEIGHT / 2 - 60 * mult - 40 + mult, 24, glm::vec3(0.0f, 0.0f, 0.0f), "Game Menu");
 	_text->displayText(WIN_WIDTH / 2 - 110 + mult, WIN_HEIGHT / 2 - 60 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Back to Game");
 	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 120 + mult, WIN_HEIGHT / 2 - 35 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Advancements");
 	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 125 + mult, WIN_HEIGHT / 2 - 10 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Give Feedback");
@@ -90,6 +129,26 @@ int Menu::pause_menu( GLFWwindow* window )
 	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 100, WIN_HEIGHT / 2 + 15 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Open to LAN");
 	_text->displayText(WIN_WIDTH / 2 - 200, WIN_HEIGHT / 2 + 40 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Save and Quit to Title");
 	return (0);
+}
+
+void Menu::setup_array_buffer_main( void )
+{
+	_nb_points = 8;
+	int mult = 3;
+    GLint vertices[] = { // pos: x y width height textcoord: x y width height
+        1, WIN_WIDTH / 2 - 129 * mult, WIN_HEIGHT / 2 - 104 * mult, 256 * mult, 64 * mult, 0, 131, 256, 64, // MINECRAFT
+
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 10 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 1), 200, 20, // Singleplayer
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 15 * mult, 200 * mult, 20 * mult, 0, 71, 200, 20, // Multiplayer
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 40 * mult, 200 * mult, 20 * mult, 0, 71, 200, 20, // Minecraft Realms
+
+        1, WIN_WIDTH / 2 - 125 * mult, WIN_HEIGHT / 2 + 80 * mult, 15 * mult, 20 * mult, 0, 71, 200, 20, // Lang settings
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 80 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Options...
+        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 80 * mult, 95 * mult, 20 * mult, 0, 91 + 20 * (_selection == 6), 200, 20, // Quit Game
+        1, WIN_WIDTH / 2 + 110 * mult, WIN_HEIGHT / 2 + 80 * mult, 15 * mult, 20 * mult, 0, 71, 200, 20, // accessibility settings
+    };
+
+	setup_shader(vertices);
 }
 
 void Menu::setup_array_buffer_load( int completion )
@@ -158,44 +217,34 @@ void Menu::setup_array_buffer_load( int completion )
 		}
 	}
 
-	glGenVertexArrays(1, &_vao);
-    glBindVertexArray(_vao);
-
-	glGenBuffers(1, &_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _nb_points * 9 * sizeof(GLint), vertices, GL_STATIC_DRAW);
-
+	setup_shader(vertices);
 	delete [] vertices;
-
-    glEnableVertexAttribArray(UI_ATLASATTRIB);
-	glVertexAttribIPointer(UI_ATLASATTRIB, 1, GL_INT, 9 * sizeof(GLint), 0);
-
-    glEnableVertexAttribArray(UI_POSATTRIB);
-	glVertexAttribIPointer(UI_POSATTRIB, 4, GL_INT, 9 * sizeof(GLint), (void *)(sizeof(GLint)));
-	
-	glEnableVertexAttribArray(UI_TEXATTRIB);
-	glVertexAttribIPointer(UI_TEXATTRIB, 4, GL_INT, 9 * sizeof(GLint), (void *)(5 * sizeof(GLint)));
-
-	check_glstate("NO");
 }
 
-void Menu::setup_array_buffer( void )
+void Menu::setup_array_buffer_pause( void )
 {
 	_nb_points = 9;
 	int mult = 3;
     GLint vertices[] = { // pos: x y width height textcoord: x y width height
 		1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1, // occult window
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 60 * mult, 200 * mult, 20 * mult, 0, 91, 200, 20, // Back to Game
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 35 * mult, 95 * mult, 20 * mult, 0, 91, 200, 20, // Advancements
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 10 * mult, 95 * mult, 20 * mult, 0, 91, 200, 20, // Give Feedback
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 15 * mult, 95 * mult, 20 * mult, 0, 91, 200, 20, // Options...
-        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 - 35 * mult, 95 * mult, 20 * mult, 0, 91, 200, 20, // Statistics
-        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 - 10 * mult, 95 * mult, 20 * mult, 0, 91, 200, 20, // Report Bugs
-        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 15 * mult, 95 * mult, 20 * mult, 0, 91, 200, 20, // Open to LAN
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 40 * mult, 200 * mult, 20 * mult, 0, 91, 200, 20, // Save and Quit to Title
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 60 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 1), 200, 20, // Back to Game
 
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 35 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Advancements
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 10 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Give Feedback
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 15 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Options...
+
+        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 - 35 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Statistics
+        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 - 10 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Report Bugs
+        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 15 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Open to LAN
+
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 40 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 8), 200, 20, // Save and Quit to Title
     };
 
+	setup_shader(vertices);
+}
+
+void Menu::setup_shader( GLint *vertices )
+{
 	glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
 	_vaoSet = true;
@@ -220,10 +269,31 @@ void Menu::setup_array_buffer( void )
 //                                Public                                      //
 // ************************************************************************** //
 
-void Menu::processMouseMovement( float x_offset, float y_offset )
+void Menu::processMouseMovement( float posX, float posY )
 {
-	(void)x_offset;
-	(void)y_offset;
+	if (_state == MAIN_MENU) {
+		int mult = 3;
+		if (posX >= WIN_WIDTH / 2 - 100 * mult && posX <= WIN_WIDTH / 2 - 100 * mult + 200 * mult
+			&& posY >= WIN_HEIGHT / 2 - 10 * mult && posY <= WIN_HEIGHT / 2 - 10 * mult + 20 * mult) {
+			_selection = 1;
+		} else if (posX >= WIN_WIDTH / 2 + 5 * mult && posX <= WIN_WIDTH / 2 + 5 * mult + 95 * mult
+			&& posY >= WIN_HEIGHT / 2 + 80 * mult && posY <= WIN_HEIGHT / 2 + 80 * mult + 20 * mult) {
+			_selection = 6;
+		} else {
+			_selection = 0;
+		}
+	} else if (_state == PAUSE_MENU) {
+		int mult = 3;
+		if (posX >= WIN_WIDTH / 2 - 100 * mult && posX <= WIN_WIDTH / 2 - 100 * mult + 200 * mult
+			&& posY >= WIN_HEIGHT / 2 - 60 * mult && posY <= WIN_HEIGHT / 2 - 60 * mult + 20 * mult) {
+			_selection = 1;
+		} else if (posX >= WIN_WIDTH / 2 - 100 * mult && posX <= WIN_WIDTH / 2 - 100 * mult + 200 * mult
+			&& posY >= WIN_HEIGHT / 2 + 40 * mult && posY <= WIN_HEIGHT / 2 + 40 * mult + 20 * mult) {
+			_selection = 8;
+		} else {
+			_selection = 0;
+		}
+	}
 }
 
 void Menu::setShaderProgram( GLuint shaderProgram )
@@ -245,7 +315,7 @@ int Menu::run( GLFWwindow* window, std::list<Chunk *> chunks, GLint render_dist 
 {
 	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GL_TRUE);
-		return (1);
+		return (-1);
 	}
 
 	switch (_state) {
