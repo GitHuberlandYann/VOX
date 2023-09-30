@@ -76,8 +76,17 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	// from now on adding = true
+	if (_block_hit.w == blocks::CRAFTING_TABLE) {
+		_paused = true;
+		_esc_released = false;
+		_e_released = false;
+		_menu->setState(CRAFTING_MENU);
+		set_cursor_position_callback(NULL, _menu);
+		set_scroll_callback(NULL);
+		return ;
+	}
 	int type = _inventory->getCurrentSlot();
-	if (type == blocks::AIR) {
+	if (type == blocks::AIR || type >= blocks::STICK) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
 	}
@@ -254,6 +263,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	if (_e_released && glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
 		_paused = true;
 		_e_released = false;
+		_esc_released = false;
 		_menu->setState(INVENTORY_MENU);
 		set_cursor_position_callback(NULL, _menu);
 		set_scroll_callback(NULL);
@@ -290,12 +300,16 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		if (_game_mode == SURVIVAL) {
 			_break_time += deltaTime;
-			if (_block_hit.w != blocks::AIR && _break_time >= s_blocks[_block_hit.w].break_time_hand) {
+			mtx_inventory.lock();
+			float break_time = s_blocks[_block_hit.w].getBreakTime(_inventory->getCurrentSlot());
+			bool can_collect = s_blocks[_block_hit.w].canCollect(_inventory->getCurrentSlot());
+			mtx_inventory.unlock();
+			if (_block_hit.w != blocks::AIR && _break_time >= break_time) {
 				_break_time = 0;
 				_break_frame = 0;
-				handle_add_rm_block(false, s_blocks[_block_hit.w].byHand); // collect in inventory if byhand allowed, will later use tools
+				handle_add_rm_block(false, can_collect);
 			} else {
-				int break_frame = static_cast<int>(10 * _break_time / s_blocks[_block_hit.w].break_time_hand) + 1;
+				int break_frame = static_cast<int>(10 * _break_time / break_time) + 1;
 				if (_break_frame != break_frame) {
 					if (chunk_hit) {
 						chunk_hit->updateBreak(_block_hit, break_frame);

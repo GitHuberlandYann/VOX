@@ -4,8 +4,9 @@
 enum blocks {
 	AIR,
 	GRASS_BLOCK,
-	OAK_TRUNK,
+	OAK_LOG,
 	CACTUS,
+	CRAFTING_TABLE,
 	BEDROCK = 16,
 	DIRT,
 	STONE,
@@ -26,6 +27,22 @@ enum blocks {
 	GRASS,
 	SUGAR_CANE,
 	DEAD_BUSH,
+	STICK = 80,
+	WOODEN_SHOVEL,
+	STONE_SHOVEL,
+	IRON_SHOVEL,
+	DIAMOND_SHOVEL,
+	WOODEN_AXE,
+	STONE_AXE,
+	IRON_AXE,
+	DIAMOND_AXE,
+	WOODEN_PICKAXE,
+	STONE_PICKAXE,
+	IRON_PICKAXE,
+	DIAMOND_PICKAXE,
+	COAL = 96,
+	IRON_INGOT,
+	DIAMOND,
 	NOTVISIBLE = 1000
 };
 
@@ -33,7 +50,31 @@ struct Block {
 	public:
 		std::string name = "DEFAULT";
 		bool byHand = false;
+		int needed_tool = blocks::NOTVISIBLE;
+		int needed_material_level = 0;
 		float break_time_hand = FLT_MAX;
+		float break_time_wooden = FLT_MAX;
+		float break_time_stone = FLT_MAX;
+		float break_time_iron = FLT_MAX;
+		float break_time_diamond = FLT_MAX;
+		float getBreakTime( int tool ) const {
+			if (tool == needed_tool) {
+				return (break_time_wooden);
+			} else if (tool == needed_tool + 1) {
+				return (break_time_stone);
+			} else if (tool == needed_tool + 2) {
+				return (break_time_iron);
+			} else if (tool == needed_tool + 3) {
+				return (break_time_diamond);
+			}
+			return (break_time_hand);
+		}
+		bool canCollect( int tool ) const {
+			if (byHand) {
+				return (true);
+			}
+			return (tool >= needed_tool + needed_material_level && tool < needed_tool + 4 - needed_material_level);
+		}
 };
 
 struct Air : Block {
@@ -55,16 +96,26 @@ struct GrassBlock : Block {
 		GrassBlock() {
 			name = "GRASS_BLOCK";
 			byHand = true;
+			needed_tool = blocks::WOODEN_SHOVEL;
 			break_time_hand = 0.9f;
+			break_time_wooden = 0.45f;
+			break_time_stone = 0.25f;
+			break_time_iron = 0.15f;
+			break_time_diamond = 0.15f;
 		}
 };
 
-struct OakTrunk : Block {
+struct OakLog : Block {
 	public:
-		OakTrunk() {
-			name = "OAK_TRUNK";
+		OakLog() {
+			name = "OAK_LOG";
 			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
 			break_time_hand = 3.0f;
+			break_time_wooden = 1.5f;
+			break_time_stone = 0.75f;
+			break_time_iron = 0.5f;
+			break_time_diamond = 0.4f;
 		}
 };
 
@@ -74,6 +125,20 @@ struct Cactus : Block {
 			name = "CACTUS";
 			byHand = true;
 			break_time_hand = 0.6f;
+		}
+};
+
+struct CraftingTable : Block {
+	public:
+		CraftingTable() {
+			name = "CRAFTING_TABLE";
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			break_time_hand = 3.75f;
+			break_time_wooden = 1.9f;
+			break_time_stone = 0.95f;
+			break_time_iron = 0.65f;
+			break_time_diamond = 0.5f;
 		}
 };
 
@@ -90,7 +155,12 @@ struct Dirt : Block {
 		Dirt() {
 			name = "DIRT";
 			byHand = true;
+			needed_tool = blocks::WOODEN_SHOVEL;
 			break_time_hand = 0.75f;
+			break_time_wooden = 0.4f;
+			break_time_stone = 0.2f;
+			break_time_iron = 0.15f;
+			break_time_diamond = 0.1f;
 		}
 };
 
@@ -99,7 +169,12 @@ struct Stone : Block {
 		Stone() {
 			name = "STONE";
 			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
 			break_time_hand = 7.5f;
+			break_time_wooden = 1.15f;
+			break_time_stone = 0.6f;
+			break_time_iron = 0.4f;
+			break_time_diamond = 0.3f;
 		}
 };
 
@@ -108,7 +183,12 @@ struct Cobblestone : Block {
 		Cobblestone() {
 			name = "COBBLESTONE";
 			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
 			break_time_hand = 10.0f;
+			break_time_wooden = 1.5f;
+			break_time_stone = 0.74f;
+			break_time_iron = 0.5f;
+			break_time_diamond = 0.4f;
 		}
 };
 
@@ -117,7 +197,12 @@ struct Sand : Block {
 		Sand() {
 			name = "SAND";
 			byHand = true;
+			needed_tool = WOODEN_SHOVEL;
 			break_time_hand = 0.75f;
+			break_time_wooden = 0.4f;
+			break_time_stone = 0.2f;
+			break_time_iron = 0.15f;
+			break_time_diamond = 0.1f;
 		}
 };
 
@@ -126,7 +211,12 @@ struct Gravel : Block {
 		Gravel() {
 			name = "GRAVEL";
 			byHand = true;
+			needed_tool = WOODEN_SHOVEL;
 			break_time_hand = 0.9f;
+			break_time_wooden = 0.45f;
+			break_time_stone = 0.25f;
+			break_time_iron = 0.15f;
+			break_time_diamond = 0.15f;
 		}
 };
 
@@ -134,7 +224,7 @@ struct OakLeaves : Block {
 	public:
 		OakLeaves() {
 			name = "OAK_LEAVES";
-			byHand = true;
+			byHand = false;
 			break_time_hand = 0.3f;
 		}
 };
@@ -144,7 +234,12 @@ struct OakPlanks : Block {
 		OakPlanks() {
 			name = "OAK_PLANKS";
 			byHand = true;
+			needed_tool = WOODEN_AXE;
 			break_time_hand = 3.0f;
+			break_time_wooden = 1.5f;
+			break_time_stone = 0.75f;
+			break_time_iron = 0.5f;
+			break_time_diamond = 0.4f;
 		}
 };
 
@@ -153,7 +248,12 @@ struct CoalOre : Block {
 		CoalOre() {
 			name = "COAL_ORE";
 			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
 			break_time_hand = 15.0f;
+			break_time_wooden = 2.25f;
+			break_time_stone = 1.15f;
+			break_time_iron = 0.75f;
+			break_time_diamond = 0.6f;
 		}
 };
 
@@ -162,7 +262,13 @@ struct IronOre : Block {
 		IronOre() {
 			name = "IRON_ORE";
 			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
+			needed_material_level = 1; // min stone to collect
 			break_time_hand = 15.0f;
+			break_time_wooden = 7.5f;
+			break_time_stone = 1.15f;
+			break_time_iron = 0.75f;
+			break_time_diamond = 0.6f;
 		}
 };
 
@@ -171,7 +277,13 @@ struct DiamondOre : Block {
 		DiamondOre() {
 			name = "DIAMOND_ORE";
 			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
+			needed_material_level = 2; // min iron to collect
 			break_time_hand = 15.0f;
+			break_time_wooden = 7.5f;
+			break_time_stone = 3.75f;
+			break_time_iron = 0.75f;
+			break_time_diamond = 0.6f;
 		}
 };
 
@@ -257,7 +369,7 @@ struct DeadBush : Block {
 };
 
 const Block s_blocks[64] = {
-	Air(), GrassBlock(), OakTrunk(), Cactus(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Air(), GrassBlock(), OakLog(), Cactus(), CraftingTable(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Bedrock(), Dirt(), Stone(), Cobblestone(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD()

@@ -299,7 +299,8 @@ void OpenGL_Manager::main_loop( void )
 		glDisable(GL_DEPTH_TEST);
 		mtx.lock();
 		std::string str = (_debug_mode)
-			? "FPS: " + std::to_string(nbFramesLastSecond) + _camera->getCamString(_game_mode)
+			? "Timer: " + std::to_string(currentTime)
+				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + _camera->getCamString(_game_mode)
 				+ "\nBlock\t> " + ((_block_hit.w >= blocks::AIR) ? s_blocks[_block_hit.w].name : s_blocks[_block_hit.w + blocks::NOTVISIBLE].name)
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
 				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "")

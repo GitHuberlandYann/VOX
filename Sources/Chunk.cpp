@@ -110,7 +110,7 @@ int Chunk::get_block_type_cave( int row, int col, int level, int ground_level,
 	if (level == ground_level + 1 && ground_level > 9) {
 		value = blocks::GRASS_BLOCK;
 	} else if (tree_gen && level <= ground_level + 6 && ground_level > 9) {
-		value = blocks::OAK_TRUNK;
+		value = blocks::OAK_LOG;
 		if (level == ground_level + 6) {
 			trees.push_back(glm::ivec3(row, col, level));
 		}
@@ -165,7 +165,7 @@ int Chunk::get_block_type( siv::PerlinNoise perlin, int row, int col, int level,
 			}
 		}
 	} else if (tree_gen && surface_level > 65 && level <= surface_level + 5 && surface_level < 220) {
-		value = blocks::OAK_TRUNK;
+		value = blocks::OAK_LOG;
 		if (level == surface_level + 5) {
 			trees.push_back(glm::ivec3(row, col, level));
 		}

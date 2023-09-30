@@ -43,6 +43,7 @@ TODOS:
     - player arm in survival mode
     - hide faces not oriented towards us // face culling ..
     - nether
+    - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
     - biomes

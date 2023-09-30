@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _vaoSet(false),
+Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _selection(0), _vaoSet(false),
 	_esc_released(false), _e_released(false), _left_released(false), _right_released(false),
 	_inventory(inventory), _text(text)
 {
@@ -137,7 +137,6 @@ int Menu::pause_menu( GLFWwindow* window )
 int Menu::inventory_menu( GLFWwindow* window )
 {
 	if (_esc_released && glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		_state = PAUSE_MENU;
 		_selection = 0;
 		_esc_released = false;
 		_e_released = false;
@@ -146,7 +145,7 @@ int Menu::inventory_menu( GLFWwindow* window )
 			_inventory.restoreBlock(_selected_block);
 		}
 		_selected_block = glm::ivec2(blocks::AIR, 0);
-		return (3);
+		return (1);
 	} else if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;
 	}
@@ -170,9 +169,9 @@ int Menu::inventory_menu( GLFWwindow* window )
 		_left_released = false;
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
-				_selected_block = _inventory.pickBlockAt(_selection - 1);
+				_selected_block = _inventory.pickBlockAt(1, _selection - 1);
 			} else {
-				_selected_block = _inventory.putBlockAt(_selection - 1, _selected_block);
+				_selected_block = _inventory.putBlockAt(1, _selection - 1, _selected_block);
 			}
 		}
 	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
@@ -182,9 +181,9 @@ int Menu::inventory_menu( GLFWwindow* window )
 		_right_released = false;
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
-				_selected_block = _inventory.pickHalfBlockAt(_selection - 1);
+				_selected_block = _inventory.pickHalfBlockAt(1, _selection - 1);
 			} else {
-				_selected_block = _inventory.putOneBlockAt(_selection - 1, _selected_block);
+				_selected_block = _inventory.putOneBlockAt(1, _selection - 1, _selected_block);
 			}
 		}
 	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
@@ -192,7 +191,7 @@ int Menu::inventory_menu( GLFWwindow* window )
 	}
 
 
-	setup_array_buffer_inventory();
+	setup_array_buffer_inventory(window);
 	glUseProgram(_shaderProgram);
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
@@ -213,8 +212,96 @@ int Menu::inventory_menu( GLFWwindow* window )
 		_text->displayText((WIN_WIDTH - (166 * 3)) / 2 + 155 * 3, WIN_HEIGHT / 2 - 49 * 3, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
 	}
 	if (_selected_block.y > 1) {
+		double mouseX, mouseY;
+		glfwGetCursorPos(window, &mouseX, &mouseY);
 		value = _selected_block.y;
-		_text->displayText(_mouseX - 6, _mouseY - 6, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->displayText(mouseX - 6, mouseY - 6, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
+	return (0);
+}
+
+int Menu::crafting_menu( GLFWwindow* window )
+{
+	if (_esc_released && glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		_selection = 0;
+		_esc_released = false;
+		_e_released = false;
+		_inventory.restoreCraft();
+		if (_selected_block.x != blocks::AIR) {
+			_inventory.restoreBlock(_selected_block);
+		}
+		_selected_block = glm::ivec2(blocks::AIR, 0);
+		return (1);
+	} else if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
+		_esc_released = true;
+	}
+	if (_e_released && glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+		_selection = 0;
+		_esc_released = false;
+		_e_released = false;
+		_inventory.restoreCraft();
+		if (_selected_block.x != blocks::AIR) {
+			_inventory.restoreBlock(_selected_block);
+		}
+		_selected_block = glm::ivec2(blocks::AIR, 0);
+		return (1);
+	} else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE) {
+		_e_released = true;
+	}
+	if (_selection && glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+		_inventory.removeBlockAt(_selection - 1);
+	}
+	if (_left_released && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		_left_released = false;
+		if (_selection) {
+			if (_selected_block.x == blocks::AIR) {
+				_selected_block = _inventory.pickBlockAt(2, _selection - 1);
+			} else {
+				_selected_block = _inventory.putBlockAt(2, _selection - 1, _selected_block);
+			}
+		}
+	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+		_left_released = true;
+	}
+	if (_right_released && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+		_right_released = false;
+		if (_selection) {
+			if (_selected_block.x == blocks::AIR) {
+				_selected_block = _inventory.pickHalfBlockAt(2, _selection - 1);
+			} else {
+				_selected_block = _inventory.putOneBlockAt(2, _selection - 1, _selected_block);
+			}
+		}
+	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+		_right_released = true;
+	}
+
+
+	setup_array_buffer_crafting(window);
+	glUseProgram(_shaderProgram);
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_POINTS, 0, _nb_points);
+
+	for (int index = 0; index < 9; index++) {
+		display_slot_value(index);
+	}
+	for (int index = 0; index < 27; index++) {
+		display_backpack_value(index);
+	}
+	for (int index = 0; index < 9; index++) {
+		display_craft_value(index);
+	}
+	mtx_inventory.lock();
+	int value = _inventory.getCrafted().y;
+	mtx_inventory.unlock();
+	if (value > 1) {
+		_text->displayText((WIN_WIDTH - (166 * 3)) / 2 + 125 * 3, WIN_HEIGHT / 2 - 42 * 3, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
+	if (_selected_block.y > 1) {
+		double mouseX, mouseY;
+		glfwGetCursorPos(window, &mouseX, &mouseY);
+		value = _selected_block.y;
+		_text->displayText(mouseX - 6, mouseY - 6, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
 	}
 	return (0);
 }
@@ -364,6 +451,17 @@ void Menu::display_icraft_value( int index )
 	}
 }
 
+void Menu::display_craft_value( int index )
+{
+	if (index < 0 || index >= 9) {
+		return ;
+	}
+	int mult = 3, value = _inventory.getCraftBlock(index).y;
+	if (value > 1) {
+		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 14 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 60 * mult + 18 * mult * (index / 3), 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
+}
+
 void Menu::add_slot_value( GLint *vertices, int mult, int index, int & vindex )
 {
 	mtx_inventory.lock();
@@ -427,6 +525,27 @@ void Menu::add_icraft_value( GLint *vertices, int mult, int index, int & vindex 
 	vindex += 9;
 }
 
+void Menu::add_craft_value( GLint *vertices, int mult, int index, int & vindex )
+{
+	mtx_inventory.lock();
+	int value = _inventory.getCraftBlock(index).x;
+	mtx_inventory.unlock();
+	if (value == blocks::AIR) {
+		return ;
+	}
+	// std::cout << "in back; nb points " << _nb_points << ", vindex at " << vindex << std::endl;
+	vertices[vindex + 0] = 0;
+	vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 7;
+	vertices[vindex + 2] = WIN_HEIGHT / 2 - 66 * mult + 18 * mult * (index / 3);
+	vertices[vindex + 3] = 16 * mult;
+	vertices[vindex + 4] = 16 * mult;
+	vertices[vindex + 5] = blockAtlasX(value);
+	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 7] = 16;
+	vertices[vindex + 8] = 16;
+	vindex += 9;
+}
+
 void Menu::add_crafted_value( GLint *vertices, int mult, int & vindex )
 {
 	mtx_inventory.lock();
@@ -437,8 +556,13 @@ void Menu::add_crafted_value( GLint *vertices, int mult, int & vindex )
 	}
 	// std::cout << "in back; nb points " << _nb_points << ", vindex at " << vindex << std::endl;
 	vertices[vindex + 0] = 0;
-	vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 149 * mult;
-	vertices[vindex + 2] = WIN_HEIGHT / 2 - 55 * mult;
+	if (_state == INVENTORY_MENU) {
+		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 149 * mult;
+		vertices[vindex + 2] = WIN_HEIGHT / 2 - 55 * mult;
+	} else if (_state == CRAFTING_MENU) {
+		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 119 * mult;
+		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult;
+	}
 	vertices[vindex + 3] = 16 * mult;
 	vertices[vindex + 4] = 16 * mult;
 	vertices[vindex + 5] = blockAtlasX(value);
@@ -448,7 +572,7 @@ void Menu::add_crafted_value( GLint *vertices, int mult, int & vindex )
 	vindex += 9;
 }
 
-void Menu::setup_array_buffer_inventory( void )
+void Menu::setup_array_buffer_inventory( GLFWwindow *window )
 {
 	mtx_inventory.lock();
 	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countiCraft() + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
@@ -479,9 +603,59 @@ void Menu::setup_array_buffer_inventory( void )
 	add_crafted_value(vertices, mult, vindex);
 
 	if (_selected_block.x != blocks::AIR) {
+		double mouseX, mouseY;
+		glfwGetCursorPos(window, &mouseX, &mouseY);
 		vertices[vindex + 0] = 0;
-		vertices[vindex + 1] = _mouseX - 8 * mult;
-		vertices[vindex + 2] = _mouseY - 8 * mult;
+		vertices[vindex + 1] = mouseX - 8 * mult;
+		vertices[vindex + 2] = mouseY - 8 * mult;
+		vertices[vindex + 3] = 16 * mult;
+		vertices[vindex + 4] = 16 * mult;
+		vertices[vindex + 5] = blockAtlasX(_selected_block.x);
+		vertices[vindex + 6] = blockAtlasY(_selected_block.x);
+		vertices[vindex + 7] = 16;
+		vertices[vindex + 8] = 16;
+	}
+
+	setup_shader(vertices);
+	delete [] vertices;
+}
+
+void Menu::setup_array_buffer_crafting( GLFWwindow *window )
+{
+	mtx_inventory.lock();
+	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countCraft() + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
+	mtx_inventory.unlock();
+	int mult = 3;
+    GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
+
+	vertices[0] = 2;
+	vertices[1] = WIN_WIDTH / 2 - 88 * mult;
+	vertices[2] = WIN_HEIGHT / 2 - 83 * mult;
+	vertices[3] = 176 * mult;
+	vertices[4] = 166 * mult;
+	vertices[5] = 128;
+	vertices[6] = 0;
+	vertices[7] = 128; // textcoord are in 256*256
+	vertices[8] = 128;
+
+	int vindex = 9;
+	for (int index = 0; index < 9; index++) {
+		add_slot_value(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < 27; index++) {
+		add_backpack_value(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < 9; index++) {
+		add_craft_value(vertices, mult, index, vindex);
+	}
+	add_crafted_value(vertices, mult, vindex);
+
+	if (_selected_block.x != blocks::AIR) {
+		double mouseX, mouseY;
+		glfwGetCursorPos(window, &mouseX, &mouseY);
+		vertices[vindex + 0] = 0;
+		vertices[vindex + 1] = mouseX - 8 * mult;
+		vertices[vindex + 2] = mouseY - 8 * mult;
 		vertices[vindex + 3] = 16 * mult;
 		vertices[vindex + 4] = 16 * mult;
 		vertices[vindex + 5] = blockAtlasX(_selected_block.x);
@@ -545,9 +719,7 @@ void Menu::processMouseMovement( float posX, float posY )
 		} else {
 			_selection = 0;
 		}
-	} else if (_state == INVENTORY_MENU) {
-		_mouseX = posX;
-		_mouseY = posY;
+	} else if (_state >= INVENTORY_MENU) {
 		int mult = 3;
 		for (int index = 0; index < 9; index++) {
 			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + (18 * index * mult) + mult * 3, WIN_HEIGHT / 2 + 59 * mult, 16 * mult, 16 * mult)) {
@@ -561,15 +733,28 @@ void Menu::processMouseMovement( float posX, float posY )
 				return ;
 			}
 		}
-		for (int index = 0; index < 4; index++) {
-			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 3, WIN_HEIGHT / 2 - 65 * mult + 18 * mult * (index / 2), 16 * mult, 16 * mult)) {
-				_selection = index + 37;
+		if (_state == INVENTORY_MENU) {
+			for (int index = 0; index < 4; index++) {
+				if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 3, WIN_HEIGHT / 2 - 65 * mult + 18 * mult * (index / 2), 16 * mult, 16 * mult)) {
+					_selection = index + 37;
+					return ;
+				}
+			}
+			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + 149 * mult, WIN_HEIGHT / 2 - 55 * mult, 16 * mult, 16 * mult)) {
+				_selection = 41;
 				return ;
 			}
-		}
-		if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + 149 * mult, WIN_HEIGHT / 2 - 55 * mult, 16 * mult, 16 * mult)) {
-			_selection = 41;
-			return ;
+		} else if (_state == CRAFTING_MENU) {
+			for (int index = 0; index < 9; index++) {
+				if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 7, WIN_HEIGHT / 2 - 66 * mult + 18 * mult * (index / 3), 16 * mult, 16 * mult)) {
+					_selection = index + 42;
+					return ;
+				}
+			}
+			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + 119 * mult, WIN_HEIGHT / 2 - 48 * mult, 16 * mult, 16 * mult)) {
+				_selection = 41;
+				return ;
+			}
 		}
 		_selection = 0;
 	}
@@ -606,6 +791,8 @@ int Menu::run( GLFWwindow* window, std::list<Chunk *> chunks, GLint render_dist 
 			return (pause_menu(window));
 		case INVENTORY_MENU:
 			return (inventory_menu(window));
+		case CRAFTING_MENU:
+			return (crafting_menu(window));
 		default:
 			return (1);
 	}
