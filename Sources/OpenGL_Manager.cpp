@@ -90,9 +90,10 @@ void OpenGL_Manager::setup_window( void )
 	glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE); // doesn't seem to work in windowed mode
 
 	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << std::endl;
-	(IS_LINUX)
-		? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", nullptr, nullptr)
-		: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr);
+	// (IS_LINUX)
+	// 	? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", nullptr, nullptr)
+	// 	: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr);
+	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr);
 	if (_window == NULL)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -243,7 +244,7 @@ void OpenGL_Manager::main_loop( void )
 	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
 
 	if (!IS_LINUX) {
-		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // TODO add this when switch between game and menus
 		if (glfwRawMouseMotionSupported()) {
 			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 		}

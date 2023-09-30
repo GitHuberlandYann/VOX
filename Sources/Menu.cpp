@@ -1,8 +1,10 @@
 #include "vox.h"
 
-Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _vaoSet(false), _esc_released(false), _e_released(false), _inventory(inventory), _text(text)
+Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _vaoSet(false),
+	_esc_released(false), _e_released(false), _left_released(false), _right_released(false),
+	_inventory(inventory), _text(text)
 {
-	(void)_inventory;
+	_selected_block = glm::ivec2(blocks::AIR, 0);
 }
 
 Menu::~Menu( void )
@@ -139,6 +141,11 @@ int Menu::inventory_menu( GLFWwindow* window )
 		_selection = 0;
 		_esc_released = false;
 		_e_released = false;
+		_inventory.restoreiCraft();
+		if (_selected_block.x != blocks::AIR) {
+			_inventory.restoreBlock(_selected_block);
+		}
+		_selected_block = glm::ivec2(blocks::AIR, 0);
 		return (3);
 	} else if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;
@@ -147,15 +154,68 @@ int Menu::inventory_menu( GLFWwindow* window )
 		_selection = 0;
 		_esc_released = false;
 		_e_released = false;
+		_inventory.restoreiCraft();
+		if (_selected_block.x != blocks::AIR) {
+			_inventory.restoreBlock(_selected_block);
+		}
+		_selected_block = glm::ivec2(blocks::AIR, 0);
 		return (1);
 	} else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE) {
 		_e_released = true;
 	}
+	if (_selection && glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+		_inventory.removeBlockAt(_selection - 1);
+	}
+	if (_left_released && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		_left_released = false;
+		if (_selection) {
+			if (_selected_block.x == blocks::AIR) {
+				_selected_block = _inventory.pickBlockAt(_selection - 1);
+			} else {
+				_selected_block = _inventory.putBlockAt(_selection - 1, _selected_block);
+			}
+		}
+	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+		_left_released = true;
+	}
+	if (_right_released && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+		_right_released = false;
+		if (_selection) {
+			if (_selected_block.x == blocks::AIR) {
+				_selected_block = _inventory.pickHalfBlockAt(_selection - 1);
+			} else {
+				_selected_block = _inventory.putOneBlockAt(_selection - 1, _selected_block);
+			}
+		}
+	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+		_right_released = true;
+	}
+
 
 	setup_array_buffer_inventory();
 	glUseProgram(_shaderProgram);
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
+
+	for (int index = 0; index < 9; index++) {
+		display_slot_value(index);
+	}
+	for (int index = 0; index < 27; index++) {
+		display_backpack_value(index);
+	}
+	for (int index = 0; index < 4; index++) {
+		display_icraft_value(index);
+	}
+	mtx_inventory.lock();
+	int value = _inventory.getCrafted().y;
+	mtx_inventory.unlock();
+	if (value > 1) {
+		_text->displayText((WIN_WIDTH - (166 * 3)) / 2 + 155 * 3, WIN_HEIGHT / 2 - 49 * 3, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
+	if (_selected_block.y > 1) {
+		value = _selected_block.y;
+		_text->displayText(_mouseX - 6, _mouseY - 6, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
 	return (0);
 }
 
@@ -271,24 +331,128 @@ void Menu::setup_array_buffer_pause( void )
 	setup_shader(vertices);
 }
 
-void Menu::add_slot_value( GLint *vertices, int mult, int index )
+void Menu::display_slot_value( int index )
 {
-	vertices[(1 + index) * 9 + 0] = 0;
-	vertices[(1 + index) * 9 + 1] = (WIN_WIDTH - (166 * mult)) / 2 + (18 * index * mult) + mult * 3;
-	vertices[(1 + index) * 9 + 2] = WIN_HEIGHT / 2 - 83 * mult + (142) * mult;
-	vertices[(1 + index) * 9 + 3] = 16 * mult;
-	vertices[(1 + index) * 9 + 4] = 16 * mult;
+	if (index < 0 || index >= 9) {
+		return ;
+	}
+	int mult = 3, value = _inventory.getSlotBlock(index).y;
+	if (value > 1) {
+		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 18 * index * mult + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 + (59 + 6) * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
+}
+
+void Menu::display_backpack_value( int index )
+{
+	if (index < 0 || index >= 27) {
+		return ;
+	}
+	int mult = 3, value = _inventory.getBackpackBlock(index).y;
+	if (value > 1) {
+		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 + 7 * mult + 18 * mult * (index / 9), 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
+}
+
+void Menu::display_icraft_value( int index )
+{
+	if (index < 0 || index >= 4) {
+		return ;
+	}
+	int mult = 3, value = _inventory.getiCraftBlock(index).y;
+	if (value > 1) {
+		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 59 * mult + 18 * mult * (index / 2), 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
+}
+
+void Menu::add_slot_value( GLint *vertices, int mult, int index, int & vindex )
+{
 	mtx_inventory.lock();
-	vertices[(1 + index) * 9 + 5] = blockAtlasX(_inventory.getSlotBlock(index).x);
-	vertices[(1 + index) * 9 + 6] = blockAtlasY(_inventory.getSlotBlock(index).x);
+	int value = _inventory.getSlotBlock(index).x;
 	mtx_inventory.unlock();
-	vertices[(1 + index) * 9 + 7] = 16;
-	vertices[(1 + index) * 9 + 8] = 16;
+	if (value == blocks::AIR) {
+		return ;
+	}
+	// std::cout << "nb points " << _nb_points << ", vindex at " << vindex << std::endl;
+	vertices[vindex + 0] = 0;
+	vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + (18 * index * mult) + mult * 3;
+	vertices[vindex + 2] = WIN_HEIGHT / 2 + 59 * mult;
+	vertices[vindex + 3] = 16 * mult;
+	vertices[vindex + 4] = 16 * mult;
+	vertices[vindex + 5] = blockAtlasX(value);
+	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 7] = 16;
+	vertices[vindex + 8] = 16;
+	vindex += 9;
+}
+
+void Menu::add_backpack_value( GLint *vertices, int mult, int index, int & vindex )
+{
+	mtx_inventory.lock();
+	int value = _inventory.getBackpackBlock(index).x;
+	mtx_inventory.unlock();
+	if (value == blocks::AIR) {
+		return ;
+	}
+	// std::cout << "in back; nb points " << _nb_points << ", vindex at " << vindex << std::endl;
+	vertices[vindex + 0] = 0;
+	vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 3;
+	vertices[vindex + 2] = WIN_HEIGHT / 2 + mult + 18 * mult * (index / 9);
+	vertices[vindex + 3] = 16 * mult;
+	vertices[vindex + 4] = 16 * mult;
+	vertices[vindex + 5] = blockAtlasX(value);
+	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 7] = 16;
+	vertices[vindex + 8] = 16;
+	vindex += 9;
+}
+
+void Menu::add_icraft_value( GLint *vertices, int mult, int index, int & vindex )
+{
+	mtx_inventory.lock();
+	int value = _inventory.getiCraftBlock(index).x;
+	mtx_inventory.unlock();
+	if (value == blocks::AIR) {
+		return ;
+	}
+	// std::cout << "in back; nb points " << _nb_points << ", vindex at " << vindex << std::endl;
+	vertices[vindex + 0] = 0;
+	vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 3;
+	vertices[vindex + 2] = WIN_HEIGHT / 2 - 65 * mult + 18 * mult * (index / 2);
+	vertices[vindex + 3] = 16 * mult;
+	vertices[vindex + 4] = 16 * mult;
+	vertices[vindex + 5] = blockAtlasX(value);
+	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 7] = 16;
+	vertices[vindex + 8] = 16;
+	vindex += 9;
+}
+
+void Menu::add_crafted_value( GLint *vertices, int mult, int & vindex )
+{
+	mtx_inventory.lock();
+	int value = _inventory.getCrafted().x;
+	mtx_inventory.unlock();
+	if (value == blocks::AIR) {
+		return ;
+	}
+	// std::cout << "in back; nb points " << _nb_points << ", vindex at " << vindex << std::endl;
+	vertices[vindex + 0] = 0;
+	vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 149 * mult;
+	vertices[vindex + 2] = WIN_HEIGHT / 2 - 55 * mult;
+	vertices[vindex + 3] = 16 * mult;
+	vertices[vindex + 4] = 16 * mult;
+	vertices[vindex + 5] = blockAtlasX(value);
+	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 7] = 16;
+	vertices[vindex + 8] = 16;
+	vindex += 9;
 }
 
 void Menu::setup_array_buffer_inventory( void )
 {
-	_nb_points = 1 + 10;
+	mtx_inventory.lock();
+	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countiCraft() + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
+	mtx_inventory.unlock();
 	int mult = 3;
     GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
 
@@ -302,8 +466,28 @@ void Menu::setup_array_buffer_inventory( void )
 	vertices[7] = 128; // textcoord are in 256*256
 	vertices[8] = 128;
 
-	for (int index = 0; index < 10; index++) {
-		add_slot_value(vertices, mult, index);
+	int vindex = 9;
+	for (int index = 0; index < 9; index++) {
+		add_slot_value(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < 27; index++) {
+		add_backpack_value(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < 4; index++) {
+		add_icraft_value(vertices, mult, index, vindex);
+	}
+	add_crafted_value(vertices, mult, vindex);
+
+	if (_selected_block.x != blocks::AIR) {
+		vertices[vindex + 0] = 0;
+		vertices[vindex + 1] = _mouseX - 8 * mult;
+		vertices[vindex + 2] = _mouseY - 8 * mult;
+		vertices[vindex + 3] = 16 * mult;
+		vertices[vindex + 4] = 16 * mult;
+		vertices[vindex + 5] = blockAtlasX(_selected_block.x);
+		vertices[vindex + 6] = blockAtlasY(_selected_block.x);
+		vertices[vindex + 7] = 16;
+		vertices[vindex + 8] = 16;
 	}
 
 	setup_shader(vertices);
@@ -361,6 +545,33 @@ void Menu::processMouseMovement( float posX, float posY )
 		} else {
 			_selection = 0;
 		}
+	} else if (_state == INVENTORY_MENU) {
+		_mouseX = posX;
+		_mouseY = posY;
+		int mult = 3;
+		for (int index = 0; index < 9; index++) {
+			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + (18 * index * mult) + mult * 3, WIN_HEIGHT / 2 + 59 * mult, 16 * mult, 16 * mult)) {
+				_selection = index + 1;
+				return ;
+			}
+		}
+		for (int index = 0; index < 27; index++) {
+			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 3, WIN_HEIGHT / 2 + mult + 18 * mult * (index / 9), 16 * mult, 16 * mult)) {
+				_selection = index + 10;
+				return ;
+			}
+		}
+		for (int index = 0; index < 4; index++) {
+			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 3, WIN_HEIGHT / 2 - 65 * mult + 18 * mult * (index / 2), 16 * mult, 16 * mult)) {
+				_selection = index + 37;
+				return ;
+			}
+		}
+		if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + 149 * mult, WIN_HEIGHT / 2 - 55 * mult, 16 * mult, 16 * mult)) {
+			_selection = 41;
+			return ;
+		}
+		_selection = 0;
 	}
 }
 

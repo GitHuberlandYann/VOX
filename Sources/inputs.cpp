@@ -354,6 +354,7 @@ void OpenGL_Manager::user_inputs( float deltaTime )
 			_thread.join();
 		}
 		_thread = std::thread(thread_chunk_update, &_chunks, &_delete_chunks, _camera, _render_distance, _current_chunk.x, _current_chunk.y);
+		update_visible_chunks();
 		// std::cout << "render distance set to " << _render_distance << std::endl;
 	} else if (!key_render_dist) {
 		_key_rdist = 0;

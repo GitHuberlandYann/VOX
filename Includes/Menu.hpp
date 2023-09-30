@@ -14,7 +14,9 @@ class Menu
 	    GLuint _vao, _vbo;
 		GLuint _shaderProgram;
         GLint _nb_points, _state, _selection;
-		bool _vaoSet, _esc_released, _e_released;
+		glm::ivec2 _selected_block;
+		float _mouseX, _mouseY;
+		bool _vaoSet, _esc_released, _e_released, _left_released, _right_released;
 		Inventory &_inventory;
 		Text *_text;
 
@@ -25,7 +27,13 @@ class Menu
         void setup_array_buffer_main( void );
 		void setup_array_buffer_load( int completion );
         void setup_array_buffer_pause( void );
-		void add_slot_value( GLint *vertices, int mult, int index );
+		void display_slot_value( int index );
+		void display_backpack_value( int index );
+		void display_icraft_value( int index );
+		void add_slot_value( GLint *vertices, int mult, int index, int & vindex );
+		void add_backpack_value( GLint *vertices, int mult, int index, int & vindex );
+		void add_icraft_value( GLint *vertices, int mult, int index, int & vindex );
+		void add_crafted_value( GLint *vertices, int mult, int & vindex );
         void setup_array_buffer_inventory( void );
 		void setup_shader( GLint *vertices );
 

@@ -44,8 +44,8 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 	}
 
 	if (yoffset > 0) {
-		scroll_inventory->setSlot(scroll_inventory->getSlot() + 1);
+		scroll_inventory->setSlot(scroll_inventory->getSlotNum() + 1);
 	} else if (yoffset < 0) {
-		scroll_inventory->setSlot(scroll_inventory->getSlot() - 1);
+		scroll_inventory->setSlot(scroll_inventory->getSlotNum() - 1);
 	}
 }

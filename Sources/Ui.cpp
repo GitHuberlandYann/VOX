@@ -79,7 +79,7 @@ void UI::setup_array_buffer( void )
     GLint vertices[] = { // pos: x y width height textcoord: x y width height
         1, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16, // crosshair
 		1, (WIN_WIDTH - (182 * mult)) / 2, WIN_HEIGHT - (22 * mult) * 2, 182 * mult, 22 * mult, 0, 25, 182, 22,  // hot bar
-		1, (WIN_WIDTH - (182 * mult)) / 2 + (20 * _inventory.getSlot() * mult) - mult, WIN_HEIGHT - (22 * mult) * 2 - mult, 24 * mult, 24 * mult, 0, 47, 24, 24,  // slot select
+		1, (WIN_WIDTH - (182 * mult)) / 2 + (20 * _inventory.getSlotNum() * mult) - mult, WIN_HEIGHT - (22 * mult) * 2 - mult, 24 * mult, 24 * mult, 0, 47, 24, 24,  // slot select
 		0, (WIN_WIDTH - (182 * mult)) / 2 + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(0).x), b(_inventory.getSlotBlock(0).x), 16, 16, // inventory elem
 		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 1 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(1).x), b(_inventory.getSlotBlock(1).x), 16, 16,
 		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 2 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(2).x), b(_inventory.getSlotBlock(2).x), 16, 16,
