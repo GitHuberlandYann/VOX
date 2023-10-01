@@ -82,6 +82,12 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_e_released = false;
 		_menu->setState(CRAFTING_MENU);
 		return ;
+	} else if (_block_hit.w == blocks::FURNACE) {
+		_paused = true;
+		_esc_released = false;
+		_e_released = false;
+		_menu->setState(FURNACE_MENU);
+		return ;
 	}
 	int type = _inventory->getCurrentSlot();
 	if (type == blocks::AIR || type >= blocks::STICK) {
@@ -466,10 +472,6 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	{
 		update_cam_view();
 		update_visible_chunks();
-		// if (_camera->_turnUpdate) {
-		// 	update_visible_chunks(); // might do this on every frame to remove it from chunk update, tbd
-		// 	_camera->_turnUpdate = false;
-		// }
 	}
 
 	GLint key_cam_speed = (glfwGetKey(_window, GLFW_KEY_KP_ADD) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);

@@ -50,6 +50,7 @@ enum blocks {
 struct Block {
 	public:
 		std::string name = "DEFAULT";
+		bool stackable = true;
 		bool byHand = false;
 		int needed_tool = blocks::NOTVISIBLE;
 		int needed_material_level = 0;
@@ -383,11 +384,115 @@ struct DeadBush : Block {
 		}
 };
 
-const Block s_blocks[64] = {
+struct Stick : Block {
+	public:
+		Stick() {
+			name = "STICK";
+		}
+};
+
+struct WoodenShovel : Block {
+	public:
+		WoodenShovel() {
+			name = "WOODEN_SHOVEL";
+			stackable = false;
+		}
+};
+
+struct StoneShovel : Block {
+	public:
+		StoneShovel() {
+			name = "STONE_SHOVEL";
+			stackable = false;
+		}
+};
+
+struct IronShovel : Block {
+	public:
+		IronShovel() {
+			name = "IRON_SHOVEL";
+			stackable = false;
+		}
+};
+
+struct DiamondShovel : Block {
+	public:
+		DiamondShovel() {
+			name = "DIAMOND_SHOVEL";
+			stackable = false;
+		}
+};
+
+struct WoodenAxe : Block {
+	public:
+		WoodenAxe() {
+			name = "WOODEN_AXE";
+			stackable = false;
+		}
+};
+
+struct StoneAxe : Block {
+	public:
+		StoneAxe() {
+			name = "STONE_AXE";
+			stackable = false;
+		}
+};
+
+struct IronAxe : Block {
+	public:
+		IronAxe() {
+			name = "IRON_AXE";
+			stackable = false;
+		}
+};
+
+struct DiamondAxe : Block {
+	public:
+		DiamondAxe() {
+			name = "DIAMOND_AXE";
+			stackable = false;
+		}
+};
+
+struct WoodenPickaxe : Block {
+	public:
+		WoodenPickaxe() {
+			name = "WOODEN_PICKAXE";
+			stackable = false;
+		}
+};
+
+struct StonePickaxe : Block {
+	public:
+		StonePickaxe() {
+			name = "STONE_PICKAXE";
+			stackable = false;
+		}
+};
+
+struct IronPickaxe : Block {
+	public:
+		IronPickaxe() {
+			name = "IRON_PICKAXE";
+			stackable = false;
+		}
+};
+
+struct DiamondPickaxe : Block {
+	public:
+		DiamondPickaxe() {
+			name = "DIAMOND_PICKAXE";
+			stackable = false;
+		}
+};
+
+const Block s_blocks[96] = {
 	Air(), GrassBlock(), OakLog(), Cactus(), TBD(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Bedrock(), Dirt(), Stone(), Cobblestone(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD()
+	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Stick(), WoodenShovel(), StoneShovel(), IronShovel(), DiamondShovel(), WoodenAxe(), StoneAxe(), IronAxe(), DiamondAxe(), WoodenPickaxe(), StonePickaxe(), IronPickaxe(), DiamondPickaxe(), TBD(), TBD(), TBD(),
 };
-
 #endif

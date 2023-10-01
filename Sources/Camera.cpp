@@ -7,7 +7,6 @@ Camera::Camera( glm::vec3 position ) : _fall_time(0), _fall_distance(0), _fov(FO
 	_yaw = YAW;
 	_pitch = PITCH;
 	_update = false;
-	_turnUpdate = false;
 	_fovUpdate = false;
 	updateCameraVectors();
 }
@@ -23,7 +22,6 @@ Camera::~Camera( void )
 void Camera::updateCameraVectors( void )
 {
 	_update = true;
-	_turnUpdate = true;
 	glm::vec3 front;
 	front.x = cos(glm::radians(_yaw)) * cos(glm::radians(_pitch));
 	front.y = sin(glm::radians(_yaw)) * cos(glm::radians(_pitch));

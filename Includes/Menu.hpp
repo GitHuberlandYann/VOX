@@ -6,7 +6,8 @@ enum {
 	LOAD_MENU,
 	PAUSE_MENU,
 	INVENTORY_MENU,
-	CRAFTING_MENU
+	CRAFTING_MENU,
+	FURNACE_MENU
 };
 
 class Menu
@@ -22,11 +23,12 @@ class Menu
 		Text *_text;
 		std::list<Chunk *> _chunks;
 
+		void reset_values( void );
 		int main_menu( void );
 		int loading_screen( GLint render_dist );
 		int pause_menu( void );
-		int inventory_menu( void );
-		int crafting_menu( void );
+		int ingame_inputs( void );
+		int ingame_menu( void );
         void setup_array_buffer_main( void );
 		void setup_array_buffer_load( int completion );
         void setup_array_buffer_pause( void );
@@ -41,6 +43,7 @@ class Menu
 		void add_crafted_value( GLint *vertices, int mult, int & vindex );
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );
+        void setup_array_buffer_furnace( void );
 		void setup_shader( GLint *vertices );
 
 	public:

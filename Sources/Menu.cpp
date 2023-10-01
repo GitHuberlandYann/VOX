@@ -16,12 +16,25 @@ Menu::~Menu( void )
 //                                Private                                     //
 // ************************************************************************** //
 
+void Menu::reset_values( void )
+{
+	_selection = 0;
+	_esc_released = false;
+	_e_released = false;
+	_inventory.restoreiCraft();
+	_inventory.restoreCraft();
+	if (_selected_block.x != blocks::AIR) {
+		_inventory.restoreBlock(_selected_block);
+	}
+	_selected_block = glm::ivec2(blocks::AIR, 0);
+}
+
 int Menu::main_menu( void )
 {
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		if (_selection == 1) { //singleplayer
 			_state = LOAD_MENU;
-			_selection = 0;
+			reset_values();
 			return (2);
 		} else if (_selection == 6) { //quit game
 			glfwSetWindowShouldClose(_window, GL_TRUE);
@@ -30,7 +43,7 @@ int Menu::main_menu( void )
 	}
 	if (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		_state = LOAD_MENU;
-		_selection = 0;
+		reset_values();
 		return (2);
 	}
 
@@ -88,12 +101,11 @@ int Menu::pause_menu( void )
 {
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		if (_selection == 1) { //Back to Game
-			_esc_released = false;
-			_selection = 0;
+			reset_values();
 			return (1);
 		} else if (_selection == 8) { //Save and Quit to Title
 			_state = MAIN_MENU;
-			_selection = 0;
+			reset_values();
 			return (3);
 		}
 	}
@@ -134,30 +146,17 @@ int Menu::pause_menu( void )
 	return (0);
 }
 
-int Menu::inventory_menu( void )
+int Menu::ingame_inputs( void )
 {
+	int craft = _state + 1 - INVENTORY_MENU; // craft = 1: inventory, 2: crafting
 	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		_selection = 0;
-		_esc_released = false;
-		_e_released = false;
-		_inventory.restoreiCraft();
-		if (_selected_block.x != blocks::AIR) {
-			_inventory.restoreBlock(_selected_block);
-		}
-		_selected_block = glm::ivec2(blocks::AIR, 0);
+		reset_values();
 		return (1);
 	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;
 	}
 	if (_e_released && glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
-		_selection = 0;
-		_esc_released = false;
-		_e_released = false;
-		_inventory.restoreiCraft();
-		if (_selected_block.x != blocks::AIR) {
-			_inventory.restoreBlock(_selected_block);
-		}
-		_selected_block = glm::ivec2(blocks::AIR, 0);
+		reset_values();
 		return (1);
 	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
 		_e_released = true;
@@ -169,9 +168,9 @@ int Menu::inventory_menu( void )
 		_left_released = false;
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
-				_selected_block = _inventory.pickBlockAt(1, _selection - 1);
+				_selected_block = _inventory.pickBlockAt(craft, _selection - 1);
 			} else {
-				_selected_block = _inventory.putBlockAt(1, _selection - 1, _selected_block);
+				_selected_block = _inventory.putBlockAt(craft, _selection - 1, _selected_block);
 			}
 		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
@@ -181,103 +180,36 @@ int Menu::inventory_menu( void )
 		_right_released = false;
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
-				_selected_block = _inventory.pickHalfBlockAt(1, _selection - 1);
+				_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1);
 			} else {
-				_selected_block = _inventory.putOneBlockAt(1, _selection - 1, _selected_block);
+				_selected_block = _inventory.putOneBlockAt(craft, _selection - 1, _selected_block);
 			}
 		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_right_released = true;
-	}
-
-
-	setup_array_buffer_inventory();
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_POINTS, 0, _nb_points);
-
-	for (int index = 0; index < 9; index++) {
-		display_slot_value(index);
-	}
-	for (int index = 0; index < 27; index++) {
-		display_backpack_value(index);
-	}
-	for (int index = 0; index < 4; index++) {
-		display_icraft_value(index);
-	}
-	mtx_inventory.lock();
-	int value = _inventory.getCrafted().y;
-	mtx_inventory.unlock();
-	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * 3)) / 2 + 155 * 3, WIN_HEIGHT / 2 - 49 * 3, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
-	}
-	if (_selected_block.y > 1) {
-		double mouseX, mouseY;
-		glfwGetCursorPos(_window, &mouseX, &mouseY);
-		value = _selected_block.y;
-		_text->displayText(mouseX - 6, mouseY - 6, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
 	}
 	return (0);
 }
 
-int Menu::crafting_menu( void )
+int Menu::ingame_menu( void )
 {
-	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		_selection = 0;
-		_esc_released = false;
-		_e_released = false;
-		_inventory.restoreCraft();
-		if (_selected_block.x != blocks::AIR) {
-			_inventory.restoreBlock(_selected_block);
-		}
-		_selected_block = glm::ivec2(blocks::AIR, 0);
-		return (1);
-	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
-		_esc_released = true;
-	}
-	if (_e_released && glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
-		_selection = 0;
-		_esc_released = false;
-		_e_released = false;
-		_inventory.restoreCraft();
-		if (_selected_block.x != blocks::AIR) {
-			_inventory.restoreBlock(_selected_block);
-		}
-		_selected_block = glm::ivec2(blocks::AIR, 0);
-		return (1);
-	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
-		_e_released = true;
-	}
-	if (_selection && glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
-		_inventory.removeBlockAt(_selection - 1);
-	}
-	if (_left_released && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-		_left_released = false;
-		if (_selection) {
-			if (_selected_block.x == blocks::AIR) {
-				_selected_block = _inventory.pickBlockAt(2, _selection - 1);
-			} else {
-				_selected_block = _inventory.putBlockAt(2, _selection - 1, _selected_block);
-			}
-		}
-	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
-		_left_released = true;
-	}
-	if (_right_released && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-		_right_released = false;
-		if (_selection) {
-			if (_selected_block.x == blocks::AIR) {
-				_selected_block = _inventory.pickHalfBlockAt(2, _selection - 1);
-			} else {
-				_selected_block = _inventory.putOneBlockAt(2, _selection - 1, _selected_block);
-			}
-		}
-	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
-		_right_released = true;
+	int ret = ingame_inputs();
+	if (ret) {
+		return (ret);
 	}
 
+	switch (_state) {
+		case INVENTORY_MENU:
+			setup_array_buffer_inventory();
+			break ;
+		case CRAFTING_MENU:
+			setup_array_buffer_crafting();
+			break ;
+		case FURNACE_MENU:
+			setup_array_buffer_furnace();
+			break ;
+	}
 
-	setup_array_buffer_crafting();
 	glUseProgram(_shaderProgram);
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
@@ -288,14 +220,31 @@ int Menu::crafting_menu( void )
 	for (int index = 0; index < 27; index++) {
 		display_backpack_value(index);
 	}
-	for (int index = 0; index < 9; index++) {
-		display_craft_value(index);
+	for (int index = 0; index < 4 + 5 * (_state == CRAFTING_MENU) - 2 * (_state == FURNACE_MENU); index++) {
+		switch (_state) {
+			case INVENTORY_MENU:
+				display_icraft_value(index);
+				break ;
+			case CRAFTING_MENU:
+				display_craft_value(index);
+				break ;
+			case FURNACE_MENU:
+				// display_furnace_value(index);
+				break ;
+		}
 	}
 	mtx_inventory.lock();
 	int value = _inventory.getCrafted().y;
 	mtx_inventory.unlock();
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * 3)) / 2 + 125 * 3, WIN_HEIGHT / 2 - 42 * 3, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		switch (_state) {
+			case (INVENTORY_MENU):
+				_text->displayText((WIN_WIDTH - (166 * 3)) / 2 + 155 * 3, WIN_HEIGHT / 2 - 49 * 3, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+				break ;
+			case (CRAFTING_MENU):
+				_text->displayText((WIN_WIDTH - (166 * 3)) / 2 + 125 * 3, WIN_HEIGHT / 2 - 42 * 3, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+				break ;
+		}
 	}
 	if (_selected_block.y > 1) {
 		double mouseX, mouseY;
@@ -668,6 +617,51 @@ void Menu::setup_array_buffer_crafting( void )
 	delete [] vertices;
 }
 
+void Menu::setup_array_buffer_furnace( void )
+{
+	mtx_inventory.lock();
+	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
+	mtx_inventory.unlock();
+	int mult = 3;
+    GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
+
+	vertices[0] = 2;
+	vertices[1] = WIN_WIDTH / 2 - 88 * mult;
+	vertices[2] = WIN_HEIGHT / 2 - 83 * mult;
+	vertices[3] = 176 * mult;
+	vertices[4] = 166 * mult;
+	vertices[5] = 0;
+	vertices[6] = 128;
+	vertices[7] = 128; // textcoord are in 256*256
+	vertices[8] = 128;
+
+	int vindex = 9;
+	for (int index = 0; index < 9; index++) {
+		add_slot_value(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < 27; index++) {
+		add_backpack_value(vertices, mult, index, vindex);
+	}
+	add_crafted_value(vertices, mult, vindex);
+
+	if (_selected_block.x != blocks::AIR) {
+		double mouseX, mouseY;
+		glfwGetCursorPos(_window, &mouseX, &mouseY);
+		vertices[vindex + 0] = 0;
+		vertices[vindex + 1] = mouseX - 8 * mult;
+		vertices[vindex + 2] = mouseY - 8 * mult;
+		vertices[vindex + 3] = 16 * mult;
+		vertices[vindex + 4] = 16 * mult;
+		vertices[vindex + 5] = blockAtlasX(_selected_block.x);
+		vertices[vindex + 6] = blockAtlasY(_selected_block.x);
+		vertices[vindex + 7] = 16;
+		vertices[vindex + 8] = 16;
+	}
+
+	setup_shader(vertices);
+	delete [] vertices;
+}
+
 void Menu::setup_shader( GLint *vertices )
 {
 	glGenVertexArrays(1, &_vao);
@@ -810,9 +804,11 @@ int Menu::run( GLint render_dist )
 		case PAUSE_MENU:
 			return (pause_menu());
 		case INVENTORY_MENU:
-			return (inventory_menu());
+			return (ingame_menu());
 		case CRAFTING_MENU:
-			return (crafting_menu());
+			return (ingame_menu());
+		case FURNACE_MENU:
+			return (ingame_menu());
 		default:
 			return (1);
 	}

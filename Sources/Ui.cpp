@@ -58,19 +58,6 @@ void UI::load_texture( std::string texstr, std::string shname, int index )
 
 }
 
-static int a( int block ) // x coord in blockAtlas in pxl
-{
-	if (block < 16) {
-		return (0);
-	}
-	return ((3 + block / 16) * 16);
-}
-
-static int b( int block ) // y coord in blockAtlas in pxl
-{
-	return ((block % 16) * 16);
-}
-
 void UI::setup_array_buffer( void )
 {
     _nb_points = 3 + 9 + 10 + 10 + 10 + 4 + 10 + 2;
@@ -80,15 +67,15 @@ void UI::setup_array_buffer( void )
         1, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16, // crosshair
 		1, (WIN_WIDTH - (182 * mult)) / 2, WIN_HEIGHT - (22 * mult) * 2, 182 * mult, 22 * mult, 0, 25, 182, 22,  // hot bar
 		1, (WIN_WIDTH - (182 * mult)) / 2 + (20 * _inventory.getSlotNum() * mult) - mult, WIN_HEIGHT - (22 * mult) * 2 - mult, 24 * mult, 24 * mult, 0, 47, 24, 24,  // slot select
-		0, (WIN_WIDTH - (182 * mult)) / 2 + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(0).x), b(_inventory.getSlotBlock(0).x), 16, 16, // inventory elem
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 1 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(1).x), b(_inventory.getSlotBlock(1).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 2 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(2).x), b(_inventory.getSlotBlock(2).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 3 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(3).x), b(_inventory.getSlotBlock(3).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 4 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(4).x), b(_inventory.getSlotBlock(4).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 5 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(5).x), b(_inventory.getSlotBlock(5).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 6 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(6).x), b(_inventory.getSlotBlock(6).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 7 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(7).x), b(_inventory.getSlotBlock(7).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 8 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, a(_inventory.getSlotBlock(8).x), b(_inventory.getSlotBlock(8).x), 16, 16,
+		0, (WIN_WIDTH - (182 * mult)) / 2 + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(0).x), blockAtlasY(_inventory.getSlotBlock(0).x), 16, 16, // inventory elem
+		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 1 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(1).x), blockAtlasY(_inventory.getSlotBlock(1).x), 16, 16,
+		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 2 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(2).x), blockAtlasY(_inventory.getSlotBlock(2).x), 16, 16,
+		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 3 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(3).x), blockAtlasY(_inventory.getSlotBlock(3).x), 16, 16,
+		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 4 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(4).x), blockAtlasY(_inventory.getSlotBlock(4).x), 16, 16,
+		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 5 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(5).x), blockAtlasY(_inventory.getSlotBlock(5).x), 16, 16,
+		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 6 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(6).x), blockAtlasY(_inventory.getSlotBlock(6).x), 16, 16,
+		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 7 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(7).x), blockAtlasY(_inventory.getSlotBlock(7).x), 16, 16,
+		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 8 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(8).x), blockAtlasY(_inventory.getSlotBlock(8).x), 16, 16,
 		1, (WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,  // hearts
 		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
 		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,

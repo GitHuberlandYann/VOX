@@ -43,7 +43,8 @@ TODOS:
     - player arm in survival mode
     - hide faces not oriented towards us // face culling ..
     - nether
-    - fix fall going through blocks
+    - fix fall going through blocks + fix jump into block above head
+    - right/left click and drag in inventory
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:

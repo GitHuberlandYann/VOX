@@ -73,7 +73,7 @@ double gradient( double value, double start, double end, double value_start, dou
 int blockAtlasX( int block ) // x coord in blockAtlas in pxl
 {
 	if (block < 16) {
-		return (0);
+		return (2 * (block >= 8) * 16);
 	}
 	return ((3 + block / 16) * 16);
 }

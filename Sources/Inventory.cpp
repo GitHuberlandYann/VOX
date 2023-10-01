@@ -95,7 +95,7 @@ glm::ivec2 Inventory::pickCrafted( int craft, glm::ivec2 block )
 		glm::ivec2 ret = _crafted;
 		produceCraft(craft);
 		return (ret);
-	} else if (block.x == _crafted.x && block.y + _crafted.y <= 64) {
+	} else if (block.x == _crafted.x && s_blocks[block.x].stackable && block.y + _crafted.y <= 64) {
 		block.y += _crafted.y;
 		produceCraft(craft);
 	}
@@ -131,6 +131,9 @@ void Inventory::pickAllCrafted( int craft )
 	}
 	while (_crafted.x != blocks::AIR && bat->y < 64) {
 			*bat = pickCrafted(craft, *bat);
+			if (!s_blocks[bat->x].stackable) {
+				return ;
+			}
 	}
 }
 
@@ -323,7 +326,7 @@ glm::ivec2 Inventory::putBlockAt( int craft, int value, glm::ivec2 block )
 		bat = &_craft[value - 41];
 	}
 	glm::ivec2 res = *bat;
-	if (res.x == block.x) {
+	if (res.x == block.x && s_blocks[block.x].stackable) {
 		res.y += block.y;
 		if (res.y > 64) {
 			block.y = res.y - 64;
@@ -367,7 +370,7 @@ glm::ivec2 Inventory::putOneBlockAt( int craft,  int value, glm::ivec2 block )
 	if (bat->y == 64) {
 		return (block);
 	}
-	if (bat->x == block.x) {
+	if (bat->x == block.x && s_blocks[block.x].stackable) {
 		bat->y++;
 	} else if (bat->x == blocks::AIR) {
 		*bat = glm::ivec2(block.x, 1);
