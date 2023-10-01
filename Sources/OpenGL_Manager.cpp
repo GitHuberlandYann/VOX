@@ -296,6 +296,7 @@ void OpenGL_Manager::main_loop( void )
 		// glClear(GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 		mtx.lock();
+		mtx_perimeter.lock();
 		std::string str = (_debug_mode)
 			? "Timer: " + std::to_string(currentTime)
 				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + _camera->getCamString(_game_mode)
@@ -304,20 +305,22 @@ void OpenGL_Manager::main_loop( void )
 				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "")
 				+ "\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size())
-				+ '/' + std::to_string(_chunks.size())
-				+ "\nTODEL chunks\t> " + std::to_string(_delete_chunks.size())
-				+ "\nperi chunks\t>" + std::to_string(_perimeter_chunks.size())
+				+ '/' + std::to_string(_perimeter_chunks.size()) + '/' + std::to_string(_chunks.size())
 				+ "\nDisplayed blocks\t> " + std::to_string(blockCounter)
 				+ "\nRender Distance\t> " + std::to_string(_render_distance)
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				// + _inventory->getInventoryString()
 			: "";
+		mtx_perimeter.unlock();
 		mtx.unlock();
 		if (_menu->getState() >= PAUSE_MENU) {
 			_ui->drawUserInterface(str, _game_mode, _f5_mode);
 		}
 		if (_paused) {
-			int menu_ret = _menu->run(_chunks, _render_distance);
+			mtx.lock();
+			_menu->setChunks(_chunks);
+			mtx.unlock();
+			int menu_ret = _menu->run(_render_distance);
 			if (menu_ret == 2) {
 				initWorld();
 			} else if (menu_ret == 1) {

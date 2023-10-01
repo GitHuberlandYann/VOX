@@ -57,10 +57,10 @@ int Menu::main_menu( void )
 	return (0);
 }
 
-int Menu::loading_screen( std::list<Chunk *> chunks, GLint render_dist )
+int Menu::loading_screen( GLint render_dist )
 {
 	GLint current_size = 0, newVaoCounter = 0;
-	for (auto& c : chunks) {
+	for (auto& c : _chunks) {
 		mtx.lock();
 		current_size += c->isLoaded(newVaoCounter);
 		mtx.unlock();
@@ -770,6 +770,13 @@ void Menu::setShaderProgram( GLuint shaderProgram )
 	_shaderProgram = shaderProgram;
 }
 
+void Menu::setChunks( std::list<Chunk *> chunks )
+{
+	if (_state == LOAD_MENU) {
+		_chunks = chunks;
+	}
+}
+
 void Menu::setState( int state )
 {
 	_state = state;
@@ -788,7 +795,7 @@ int Menu::getState( void )
 	return (_state);
 }
 
-int Menu::run( std::list<Chunk *> chunks, GLint render_dist )
+int Menu::run( GLint render_dist )
 {
 	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
@@ -799,7 +806,7 @@ int Menu::run( std::list<Chunk *> chunks, GLint render_dist )
 		case MAIN_MENU:
 			return (main_menu());
 		case LOAD_MENU:
-			return (loading_screen(chunks, render_dist));
+			return (loading_screen(render_dist));
 		case PAUSE_MENU:
 			return (pause_menu());
 		case INVENTORY_MENU:

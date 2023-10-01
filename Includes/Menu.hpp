@@ -20,9 +20,10 @@ class Menu
 		GLFWwindow *_window;
 		Inventory &_inventory;
 		Text *_text;
+		std::list<Chunk *> _chunks;
 
 		int main_menu( void );
-		int loading_screen( std::list<Chunk *> chunks, GLint render_dist );
+		int loading_screen( GLint render_dist );
 		int pause_menu( void );
 		int inventory_menu( void );
 		int crafting_menu( void );
@@ -49,9 +50,10 @@ class Menu
 		void processMouseMovement( float posX, float posY );
 		void setWindow( GLFWwindow *window );
 		void setShaderProgram( GLuint shaderProgram );
+		void setChunks( std::list<Chunk *> chunks );
 		void setState( int state );
 		int getState( void );
-		int run( std::list<Chunk *> chunks, GLint render_dist );
+		int run( GLint render_dist );
 };
 
 #endif
