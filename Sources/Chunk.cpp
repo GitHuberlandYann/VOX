@@ -747,7 +747,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	}
 	for (int index = 0; index < _displayed_blocks * 6; index += 6) {
 		_mtx.lock();
-		if (_vertices[index + 3] == block_hit.x && _vertices[index + 4] == block_hit.y && _vertices[index + 5] == block_hit.z) {
+		if (_vertices[index + 5] == block_hit.z && _vertices[index + 3] == block_hit.x && _vertices[index + 4] == block_hit.y) {
 			_vaoReset = false;
 			_vertices[index + 1] = frame;
 			_mtx.unlock();

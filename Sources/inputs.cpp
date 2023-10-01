@@ -302,6 +302,12 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	} else if (glfwGetKey(_window, GLFW_KEY_J) == GLFW_RELEASE) {
 		_key_j = 0;
 	}
+	// toggle outline
+	if ((glfwGetKey(_window, GLFW_KEY_O) == GLFW_PRESS) && ++_key_o == 1) {
+		_outline = !_outline;
+	} else if (glfwGetKey(_window, GLFW_KEY_O) == GLFW_RELEASE) {
+		_key_o = 0;
+	}
 
 	// add and remove blocks
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
@@ -313,10 +319,10 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			mtx_inventory.unlock();
 			if (_block_hit.w != blocks::AIR && _break_time >= break_time) {
 				_break_time = 0;
-				_break_frame = 0;
+				_break_frame = _outline;
 				handle_add_rm_block(false, can_collect);
 			} else {
-				int break_frame = static_cast<int>(10 * _break_time / break_time) + 1;
+				int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
 				if (_break_frame != break_frame) {
 					if (chunk_hit) {
 						chunk_hit->updateBreak(_block_hit, break_frame);
@@ -330,10 +336,10 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 		_key_rm_block = 0;
 		_break_time = 0;
-		if (_break_frame && chunk_hit) {
-			chunk_hit->updateBreak(_block_hit, 0);
+		if (_break_frame != _outline && chunk_hit) {
+			chunk_hit->updateBreak(_block_hit, _outline);
 		}
-		_break_frame = 0;
+		_break_frame = _outline;
 	}
 	if (_key_rm_block != 1 && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) && ++_key_add_block == 1) { // I don't want to try to del and add at the same time
 		handle_add_rm_block(true, _game_mode == SURVIVAL);
@@ -438,8 +444,11 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				save_chunk->updateBreak(_block_hit, 0);
 			}
 			_block_hit = block_hit;
+			if (_outline && chunk_hit) {
+				chunk_hit->updateBreak(_block_hit, 1);
+			}
 			_break_time = 0;
-			_break_frame = 0;
+			_break_frame = _outline;
 		}
 
 		if (_game_mode == SURVIVAL) {

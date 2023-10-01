@@ -4,9 +4,9 @@ OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE),
 		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0),
-		_key_h(0), _key_g(0), _key_j(0), _key_1(0), _key_2(0), _key_3(0),
+		_key_h(0), _key_g(0), _key_j(0), _key_o(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
-		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _paused(true),
+		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _outline(true), _paused(true),
 		_esc_released(true), _e_released(true),
 		_break_time(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
 {
