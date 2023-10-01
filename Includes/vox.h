@@ -7,6 +7,7 @@
 # include <mutex>
 # include <fstream>
 # include <list>
+# include <map>
 # include <random>
 // # include <math.h>
 
@@ -26,6 +27,7 @@ typedef struct {
 
 extern std::mutex mtx;
 extern std::mutex mtx_delete_chunks;
+extern std::mutex mtx_perimeter;
 extern std::mutex mtx_inventory;
 
 # include "utils.h"

@@ -53,6 +53,7 @@ class Camera
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
 		bool chunkInFront( int posX, int posY );
+		int getOrientation( void );
 		void setRun( bool value );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );

@@ -16,19 +16,19 @@ Menu::~Menu( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-int Menu::main_menu( GLFWwindow *window )
+int Menu::main_menu( void )
 {
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		if (_selection == 1) { //singleplayer
 			_state = LOAD_MENU;
 			_selection = 0;
 			return (2);
 		} else if (_selection == 6) { //quit game
-			glfwSetWindowShouldClose(window, GL_TRUE);
+			glfwSetWindowShouldClose(_window, GL_TRUE);
 			return (-1);
 		}
 	}
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+	if (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		_state = LOAD_MENU;
 		_selection = 0;
 		return (2);
@@ -84,9 +84,9 @@ int Menu::loading_screen( std::list<Chunk *> chunks, GLint render_dist )
 	return (0);
 }
 
-int Menu::pause_menu( GLFWwindow* window )
+int Menu::pause_menu( void )
 {
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		if (_selection == 1) { //Back to Game
 			_esc_released = false;
 			_selection = 0;
@@ -97,10 +97,10 @@ int Menu::pause_menu( GLFWwindow* window )
 			return (3);
 		}
 	}
-	if (_esc_released && glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		_esc_released = false;
 		return (1);
-	} else if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
+	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;
 	}
 
@@ -134,9 +134,9 @@ int Menu::pause_menu( GLFWwindow* window )
 	return (0);
 }
 
-int Menu::inventory_menu( GLFWwindow* window )
+int Menu::inventory_menu( void )
 {
-	if (_esc_released && glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		_selection = 0;
 		_esc_released = false;
 		_e_released = false;
@@ -146,10 +146,10 @@ int Menu::inventory_menu( GLFWwindow* window )
 		}
 		_selected_block = glm::ivec2(blocks::AIR, 0);
 		return (1);
-	} else if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
+	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;
 	}
-	if (_e_released && glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+	if (_e_released && glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
 		_selection = 0;
 		_esc_released = false;
 		_e_released = false;
@@ -159,13 +159,13 @@ int Menu::inventory_menu( GLFWwindow* window )
 		}
 		_selected_block = glm::ivec2(blocks::AIR, 0);
 		return (1);
-	} else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE) {
+	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
 		_e_released = true;
 	}
-	if (_selection && glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+	if (_selection && glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
 		_inventory.removeBlockAt(_selection - 1);
 	}
-	if (_left_released && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	if (_left_released && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		_left_released = false;
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
@@ -174,10 +174,10 @@ int Menu::inventory_menu( GLFWwindow* window )
 				_selected_block = _inventory.putBlockAt(1, _selection - 1, _selected_block);
 			}
 		}
-	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 		_left_released = true;
 	}
-	if (_right_released && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+	if (_right_released && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
 		_right_released = false;
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
@@ -186,12 +186,12 @@ int Menu::inventory_menu( GLFWwindow* window )
 				_selected_block = _inventory.putOneBlockAt(1, _selection - 1, _selected_block);
 			}
 		}
-	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_right_released = true;
 	}
 
 
-	setup_array_buffer_inventory(window);
+	setup_array_buffer_inventory();
 	glUseProgram(_shaderProgram);
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
@@ -213,16 +213,16 @@ int Menu::inventory_menu( GLFWwindow* window )
 	}
 	if (_selected_block.y > 1) {
 		double mouseX, mouseY;
-		glfwGetCursorPos(window, &mouseX, &mouseY);
+		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		value = _selected_block.y;
 		_text->displayText(mouseX - 6, mouseY - 6, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
 	}
 	return (0);
 }
 
-int Menu::crafting_menu( GLFWwindow* window )
+int Menu::crafting_menu( void )
 {
-	if (_esc_released && glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		_selection = 0;
 		_esc_released = false;
 		_e_released = false;
@@ -232,10 +232,10 @@ int Menu::crafting_menu( GLFWwindow* window )
 		}
 		_selected_block = glm::ivec2(blocks::AIR, 0);
 		return (1);
-	} else if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
+	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;
 	}
-	if (_e_released && glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+	if (_e_released && glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
 		_selection = 0;
 		_esc_released = false;
 		_e_released = false;
@@ -245,13 +245,13 @@ int Menu::crafting_menu( GLFWwindow* window )
 		}
 		_selected_block = glm::ivec2(blocks::AIR, 0);
 		return (1);
-	} else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE) {
+	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
 		_e_released = true;
 	}
-	if (_selection && glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+	if (_selection && glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
 		_inventory.removeBlockAt(_selection - 1);
 	}
-	if (_left_released && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	if (_left_released && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		_left_released = false;
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
@@ -260,10 +260,10 @@ int Menu::crafting_menu( GLFWwindow* window )
 				_selected_block = _inventory.putBlockAt(2, _selection - 1, _selected_block);
 			}
 		}
-	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 		_left_released = true;
 	}
-	if (_right_released && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+	if (_right_released && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
 		_right_released = false;
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
@@ -272,12 +272,12 @@ int Menu::crafting_menu( GLFWwindow* window )
 				_selected_block = _inventory.putOneBlockAt(2, _selection - 1, _selected_block);
 			}
 		}
-	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_right_released = true;
 	}
 
 
-	setup_array_buffer_crafting(window);
+	setup_array_buffer_crafting();
 	glUseProgram(_shaderProgram);
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
@@ -299,7 +299,7 @@ int Menu::crafting_menu( GLFWwindow* window )
 	}
 	if (_selected_block.y > 1) {
 		double mouseX, mouseY;
-		glfwGetCursorPos(window, &mouseX, &mouseY);
+		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		value = _selected_block.y;
 		_text->displayText(mouseX - 6, mouseY - 6, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
 	}
@@ -572,7 +572,7 @@ void Menu::add_crafted_value( GLint *vertices, int mult, int & vindex )
 	vindex += 9;
 }
 
-void Menu::setup_array_buffer_inventory( GLFWwindow *window )
+void Menu::setup_array_buffer_inventory( void )
 {
 	mtx_inventory.lock();
 	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countiCraft() + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
@@ -604,7 +604,7 @@ void Menu::setup_array_buffer_inventory( GLFWwindow *window )
 
 	if (_selected_block.x != blocks::AIR) {
 		double mouseX, mouseY;
-		glfwGetCursorPos(window, &mouseX, &mouseY);
+		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		vertices[vindex + 0] = 0;
 		vertices[vindex + 1] = mouseX - 8 * mult;
 		vertices[vindex + 2] = mouseY - 8 * mult;
@@ -620,7 +620,7 @@ void Menu::setup_array_buffer_inventory( GLFWwindow *window )
 	delete [] vertices;
 }
 
-void Menu::setup_array_buffer_crafting( GLFWwindow *window )
+void Menu::setup_array_buffer_crafting( void )
 {
 	mtx_inventory.lock();
 	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countCraft() + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
@@ -652,7 +652,7 @@ void Menu::setup_array_buffer_crafting( GLFWwindow *window )
 
 	if (_selected_block.x != blocks::AIR) {
 		double mouseX, mouseY;
-		glfwGetCursorPos(window, &mouseX, &mouseY);
+		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		vertices[vindex + 0] = 0;
 		vertices[vindex + 1] = mouseX - 8 * mult;
 		vertices[vindex + 2] = mouseY - 8 * mult;
@@ -760,6 +760,11 @@ void Menu::processMouseMovement( float posX, float posY )
 	}
 }
 
+void Menu::setWindow( GLFWwindow *window )
+{
+	_window = window;
+}
+
 void Menu::setShaderProgram( GLuint shaderProgram )
 {
 	_shaderProgram = shaderProgram;
@@ -768,6 +773,14 @@ void Menu::setShaderProgram( GLuint shaderProgram )
 void Menu::setState( int state )
 {
 	_state = state;
+	if (!IS_LINUX) {
+		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		if (glfwRawMouseMotionSupported()) {
+			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+		}
+	}
+	set_cursor_position_callback(NULL, this);
+	set_scroll_callback(NULL);
 }
 
 int Menu::getState( void )
@@ -775,24 +788,24 @@ int Menu::getState( void )
 	return (_state);
 }
 
-int Menu::run( GLFWwindow* window, std::list<Chunk *> chunks, GLint render_dist )
+int Menu::run( std::list<Chunk *> chunks, GLint render_dist )
 {
-	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
-		glfwSetWindowShouldClose(window, GL_TRUE);
+	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
+		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return (-1);
 	}
 
 	switch (_state) {
 		case MAIN_MENU:
-			return (main_menu(window));
+			return (main_menu());
 		case LOAD_MENU:
 			return (loading_screen(chunks, render_dist));
 		case PAUSE_MENU:
-			return (pause_menu(window));
+			return (pause_menu());
 		case INVENTORY_MENU:
-			return (inventory_menu(window));
+			return (inventory_menu());
 		case CRAFTING_MENU:
-			return (crafting_menu(window));
+			return (crafting_menu());
 		default:
 			return (1);
 	}

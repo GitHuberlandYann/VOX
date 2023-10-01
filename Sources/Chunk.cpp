@@ -1,7 +1,7 @@
 #include "vox.h"
 
-Chunk::Chunk( int posX, int posY ) : _isVisible(true), _vaoSet(false), _vaoReset(false), _startX(posX), _startY(posY),
-	_blocks(NULL), _vertices(NULL), _displayed_blocks(0)
+Chunk::Chunk( Camera *camera, int posX, int posY ) : _isVisible(true), _vaoSet(false), _vaoReset(false), _startX(posX), _startY(posY),
+	_blocks(NULL), _vertices(NULL), _displayed_blocks(0), _camera(camera)
 {
 }
 
@@ -16,6 +16,9 @@ Chunk::~Chunk( void )
 
 	delete [] _blocks;
 	delete [] _vertices;
+
+	_orientations.clear();
+	// std::cout << "chunk deleted " << _startX << ", " << _startY << std::endl;
 }
 
 // ************************************************************************** //
@@ -51,9 +54,8 @@ static int air_flower( int value, bool air_leaves )
 	return (value);
 }
 
-GLint Chunk::get_empty_faces( int row, int col, int level, bool isNotLeaves )
+GLint Chunk::get_empty_faces( int type, int row, int col, int level, bool isNotLeaves )
 {
-	// isNotLeaves = true;
 	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves) * (1 << 2)
 				+ !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves) * (1 << 3)
 				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], isNotLeaves) * (1 << 0)
@@ -71,6 +73,12 @@ GLint Chunk::get_empty_faces( int row, int col, int level, bool isNotLeaves )
 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves) * (1 << 5);
 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves) * (1 << 4);
 	}
+	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented block
+		std::map<int, int>::iterator search = _orientations.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
+		if (search != _orientations.end()) {
+			res += (1 << (6 + search->second));
+		}
+	}
 	return (res);
 }
 
@@ -79,7 +87,7 @@ bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves )
 {
 	// isNotLeaves = true;
 	if (!isNotLeaves) {
-		return (true); // TODO this is some shinanigans
+		return (true);
 	}
 	bool below, above;
 	switch (level) {
@@ -505,6 +513,9 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
 		inventory->removeBlock();
 	}
 	mtx_inventory.unlock();
+	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
+		_orientations[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = _camera->getOrientation();
+	}
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		pos.z = sand_fall_endz(pos);
 	}
@@ -543,7 +554,7 @@ void Chunk::fill_vertex_array( void )
 					// }
 					_vertices[index] = block_type;
 					_vertices[index + 1] = 0;
-					_vertices[index + 2] = get_empty_faces(row + 1, col + 1, level, block_type != blocks::OAK_LEAVES);
+					_vertices[index + 2] = get_empty_faces(block_type, row + 1, col + 1, level, block_type != blocks::OAK_LEAVES);
 					_vertices[index + 3] = _startX + row;
 					_vertices[index + 4] = _startY + col;
 					_vertices[index + 5] = level;
@@ -649,13 +660,23 @@ void Chunk::generate_chunk( std::list<Chunk *> *chunks )
 	_thread = std::thread(thread_setup_chunk, chunks, this);
 }
 
+bool Chunk::inPerimeter( int posX, int posY, GLint render_dist )
+{
+	return (_startX >= posX - render_dist && _startX <= posX + render_dist
+			&& _startY >= posY - render_dist && _startY <= posY + render_dist);
+}
+
 void Chunk::setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist )
 {
-	_isVisible = (_startX >= posX - render_dist && _startX <= posX + render_dist
-			&& _startY >= posY - render_dist && _startY <= posY + render_dist);
+	_isVisible = inPerimeter(posX, posY, render_dist);
 	if (_isVisible) {
 		visible_chunks->push_back(this);
 	}
+}
+
+void Chunk::hide( void )
+{
+	_isVisible = false;
 }
 
 bool Chunk::shouldDelete( glm::vec3 pos, GLfloat dist )
@@ -765,13 +786,11 @@ void Chunk::update_border(int posX, int posY, int level, bool adding)
 		}
 		if (exposed_block(target.x, target.y, level, true)) { // block was already exposed, no change in displayed_blocks, only in visible faces
 			// std::cout << "displayed blocks same" << std::endl;
-			// std::cout << "empty faces before: " << get_empty_faces(target.x, target.y, level, true) << std::endl;
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
-			// std::cout << "empty faces after: " << get_empty_faces(target.x, target.y, level, true) << std::endl;
 			for (int index = 0; index < _displayed_blocks * 6; index += 6) {
 				_mtx.lock();
 				if (_vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1 && _vertices[index + 5] == level) {
-					_vertices[index + 2] = get_empty_faces(target.x, target.y, level, true);
+					_vertices[index + 2] = get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true);
 					_vaoReset = false;
 					_mtx.unlock();
 					return ;
@@ -780,10 +799,8 @@ void Chunk::update_border(int posX, int posY, int level, bool adding)
 			}
 		} else { // we need to redo it all because one new exposed block
 			// std::cout << "redo it all" << std::endl;
-			// std::cout << "empty faces before: " << get_empty_faces(target.x, target.y, level, true) << std::endl;
 			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] += blocks::NOTVISIBLE;
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
-			// std::cout << "empty faces after: " << get_empty_faces(target.x, target.y, level, true) << std::endl;
 			delete [] _vertices;
 			_displayed_blocks++;
 			_vertices = new GLint[_displayed_blocks * 6]; // blocktype, adjacents blocks, X Y Z

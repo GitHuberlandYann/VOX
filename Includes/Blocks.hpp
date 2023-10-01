@@ -6,7 +6,8 @@ enum blocks {
 	GRASS_BLOCK,
 	OAK_LOG,
 	CACTUS,
-	CRAFTING_TABLE,
+	CRAFTING_TABLE = 8,
+	FURNACE,
 	BEDROCK = 16,
 	DIRT,
 	STONE,
@@ -139,6 +140,20 @@ struct CraftingTable : Block {
 			break_time_stone = 0.95f;
 			break_time_iron = 0.65f;
 			break_time_diamond = 0.5f;
+		}
+};
+
+struct Furnace : Block {
+	public:
+		Furnace() {
+			name = "FURNACE";
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			break_time_hand = 17.5f;
+			break_time_wooden = 2.65f;
+			break_time_stone = 1.35f;
+			break_time_iron = 0.9f;
+			break_time_diamond = 0.7f;
 		}
 };
 
@@ -369,7 +384,7 @@ struct DeadBush : Block {
 };
 
 const Block s_blocks[64] = {
-	Air(), GrassBlock(), OakLog(), Cactus(), CraftingTable(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Air(), GrassBlock(), OakLog(), Cactus(), TBD(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Bedrock(), Dirt(), Stone(), Cobblestone(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD()

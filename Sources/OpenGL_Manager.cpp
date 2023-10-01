@@ -46,6 +46,9 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	mtx_delete_chunks.lock();
 	_delete_chunks.clear();
 	mtx_delete_chunks.unlock();
+	mtx_perimeter.lock();
+	_perimeter_chunks.clear();
+	mtx_perimeter.unlock();
 	mtx.lock();
 	std::list<Chunk *>::iterator it = _chunks.begin();
 	for (; it != _chunks.end(); it++) {
@@ -100,6 +103,7 @@ void OpenGL_Manager::setup_window( void )
         glfwTerminate();
         exit (1);
     }
+	_menu->setWindow(_window);
 
 	// int width, height;
 	// glfwGetWindowSize(_window, &width, &height);
@@ -243,14 +247,8 @@ void OpenGL_Manager::main_loop( void )
 	glfwSwapInterval(1);
 	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
 
-	if (!IS_LINUX) {
-		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // TODO add this when switch between game and menus
-		if (glfwRawMouseMotionSupported()) {
-			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-		}
-	}
 	set_cursor_position_callback( NULL, _menu );
-	set_scroll_callback(_inventory);
+	set_scroll_callback(NULL);
 	glfwSetCursorPosCallback(_window, cursor_position_callback);
 	glfwSetScrollCallback(_window, scroll_callback);
 
@@ -281,7 +279,7 @@ void OpenGL_Manager::main_loop( void )
 
 		if (!_paused) {
 			if (++backFromMenu != 1) {
-				user_inputs(currentTime - previousFrame);
+				user_inputs(currentTime - previousFrame, ++backFromMenu > 3);
 			}
 			chunk_update();
 		}
@@ -307,6 +305,8 @@ void OpenGL_Manager::main_loop( void )
 				+ "\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size())
 				+ '/' + std::to_string(_chunks.size())
+				+ "\nTODEL chunks\t> " + std::to_string(_delete_chunks.size())
+				+ "\nperi chunks\t>" + std::to_string(_perimeter_chunks.size())
 				+ "\nDisplayed blocks\t> " + std::to_string(blockCounter)
 				+ "\nRender Distance\t> " + std::to_string(_render_distance)
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
@@ -317,14 +317,21 @@ void OpenGL_Manager::main_loop( void )
 			_ui->drawUserInterface(str, _game_mode, _f5_mode);
 		}
 		if (_paused) {
-			int menu_ret = _menu->run(_window, _chunks, _render_distance);
+			int menu_ret = _menu->run(_chunks, _render_distance);
 			if (menu_ret == 2) {
 				initWorld();
 			} else if (menu_ret == 1) {
+				if (!IS_LINUX) {
+					glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					if (glfwRawMouseMotionSupported()) {
+						glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+					}
+				}
 				set_cursor_position_callback( _camera, NULL );
 				set_scroll_callback(_inventory);
 				_paused = false;
 				backFromMenu = 0;
+				_camera->_update = true;
 			}
 		}
 		glEnable(GL_DEPTH_TEST);

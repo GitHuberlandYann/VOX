@@ -64,6 +64,15 @@ bool Camera::chunkInFront( int posX, int posY )
 		&& glm::dot(glm::vec2(posX + 1 * CHUNK_SIZE * (_front.x - _right.x) - _position.x, posY + 1 * CHUNK_SIZE * (_front.y - _right.y) - _position.y), glm::vec2((_front.x - _right.x), (_front.y - _right.y))) >= 0);
 }
 
+// return orientation of block we just placed 0 = -y, 1 = +y, 2 = -x, 3 = +x (it is opposite of cam dir)
+int Camera::getOrientation( void )
+{
+	if (glm::abs(_front.x) > glm::abs(_front.y)) {
+		return (2 + (_front.x < 0));
+	}
+	return (_front.y < 0);
+}
+
 void Camera::setRun( bool value )
 {
 	_isRunning = value;

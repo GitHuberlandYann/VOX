@@ -52,11 +52,13 @@ class Chunk
 		GLint *_vertices;
 		GLint _displayed_blocks;
 		std::list<Chunk *> _vis_chunks;
+		Camera *_camera;
+		std::map<int,int> _orientations;
 		std::thread _thread;
 		std::mutex _mtx;
 
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
-		GLint get_empty_faces( int row, int col, int level, bool isNotLeaves );
+		GLint get_empty_faces( int type, int row, int col, int level, bool isNotLeaves );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves );
 		int get_block_type_cave( int row, int col, int level, int ground_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
@@ -74,7 +76,7 @@ class Chunk
         void setup_array_buffer( void );
 
     public:
-        Chunk( int posX, int posY );
+        Chunk( Camera *camera, int posX, int posY );
         ~Chunk( void );
 
 		GLint getStartX( void );
@@ -82,7 +84,9 @@ class Chunk
 		void generation( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( std::list<Chunk *> *chunks );
+		bool inPerimeter( int posX, int posY, GLint render_dist );
         void setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist );
+		void hide( void );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
 		int isHit( glm::ivec3 pos );
