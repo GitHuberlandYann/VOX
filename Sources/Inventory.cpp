@@ -6,7 +6,7 @@ Inventory::Inventory( void ) : _slot(0), _modif(false)
         _content[index] = glm::ivec2(blocks::AIR, 0);
     }
     for (int index = 0; index < 27; index++) {
-        _backpack[index] = glm::ivec2(blocks::OAK_LOG * (index == 0), 16 * (index == 0));
+        _backpack[index] = glm::ivec2(blocks::AIR * (index == 0), 0 * (index == 0));
     }
     for (int index = 0; index < 4; index++) {
         _icraft[index] = glm::ivec2(blocks::AIR, 0);

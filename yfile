@@ -74,6 +74,9 @@ DONE:
     - chunk border fix
     - FOV changed on isRunning change
     - stop fov run if player idle
+    - load menu
+    - inventory menu
+    - crafting menu
 
 
 Some info:
