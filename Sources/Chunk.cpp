@@ -117,6 +117,8 @@ int Chunk::get_block_type_cave( int row, int col, int level, int ground_level,
 	int value = blocks::AIR;
 	if (level == ground_level + 1 && ground_level > 9) {
 		value = blocks::GRASS_BLOCK;
+	} else if (level < 12) {
+		// value = blocks::WATER;
 	} else if (tree_gen && level <= ground_level + 6 && ground_level > 9) {
 		value = blocks::OAK_LOG;
 		if (level == ground_level + 6) {
@@ -160,6 +162,8 @@ int Chunk::get_block_type( siv::PerlinNoise perlin, int row, int col, int level,
 		} else if (value == blocks::GRASS_BLOCK && _continent <= cont::CONT_COAST) {
 			value = blocks::SAND;
 		}
+	} else if (level <= SEA_LEVEL) {
+		// value = blocks::WATER;
 	} else if (_continent <= cont::CONT_COAST) {
 		if (surface_level >= SEA_LEVEL && level <= surface_level + 3) {
 			if (tree_gen) {
@@ -357,7 +361,9 @@ void Chunk::generate_blocks( void )
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
 				if (value) {
-					if (exposed_block(row, col, level, value != blocks::OAK_LEAVES)) {
+					if (value == blocks::WATER) {
+						// do nothing
+					} else if (exposed_block(row, col, level, value != blocks::OAK_LEAVES)) {
 						_displayed_blocks++;
 						// reverting ores back to stone if they are exposed
 						if (value == blocks::IRON_ORE && distribution(generator) < 500) {
@@ -381,7 +387,7 @@ void Chunk::generate_blocks( void )
 int Chunk::sand_fall_endz( glm::ivec3 pos )
 {
 	for (int level = pos.z - 1; level > 0; level--) {
-		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + level] != blocks::AIR) {
+		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + level] != blocks::AIR) { // and diff water later
 			return (level + 1);
 		}
 	}
@@ -390,8 +396,8 @@ int Chunk::sand_fall_endz( glm::ivec3 pos )
 
 static bool isSandOrGravel( int type )
 {
-	return (type == blocks::SAND || (type < blocks::AIR && type + blocks::NOTVISIBLE == blocks::SAND)
-		|| type == blocks::GRAVEL || (type < blocks::AIR && type + blocks::NOTVISIBLE == blocks::GRAVEL));
+	type += blocks::NOTVISIBLE * (type < blocks::AIR);
+	return (type == blocks::SAND || type == blocks::GRAVEL);
 }
 
 void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
@@ -490,7 +496,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	}
 	if (endZ != -1) { // sand fall
 		remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1));
-	} else if (pos.z < 255 && block_above >= blocks::POPPY) { // del flower if block underneath deleted
+	} else if (pos.z < 255 && block_above >= blocks::POPPY && block_above < blocks::WATER) { // del flower if block underneath deleted
 		(block_above == blocks::GRASS)
 			? remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1)) // if grass above breaked block, don't collect it
 			: remove_block(inventory, glm::ivec3(pos.x, pos.y, pos.z + 1));
@@ -548,7 +554,7 @@ void Chunk::fill_vertex_array( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint block_type = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level];
-				if (block_type > blocks::AIR) {
+				if (block_type > blocks::AIR && block_type != blocks::WATER) {
 					// if (index + 5 > _displayed_blocks * 5) {
 					// 	std::cout << "ERROR index is " << index / 5 << std::endl;
 					// }
@@ -639,7 +645,8 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 		}
 		remove_block(inventory, pos);
 	} else {
-		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] != blocks::AIR || type == blocks::AIR) { // can't replace block
+		int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
+		if ((value != blocks::AIR && value != blocks::WATER) || type == blocks::AIR) { // can't replace block
 			return ;
 		}
 		add_block(inventory, pos, type);
@@ -709,7 +716,11 @@ int Chunk::isHit( glm::ivec3 pos )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	return (_blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * WORLD_HEIGHT + chunk_pos.z]);
+	int value = _blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * WORLD_HEIGHT + chunk_pos.z];
+	if (value == blocks::WATER) {
+		return (blocks::AIR);
+	}
+	return (value);
 }
 
 static void thread_modif_block( Chunk *current, Inventory *inventory, int type, glm::ivec3 pos, bool adding )

@@ -28,6 +28,7 @@ enum blocks {
 	GRASS,
 	SUGAR_CANE,
 	DEAD_BUSH,
+	WATER = 78,
 	STICK = 80,
 	WOODEN_SHOVEL,
 	STONE_SHOVEL,
@@ -384,6 +385,13 @@ struct DeadBush : Block {
 		}
 };
 
+struct Water : Block {
+	public:
+		Water() {
+			name = "WATER";
+		}
+};
+
 struct Stick : Block {
 	public:
 		Stick() {
@@ -492,7 +500,7 @@ const Block s_blocks[96] = {
 	Bedrock(), Dirt(), Stone(), Cobblestone(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), Water(), TBD(),
 	Stick(), WoodenShovel(), StoneShovel(), IronShovel(), DiamondShovel(), WoodenAxe(), StoneAxe(), IronAxe(), DiamondAxe(), WoodenPickaxe(), StonePickaxe(), IronPickaxe(), DiamondPickaxe(), TBD(), TBD(), TBD(),
 };
 #endif
