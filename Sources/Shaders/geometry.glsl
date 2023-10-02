@@ -142,27 +142,35 @@ void oriented_block( void )
 	}
 	if ((vsData[0].Adj_blocks & (1 << 0)) == 0) {
 		FaceShadow = 0.92;
-		((vsData[0].Adj_blocks & (1 << 6)) == 0)
-			? emitFace(v0, v1, v2, v3, start)
-			: emitFace(v0, v1, v2, v3, start + bottom); // use 'bottom' texture as front texture
+		if ((vsData[0].Adj_blocks & (1 << 6)) == 0) {
+			emitFace(v0, v1, v2, v3, start);
+		} else {
+			emitFace(v0, v1, v2, v3, start + bottom); // use 'bottom' texture as front texture
+		}
 	}
 	if ((vsData[0].Adj_blocks & (1 << 1)) == 0) {
 		FaceShadow = 0.88;
-		((vsData[0].Adj_blocks & (1 << 7)) == 0)
-			? emitFace(v5, v4, v7, v6, start)
-			: emitFace(v5, v4, v7, v6, start + bottom);
+		if ((vsData[0].Adj_blocks & (1 << 7)) == 0) {
+			emitFace(v5, v4, v7, v6, start);
+		} else {
+			emitFace(v5, v4, v7, v6, start + bottom);
+		}
 	}
 	if ((vsData[0].Adj_blocks & (1 << 2)) == 0) {
 		FaceShadow = 0.84;
-		((vsData[0].Adj_blocks & (1 << 8)) == 0)
-			? emitFace(v4, v0, v6, v2, start)
-			: emitFace(v4, v0, v6, v2, start + bottom);
+		if ((vsData[0].Adj_blocks & (1 << 8)) == 0) {
+			emitFace(v4, v0, v6, v2, start);
+		} else {
+			emitFace(v4, v0, v6, v2, start + bottom);
+		}
 	}
 	if ((vsData[0].Adj_blocks & (1 << 3)) == 0) {
 		FaceShadow = 0.80;
-		((vsData[0].Adj_blocks & (1 << 9)) == 0)
-			? emitFace(v1, v5, v3, v7, start)
-			: emitFace(v1, v5, v3, v7, start + bottom);
+		if ((vsData[0].Adj_blocks & (1 << 9)) == 0) {
+			emitFace(v1, v5, v3, v7, start);
+		} else {
+			emitFace(v1, v5, v3, v7, start + bottom);
+		}
 	}
 	if ((vsData[0].Adj_blocks & (1 << 5)) == 0) {
 		FaceShadow = 0.74;
