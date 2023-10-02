@@ -46,17 +46,21 @@ glm::mat4 Camera::getPerspectiveMatrix( void )
 	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
 }
 
-bool Camera::chunkInFront( int posX, int posY )
+bool Camera::chunkInFront( glm::ivec2 current_chunk, int posX, int posY )
 {
 	// (void)posX;
 	// (void)posY;
 	// return (true);
-	if (_front.z <= -0.85f || _front.z >= 0.85f) {
-		return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * glm::sign(_front.x) - _position.x, posY + 2 * CHUNK_SIZE * glm::sign(_front.y) - _position.y), glm::vec2(_front.x, _front.y)) >= 0
-			&& glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * glm::sign(_front.x) - _position.x, posY + 2 * CHUNK_SIZE * glm::sign(_front.y) - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
-	} else if (_front.z <= -0.45f || _front.z >= 0.45f) {
-		return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0
-			&& glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
+	// if (_front.z <= -0.85f || _front.z >= 0.85f) {
+	// 	return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * glm::sign(_front.x) - _position.x, posY + 2 * CHUNK_SIZE * glm::sign(_front.y) - _position.y), glm::vec2(_front.x, _front.y)) >= 0
+	// 		&& glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * glm::sign(_front.x) - _position.x, posY + 2 * CHUNK_SIZE * glm::sign(_front.y) - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
+	// } else if (_front.z <= -0.45f || _front.z >= 0.45f) {
+	// 	return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0
+	// 		&& glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
+	// }
+	if (posX >= current_chunk.x - CHUNK_SIZE && posX <= current_chunk.x + CHUNK_SIZE
+		&& posY >= current_chunk.y - CHUNK_SIZE && posY <= current_chunk.y + CHUNK_SIZE) {
+		return (true);
 	}
 	return (glm::dot(glm::vec2(posX + 1 * CHUNK_SIZE * (_front.x + _right.x) - _position.x, posY + 1 * CHUNK_SIZE * (_front.y + _right.y) - _position.y), glm::vec2((_front.x + _right.x), (_front.y + _right.y))) >= 0
 		&& glm::dot(glm::vec2(posX + 1 * CHUNK_SIZE * (_front.x - _right.x) - _position.x, posY + 1 * CHUNK_SIZE * (_front.y - _right.y) - _position.y), glm::vec2((_front.x - _right.x), (_front.y - _right.y))) >= 0);

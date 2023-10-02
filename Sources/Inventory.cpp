@@ -102,25 +102,46 @@ glm::ivec2 Inventory::pickCrafted( int craft, glm::ivec2 block )
 	return (block);
 }
 
-int Inventory::findEmptyCell( void )
+int Inventory::findEmptyCell( glm::ivec2 block, bool swap )
 {
+	if (s_blocks[block.x].stackable) {
+		for (int index = 0; index < 9; index++) {
+			if (_content[index].x == block.x && _content[index].y + block.y <= 64) {
+				return (index);
+			}
+		}
+		for (int index = 0; index < 27; index++) {
+			if (_backpack[index].x == block.x && _backpack[index].y + block.y <= 64) {
+				return (index + 9);
+			}
+		}
+	}
+	if (swap) {
+		for (int index = 0; index < 9; index++) {
+			if (_content[index].x == blocks::AIR) {
+				return (index);
+			}
+		}
+	}
 	for (int index = 0; index < 27; index++) {
 		if (_backpack[index].x == blocks::AIR) {
 			return (index + 9);
 		}
 	}
-	for (int index = 0; index < 9; index++) {
-		if (_content[index].x == blocks::AIR) {
-			return (index);
+	if (!swap) {
+		for (int index = 0; index < 9; index++) {
+			if (_content[index].x == blocks::AIR) {
+				return (index);
+			}
 		}
 	}
-	return (0);
+	return (-1);
 }
 
 void Inventory::pickAllCrafted( int craft )
 {
-	int location = findEmptyCell();
-	if (!location) {
+	int location = findEmptyCell(_crafted);
+	if (location == -1) {
 		return ;
 	}
 	glm::ivec2 *bat;
@@ -131,9 +152,15 @@ void Inventory::pickAllCrafted( int craft )
 	}
 	while (_crafted.x != blocks::AIR && bat->y < 64) {
 			*bat = pickCrafted(craft, *bat);
-			if (!s_blocks[bat->x].stackable) {
-				return ;
+			if (_crafted.x != bat->x && _crafted.x != blocks::AIR) {
+				return (pickAllCrafted(craft));
 			}
+			if (!s_blocks[bat->x].stackable) {
+				return (pickAllCrafted(craft));
+			}
+	}
+	if (_crafted.x != blocks::AIR) {
+		return (pickAllCrafted(craft));
 	}
 }
 
@@ -385,20 +412,17 @@ glm::ivec2 Inventory::putOneBlockAt( int craft,  int value, glm::ivec2 block )
 	return (block);
 }
 
-void Inventory::restoreBlock( glm::ivec2 block )
+void Inventory::restoreBlock( glm::ivec2 block, bool swap )
 {
-	for (int index = 0; index < 9; index++) {
-		if (_content[index].x == blocks::AIR) { // TODO add on top of block of the same kind if found + dispatch rest of stack correctly
-			_content[index] = block;
-			_modif = true;
-			return ;
-		}
+	int location = findEmptyCell(block, swap);
+	if (location == -1) {
+		return ;
 	}
-	for (int index = 0; index < 27; index++) {
-		if (_backpack[index].x == blocks::AIR) {
-			_backpack[index] = block;
-			return ;
-		}
+	if (location < 9) {
+		_content[location] = glm::ivec2(block.x, block.y + _content[location].y);
+		_modif = true;
+	} else {
+		_backpack[location - 9] = glm::ivec2(block.x, block.y + _backpack[location - 9].y);
 	}
 }
 
@@ -445,31 +469,8 @@ void Inventory::addBlock( int type )
 	} else if (type == blocks::DIAMOND_ORE) {
 		type = blocks::DIAMOND;
 	}
-    glm::ivec2 current = _content[_slot];
-    if ((current.x == blocks::AIR || current.x == type) && current.y != 64) {
-        _content[_slot].x = type;
-        _content[_slot].y++;
-		_modif = true;
-        return ;
-    }
-    for (int index = 0; index < 9; index++)
-    {
-        current = _content[index];
-        if ((current.x == blocks::AIR || current.x == type) && current.y != 64) {
-            _content[index].x = type;
-            _content[index].y++;
-			_modif = true;
-            return ;
-        }
-    }
-	for (int index = 0; index < 27; index++) {
-		current = _backpack[index];
-		if ((current.x == blocks::AIR || current.x == type) && current.y != 64) {
-			_backpack[index].x = type;
-			_backpack[index].y++;
-			return ;
-		}
-	}
+	glm::ivec2 block = glm::ivec2(type, 1);
+	restoreBlock(block, true);
 }
 
 void Inventory::removeBlockAt( int value )

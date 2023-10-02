@@ -64,7 +64,7 @@ class Inventory
 		void changeCrafted( int craft );
 		void produceCraft( int craft );
 		glm::ivec2 pickCrafted( int craft, glm::ivec2 block );
-		int findEmptyCell( void );
+		int findEmptyCell( glm::ivec2 block, bool swap = false );
 		void pickAllCrafted( int craft );
 
     public:
@@ -87,7 +87,7 @@ class Inventory
 		glm::ivec2 pickHalfBlockAt( int craft, int value );
 		glm::ivec2 putBlockAt( int craft, int value, glm::ivec2 block );
 		glm::ivec2 putOneBlockAt( int craft, int value, glm::ivec2 block );
-		void restoreBlock( glm::ivec2 block );
+		void restoreBlock( glm::ivec2 block, bool swap = false );
 		void restoreiCraft( void );
 		void restoreCraft( void );
 		bool getModif( void );

@@ -40,10 +40,12 @@ TODOS:
     - items on ground after break
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - hitbox around player for collisions
+    - fix fall going through blocks + fix jump into block above head
     - player arm in survival mode
     - nether
-    - fix fall going through blocks + fix jump into block above head
     - right/left click and drag in inventory
+    - tools durabitlity
+    - hitbox flowers and blocks in general -> might have to split blocks in 27 ..
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
