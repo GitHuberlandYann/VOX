@@ -41,7 +41,6 @@ TODOS:
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - hitbox around player for collisions
     - player arm in survival mode
-    - hide faces not oriented towards us // face culling ..
     - nether
     - fix fall going through blocks + fix jump into block above head
     - right/left click and drag in inventory
@@ -62,6 +61,7 @@ DONE:
     - inventory
     - better caves
     - obstacle detection for physics + game mode
+    - hide faces not oriented towards us // face culling .. only on mac, gains no fps
     - player gravity
     - better fall damage
     - placing sand = gravity

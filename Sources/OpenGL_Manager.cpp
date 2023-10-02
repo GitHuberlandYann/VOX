@@ -230,16 +230,18 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 }
 
 void OpenGL_Manager::main_loop( void )
-{	
-	glEnable(GL_DEPTH_TEST);
+{
+	if (!IS_LINUX) { // face culling seems to only work on mac, but gains 0 fps anyway ..
+		glEnable(GL_DEPTH_TEST);
 
-	// glEnable(GL_CULL_FACE); // TODO find wether this could work with geometry shader or not
-	// glCullFace(GL_FRONT_AND_BACK);
-	// // glFrontFace(GL_CW);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		// glFrontFace(GL_CW);
+	}
 
-	// (glIsEnabled(GL_CULL_FACE))
-	// 	? std::cout << "culling enabled" << std::endl
-	// 	: std::cout << "culling disabled" << std::endl;
+	(glIsEnabled(GL_CULL_FACE))
+		? std::cout << "culling enabled" << std::endl
+		: std::cout << "culling disabled" << std::endl;
 
 	glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
