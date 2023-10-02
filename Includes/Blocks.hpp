@@ -55,6 +55,7 @@ struct Block {
 		bool byHand = false;
 		int needed_tool = blocks::NOTVISIBLE;
 		int needed_material_level = 0;
+		int durability = 0;
 		float break_time_hand = FLT_MAX;
 		float break_time_wooden = FLT_MAX;
 		float break_time_stone = FLT_MAX;
@@ -404,6 +405,7 @@ struct WoodenShovel : Block {
 		WoodenShovel() {
 			name = "WOODEN_SHOVEL";
 			stackable = false;
+			durability = 59;
 		}
 };
 
@@ -412,6 +414,7 @@ struct StoneShovel : Block {
 		StoneShovel() {
 			name = "STONE_SHOVEL";
 			stackable = false;
+			durability = 131;
 		}
 };
 
@@ -420,6 +423,7 @@ struct IronShovel : Block {
 		IronShovel() {
 			name = "IRON_SHOVEL";
 			stackable = false;
+			durability = 250;
 		}
 };
 
@@ -428,6 +432,7 @@ struct DiamondShovel : Block {
 		DiamondShovel() {
 			name = "DIAMOND_SHOVEL";
 			stackable = false;
+			durability = 1561;
 		}
 };
 
@@ -436,6 +441,7 @@ struct WoodenAxe : Block {
 		WoodenAxe() {
 			name = "WOODEN_AXE";
 			stackable = false;
+			durability = 59;
 		}
 };
 
@@ -444,6 +450,7 @@ struct StoneAxe : Block {
 		StoneAxe() {
 			name = "STONE_AXE";
 			stackable = false;
+			durability = 131;
 		}
 };
 
@@ -452,6 +459,7 @@ struct IronAxe : Block {
 		IronAxe() {
 			name = "IRON_AXE";
 			stackable = false;
+			durability = 250;
 		}
 };
 
@@ -460,6 +468,7 @@ struct DiamondAxe : Block {
 		DiamondAxe() {
 			name = "DIAMOND_AXE";
 			stackable = false;
+			durability = 1561;
 		}
 };
 
@@ -468,6 +477,7 @@ struct WoodenPickaxe : Block {
 		WoodenPickaxe() {
 			name = "WOODEN_PICKAXE";
 			stackable = false;
+			durability = 59;
 		}
 };
 
@@ -476,6 +486,7 @@ struct StonePickaxe : Block {
 		StonePickaxe() {
 			name = "STONE_PICKAXE";
 			stackable = false;
+			durability = 131;
 		}
 };
 
@@ -484,6 +495,7 @@ struct IronPickaxe : Block {
 		IronPickaxe() {
 			name = "IRON_PICKAXE";
 			stackable = false;
+			durability = 250;
 		}
 };
 
@@ -492,6 +504,7 @@ struct DiamondPickaxe : Block {
 		DiamondPickaxe() {
 			name = "DIAMOND_PICKAXE";
 			stackable = false;
+			durability = 1561;
 		}
 };
 

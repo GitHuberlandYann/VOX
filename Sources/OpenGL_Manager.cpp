@@ -237,11 +237,12 @@ void OpenGL_Manager::main_loop( void )
 	// 	glEnable(GL_CULL_FACE);
 	// 	glCullFace(GL_FRONT);
 	// 	// glFrontFace(GL_CW);
+
+	//	(glIsEnabled(GL_CULL_FACE))
+	// 		? std::cout << "culling enabled" << std::endl
+	//		: std::cout << "culling disabled" << std::endl;
 	// }
 
-	(glIsEnabled(GL_CULL_FACE))
-		? std::cout << "culling enabled" << std::endl
-		: std::cout << "culling disabled" << std::endl;
 
 	glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -301,16 +302,18 @@ void OpenGL_Manager::main_loop( void )
 		mtx_perimeter.lock();
 		std::string str = (_debug_mode)
 			? "Timer: " + std::to_string(currentTime)
-				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + _camera->getCamString(_game_mode)
+				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + '\n' + _camera->getCamString(_game_mode)
 				+ "\nBlock\t> " + ((_block_hit.w >= blocks::AIR) ? s_blocks[_block_hit.w].name : s_blocks[_block_hit.w + blocks::NOTVISIBLE].name)
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
 				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "")
-				+ "\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
+				+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size())
 				+ '/' + std::to_string(_perimeter_chunks.size()) + '/' + std::to_string(_chunks.size())
 				+ "\nDisplayed blocks\t> " + std::to_string(blockCounter)
-				+ "\nRender Distance\t> " + std::to_string(_render_distance)
+				+ "\n\nRender Distance\t> " + std::to_string(_render_distance)
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
+				+ _inventory->getSlotString()
+				// + _inventory->getDuraString()
 				// + _inventory->getInventoryString()
 			: "";
 		mtx_perimeter.unlock();

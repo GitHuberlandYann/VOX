@@ -40,6 +40,7 @@ class Menu
 		void add_backpack_value( GLint *vertices, int mult, int index, int & vindex );
 		void add_icraft_value( GLint *vertices, int mult, int index, int & vindex );
 		void add_craft_value( GLint *vertices, int mult, int index, int & vindex );
+		void add_dura_value( GLint *vertices, int mult, int index, int & vindex );
 		void add_crafted_value( GLint *vertices, int mult, int & vindex );
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );

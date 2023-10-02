@@ -58,9 +58,11 @@ class Inventory
 		glm::ivec2 _icraft[4];
 		glm::ivec2 _craft[9];
 		glm::ivec2 _crafted;
-        int _slot;
+		std::list<glm::ivec3> _durabilities; // emplacement value, durability
+        int _slot, _saved_durability;
 		bool _modif;
 
+		int getrmDura( int value );
 		void changeCrafted( int craft );
 		void produceCraft( int craft );
 		glm::ivec2 pickCrafted( int craft, glm::ivec2 block );
@@ -76,6 +78,7 @@ class Inventory
 		glm::ivec2 getBackpackBlock( int slot );
 		glm::ivec2 getiCraftBlock( int slot );
 		glm::ivec2 getCraftBlock( int slot );
+		glm::ivec3 getDuraFromIndex( int index );
 		glm::ivec2 getCrafted( void );
 		int getSlotNum( void );
         void setSlot( int value );
@@ -83,6 +86,7 @@ class Inventory
 		int countBackpack( void );
 		int countiCraft( void );
 		int countCraft( void );
+		int countDura( void );
 		glm::ivec2 pickBlockAt( int craft, int value );
 		glm::ivec2 pickHalfBlockAt( int craft, int value );
 		glm::ivec2 putBlockAt( int craft, int value, glm::ivec2 block );
@@ -96,8 +100,11 @@ class Inventory
 		void removeBlockAt( int value );
         void removeBlock( void );
 		void replaceSlot( int type );
+		void decrementDurabitilty( void );
 
         std::string getInventoryString( void );
+		std::string getDuraString( void );
+		std::string getSlotString( void );
 };
 
 #endif

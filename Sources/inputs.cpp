@@ -321,6 +321,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				_break_time = 0;
 				_break_frame = _outline;
 				handle_add_rm_block(false, can_collect);
+				_inventory->decrementDurabitilty();
 			} else {
 				int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
 				if (_break_frame != break_frame) {

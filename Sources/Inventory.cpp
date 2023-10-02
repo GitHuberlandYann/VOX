@@ -1,12 +1,12 @@
 #include "vox.h"
 
-Inventory::Inventory( void ) : _slot(0), _modif(false)
+Inventory::Inventory( void ) : _slot(0), _saved_durability(0), _modif(false)
 {
     for (int index = 0; index < 9; index++) {
         _content[index] = glm::ivec2(blocks::AIR, 0);
     }
     for (int index = 0; index < 27; index++) {
-        _backpack[index] = glm::ivec2(blocks::AIR * (index == 0), 0 * (index == 0));
+        _backpack[index] = glm::ivec2(blocks::OAK_PLANKS * (index == 0) + blocks::COBBLESTONE * (index == 1), 32 * (index <= 1));
     }
     for (int index = 0; index < 4; index++) {
         _icraft[index] = glm::ivec2(blocks::AIR, 0);
@@ -19,12 +19,25 @@ Inventory::Inventory( void ) : _slot(0), _modif(false)
 
 Inventory::~Inventory( void )
 {
-
+	_durabilities.clear();
 }
 
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
+
+int Inventory::getrmDura( int value )
+{
+	for (auto& dura: _durabilities) {
+		if (dura.x == value) {
+			int ret = dura.y;
+			_durabilities.remove(dura);
+			return (ret);
+		}
+	}
+	std::cout << "GETRMDURA not found on emplacement " << value << std::endl;
+	return (0);
+}
 
 void Inventory::changeCrafted( int craft )
 {
@@ -90,6 +103,8 @@ glm::ivec2 Inventory::pickCrafted( int craft, glm::ivec2 block )
 {
 	if (_crafted.x == blocks::AIR) {
 		return (block);
+	} else if (s_blocks[_crafted.x].durability) {
+		_saved_durability = s_blocks[_crafted.x].durability;
 	}
 	if (block.x == blocks::AIR) {
 		glm::ivec2 ret = _crafted;
@@ -152,6 +167,9 @@ void Inventory::pickAllCrafted( int craft )
 	}
 	while (_crafted.x != blocks::AIR && bat->y < 64) {
 			*bat = pickCrafted(craft, *bat);
+			if (s_blocks[bat->x].durability) {
+				_durabilities.push_back(glm::ivec3(location, _saved_durability, s_blocks[bat->x].durability));
+			}
 			if (_crafted.x != bat->x && _crafted.x != blocks::AIR) {
 				return (pickAllCrafted(craft));
 			}
@@ -203,6 +221,22 @@ glm::ivec2 Inventory::getCraftBlock( int slot )
 		return (glm::vec2(0, 0));
 	}
 	return (_craft[slot]);
+}
+
+glm::ivec3 Inventory::getDuraFromIndex( int index )
+{
+	if (index < 0 || index >= static_cast<int>(_durabilities.size())) {
+		std::cerr << "ERROR getDuraFromIndex " << index << std::endl;
+		return glm::ivec3(0);
+	}
+	int i = 0;
+	for (auto& dura: _durabilities) {
+		if (i == index) {
+			return (dura);
+		}
+		i++;
+	}
+	return (glm::ivec3(0));
 }
 
 glm::ivec2 Inventory::getCrafted( void )
@@ -260,6 +294,11 @@ int Inventory::countCraft( void )
 	return (res);
 }
 
+int Inventory::countDura( void )
+{
+	return (_durabilities.size());
+}
+
 glm::ivec2 Inventory::pickBlockAt( int craft, int value )
 {
 	// std::cout << "pickBlockAt " << value << std::endl;
@@ -285,6 +324,9 @@ glm::ivec2 Inventory::pickBlockAt( int craft, int value )
 	}
 	if (bat->x != blocks::AIR) {
 		glm::ivec2 res = *bat;
+		if (s_blocks[res.x].durability) {
+			_saved_durability = getrmDura(value);
+		}
 		*bat = glm::ivec2(blocks::AIR, 0);
 		changeCrafted(craft);
 		return (res);
@@ -322,6 +364,9 @@ glm::ivec2 Inventory::pickHalfBlockAt( int craft, int value )
 		bat->y /= 2;
 		if (!bat->y) {
 			*bat = glm::ivec2(blocks::AIR, 0);
+		}
+		if (s_blocks[res.x].durability) {
+			_saved_durability = getrmDura(value);
 		}
 		changeCrafted(craft_place);
 		return (res);
@@ -368,6 +413,19 @@ glm::ivec2 Inventory::putBlockAt( int craft, int value, glm::ivec2 block )
 	}
 	*bat = block;
 	changeCrafted(craft_place);
+	if (s_blocks[block.x].durability) {
+		int save_dura = _saved_durability;
+		if (s_blocks[res.x].durability) {
+			_saved_durability = getrmDura(value);
+		}
+		if (save_dura == 0) {
+			*bat = glm::ivec2(blocks::AIR, 0);
+		} else {
+			_durabilities.push_back(glm::ivec3(value, save_dura, s_blocks[bat->x].durability));
+		}
+	} else if (s_blocks[res.x].durability) {
+		_saved_durability = getrmDura(value);
+	}
 	return (res);
 }
 
@@ -401,6 +459,13 @@ glm::ivec2 Inventory::putOneBlockAt( int craft,  int value, glm::ivec2 block )
 		bat->y++;
 	} else if (bat->x == blocks::AIR) {
 		*bat = glm::ivec2(block.x, 1);
+		if (s_blocks[block.x].durability) { // tool
+			if (_saved_durability == 0) {
+				*bat = glm::ivec2(blocks::AIR, 0);
+			} else {
+				_durabilities.push_back(glm::ivec3(value, _saved_durability, s_blocks[block.x].durability));
+			}
+		}
 	} else {
 		return (block);
 	}
@@ -418,6 +483,9 @@ void Inventory::restoreBlock( glm::ivec2 block, bool swap )
 	if (location == -1) {
 		return ;
 	}
+	if (s_blocks[block.x].durability) {
+		_durabilities.push_back(glm::ivec3(location, _saved_durability, s_blocks[block.x].durability));
+	}
 	if (location < 9) {
 		_content[location] = glm::ivec2(block.x, block.y + _content[location].y);
 		_modif = true;
@@ -430,6 +498,7 @@ void Inventory::restoreiCraft( void )
 {
 	for (int index = 0; index < 4; index++) {
 		if (_icraft[index].x != blocks::AIR) {
+			_saved_durability = getrmDura(index + 36);
 			restoreBlock(_icraft[index]);
 			_icraft[index] = glm::ivec2(blocks::AIR, 0);
 		}
@@ -441,6 +510,7 @@ void Inventory::restoreCraft( void )
 {
 	for (int index = 0; index < 9; index++) {
 		if (_craft[index].x != blocks::AIR) {
+			_saved_durability = getrmDura(index + 41);
 			restoreBlock(_craft[index]);
 			_craft[index] = glm::ivec2(blocks::AIR, 0);
 		}
@@ -479,11 +549,17 @@ void Inventory::removeBlockAt( int value )
 		return ;
 	}
 	if (value < 9) {
+		if (s_blocks[_content[value].x].durability) {
+			getrmDura(value);
+		}
 		if (_content[value].x != blocks::AIR && --_content[value].y <= 0) {
 			_content[value] = glm::ivec2(blocks::AIR, 0);
 			_modif = true;
 		}
 	} else {
+		if (s_blocks[_backpack[value].x].durability) {
+			getrmDura(value);
+		}
 		if (_backpack[value - 9].x != blocks::AIR && --_backpack[value - 9].y <= 0) {
 			_backpack[value - 9] = glm::ivec2(blocks::AIR, 0);
 		}
@@ -501,6 +577,32 @@ void Inventory::removeBlock( void )
     }
 }
 
+void Inventory::replaceSlot( int type )
+{
+	if (s_blocks[_content[_slot].x].durability) {
+		getrmDura(_slot);
+	}
+	_content[_slot] = glm::ivec2(type, 1);
+	_modif = true;
+}
+
+void Inventory::decrementDurabitilty( void )
+{
+	if (s_blocks[_content[_slot].x].durability) {
+		for (auto& dura: _durabilities) {
+			if (dura.x == _slot) {
+				dura.y--;
+				if (!dura.y) {
+					removeBlock();
+					_durabilities.remove(dura);
+				}
+				return ;
+			}
+		}
+	}
+}
+
+// TODO DEL THOSE
 std::string Inventory::getInventoryString( void )
 {
     std::string res = "\nCurrent Slot > " + std::to_string(_slot);
@@ -511,8 +613,27 @@ std::string Inventory::getInventoryString( void )
     return (res);
 }
 
-void Inventory::replaceSlot( int type )
+std::string Inventory::getDuraString( void )
 {
-	_content[_slot] = glm::ivec2(type, 1);
-	_modif = true;
+	std::string res = "\n\nDURAS\t> saved is " + std::to_string(_saved_durability) + "\n";
+	for (auto& dura: _durabilities) {
+		res += "\t\t\t" + std::to_string(dura.x) + ": " + std::to_string(dura.y) + '\n';
+	}
+	return (res);
+}
+
+std::string Inventory::getSlotString( void )
+{
+	std::string res = "\n\nHolding\t> " + s_blocks[_content[_slot].x].name;
+	if (s_blocks[_content[_slot].x].durability) {
+		for (auto& dura: _durabilities) {
+			if (dura.x == _slot) {
+				res += " (" + std::to_string(dura.y) + '/' + std::to_string(dura.z) + ')';
+				break ;
+			}
+		}
+	} else if (_content[_slot].x) {
+		res += " (" + std::to_string(_content[_slot].y) + ')';
+	}
+	return (res);
 }

@@ -21,11 +21,11 @@ void Menu::reset_values( void )
 	_selection = 0;
 	_esc_released = false;
 	_e_released = false;
-	_inventory.restoreiCraft();
-	_inventory.restoreCraft();
-	if (_selected_block.x != blocks::AIR) {
+	if (_selected_block.x != blocks::AIR) { // important to do this first as they use same variable
 		_inventory.restoreBlock(_selected_block);
 	}
+	_inventory.restoreiCraft();
+	_inventory.restoreCraft();
 	_selected_block = glm::ivec2(blocks::AIR, 0);
 }
 
@@ -495,6 +495,68 @@ void Menu::add_craft_value( GLint *vertices, int mult, int index, int & vindex )
 	vindex += 9;
 }
 
+static int screenPosXFromlocation( int mult, int location )
+{
+	if (location < 9) { // action
+		return ((WIN_WIDTH - (166 * mult)) / 2 + (18 * location * mult) + mult * 3);
+	} else if (location < 36) { // backpack
+		return ((WIN_WIDTH - (166 * mult)) / 2 + (18 * (location % 9) * mult) + mult * 3);
+	} else if (location < 40) { // icraft
+		return ((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + location % 2) * mult) + mult * 3);
+	} else if (location == 41) { // crafted, ignore
+	} else { // craft
+		return ((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + (location - 41) % 3) * mult) + mult * 7);
+	}
+	return (0);
+}
+
+static int screenPosYFromlocation( int mult, int location )
+{
+	if (location < 9) {
+		return (WIN_HEIGHT / 2 + 59 * mult);
+	} else if (location < 36) {
+		return (WIN_HEIGHT / 2 + mult + 18 * mult * ((location - 9) / 9));
+	} else if (location < 40) {
+		return (WIN_HEIGHT / 2 - 65 * mult + 18 * mult * ((location - 36) / 2));
+	} else if (location == 41) {
+	} else {
+		return (WIN_HEIGHT / 2 - 66 * mult + 18 * mult * ((location - 41) / 3));
+	}
+	return (0);
+}
+
+void Menu::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
+{
+	mtx_inventory.lock();
+	glm::ivec3 value = _inventory.getDuraFromIndex(index);
+	mtx_inventory.unlock();
+	if (value.y == 0) {
+		return ;
+	}
+	// adding grey bar first
+	vertices[vindex + 0] = 0;
+	vertices[vindex + 1] = screenPosXFromlocation(mult, value.x) + mult;
+	vertices[vindex + 2] = screenPosYFromlocation(mult, value.x) + 14 * mult;
+	vertices[vindex + 3] = 14 * mult;
+	vertices[vindex + 4] = mult;
+	vertices[vindex + 5] = 64;
+	vertices[vindex + 6] = 0;
+	vertices[vindex + 7] = 1;
+	vertices[vindex + 8] = 1;
+	vindex += 9;
+	vertices[vindex + 0] = 0; // adding progress bar second
+	vertices[vindex + 1] = screenPosXFromlocation(mult, value.x) + mult;
+	vertices[vindex + 2] = screenPosYFromlocation(mult, value.x) + 14 * mult;
+	float percent = 1.0f * value.y / value.z;
+	vertices[vindex + 3] = 14 * mult * percent;
+	vertices[vindex + 4] = mult;
+	vertices[vindex + 5] = 103 * (percent < 0.6f) - (percent < 0.3);
+	vertices[vindex + 6] = 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f);
+	vertices[vindex + 7] = 1;
+	vertices[vindex + 8] = 1;
+	vindex += 9;
+}
+
 void Menu::add_crafted_value( GLint *vertices, int mult, int & vindex )
 {
 	mtx_inventory.lock();
@@ -524,7 +586,8 @@ void Menu::add_crafted_value( GLint *vertices, int mult, int & vindex )
 void Menu::setup_array_buffer_inventory( void )
 {
 	mtx_inventory.lock();
-	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countiCraft() + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
+	int duras = _inventory.countDura();
+	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countiCraft() + 2 * duras + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
 	mtx_inventory.unlock();
 	int mult = 3;
     GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
@@ -549,6 +612,9 @@ void Menu::setup_array_buffer_inventory( void )
 	for (int index = 0; index < 4; index++) {
 		add_icraft_value(vertices, mult, index, vindex);
 	}
+	for (int index = 0; index < duras; index++) {
+		add_dura_value(vertices, mult, index, vindex);
+	}
 	add_crafted_value(vertices, mult, vindex);
 
 	if (_selected_block.x != blocks::AIR) {
@@ -572,7 +638,8 @@ void Menu::setup_array_buffer_inventory( void )
 void Menu::setup_array_buffer_crafting( void )
 {
 	mtx_inventory.lock();
-	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countCraft() + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
+	int duras = _inventory.countDura();
+	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countCraft() + 2 * duras + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
 	mtx_inventory.unlock();
 	int mult = 3;
     GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
@@ -593,6 +660,9 @@ void Menu::setup_array_buffer_crafting( void )
 	}
 	for (int index = 0; index < 27; index++) {
 		add_backpack_value(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < duras; index++) {
+		add_dura_value(vertices, mult, index, vindex);
 	}
 	for (int index = 0; index < 9; index++) {
 		add_craft_value(vertices, mult, index, vindex);
