@@ -2,6 +2,7 @@
 
 Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _selection(0), _vaoSet(false),
 	_esc_released(false), _e_released(false), _left_released(false), _right_released(false),
+	_key_1(0), _key_2(0), _key_3(0), _key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 	_inventory(inventory), _text(text)
 {
 	_selected_block = glm::ivec2(blocks::AIR, 0);
@@ -187,6 +188,51 @@ int Menu::ingame_inputs( void )
 		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_right_released = true;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_1) == GLFW_PRESS) && ++_key_1 == 1) {
+		_inventory.swapCells(0, _selection - 1);
+	} else if (glfwGetKey(_window, GLFW_KEY_1) == GLFW_RELEASE) {
+		_key_1 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_2) == GLFW_PRESS) && ++_key_2 == 1) {
+		_inventory.swapCells(1, _selection - 1);
+	} else if (glfwGetKey(_window, GLFW_KEY_2) == GLFW_RELEASE) {
+		_key_2 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_3) == GLFW_PRESS) && ++_key_3 == 1) {
+		_inventory.swapCells(2, _selection - 1);
+	} else if (glfwGetKey(_window, GLFW_KEY_3) == GLFW_RELEASE) {
+		_key_3 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_4) == GLFW_PRESS) && ++_key_4 == 1) {
+		_inventory.swapCells(3, _selection - 1);
+	} else if (glfwGetKey(_window, GLFW_KEY_4) == GLFW_RELEASE) {
+		_key_4 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_5) == GLFW_PRESS) && ++_key_5 == 1) {
+		_inventory.swapCells(4, _selection - 1);
+	} else if (glfwGetKey(_window, GLFW_KEY_5) == GLFW_RELEASE) {
+		_key_5 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_6) == GLFW_PRESS) && ++_key_6 == 1) {
+		_inventory.swapCells(5, _selection - 1);
+	} else if (glfwGetKey(_window, GLFW_KEY_6) == GLFW_RELEASE) {
+		_key_6 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_7) == GLFW_PRESS) && ++_key_7 == 1) {
+		_inventory.swapCells(6, _selection - 1);
+	} else if (glfwGetKey(_window, GLFW_KEY_7) == GLFW_RELEASE) {
+		_key_7 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_8) == GLFW_PRESS) && ++_key_8 == 1) {
+		_inventory.swapCells(7, _selection - 1);
+	} else if (glfwGetKey(_window, GLFW_KEY_8) == GLFW_RELEASE) {
+		_key_8 = 0;
+	}
+	if ((glfwGetKey(_window, GLFW_KEY_9) == GLFW_PRESS) && ++_key_9 == 1) {
+		_inventory.swapCells(8, _selection - 1);
+	} else if (glfwGetKey(_window, GLFW_KEY_9) == GLFW_RELEASE) {
+		_key_9 = 0;
 	}
 	return (0);
 }

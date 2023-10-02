@@ -58,73 +58,214 @@ void UI::load_texture( std::string texstr, std::string shname, int index )
 
 }
 
+void UI::add_inventory_elem( GLint *vertices, int mult, int index, int & vindex )
+{
+	mtx_inventory.lock();
+	int value = _inventory.getSlotBlock(index).x;
+	mtx_inventory.unlock();
+	if (value == blocks::AIR) {
+		return ;
+	}
+	vertices[vindex + 0] = 0;
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * index * mult) + mult * 3;
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 + mult * 3;
+	vertices[vindex + 3] = 16 * mult;
+	vertices[vindex + 4] = 16 * mult;
+	vertices[vindex + 5] = blockAtlasX(value);
+	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 7] = 16;
+	vertices[vindex + 8] = 16;
+	vindex += 9;
+}
+
+void UI::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
+{
+	mtx_inventory.lock();
+	glm::ivec3 value = _inventory.getDuraFromIndex(index);
+	mtx_inventory.unlock();
+	if (value.y == 0) {
+		return ;
+	}
+	// adding grey bar first
+	vertices[vindex + 0] = 0;
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * index * mult) + mult * 3 + mult;
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 + mult * 3 + 14 * mult;
+	vertices[vindex + 3] = 14 * mult;
+	vertices[vindex + 4] = mult;
+	vertices[vindex + 5] = 64;
+	vertices[vindex + 6] = 0;
+	vertices[vindex + 7] = 1;
+	vertices[vindex + 8] = 1;
+	vindex += 9;
+	vertices[vindex + 0] = 0; // adding progress bar second
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * index * mult) + mult * 3 + mult;
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 + mult * 3 + 14 * mult;
+	float percent = 1.0f * value.y / value.z;
+	vertices[vindex + 3] = 14 * mult * percent;
+	vertices[vindex + 4] = mult;
+	vertices[vindex + 5] = 103 * (percent < 0.6f) - (percent < 0.3);
+	vertices[vindex + 6] = 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f);
+	vertices[vindex + 7] = 1;
+	vertices[vindex + 8] = 1;
+	vindex += 9;
+}
+
+void UI::add_hearts_holder( GLint *vertices, int mult, int index, int & vindex )
+{
+	vertices[vindex + 0] = 1;
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + mult + (index * 8 * mult);
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
+	vertices[vindex + 3] = 8 * mult;
+	vertices[vindex + 4] = 8 * mult;
+	vertices[vindex + 5] = 0;
+	vertices[vindex + 6] = 16;
+	vertices[vindex + 7] = 9;
+	vertices[vindex + 8] = 9;
+	vindex += 9;
+}
+
+void UI::add_hearts( GLint *vertices, int mult, int index, int & vindex )
+{
+	vertices[vindex + 0] = 1;
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + mult + (index * 8 * mult);
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
+	vertices[vindex + 3] = 8 * mult;
+	vertices[vindex + 4] = 8 * mult;
+	vertices[vindex + 5] = 18 * (_camera._health_points == (1 + 2 * index)) + 9 * (_camera._health_points > (1 + 2 * index));
+	vertices[vindex + 6] = 16;
+	vertices[vindex + 7] = 9;
+	vertices[vindex + 8] = 9;
+	vindex += 9;
+}
+
+void UI::add_armor_holder( GLint *vertices, int mult, int index, int & vindex )
+{
+	vertices[vindex + 0] = 1;
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + mult + (index * 8 * mult);
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3);
+	vertices[vindex + 3] = 8 * mult;
+	vertices[vindex + 4] = 8 * mult;
+	vertices[vindex + 5] = 27;
+	vertices[vindex + 6] = 16;
+	vertices[vindex + 7] = 9;
+	vertices[vindex + 8] = 9;
+	vindex += 9;
+}
+
+void UI::add_armor( GLint *vertices, int mult, int index, int & vindex )
+{
+	vertices[vindex + 0] = 1;
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + mult + (index * 8 * mult);
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3);
+	vertices[vindex + 3] = 8 * mult;
+	vertices[vindex + 4] = 8 * mult;
+	vertices[vindex + 5] = 36 + 9 * (index == 3);
+	vertices[vindex + 6] = 16;
+	vertices[vindex + 7] = 9;
+	vertices[vindex + 8] = 9;
+	vindex += 9;
+}
+
+void UI::add_food_holder( GLint *vertices, int mult, int index, int & vindex )
+{
+	vertices[vindex + 0] = 1;
+	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - mult - (index * 8 * mult);
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
+	vertices[vindex + 3] = 8 * mult;
+	vertices[vindex + 4] = 8 * mult;
+	vertices[vindex + 5] = 54;
+	vertices[vindex + 6] = 16;
+	vertices[vindex + 7] = 9;
+	vertices[vindex + 8] = 9;
+	vindex += 9;
+}
+
+void UI::add_food( GLint *vertices, int mult, int index, int & vindex )
+{
+	vertices[vindex + 0] = 1;
+	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - mult - (index * 8 * mult);
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
+	vertices[vindex + 3] = 8 * mult;
+	vertices[vindex + 4] = 8 * mult;
+	vertices[vindex + 5] = 63 + 9 * (index == 1);
+	vertices[vindex + 6] = 16;
+	vertices[vindex + 7] = 9;
+	vertices[vindex + 8] = 9;
+	vindex += 9;
+}
+
 void UI::setup_array_buffer( void )
 {
-    _nb_points = 3 + 9 + 10 + 10 + 10 + 4 + 10 + 2;
-	int mult = 4;
 	mtx_inventory.lock();
-    GLint vertices[] = { // pos: x y width height textcoord: x y width height
-        1, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16, // crosshair
-		1, (WIN_WIDTH - (182 * mult)) / 2, WIN_HEIGHT - (22 * mult) * 2, 182 * mult, 22 * mult, 0, 25, 182, 22,  // hot bar
-		1, (WIN_WIDTH - (182 * mult)) / 2 + (20 * _inventory.getSlotNum() * mult) - mult, WIN_HEIGHT - (22 * mult) * 2 - mult, 24 * mult, 24 * mult, 0, 47, 24, 24,  // slot select
-		0, (WIN_WIDTH - (182 * mult)) / 2 + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(0).x), blockAtlasY(_inventory.getSlotBlock(0).x), 16, 16, // inventory elem
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 1 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(1).x), blockAtlasY(_inventory.getSlotBlock(1).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 2 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(2).x), blockAtlasY(_inventory.getSlotBlock(2).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 3 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(3).x), blockAtlasY(_inventory.getSlotBlock(3).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 4 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(4).x), blockAtlasY(_inventory.getSlotBlock(4).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 5 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(5).x), blockAtlasY(_inventory.getSlotBlock(5).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 6 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(6).x), blockAtlasY(_inventory.getSlotBlock(6).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 7 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(7).x), blockAtlasY(_inventory.getSlotBlock(7).x), 16, 16,
-		0, (WIN_WIDTH - (182 * mult)) / 2 + (20 * 8 * mult) + mult * 3, WIN_HEIGHT - (22 * mult) * 2 + mult * 3, 16 * mult, 16 * mult, blockAtlasX(_inventory.getSlotBlock(8).x), blockAtlasY(_inventory.getSlotBlock(8).x), 16, 16,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,  // hearts
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (4 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (5 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (6 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (8 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (9 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 0, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 1) + 9 * (_camera._health_points > 1), 16, 9, 9,  // filling hearts
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 3) + 9 * (_camera._health_points > 3), 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 5) + 9 * (_camera._health_points > 5), 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 7) + 9 * (_camera._health_points > 7), 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (4 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 9) + 9 * (_camera._health_points > 9), 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (5 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 11) + 9 * (_camera._health_points > 11), 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (6 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 13) + 9 * (_camera._health_points > 13), 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 15) + 9 * (_camera._health_points > 15), 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (8 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 17) + 9 * (_camera._health_points > 17), 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (9 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 18 * (_camera._health_points == 19) + 9 * (_camera._health_points > 19), 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,  // armor
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (4 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (5 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (6 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (8 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (9 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 27, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult, WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 36, 16, 9, 9,  // filling armor
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 36, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 36, 16, 9, 9,
-		1, (WIN_WIDTH - (182 * mult)) / 2 + mult + (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3), 8 * mult, 8 * mult, 45, 16, 9, 9,
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,  // food
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (3 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (4 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (5 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (6 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (7 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (8 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (9 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (10 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 54, 16, 9, 9,
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (1 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 63, 16, 9, 9,  // filling food
-		1, (WIN_WIDTH + (182 * mult)) / 2 - mult - (2 * 8 * mult), WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult), 8 * mult, 8 * mult, 72, 16, 9, 9,
-
-    };
+	int countSlot = _inventory.countSlots();
+	int duras = _inventory.countDura();
 	mtx_inventory.unlock();
+    _nb_points = 3 + countSlot + 2 * duras + 10 + _camera._health_points / 2 + _camera._health_points % 2 + 10 + 4 + 10 + 2;
+	int mult = 4;
+	GLint *vertices = new GLint[_nb_points * 9];
+
+	vertices[0] = 1; // crosshair
+	vertices[1] = WIN_WIDTH / 2 - 16;
+	vertices[2] = WIN_HEIGHT / 2 - 16;
+	vertices[3] = 32;
+	vertices[4] = 32;
+	vertices[5] = 0;
+	vertices[6] = 0;
+	vertices[7] = 16;
+	vertices[8] = 16;
+
+	int vindex = 9;
+	vertices[vindex + 0] = 1; // hot bar
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2;
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2;
+	vertices[vindex + 3] = 182 * mult;
+	vertices[vindex + 4] = 22 * mult;
+	vertices[vindex + 5] = 0;
+	vertices[vindex + 6] = 25;
+	vertices[vindex + 7] = 182;
+	vertices[vindex + 8] = 22;
+	vindex += 9;
+	vertices[vindex + 0] = 1; // slot select
+	mtx_inventory.lock();
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * _inventory.getSlotNum() * mult) - mult;
+	mtx_inventory.unlock();
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - mult;
+	vertices[vindex + 3] = 24 * mult;
+	vertices[vindex + 4] = 24 * mult;
+	vertices[vindex + 5] = 0;
+	vertices[vindex + 6] = 47;
+	vertices[vindex + 7] = 24;
+	vertices[vindex + 8] = 24;
+	vindex += 9;
+
+	for (int index = 0; index < 9; index++) {
+		add_inventory_elem(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < duras; index++) {
+		add_dura_value(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < 10; index++) {
+		add_hearts_holder(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < _camera._health_points / 2 + _camera._health_points % 2; index++) {
+		add_hearts(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < 10; index++) {
+		add_armor_holder(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < 4; index++) {
+		add_armor(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < 10; index++) {
+		add_food_holder(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < 2; index++) {
+		add_food(vertices, mult, index, vindex);
+	}
+	if (vindex / 9 != _nb_points) {
+		std::cout << "ERROR ui nb points is " << _nb_points << std::endl;
+		std::cout << "current vindex is " << vindex / 9 << std::endl << std::endl << std::endl;
+	}
 
 	glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
@@ -133,6 +274,8 @@ void UI::setup_array_buffer( void )
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferData(GL_ARRAY_BUFFER, _nb_points * 9 * sizeof(GLint), vertices, GL_STATIC_DRAW);
+
+	delete [] vertices;
 
     glEnableVertexAttribArray(UI_ATLASATTRIB);
 	glVertexAttribIPointer(UI_ATLASATTRIB, 1, GL_INT, 9 * sizeof(GLint), 0);
@@ -243,9 +386,11 @@ void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 	mtx_inventory.unlock();
 	glUseProgram(_shaderProgram);
     glBindVertexArray(_vao);
+	mtx_inventory.lock();
 	(game_mode == SURVIVAL)
 		? glDrawArrays(GL_POINTS, 0, _nb_points)
-		: glDrawArrays(GL_POINTS, 0, 12);
+		: glDrawArrays(GL_POINTS, 0, 3 + _inventory.countSlots() + 2 * _inventory.countDura());
+	mtx_inventory.unlock();
 
 	_text->displayText(12, 24, 12, glm::vec3(1.0f, 1.0f, 1.0f), str);
 	for (int index = 0; index < 9; index++) {

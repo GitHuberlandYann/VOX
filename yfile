@@ -44,7 +44,6 @@ TODOS:
     - player arm in survival mode
     - nether
     - right/left click and drag in inventory
-    - tools durabitlity
     - hitbox flowers and blocks in general -> might have to split blocks in 27 ..
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
@@ -73,6 +72,7 @@ DONE:
     - flowers destroyed if block underneath destroyed
     - leaves touchy
     - inventory block count
+    - tools durabitlity
     - block break animation
     - chunk border fix
     - FOV changed on isRunning change

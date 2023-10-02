@@ -100,6 +100,7 @@ class Inventory
 		void removeBlockAt( int value );
         void removeBlock( void );
 		void replaceSlot( int type );
+		void swapCells( int slot, int location );
 		void decrementDurabitilty( void );
 
         std::string getInventoryString( void );

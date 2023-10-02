@@ -20,6 +20,14 @@ class UI
 		bool _vaoSet;
 
 		void load_texture( std::string texstr, std::string shname, int index );
+        void add_inventory_elem( GLint *vertices, int mult, int index, int & vindex );
+        void add_dura_value( GLint *vertices, int mult, int index, int & vindex );
+        void add_hearts_holder( GLint *vertices, int mult, int index, int & vindex );
+        void add_hearts( GLint *vertices, int mult, int index, int & vindex );
+        void add_armor_holder( GLint *vertices, int mult, int index, int & vindex );
+        void add_armor( GLint *vertices, int mult, int index, int & vindex );
+        void add_food_holder( GLint *vertices, int mult, int index, int & vindex );
+        void add_food( GLint *vertices, int mult, int index, int & vindex );
         void setup_array_buffer( void );
         void display_slot_value( int index );
 

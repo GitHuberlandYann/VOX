@@ -229,12 +229,14 @@ glm::ivec3 Inventory::getDuraFromIndex( int index )
 		std::cerr << "ERROR getDuraFromIndex " << index << std::endl;
 		return glm::ivec3(0);
 	}
-	int i = 0;
+	int i = -1;
 	for (auto& dura: _durabilities) {
+		if (dura.y != dura.z) {
+			i++;
+		}
 		if (i == index) {
 			return (dura);
 		}
-		i++;
 	}
 	return (glm::ivec3(0));
 }
@@ -296,7 +298,13 @@ int Inventory::countCraft( void )
 
 int Inventory::countDura( void )
 {
-	return (_durabilities.size());
+	int cnt = 0;
+	for (auto& dura: _durabilities) {
+		if (dura.y != dura.z) {
+			cnt++;
+		}
+	}
+	return (cnt);
 }
 
 glm::ivec2 Inventory::pickBlockAt( int craft, int value )
@@ -583,6 +591,55 @@ void Inventory::replaceSlot( int type )
 		getrmDura(_slot);
 	}
 	_content[_slot] = glm::ivec2(type, 1);
+	_modif = true;
+}
+
+void Inventory::swapCells( int slot, int location )
+{
+	if (slot == location || location == 40) {
+		return ;
+	}
+	if (location < 0 || location > 49) {
+		return ;
+	}
+	glm::ivec2 *bat;
+	if (location < 9) {
+		bat = &_content[location];
+	} else if (location < 36) {
+		bat = &_backpack[location - 9];
+	} else if (location < 40) {
+		bat = &_icraft[location - 36];
+	} else {
+		bat = &_craft[location - 41];
+	}
+	if (_content[slot].x == bat->x && bat->x != AIR) {
+		_content[slot].y += bat->y;
+		if (_content[slot].y > 64) {
+			bat->y = _content[slot].y - 64;
+			_content[slot].y = 64;
+		} else {
+			bat->x = blocks::AIR;
+			bat->y = 0;
+		}
+		return ;
+	}
+	int save_dura0 = 0;
+	int save_dura1 = 0;
+	if (s_blocks[_content[slot].x].durability) {
+		save_dura0 = getrmDura(slot);
+	}
+	if (s_blocks[bat->x].durability) {
+		save_dura1 = getrmDura(location);
+	}
+	glm::ivec2 tmp = _content[slot];
+	_content[slot] = *bat;
+	*bat = tmp;
+	if (save_dura0) {
+		_durabilities.push_back(glm::ivec3(location, save_dura0, s_blocks[bat->x].durability));
+	}
+	if (save_dura1) {
+		_durabilities.push_back(glm::ivec3(slot, save_dura1, s_blocks[_content[slot].x].durability));
+	}
 	_modif = true;
 }
 
