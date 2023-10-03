@@ -7,7 +7,7 @@ class FurnaceInstance
 		glm::ivec2 _composant;
 		glm::ivec2 _fuel;
 		glm::ivec2 _production;
-		float _fuel_time, _composant_time, _current_fuel_time;
+		float _fuel_time, _composant_time, _current_fuel_time, _current_time;
 
 	public:
 		FurnaceInstance( void );

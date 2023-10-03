@@ -827,6 +827,8 @@ void Chunk::update_border(int posX, int posY, int level, bool adding)
 	if (adding) {
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::STONE;
 		// TODO hide block if no longer visible
+		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
+		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::STONE;
 	} else {
 		glm::ivec2 target;
 		if (!posX) {
@@ -838,6 +840,8 @@ void Chunk::update_border(int posX, int posY, int level, bool adding)
 		} else if (posY == CHUNK_SIZE + 1) {
 			target = glm::ivec2(posX, CHUNK_SIZE);
 		}
+		_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
+		_removed[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = 1;
 		if (exposed_block(target.x, target.y, level, true)) { // block was already exposed, no change in displayed_blocks, only in visible faces
 			// std::cout << "displayed blocks same" << std::endl;
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;

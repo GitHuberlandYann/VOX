@@ -10,6 +10,7 @@ enum blocks {
 	FURNACE,
 	BEDROCK = 16,
 	DIRT,
+	SMOOTH_STONE,
 	STONE,
 	COBBLESTONE,
 	SAND,
@@ -19,6 +20,9 @@ enum blocks {
 	COAL_ORE = 32,
 	IRON_ORE,
 	DIAMOND_ORE,
+	COAL_BLOCK,
+	IRON_BLOCK,
+	DIAMOND_BLOCK,
 	POPPY = 48,
 	DANDELION,
 	BLUE_ORCHID,
@@ -52,6 +56,7 @@ enum blocks {
 struct Block {
 	public:
 		std::string name = "DEFAULT";
+		int mined = blocks::AIR;
 		bool stackable = true;
 		bool isFuel = false;
 		float fuel_time = 0;
@@ -104,6 +109,7 @@ struct GrassBlock : Block {
 	public:
 		GrassBlock() {
 			name = "GRASS_BLOCK";
+			mined = blocks::DIRT;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
 			break_time_hand = 0.9f;
@@ -118,6 +124,7 @@ struct OakLog : Block {
 	public:
 		OakLog() {
 			name = "OAK_LOG";
+			mined = blocks::OAK_LOG;
 			isFuel = true;
 			fuel_time = 15;
 			isComposant = true;
@@ -136,6 +143,7 @@ struct Cactus : Block {
 	public:
 		Cactus() {
 			name = "CACTUS";
+			mined = blocks::CACTUS;
 			byHand = true;
 			break_time_hand = 0.6f;
 		}
@@ -145,6 +153,7 @@ struct CraftingTable : Block {
 	public:
 		CraftingTable() {
 			name = "CRAFTING_TABLE";
+			mined = blocks::CRAFTING_TABLE;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
@@ -161,6 +170,7 @@ struct Furnace : Block {
 	public:
 		Furnace() {
 			name = "FURNACE";
+			mined = blocks::FURNACE;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 17.5f;
@@ -183,6 +193,7 @@ struct Dirt : Block {
 	public:
 		Dirt() {
 			name = "DIRT";
+			mined = blocks::DIRT;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
 			break_time_hand = 0.75f;
@@ -193,10 +204,28 @@ struct Dirt : Block {
 		}
 };
 
+struct SmoothStone : Block {
+	public:
+		SmoothStone() {
+			name = "SMOOTH_STONE";
+			mined = blocks::SMOOTH_STONE;
+			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
+			break_time_hand = 10.0f;
+			break_time_wooden = 1.5f;
+			break_time_stone = 0.75f;
+			break_time_iron = 0.5f;
+			break_time_diamond = 0.4f;
+		}
+};
+
 struct Stone : Block {
 	public:
 		Stone() {
 			name = "STONE";
+			mined = blocks::COBBLESTONE;
+			isComposant = true;
+			getProduction = blocks::SMOOTH_STONE;
 			byHand = false;
 			needed_tool = WOODEN_PICKAXE;
 			break_time_hand = 7.5f;
@@ -211,6 +240,7 @@ struct Cobblestone : Block {
 	public:
 		Cobblestone() {
 			name = "COBBLESTONE";
+			mined = blocks::COBBLESTONE;
 			isComposant = true;
 			getProduction = blocks::STONE;
 			byHand = false;
@@ -227,6 +257,7 @@ struct Sand : Block {
 	public:
 		Sand() {
 			name = "SAND";
+			mined = blocks::SAND;
 			byHand = true;
 			needed_tool = WOODEN_SHOVEL;
 			break_time_hand = 0.75f;
@@ -241,6 +272,7 @@ struct Gravel : Block {
 	public:
 		Gravel() {
 			name = "GRAVEL";
+			mined = blocks::GRAVEL;
 			byHand = true;
 			needed_tool = WOODEN_SHOVEL;
 			break_time_hand = 0.9f;
@@ -264,6 +296,7 @@ struct OakPlanks : Block {
 	public:
 		OakPlanks() {
 			name = "OAK_PLANKS";
+			mined = blocks::OAK_PLANKS;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
@@ -280,6 +313,7 @@ struct CoalOre : Block {
 	public:
 		CoalOre() {
 			name = "COAL_ORE";
+			mined = blocks::COAL;
 			isComposant = true;
 			getProduction = blocks::COAL;
 			byHand = false;
@@ -296,6 +330,7 @@ struct IronOre : Block {
 	public:
 		IronOre() {
 			name = "IRON_ORE";
+			mined = blocks::IRON_ORE;
 			isComposant = true;
 			getProduction = blocks::IRON_INGOT;
 			byHand = false;
@@ -313,6 +348,7 @@ struct DiamondOre : Block {
 	public:
 		DiamondOre() {
 			name = "DIAMOND_ORE";
+			mined = blocks::DIAMOND;
 			isComposant = true;
 			getProduction = blocks::DIAMOND;
 			byHand = false;
@@ -326,10 +362,60 @@ struct DiamondOre : Block {
 		}
 };
 
+struct CoalBlock : Block {
+	public:
+		CoalBlock() {
+			name = "COAL_BLOCK";
+			mined = blocks::COAL_BLOCK;
+			isFuel = true;
+			fuel_time = 800;
+			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
+			break_time_hand = 25.0f;
+			break_time_wooden = 3.75f;
+			break_time_stone = 1.9f;
+			break_time_iron = 1.25f;
+			break_time_diamond = 0.95f;
+		}
+};
+
+struct IronBlock : Block {
+	public:
+		IronBlock() {
+			name = "IRON_BLOCK";
+			mined = blocks::IRON_BLOCK;
+			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
+			needed_material_level = 1; // min stone to collect
+			break_time_hand = 25.0f;
+			break_time_wooden = 12.5f;
+			break_time_stone = 1.9f;
+			break_time_iron = 1.25f;
+			break_time_diamond = 0.95f;
+		}
+};
+
+struct DiamondBlock : Block {
+	public:
+		DiamondBlock() {
+			name = "DIAMOND_BLOCK";
+			mined = blocks::DIAMOND_BLOCK;
+			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
+			needed_material_level = 2; // min iron to collect
+			break_time_hand = 25.0f;
+			break_time_wooden = 12.5f;
+			break_time_stone = 6.25f;
+			break_time_iron = 1.25f;
+			break_time_diamond = 0.95f;
+		}
+};
+
 struct Poppy : Block {
 	public:
 		Poppy() {
 			name = "POPPY";
+			mined = blocks::POPPY;
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -339,6 +425,7 @@ struct Dandelion : Block {
 	public:
 		Dandelion() {
 			name = "DANDELION";
+			mined = blocks::DANDELION;
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -348,6 +435,7 @@ struct BlueOrchid : Block {
 	public:
 		BlueOrchid() {
 			name = "BLUE_ORCHID";
+			mined = blocks::BLUE_ORCHID;
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -357,6 +445,7 @@ struct Allium : Block {
 	public:
 		Allium() {
 			name = "ALLIUM";
+			mined = blocks::ALLIUM;
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -366,6 +455,7 @@ struct CornFlower : Block {
 	public:
 		CornFlower() {
 			name = "CORNFLOWER";
+			mined = blocks::CORNFLOWER;
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -375,6 +465,7 @@ struct PinkTulip : Block {
 	public:
 		PinkTulip() {
 			name = "PINK_TULIP";
+			mined = blocks::PINK_TULIP;
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -393,6 +484,7 @@ struct SugarCane : Block {
 	public:
 		SugarCane() {
 			name = "SUGAR_CANE";
+			mined = blocks::SUGAR_CANE;
 			byHand = true;
 			break_time_hand = 0.2f;
 		}
@@ -402,6 +494,9 @@ struct DeadBush : Block {
 	public:
 		DeadBush() {
 			name = "DEAD_BUSH";
+			mined = blocks::DEAD_BUSH;
+			isFuel = true;
+			fuel_time = 5;
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -571,8 +666,8 @@ struct Diamond : Block {
 
 const Block s_blocks[112] = {
 	Air(), GrassBlock(), OakLog(), Cactus(), TBD(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	Bedrock(), Dirt(), Stone(), Cobblestone(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	CoalOre(), IronOre(), DiamondOre(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	CoalOre(), IronOre(), DiamondOre(), CoalBlock(), IronBlock(), DiamondBlock(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), Water(), TBD(),
 	Stick(), WoodenShovel(), StoneShovel(), IronShovel(), DiamondShovel(), WoodenAxe(), StoneAxe(), IronAxe(), DiamondAxe(), WoodenPickaxe(), StonePickaxe(), IronPickaxe(), DiamondPickaxe(), TBD(), TBD(), TBD(),

@@ -454,15 +454,15 @@ void Menu::display_furnace_value( void )
 	}
 	int mult = 3, value = _furnace->getComposant().y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 8 - 2 * mult * (value > 9),  WIN_HEIGHT / 2 - 61 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 7 - 2 * mult * (value > 9),  WIN_HEIGHT / 2 - 60 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
 	}
 	value = _furnace->getFuel().y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 8 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 25 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 7 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 24 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
 	}
 	value = _furnace->getProduction().y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 111 * mult + mult * 8 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 43 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 111 * mult + mult * 7 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 42 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
 	}
 }
 
@@ -768,29 +768,29 @@ void Menu::add_furnace_value( GLint *vertices, int mult, int & vindex )
 		vertices[vindex + 8] = 16;
 		vindex += 9;
 	}
-	float progress = _furnace->getFuelTime();
-	if (progress) {
+	int progress = 1 + glm::floor(_furnace->getFuelTime() * 13);
+	if (_furnace->getFuelTime()) {
 		vertices[vindex + 0] = 1;
 		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult;
-		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult + mult;
+		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult + (14 - progress) * mult + mult;
 		vertices[vindex + 3] = 14 * mult;
-		vertices[vindex + 4] = 14 * mult;
+		vertices[vindex + 4] = progress * mult;
 		vertices[vindex + 5] = 24;
-		vertices[vindex + 6] = 47;
+		vertices[vindex + 6] = 47 + (14 - progress);
 		vertices[vindex + 7] = 14;
-		vertices[vindex + 8] = 14;
+		vertices[vindex + 8] = progress;
 		vindex += 9;
 	}
-	progress = _furnace->getComposantTime();
-	if (progress) {
+	progress = 1 + glm::floor(_furnace->getComposantTime() * 23);
+	if (_furnace->getComposantTime()) {
 		vertices[vindex + 0] = 1;
 		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 74 * mult;
 		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult;
-		vertices[vindex + 3] = 24 * mult;
+		vertices[vindex + 3] = progress * mult;
 		vertices[vindex + 4] = 17 * mult;
 		vertices[vindex + 5] = 38;
 		vertices[vindex + 6] = 47;
-		vertices[vindex + 7] = 24;
+		vertices[vindex + 7] = progress;
 		vertices[vindex + 8] = 17;
 		vindex += 9;
 	}

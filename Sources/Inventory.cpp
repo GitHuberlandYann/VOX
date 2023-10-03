@@ -533,16 +533,7 @@ void Inventory::setModif( bool value )
 
 void Inventory::addBlock( int type )
 {
-	if (type == blocks::GRASS_BLOCK) {
-		type = blocks::DIRT;
-	} else if (type == blocks::STONE) {
-		type = blocks::COBBLESTONE;
-	} else if (type == blocks::COAL_ORE) {
-		type = blocks::COAL;
-	} else if (type == blocks::DIAMOND_ORE) {
-		type = blocks::DIAMOND;
-	}
-	glm::ivec2 block = glm::ivec2(type, 1);
+	glm::ivec2 block = glm::ivec2(s_blocks[type].mined, 1);
 	restoreBlock(block, true);
 }
 

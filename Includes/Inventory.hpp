@@ -1,14 +1,26 @@
 #ifndef INVENTORY_HPP
 # define INVENTORY_HPP
 
-# define IRECEIPT_SIZE 7
-# define RECEIPT_SIZE 32
+# define IRECEIPT_SIZE 19
+# define RECEIPT_SIZE 62
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
 	{blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::AIR, blocks::OAK_PLANKS, 4},
 	{blocks::AIR, blocks::OAK_LOG, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, 4},
 	{blocks::OAK_LOG, blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, 4},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::COAL, 9},
+	{blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::AIR, blocks::COAL, 9},
+	{blocks::AIR, blocks::COAL_BLOCK, blocks::AIR, blocks::AIR, blocks::COAL, 9},
+	{blocks::COAL_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_BLOCK, blocks::IRON_INGOT, 9},
+	{blocks::AIR, blocks::AIR, blocks::IRON_BLOCK, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::AIR, blocks::IRON_BLOCK, blocks::AIR, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::IRON_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND_BLOCK, blocks::DIAMOND, 9},
+	{blocks::AIR, blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::DIAMOND, 9},
+	{blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
+	{blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
 	{blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::STICK, 4},
 	{blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::STICK, 4},
 	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::CRAFTING_TABLE, 1},
@@ -51,6 +63,37 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_PICKAXE, 1},
 	{blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::IRON_PICKAXE, 1},
 	{blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::DIAMOND_PICKAXE, 1},
+	
+	{blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL_BLOCK, 1},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::COAL, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::AIR, blocks::COAL, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::AIR, blocks::AIR, blocks::COAL, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL, 9},
+	{blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL, 9},
+	{blocks::AIR, blocks::COAL_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL, 9},
+	{blocks::COAL_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL, 9},
+	{blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_BLOCK, 1},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_BLOCK, blocks::IRON_INGOT, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_BLOCK, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_BLOCK, blocks::AIR, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::AIR, blocks::AIR, blocks::IRON_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::AIR, blocks::IRON_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::IRON_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_INGOT, 9},
+	{blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND_BLOCK, 1},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND_BLOCK, blocks::DIAMOND, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::DIAMOND, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
+	{blocks::AIR, blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
+	{blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
+	{blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
 };
 
 class Inventory

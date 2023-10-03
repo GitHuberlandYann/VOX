@@ -23,13 +23,16 @@ int FurnaceInstance::count( void )
 
 float FurnaceInstance::getComposantTime( void )
 {
-	return (_composant_time / 10);
+	if (!_composant_time) {
+		return (0);
+	}
+	return ((_current_time - _composant_time) / 10);
 }
 
 float FurnaceInstance::getFuelTime( void )
 {
 	if (_current_fuel_time) {
-		return (_fuel_time / _current_fuel_time);
+		return ((_current_time - _fuel_time) / _current_fuel_time);
 	}
 	return (0);
 }
@@ -80,6 +83,7 @@ glm::ivec2 *FurnaceInstance::pickCompoFuel( bool fuel )
 
 void FurnaceInstance::updateTimes( float currentTime )
 {
+	_current_time = currentTime; // used for display
 	float deltaTime;
 	if (_current_fuel_time && s_blocks[_composant.x].isComposant) {
 		if (_composant_time) {
@@ -141,7 +145,7 @@ std::string FurnaceInstance::getInfoString( void )
 {
 	std::string res = "\n\nComposant\t> " + s_blocks[_composant.x].name + ((s_blocks[_composant.x].isComposant) ? " smelts into " + s_blocks[s_blocks[_composant.x].getProduction].name : " is not composant")
 						+ "\nFuel\t\t> " + s_blocks[_fuel.x].name + ((s_blocks[_fuel.x].isFuel) ? " lasts " + std::to_string(s_blocks[_fuel.x].fuel_time) : " is not fuel")
-						+ "\nTimes\t\t> " + std::to_string(_composant_time) + ", " + std::to_string(_fuel_time);
+						+ "\nTimes\t\t> " + std::to_string((_current_time - _composant_time) * (_composant_time > 0)) + ", " + std::to_string((_current_time - _fuel_time) * (_fuel_time > 0));
 
 	return (res);
 }

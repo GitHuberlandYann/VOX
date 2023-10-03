@@ -27,7 +27,6 @@ Project Requirements:
 
 TODOS:
 	- water if air && level > surface_level && level < 64
-	- furnace
     - skybox
     - main menu
         - play
@@ -62,6 +61,7 @@ DONE:
     - full screen mode
     - mouse movements
     - inventory
+	- furnace
     - better caves
     - obstacle detection for physics + game mode
     - hide faces not oriented towards us // face culling .. only on mac, gains no fps
