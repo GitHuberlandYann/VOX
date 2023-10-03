@@ -18,6 +18,8 @@ Chunk::~Chunk( void )
 	delete [] _vertices;
 
 	_orientations.clear();
+	_added.clear();
+	_removed.clear();
 	// std::cout << "chunk deleted " << _startX << ", " << _startY << std::endl;
 }
 
@@ -56,9 +58,9 @@ static int air_flower( int value, bool air_leaves )
 
 GLint Chunk::get_empty_faces( int type, int row, int col, int level, bool isNotLeaves )
 {
-	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves) * (1 << 2)
+	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true) * (1 << 2)
 				+ !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves) * (1 << 3)
-				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], isNotLeaves) * (1 << 0)
+				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true) * (1 << 0)
 				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves) * (1 << 1);
 	switch (level) {
 		case 0:
@@ -66,11 +68,11 @@ GLint Chunk::get_empty_faces( int type, int row, int col, int level, bool isNotL
 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves) * (1 << 4);
 			break ;
 		case 255:
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves) * (1 << 5);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true) * (1 << 5);
 			// res += (1 << 4); // don't wan't to hide face from above, because we can be at pos 257 and looking at block 255
 			break ;
 		default:
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves) * (1 << 5);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true) * (1 << 5);
 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves) * (1 << 4);
 	}
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented block
@@ -301,6 +303,15 @@ void Chunk::generate_blocks( void )
 				// if (row == 9 && col == 9 && level == surface_level + 5) {
 				// 	_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = 1;
 				// }
+				std::map<int, int>::iterator search = _added.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
+				if (search != _added.end()) {
+					_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = search->second;
+				} else {
+					search = _removed.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
+					if (search != _removed.end()) {
+						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR;
+					}
+				}
 			}
 		}
 	}
@@ -311,7 +322,10 @@ void Chunk::generate_blocks( void )
 		for (int index = 0; index < 61; index++) {
 			const GLint delta[3] = {oak_normal[index][0], oak_normal[index][1], oak_normal[index][2]};
 			if (_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * WORLD_HEIGHT + (*it).z + delta[2]] == blocks::AIR) {
-				_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * WORLD_HEIGHT + (*it).z + delta[2]] = blocks::OAK_LEAVES;
+				std::map<int, int>::iterator search = _removed.find((((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * WORLD_HEIGHT + (*it).z + delta[2]);
+				if (search == _removed.end()) {
+					_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * WORLD_HEIGHT + (*it).z + delta[2]] = blocks::OAK_LEAVES;
+				}
 			}
 		}
 	}
@@ -406,8 +420,6 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 		return ;
 	}
 	if (!pos.x) {
-		// std::cout << std::endl << _startX << ", " << _startY << ": at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-		// std::cout << "pos.x is 0!! gogo neighbour" << std::endl;
 		for (auto& c : _vis_chunks) {
 			if (c->isInChunk(_startX - CHUNK_SIZE, _startY)) {
 				c->update_border(CHUNK_SIZE + 1, pos.y + 1, pos.z, adding);
@@ -415,8 +427,6 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 			}
 		}
 	} else if (pos.x == CHUNK_SIZE - 1) {
-		// std::cout << std::endl << _startX << ", " << _startY << ": at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-		// std::cout << "pos.x is 15 gogo neighbour" << std::endl;
 		for (auto& c : _vis_chunks) {
 			if (c->isInChunk(_startX + CHUNK_SIZE, _startY)) {
 				c->update_border(0, pos.y + 1, pos.z, adding);
@@ -425,8 +435,6 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 		}
 	}
 	if (!pos.y) {
-		// std::cout << std::endl << _startX << ", " << _startY << ": at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-		// std::cout << "pos.y is 0!! gogo neighbour" << std::endl;
 		for (auto& c : _vis_chunks) {
 			if (c->isInChunk(_startX, _startY - CHUNK_SIZE)) {
 				c->update_border(pos.x + 1, CHUNK_SIZE + 1, pos.z, adding);
@@ -434,8 +442,6 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 			}
 		}
 	} else if (pos.y == CHUNK_SIZE - 1) {
-		// std::cout << std::endl << _startX << ", " << _startY << ": at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-		// std::cout << "pos.y is 15 gogo neighbour" << std::endl;
 		for (auto& c : _vis_chunks) {
 			if (c->isInChunk(_startX, _startY + CHUNK_SIZE)) {
 				c->update_border(pos.x + 1, 0, pos.z, adding);
@@ -450,6 +456,11 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
+	std::map<int, int>::iterator search = _added.find(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
+	if (search != _added.end()) {
+		_added.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
+	}
+	_removed[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = 1;
 	mtx_inventory.lock();
 	if (inventory) {
 		inventory->addBlock(value + (value < 0) * blocks::NOTVISIBLE);
@@ -526,6 +537,11 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
 		pos.z = sand_fall_endz(pos);
 	}
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
+	std::map<int, int>::iterator search = _removed.find(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
+	if (search != _removed.end()) {
+		_removed.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
+	}
+	_added[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
 	_mtx.lock();
 	_displayed_blocks++;
 	_mtx.unlock();
@@ -620,6 +636,20 @@ GLint Chunk::getStartY( void )
 	return (_startY);
 }
 
+void Chunk::setBackup( std::map<std::pair<int, int>, s_backup> *backups )
+{
+	if (_orientations.size() || _added.size() || _removed.size()) {
+		(*backups)[std::pair<int, int>(_startX, _startY)] = {_orientations, _added, _removed};
+	}
+}
+
+void Chunk::restoreBackup( s_backup backup )
+{
+	_orientations = backup.orientations;
+	_added = backup.added;
+	_removed = backup.removed;
+}
+
 static void thread_setup_chunk( std::list<Chunk *> *chunks, Chunk *current )
 {
 	current->generation();
@@ -688,9 +718,6 @@ void Chunk::hide( void )
 
 bool Chunk::shouldDelete( glm::vec3 pos, GLfloat dist )
 {
-	if (_isVisible) {
-		return (false);
-	}
 	if (dist < CHUNK_SIZE * 5) {
 		dist = CHUNK_SIZE * 5;
 	}
@@ -901,4 +928,17 @@ void Chunk::drawArray( GLint & counter, GLint &block_counter )
 	glDrawArrays(GL_POINTS, 0, _displayed_blocks);
 	block_counter += _displayed_blocks;
 	_mtx.unlock();
+}
+
+std::string Chunk::getAddsRmsString( void )
+{
+	std::string res = "\nADDED\t> " + std::to_string(_added.size()) + "\n";
+	for (auto& add: _added) {
+		res += "\t\t\t" + std::to_string(add.first) + ": " + std::to_string(add.second) + '\n';
+	}
+	res += "\nRMED\t> " + std::to_string(_removed.size()) + "\n";
+	for (auto& rm: _removed) {
+		res += "\t\t\t" + std::to_string(rm.first) + '\n';
+	}
+	return (res);
 }

@@ -41,6 +41,12 @@ const GLint oak_normal[61][3] = {
 	{0, 1, 1}
 };
 
+struct s_backup {
+	std::map<int, int> orientations;
+	std::map<int, int> added;
+	std::map<int, int> removed;
+};
+
 class Chunk
 {
     private:
@@ -54,6 +60,8 @@ class Chunk
 		std::list<Chunk *> _vis_chunks;
 		Camera *_camera;
 		std::map<int,int> _orientations;
+		std::map<int,int> _added;
+		std::map<int,int> _removed;
 		std::thread _thread;
 		std::mutex _mtx;
 
@@ -81,6 +89,8 @@ class Chunk
 
 		GLint getStartX( void );
 		GLint getStartY( void );
+		void setBackup( std::map<std::pair<int, int>, s_backup> *backups );
+		void restoreBackup( s_backup backup);
 		void generation( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( std::list<Chunk *> *chunks );
@@ -96,6 +106,7 @@ class Chunk
 		bool collision( glm::vec3 & pos, Camera &cam );
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &block_counter );
+		std::string getAddsRmsString( void );
 };
 
 #endif

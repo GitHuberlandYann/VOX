@@ -4,6 +4,10 @@ Chunk *current_chunk_ptr = NULL;
 Chunk *prev_chunk_ptr = NULL;
 Chunk *chunk_hit = NULL;
 
+Chunk *OpenGL_Manager::get_current_chunk_ptr( void )
+{
+	return (current_chunk_ptr);
+}
 /*
 void OpenGL_Manager::update_cam_matrix( void )
 {
@@ -178,7 +182,7 @@ void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread
 	_visible_chunks = newvis_chunks;
 }
 
-static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> *perimeter_chunks,
+static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> *perimeter_chunks, std::map<std::pair<int, int>, s_backup> *backups,
 								 Camera *camera, GLint render_dist, int posX, int posY )
 {
 	std::list<Chunk *> newperi_chunks;
@@ -193,6 +197,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
 			mtx.unlock();
+			(*tmp)->setBackup(backups);
 			delete *tmp;
 			mtx.lock();
 			chunks->erase(tmp);
@@ -229,6 +234,11 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 			if (!isInChunk) {
 				//create new chunk where player stands
 				Chunk *newChunk = new Chunk(camera, posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE);
+				std::map<std::pair<int, int>, s_backup>::iterator search = backups->find(std::pair<int, int>(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE));
+				if (search != backups->end()) {
+					newChunk->restoreBackup(search->second);
+					backups->erase(search);
+				}
 				newChunk->generate_chunk(chunks);
 			}
 		}
@@ -250,7 +260,7 @@ void OpenGL_Manager::chunk_update( void )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	_thread = std::thread(thread_chunk_update, &_chunks, &_perimeter_chunks, _camera, _render_distance, posX, posY);
+	_thread = std::thread(thread_chunk_update, &_chunks, &_perimeter_chunks, &_backups, _camera, _render_distance, posX, posY);
 }
 
 void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
@@ -375,7 +385,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		if (_thread.joinable()) {
 			_thread.join();
 		}
-		_thread = std::thread(thread_chunk_update, &_chunks, &_perimeter_chunks, _camera, _render_distance, _current_chunk.x, _current_chunk.y);
+		_thread = std::thread(thread_chunk_update, &_chunks, &_perimeter_chunks, &_backups, _camera, _render_distance, _current_chunk.x, _current_chunk.y);
 		// update_visible_chunks();
 		// std::cout << "render distance set to " << _render_distance << std::endl;
 	} else if (!key_render_dist) {

@@ -29,7 +29,6 @@ TODOS:
 	- water if air && level > surface_level && level < 64
 	- furnace
     - skybox
-    - save block changed
     - main menu
         - play
             - random seed / custom seed
@@ -66,6 +65,7 @@ DONE:
     - better caves
     - obstacle detection for physics + game mode
     - hide faces not oriented towards us // face culling .. only on mac, gains no fps
+    - save block changed into backup map
     - player gravity
     - better fall damage
     - placing sand = gravity

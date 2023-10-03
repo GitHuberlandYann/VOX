@@ -54,6 +54,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
 	_chunks.clear();
 	mtx.unlock();
+	_backups.clear();
 
 	check_glstate("OpengGL_Manager destructed");
 }
@@ -229,6 +230,7 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 void OpenGL_Manager::main_loop( void )
 {
 	// if (!IS_LINUX) { // face culling seems to only work on mac, but breaks flowers and gains 0 fps anyway ..
+	// 	glEnable(GL_DEPTH_TEST);
 	// 	glEnable(GL_CULL_FACE);
 	// 	glCullFace(GL_FRONT);
 	// 	// glFrontFace(GL_CW);
@@ -275,6 +277,10 @@ void OpenGL_Manager::main_loop( void )
 			lastTime += 1.0;
 		}
 
+		glEnable(GL_DEPTH_TEST);
+		glUseProgram(_shaderProgram);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		if (!_paused) {
 			if (++backFromMenu != 1) {
 				user_inputs(currentTime - previousFrame, ++backFromMenu > 3);
@@ -282,10 +288,6 @@ void OpenGL_Manager::main_loop( void )
 			chunk_update();
 		}
 		previousFrame = currentTime;
-		
-		glEnable(GL_DEPTH_TEST);
-		glUseProgram(_shaderProgram);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		GLint newVaoCounter = 0, blockCounter = 0;
 		std::list<Chunk *>::iterator it = _visible_chunks.begin();
@@ -293,7 +295,9 @@ void OpenGL_Manager::main_loop( void )
 			(*it)->drawArray(newVaoCounter, blockCounter);
 		}
 
+		// glClear(GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
+		// Chunk *chunk_ptr = get_current_chunk_ptr();
 		mtx.lock();
 		mtx_perimeter.lock();
 		std::string str = (_debug_mode)
@@ -303,11 +307,13 @@ void OpenGL_Manager::main_loop( void )
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
 				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "")
 				+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
+				// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
 				+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size())
 				+ '/' + std::to_string(_perimeter_chunks.size()) + '/' + std::to_string(_chunks.size())
 				+ "\nDisplayed blocks\t> " + std::to_string(blockCounter)
 				+ "\n\nRender Distance\t> " + std::to_string(_render_distance)
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
+				+ "\nBackups\t> " + std::to_string(_backups.size())
 				+ _inventory->getSlotString()
 				// + _inventory->getDuraString()
 				// + _inventory->getInventoryString()

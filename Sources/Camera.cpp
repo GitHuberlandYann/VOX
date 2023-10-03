@@ -194,7 +194,7 @@ bool Camera::getModif( void )
 void Camera::processPitch( GLint offset )
 {
 	_pitch += offset * _deltaTime * _movement_speed * 1.5f;
-	if (_pitch > 85.0f || _pitch < -85.0f) {
+	if (_pitch > 89.0f || _pitch < -89.0f) {
 		_pitch -= offset * _deltaTime * _movement_speed * 1.5f;
 	}
 
@@ -230,7 +230,7 @@ void Camera::processMouseMovement( float x_offset, float y_offset )
 	} else if (_yaw < -180.0f) {
 		_yaw += 360.0f;
 	}
-	if (_pitch > 85.0f || _pitch < -85.0f) {
+	if (_pitch > 89.0f || _pitch < -89.0f) {
 		_pitch -= y_offset;
 	}
 

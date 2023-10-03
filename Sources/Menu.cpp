@@ -80,7 +80,7 @@ int Menu::loading_screen( GLint render_dist )
 		mtx.unlock();
 	}
 
-	GLint goal = 1 + (2 * render_dist) * (2 * render_dist);
+	GLint goal = (1 + 2 * render_dist) * (1 + 2 * render_dist);
 	// std::cout << "CURRENT IS " << current_size << ", GOAL IS " << goal << std::endl;
 	if (current_size >= goal) {
 		_state = PAUSE_MENU;
