@@ -3,7 +3,7 @@
 Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _selection(0), _vaoSet(false),
 	_esc_released(false), _e_released(false), _left_released(false), _right_released(false),
 	_key_1(0), _key_2(0), _key_3(0), _key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
-	_inventory(inventory), _text(text)
+	_inventory(inventory), _text(text), _furnace(NULL)
 {
 	_selected_block = glm::ivec2(blocks::AIR, 0);
 }
@@ -28,6 +28,7 @@ void Menu::reset_values( void )
 	_inventory.restoreiCraft();
 	_inventory.restoreCraft();
 	_selected_block = glm::ivec2(blocks::AIR, 0);
+	_furnace = NULL;
 }
 
 int Menu::main_menu( void )
@@ -149,7 +150,7 @@ int Menu::pause_menu( void )
 
 int Menu::ingame_inputs( void )
 {
-	int craft = _state + 1 - INVENTORY_MENU; // craft = 1: inventory, 2: crafting
+	int craft = _state + 1 - INVENTORY_MENU; // craft = 1: inventory, 2: crafting, 3: furnace
 	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		reset_values();
 		return (1);
@@ -163,15 +164,15 @@ int Menu::ingame_inputs( void )
 		_e_released = true;
 	}
 	if (_selection && glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
-		_inventory.removeBlockAt(_selection - 1);
+		_inventory.removeBlockAt(_selection - 1, _furnace);
 	}
 	if (_left_released && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		_left_released = false;
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
-				_selected_block = _inventory.pickBlockAt(craft, _selection - 1);
+				_selected_block = _inventory.pickBlockAt(craft, _selection - 1, _furnace);
 			} else {
-				_selected_block = _inventory.putBlockAt(craft, _selection - 1, _selected_block);
+				_selected_block = _inventory.putBlockAt(craft, _selection - 1, _selected_block, _furnace);
 			}
 		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
@@ -181,9 +182,9 @@ int Menu::ingame_inputs( void )
 		_right_released = false;
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
-				_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1);
+				_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1, _furnace);
 			} else {
-				_selected_block = _inventory.putOneBlockAt(craft, _selection - 1, _selected_block);
+				_selected_block = _inventory.putOneBlockAt(craft, _selection - 1, _selected_block, _furnace);
 			}
 		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
@@ -266,7 +267,7 @@ int Menu::ingame_menu( void )
 	for (int index = 0; index < 27; index++) {
 		display_backpack_value(index);
 	}
-	for (int index = 0; index < 4 + 5 * (_state == CRAFTING_MENU) - 2 * (_state == FURNACE_MENU); index++) {
+	for (int index = 0; index < 4 + 5 * (_state == CRAFTING_MENU) - 1 * (_state == FURNACE_MENU); index++) {
 		switch (_state) {
 			case INVENTORY_MENU:
 				display_icraft_value(index);
@@ -274,10 +275,10 @@ int Menu::ingame_menu( void )
 			case CRAFTING_MENU:
 				display_craft_value(index);
 				break ;
-			case FURNACE_MENU:
-				// display_furnace_value(index);
-				break ;
 		}
+	}
+	if (_state == FURNACE_MENU) {
+		display_furnace_value();
 	}
 	mtx_inventory.lock();
 	int value = _inventory.getCrafted().y;
@@ -360,7 +361,7 @@ void Menu::setup_array_buffer_load( int completion )
 			vertices[101 * 9 + 3] = stepSize;
 			vertices[101 * 9 + 4] = stepSize;
 			vertices[101 * 9 + 5] = 240; // break frame
-			vertices[101 * 9 + 6] = 16 + 16 * (completion % 10);
+			vertices[101 * 9 + 6] = 32 * ((completion % 10) != 0) + 16 * (completion % 10);
 			vertices[101 * 9 + 7] = 16;
 			vertices[101 * 9 + 8] = 16;
 		}
@@ -443,6 +444,25 @@ void Menu::display_icraft_value( int index )
 	int mult = 3, value = _inventory.getiCraftBlock(index).y;
 	if (value > 1) {
 		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 59 * mult + 18 * mult * (index / 2), 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
+}
+
+void Menu::display_furnace_value( void )
+{
+	if (!_furnace) {
+		return ;
+	}
+	int mult = 3, value = _furnace->getComposant().y;
+	if (value > 1) {
+		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 8 - 2 * mult * (value > 9),  WIN_HEIGHT / 2 - 61 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
+	value = _furnace->getFuel().y;
+	if (value > 1) {
+		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 8 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 25 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+	}
+	value = _furnace->getProduction().y;
+	if (value > 1) {
+		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 111 * mult + mult * 8 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 43 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
 	}
 }
 
@@ -733,11 +753,80 @@ void Menu::setup_array_buffer_crafting( void )
 	delete [] vertices;
 }
 
+void Menu::add_furnace_value( GLint *vertices, int mult, int & vindex )
+{
+	int value = _furnace->getComposant().x;
+	if (value != blocks::AIR) {
+		vertices[vindex + 0] = 0;
+		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 51 * mult;
+		vertices[vindex + 2] = WIN_HEIGHT / 2 - 66 * mult;
+		vertices[vindex + 3] = 16 * mult;
+		vertices[vindex + 4] = 16 * mult;
+		vertices[vindex + 5] = blockAtlasX(value);
+		vertices[vindex + 6] = blockAtlasY(value);
+		vertices[vindex + 7] = 16;
+		vertices[vindex + 8] = 16;
+		vindex += 9;
+	}
+	float progress = _furnace->getFuelTime();
+	if (progress) {
+		vertices[vindex + 0] = 1;
+		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult;
+		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult + mult;
+		vertices[vindex + 3] = 14 * mult;
+		vertices[vindex + 4] = 14 * mult;
+		vertices[vindex + 5] = 24;
+		vertices[vindex + 6] = 47;
+		vertices[vindex + 7] = 14;
+		vertices[vindex + 8] = 14;
+		vindex += 9;
+	}
+	progress = _furnace->getComposantTime();
+	if (progress) {
+		vertices[vindex + 0] = 1;
+		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 74 * mult;
+		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult;
+		vertices[vindex + 3] = 24 * mult;
+		vertices[vindex + 4] = 17 * mult;
+		vertices[vindex + 5] = 38;
+		vertices[vindex + 6] = 47;
+		vertices[vindex + 7] = 24;
+		vertices[vindex + 8] = 17;
+		vindex += 9;
+	}
+	value = _furnace->getFuel().x;
+	if (value != blocks::AIR) {
+		vertices[vindex + 0] = 0;
+		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 51 * mult;
+		vertices[vindex + 2] = WIN_HEIGHT / 2 - 30 * mult;
+		vertices[vindex + 3] = 16 * mult;
+		vertices[vindex + 4] = 16 * mult;
+		vertices[vindex + 5] = blockAtlasX(value);
+		vertices[vindex + 6] = blockAtlasY(value);
+		vertices[vindex + 7] = 16;
+		vertices[vindex + 8] = 16;
+		vindex += 9;
+	}
+	value = _furnace->getProduction().x;
+	if (value != blocks::AIR) {
+		vertices[vindex + 0] = 0;
+		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 111 * mult;
+		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult;
+		vertices[vindex + 3] = 16 * mult;
+		vertices[vindex + 4] = 16 * mult;
+		vertices[vindex + 5] = blockAtlasX(value);
+		vertices[vindex + 6] = blockAtlasY(value);
+		vertices[vindex + 7] = 16;
+		vertices[vindex + 8] = 16;
+		vindex += 9;
+	}
+}
+
 void Menu::setup_array_buffer_furnace( void )
 {
-	mtx_inventory.lock();
-	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
-	mtx_inventory.unlock();
+	int furnaceCount = (_furnace) ? _furnace->count() : 0;
+	// std::cout << "FURNACE count is " << furnaceCount << std::endl;
+	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + furnaceCount + (_selected_block.x != blocks::AIR);
 	int mult = 3;
     GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
 
@@ -758,7 +847,9 @@ void Menu::setup_array_buffer_furnace( void )
 	for (int index = 0; index < 27; index++) {
 		add_backpack_value(vertices, mult, index, vindex);
 	}
-	add_crafted_value(vertices, mult, vindex);
+	if (furnaceCount) {
+		add_furnace_value(vertices, mult, vindex);
+	}
 
 	if (_selected_block.x != blocks::AIR) {
 		double mouseX, mouseY;
@@ -865,6 +956,19 @@ void Menu::processMouseMovement( float posX, float posY )
 				_selection = 41;
 				return ;
 			}
+		} else if (_state == FURNACE_MENU) {
+			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + 51 * mult, WIN_HEIGHT / 2 - 66 * mult, 16 * mult, 16 * mult)) {
+				_selection = 51;
+				return ;
+			}
+			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + 51 * mult, WIN_HEIGHT / 2 - 30 * mult, 16 * mult, 16 * mult)) {
+				_selection = 52;
+				return ;
+			}
+			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + 111 * mult, WIN_HEIGHT / 2 - 48 * mult, 16 * mult, 16 * mult)) {
+				_selection = 41;
+				return ;
+			}
 		}
 		_selection = 0;
 	}
@@ -885,6 +989,11 @@ void Menu::setChunks( std::list<Chunk *> chunks )
 	if (_state == LOAD_MENU) {
 		_chunks = chunks;
 	}
+}
+
+void Menu::setFurnaceInstance( FurnaceInstance *furnace )
+{
+	_furnace = furnace;
 }
 
 void Menu::setState( int state )
@@ -929,4 +1038,12 @@ int Menu::run( GLint render_dist )
 			return (1);
 	}
 	return (0);
+}
+
+std::string Menu::getFurnaceString( void )
+{
+	if (!_furnace) {
+		return ("");
+	}
+	return (_furnace->getInfoString());
 }

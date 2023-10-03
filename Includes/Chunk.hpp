@@ -45,6 +45,7 @@ struct s_backup {
 	std::map<int, int> orientations;
 	std::map<int, int> added;
 	std::map<int, int> removed;
+	std::map<int, FurnaceInstance> furnaces;
 };
 
 class Chunk
@@ -62,6 +63,7 @@ class Chunk
 		std::map<int,int> _orientations;
 		std::map<int,int> _added;
 		std::map<int,int> _removed;
+		std::map<int, FurnaceInstance> _furnaces;
 		std::thread _thread;
 		std::mutex _mtx;
 
@@ -91,21 +93,26 @@ class Chunk
 		GLint getStartY( void );
 		void setBackup( std::map<std::pair<int, int>, s_backup> *backups );
 		void restoreBackup( s_backup backup);
+		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
 		void generation( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( std::list<Chunk *> *chunks );
+	
 		bool inPerimeter( int posX, int posY, GLint render_dist );
         void setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist );
 		void hide( void );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
+
 		int isHit( glm::ivec3 pos );
 		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding, std::list<Chunk *> vis_chunks );
 		void updateBreak( glm::ivec4 block_hit, int frame );
 		void update_border(int posX, int posY, int level, bool adding);
 		bool collision( glm::vec3 & pos, Camera &cam );
+
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &block_counter );
+		void updateFurnaces( double currentTime );
 		std::string getAddsRmsString( void );
 };
 

@@ -456,11 +456,11 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
-	std::map<int, int>::iterator search = _added.find(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
-	if (search != _added.end()) {
-		_added.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
-	}
+	_added.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
 	_removed[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = 1;
+	if (value == blocks::FURNACE) {
+		_furnaces.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z); // TODO drop furnace's items/ put them in inventory
+	}
 	mtx_inventory.lock();
 	if (inventory) {
 		inventory->addBlock(value + (value < 0) * blocks::NOTVISIBLE);
@@ -537,11 +537,11 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
 		pos.z = sand_fall_endz(pos);
 	}
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
-	std::map<int, int>::iterator search = _removed.find(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
-	if (search != _removed.end()) {
-		_removed.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
-	}
+	_removed.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
 	_added[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
+	if (type == blocks::FURNACE) {
+		_furnaces[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = FurnaceInstance();
+	}
 	_mtx.lock();
 	_displayed_blocks++;
 	_mtx.unlock();
@@ -639,7 +639,7 @@ GLint Chunk::getStartY( void )
 void Chunk::setBackup( std::map<std::pair<int, int>, s_backup> *backups )
 {
 	if (_orientations.size() || _added.size() || _removed.size()) {
-		(*backups)[std::pair<int, int>(_startX, _startY)] = {_orientations, _added, _removed};
+		(*backups)[std::pair<int, int>(_startX, _startY)] = {_orientations, _added, _removed, _furnaces};
 	}
 }
 
@@ -648,6 +648,22 @@ void Chunk::restoreBackup( s_backup backup )
 	_orientations = backup.orientations;
 	_added = backup.added;
 	_removed = backup.removed;
+	_furnaces = backup.furnaces;
+}
+
+FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
+{
+	int key = ((pos.x - _startX + 1) * (CHUNK_SIZE + 2) + pos.y - _startY + 1) * WORLD_HEIGHT + pos.z;
+	std::map<int, FurnaceInstance>::iterator search = _furnaces.find(key);
+	if (search != _furnaces.end()) {
+		return (&search->second);
+	}
+	std::cout << "failed to find furnace at " << key << std::endl;
+	std::cout << "furnaces values are " << std::endl;
+	for (auto& fur: _furnaces) {
+		std::cout << fur.first << std::endl;
+	}
+	return (NULL);
 }
 
 static void thread_setup_chunk( std::list<Chunk *> *chunks, Chunk *current )
@@ -928,6 +944,13 @@ void Chunk::drawArray( GLint & counter, GLint &block_counter )
 	glDrawArrays(GL_POINTS, 0, _displayed_blocks);
 	block_counter += _displayed_blocks;
 	_mtx.unlock();
+}
+
+void Chunk::updateFurnaces( double currentTime )
+{
+	for (auto& fur: _furnaces) {
+		fur.second.updateTimes(currentTime);
+	}
 }
 
 std::string Chunk::getAddsRmsString( void )

@@ -3,10 +3,10 @@
 Inventory::Inventory( void ) : _slot(0), _saved_durability(0), _modif(false)
 {
     for (int index = 0; index < 9; index++) {
-        _content[index] = glm::ivec2(blocks::AIR, 0);
+        _content[index] = glm::ivec2(blocks::COAL * (index == 0), 8 * (index == 0));
     }
     for (int index = 0; index < 27; index++) {
-        _backpack[index] = glm::ivec2(blocks::OAK_PLANKS * (index == 0) + blocks::COBBLESTONE * (index == 1), 32 * (index <= 1));
+        _backpack[index] = glm::ivec2(blocks::OAK_LOG * (index == 0) + blocks::IRON_INGOT * (index == 1), 32 * (index <= 1));
     }
     for (int index = 0; index < 4; index++) {
         _icraft[index] = glm::ivec2(blocks::AIR, 0);
@@ -37,6 +37,32 @@ int Inventory::getrmDura( int value )
 	}
 	std::cout << "GETRMDURA not found on emplacement " << value << std::endl;
 	return (0);
+}
+
+glm::ivec2 *Inventory::getBlockPtr( int value, int &craft_place, FurnaceInstance *furnace )
+{
+	if (value < 0 || value > 51) {
+		return (NULL);
+	}
+	glm::ivec2 *res = NULL;
+	if (value < 9) {
+		_modif = true;
+		res = &_content[value];
+	} else if (value < 36) {
+		res = &_backpack[value - 9];
+	} else if (value < 40) {
+		craft_place = 1;
+		res = &_icraft[value - 36];
+	} else if (value < 50) {
+		craft_place = 2;
+		res = &_craft[value - 41];
+	} else if (value < 52) {
+		if (!furnace) {
+			return (NULL);
+		}
+		res = furnace->pickCompoFuel(value == 51);
+	}
+	return (res);
 }
 
 void Inventory::changeCrafted( int craft )
@@ -307,28 +333,22 @@ int Inventory::countDura( void )
 	return (cnt);
 }
 
-glm::ivec2 Inventory::pickBlockAt( int craft, int value )
+glm::ivec2 Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace )
 {
 	// std::cout << "pickBlockAt " << value << std::endl;
 	if (value == 40) {
+		if (furnace) {
+			return (furnace->pickProduction());
+		}
 		return (pickCrafted(craft, glm::ivec2 (blocks::AIR, 0)));
 	}
-	if (value < 0 || value > 49) {
+	int craft_place = 0;
+	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace);
+	if (!bat) {
 		return (glm::ivec2(blocks::AIR, 0));
 	}
-	glm::ivec2 *bat;
-	int craft_place = 0;
-	if (value < 9) {
-		_modif = true;
-		bat = &_content[value];
-	} else if (value < 36) {
-		bat = &_backpack[value - 9];
-	} else if (value < 40) {
-		craft_place = 1;
-		bat = &_icraft[value - 36];
-	} else {
-		craft_place = 2;
-		bat = &_craft[value - 41];
+	if (value < 0 || value > 51) {
+		return (glm::ivec2(blocks::AIR, 0));
 	}
 	if (bat->x != blocks::AIR) {
 		glm::ivec2 res = *bat;
@@ -343,28 +363,18 @@ glm::ivec2 Inventory::pickBlockAt( int craft, int value )
 	return (glm::ivec2(blocks::AIR, 0));
 }
 
-glm::ivec2 Inventory::pickHalfBlockAt( int craft, int value )
+glm::ivec2 Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace )
 {
 	if (value == 40) {
-		pickAllCrafted(craft);
+		if (!furnace) { // for now does nothing if in furnace
+			pickAllCrafted(craft);
+		}
 		return (glm::ivec2(blocks::AIR, 0));
 	}
-	if (value < 0 || value > 49) {
-		return (glm::ivec2(blocks::AIR, 0));
-	}
-	glm::ivec2 *bat;
 	int craft_place = 0;
-	if (value < 9) {
-		_modif = true;
-		bat = &_content[value];
-	} else if (value < 36) {
-		bat = &_backpack[value - 9];
-	} else if (value < 40) {
-		craft_place = 1;
-		bat = &_icraft[value - 36];
-	} else {
-		craft_place = 2;
-		bat = &_craft[value - 41];
+	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace);
+	if (!bat) {
+		return (glm::ivec2(blocks::AIR, 0));
 	}
 	if (bat->x != blocks::AIR) {
 		glm::ivec2 res = *bat;
@@ -383,27 +393,18 @@ glm::ivec2 Inventory::pickHalfBlockAt( int craft, int value )
 	return (glm::ivec2(blocks::AIR, 0));
 }
 
-glm::ivec2 Inventory::putBlockAt( int craft, int value, glm::ivec2 block )
+glm::ivec2 Inventory::putBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace )
 {
 	if (value == 40) {
+		if (furnace) {
+			return (block);
+		}
 		return (pickCrafted(craft, block));
 	}
-	if (value < 0 || value > 49) {
-		return (block);
-	}
-	glm::ivec2 *bat;
 	int craft_place = 0;
-	if (value < 9) {
-		_modif = true;
-		bat = &_content[value];
-	} else if (value < 36) {
-		bat = &_backpack[value - 9];
-	} else if (value < 40) {
-		craft_place = 1;
-		bat = &_icraft[value - 36];
-	} else {
-		craft_place = 2;
-		bat = &_craft[value - 41];
+	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace);
+	if (!bat) {
+		return (block);
 	}
 	glm::ivec2 res = *bat;
 	if (res.x == block.x && s_blocks[block.x].stackable) {
@@ -437,28 +438,18 @@ glm::ivec2 Inventory::putBlockAt( int craft, int value, glm::ivec2 block )
 	return (res);
 }
 
-glm::ivec2 Inventory::putOneBlockAt( int craft,  int value, glm::ivec2 block )
+glm::ivec2 Inventory::putOneBlockAt( int craft,  int value, glm::ivec2 block, FurnaceInstance *furnace )
 {
 	if (value == 40) {
-		pickAllCrafted(craft);
+		if (!furnace) {
+			pickAllCrafted(craft);
+		}
 		return (block);
 	}
-	if (value < 0 || value > 49) {
-		return (block);
-	}
-	glm::ivec2 *bat;
 	int craft_place = 0;
-	if (value < 9) {
-		_modif = true;
-		bat = &_content[value];
-	} else if (value < 36) {
-		bat = &_backpack[value - 9];
-	} else if (value < 40) {
-		craft_place = 1;
-		bat = &_icraft[value - 36];
-	} else {
-		craft_place = 2;
-		bat = &_craft[value - 41];
+	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace);
+	if (!bat) {
+		return (block);
 	}
 	if (bat->y == 64) {
 		return (block);
@@ -506,7 +497,9 @@ void Inventory::restoreiCraft( void )
 {
 	for (int index = 0; index < 4; index++) {
 		if (_icraft[index].x != blocks::AIR) {
-			_saved_durability = getrmDura(index + 36);
+			if (s_blocks[_craft[index].x].durability) {
+				_saved_durability = getrmDura(index + 36);
+			}
 			restoreBlock(_icraft[index]);
 			_icraft[index] = glm::ivec2(blocks::AIR, 0);
 		}
@@ -518,7 +511,9 @@ void Inventory::restoreCraft( void )
 {
 	for (int index = 0; index < 9; index++) {
 		if (_craft[index].x != blocks::AIR) {
-			_saved_durability = getrmDura(index + 41);
+			if (s_blocks[_craft[index].x].durability) {
+				_saved_durability = getrmDura(index + 41);
+			}
 			restoreBlock(_craft[index]);
 			_craft[index] = glm::ivec2(blocks::AIR, 0);
 		}
@@ -551,11 +546,8 @@ void Inventory::addBlock( int type )
 	restoreBlock(block, true);
 }
 
-void Inventory::removeBlockAt( int value )
+void Inventory::removeBlockAt( int value, FurnaceInstance *furnace )
 {
-	if (value < 0 || value > 36) {
-		return ;
-	}
 	if (value < 9) {
 		if (s_blocks[_content[value].x].durability) {
 			getrmDura(value);
@@ -564,13 +556,17 @@ void Inventory::removeBlockAt( int value )
 			_content[value] = glm::ivec2(blocks::AIR, 0);
 			_modif = true;
 		}
-	} else {
+	} else if (value < 37) {
 		if (s_blocks[_backpack[value].x].durability) {
 			getrmDura(value);
 		}
 		if (_backpack[value - 9].x != blocks::AIR && --_backpack[value - 9].y <= 0) {
 			_backpack[value - 9] = glm::ivec2(blocks::AIR, 0);
 		}
+	} else if (value == 50 && furnace) {
+		furnace->removeComposant();
+	} else if (value == 51 && furnace) {
+		furnace->removeFuel();
 	}
 }
 
@@ -602,6 +598,7 @@ void Inventory::swapCells( int slot, int location )
 	if (location < 0 || location > 49) {
 		return ;
 	}
+	_modif = true;
 	glm::ivec2 *bat;
 	if (location < 9) {
 		bat = &_content[location];
@@ -640,7 +637,6 @@ void Inventory::swapCells( int slot, int location )
 	if (save_dura1) {
 		_durabilities.push_back(glm::ivec3(slot, save_dura1, s_blocks[_content[slot].x].durability));
 	}
-	_modif = true;
 }
 
 void Inventory::decrementDurabitilty( void )

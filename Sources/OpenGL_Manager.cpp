@@ -293,6 +293,7 @@ void OpenGL_Manager::main_loop( void )
 		std::list<Chunk *>::iterator it = _visible_chunks.begin();
 		for (; it != _visible_chunks.end(); it++) {
 			(*it)->drawArray(newVaoCounter, blockCounter);
+			(*it)->updateFurnaces(currentTime);
 		}
 
 		// glClear(GL_DEPTH_BUFFER_BIT);
@@ -315,6 +316,7 @@ void OpenGL_Manager::main_loop( void )
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				+ "\nBackups\t> " + std::to_string(_backups.size())
 				+ _inventory->getSlotString()
+				+ _menu->getFurnaceString()
 				// + _inventory->getDuraString()
 				// + _inventory->getInventoryString()
 			: "";

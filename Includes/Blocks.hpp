@@ -43,6 +43,7 @@ enum blocks {
 	IRON_PICKAXE,
 	DIAMOND_PICKAXE,
 	COAL = 96,
+	CHARCOAL,
 	IRON_INGOT,
 	DIAMOND,
 	NOTVISIBLE = 1000
@@ -52,6 +53,10 @@ struct Block {
 	public:
 		std::string name = "DEFAULT";
 		bool stackable = true;
+		bool isFuel = false;
+		float fuel_time = 0;
+		bool isComposant = false;
+		int getProduction = blocks::AIR;
 		bool byHand = false;
 		int needed_tool = blocks::NOTVISIBLE;
 		int needed_material_level = 0;
@@ -77,7 +82,7 @@ struct Block {
 			if (byHand) {
 				return (true);
 			}
-			return (tool >= needed_tool + needed_material_level && tool < needed_tool + 4 - needed_material_level);
+			return (tool >= needed_tool + needed_material_level && tool < needed_tool + 4);
 		}
 };
 
@@ -113,6 +118,10 @@ struct OakLog : Block {
 	public:
 		OakLog() {
 			name = "OAK_LOG";
+			isFuel = true;
+			fuel_time = 15;
+			isComposant = true;
+			getProduction = blocks::CHARCOAL;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			break_time_hand = 3.0f;
@@ -136,6 +145,8 @@ struct CraftingTable : Block {
 	public:
 		CraftingTable() {
 			name = "CRAFTING_TABLE";
+			isFuel = true;
+			fuel_time = 15;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			break_time_hand = 3.75f;
@@ -200,6 +211,8 @@ struct Cobblestone : Block {
 	public:
 		Cobblestone() {
 			name = "COBBLESTONE";
+			isComposant = true;
+			getProduction = blocks::STONE;
 			byHand = false;
 			needed_tool = WOODEN_PICKAXE;
 			break_time_hand = 10.0f;
@@ -251,6 +264,8 @@ struct OakPlanks : Block {
 	public:
 		OakPlanks() {
 			name = "OAK_PLANKS";
+			isFuel = true;
+			fuel_time = 15;
 			byHand = true;
 			needed_tool = WOODEN_AXE;
 			break_time_hand = 3.0f;
@@ -265,6 +280,8 @@ struct CoalOre : Block {
 	public:
 		CoalOre() {
 			name = "COAL_ORE";
+			isComposant = true;
+			getProduction = blocks::COAL;
 			byHand = false;
 			needed_tool = WOODEN_PICKAXE;
 			break_time_hand = 15.0f;
@@ -279,6 +296,8 @@ struct IronOre : Block {
 	public:
 		IronOre() {
 			name = "IRON_ORE";
+			isComposant = true;
+			getProduction = blocks::IRON_INGOT;
 			byHand = false;
 			needed_tool = WOODEN_PICKAXE;
 			needed_material_level = 1; // min stone to collect
@@ -294,6 +313,8 @@ struct DiamondOre : Block {
 	public:
 		DiamondOre() {
 			name = "DIAMOND_ORE";
+			isComposant = true;
+			getProduction = blocks::DIAMOND;
 			byHand = false;
 			needed_tool = WOODEN_PICKAXE;
 			needed_material_level = 2; // min iron to collect
@@ -397,6 +418,8 @@ struct Stick : Block {
 	public:
 		Stick() {
 			name = "STICK";
+			isFuel = true;
+			fuel_time = 5;
 		}
 };
 
@@ -405,6 +428,8 @@ struct WoodenShovel : Block {
 		WoodenShovel() {
 			name = "WOODEN_SHOVEL";
 			stackable = false;
+			isFuel = true;
+			fuel_time = 10;
 			durability = 59;
 		}
 };
@@ -441,6 +466,8 @@ struct WoodenAxe : Block {
 		WoodenAxe() {
 			name = "WOODEN_AXE";
 			stackable = false;
+			isFuel = true;
+			fuel_time = 10;
 			durability = 59;
 		}
 };
@@ -477,6 +504,8 @@ struct WoodenPickaxe : Block {
 		WoodenPickaxe() {
 			name = "WOODEN_PICKAXE";
 			stackable = false;
+			isFuel = true;
+			fuel_time = 10;
 			durability = 59;
 		}
 };
@@ -508,12 +537,45 @@ struct DiamondPickaxe : Block {
 		}
 };
 
-const Block s_blocks[96] = {
+struct Coal : Block {
+	public:
+		Coal() {
+			name = "COAL";
+			isFuel = true;
+			fuel_time = 80;
+		}
+};
+
+struct Charcoal : Block {
+	public:
+		Charcoal() {
+			name = "CHARCOAL";
+			isFuel = true;
+			fuel_time = 80;
+		}
+};
+
+struct IronIngot : Block {
+	public:
+		IronIngot() {
+			name = "IRON_INGOT";
+		}
+};
+
+struct Diamond : Block {
+	public:
+		Diamond() {
+			name = "DIAMOND";
+		}
+};
+
+const Block s_blocks[112] = {
 	Air(), GrassBlock(), OakLog(), Cactus(), TBD(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Bedrock(), Dirt(), Stone(), Cobblestone(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), Water(), TBD(),
 	Stick(), WoodenShovel(), StoneShovel(), IronShovel(), DiamondShovel(), WoodenAxe(), StoneAxe(), IronAxe(), DiamondAxe(), WoodenPickaxe(), StonePickaxe(), IronPickaxe(), DiamondPickaxe(), TBD(), TBD(), TBD(),
+	Coal(), Charcoal(), IronIngot(), Diamond(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 };
 #endif

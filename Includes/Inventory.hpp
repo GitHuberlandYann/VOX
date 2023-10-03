@@ -2,7 +2,7 @@
 # define INVENTORY_HPP
 
 # define IRECEIPT_SIZE 7
-# define RECEIPT_SIZE 29
+# define RECEIPT_SIZE 32
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
@@ -40,14 +40,17 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::AIR, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::FURNACE, 1},
 
 	{blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::WOODEN_SHOVEL, 1},
-	{blocks::AIR, blocks::STONE, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_SHOVEL, 1},
 	{blocks::AIR, blocks::COBBLESTONE, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_SHOVEL, 1},
+	{blocks::AIR, blocks::IRON_INGOT, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::IRON_SHOVEL, 1},
+	{blocks::AIR, blocks::DIAMOND, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::DIAMOND_SHOVEL, 1},
 	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::WOODEN_AXE, 1},
-	{blocks::STONE, blocks::STONE, blocks::AIR, blocks::STONE, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_AXE, 1},
 	{blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::AIR, blocks::COBBLESTONE, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_AXE, 1},
+	{blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::AIR, blocks::IRON_INGOT, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::IRON_AXE, 1},
+	{blocks::DIAMOND, blocks::DIAMOND, blocks::AIR, blocks::DIAMOND, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::DIAMOND_AXE, 1},
 	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::WOODEN_PICKAXE, 1},
-	{blocks::STONE, blocks::STONE, blocks::STONE, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_PICKAXE, 1},
 	{blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_PICKAXE, 1},
+	{blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::IRON_PICKAXE, 1},
+	{blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::DIAMOND_PICKAXE, 1},
 };
 
 class Inventory
@@ -63,6 +66,7 @@ class Inventory
 		bool _modif;
 
 		int getrmDura( int value );
+		glm::ivec2 *getBlockPtr( int value, int & craft_place, FurnaceInstance *furnace );
 		void changeCrafted( int craft );
 		void produceCraft( int craft );
 		glm::ivec2 pickCrafted( int craft, glm::ivec2 block );
@@ -87,17 +91,17 @@ class Inventory
 		int countiCraft( void );
 		int countCraft( void );
 		int countDura( void );
-		glm::ivec2 pickBlockAt( int craft, int value );
-		glm::ivec2 pickHalfBlockAt( int craft, int value );
-		glm::ivec2 putBlockAt( int craft, int value, glm::ivec2 block );
-		glm::ivec2 putOneBlockAt( int craft, int value, glm::ivec2 block );
+		glm::ivec2 pickBlockAt( int craft, int value, FurnaceInstance *furnace );
+		glm::ivec2 pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace );
+		glm::ivec2 putBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace );
+		glm::ivec2 putOneBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace );
 		void restoreBlock( glm::ivec2 block, bool swap = false );
 		void restoreiCraft( void );
 		void restoreCraft( void );
 		bool getModif( void );
 		void setModif( bool value );
         void addBlock( int type );
-		void removeBlockAt( int value );
+		void removeBlockAt( int value, FurnaceInstance *furnace );
         void removeBlock( void );
 		void replaceSlot( int type );
 		void swapCells( int slot, int location );

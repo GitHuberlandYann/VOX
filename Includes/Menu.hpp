@@ -23,6 +23,7 @@ class Menu
 		Inventory &_inventory;
 		Text *_text;
 		std::list<Chunk *> _chunks;
+		FurnaceInstance *_furnace;
 
 		void reset_values( void );
 		int main_menu( void );
@@ -36,6 +37,7 @@ class Menu
 		void display_slot_value( int index );
 		void display_backpack_value( int index );
 		void display_icraft_value( int index );
+		void display_furnace_value( void );
 		void display_craft_value( int index );
 		void add_slot_value( GLint *vertices, int mult, int index, int & vindex );
 		void add_backpack_value( GLint *vertices, int mult, int index, int & vindex );
@@ -45,6 +47,7 @@ class Menu
 		void add_crafted_value( GLint *vertices, int mult, int & vindex );
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );
+		void add_furnace_value( GLint *vertices, int mult, int & vindex );
         void setup_array_buffer_furnace( void );
 		void setup_shader( GLint *vertices );
 
@@ -56,9 +59,12 @@ class Menu
 		void setWindow( GLFWwindow *window );
 		void setShaderProgram( GLuint shaderProgram );
 		void setChunks( std::list<Chunk *> chunks );
+		void setFurnaceInstance( FurnaceInstance *furnace );
 		void setState( int state );
 		int getState( void );
 		int run( GLint render_dist );
+
+		std::string getFurnaceString( void );
 };
 
 #endif

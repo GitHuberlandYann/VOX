@@ -33,6 +33,7 @@ extern std::mutex mtx_inventory;
 # include "Camera.hpp"
 # include "PerlinNoise.hpp"
 # include "Blocks.hpp"
+# include "FurnaceInstance.hpp"
 # include "Biomes.hpp"
 # include "Inventory.hpp"
 # include "Chunk.hpp"

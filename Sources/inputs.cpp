@@ -91,6 +91,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_esc_released = false;
 		_e_released = false;
 		_menu->setState(FURNACE_MENU);
+		_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit));
 		return ;
 	}
 	int type = _inventory->getCurrentSlot();

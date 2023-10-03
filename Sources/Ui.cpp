@@ -88,7 +88,7 @@ void UI::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
 	}
 	// adding grey bar first
 	vertices[vindex + 0] = 0;
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * index * mult) + mult * 3 + mult;
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * value.x * mult) + mult * 3 + mult;
 	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 + mult * 3 + 14 * mult;
 	vertices[vindex + 3] = 14 * mult;
 	vertices[vindex + 4] = mult;
@@ -98,7 +98,7 @@ void UI::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
 	vertices[vindex + 8] = 1;
 	vindex += 9;
 	vertices[vindex + 0] = 0; // adding progress bar second
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * index * mult) + mult * 3 + mult;
+	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * value.x * mult) + mult * 3 + mult;
 	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 + mult * 3 + 14 * mult;
 	float percent = 1.0f * value.y / value.z;
 	vertices[vindex + 3] = 14 * mult * percent;
