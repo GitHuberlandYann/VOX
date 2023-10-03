@@ -27,6 +27,7 @@ Project Requirements:
 
 TODOS:
 	- water if air && level > surface_level && level < 64
+	- furnace
     - skybox
     - save block changed
     - main menu
@@ -37,6 +38,7 @@ TODOS:
             - render dist
             - speed
         - quit
+	- particles ?
     - items on ground after break
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - hitbox around player for collisions
@@ -44,6 +46,7 @@ TODOS:
     - player arm in survival mode
     - nether
     - right/left click and drag in inventory
+	- strafing speed reduction
     - hitbox flowers and blocks in general -> might have to split blocks in 27 ..
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 

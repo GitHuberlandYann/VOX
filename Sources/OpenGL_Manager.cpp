@@ -43,9 +43,6 @@ OpenGL_Manager::~OpenGL_Manager( void )
     glfwTerminate();
 
 	_visible_chunks.clear();
-	mtx_delete_chunks.lock();
-	_delete_chunks.clear();
-	mtx_delete_chunks.unlock();
 	mtx_perimeter.lock();
 	_perimeter_chunks.clear();
 	mtx_perimeter.unlock();
@@ -232,8 +229,6 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 void OpenGL_Manager::main_loop( void )
 {
 	// if (!IS_LINUX) { // face culling seems to only work on mac, but breaks flowers and gains 0 fps anyway ..
-	// 	glEnable(GL_DEPTH_TEST);
-
 	// 	glEnable(GL_CULL_FACE);
 	// 	glCullFace(GL_FRONT);
 	// 	// glFrontFace(GL_CW);
@@ -288,6 +283,8 @@ void OpenGL_Manager::main_loop( void )
 		}
 		previousFrame = currentTime;
 		
+		glEnable(GL_DEPTH_TEST);
+		glUseProgram(_shaderProgram);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		GLint newVaoCounter = 0, blockCounter = 0;
@@ -296,7 +293,6 @@ void OpenGL_Manager::main_loop( void )
 			(*it)->drawArray(newVaoCounter, blockCounter);
 		}
 
-		// glClear(GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 		mtx.lock();
 		mtx_perimeter.lock();
@@ -342,17 +338,6 @@ void OpenGL_Manager::main_loop( void )
 				_camera->_update = true;
 			}
 		}
-		glEnable(GL_DEPTH_TEST);
-		glUseProgram(_shaderProgram);
-
-		mtx_delete_chunks.lock();
-		std::list<Chunk *>::iterator d_it = _delete_chunks.begin();
-		for (; d_it != _delete_chunks.end(); d_it++) {
-			delete *d_it;
-		}
-		_delete_chunks.clear();
-		mtx_delete_chunks.unlock();
-		
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
