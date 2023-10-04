@@ -42,6 +42,7 @@ void OpenGL_Manager::saveWorld( void )
 	catch (std::exception & e) {
 		std::cerr << e.what() << std::endl << "world save failure .. hope you did some snapshot" << std::endl;
 	}
+	_backups.clear();
 }
 
 std::string Camera::saveString( void )

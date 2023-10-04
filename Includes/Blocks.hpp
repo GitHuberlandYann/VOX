@@ -13,6 +13,8 @@ enum blocks {
 	SMOOTH_STONE,
 	STONE,
 	COBBLESTONE,
+	STONE_BRICKS,
+	CRACKED_STONE_BRICKS,
 	SAND,
 	GRAVEL,
 	OAK_LEAVES,
@@ -250,6 +252,38 @@ struct Cobblestone : Block {
 			break_time_stone = 0.74f;
 			break_time_iron = 0.5f;
 			break_time_diamond = 0.4f;
+		}
+};
+
+struct StoneBrick : Block {
+	public:
+		StoneBrick() {
+			name = "STONE_BRICK";
+			mined = blocks::STONE_BRICKS;
+			isComposant = true;
+			getProduction = blocks::CRACKED_STONE_BRICKS;
+			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
+			break_time_hand = 7.5f;
+			break_time_wooden = 1.15f;
+			break_time_stone = 0.6f;
+			break_time_iron = 0.4f;
+			break_time_diamond = 0.3f;
+		}
+};
+
+struct CrackedStoneBrick : Block {
+	public:
+		CrackedStoneBrick() {
+			name = "CRACKED_STONE_BRICK";
+			mined = blocks::CRACKED_STONE_BRICKS;
+			byHand = false;
+			needed_tool = WOODEN_PICKAXE;
+			break_time_hand = 7.5f;
+			break_time_wooden = 1.15f;
+			break_time_stone = 0.6f;
+			break_time_iron = 0.4f;
+			break_time_diamond = 0.3f;
 		}
 };
 
@@ -666,7 +700,7 @@ struct Diamond : Block {
 
 const Block s_blocks[112] = {
 	Air(), GrassBlock(), OakLog(), Cactus(), TBD(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), StoneBrick(), CrackedStoneBrick(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), CoalBlock(), IronBlock(), DiamondBlock(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), Water(), TBD(),

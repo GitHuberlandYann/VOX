@@ -28,14 +28,6 @@ Project Requirements:
 TODOS:
 	- water if air && level > surface_level && level < 64
     - skybox
-    - main menu
-        - play
-            - random seed / custom seed
-        - load -> save world in json
-        - settings
-            - render dist
-            - speed
-        - quit
 	- particles ?
     - items on ground after break
     - Sound https://www.ambiera.com/irrklang/tutorials.html
@@ -44,14 +36,21 @@ TODOS:
     - player arm in survival mode
     - nether
     - right/left click and drag in inventory
-	- strafing speed reduction
+	- item number color in ingame menus
+	- strafing speed reduction + rework movements
     - hitbox flowers and blocks in general -> might have to split blocks in 27 ..
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+    - main menu
+        - play
+            - random seed / custom seed
+        - load -> save world in json
+        - settings
+            - render dist
+            - speed
+        - quit
     - biomes
-    - https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
-    - https://stackoverflow.com/questions/54583368/how-to-draw-multiple-objects-in-opengl-using-multiple-vao-and-vbo
 
 DONE:
 	- pthread chunk creation
@@ -83,6 +82,7 @@ DONE:
     - load menu
     - inventory menu
     - crafting menu
+	- furnace menu
 
 
 Some info:
@@ -93,6 +93,8 @@ Some info:
   - how to fix broken everything in wsl: https://stackoverflow.com/questions/66497147/cant-run-opengl-on-wsl2/66506098#66506098
       - lauch VcXsrv; xcalc worksn't
       - DISPLAY=:0; xcalc works
+  - https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
+  - https://stackoverflow.com/questions/54583368/how-to-draw-multiple-objects-in-opengl-using-multiple-vao-and-vbo
   
   - Overworld biome generation is based on 6 parameters:
     Temperature, Humidity (aka. Vegetation), Continentalness (aka. Continents), Erosion, Weirdness (aka. Ridges) and Depth, which are calculated with 6 density functions.
