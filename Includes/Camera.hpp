@@ -68,6 +68,7 @@ class Camera
 		// void processMouseScroll( float offset );
 		std::string getCamString( bool game_mode );
 		std::string saveString( void );
+		void loadWorld( std::ofstream & ofs, std::ifstream & indata );
 };
 
 #endif

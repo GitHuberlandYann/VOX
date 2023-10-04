@@ -8,6 +8,13 @@ Chunk *OpenGL_Manager::get_current_chunk_ptr( void )
 {
 	return (current_chunk_ptr);
 }
+
+void OpenGL_Manager::resetInputsPtrs( void )
+{
+	current_chunk_ptr = NULL;
+	prev_chunk_ptr = NULL;
+	chunk_hit = NULL;
+}
 /*
 void OpenGL_Manager::update_cam_matrix( void )
 {

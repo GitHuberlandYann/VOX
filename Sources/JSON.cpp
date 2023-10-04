@@ -1,5 +1,9 @@
 #include "vox.h"
 
+// ************************************************************************** //
+//                                 Upload                                     //
+// ************************************************************************** //
+
 void OpenGL_Manager::saveWorld( void )
 {
 	// first delete chunks, this updates _backups
@@ -44,8 +48,9 @@ std::string Camera::saveString( void )
 {
 	std::string res = "\"camera\": {\n\t\t\"pos\": {\"x\": "
 		+ std::to_string(_position.x) + ", \"y\": " + std::to_string(_position.y) + ", \"z\": " + std::to_string(_position.z)
-		+ "},\n\t\t\"dir\": {\"x\": " + std::to_string(_front.x) + ", \"y\": " + std::to_string(_front.y) + ", \"z\": " + std::to_string(_front.z)
-		+ "},\n\t\t\"fov\": " + std::to_string(_fov)
+		+ "},\n\t\t\"yaw\": " + std::to_string(_yaw)
+		+ ",\n\t\t\"pitch\": " + std::to_string(_pitch)
+		+ ",\n\t\t\"fov\": " + std::to_string(_fov)
 		+ ",\n\t\t\"health_points\": " + std::to_string(_health_points)
 		+ ",\n\t\t\"touch_ground\": " + ((_touchGround) ? "true" : "false")
 		+ "\n\t},\n\t";
@@ -96,7 +101,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 		bool ostart = true;
 		for (auto& orient: bup.second.orientations) {
 			if (!ostart) {
-				res += ',';
+				res += ", ";
 			}
 			ostart = false;
 			res += "[" + std::to_string(orient.first) + ", " + std::to_string(orient.second) + ']';
@@ -105,7 +110,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 		bool astart = true;
 		for (auto& add: bup.second.added) {
 			if (!astart) {
-				res += ',';
+				res += ", ";
 			}
 			astart = false;
 			res += "[" + std::to_string(add.first) + ", " + std::to_string(add.second) + ']';
@@ -114,7 +119,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 		bool rmstart = true;
 		for (auto& rm: bup.second.removed) {
 			if (!rmstart) {
-				res += ',';
+				res += ", ";
 			}
 			rmstart = false;
 			res += "[" + std::to_string(rm.first) + ", " + std::to_string(rm.second) + ']';
@@ -123,7 +128,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 		bool fstart = true;
 		for (auto& fur: bup.second.furnaces) {
 			if (!fstart) {
-				res += ',';
+				res += ", ";
 			}
 			fstart = false;
 			res += "{\"pos\": " + std::to_string(fur.first)
@@ -134,6 +139,267 @@ std::string OpenGL_Manager::saveBackupString( void )
 		}
 		res += "]}";
 	}
-	res += ']';
+	res += "\n\t]";
 	return (res);
+}
+
+// ************************************************************************** //
+//                                Download                                    //
+// ************************************************************************** //
+
+class InvalidFileException : public std::exception
+{
+	public:
+		const char *what() const throw()
+		{
+			return ("[InvalidFileException] Input file could not be opened.");
+		}
+};
+
+class UnclosedBracketException : public std::exception
+{
+	public:
+		const char *what() const throw()
+		{
+			return ("[UnclosedBracketException] Reached end of file with an unclosed bracket.");
+		}
+};
+
+void OpenGL_Manager::loadWorld( std::string file )
+{
+	try {
+		std::ofstream ofs("Worlds/loading.log", std::ofstream::out | std::ofstream::trunc);
+
+		ofs << "Opening file " << file << std::endl;
+		std::ifstream indata(file.c_str());
+		if (!indata.is_open()) {
+			throw InvalidFileException();
+		}
+		std::string line;
+		while (!indata.eof()) {
+			std::getline(indata, line);
+			line = trim_spaces(line);
+			if (line.empty() || line[0] == '#') {
+				continue ;
+			} else if (!line.compare(0, 8, "\"seed\": ")) {
+				perlin_seed = std::atoi(&line[8]);
+				ofs << "seed set to " << perlin_seed << std::endl;
+			} else if (!line.compare(0, 13, "\"game_mode\": ")) {
+				_game_mode = std::atoi(&line[13]);
+				ofs << "game mode set to " << _game_mode << std::endl;
+			} else if (!line.compare(0, 14, "\"debug_mode\": ")) {
+				_debug_mode = line.substr(14, 4) == "true";
+				ofs << "debug mode set to " << _debug_mode << std::endl;
+			} else if (!line.compare(0, 11, "\"f5_mode\": ")) {
+				_f5_mode = line.substr(11, 4) == "true";
+				ofs << "f5 mode set to " << _f5_mode << std::endl;
+			} else if (!line.compare(0, 11, "\"outline\": ")) {
+				_outline = line.substr(11, 4) == "true";
+				ofs << "outline set to " << _outline << std::endl;
+			} else if (!line.compare(0, 19, "\"render_distance\": ")) {
+				_render_distance = std::atoi(&line[19]);
+				ofs << "render dist set to " << _render_distance << std::endl;
+			} else if (!line.compare(0, 10, "\"camera\": ")) {
+				_camera->loadWorld(ofs, indata);
+			} else if (!line.compare(0, 13, "\"inventory\": ")) {
+				_inventory->loadWorld(ofs, indata);
+			} else if (!line.compare(0, 11, "\"backups\": ")) {
+				loadBackups(ofs, indata);
+			}
+		}
+		indata.close();
+		ofs.close();
+	}
+	catch (std::exception & e) {
+		std::cerr << e.what() << std::endl;
+		exit (1); // TODO might want to return to main menu instead
+	}
+}
+
+void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
+{
+	int index;
+	std::string line;
+	while (!indata.eof()) {
+		std::getline(indata, line);
+		line = trim_spaces(line);
+		if (line.empty() || line[0] == '#') {
+			continue ;
+		} else if (!line.compare(0, 7, "\"pos\": ")) {
+			_position.x = std::stof(&line[13]);
+			for (index = 13; line[index] && line[index] != ':'; index++);
+			_position.y = std::stof(&line[index + 2]);
+			for (index = index + 2; line[index] && line[index] != ':'; index++);
+			_position.z = std::stof(&line[index + 2]);
+			ofs << "camera pos set to " << _position.x << ", " << _position.y << ", " << _position.z << std::endl;
+		} else if (!line.compare(0, 7, "\"yaw\": ")) {
+			_yaw = std::stof(&line[7]);
+			ofs << "camera yaw set to " << _yaw << std::endl;
+		} else if (!line.compare(0, 9, "\"pitch\": ")) {
+			_pitch = std::stof(&line[9]);
+			ofs << "camera pitch set to " << _pitch << std::endl;
+		} else if (!line.compare(0, 7, "\"fov\": ")) {
+			_fov = std::stof(&line[7]);
+			ofs << "camera fov set to " << _fov << std::endl;
+		} else if (!line.compare(0, 17, "\"health_points\": ")) {
+			_health_points = std::atoi(&line[17]);
+			ofs << "camera health points set to " << _health_points << std::endl;
+		} else if (!line.compare(0, 16, "\"touch_ground\": ")) {
+			_touchGround = line.substr(16, 4) == "true";
+			ofs << "camera touch ground set to " << _touchGround << std::endl;
+		} else if (line == "},") {
+			updateCameraVectors();
+			return ;
+		} else {
+			std::cerr << "foreigh line in camera: " << line << std::endl;
+		}
+	}
+	throw UnclosedBracketException();
+}
+
+void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
+{
+	int index;
+	std::string line;
+	while (!indata.eof()) {
+		std::getline(indata, line);
+		line = trim_spaces(line);
+		if (line.empty() || line[0] == '#') {
+			continue ;
+		} else if (!line.compare(0, 8, "\"slot\": ")) {
+			_slot = std::atoi(&line[8]);
+			ofs << "inventory slot set to " << _slot << std::endl;
+		} else if (!line.compare(0, 11, "\"content\": ")) {
+			index = 12;
+			for (int cindex = 0; cindex < 8 && line[index]; cindex++) {
+				_content[cindex].x = std::atoi(&line[index + 1]);
+				for (; line[index] && line[index] != ','; index++);
+				_content[cindex].y = std::atoi(&line[index + 2]);
+				for (index = index + 2; line[index] && line[index] != '['; index++);
+				ofs << "inventory slot " << cindex << " set to " << _content[cindex].x << ", " << _content[cindex].y << std::endl;
+			}
+		} else if (!line.compare(0, 12, "\"backpack\": ")) {
+			index = 13;
+			for (int bindex = 0; bindex < 27 && line[index]; bindex++) {
+				_backpack[bindex].x = std::atoi(&line[index + 1]);
+				for (; line[index] && line[index] != ','; index++);
+				_backpack[bindex].y = std::atoi(&line[index + 2]);
+				for (index = index + 2; line[index] && line[index] != '['; index++);
+				ofs << "inventory backpack slot " << bindex << " set to " << _backpack[bindex].x << ", " << _backpack[bindex].y << std::endl;
+			}
+		} else if (!line.compare(0, 16, "\"durabilities\": ")) {
+			while (!indata.eof()) {
+				std::getline(indata, line);
+				line = trim_spaces(line);
+				if (line.empty() || line[0] == '#') {
+					continue ;
+				} else if (!line.compare(0, 13, "{\"location\": ")) {
+					glm::ivec3 newDura;
+					newDura.x = std::atoi(&line[13]);
+					for (index = 13; line[index] && line[index] != ':'; index++);
+					newDura.y = std::atoi(&line[index + 2]);
+					for (index = index + 2; line[index] && line[index] != ':'; index++);
+					newDura.z = std::atoi(&line[index + 2]);
+					_durabilities.push_back(newDura);
+					ofs << "inventory new dura set to " << newDura.x << ", " << newDura.y << ", " << newDura.z << std::endl;
+				} else if (line == "]") {
+					break ;
+				} else {
+					std::cerr << "foreigh line in durabilities: " << line << std::endl;
+				}
+			}
+		} else if (line == "},") {
+			return ;
+		} else {
+			std::cerr << "foreigh line in inventory: " << line << std::endl;
+		}
+	}
+	throw UnclosedBracketException();
+}
+
+void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
+{
+	int index;
+	std::string line;
+	while (!indata.eof()) {
+		std::getline(indata, line);
+		line = trim_spaces(line);
+		if (line.empty() || line[0] == '#') {
+			continue ;
+		} else if (!line.compare(0, 8, "{\"pos\": ")) {
+			std::pair<int, int> key;
+			key.first = std::atoi(&line[9]);
+			for (index = 9; line[index] && line[index] != ','; index++);
+			key.second = std::atoi(&line[index + 2]);
+			s_backup backups_value;
+			while (!indata.eof()) {
+				std::getline(indata, line);
+				line = trim_spaces(line);
+				if (line.empty() || line[0] == '#') {
+					continue ;
+				} else if (!line.compare(0, 16, "\"orientations\": ")) {
+					index = 16;
+					while (line[index + 1] == '[') {
+						int okey = std::atoi(&line[index + 2]);
+						for (; line[index] && line[index] != ','; index++);
+						backups_value.orientations[okey] = std::atoi(&line[index + 2]);
+						ofs << "backups new orientation " << okey << ", " << backups_value.orientations[okey] << std::endl;
+						for (; line[index + 1] && line[index + 1] != '['; index++);
+					}
+				} else if (!line.compare(0, 9, "\"added\": ")) {
+					index = 9;
+					while (line[index + 1] == '[') {
+						int addkey = std::atoi(&line[index + 2]);
+						for (; line[index] && line[index] != ','; index++);
+						backups_value.added[addkey] = std::atoi(&line[index + 2]);
+						ofs << "backups new added " << addkey << ", " << backups_value.added[addkey] << std::endl;
+						for (; line[index + 1] && line[index + 1] != '['; index++);
+					}
+				} else if (!line.compare(0, 11, "\"removed\": ")) {
+					index = 11;
+					while (line[index + 1] == '[') {
+						int rmkey = std::atoi(&line[index + 2]);
+						for (; line[index] && line[index] != ','; index++);
+						backups_value.removed[rmkey] = std::atoi(&line[index + 2]);
+						ofs << "backups new removed " << rmkey << ", " << backups_value.removed[rmkey] << std::endl;
+						for (; line[index + 1] && line[index + 1] != '['; index++);
+					}
+				} else if (!line.compare(0, 12, "\"furnaces\": ")) {
+					index = 12;
+					while (line[index + 1] == '{') {
+						int fkey = std::atoi(&line[index + 9]);
+						FurnaceInstance fur;
+						glm::ivec2 value;
+						for (index = index + 9; line[index] && line[index] != ':'; index++);
+						value.x = std::atoi(&line[index + 3]);
+						for (; line[index] && line[index] != ','; index++);
+						value.y = std::atoi(&line[index + 2]);
+						fur.setComposant(value);
+						for (; line[index] && line[index] != ':'; index++);
+						value.x = std::atoi(&line[index + 3]);
+						for (; line[index] && line[index] != ','; index++);
+						value.y = std::atoi(&line[index + 2]);
+						fur.setFuel(value);
+						for (; line[index] && line[index] != ':'; index++);
+						value.x = std::atoi(&line[index + 3]);
+						for (; line[index] && line[index] != ','; index++);
+						value.y = std::atoi(&line[index + 2]);
+						fur.setProduction(value);
+						backups_value.furnaces[fkey] = fur;
+						ofs << "one more furnace at " << fkey << std::endl;
+						for (; line[index] && line[index] != '{'; index++);
+					}
+					break ;
+				} else {
+					std::cerr << "foreigh line in backup: " << line << std::endl;
+				}
+			}
+			_backups[key] = backups_value;
+		} else if (line == "]") {
+			return ;
+		} else {
+			std::cerr << "foreigh line in backups: " << line << std::endl;
+		}
+	}
+	throw UnclosedBracketException();
 }

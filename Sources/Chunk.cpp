@@ -303,15 +303,6 @@ void Chunk::generate_blocks( void )
 				// if (row == 9 && col == 9 && level == surface_level + 5) {
 				// 	_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = 1;
 				// }
-				std::map<int, int>::iterator search = _added.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
-				if (search != _added.end()) {
-					_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = search->second;
-				} else {
-					search = _removed.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
-					if (search != _removed.end()) {
-						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR;
-					}
-				}
 			}
 		}
 	}
@@ -368,8 +359,7 @@ void Chunk::generate_blocks( void )
 		}
 	}
 
-
-	// hiding unseen blocks
+	// reverting ores back to stone if they are exposed
 	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
 		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
@@ -378,8 +368,6 @@ void Chunk::generate_blocks( void )
 					if (value == blocks::WATER) {
 						// do nothing
 					} else if (exposed_block(row, col, level, value != blocks::OAK_LEAVES)) {
-						_displayed_blocks++;
-						// reverting ores back to stone if they are exposed
 						if (value == blocks::IRON_ORE && distribution(generator) < 500) {
 							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::STONE;
 						} else if (value == blocks::GRAVEL && distribution(generator) < 100) {
@@ -389,6 +377,41 @@ void Chunk::generate_blocks( void )
 						} else if (value == blocks::COAL_ORE && distribution(generator) < 200) {
 							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::STONE;
 						} 
+					}
+				}
+			}
+		}
+	}
+
+	// loading backup, MUST be done after all randomness to not alter anything
+	if (_added.size() || _removed.size()) {
+		for (int row = 0; row < CHUNK_SIZE + 2; row++) {
+			for (int col = 0; col < CHUNK_SIZE + 2; col++) {
+				for (int level = 0; level < WORLD_HEIGHT; level++) {
+					std::map<int, int>::iterator search = _added.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
+					if (search != _added.end()) {
+						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = search->second;
+					} else {
+						search = _removed.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
+						if (search != _removed.end()) {
+							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// counting displayed blocks and hiding unseen blocks
+	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
+		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
+			for (int level = 0; level < WORLD_HEIGHT; level++) {
+				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
+				if (value) {
+					if (value == blocks::WATER) {
+						// do nothing
+					} else if (exposed_block(row, col, level, value != blocks::OAK_LEAVES)) {
+						_displayed_blocks++;
 					} else {
 						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
 					}

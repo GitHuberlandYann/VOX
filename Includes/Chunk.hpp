@@ -44,7 +44,7 @@ const GLint oak_normal[61][3] = {
 struct s_backup {
 	std::map<int, int> orientations;
 	std::map<int, int> added;
-	std::map<int, int> removed;
+	std::map<int, int> removed; // TODO change this to set
 	std::map<int, FurnaceInstance> furnaces;
 };
 

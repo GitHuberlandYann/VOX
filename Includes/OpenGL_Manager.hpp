@@ -56,6 +56,9 @@ class OpenGL_Manager
 		UI *_ui;
 		Menu *_menu;
 
+		Chunk *get_current_chunk_ptr( void );
+		void resetInputsPtrs( void );
+
 		void update_visible_chunks( void );
 		void chunk_update( void );
 		void user_inputs( float deltaTime, bool rayCast );
@@ -65,12 +68,12 @@ class OpenGL_Manager
 		void update_cam_perspective( void );
 		void saveWorld( void );
 		std::string saveBackupString( void );
+		void loadWorld( std::string file );
+		void loadBackups( std::ofstream & ofs, std::ifstream & indata );
 
 	public:
 		OpenGL_Manager( void );
 		~OpenGL_Manager( void );
-
-		Chunk *get_current_chunk_ptr( void );
 
 		void setup_window( void );
 		void initWorld( void );

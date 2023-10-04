@@ -19,6 +19,9 @@ class FurnaceInstance
 		glm::ivec2 getComposant( void );
 		glm::ivec2 getFuel( void );
 		glm::ivec2 getProduction( void );
+		void setComposant( glm::ivec2 value );
+		void setFuel( glm::ivec2 value );
+		void setProduction( glm::ivec2 value );
 		void removeComposant( void );
 		void removeFuel( void );
 		glm::ivec2 pickProduction( void );

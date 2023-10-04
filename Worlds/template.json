@@ -7,7 +7,8 @@
 	"render_distance": 14,
 	"camera": {
 		"pos": {"x": 5, "y": 5, "z": 72},
-		"dir": {"x": 0, "y": 1, "z": 0},
+		"yaw": 65,
+		"pitch": 74,
 		"fov": 60,
 		"health_points": 20,
 		"touch_ground": true

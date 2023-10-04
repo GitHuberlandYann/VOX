@@ -154,6 +154,7 @@ class Inventory
 		std::string getDuraString( void );
 		std::string getSlotString( void );
 		std::string saveString( void );
+		void loadWorld( std::ofstream & ofs, std::ifstream & indata );
 };
 
 #endif

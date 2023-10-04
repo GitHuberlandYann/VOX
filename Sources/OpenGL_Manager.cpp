@@ -120,6 +120,7 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::initWorld( void )
 {
+	loadWorld("Worlds/default.json");
 	_current_chunk = glm::ivec2(-10000, -10000);
 	chunk_update();
 	_current_chunk = glm::ivec2(-10000, -10000);
@@ -345,6 +346,7 @@ void OpenGL_Manager::main_loop( void )
 				backFromMenu = 0;
 				_camera->_update = true;
 			} else if (menu_ret == 3) { // save and quit to menu
+				resetInputsPtrs();
 				saveWorld();
 			}
 		}

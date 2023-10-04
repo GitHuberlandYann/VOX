@@ -2,6 +2,7 @@
 # define UTILS_HPP
 
 std::string get_file_content( std::string file_name );
+std::string	trim_spaces( std::string str );
 void compile_shader( GLuint ptrShader, std::string name );
 void check_glstate( std::string str );
 int chunk_pos( int pos );

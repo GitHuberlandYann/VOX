@@ -52,6 +52,22 @@ glm::ivec2 FurnaceInstance::getProduction( void )
 	return (_production);
 }
 
+void FurnaceInstance::setComposant( glm::ivec2 value )
+{
+	_composant = value;
+}
+
+void FurnaceInstance::setFuel( glm::ivec2 value )
+{
+	_fuel = value;
+}
+
+void FurnaceInstance::setProduction( glm::ivec2 value )
+{
+	_production = value;
+}
+
+
 void FurnaceInstance::removeComposant( void )
 {
 	if (_composant.x != blocks::AIR && --_composant.y <= 0) {
