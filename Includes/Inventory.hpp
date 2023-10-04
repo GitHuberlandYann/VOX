@@ -104,7 +104,7 @@ class Inventory
 		glm::ivec2 _icraft[4];
 		glm::ivec2 _craft[9];
 		glm::ivec2 _crafted;
-		std::list<glm::ivec3> _durabilities; // emplacement value, durability
+		std::list<glm::ivec3> _durabilities; // location, durability, tool dura
         int _slot, _saved_durability;
 		bool _modif;
 
@@ -153,6 +153,7 @@ class Inventory
         std::string getInventoryString( void );
 		std::string getDuraString( void );
 		std::string getSlotString( void );
+		std::string saveString( void );
 };
 
 #endif

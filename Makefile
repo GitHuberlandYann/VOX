@@ -2,7 +2,7 @@ NAME		= vox
 OBJS_DIR	= Objs
 SRCS_DIR	= Sources
 
-FILES		= main callbacks inputs utils Camera Chunk FurnaceInstance Inventory Menu OpenGL_Manager Text Ui
+FILES		= main callbacks inputs utils Camera Chunk FurnaceInstance Inventory JSON Menu OpenGL_Manager Text Ui
 
 SRCS		= $(addprefix $(SRCS_DIR)/, $(addsuffix .cpp, $(FILES)))
 OBJS 		= $(addprefix $(OBJS_DIR)/, $(addsuffix .o, $(FILES)))

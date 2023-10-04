@@ -59,11 +59,12 @@ class OpenGL_Manager
 		void update_visible_chunks( void );
 		void chunk_update( void );
 		void user_inputs( float deltaTime, bool rayCast );
-		// void update_cam_matrix( void );
 		glm::ivec4 get_block_hit( void );
 		void handle_add_rm_block( bool adding, bool collect );
 		void update_cam_view( void );
 		void update_cam_perspective( void );
+		void saveWorld( void );
+		std::string saveBackupString( void );
 
 	public:
 		OpenGL_Manager( void );

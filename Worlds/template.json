@@ -1,0 +1,30 @@
+{
+	"seed": 123456789,
+	"game_mode": 1,
+	"debug_mode": true,
+	"f5_mode": false,
+	"outline": true,
+	"render_distance": 14,
+	"camera": {
+		"pos": {"x": 5, "y": 5, "z": 72},
+		"dir": {"x": 0, "y": 1, "z": 0},
+		"fov": 60,
+		"health_points": 20,
+		"touch_ground": true
+	},
+	"inventory": {
+		"slot": 4,
+		"content": [0, 0, 0, 0, 0, 0, 0, 0, 0],
+		"backpack": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		"durabilities": [
+			{"location": 4, "dura": 50, "max_dura": 59}
+		]
+	},
+	"backups": [
+		{"pos": [16, 16],
+		"orientations": [[15, 4]],
+		"added": [[16, 5]],
+		"removed": [[17, 6]],
+		"furnaces": [{"pos": 29, "composant": [45, 2], "fuel": [6, 8], "production": [6, 8]}]}
+	]
+}

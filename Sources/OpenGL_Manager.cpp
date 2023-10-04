@@ -332,7 +332,7 @@ void OpenGL_Manager::main_loop( void )
 			int menu_ret = _menu->run(_render_distance);
 			if (menu_ret == 2) {
 				initWorld();
-			} else if (menu_ret == 1) {
+			} else if (menu_ret == 1) { // back to game
 				if (!IS_LINUX) {
 					glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 					if (glfwRawMouseMotionSupported()) {
@@ -344,6 +344,8 @@ void OpenGL_Manager::main_loop( void )
 				_paused = false;
 				backFromMenu = 0;
 				_camera->_update = true;
+			} else if (menu_ret == 3) { // save and quit to menu
+				saveWorld();
 			}
 		}
 
