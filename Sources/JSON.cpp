@@ -35,14 +35,13 @@ void OpenGL_Manager::saveWorld( void )
 		+ saveBackupString()
 		+ "\n}";
 	try {
-		std::ofstream ofs("Worlds/default.json", std::ofstream::out | std::ofstream::trunc);
+		std::ofstream ofs("Worlds/" + _world_name, std::ofstream::out | std::ofstream::trunc);
 		ofs << json;
 		ofs.close();
 	}
 	catch (std::exception & e) {
-		std::cerr << e.what() << std::endl << "world save failure .. hope you did some snapshot" << std::endl;
+		std::cerr << e.what() << std::endl << "world save on Worlds/" << _world_name << " failure .. hope you did some snapshot" << std::endl;
 	}
-	_backups.clear();
 }
 
 std::string Camera::saveString( void )
@@ -84,6 +83,7 @@ std::string Inventory::saveString( void )
 		start = false;
 		res += "\n\t\t\t{\"location\": " + std::to_string(dura.x) + ", \"dura\": " + std::to_string(dura.y) + ", \"max_dura\": " + std::to_string(dura.z) + "}";
 	}
+	_durabilities.clear();
 	res += "\n\t\t]\n\t},\n\t";
 	return (res);
 }
@@ -140,6 +140,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 		}
 		res += "]}";
 	}
+	_backups.clear();
 	res += "\n\t]";
 	return (res);
 }
@@ -260,6 +261,7 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 
 void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 {
+	_modif = true;
 	int index;
 	std::string line;
 	while (!indata.eof()) {

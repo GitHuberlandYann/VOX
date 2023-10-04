@@ -11,6 +11,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_break_time(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
+	_world_name = "default.json";
 	_camera = new Camera(glm::vec3(1.0f, -2.0f, 66.0f));
 	_inventory = new Inventory();
 	_ui = new UI(*_inventory, *_camera);
@@ -120,7 +121,6 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::initWorld( void )
 {
-	loadWorld("Worlds/default.json");
 	_current_chunk = glm::ivec2(-10000, -10000);
 	chunk_update();
 	_current_chunk = glm::ivec2(-10000, -10000);
@@ -332,6 +332,8 @@ void OpenGL_Manager::main_loop( void )
 			mtx.unlock();
 			int menu_ret = _menu->run(_render_distance);
 			if (menu_ret == 2) {
+				_world_name = _menu->getWorldFile();
+				loadWorld("Worlds/" + _world_name);
 				initWorld();
 			} else if (menu_ret == 1) { // back to game
 				if (!IS_LINUX) {
@@ -348,6 +350,8 @@ void OpenGL_Manager::main_loop( void )
 			} else if (menu_ret == 3) { // save and quit to menu
 				resetInputsPtrs();
 				saveWorld();
+			} else if (menu_ret == 4) { // skip world selection and play with default seed of 123456
+				initWorld();
 			}
 		}
 

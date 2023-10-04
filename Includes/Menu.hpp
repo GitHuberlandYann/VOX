@@ -3,6 +3,7 @@
 
 enum {
 	MAIN_MENU,
+	WORLD_SELECT_MENU,
 	LOAD_MENU,
 	PAUSE_MENU,
 	INVENTORY_MENU,
@@ -15,10 +16,12 @@ class Menu
 	private:
 	    GLuint _vao, _vbo;
 		GLuint _shaderProgram;
-        GLint _nb_points, _state, _selection;
+        GLint _nb_points, _state, _selection, _selected_world;
 		glm::ivec2 _selected_block;
 		bool _vaoSet, _esc_released, _e_released, _left_released, _right_released;
 		GLint _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9;
+		std::vector<std::string> _worlds;
+		std::string _world_file;
 		GLFWwindow *_window;
 		Inventory &_inventory;
 		Text *_text;
@@ -27,11 +30,14 @@ class Menu
 
 		void reset_values( void );
 		int main_menu( void );
+		int world_select_menu( void );
 		int loading_screen( GLint render_dist );
 		int pause_menu( void );
 		int ingame_inputs( void );
 		int ingame_menu( void );
+		void fill_vertices( GLint *vertices, GLint values[9], int & vindex);
         void setup_array_buffer_main( void );
+        void setup_array_buffer_select( void );
 		void setup_array_buffer_load( int completion );
         void setup_array_buffer_pause( void );
 		void display_slot_value( int index );
@@ -62,6 +68,7 @@ class Menu
 		void setFurnaceInstance( FurnaceInstance *furnace );
 		void setState( int state );
 		int getState( void );
+		std::string getWorldFile( void );
 		int run( GLint render_dist );
 
 		std::string getFurnaceString( void );

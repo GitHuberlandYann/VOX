@@ -1,16 +1,19 @@
 #include "vox.h"
+#include <dirent.h>
 
-Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _selection(0), _vaoSet(false),
+Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _selection(0), _selected_world(0), _vaoSet(false),
 	_esc_released(false), _e_released(false), _left_released(false), _right_released(false),
 	_key_1(0), _key_2(0), _key_3(0), _key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 	_inventory(inventory), _text(text), _furnace(NULL)
 {
 	_selected_block = glm::ivec2(blocks::AIR, 0);
+	_world_file = "";
 }
 
 Menu::~Menu( void )
 {
 	// delete _text; // nope, this is done in ui as they share same ptr
+	_worlds.clear();
 }
 
 // ************************************************************************** //
@@ -29,24 +32,41 @@ void Menu::reset_values( void )
 	_inventory.restoreCraft();
 	_selected_block = glm::ivec2(blocks::AIR, 0);
 	_furnace = NULL;
+	_selected_world = 0;
+	_worlds.clear();
 }
 
 int Menu::main_menu( void )
 {
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		if (_selection == 1) { //singleplayer
-			_state = LOAD_MENU;
-			reset_values();
-			return (2);
+			_state = WORLD_SELECT_MENU;
+			reset_values();			
+			DIR *dir = opendir("Worlds");
+			if (dir == NULL) {
+				std::cerr << "failed to open dir Worlds/" << std::endl;
+				return (0);
+			}
+			struct dirent *dent;
+			while ((dent = readdir(dir)) != NULL)
+			{
+				std::string file = dent->d_name;
+				if (file == "." || file == ".." || file == "template.json" || file.size() < 6 || file.compare(file.size() - 5, 5, ".json")) {
+				} else {
+					_worlds.push_back(file);
+				}
+			}
+			closedir(dir);
+			return (0);
 		} else if (_selection == 6) { //quit game
 			glfwSetWindowShouldClose(_window, GL_TRUE);
 			return (-1);
 		}
 	}
-	if (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+	if (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) { // skip world selection and launch with default seed
 		_state = LOAD_MENU;
 		reset_values();
-		return (2);
+		return (4);
 	}
 
 	setup_array_buffer_main();
@@ -69,6 +89,59 @@ int Menu::main_menu( void )
 	_text->displayText(WIN_WIDTH / 2 - 150, WIN_HEIGHT / 2 + 40 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Minecraft Realms");
 	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 80, WIN_HEIGHT / 2 + 80 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Options...");
 	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 75, WIN_HEIGHT / 2 + 80 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Quit Game");
+	return (0);
+}
+
+int Menu::world_select_menu( void )
+{
+	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		if (_selection == 1) { //play selected world
+			_world_file = _worlds[_selected_world - 1];
+			_state = LOAD_MENU;
+			reset_values();
+			return (2);
+		} else if (_selection == 4) { // new random seed
+			const auto p1 = std::chrono::system_clock::now(); // works without #include <chrono> #include <ctime> ?
+			perlin_seed = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
+			_state = LOAD_MENU;
+			reset_values();
+			return (4);
+		} else if (_selection == 6) { //cancel, go back to main menu
+			_state = MAIN_MENU;
+			reset_values();
+			return (0);
+		} else if (_selection > 6) {
+			_selected_world = _selection - 6;
+		}
+	}
+
+	setup_array_buffer_select();
+	glUseProgram(_shaderProgram);
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_POINTS, 0, _nb_points);
+
+	_text->displayText(WIN_WIDTH / 2 - 120, 30, 24, glm::vec3(1.0f, 1.0f, 1.0f), "Select World");
+
+	int mult = 3;
+	// shadows
+	_text->displayText(WIN_WIDTH / 2 - 406 + mult, WIN_HEIGHT / 2 + 90 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Play Selected World");
+	_text->displayText(WIN_WIDTH / 2 - 390 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Edit");
+	_text->displayText(WIN_WIDTH / 2 - 180 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Delete");
+	_text->displayText(WIN_WIDTH / 2 + 76 + mult, WIN_HEIGHT / 2 + 90 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Create New World");
+	_text->displayText(WIN_WIDTH / 2 + 40 * mult - 80 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Re-Create");
+	_text->displayText(WIN_WIDTH / 2 + 128 * mult - 80 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Cancel");
+	// white
+	_text->displayText(WIN_WIDTH / 2 - 406, WIN_HEIGHT / 2 + 90 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Play Selected World");
+	_text->displayText(WIN_WIDTH / 2 - 390, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Edit");
+	_text->displayText(WIN_WIDTH / 2 - 180, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Delete");
+	_text->displayText(WIN_WIDTH / 2 + 76, WIN_HEIGHT / 2 + 90 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Create New World");
+	_text->displayText(WIN_WIDTH / 2 + 40 * mult - 80, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Re-Create");
+	_text->displayText(WIN_WIDTH / 2 + 128 * mult - 80, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Cancel");
+
+	for (int index = 0; index < static_cast<int>(_worlds.size()) && index < 8; index++) {
+		_text->displayText(WIN_WIDTH / 2 - _worlds[index].size() * 10 + mult, (30 + 20 * index) * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), _worlds[index]);
+		_text->displayText(WIN_WIDTH / 2 - _worlds[index].size() * 10, (30 + 20 * index) * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), _worlds[index]);
+	}
 	return (0);
 }
 
@@ -302,6 +375,14 @@ int Menu::ingame_menu( void )
 	return (0);
 }
 
+void Menu::fill_vertices( GLint *vertices, GLint values[9], int & vindex)
+{
+	for (int index = 0; index < 9; index++) {
+		vertices[vindex + index] = values[index];
+	}
+	vindex += 9;
+}
+
 void Menu::setup_array_buffer_main( void )
 {
 	_nb_points = 8;
@@ -318,6 +399,37 @@ void Menu::setup_array_buffer_main( void )
         1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 80 * mult, 95 * mult, 20 * mult, 0, 91 + 20 * (_selection == 6), 200, 20, // Quit Game
         1, WIN_WIDTH / 2 + 110 * mult, WIN_HEIGHT / 2 + 80 * mult, 15 * mult, 20 * mult, 0, 71, 200, 20, // accessibility settings
     };
+
+	setup_shader(vertices);
+}
+
+void Menu::setup_array_buffer_select( void )
+{
+	_nb_points = 6 + _worlds.size();
+	if (_nb_points > 14) {
+		_nb_points = 14;
+	}
+	int mult = 3;
+    GLint *vertices = new GLint[9 * _nb_points]; // pos: x y width height textcoord: x y width height
+
+	int vindex = 0;
+	GLint  playSelectedWorld[9] = {1, WIN_WIDTH / 2 - 155 * mult, WIN_HEIGHT / 2 + 90 * mult, 150 * mult, 20 * mult, 0, (91 + 20 * (_selection == 1)) * (_selected_world != 0) + 71 * (_selected_world == 0), 200, 20};
+	fill_vertices(vertices, playSelectedWorld, vindex);
+	GLint edit[9] = {1, WIN_WIDTH / 2 - 155 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 71, 200, 20};
+	fill_vertices(vertices, edit, vindex);
+	GLint del[9] = {1, WIN_WIDTH / 2 - 78 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 71, 200, 20};
+	fill_vertices(vertices, del, vindex);
+	GLint createNewWorld[9] = {1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 90 * mult, 150 * mult, 20 * mult, 0, 91 + 20 * (_selection == 4), 200, 20};
+	fill_vertices(vertices, createNewWorld, vindex);
+	GLint reCreate[9] = {1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 71, 200, 20};
+	fill_vertices(vertices, reCreate, vindex);
+	GLint cancel[9] = {1, WIN_WIDTH / 2 + 82 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 91 + 20 * (_selection == 6), 200, 20};
+	fill_vertices(vertices, cancel, vindex);
+
+	for (int index = 0; index < static_cast<int>(static_cast<int>(_worlds.size())) && index < 8; index++) {
+		GLint world[9] = {1, WIN_WIDTH / 2 - 100 * mult, (30 + 20 * index) * mult, 200 * mult, 20 * mult, 0, 71 + 20 * (_selected_world - 1 == index), 200, 20};
+		fill_vertices(vertices, world, vindex);
+	}
 
 	setup_shader(vertices);
 }
@@ -902,8 +1014,8 @@ static bool inRectangle( float posX, float posY, int rx, int ry, int width, int 
 
 void Menu::processMouseMovement( float posX, float posY )
 {
+	int mult = 3;
 	if (_state == MAIN_MENU) {
-		int mult = 3;
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 10 * mult, 200 * mult, 20 * mult)) {
 			_selection = 1;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 80 * mult, 95 * mult, 20 * mult)) {
@@ -911,8 +1023,22 @@ void Menu::processMouseMovement( float posX, float posY )
 		} else {
 			_selection = 0;
 		}
+	} else if (_state == WORLD_SELECT_MENU) {
+		if (_selected_world && inRectangle(posX, posY, WIN_WIDTH / 2 - 155 * mult, WIN_HEIGHT / 2 + 90 * mult, 150 * mult, 20 * mult)) {
+			_selection = 1;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 90 * mult, 150 * mult, 20 * mult)) {
+			_selection = 4;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 82 * mult, WIN_HEIGHT / 2 + 105 * mult, 73 * mult, 20 * mult)) {
+			_selection = 6;
+		} else {
+			_selection = 0;
+		}
+		for (int index = 0; index < static_cast<int>(_worlds.size()) && index < 8; index++) {
+			if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * mult, (30 + 20 * index) * mult, 200 * mult, 20 * mult)) {
+				_selection = index + 7;
+			}
+		}
 	} else if (_state == PAUSE_MENU) {
-		int mult = 3;
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 60 * mult, 200 * mult, 20 * mult)) {
 			_selection = 1;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 40 * mult, 200 * mult, 20 * mult)) {
@@ -921,7 +1047,6 @@ void Menu::processMouseMovement( float posX, float posY )
 			_selection = 0;
 		}
 	} else if (_state >= INVENTORY_MENU) {
-		int mult = 3;
 		for (int index = 0; index < 9; index++) {
 			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * mult)) / 2 + (18 * index * mult) + mult * 3, WIN_HEIGHT / 2 + 59 * mult, 16 * mult, 16 * mult)) {
 				_selection = index + 1;
@@ -1014,6 +1139,11 @@ int Menu::getState( void )
 	return (_state);
 }
 
+std::string Menu::getWorldFile( void )
+{
+	return (_world_file);
+}
+
 int Menu::run( GLint render_dist )
 {
 	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
@@ -1024,6 +1154,8 @@ int Menu::run( GLint render_dist )
 	switch (_state) {
 		case MAIN_MENU:
 			return (main_menu());
+		case WORLD_SELECT_MENU:
+			return (world_select_menu());
 		case LOAD_MENU:
 			return (loading_screen(render_dist));
 		case PAUSE_MENU:

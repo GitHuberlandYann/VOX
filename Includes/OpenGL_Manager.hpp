@@ -45,6 +45,7 @@ class OpenGL_Manager
 		bool _debug_mode, _game_mode, _f5_mode, _outline, _paused, _esc_released, _e_released;
 		float _break_time;
 		int _break_frame;
+		std::string _world_name;
 		std::list<Chunk *> _chunks;
 		std::list<Chunk *> _visible_chunks;
 		std::list<Chunk *> _perimeter_chunks;
