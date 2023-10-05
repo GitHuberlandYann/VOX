@@ -3,10 +3,10 @@
 Inventory::Inventory( void ) : _slot(0), _saved_durability(0), _modif(false)
 {
     for (int index = 0; index < 9; index++) {
-        _content[index] = glm::ivec2(blocks::COAL * (index == 0), 8 * (index == 0));
+        _content[index] = glm::ivec2(blocks::AIR * (index == 0), 0 * (index == 0));
     }
     for (int index = 0; index < 27; index++) {
-        _backpack[index] = glm::ivec2(blocks::OAK_LOG * (index == 0) + blocks::IRON_INGOT * (index == 1), 32 * (index <= 1));
+        _backpack[index] = glm::ivec2(blocks::AIR * (index == 0) + blocks::AIR * (index == 1), 0 * (index <= 1));
     }
     for (int index = 0; index < 4; index++) {
         _icraft[index] = glm::ivec2(blocks::AIR, 0);
@@ -249,7 +249,7 @@ glm::ivec2 Inventory::getCraftBlock( int slot )
 	return (_craft[slot]);
 }
 
-glm::ivec3 Inventory::getDuraFromIndex( int index )
+glm::ivec3 Inventory::getDuraFromIndex( int index, bool all )
 {
 	if (index < 0 || index >= static_cast<int>(_durabilities.size())) {
 		std::cerr << "ERROR getDuraFromIndex " << index << std::endl;
@@ -257,7 +257,7 @@ glm::ivec3 Inventory::getDuraFromIndex( int index )
 	}
 	int i = -1;
 	for (auto& dura: _durabilities) {
-		if (dura.y != dura.z) {
+		if (dura.y != dura.z && (all || dura.x < 9)) {
 			i++;
 		}
 		if (i == index) {
@@ -322,11 +322,11 @@ int Inventory::countCraft( void )
 	return (res);
 }
 
-int Inventory::countDura( void )
+int Inventory::countDura( bool all )
 {
 	int cnt = 0;
 	for (auto& dura: _durabilities) {
-		if (dura.y != dura.z) {
+		if (dura.y != dura.z && (all || dura.x < 9)) {
 			cnt++;
 		}
 	}
@@ -567,6 +567,9 @@ void Inventory::removeBlock( void )
         return ;
     }
     if (--_content[_slot].y <= 0) {
+		if (s_blocks[_content[_slot].x].durability) {
+			getrmDura(_slot);
+		}
         _content[_slot] = glm::ivec2(blocks::AIR, 0);
 		_modif = true;
     }

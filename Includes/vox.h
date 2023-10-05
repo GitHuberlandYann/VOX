@@ -27,6 +27,7 @@ typedef struct {
 
 extern std::mutex mtx;
 extern std::mutex mtx_perimeter;
+extern std::mutex mtx_deleted_chunks;
 extern std::mutex mtx_inventory;
 
 # include "utils.h"

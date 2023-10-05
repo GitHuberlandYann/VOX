@@ -131,7 +131,7 @@ class Inventory
 		glm::ivec2 getBackpackBlock( int slot );
 		glm::ivec2 getiCraftBlock( int slot );
 		glm::ivec2 getCraftBlock( int slot );
-		glm::ivec3 getDuraFromIndex( int index );
+		glm::ivec3 getDuraFromIndex( int index, bool all );
 		glm::ivec2 getCrafted( void );
 		int getSlotNum( void );
         void setSlot( int value );
@@ -139,7 +139,7 @@ class Inventory
 		int countBackpack( void );
 		int countiCraft( void );
 		int countCraft( void );
-		int countDura( void );
+		int countDura( bool all );
 		glm::ivec2 pickBlockAt( int craft, int value, FurnaceInstance *furnace );
 		glm::ivec2 pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace );
 		glm::ivec2 putBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace );

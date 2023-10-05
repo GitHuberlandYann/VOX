@@ -190,10 +190,11 @@ void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread
 	_visible_chunks = newvis_chunks;
 }
 
-static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> *perimeter_chunks, std::map<std::pair<int, int>, s_backup> *backups,
+static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> *perimeter_chunks, std::list<Chunk *> *deleted_chunks, std::map<std::pair<int, int>, s_backup> *backups,
 								 Camera *camera, GLint render_dist, int posX, int posY )
 {
 	std::list<Chunk *> newperi_chunks;
+	std::list<Chunk *> newdel_chunks;
 	mtx.lock();
 	std::list<Chunk *>::iterator ite = chunks->end();
 	std::list<Chunk *>::iterator it = chunks->begin();
@@ -206,7 +207,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 			--it;
 			mtx.unlock();
 			(*tmp)->setBackup(backups);
-			delete *tmp;
+			newdel_chunks.push_back(*tmp);
 			mtx.lock();
 			chunks->erase(tmp);
 		} else if ((*it)->inPerimeter(posX, posY, render_dist * CHUNK_SIZE)) {
@@ -219,6 +220,9 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 	mtx_perimeter.lock();
 	*perimeter_chunks = newperi_chunks;
 	mtx_perimeter.unlock();
+	mtx_deleted_chunks.lock();
+	*deleted_chunks = newdel_chunks;
+	mtx_deleted_chunks.unlock();
 
 	for (int row = -render_dist; row <= render_dist; row++) {
 		for (int col = -render_dist; col <= render_dist; col++) {
@@ -268,7 +272,7 @@ void OpenGL_Manager::chunk_update( void )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	_thread = std::thread(thread_chunk_update, &_chunks, &_perimeter_chunks, &_backups, _camera, _render_distance, posX, posY);
+	_thread = std::thread(thread_chunk_update, &_chunks, &_perimeter_chunks, &_deleted_chunks, &_backups, _camera, _render_distance, posX, posY);
 }
 
 void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
@@ -393,7 +397,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		if (_thread.joinable()) {
 			_thread.join();
 		}
-		_thread = std::thread(thread_chunk_update, &_chunks, &_perimeter_chunks, &_backups, _camera, _render_distance, _current_chunk.x, _current_chunk.y);
+		_thread = std::thread(thread_chunk_update, &_chunks, &_perimeter_chunks, &_deleted_chunks, &_backups, _camera, _render_distance, _current_chunk.x, _current_chunk.y);
 		// update_visible_chunks();
 		// std::cout << "render distance set to " << _render_distance << std::endl;
 	} else if (!key_render_dist) {

@@ -47,6 +47,9 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	mtx_perimeter.lock();
 	_perimeter_chunks.clear();
 	mtx_perimeter.unlock();
+	mtx_deleted_chunks.lock();
+	_deleted_chunks.clear();
+	mtx_deleted_chunks.unlock();
 	mtx.lock();
 	std::list<Chunk *>::iterator it = _chunks.begin();
 	for (; it != _chunks.end(); it++) {
@@ -354,6 +357,13 @@ void OpenGL_Manager::main_loop( void )
 				initWorld();
 			}
 		}
+
+		mtx_deleted_chunks.lock();
+		for (auto& todel: _deleted_chunks) {
+			delete todel;
+		}
+		_deleted_chunks.clear();
+		mtx_deleted_chunks.unlock();
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();

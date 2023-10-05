@@ -706,7 +706,7 @@ static int screenPosYFromlocation( int mult, int location )
 void Menu::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
 {
 	mtx_inventory.lock();
-	glm::ivec3 value = _inventory.getDuraFromIndex(index);
+	glm::ivec3 value = _inventory.getDuraFromIndex(index, true);
 	mtx_inventory.unlock();
 	if (value.y == 0) {
 		return ;
@@ -764,7 +764,7 @@ void Menu::add_crafted_value( GLint *vertices, int mult, int & vindex )
 void Menu::setup_array_buffer_inventory( void )
 {
 	mtx_inventory.lock();
-	int duras = _inventory.countDura();
+	int duras = _inventory.countDura(true);
 	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countiCraft() + 2 * duras + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
 	mtx_inventory.unlock();
 	int mult = 3;
@@ -816,7 +816,7 @@ void Menu::setup_array_buffer_inventory( void )
 void Menu::setup_array_buffer_crafting( void )
 {
 	mtx_inventory.lock();
-	int duras = _inventory.countDura();
+	int duras = _inventory.countDura(true);
 	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countCraft() + 2 * duras + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
 	mtx_inventory.unlock();
 	int mult = 3;

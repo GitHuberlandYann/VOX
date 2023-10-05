@@ -2,6 +2,7 @@
 
 std::mutex mtx;
 std::mutex mtx_perimeter;
+std::mutex mtx_deleted_chunks;
 std::mutex mtx_inventory;
 siv::PerlinNoise::seed_type perlin_seed = 123456u;
 

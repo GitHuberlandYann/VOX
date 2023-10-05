@@ -49,6 +49,7 @@ class OpenGL_Manager
 		std::list<Chunk *> _chunks;
 		std::list<Chunk *> _visible_chunks;
 		std::list<Chunk *> _perimeter_chunks;
+		std::list<Chunk *> _deleted_chunks;
 		std::map<std::pair<int, int>, s_backup> _backups;
 		std::thread _thread;
 		glm::ivec4 _block_hit;

@@ -81,7 +81,7 @@ void UI::add_inventory_elem( GLint *vertices, int mult, int index, int & vindex 
 void UI::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
 {
 	mtx_inventory.lock();
-	glm::ivec3 value = _inventory.getDuraFromIndex(index);
+	glm::ivec3 value = _inventory.getDuraFromIndex(index, false);
 	mtx_inventory.unlock();
 	if (value.y == 0) {
 		return ;
@@ -198,7 +198,7 @@ void UI::setup_array_buffer( void )
 {
 	mtx_inventory.lock();
 	int countSlot = _inventory.countSlots();
-	int duras = _inventory.countDura();
+	int duras = _inventory.countDura(false);
 	mtx_inventory.unlock();
     _nb_points = 3 + countSlot + 2 * duras + 10 + _camera._health_points / 2 + _camera._health_points % 2 + 10 + 4 + 10 + 2;
 	int mult = 4;
@@ -389,7 +389,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 	mtx_inventory.lock();
 	(game_mode == SURVIVAL)
 		? glDrawArrays(GL_POINTS, 0, _nb_points)
-		: glDrawArrays(GL_POINTS, 0, 3 + _inventory.countSlots() + 2 * _inventory.countDura());
+		: glDrawArrays(GL_POINTS, 0, 3 + _inventory.countSlots() + 2 * _inventory.countDura(false));
 	mtx_inventory.unlock();
 
 	_text->displayText(12, 24, 12, glm::vec3(1.0f, 1.0f, 1.0f), str);
