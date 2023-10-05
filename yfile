@@ -31,17 +31,16 @@ TODOS:
 	- particles ?
     - items on ground after break
     - Sound https://www.ambiera.com/irrklang/tutorials.html
-    - hitbox around player for collisions
-    - fix fall going through blocks + fix jump into block above head
     - player arm in survival mode
     - nether
-    - right/left click and drag in inventory
 	- item number color in ingame menus
 	- strafing speed reduction + rework movements
     - hitbox flowers and blocks in general -> might have to split blocks in 27 ..
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+    - hitbox around player for collisions - https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
+    - fix fall going through blocks + fix jump into block above head
     - main menu
         - play
             - random seed / custom seed
@@ -74,6 +73,7 @@ DONE:
     - flowers destroyed if block underneath destroyed
     - leaves touchy
     - inventory block count
+    - right click and drag in inventory
     - tools durabitlity
     - block break animation
     - chunk border fix

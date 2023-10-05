@@ -136,7 +136,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 				+ ", \"composant\": [" + std::to_string(fur.second.getComposant().x) + ", " + std::to_string(fur.second.getComposant().y)
 				+ "], \"fuel\": [" + std::to_string(fur.second.getFuel().x) + ", " + std::to_string(fur.second.getFuel().y)
 				+ "], \"production\": [" + std::to_string(fur.second.getProduction().x) + ", " + std::to_string(fur.second.getProduction().y)
-				+ "]}";
+				+ "]}"; // TODO add current times for better backup
 		}
 		res += "]}";
 	}

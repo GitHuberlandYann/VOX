@@ -14,6 +14,7 @@ Menu::~Menu( void )
 {
 	// delete _text; // nope, this is done in ui as they share same ptr
 	_worlds.clear();
+	_selection_list.clear();
 }
 
 // ************************************************************************** //
@@ -34,6 +35,7 @@ void Menu::reset_values( void )
 	_furnace = NULL;
 	_selected_world = 0;
 	_worlds.clear();
+	_selection_list.clear();
 }
 
 int Menu::main_menu( void )
@@ -251,17 +253,30 @@ int Menu::ingame_inputs( void )
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 		_left_released = true;
 	}
-	if (_right_released && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-		_right_released = false;
+	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
 		if (_selection) {
 			if (_selected_block.x == blocks::AIR) {
-				_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1, _furnace);
+				if (_right_released) {
+					_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1, _furnace);
+				}
 			} else {
-				_selected_block = _inventory.putOneBlockAt(craft, _selection - 1, _selected_block, _furnace);
+				bool inList = false;
+				for (auto& s: _selection_list) {
+					if (s == _selection) {
+						inList = true;
+						break ;
+					}
+				}
+				if (!inList) {
+					_selected_block = _inventory.putOneBlockAt(craft, _selection - 1, _selected_block, _furnace);
+					_selection_list.push_back(_selection);
+				}
 			}
 		}
+		_right_released = false;
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_right_released = true;
+		_selection_list.clear();
 	}
 	if ((glfwGetKey(_window, GLFW_KEY_1) == GLFW_PRESS) && ++_key_1 == 1) {
 		_inventory.swapCells(0, _selection - 1);

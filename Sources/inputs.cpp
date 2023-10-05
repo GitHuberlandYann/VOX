@@ -138,7 +138,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		if (chunk->isHit(i)) {
 			// std::cout << "we have a hit ! " << i.x << ", " << i.y << ", " << i.z << ", " << std::endl;
-			if (i == player_pos || previous_block == player_pos) {
+			if (i == player_pos || previous_block == player_pos || previous_block == glm::ivec3(player_pos.x, player_pos.y, player_pos.z - 1)) {
 				// std::cout << "abort because hit is player pos" << std::endl;
 				return ;
 			}
@@ -251,7 +251,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 					newChunk->restoreBackup(search->second);
 					backups->erase(search);
 				}
-				newChunk->generate_chunk(chunks);
+				newChunk->generate_chunk(chunks); // TODO remove this from thread because it launches its own thread and there's data races..
 			}
 		}
 	}

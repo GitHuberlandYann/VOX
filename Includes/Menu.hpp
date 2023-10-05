@@ -21,6 +21,7 @@ class Menu
 		bool _vaoSet, _esc_released, _e_released, _left_released, _right_released;
 		GLint _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9;
 		std::vector<std::string> _worlds;
+		std::vector<int> _selection_list;
 		std::string _world_file;
 		GLFWwindow *_window;
 		Inventory &_inventory;
