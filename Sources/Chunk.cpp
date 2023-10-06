@@ -445,14 +445,14 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 	if (!pos.x) {
 		for (auto& c : _vis_chunks) {
 			if (c->isInChunk(_startX - CHUNK_SIZE, _startY)) {
-				c->update_border(CHUNK_SIZE + 1, pos.y + 1, pos.z, adding);
+				c->update_border(CHUNK_SIZE + 1, pos.y + 1, pos.z, type, adding);
 				break ;
 			}
 		}
 	} else if (pos.x == CHUNK_SIZE - 1) {
 		for (auto& c : _vis_chunks) {
 			if (c->isInChunk(_startX + CHUNK_SIZE, _startY)) {
-				c->update_border(0, pos.y + 1, pos.z, adding);
+				c->update_border(0, pos.y + 1, pos.z, type, adding);
 				break ;
 			}
 		}
@@ -460,14 +460,14 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 	if (!pos.y) {
 		for (auto& c : _vis_chunks) {
 			if (c->isInChunk(_startX, _startY - CHUNK_SIZE)) {
-				c->update_border(pos.x + 1, CHUNK_SIZE + 1, pos.z, adding);
+				c->update_border(pos.x + 1, CHUNK_SIZE + 1, pos.z, type, adding);
 				break ;
 			}
 		}
 	} else if (pos.y == CHUNK_SIZE - 1) {
 		for (auto& c : _vis_chunks) {
 			if (c->isInChunk(_startX, _startY + CHUNK_SIZE)) {
-				c->update_border(pos.x + 1, 0, pos.z, adding);
+				c->update_border(pos.x + 1, 0, pos.z, type, adding);
 				break ;
 			}
 		}
@@ -562,6 +562,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		pos.z = sand_fall_endz(pos);
 	}
+	handle_border_block(pos, air_flower(type, true), true); // if block at border of chunk gets added, we update neighbours
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
 	_removed.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
 	_added[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
@@ -705,7 +706,7 @@ void Chunk::generation( void )
 {
 	_blocks = new GLint[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT];
 	generate_blocks();
-	_vertices = new GLint[_displayed_blocks * 6]; // blocktype, adjacents blocks, X Y Z
+	_vertices = new GLint[_displayed_blocks * 6]; // blocktype, break frame, adjacents blocks, X Y Z
 	fill_vertex_array();
 }
 
@@ -724,7 +725,7 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 		add_block(inventory, pos, type);
 	}
 	delete [] _vertices;
-	_vertices = new GLint[_displayed_blocks * 6]; // blocktype, adjacents blocks, X Y Z
+	_vertices = new GLint[_displayed_blocks * 6];
 	fill_vertex_array();
 	_mtx.lock();
 	_vaoReset = false;
@@ -839,7 +840,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 
 // called by neighbour chunk if block change at border
 // posX and posY in [0; CHUNK_SIZE + 1] === _blocks compatible
-void Chunk::update_border(int posX, int posY, int level, bool adding)
+void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 {
 	// std::cout << "got into update border of chunk " << _startX << ", " << _startY << std::endl;
 	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << adding << std::endl;
@@ -850,22 +851,42 @@ void Chunk::update_border(int posX, int posY, int level, bool adding)
 	if (_thread.joinable()) {
 		_thread.join();
 	}
+	glm::ivec2 target;
+	if (!posX) {
+		target = glm::ivec2(1, posY);
+	} else if (posX == CHUNK_SIZE + 1) {
+		target = glm::ivec2(CHUNK_SIZE, posY);
+	} else if (!posY) {
+		target = glm::ivec2(posX, 1);
+	} else if (posY == CHUNK_SIZE + 1) {
+		target = glm::ivec2(posX, CHUNK_SIZE);
+	}
 	if (adding) {
-		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::STONE;
-		// TODO hide block if no longer visible
+		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
 		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
-		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::STONE;
-	} else {
-		glm::ivec2 target;
-		if (!posX) {
-			target = glm::ivec2(1, posY);
-		} else if (posX == CHUNK_SIZE + 1) {
-			target = glm::ivec2(CHUNK_SIZE, posY);
-		} else if (!posY) {
-			target = glm::ivec2(posX, 1);
-		} else if (posY == CHUNK_SIZE + 1) {
-			target = glm::ivec2(posX, CHUNK_SIZE);
+		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
+		if (exposed_block(target.x, target.y, level, true)) { // block still visible, no change in display_blocks, only in vixible faces
+			for (int index = 0; index < _displayed_blocks * 6; index += 6) {
+				_mtx.lock();
+				if (_vertices[index + 5] == level && _vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1) {
+					_vertices[index + 2] = get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true);
+					_vaoReset = false;
+					_mtx.unlock();
+					return ;
+				}
+				_mtx.unlock();
+			}
+		} else { // we need to redo it all because on less exposed block
+			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
+			delete [] _vertices;
+			_displayed_blocks--;
+			_vertices = new GLint[_displayed_blocks * 6];
+			fill_vertex_array();
+			_mtx.lock();
+			_vaoReset = false;
+			_mtx.unlock();
 		}
+	} else {
 		_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_removed[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = 1;
 		if (exposed_block(target.x, target.y, level, true)) { // block was already exposed, no change in displayed_blocks, only in visible faces
@@ -873,7 +894,7 @@ void Chunk::update_border(int posX, int posY, int level, bool adding)
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
 			for (int index = 0; index < _displayed_blocks * 6; index += 6) {
 				_mtx.lock();
-				if (_vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1 && _vertices[index + 5] == level) {
+				if (_vertices[index + 5] == level && _vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1) {
 					_vertices[index + 2] = get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true);
 					_vaoReset = false;
 					_mtx.unlock();
@@ -887,7 +908,7 @@ void Chunk::update_border(int posX, int posY, int level, bool adding)
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
 			delete [] _vertices;
 			_displayed_blocks++;
-			_vertices = new GLint[_displayed_blocks * 6]; // blocktype, adjacents blocks, X Y Z
+			_vertices = new GLint[_displayed_blocks * 6];
 			fill_vertex_array();
 			_mtx.lock();
 			_vaoReset = false;
@@ -896,48 +917,85 @@ void Chunk::update_border(int posX, int posY, int level, bool adding)
 	}
 }
 
-bool Chunk::collision( glm::vec3 &pos, Camera &cam )
+/* collisionBox takes eye-position of object, dimension of its hitbox and returns wether object is inside block or not */
+bool Chunk::collisionBox( glm::vec3 pos, float width, float height, float height_offset )
 {
-	glm::ivec3 ipos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
-	if (ipos.x < 0 || ipos.x >= CHUNK_SIZE || ipos.y < 0 || ipos.y >= CHUNK_SIZE || ipos.z < 2 || ipos.z > 255) {
-		std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK " << ipos.x << ", " << ipos.y << ", " << ipos.z << std::endl;
-		// std::cout << "\treal pos " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-		// std::cout << "\tchunk pos " << _startX << ", " << _startY << std::endl;
+	// WATCHOUT if width > 0.5 problemos because we check block left and right but not middle
+	glm::ivec3 top0 = glm::ivec3(pos.x - width - _startX, pos.y - width - _startY, pos.z + height_offset);
+	if (top0.x < -1 || top0.x > CHUNK_SIZE || top0.y < -1 || top0.y > CHUNK_SIZE || top0.z < 2 || top0.z > 255) {
+		std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top0 " << top0.x << ", " << top0.y << ", " << top0.z << std::endl;
 		return (true);
 	}
-	if (air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z], false)
-		|| air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 1], false)) { // body in block
+	if (air_flower(_blocks[((top0.x + 1) * (CHUNK_SIZE + 2) + top0.y + 1) * WORLD_HEIGHT + top0.z], false)) {
 		return (true);
 	}
-	glm::vec3 save_pos = pos;
-	if (!air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + ipos.z - 2], false)) { // falling
-		// std::cout << "before fall: " << pos.z << " vs " << save_pos.z << std::endl;
-		cam.fall(true);
-		// std::cout << "after fall: " << pos.z << " vs " << save_pos.z << std::endl;
-		for (int index = save_pos.z; index >= ((pos.z > 2) ? pos.z : 2); index--) {
-			if (air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + index], false)) {
-				pos.z = index + 2.62f;
-				cam.touchGround();
-				cam._update = true;
-				return (false);
-			}
+	glm::ivec3 top1 = glm::ivec3(pos.x + width - _startX, pos.y - width - _startY, pos.z + height_offset);
+	if (top1 != top0) {
+		if (top1.x < -1 || top1.x > CHUNK_SIZE || top1.y < -1 || top1.y > CHUNK_SIZE || top1.z < 2 || top1.z > 255) {
+			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top1 " << top1.x << ", " << top1.y << ", " << top1.z << std::endl;
+			return (true);
 		}
-	} else {
-		cam.fall(false);
+		if (air_flower(_blocks[((top1.x + 1) * (CHUNK_SIZE + 2) + top1.y + 1) * WORLD_HEIGHT + top1.z], false)) {
+			return (true);
+		}
 	}
-	// cam.fall(true);
-	// for (int index = save_pos.z - 1; index >= ((pos.z > 2) ? pos.z : 2); index--) {
-	// 	if (air_flower(_blocks[((ipos.x + 1) * (CHUNK_SIZE + 2) + ipos.y + 1) * WORLD_HEIGHT + index], false)) {
-	// 		pos.z = index + 2.62f;
-	// 		cam.touchGround();
-	// 		cam._update = true;
-	// 		return (false);
-	// 	}
-	// }
-	if (save_pos.z != pos.z) {
-		cam._update = true;
+	glm::ivec3 top2 = glm::ivec3(pos.x + width - _startX, pos.y + width - _startY, pos.z + height_offset);
+	if (top2 != top0) {
+		if (top2.x < -1 || top2.x > CHUNK_SIZE || top2.y < -1 || top2.y > CHUNK_SIZE || top2.z < 2 || top2.z > 255) {
+			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top2 " << top2.x << ", " << top2.y << ", " << top2.z << std::endl;
+			return (true);
+		}
+		if (air_flower(_blocks[((top2.x + 1) * (CHUNK_SIZE + 2) + top2.y + 1) * WORLD_HEIGHT + top2.z], false)) {
+			return (true);
+		}
+	}
+	glm::ivec3 top3 = glm::ivec3(pos.x - width - _startX, pos.y + width - _startY, pos.z + height_offset);
+	if (top3 != top0) {
+		if (top3.x < -1 || top3.x > CHUNK_SIZE || top3.y < -1 || top3.y > CHUNK_SIZE || top3.z < 2 || top3.z > 255) {
+			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top3 " << top3.x << ", " << top3.y << ", " << top3.z << std::endl;
+			return (true);
+		}
+		if (air_flower(_blocks[((top3.x + 1) * (CHUNK_SIZE + 2) + top3.y + 1) * WORLD_HEIGHT + top3.z], false)) {
+			return (true);
+		}
+	}
+	if (height > 0 && top0.z != static_cast<int>(pos.z + height_offset - height)) {
+		return (collisionBox(glm::vec3(pos.x, pos.y, pos.z - 1), width, height - 1, height_offset));
 	}
 	return (false);
+}
+
+void Chunk::applyGravity( Camera *camera )
+{
+	float saved_posZ = camera->_position.z;
+	_camera->applyGravity();
+	glm::vec3 pos = _camera->_position;
+	float distZ = saved_posZ - pos.z;
+	if (distZ < 0) { // jumping
+		// std::cout << "DEBUG: " << std::to_string(camera->_position.z) << std::endl;
+		for (int posZ = saved_posZ + 1; posZ <= static_cast<int>(pos.z) + 1; posZ++) {
+			// std::cout << "testing with posZ " << posZ << std::endl;
+			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
+				camera->_position.z = glm::floor(posZ) - (0.8f - EYE_LEVEL + 0.00005f);
+				// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
+				camera->_fall_distance -= (camera->_position.z - pos.z);
+				camera->_update = true;
+				camera->_inJump = false;
+				return ;
+			}
+		}
+	} else { // falling
+		for (int posZ = saved_posZ; posZ >= static_cast<int>(pos.z); posZ--) {
+			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
+				camera->_position.z = glm::floor((posZ)) + EYE_LEVEL + 0.00005f;
+				// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
+				camera->_fall_distance -= (camera->_position.z - pos.z);
+				camera->touchGround();
+				return ;
+			}
+		}
+	}
+	camera->_update = true;
 }
 
 int Chunk::isLoaded( GLint &counter )
@@ -962,8 +1020,6 @@ void Chunk::drawArray( GLint & counter, GLint &block_counter )
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		_mtx.unlock();
 		++counter;
-		// if (counter > 5) { // we don't load more than 5 new chunks per frame
-		// if (counter > 5 && counter < 50) { // we don't load more than 5 new chunks per frame, but if there's more than 50 to load, we take the hit
 		if (counter % 50 > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
 			return ;
 		}

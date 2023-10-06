@@ -107,8 +107,9 @@ class Chunk
 		int isHit( glm::ivec3 pos );
 		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding, std::list<Chunk *> vis_chunks );
 		void updateBreak( glm::ivec4 block_hit, int frame );
-		void update_border(int posX, int posY, int level, bool adding);
-		bool collision( glm::vec3 & pos, Camera &cam );
+		void update_border(int posX, int posY, int level, int type, bool adding);
+		bool collisionBox( glm::vec3 pos, float width, float height, float height_offset );
+		void applyGravity( Camera *camera );
 
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &block_counter );

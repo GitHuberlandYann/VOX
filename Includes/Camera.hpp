@@ -7,7 +7,9 @@ enum Camera_Movement {
     LEFT,
     RIGHT,
 	UP,
-	DOWN
+	DOWN,
+	X_AXIS,
+	Y_AXIS
 };
 	// _cam_angles = glm::vec2(225.0f, -37.0f);
 # define YAW          90.0f
@@ -15,6 +17,7 @@ enum Camera_Movement {
 # define SPEED        20
 # define WALK_SPEED   4.317
 # define RUN_SPEED    5.612
+# define RUN_JUMP_SPEED 7.127
 # define EYE_LEVEL    0.62f
 # define INITIAL_JUMP -9.317f
 # define INITIAL_FALL 6.605f
@@ -36,7 +39,7 @@ class Camera
 		float _yaw;
 		float _pitch;
 		// double _mouse_sensitivity;
-		float _deltaTime, _fall_time, _fall_distance;
+		float _deltaTime, _fall_time;
 		float _fov;
 		float _fall_speed;
 		bool _isRunning, _healthUpdate;
@@ -46,6 +49,7 @@ class Camera
 		glm::vec3 _position;
 		int _movement_speed, _health_points;
 		bool _update, _fovUpdate, _inJump, _touchGround;
+		float _fall_distance;
 
 		Camera( glm::vec3 position );
 		~Camera( void );
@@ -57,8 +61,9 @@ class Camera
 		void setRun( bool value );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );
-		void processKeyboard( Camera_Movement direction, bool game_mode );
-		void fall( bool real_fall );
+		void moveFly( GLint v, GLint h, GLint z );
+		void moveHuman( Camera_Movement direction, GLint v, GLint h );
+		void applyGravity( void );
 		void touchGround( void );
 		bool getModif( void );
 		void processPitch( GLint offset );

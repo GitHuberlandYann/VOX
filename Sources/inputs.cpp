@@ -1,7 +1,7 @@
 #include "vox.h"
 
 Chunk *current_chunk_ptr = NULL;
-Chunk *prev_chunk_ptr = NULL;
+// Chunk *prev_chunk_ptr = NULL;
 Chunk *chunk_hit = NULL;
 
 Chunk *OpenGL_Manager::get_current_chunk_ptr( void )
@@ -12,7 +12,7 @@ Chunk *OpenGL_Manager::get_current_chunk_ptr( void )
 void OpenGL_Manager::resetInputsPtrs( void )
 {
 	current_chunk_ptr = NULL;
-	prev_chunk_ptr = NULL;
+	// prev_chunk_ptr = NULL;
 	chunk_hit = NULL;
 }
 /*
@@ -50,7 +50,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 			}
 		}
 		if (first_loop) {
-			(current_chunk_ptr) ? prev_chunk_ptr = current_chunk_ptr : prev_chunk_ptr = chunk;
+			// (current_chunk_ptr) ? prev_chunk_ptr = current_chunk_ptr : prev_chunk_ptr = chunk;
 			current_chunk_ptr = chunk;
 			first_loop = false;
 		}
@@ -417,25 +417,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 
 	// camera work 
 	_camera->setDelta(deltaTime);
-	_camera->setRun(glfwGetKey(_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS);
 	GLint key_cam_v = (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS);
-	if (key_cam_v) {
-		(key_cam_v == 1)
-			? _camera->processKeyboard(FORWARD, _game_mode)
-			: _camera->processKeyboard(BACKWARD, _game_mode);
-	}
-	GLint key_cam_h = (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS);
-	if (key_cam_h) {
-		(key_cam_h == 1)
-			? _camera->processKeyboard(LEFT, _game_mode)
-			: _camera->processKeyboard(RIGHT, _game_mode);
-	}
+	GLint key_cam_h = (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS);
 	GLint key_cam_z = (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS);
-	if (key_cam_z) {
-		(key_cam_z == 1)
-			? _camera->processKeyboard(UP, _game_mode)
-			: _camera->processKeyboard(DOWN, _game_mode);
-	}
 
 	// this will be commented at some point
 	GLint key_cam_yaw = (glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS);
@@ -449,11 +433,51 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 
 	if (!key_cam_v && !key_cam_h) {
 		_camera->setRun(false);
+	} else {
+		_camera->setRun(glfwGetKey(_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS);
+	}
+
+	if (_game_mode == CREATIVE) { // no collision check, free to move however you want
+		_camera->moveFly(key_cam_v, key_cam_h, key_cam_z);
 	}
 
 	// we update the current chunk before we update cam view, because we check in current chunk for collision
 	// update block hit
 	if (rayCast) {
+		mtx.lock();
+		if (_game_mode == SURVIVAL && current_chunk_ptr) { // on first frame -> no current_chunk_ptr
+			mtx.unlock();
+			_camera->moveHuman((key_cam_z == 1 && ++_key_jump == 1) ? UP : DOWN, 0, 0); // sets inJump variable, no actual movement
+			if (key_cam_z < 1) {
+				_key_jump = 0;
+			}
+			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h); // move on X_AXIS
+			mtx.lock();
+			if (current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
+				mtx.unlock();
+				_camera->moveHuman(X_AXIS, -key_cam_v, -key_cam_h); // if collision after movement, undo movement
+				// prev_chunk_ptr->collision(_camera->_position, *_camera);
+				// current_chunk_ptr = prev_chunk_ptr;
+				_camera->setRun(false);
+				mtx.lock();
+			}
+			mtx.unlock();
+			_camera->moveHuman(Y_AXIS, key_cam_v, key_cam_h); // move on Y_AXIS
+			mtx.lock();
+			if (current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
+				mtx.unlock();
+				_camera->moveHuman(Y_AXIS, -key_cam_v, -key_cam_h); // if collision after movement, undo movement
+				_camera->setRun(false);
+				mtx.lock();
+			}
+			mtx.unlock();
+			mtx.lock();
+			if (!current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
+				current_chunk_ptr->applyGravity(_camera); // move on Z_AXIS
+			}
+		}
+		mtx.unlock();
+
 		Chunk *save_chunk = chunk_hit;
 		glm::ivec4 block_hit = get_block_hit();
 		if (_block_hit != block_hit) {
@@ -466,28 +490,6 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			}
 			_break_time = 0;
 			_break_frame = _outline;
-		}
-
-		if (_game_mode == SURVIVAL) {
-			mtx.lock();
-			if (current_chunk_ptr->collision(_camera->_position, *_camera)) {
-				mtx.unlock();
-				if (key_cam_v) {
-					(key_cam_v == 1)
-						? _camera->processKeyboard(BACKWARD, _game_mode) // if collision after movement, undo movement
-						: _camera->processKeyboard(FORWARD, _game_mode);
-				}
-				if (key_cam_h) {
-					(key_cam_h == 1)
-						? _camera->processKeyboard(RIGHT, _game_mode)
-						: _camera->processKeyboard(LEFT, _game_mode);
-				}
-				prev_chunk_ptr->collision(_camera->_position, *_camera);
-				current_chunk_ptr = prev_chunk_ptr;
-				_camera->setRun(false);
-				mtx.lock();
-			}
-			mtx.unlock();
 		}
 	}
 

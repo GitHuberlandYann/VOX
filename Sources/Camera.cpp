@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _fall_time(0), _fall_distance(0), _fov(FOV), _fall_speed(0), _isRunning(false), _movement_speed(SPEED), _health_points(20), _inJump(false), _touchGround(false)
+Camera::Camera( glm::vec3 position ) : _fall_time(0), _fov(FOV), _fall_speed(0), _isRunning(false), _movement_speed(SPEED), _health_points(20), _inJump(false), _touchGround(false), _fall_distance(0)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -106,40 +106,39 @@ void Camera::update_movement_speed( GLint key_cam_speed )
 	}
 }
 
-void Camera::processKeyboard( Camera_Movement direction, bool game_mode )
+void Camera::moveFly( GLint v, GLint h, GLint z )
 {
-	_update = true;
-	if (game_mode == CREATIVE) {
-		float speed_frame = (_isRunning) ?  _deltaTime * _movement_speed * 2: _deltaTime * _movement_speed;
-		if (direction == FORWARD)
-			_position += _front * speed_frame;
-		else if (direction == BACKWARD)
-			_position -= _front * speed_frame;
-		else if (direction == LEFT)
-			_position -= _right * speed_frame;
-		else if (direction == RIGHT)
-			_position += _right * speed_frame;
-		else if (direction == UP)
-			_position += _up * speed_frame;
-		else if (direction == DOWN)
-			_position -= _up * speed_frame;
-	} else {
-		float speed_frame = (_isRunning) ?  _deltaTime * RUN_SPEED : _deltaTime * WALK_SPEED;
-		if (direction == FORWARD)
-			_position += glm::vec3(_front.x, _front.y, 0.0f) * speed_frame;
-		else if (direction == BACKWARD)
-			_position -= glm::vec3(_front.x, _front.y, 0.0f) * speed_frame;
-		else if (direction == LEFT)
-			_position -= glm::vec3(_right.x, _right.y, 0.0f) * speed_frame;
-		else if (direction == RIGHT)
-			_position += glm::vec3(_right.x, _right.y, 0.0f) * speed_frame;
-		else if (direction == UP && _touchGround)
-			_inJump = true;
+	if (!v && !h && !z) {
+		return ;
 	}
+	_update = true;
+	float speed_frame = _deltaTime * _movement_speed * ((_isRunning) ? 2 : 1);
+	_position.x += (v * _front.x + h * _right.x + z * _up.x) * speed_frame;
+	_position.y += (v * _front.y + h * _right.y + z * _up.y) * speed_frame;
+	_position.z += (v * _front.z + h * _right.z + z * _up.z) * speed_frame;
 }
 
-void Camera::fall( bool real_fall )
+void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h )
 {
+	if (direction == UP && _touchGround) {
+		_update = true;
+		_inJump = true;
+		return ;
+	} else if (direction == UP || direction == DOWN || (!v && !h)) {
+		return ;
+	}
+	_update = true;
+
+	float speed_frame = _deltaTime * ((_isRunning) ?  ((_touchGround) ? RUN_SPEED : RUN_JUMP_SPEED ) : WALK_SPEED);
+	if (direction == X_AXIS)
+		_position.x += glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).x * speed_frame;
+	else if (direction == Y_AXIS)
+		_position.y += glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).y * speed_frame;
+}
+
+void Camera::applyGravity( void )
+{
+	// std::cout << "Gravity applied" << std::endl;
 	_touchGround = false;
 	_fall_time += _deltaTime;
 	if (_inJump) {
@@ -149,28 +148,19 @@ void Camera::fall( bool real_fall )
 	} else if (INITIAL_FALL + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time < FALL_SPEED) {
 		_fall_speed = INITIAL_FALL + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time;
 	}
-	// std::cout << "fall " << real_fall << std::endl;
-	if (real_fall) { // empty block bellow
-		_position.z -= _deltaTime * _fall_speed;
-		_fall_distance += _deltaTime * _fall_speed;
-	} else {//if (_position.z - int(_position.z) > 0.62f) {
-		float new_z = _position.z - _deltaTime * _fall_speed;
-		if (new_z - int(_position.z) > EYE_LEVEL) {
-			_position.z = new_z;
-		} else if (_fall_speed > 0) { // don't wan't to get a boost on jump
-			_position.z = int(_position.z) + EYE_LEVEL;
-			touchGround();
-		} else {
-			_position.z = new_z; // jump
-		}
-	}
+
+	_position.z -= _deltaTime * _fall_speed;
+	_fall_distance += _deltaTime * _fall_speed;
 }
 
 void Camera::touchGround( void )
 {
-	// std::cout << "TOUCH GROUND AT " << _fall_speed << std::endl;
+	// std::cout << "TOUCH GROUND AT " << _fall_speed << std::endl; // TODO no damage if coming from CREATIVE mode
 	if (_inJump && _fall_speed < 0) {
 		return ;
+	}
+	if (!_touchGround) {
+		_update = true;
 	}
 	_healthUpdate = (glm::max(0.0f, _fall_distance - 3) != 0);
 	_health_points -= glm::max(0.0f, _fall_distance - 3);
@@ -250,7 +240,7 @@ std::string Camera::getCamString( bool game_mode )
 			+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 			+ "\nDir\t\t> x: " + std::to_string(_front.x)
 			+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
-			+ "\nSpeed\t> " + ((_isRunning) ? std::to_string(RUN_SPEED) : std::to_string(WALK_SPEED))
+			+ "\nSpeed\t> " + ((_isRunning) ?  ((_touchGround) ? std::to_string(RUN_SPEED) : std::to_string(RUN_JUMP_SPEED) ) : std::to_string(WALK_SPEED))
 			+ "\nFall\t> " + std::to_string(_fall_speed)
 			+ "\nFall Distance\t> " + std::to_string(_fall_distance)
 			+ "\nHealth\t> " + std::to_string(_health_points)
