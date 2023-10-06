@@ -309,6 +309,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	// toggle game mode
 	if ((glfwGetKey(_window, GLFW_KEY_G) == GLFW_PRESS) && ++_key_g == 1) {
 		_game_mode = !_game_mode;
+		_camera->_fall_immunity = true;
 	} else if (glfwGetKey(_window, GLFW_KEY_G) == GLFW_RELEASE) {
 		_key_g = 0;
 	}

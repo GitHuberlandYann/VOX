@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _fall_time(0), _fov(FOV), _fall_speed(0), _isRunning(false), _movement_speed(SPEED), _health_points(20), _inJump(false), _touchGround(false), _fall_distance(0)
+Camera::Camera( glm::vec3 position ) : _fall_time(0), _fov(FOV), _fall_speed(0), _isRunning(false), _movement_speed(SPEED), _health_points(20), _inJump(false), _touchGround(false), _fall_immunity(true), _fall_distance(0)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -162,10 +162,14 @@ void Camera::touchGround( void )
 	if (!_touchGround) {
 		_update = true;
 	}
-	_healthUpdate = (glm::max(0.0f, _fall_distance - 3) != 0);
-	_health_points -= glm::max(0.0f, _fall_distance - 3);
-	if (_health_points < 0) {
-		_health_points = 0;
+	if (_fall_immunity) {
+		_fall_immunity = false;
+	} else {
+		_healthUpdate = (glm::max(0.0f, _fall_distance - 3) != 0);
+		_health_points -= glm::max(0.0f, _fall_distance - 3);
+		if (_health_points < 0) {
+			_health_points = 0;
+		}
 	}
 	_fall_time = 0;
 	_fall_distance = 0;

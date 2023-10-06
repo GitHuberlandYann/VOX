@@ -141,8 +141,9 @@ int Menu::world_select_menu( void )
 	_text->displayText(WIN_WIDTH / 2 + 128 * mult - 80, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Cancel");
 
 	for (int index = 0; index < static_cast<int>(_worlds.size()) && index < 8; index++) {
-		_text->displayText(WIN_WIDTH / 2 - _worlds[index].size() * 10 + mult, (30 + 20 * index) * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), _worlds[index]);
-		_text->displayText(WIN_WIDTH / 2 - _worlds[index].size() * 10, (30 + 20 * index) * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), _worlds[index]);
+		std::string str = _worlds[index].substr(0, _worlds[index].size() - 5);
+		_text->displayText(WIN_WIDTH / 2 - str.size() * 10 + mult, (30 + 20 * index) * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), str);
+		_text->displayText(WIN_WIDTH / 2 - str.size() * 10, (30 + 20 * index) * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), str);
 	}
 	return (0);
 }

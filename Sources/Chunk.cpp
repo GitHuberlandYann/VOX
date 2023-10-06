@@ -308,7 +308,7 @@ void Chunk::generate_blocks( void )
 	}
 
 	// adding leaves to trees
-	std::vector<glm::ivec3>::iterator it = trees.begin();
+	std::vector<glm::ivec3>::iterator it = trees.begin(); // TODO put trees on chunk border and communicate with border chunks
 	for (; it != trees.end(); it++) {
 		for (int index = 0; index < 61; index++) {
 			const GLint delta[3] = {oak_normal[index][0], oak_normal[index][1], oak_normal[index][2]};
@@ -562,7 +562,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		pos.z = sand_fall_endz(pos);
 	}
-	handle_border_block(pos, air_flower(type, true), true); // if block at border of chunk gets added, we update neighbours
+	handle_border_block(pos, air_flower(type, false), true); // if block at border of chunk gets added, we update neighbours
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
 	_removed.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
 	_added[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
@@ -921,7 +921,7 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 bool Chunk::collisionBox( glm::vec3 pos, float width, float height, float height_offset )
 {
 	// WATCHOUT if width > 0.5 problemos because we check block left and right but not middle
-	glm::ivec3 top0 = glm::ivec3(pos.x - width - _startX, pos.y - width - _startY, pos.z + height_offset);
+	glm::ivec3 top0 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height_offset));
 	if (top0.x < -1 || top0.x > CHUNK_SIZE || top0.y < -1 || top0.y > CHUNK_SIZE || top0.z < 2 || top0.z > 255) {
 		std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top0 " << top0.x << ", " << top0.y << ", " << top0.z << std::endl;
 		return (true);
@@ -929,7 +929,7 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height, float height
 	if (air_flower(_blocks[((top0.x + 1) * (CHUNK_SIZE + 2) + top0.y + 1) * WORLD_HEIGHT + top0.z], false)) {
 		return (true);
 	}
-	glm::ivec3 top1 = glm::ivec3(pos.x + width - _startX, pos.y - width - _startY, pos.z + height_offset);
+	glm::ivec3 top1 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height_offset));
 	if (top1 != top0) {
 		if (top1.x < -1 || top1.x > CHUNK_SIZE || top1.y < -1 || top1.y > CHUNK_SIZE || top1.z < 2 || top1.z > 255) {
 			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top1 " << top1.x << ", " << top1.y << ", " << top1.z << std::endl;
@@ -939,7 +939,7 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height, float height
 			return (true);
 		}
 	}
-	glm::ivec3 top2 = glm::ivec3(pos.x + width - _startX, pos.y + width - _startY, pos.z + height_offset);
+	glm::ivec3 top2 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height_offset));
 	if (top2 != top0) {
 		if (top2.x < -1 || top2.x > CHUNK_SIZE || top2.y < -1 || top2.y > CHUNK_SIZE || top2.z < 2 || top2.z > 255) {
 			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top2 " << top2.x << ", " << top2.y << ", " << top2.z << std::endl;
@@ -949,7 +949,7 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height, float height
 			return (true);
 		}
 	}
-	glm::ivec3 top3 = glm::ivec3(pos.x - width - _startX, pos.y + width - _startY, pos.z + height_offset);
+	glm::ivec3 top3 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height_offset));
 	if (top3 != top0) {
 		if (top3.x < -1 || top3.x > CHUNK_SIZE || top3.y < -1 || top3.y > CHUNK_SIZE || top3.z < 2 || top3.z > 255) {
 			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top3 " << top3.x << ", " << top3.y << ", " << top3.z << std::endl;
@@ -973,26 +973,45 @@ void Chunk::applyGravity( Camera *camera )
 	float distZ = saved_posZ - pos.z;
 	if (distZ < 0) { // jumping
 		// std::cout << "DEBUG: " << std::to_string(camera->_position.z) << std::endl;
-		for (int posZ = saved_posZ + 1; posZ <= static_cast<int>(pos.z) + 1; posZ++) {
+		for (float posZ = saved_posZ + 1; posZ < pos.z + 1; posZ++) {
 			// std::cout << "testing with posZ " << posZ << std::endl;
 			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
 				camera->_position.z = glm::floor(posZ) - (0.8f - EYE_LEVEL + 0.00005f);
 				// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
-				camera->_fall_distance -= (camera->_position.z - pos.z);
+				camera->_fall_distance -= (camera->_position.z - posZ);
 				camera->_update = true;
 				camera->_inJump = false;
 				return ;
 			}
 		}
+		if (collisionBox(glm::vec3(pos.x, pos.y, pos.z + 1), 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
+			camera->_position.z = glm::floor(pos.z + 1) - (0.8f - EYE_LEVEL + 0.00005f);
+			// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
+			camera->_fall_distance -= 1;
+			camera->_update = true;
+			camera->_inJump = false;
+			return ;
+		}
 	} else { // falling
-		for (int posZ = saved_posZ; posZ >= static_cast<int>(pos.z); posZ--) {
+		for (float posZ = saved_posZ; posZ > pos.z; posZ--) {
 			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
 				camera->_position.z = glm::floor((posZ)) + EYE_LEVEL + 0.00005f;
-				// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
-				camera->_fall_distance -= (camera->_position.z - pos.z);
+				camera->_fall_distance -= (camera->_position.z - posZ);
 				camera->touchGround();
+				if (saved_posZ != camera->_position.z) {
+					camera->_update = true;
+				}
 				return ;
 			}
+		}
+		if (collisionBox(glm::vec3(pos), 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
+			camera->_position.z = glm::floor((pos.z)) + EYE_LEVEL + 0.00005f;
+			camera->_fall_distance -= (camera->_position.z - pos.z);
+			camera->touchGround();
+			if (saved_posZ != camera->_position.z) {
+				camera->_update = true;
+			}
+			return ;
 		}
 	}
 	camera->_update = true;
