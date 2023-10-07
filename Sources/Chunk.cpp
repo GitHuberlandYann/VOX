@@ -308,14 +308,13 @@ void Chunk::generate_blocks( void )
 	}
 
 	// adding leaves to trees
-	std::vector<glm::ivec3>::iterator it = trees.begin(); // TODO put trees on chunk border and communicate with border chunks
-	for (; it != trees.end(); it++) {
+	for (auto& tree: trees) { // TODO put trees on chunk border and communicate with border chunks
 		for (int index = 0; index < 61; index++) {
 			const GLint delta[3] = {oak_normal[index][0], oak_normal[index][1], oak_normal[index][2]};
-			if (_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * WORLD_HEIGHT + (*it).z + delta[2]] == blocks::AIR) {
-				std::map<int, int>::iterator search = _removed.find((((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * WORLD_HEIGHT + (*it).z + delta[2]);
+			if (_blocks[((tree.x + delta[0]) * (CHUNK_SIZE + 2) + tree.y + delta[1]) * WORLD_HEIGHT + tree.z + delta[2]] == blocks::AIR) {
+				std::map<int, int>::iterator search = _removed.find(((tree.x + delta[0]) * (CHUNK_SIZE + 2) + tree.y + delta[1]) * WORLD_HEIGHT + tree.z + delta[2]);
 				if (search == _removed.end()) {
-					_blocks[(((*it).x + delta[0]) * (CHUNK_SIZE + 2) + (*it).y + delta[1]) * WORLD_HEIGHT + (*it).z + delta[2]] = blocks::OAK_LEAVES;
+					_blocks[((tree.x + delta[0]) * (CHUNK_SIZE + 2) + tree.y + delta[1]) * WORLD_HEIGHT + tree.z + delta[2]] = blocks::OAK_LEAVES;
 				}
 			}
 		}

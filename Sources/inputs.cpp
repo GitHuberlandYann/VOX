@@ -176,15 +176,12 @@ void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread
 {
 	std::list<Chunk *> newvis_chunks;
 	mtx_perimeter.lock();
-	std::list<Chunk *>::iterator ite = _perimeter_chunks.end();
-	std::list<Chunk *>::iterator it = _perimeter_chunks.begin();
-	for (; it != ite;) {
-		if (_camera->chunkInFront(_current_chunk, (*it)->getStartX(), (*it)->getStartY())) {
-			(*it)->setVisibility(&newvis_chunks, _current_chunk.x, _current_chunk.y, _render_distance * CHUNK_SIZE);
+	for (auto& peri: _perimeter_chunks) {
+		if (_camera->chunkInFront(_current_chunk, peri->getStartX(), peri->getStartY())) {
+			peri->setVisibility(&newvis_chunks, _current_chunk.x, _current_chunk.y, _render_distance * CHUNK_SIZE);
 		} else {
-			(*it)->hide();
+			peri->hide();
 		}
-		++it;
 	}
 	mtx_perimeter.unlock();
 	_visible_chunks = newvis_chunks;

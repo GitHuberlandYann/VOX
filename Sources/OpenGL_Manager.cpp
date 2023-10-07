@@ -51,9 +51,8 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_deleted_chunks.clear();
 	mtx_deleted_chunks.unlock();
 	mtx.lock();
-	std::list<Chunk *>::iterator it = _chunks.begin();
-	for (; it != _chunks.end(); it++) {
-		delete (*it);
+	for (auto& c: _chunks) {
+		delete c;
 	}
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
 	_chunks.clear();
@@ -294,10 +293,9 @@ void OpenGL_Manager::main_loop( void )
 		previousFrame = currentTime;
 
 		GLint newVaoCounter = 0, blockCounter = 0;
-		std::list<Chunk *>::iterator it = _visible_chunks.begin();
-		for (; it != _visible_chunks.end(); it++) {
-			(*it)->drawArray(newVaoCounter, blockCounter);
-			(*it)->updateFurnaces(currentTime);
+		for (auto& c: _visible_chunks) {
+			c->drawArray(newVaoCounter, blockCounter);
+			c->updateFurnaces(currentTime);
 		}
 
 		// glClear(GL_DEPTH_BUFFER_BIT);

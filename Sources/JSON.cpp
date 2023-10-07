@@ -15,10 +15,9 @@ void OpenGL_Manager::saveWorld( void )
 	_perimeter_chunks.clear();
 	mtx_perimeter.unlock();
 	mtx.lock();
-	std::list<Chunk *>::iterator it = _chunks.begin();
-	for (; it != _chunks.end(); it++) {
-		(*it)->setBackup(&_backups);
-		delete (*it);
+	for (auto& c: _chunks) {
+		c->setBackup(&_backups);
+		delete c;
 	}
 	_chunks.clear();
 	mtx.unlock();
