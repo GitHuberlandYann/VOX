@@ -34,7 +34,6 @@ TODOS:
     - player arm in survival mode
     - nether
 	- item number color in ingame menus
-	- strafing speed reduction + rework movements
     - hitbox flowers and blocks in general -> might have to split blocks in 27 ..
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
@@ -65,6 +64,7 @@ DONE:
     - player gravity
     - hitbox around player for collisions - https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
     - fix fall going through blocks + fix jump into block above head
+	- strafing speed reduction + rework movements
     - better fall damage
     - placing sand = gravity
     - sand falls if nothing under, even in caves

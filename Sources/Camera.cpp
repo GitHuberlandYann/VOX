@@ -113,9 +113,12 @@ void Camera::moveFly( GLint v, GLint h, GLint z )
 	}
 	_update = true;
 	float speed_frame = _deltaTime * _movement_speed * ((_isRunning) ? 2 : 1);
-	_position.x += (v * _front.x + h * _right.x + z * _up.x) * speed_frame;
-	_position.y += (v * _front.y + h * _right.y + z * _up.y) * speed_frame;
-	_position.z += (v * _front.z + h * _right.z + z * _up.z) * speed_frame;
+	glm::vec3 norm = glm::normalize(glm::vec3(v * _front.x + h * _right.x + z * _up.x,
+												v * _front.y + h * _right.y + z * _up.y,
+												v * _front.z + h * _right.z + z * _up.z));
+	_position.x += norm.x * speed_frame;
+	_position.y += norm.y * speed_frame;
+	_position.z += norm.z * speed_frame;
 }
 
 void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h )
@@ -155,7 +158,7 @@ void Camera::applyGravity( void )
 
 void Camera::touchGround( void )
 {
-	// std::cout << "TOUCH GROUND AT " << _fall_speed << std::endl; // TODO no damage if coming from CREATIVE mode
+	// std::cout << "TOUCH GROUND AT " << _fall_speed << std::endl;
 	if (_inJump && _fall_speed < 0) {
 		return ;
 	}
