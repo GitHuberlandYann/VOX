@@ -35,6 +35,7 @@ enum blocks {
 	SUGAR_CANE,
 	DEAD_BUSH,
 	WATER = 78,
+	SKY,
 	STICK = 80,
 	WOODEN_SHOVEL,
 	STONE_SHOVEL,

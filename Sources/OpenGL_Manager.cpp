@@ -227,7 +227,7 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	}
 	delete texture;
 
-	check_glstate("Succesfully loaded texture to shader");
+	check_glstate("Succesfully loaded " + texture_file + " to shader");
 }
 
 void OpenGL_Manager::main_loop( void )

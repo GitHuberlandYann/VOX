@@ -50,6 +50,9 @@ void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int & blob_
    * also use this for all 'see-through' blocks like leaves, water..*/
 static int air_flower( int value, bool air_leaves )
 {
+	if (value == blocks::SKY) {
+		return (value);
+	}
 	if (value >= blocks::POPPY || value == blocks::CACTUS || (air_leaves && value == blocks::OAK_LEAVES)) {
 		return (0);
 	}
@@ -164,8 +167,14 @@ int Chunk::get_block_type( siv::PerlinNoise perlin, int row, int col, int level,
 		} else if (value == blocks::GRASS_BLOCK && _continent <= cont::CONT_COAST) {
 			value = blocks::SAND;
 		}
-	} else if (level <= SEA_LEVEL) {
-		// value = blocks::WATER;
+	} else if (level == 155) {
+		// double sky = perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4);
+		// if (sky < 0.5) {
+		// 	value = blocks::SKY;
+		// }
+	}
+	else if (level <= SEA_LEVEL) {
+		value = blocks::WATER;
 	} else if (_continent <= cont::CONT_COAST) {
 		if (surface_level >= SEA_LEVEL && level <= surface_level + 3) {
 			if (tree_gen) {
@@ -916,11 +925,11 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 	}
 }
 
-/* collisionBox takes eye-position of object, dimension of its hitbox and returns wether object is inside block or not */
-bool Chunk::collisionBox( glm::vec3 pos, float width, float height, float height_offset )
+/* collisionBox takes feet position of object, dimension of its hitbox and returns wether object is inside block or not */
+bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 {
 	// WATCHOUT if width > 0.5 problemos because we check block left and right but not middle
-	glm::ivec3 top0 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height_offset));
+	glm::ivec3 top0 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height));
 	if (top0.x < -1 || top0.x > CHUNK_SIZE || top0.y < -1 || top0.y > CHUNK_SIZE || top0.z < 2 || top0.z > 255) {
 		std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top0 " << top0.x << ", " << top0.y << ", " << top0.z << std::endl;
 		return (true);
@@ -928,7 +937,7 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height, float height
 	if (air_flower(_blocks[((top0.x + 1) * (CHUNK_SIZE + 2) + top0.y + 1) * WORLD_HEIGHT + top0.z], false)) {
 		return (true);
 	}
-	glm::ivec3 top1 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height_offset));
+	glm::ivec3 top1 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height));
 	if (top1 != top0) {
 		if (top1.x < -1 || top1.x > CHUNK_SIZE || top1.y < -1 || top1.y > CHUNK_SIZE || top1.z < 2 || top1.z > 255) {
 			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top1 " << top1.x << ", " << top1.y << ", " << top1.z << std::endl;
@@ -938,7 +947,7 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height, float height
 			return (true);
 		}
 	}
-	glm::ivec3 top2 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height_offset));
+	glm::ivec3 top2 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height));
 	if (top2 != top0) {
 		if (top2.x < -1 || top2.x > CHUNK_SIZE || top2.y < -1 || top2.y > CHUNK_SIZE || top2.z < 2 || top2.z > 255) {
 			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top2 " << top2.x << ", " << top2.y << ", " << top2.z << std::endl;
@@ -948,7 +957,7 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height, float height
 			return (true);
 		}
 	}
-	glm::ivec3 top3 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height_offset));
+	glm::ivec3 top3 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height));
 	if (top3 != top0) {
 		if (top3.x < -1 || top3.x > CHUNK_SIZE || top3.y < -1 || top3.y > CHUNK_SIZE || top3.z < 2 || top3.z > 255) {
 			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top3 " << top3.x << ", " << top3.y << ", " << top3.z << std::endl;
@@ -958,8 +967,10 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height, float height
 			return (true);
 		}
 	}
-	if (height > 0 && top0.z != static_cast<int>(pos.z + height_offset - height)) {
-		return (collisionBox(glm::vec3(pos.x, pos.y, pos.z - 1), width, height - 1, height_offset));
+	if (height > 1) {
+		return (collisionBox(pos, width, height - 1));
+	} else if (top0.z != glm::floor(pos.z)) {
+		return (collisionBox(pos, width, 0));
 	}
 	return (false);
 }
@@ -972,10 +983,10 @@ void Chunk::applyGravity( Camera *camera )
 	float distZ = saved_posZ - pos.z;
 	if (distZ < 0) { // jumping
 		// std::cout << "DEBUG: " << std::to_string(camera->_position.z) << std::endl;
-		for (float posZ = saved_posZ + 1; posZ < pos.z + 1; posZ++) {
+		for (float posZ = saved_posZ; posZ < pos.z; posZ++) {
 			// std::cout << "testing with posZ " << posZ << std::endl;
-			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
-				camera->_position.z = glm::floor(posZ) - (0.8f - EYE_LEVEL + 0.00005f);
+			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f)) {
+				camera->_position.z = glm::floor(posZ) + 0.19f;
 				// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
 				camera->_fall_distance -= (camera->_position.z - posZ);
 				camera->_update = true;
@@ -983,8 +994,8 @@ void Chunk::applyGravity( Camera *camera )
 				return ;
 			}
 		}
-		if (collisionBox(glm::vec3(pos.x, pos.y, pos.z + 1), 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
-			camera->_position.z = glm::floor(pos.z + 1) - (0.8f - EYE_LEVEL + 0.00005f);
+		if (collisionBox(glm::vec3(pos.x, pos.y, pos.z), 0.3f, 1.8f)) {
+			camera->_position.z = glm::floor(pos.z) + 0.19f;
 			// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
 			camera->_fall_distance -= 1;
 			camera->_update = true;
@@ -992,9 +1003,9 @@ void Chunk::applyGravity( Camera *camera )
 			return ;
 		}
 	} else { // falling
-		for (float posZ = saved_posZ; posZ > pos.z; posZ--) {
-			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
-				camera->_position.z = glm::floor((posZ)) + EYE_LEVEL + 0.00005f;
+		for (float posZ = saved_posZ; posZ - 1 > pos.z; posZ--) {
+			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f)) {
+				camera->_position.z = glm::floor((posZ + 1));
 				camera->_fall_distance -= (camera->_position.z - posZ);
 				camera->touchGround();
 				if (saved_posZ != camera->_position.z) {
@@ -1003,8 +1014,8 @@ void Chunk::applyGravity( Camera *camera )
 				return ;
 			}
 		}
-		if (collisionBox(glm::vec3(pos), 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
-			camera->_position.z = glm::floor((pos.z)) + EYE_LEVEL + 0.00005f;
+		if (collisionBox(glm::vec3(pos), 0.3f, 1.8f)) {
+			camera->_position.z = glm::floor((pos.z + 1));
 			camera->_fall_distance -= (camera->_position.z - pos.z);
 			camera->touchGround();
 			if (saved_posZ != camera->_position.z) {

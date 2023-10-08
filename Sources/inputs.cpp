@@ -451,7 +451,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			}
 			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h); // move on X_AXIS
 			mtx.lock();
-			if (current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
+			if (current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f)) {
 				mtx.unlock();
 				_camera->moveHuman(X_AXIS, -key_cam_v, -key_cam_h); // if collision after movement, undo movement
 				// prev_chunk_ptr->collision(_camera->_position, *_camera);
@@ -462,7 +462,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			mtx.unlock();
 			_camera->moveHuman(Y_AXIS, key_cam_v, key_cam_h); // move on Y_AXIS
 			mtx.lock();
-			if (current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
+			if (current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f)) {
 				mtx.unlock();
 				_camera->moveHuman(Y_AXIS, -key_cam_v, -key_cam_h); // if collision after movement, undo movement
 				_camera->setRun(false);
@@ -470,7 +470,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			}
 			mtx.unlock();
 			mtx.lock();
-			if (!current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f, 0.8f - EYE_LEVEL)) {
+			if (!current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f)) {
 				current_chunk_ptr->applyGravity(_camera); // move on Z_AXIS
 			}
 		}

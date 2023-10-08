@@ -29,6 +29,8 @@ void Camera::updateCameraVectors( void )
 	_front = glm::normalize(front);
 	_right = glm::normalize(glm::cross(_front, _world_up));
 	_up    = glm::normalize(glm::cross(_right, _front));
+	_front2 = glm::normalize(glm::vec2(_front)); // used in chunkInFront
+	_right2 = glm::vec2(glm::cos(glm::radians(_fov))) * glm::normalize(glm::vec2(_right));
 }
 
 // ************************************************************************** //
@@ -38,7 +40,9 @@ void Camera::updateCameraVectors( void )
  glm::mat4 Camera::getViewMatrix( void )
 {
 	_update = false;
-	return (glm::lookAt(_position, _position + _front, _up));
+	glm::vec3 pos = _position;
+	pos.z += 1.0f + EYE_LEVEL;
+	return (glm::lookAt(pos, pos + _front, _up));
 }
 
 glm::mat4 Camera::getPerspectiveMatrix( void )
@@ -48,22 +52,12 @@ glm::mat4 Camera::getPerspectiveMatrix( void )
 
 bool Camera::chunkInFront( glm::ivec2 current_chunk, int posX, int posY )
 {
-	// (void)posX;
-	// (void)posY;
-	// return (true);
-	// if (_front.z <= -0.85f || _front.z >= 0.85f) {
-	// 	return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * glm::sign(_front.x) - _position.x, posY + 2 * CHUNK_SIZE * glm::sign(_front.y) - _position.y), glm::vec2(_front.x, _front.y)) >= 0
-	// 		&& glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * glm::sign(_front.x) - _position.x, posY + 2 * CHUNK_SIZE * glm::sign(_front.y) - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
-	// } else if (_front.z <= -0.45f || _front.z >= 0.45f) {
-	// 	return (glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0
-	// 		&& glm::dot(glm::vec2(posX + 2 * CHUNK_SIZE * _front.x - _position.x, posY + 2 * CHUNK_SIZE * _front.y - _position.y), glm::vec2(_front.x, _front.y)) >= 0);
-	// }
 	if (posX >= current_chunk.x - CHUNK_SIZE && posX <= current_chunk.x + CHUNK_SIZE
 		&& posY >= current_chunk.y - CHUNK_SIZE && posY <= current_chunk.y + CHUNK_SIZE) {
 		return (true);
 	}
-	return (glm::dot(glm::vec2(posX + 1 * CHUNK_SIZE * (_front.x + _right.x) - _position.x, posY + 1 * CHUNK_SIZE * (_front.y + _right.y) - _position.y), glm::vec2((_front.x + _right.x), (_front.y + _right.y))) >= 0
-		&& glm::dot(glm::vec2(posX + 1 * CHUNK_SIZE * (_front.x - _right.x) - _position.x, posY + 1 * CHUNK_SIZE * (_front.y - _right.y) - _position.y), glm::vec2((_front.x - _right.x), (_front.y - _right.y))) >= 0);
+	return (glm::dot(glm::vec2(posX + CHUNK_SIZE * (_front2.x + _right2.x) - _position.x, posY + CHUNK_SIZE * (_front2.y + _right2.y) - _position.y), glm::vec2((_front2.x + _right2.x), (_front2.y + _right2.y))) >= 0
+		&& glm::dot(glm::vec2(posX + CHUNK_SIZE * (_front2.x - _right2.x) - _position.x, posY + CHUNK_SIZE * (_front2.y - _right2.y) - _position.y), glm::vec2((_front2.x - _right2.x), (_front2.y - _right2.y))) >= 0);
 }
 
 // return orientation of block we just placed 0 = -y, 1 = +y, 2 = -x, 3 = +x (it is opposite of cam dir)
@@ -212,7 +206,9 @@ void Camera::processYaw( GLint offset )
 
 std::vector<glm::ivec3> Camera::get_ray_casting( GLfloat radius )
 {
-	return (voxel_traversal(_position, _position + _front * radius));
+	glm::vec3 pos = _position;
+	pos.z += 1.0f + EYE_LEVEL;
+	return (voxel_traversal(pos, pos + _front * radius));
 }
 
 
