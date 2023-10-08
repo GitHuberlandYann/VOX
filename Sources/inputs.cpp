@@ -214,6 +214,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 		++it;
 		mtx.unlock();
 	}
+	newperi_chunks = sort_chunks(camera->_position, newperi_chunks);
 	mtx_perimeter.lock();
 	*perimeter_chunks = newperi_chunks;
 	mtx_perimeter.unlock();

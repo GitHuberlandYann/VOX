@@ -111,6 +111,66 @@ int blockAtlasY( int block ) // y coord in blockAtlas in pxl
 	return ((block % 16) * 16);
 }
 
+std::list<Chunk *> sort_chunks( glm::vec3 pos, std::list<Chunk *> chunks )
+{
+	int posX = chunk_pos(pos.x);
+	int posY = chunk_pos(pos.y);
+
+	int size = chunks.size();
+	std::vector<std::pair<int, Chunk *>> dists;
+	for (auto& c: chunks) {
+		dists.push_back(std::pair<int, Chunk *>(c->manhattanDist(posX, posY), c));
+	}
+
+	for (int index = 0; index < size; index++) {
+		int minDist = dists[index].first, minIndex = index;
+		for (int jindex = index + 1; jindex < size; jindex++) {
+			if (dists[jindex].first > minDist) {
+				minIndex = jindex;
+				minDist = dists[minIndex].first;
+			}
+		}
+		if (minIndex != index) {
+			std::pair<int, Chunk *> tmp = dists[minIndex];
+			dists[minIndex] = dists[index];
+			dists[index] = tmp;
+		}
+	}
+
+	chunks.clear();
+	for (auto& d: dists) {
+		d.second->sort_sky({glm::floor(pos.x), glm::floor(pos.y), glm::floor(pos.z)});
+		chunks.push_back(d.second);
+	}
+	dists.clear();
+	return (chunks);
+}
+
+void face_vertices( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, int & vindex )
+{
+	vertices[vindex] = v0.x;
+	vertices[vindex + 1] = v0.y;
+	vertices[vindex + 2] = v0.z;
+	vertices[vindex + 3] = v1.x;
+	vertices[vindex + 4] = v1.y;
+	vertices[vindex + 5] = v1.z;
+	vertices[vindex + 6] = v2.x;
+	vertices[vindex + 7] = v2.y;
+	vertices[vindex + 8] = v2.z;
+	vindex += 9;
+
+	vertices[vindex] = v1.x;
+	vertices[vindex + 1] = v1.y;
+	vertices[vindex + 2] = v1.z;
+	vertices[vindex + 3] = v3.x;
+	vertices[vindex + 4] = v3.y;
+	vertices[vindex + 5] = v3.z;
+	vertices[vindex + 6] = v2.x;
+	vertices[vindex + 7] = v2.y;
+	vertices[vindex + 8] = v2.z;
+	vindex += 9;
+}
+
 // # include <glm/glm.hpp>
 // # include <glm/gtc/matrix_transform.hpp>
 // # include <glm/gtc/type_ptr.hpp>

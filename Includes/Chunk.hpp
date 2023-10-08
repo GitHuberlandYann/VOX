@@ -15,6 +15,15 @@ enum cont {
 	CONT_FAR_INLAND
 };
 
+enum face_dir {
+	MINUSZ,
+	PLUSZ,
+	MINUSX,
+	PLUSX,
+	MINUSY,
+	PLUSY
+};
+
 const GLint adj_blocks[6][3] = {
 	{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}
 };
@@ -52,17 +61,15 @@ class Chunk
 {
     private:
         GLuint _vao, _vbo;
-        bool _isVisible, _vaoSet, _vaoReset;
+        bool _isVisible, _vaoSet, _vaoReset, _vaoVIP;
         GLint _startX, _startY;
 		GLint _continent;
-		GLint *_blocks;
-		GLint *_vertices;
-		GLint _displayed_blocks;
+		GLint *_blocks, *_vertices, *_sky_vert;
+		GLboolean *_sky;
+		GLint _displayed_blocks, _sky_count;
 		std::list<Chunk *> _vis_chunks;
 		Camera *_camera;
-		std::map<int,int> _orientations;
-		std::map<int,int> _added;
-		std::map<int,int> _removed;
+		std::map<int,int> _orientations, _added, _removed;
 		std::map<int, FurnaceInstance> _furnaces;
 		std::thread _thread;
 		std::mutex _mtx;
@@ -78,6 +85,7 @@ class Chunk
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
 		int surfaceLevel( int row, int col, siv::PerlinNoise perlin );
 		void generate_blocks( void );
+		void generate_sky( void );
 		int sand_fall_endz( glm::ivec3 pos );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
@@ -94,11 +102,14 @@ class Chunk
 		void setBackup( std::map<std::pair<int, int>, s_backup> *backups );
 		void restoreBackup( s_backup backup);
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
+
 		void generation( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( std::list<Chunk *> *chunks );
+		void sort_sky( glm::ivec3 pos );
 	
 		bool inPerimeter( int posX, int posY, GLint render_dist );
+		int manhattanDist( int posX, int posY );
         void setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist );
 		void hide( void );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
