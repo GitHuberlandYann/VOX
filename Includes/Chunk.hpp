@@ -106,7 +106,7 @@ class Chunk
 		void generation( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( std::list<Chunk *> *chunks );
-		void sort_sky( glm::ivec3 pos );
+		void sort_sky( glm::vec3 pos );
 	
 		bool inPerimeter( int posX, int posY, GLint render_dist );
 		int manhattanDist( int posX, int posY );

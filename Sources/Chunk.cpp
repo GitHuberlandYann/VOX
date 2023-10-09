@@ -773,13 +773,28 @@ void Chunk::generate_chunk( std::list<Chunk *> *chunks )
 	_thread = std::thread(thread_setup_chunk, chunks, this);
 }
 
-void Chunk::sort_sky( glm::ivec3 pos )
+void Chunk::sort_sky( glm::vec3 pos )
 {
 	pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
-	std::vector<std::pair<int, glm::ivec2>> order;
+	std::vector<std::pair<float, std::array<int, 6>>> order;
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
-			order.push_back(std::pair<int, glm::ivec2>(glm::abs(pos.x - row) + glm::abs(pos.y - col), glm::ivec2(row, col)));
+			if (_sky[row * (CHUNK_SIZE + 2) + col]) {
+				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row + 0.5f, col + 0.5f, 256.0f)), {row, col, 256, 1, 1, 0}));
+				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row + 0.5f, col + 0.5f, 255.0f)), {row, col, 255, 1, 1, 0}));
+				if (_sky[(row - 1) * (CHUNK_SIZE + 2) + col]) {
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row, col + 0.5f, 255.5f)), {row, col, 255, 0, 1, 1}));
+				}
+				if (_sky[(row + 1) * (CHUNK_SIZE + 2) + col]) {
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row + 1, col + 0.5f, 255.5f)), {row + 1, col, 255, 0, 1, 1}));
+				}
+				if (_sky[row * (CHUNK_SIZE + 2) + col - 1]) {
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row + 0.5f, col, 255.5f)), {row, col, 256, 1, 0, -1}));
+				}
+				if (_sky[row * (CHUNK_SIZE + 2) + col + 1]) {
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row + 0.5f, col + 1, 255.5f)), {row + 1, col + 1, 256, -1, 0, -1}));
+				}
+			}
 		}
 	}
 
@@ -792,7 +807,7 @@ void Chunk::sort_sky( glm::ivec3 pos )
 			}
 		}
 		if (minIndex != index) {
-			std::pair<int, glm::ivec2> tmp = order[minIndex];
+			std::pair<float, std::array<int, 6>> tmp = order[minIndex];
 			order[minIndex] = order[index];
 			order[index] = tmp;
 		}
@@ -800,58 +815,18 @@ void Chunk::sort_sky( glm::ivec3 pos )
 
 	int vindex = 0;
 	bool from_under = pos.z < 154; // pos.z is feet pos, sky is at 155
-	for (int index = 0; index < CHUNK_SIZE * CHUNK_SIZE; index++) {
-		int row = order[index].second.x;
-		int col = order[index].second.y;
-		if (_sky[(row + 1) * (CHUNK_SIZE + 2) + col + 1]) {
-			int forder[6];
-			for (int i = 0; i < 6; i++) {
-				if (!i && pos.z < 155) {
-					forder[i] = MINUSZ;
-				} else if (!i && pos.z > 156) {
-					forder[i] = PLUSZ;	
-				} else if (i < 2 && pos.x < row) {
-					forder[i] = MINUSX;
-				} else if ()
-			}
-			glm::ivec3 v0 = glm::ivec3(_startX + row, _startY + col, 255) + glm::ivec3(0.0, 0.0, 1.0);
-			glm::ivec3 v1 = glm::ivec3(_startX + row, _startY + col, 255) + glm::ivec3(1.0, 0.0, 1.0);
-			glm::ivec3 v2 = glm::ivec3(_startX + row, _startY + col, 255) + glm::ivec3(0.0, 0.0, 0.0);
-			glm::ivec3 v3 = glm::ivec3(_startX + row, _startY + col, 255) + glm::ivec3(1.0, 0.0, 0.0);
-
-			glm::ivec3 v4 = glm::ivec3(_startX + row, _startY + col, 255) + glm::ivec3(0.0, 1.0, 1.0);
-			glm::ivec3 v5 = glm::ivec3(_startX + row, _startY + col, 255) + glm::ivec3(1.0, 1.0, 1.0);
-			glm::ivec3 v6 = glm::ivec3(_startX + row, _startY + col, 255) + glm::ivec3(0.0, 1.0, 0.0);
-			glm::ivec3 v7 = glm::ivec3(_startX + row, _startY + col, 255) + glm::ivec3(1.0, 1.0, 0.0);
-			if (from_minusX && _sky[row * (CHUNK_SIZE + 2) + col + 1]) {
-				face_vertices(_sky_vert, v4, v0, v6, v2, vindex); // x-
-			} else if (!from_minusX && _sky[(row + 2) * (CHUNK_SIZE + 2) + col + 1]) {
-				face_vertices(_sky_vert, v1, v5, v3, v7, vindex); // x+
-			}
-			if (from_minusY && _sky[(row + 1) * (CHUNK_SIZE + 2) + col]) {
-				face_vertices(_sky_vert, v0, v1, v2, v3, vindex); // y-
-			} else if (!from_minusY && _sky[(row + 1) * (CHUNK_SIZE + 2) + col + 2]) {
-				face_vertices(_sky_vert, v5, v4, v7, v6, vindex); // y+
-			}
-			if (from_under) {
-				face_vertices(_sky_vert, v2, v3, v6, v7, vindex); // under
-				face_vertices(_sky_vert, v4, v5, v0, v1, vindex); // top
-			} else {
-				face_vertices(_sky_vert, v4, v5, v0, v1, vindex); // top
-				face_vertices(_sky_vert, v2, v3, v6, v7, vindex); // under
-			}
-			if (!from_minusY && _sky[(row + 1) * (CHUNK_SIZE + 2) + col]) {
-				face_vertices(_sky_vert, v0, v1, v2, v3, vindex); // y-
-			} else if (from_minusY && _sky[(row + 1) * (CHUNK_SIZE + 2) + col + 2]) {
-				face_vertices(_sky_vert, v5, v4, v7, v6, vindex); // y+
-			}
-			if (!from_minusX && _sky[row * (CHUNK_SIZE + 2) + col + 1]) {
-				face_vertices(_sky_vert, v4, v0, v6, v2, vindex); // x-
-			} else if (from_minusX && _sky[(row + 2) * (CHUNK_SIZE + 2) + col + 1]) {
-				face_vertices(_sky_vert, v1, v5, v3, v7, vindex); // x+
-			}
-
+	for (auto& o: order) {
+		glm::ivec3 start = {o.second[0], o.second[1], o.second[2]}, offset0, offset1, offset2;
+		if (start.x && start.y) {
+			offset0 = {o.second[3], 0, 0};
+			offset1 = {0, o.second[4], 0};
+			offset2 = {o.second[3], o.second[4], 0};
+		} else {
+			offset0 = {o.second[3], o.second[4], 0};
+			offset1 = {0, 0, o.second[5]};
+			offset2 = {o.second[3], o.second[4], o.second[5]};
 		}
+		face_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex);
 	}
 }
 

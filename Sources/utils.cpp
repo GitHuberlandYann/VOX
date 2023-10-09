@@ -139,7 +139,7 @@ std::list<Chunk *> sort_chunks( glm::vec3 pos, std::list<Chunk *> chunks )
 
 	chunks.clear();
 	for (auto& d: dists) {
-		d.second->sort_sky({glm::floor(pos.x), glm::floor(pos.y), glm::floor(pos.z)});
+		d.second->sort_sky(pos);
 		chunks.push_back(d.second);
 	}
 	dists.clear();
