@@ -60,8 +60,8 @@ struct s_backup {
 class Chunk
 {
     private:
-        GLuint _vao, _vbo;
-        bool _isVisible, _vaoSet, _vaoReset, _vaoVIP;
+        GLuint _vao, _vbo, _skyVao, _skyVbo;
+        bool _isVisible, _vaoSet, _vaoReset, _vaoVIP, _skyVaoSet, _skyVaoReset;
         GLint _startX, _startY;
 		GLint _continent;
 		GLint *_blocks, *_vertices, *_sky_vert;
@@ -92,6 +92,7 @@ class Chunk
 		void add_block( Inventory *inventory, glm::ivec3 pos, int type );
         void fill_vertex_array( void );
         void setup_array_buffer( void );
+		void setup_sky_array_buffer( void );
 
     public:
         Chunk( Camera *camera, int posX, int posY );
@@ -125,6 +126,7 @@ class Chunk
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &block_counter );
 		void updateFurnaces( double currentTime );
+		void drawSky( GLint & counter, GLint &triangle_counter );
 		std::string getAddsRmsString( void );
 };
 

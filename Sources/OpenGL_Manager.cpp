@@ -16,7 +16,6 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_inventory = new Inventory();
 	_ui = new UI(*_inventory, *_camera);
 	_menu = new Menu(*_inventory, _ui->getTextPtr());
-	// render = this;
 }
 
 OpenGL_Manager::~OpenGL_Manager( void )
@@ -134,6 +133,38 @@ void OpenGL_Manager::create_shaders( void )
 	// first setup the ui and text shaders
 	_ui->setup_shader();
 	_menu->setShaderProgram(_ui->getShaderProgram());
+
+	// then setup the sky/water shader
+	std::string sky_vertex_shader_data = get_file_content("Sources/Shaders/sky_vertex.glsl");
+	char *sky_vertexSource = &sky_vertex_shader_data[0];
+
+	_skyVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(_skyVertexShader, 1, &sky_vertexSource, NULL);
+	compile_shader(_skyVertexShader, "sky_vertex");
+
+	std::string sky_fragment_shader_data = get_file_content("Sources/Shaders/sky_fragment.glsl");
+	char *sky_fragmentSource = &sky_fragment_shader_data[0];
+
+	_skyFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(_skyFragmentShader, 1, &sky_fragmentSource, NULL);
+	compile_shader(_skyFragmentShader, "sky_fragment");
+
+	// Combining shaders into a program
+	_skyShaderProgram = glCreateProgram();
+	glAttachShader(_skyShaderProgram, _skyVertexShader);
+	glAttachShader(_skyShaderProgram, _skyFragmentShader);
+
+	glBindFragDataLocation(_skyShaderProgram, 0, "outColor");
+
+	glBindAttribLocation(_skyShaderProgram, POSATTRIB, "position");
+
+	glLinkProgram(_skyShaderProgram);
+	glUseProgram(_skyShaderProgram);
+
+	glDeleteShader(_skyFragmentShader);
+    glDeleteShader(_skyVertexShader);
+
+	check_glstate("skyShader program successfully created");
 	
 	// then setup the main shader
 	std::string vertex_shader_data = get_file_content("Sources/Shaders/vertex.glsl");
@@ -183,9 +214,11 @@ void OpenGL_Manager::create_shaders( void )
 void OpenGL_Manager::setup_communication_shaders( void )
 {
 	_uniView = glGetUniformLocation(_shaderProgram, "view");
+	_skyUniView = glGetUniformLocation(_skyShaderProgram, "view");
 	update_cam_view();
 
 	_uniProj = glGetUniformLocation(_shaderProgram, "proj");
+	_skyUniProj = glGetUniformLocation(_skyShaderProgram, "proj");
 	update_cam_perspective();
 
 	// _uniPV = glGetUniformLocation(_shaderProgram, "pv");
@@ -292,11 +325,18 @@ void OpenGL_Manager::main_loop( void )
 		}
 		previousFrame = currentTime;
 
-		GLint newVaoCounter = 0, blockCounter = 0;
+		GLint newVaoCounter = 0, blockCounter = 0, skyTriangles = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, blockCounter);
 			c->updateFurnaces(currentTime);
 		}
+
+		// std::cout << "DEBUG b" << std::endl;
+		glUseProgram(_skyShaderProgram);
+		for (auto& c: _visible_chunks) {
+			c->drawSky(newVaoCounter, skyTriangles);
+		}
+		// std::cout << "DEBUG" << std::endl;
 
 		// glClear(GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
@@ -314,6 +354,7 @@ void OpenGL_Manager::main_loop( void )
 				+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size())
 				+ '/' + std::to_string(_perimeter_chunks.size()) + '/' + std::to_string(_chunks.size())
 				+ "\nDisplayed blocks\t> " + std::to_string(blockCounter)
+				+ "\nSky triangles\t> " + std::to_string(skyTriangles)
 				+ "\n\nRender Distance\t> " + std::to_string(_render_distance)
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				+ "\nBackups\t> " + std::to_string(_backups.size())

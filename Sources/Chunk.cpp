@@ -1,7 +1,7 @@
 #include "vox.h"
 
 Chunk::Chunk( Camera *camera, int posX, int posY )
-	: _isVisible(true), _vaoSet(false), _vaoReset(false), _vaoVIP(false), _startX(posX), _startY(posY),
+	: _isVisible(true), _vaoSet(false), _vaoReset(false), _vaoVIP(false), _skyVaoSet(false), _skyVaoReset(false), _startX(posX), _startY(posY),
 	_blocks(NULL), _vertices(NULL), _sky_vert(NULL), _sky(NULL), _displayed_blocks(0), _sky_count(0), _camera(camera)
 {
 }
@@ -14,6 +14,8 @@ Chunk::~Chunk( void )
 
 	glDeleteBuffers(1, &_vbo);
 	glDeleteVertexArrays(1, &_vao);
+	glDeleteBuffers(1, &_skyVbo);
+	glDeleteVertexArrays(1, &_skyVao);
 
 	delete [] _blocks;
 	delete [] _vertices;
@@ -440,16 +442,16 @@ void Chunk::generate_sky( void )
 	for (int row = 1; row < (CHUNK_SIZE + 1); row++) {
 		for (int col = 1; col < (CHUNK_SIZE + 1); col++) {
 			if (_sky[row * (CHUNK_SIZE + 2) + col]) {
-				_sky_count += 2 * 2 * 3; // top and bottom faces (each is 2 triangles)
-				_sky_count += !_sky[(row - 1) * (CHUNK_SIZE + 2) + col] * 2 * 3;
-				_sky_count += !_sky[(row + 1) * (CHUNK_SIZE + 2) + col] * 2 * 3;
-				_sky_count += !_sky[row * (CHUNK_SIZE + 2) + col - 1] * 2 * 3;
-				_sky_count += !_sky[row * (CHUNK_SIZE + 2) + col + 1] * 2 * 3;
+				_sky_count += 2; // top and bottom faces
+				_sky_count += !_sky[(row - 1) * (CHUNK_SIZE + 2) + col];
+				_sky_count += !_sky[(row + 1) * (CHUNK_SIZE + 2) + col];
+				_sky_count += !_sky[row * (CHUNK_SIZE + 2) + col - 1];
+				_sky_count += !_sky[row * (CHUNK_SIZE + 2) + col + 1];
 			}
 		}
 	}
-
-	_sky_vert = new GLint[_sky_count * 3]; // will be filled in later with a call to sort_sky
+// *18 because 2 triangles/face, which is (3 coord * 3 points * 2 triang) int
+	_sky_vert = new GLint[_sky_count * 18]; // will be filled in later with a call to sort_sky
 }
 
 int Chunk::sand_fall_endz( glm::ivec3 pos )
@@ -679,6 +681,38 @@ void Chunk::setup_array_buffer( void )
 	check_glstate("NO");
 }
 
+void Chunk::setup_sky_array_buffer( void )
+{
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+	// std::cout << "sky count is " << _sky_count << std::endl;
+	// check_glstate("no problem before");
+	if (!_skyVaoSet) {
+		glGenVertexArrays(1, &_skyVao);
+		glGenBuffers(1, &_skyVbo);
+		_skyVaoSet = true;
+		// std::cout << "skyvaoset" << std::endl;
+	}
+	glBindVertexArray(_skyVao);
+	// check_glstate("bind skyvao");
+
+	glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
+	// check_glstate("bind skyvbo");
+	glBufferData(GL_ARRAY_BUFFER, _sky_count * 18 * sizeof(GLint), _sky_vert, GL_STATIC_DRAW);
+	// check_glstate("alloc skyvbo");
+
+	_skyVaoReset = false;
+
+	glEnableVertexAttribArray(POSATTRIB);
+	// check_glstate("enable attrib");
+	glVertexAttribIPointer(POSATTRIB, 3, GL_INT, 3 * sizeof(GLint), 0);
+	// check_glstate("set attrib");
+
+	check_glstate("NO");
+	// check_glstate("over");
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -775,32 +809,44 @@ void Chunk::generate_chunk( std::list<Chunk *> *chunks )
 
 void Chunk::sort_sky( glm::vec3 pos )
 {
+	// std::cout << "in sort sky" << std::endl;
 	pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
 	std::vector<std::pair<float, std::array<int, 6>>> order;
-	for (int row = 0; row < CHUNK_SIZE; row++) {
-		for (int col = 0; col < CHUNK_SIZE; col++) {
+	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
+		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
 			if (_sky[row * (CHUNK_SIZE + 2) + col]) {
-				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row + 0.5f, col + 0.5f, 256.0f)), {row, col, 256, 1, 1, 0}));
-				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row + 0.5f, col + 0.5f, 255.0f)), {row, col, 255, 1, 1, 0}));
-				if (_sky[(row - 1) * (CHUNK_SIZE + 2) + col]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row, col + 0.5f, 255.5f)), {row, col, 255, 0, 1, 1}));
+				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1 + 0.5f, _startY + col - 1 + 0.5f, 156.0f)), {_startX + row - 1, _startY + col - 1, 156, 1, 1, 0}));
+				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1 + 0.5f, _startY + col - 1 + 0.5f, 155.0f)), {_startX + row - 1, _startY + col - 1, 155, 1, 1, 0}));
+				if (!_sky[(row - 1) * (CHUNK_SIZE + 2) + col]) {
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1, _startY + col - 1 + 0.5f, 155.5f)), {_startX + row - 1, _startY + col - 1, 155, 0, 1, 1}));
 				}
-				if (_sky[(row + 1) * (CHUNK_SIZE + 2) + col]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row + 1, col + 0.5f, 255.5f)), {row + 1, col, 255, 0, 1, 1}));
+				if (!_sky[(row + 1) * (CHUNK_SIZE + 2) + col]) {
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1 + 1, _startY + col - 1 + 0.5f, 155.5f)), {_startX + row - 1 + 1, _startY + col - 1, 155, 0, 1, 1}));
 				}
-				if (_sky[row * (CHUNK_SIZE + 2) + col - 1]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row + 0.5f, col, 255.5f)), {row, col, 256, 1, 0, -1}));
+				if (!_sky[row * (CHUNK_SIZE + 2) + col - 1]) {
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1 + 0.5f, _startY + col - 1, 155.5f)), {_startX + row - 1, _startY + col - 1, 156, 1, 0, -1}));
 				}
-				if (_sky[row * (CHUNK_SIZE + 2) + col + 1]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(row + 0.5f, col + 1, 255.5f)), {row + 1, col + 1, 256, -1, 0, -1}));
+				if (!_sky[row * (CHUNK_SIZE + 2) + col + 1]) {
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1 + 0.5f, _startY + col - 1 + 1, 155.5f)), {_startX + row - 1 + 1, _startY + col - 1 + 1, 156, -1, 0, -1}));
 				}
 			}
 		}
 	}
+	// std::cout << "before sort" << std::endl;
+	// 	std::cout << "_sky_vert malloc " << _sky_count * 18 << std::endl;
+	// 	std::cout << "order size " << order.size() << std::endl;
+	
+	if (!order.size()) {
+		if (_sky_count) {
+			std::cerr << "sort_sky, order size 0 but _sky_count is " << _sky_count << std::endl;
+		}
+		return ;
+	}
 
-	for (int index = 0; index < CHUNK_SIZE * CHUNK_SIZE; index++) {
-		int minDist = order[index].first, minIndex = index;
-		for (int jindex = index + 1; jindex < CHUNK_SIZE * CHUNK_SIZE; jindex++) {
+	for (size_t index = 0; index < order.size() - 1; index++) {
+		float minDist = order[index].first;
+		size_t minIndex = index;
+		for (size_t jindex = index + 1; jindex < order.size(); jindex++) {
 			if (order[jindex].first > minDist) {
 				minIndex = jindex;
 				minDist = order[minIndex].first;
@@ -814,7 +860,6 @@ void Chunk::sort_sky( glm::vec3 pos )
 	}
 
 	int vindex = 0;
-	bool from_under = pos.z < 154; // pos.z is feet pos, sky is at 155
 	for (auto& o: order) {
 		glm::ivec3 start = {o.second[0], o.second[1], o.second[2]}, offset0, offset1, offset2;
 		if (start.x && start.y) {
@@ -826,8 +871,13 @@ void Chunk::sort_sky( glm::vec3 pos )
 			offset1 = {0, 0, o.second[5]};
 			offset2 = {o.second[3], o.second[4], o.second[5]};
 		}
+		// std::cout << "vindex " << vindex << std::endl;
 		face_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex);
 	}
+	order.clear();
+	_mtx.lock();
+	_skyVaoReset = true;
+	_mtx.unlock();
 }
 
 bool Chunk::inPerimeter( int posX, int posY, GLint render_dist )
@@ -1137,7 +1187,7 @@ int Chunk::isLoaded( GLint &counter )
 void Chunk::drawArray( GLint & counter, GLint &block_counter )
 {
 	_mtx.lock();
-	if (!_vaoReset) {
+	if (!_vaoReset) { // TODO change vosReset logic (swap true and false)
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		_mtx.unlock();
 		++counter;
@@ -1158,6 +1208,29 @@ void Chunk::updateFurnaces( double currentTime )
 	for (auto& fur: _furnaces) {
 		fur.second.updateTimes(currentTime);
 	}
+}
+
+void Chunk::drawSky( GLint & counter, GLint &triangle_counter )
+{
+	if (!_sky_count) {
+		return ;
+	}
+	_mtx.lock();
+	if (_skyVaoReset) {
+		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
+		_mtx.unlock();
+		++counter;
+		if (counter > 2) { // we don't load more than 5 new chunks per 50 new chunks per frame
+			return ;
+		}
+		setup_sky_array_buffer();
+		_mtx.lock();
+	}
+    glBindVertexArray(_skyVao);
+	glDrawArrays(GL_TRIANGLES, 0, _sky_count * 6); // 6 points/face
+	// std::cout << "draw sky" << std::endl;
+	triangle_counter += _sky_count * 2; // 2 triang/face
+	_mtx.unlock();
 }
 
 std::string Chunk::getAddsRmsString( void )

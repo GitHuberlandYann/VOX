@@ -38,8 +38,8 @@ class OpenGL_Manager
 	private:
 		GLFWwindow* _window;
 		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
-		// GLint _uniPV;
-		GLint _uniView, _uniProj;
+		GLuint _skyShaderProgram, _skyVertexShader, _skyFragmentShader;
+		GLint _uniView, _uniProj, _skyUniView, _skyUniProj;
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
 		glm::vec3 _background_color;

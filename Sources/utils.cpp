@@ -121,6 +121,7 @@ std::list<Chunk *> sort_chunks( glm::vec3 pos, std::list<Chunk *> chunks )
 	for (auto& c: chunks) {
 		dists.push_back(std::pair<int, Chunk *>(c->manhattanDist(posX, posY), c));
 	}
+	// std::cout << "in sort chunks, dists size = " << dists.size() << std::endl;
 
 	for (int index = 0; index < size; index++) {
 		int minDist = dists[index].first, minIndex = index;
@@ -143,6 +144,7 @@ std::list<Chunk *> sort_chunks( glm::vec3 pos, std::list<Chunk *> chunks )
 		chunks.push_back(d.second);
 	}
 	dists.clear();
+	// std::cout << "out sort chunks, chunks size " << chunks.size() << std::endl;
 	return (chunks);
 }
 

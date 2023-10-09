@@ -38,6 +38,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 		
 		if (!chunk || posX != current_chunk.x || posY != current_chunk.y) {
 			current_chunk = glm::ivec2(posX, posY);
+			chunk = NULL;
 			for (auto& c : _visible_chunks) {
 				if (c->isInChunk(posX, posY)) {
 					chunk = c;
@@ -46,7 +47,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 			}
 			if (!chunk) {
 				std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
-				break ;
+				return (glm::ivec4(0, 0, 0, blocks::AIR));
 			}
 		}
 		if (first_loop) {
@@ -162,6 +163,7 @@ void OpenGL_Manager::update_cam_view( void )
 {
 	glm::mat4 view = _camera->getViewMatrix();
 	glUniformMatrix4fv(_uniView, 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(_skyUniView, 1, GL_FALSE, glm::value_ptr(view));
 
 	// glUniform3fv(_uniCamPos, 1, glm::value_ptr(_camera->_position));
 }
@@ -170,6 +172,7 @@ void OpenGL_Manager::update_cam_perspective( void )
 {
 	glm::mat4 proj = _camera->getPerspectiveMatrix();
 	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
+	glUniformMatrix4fv(_skyUniProj, 1, GL_FALSE, glm::value_ptr(proj));
 }
 
 void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread ?
