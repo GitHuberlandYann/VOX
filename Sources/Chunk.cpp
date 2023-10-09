@@ -888,7 +888,9 @@ bool Chunk::inPerimeter( int posX, int posY, GLint render_dist )
 
 int Chunk::manhattanDist( int posX, int posY )
 {
-	return (glm::abs(posX - _startX) + glm::abs(posY - _startY));
+	int distX = (_startX > posX) ? _startX - posX : posX - _startX;
+	int distY = (_startY > posY) ? _startY - posY : posY - _startY;
+	return (distX + distY);
 }
 
 void Chunk::setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist )
