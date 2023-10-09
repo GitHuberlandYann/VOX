@@ -704,9 +704,9 @@ void Chunk::setup_sky_array_buffer( void )
 
 	_skyVaoReset = false;
 
-	glEnableVertexAttribArray(POSATTRIB);
+	glEnableVertexAttribArray(0);
 	// check_glstate("enable attrib");
-	glVertexAttribIPointer(POSATTRIB, 3, GL_INT, 3 * sizeof(GLint), 0);
+	glVertexAttribIPointer(0, 3, GL_INT, 3 * sizeof(GLint), 0);
 	// check_glstate("set attrib");
 
 	check_glstate("NO");
@@ -1220,10 +1220,11 @@ void Chunk::drawSky( GLint & counter, GLint &triangle_counter )
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		_mtx.unlock();
 		++counter;
-		if (counter > 2) { // we don't load more than 5 new chunks per 50 new chunks per frame
+		if (!_skyVaoSet && counter > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
 			return ;
+		} else if (counter < 6) {
+			setup_sky_array_buffer();
 		}
-		setup_sky_array_buffer();
 		_mtx.lock();
 	}
     glBindVertexArray(_skyVao);

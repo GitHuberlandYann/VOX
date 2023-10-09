@@ -31,6 +31,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 		delete [] _textures;
 	}
 	glDeleteProgram(_shaderProgram);
+	glDeleteProgram(_skyShaderProgram);
 
 	set_cursor_position_callback(NULL, NULL);
 	set_scroll_callback(NULL);
@@ -156,7 +157,7 @@ void OpenGL_Manager::create_shaders( void )
 
 	glBindFragDataLocation(_skyShaderProgram, 0, "outColor");
 
-	glBindAttribLocation(_skyShaderProgram, POSATTRIB, "position");
+	glBindAttribLocation(_skyShaderProgram, 0, "position");
 
 	glLinkProgram(_skyShaderProgram);
 	glUseProgram(_skyShaderProgram);

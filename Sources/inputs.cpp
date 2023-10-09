@@ -163,7 +163,9 @@ void OpenGL_Manager::update_cam_view( void )
 {
 	glm::mat4 view = _camera->getViewMatrix();
 	glUniformMatrix4fv(_uniView, 1, GL_FALSE, glm::value_ptr(view));
+	glUseProgram(_skyShaderProgram);
 	glUniformMatrix4fv(_skyUniView, 1, GL_FALSE, glm::value_ptr(view));
+	glUseProgram(_shaderProgram);
 
 	// glUniform3fv(_uniCamPos, 1, glm::value_ptr(_camera->_position));
 }
@@ -172,7 +174,9 @@ void OpenGL_Manager::update_cam_perspective( void )
 {
 	glm::mat4 proj = _camera->getPerspectiveMatrix();
 	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
+	glUseProgram(_skyShaderProgram);
 	glUniformMatrix4fv(_skyUniProj, 1, GL_FALSE, glm::value_ptr(proj));
+	glUseProgram(_shaderProgram);
 }
 
 void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread ?
