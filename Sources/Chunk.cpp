@@ -686,31 +686,23 @@ void Chunk::setup_sky_array_buffer( void )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	// std::cout << "sky count is " << _sky_count << std::endl;
-	// check_glstate("no problem before");
+
 	if (!_skyVaoSet) {
 		glGenVertexArrays(1, &_skyVao);
 		glGenBuffers(1, &_skyVbo);
 		_skyVaoSet = true;
-		// std::cout << "skyvaoset" << std::endl;
 	}
 	glBindVertexArray(_skyVao);
-	// check_glstate("bind skyvao");
 
 	glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
-	// check_glstate("bind skyvbo");
 	glBufferData(GL_ARRAY_BUFFER, _sky_count * 18 * sizeof(GLint), _sky_vert, GL_STATIC_DRAW);
-	// check_glstate("alloc skyvbo");
 
 	_skyVaoReset = false;
 
 	glEnableVertexAttribArray(0);
-	// check_glstate("enable attrib");
 	glVertexAttribIPointer(0, 3, GL_INT, 3 * sizeof(GLint), 0);
-	// check_glstate("set attrib");
 
 	check_glstate("NO");
-	// check_glstate("over");
 }
 
 // ************************************************************************** //
@@ -810,24 +802,29 @@ void Chunk::generate_chunk( std::list<Chunk *> *chunks )
 void Chunk::sort_sky( glm::vec3 pos )
 {
 	// std::cout << "in sort sky" << std::endl;
-	pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
+	if (!_sky_count) {
+		return ;
+	}
+	// pos = glm::vec3(pos.x - _startX, pos.y - _startY, pos.z);
 	std::vector<std::pair<float, std::array<int, 6>>> order;
 	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
 		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
 			if (_sky[row * (CHUNK_SIZE + 2) + col]) {
-				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1 + 0.5f, _startY + col - 1 + 0.5f, 156.0f)), {_startX + row - 1, _startY + col - 1, 156, 1, 1, 0}));
-				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1 + 0.5f, _startY + col - 1 + 0.5f, 155.0f)), {_startX + row - 1, _startY + col - 1, 155, 1, 1, 0}));
+				int pX = _startX + row - 1;
+				int pY = _startY + col - 1;
+				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 156.0f)), {pX, pY + 1, 156, 1, -1, 0}));
+				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 155.0f)), {pX, pY, 155, 1, 1, 0}));
 				if (!_sky[(row - 1) * (CHUNK_SIZE + 2) + col]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1, _startY + col - 1 + 0.5f, 155.5f)), {_startX + row - 1, _startY + col - 1, 155, 0, 1, 1}));
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX, pY + 0.5f, 155.5f)), {pX, pY + 1, 156, 0, -1, -1}));
 				}
 				if (!_sky[(row + 1) * (CHUNK_SIZE + 2) + col]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1 + 1, _startY + col - 1 + 0.5f, 155.5f)), {_startX + row - 1 + 1, _startY + col - 1, 155, 0, 1, 1}));
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 1, pY + 0.5f, 155.5f)), {pX + 1, pY, 156, 0, 1, -1}));
 				}
 				if (!_sky[row * (CHUNK_SIZE + 2) + col - 1]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1 + 0.5f, _startY + col - 1, 155.5f)), {_startX + row - 1, _startY + col - 1, 156, 1, 0, -1}));
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY, 155.5f)), {pX, pY, 156, 1, 0, -1}));
 				}
 				if (!_sky[row * (CHUNK_SIZE + 2) + col + 1]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(_startX + row - 1 + 0.5f, _startY + col - 1 + 1, 155.5f)), {_startX + row - 1 + 1, _startY + col - 1 + 1, 156, -1, 0, -1}));
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 1, 155.5f)), {pX + 1, pY + 1, 156, -1, 0, -1}));
 				}
 			}
 		}
@@ -862,7 +859,7 @@ void Chunk::sort_sky( glm::vec3 pos )
 	int vindex = 0;
 	for (auto& o: order) {
 		glm::ivec3 start = {o.second[0], o.second[1], o.second[2]}, offset0, offset1, offset2;
-		if (start.x && start.y) {
+		if (!o.second[5]) {
 			offset0 = {o.second[3], 0, 0};
 			offset1 = {0, o.second[4], 0};
 			offset2 = {o.second[3], o.second[4], 0};
