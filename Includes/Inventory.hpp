@@ -2,7 +2,7 @@
 # define INVENTORY_HPP
 
 # define IRECEIPT_SIZE 20
-# define RECEIPT_SIZE 66
+# define RECEIPT_SIZE 67
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
@@ -56,6 +56,7 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::STONE, blocks::STONE, blocks::AIR, blocks::STONE, blocks::STONE, blocks::STONE_BRICKS, 4},
 	
 	{blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::AIR, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::FURNACE, 1},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::IRON_INGOT, blocks::AIR, blocks::IRON_INGOT, blocks::AIR, blocks::IRON_INGOT, blocks::AIR, blocks::BUCKET, 1},
 
 	{blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::WOODEN_SHOVEL, 1},
 	{blocks::AIR, blocks::COBBLESTONE, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_SHOVEL, 1},
