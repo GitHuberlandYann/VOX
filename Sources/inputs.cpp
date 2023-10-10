@@ -498,6 +498,14 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			_break_frame = _outline;
 		}
 	}
+	glm::ivec3 current_block = {glm::floor(_camera->_position.x), glm::floor(_camera->_position.y), glm::floor(_camera->_position.z)};
+	if (current_block != _camera->_current_block) {
+		_camera->_current_block = current_block;
+		if (current_chunk_ptr) {
+			current_chunk_ptr->sort_sky(_camera->_position, true);
+			current_chunk_ptr->sort_water(_camera->_position, true);
+		}
+	}
 
 	if (_camera->_fovUpdate) {
 		update_cam_perspective();

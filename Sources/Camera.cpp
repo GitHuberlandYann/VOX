@@ -174,7 +174,6 @@ void Camera::touchGround( void )
 	_inJump = false;
 }
 
-
 bool Camera::getModif( void )
 {
 	bool res = _healthUpdate;
@@ -235,12 +234,16 @@ std::string Camera::getCamString( bool game_mode )
 	if (game_mode == CREATIVE) {
 		return ("\nPos\t\t> x: " + std::to_string(_position.x)
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
+				+ "\niPos\n> " + std::to_string(_current_block.x)
+				+ " y: " + std::to_string(_current_block.y) + " z: " + std::to_string(_current_block.z)
 				+ "\nDir\t\t> x: " + std::to_string(_front.x)
 				+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
 				+ "\nSpeed\t> " + ((_isRunning) ? std::to_string(_movement_speed * 2) : std::to_string(_movement_speed)));
 	}
 	return ("\nPos\t\t> x: " + std::to_string(_position.x)
 			+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
+			+ "\niPos\n> " + std::to_string(_current_block.x)
+				+ " y: " + std::to_string(_current_block.y) + " z: " + std::to_string(_current_block.z)
 			+ "\nDir\t\t> x: " + std::to_string(_front.x)
 			+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
 			+ "\nSpeed\t> " + ((_isRunning) ?  ((_touchGround) ? std::to_string(RUN_SPEED) : std::to_string(RUN_JUMP_SPEED) ) : std::to_string(WALK_SPEED))

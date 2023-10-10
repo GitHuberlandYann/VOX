@@ -1,9 +1,19 @@
 #include "vox.h"
 
 Chunk::Chunk( Camera *camera, int posX, int posY )
-	: _isVisible(true), _vaoSet(false), _vaoReset(false), _vaoVIP(false), _skyVaoSet(false), _skyVaoReset(false), _startX(posX), _startY(posY),
-	_blocks(NULL), _vertices(NULL), _sky_vert(NULL), _sky(NULL), _displayed_blocks(0), _sky_count(0), _camera(camera)
+	: _isVisible(true), _vaoSet(false), _vaoReset(false), _vaoVIP(false),
+	_waterVaoSet(false), _waterVaoReset(false), _waterVaoVIP(false),
+	_skyVaoSet(false), _skyVaoReset(false), _skyVaoVIP(false),
+	_startX(posX), _startY(posY),
+	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _sky(NULL), _displayed_blocks(0), _water_count(0), _sky_count(0), _camera(camera)
 {
+	// (void)_waterVao;
+	// (void)_waterVbo;
+	// (void)_waterVaoSet;
+	// (void)_waterVaoReset;
+	// (void)_waterVaoVIP;
+	// (void)_water_vert;
+	// (void)_water_count;
 }
 
 Chunk::~Chunk( void )
@@ -19,6 +29,7 @@ Chunk::~Chunk( void )
 
 	delete [] _blocks;
 	delete [] _vertices;
+	delete [] _water_vert;
 	delete [] _sky;
 	delete [] _sky_vert;
 
@@ -53,9 +64,9 @@ void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int & blob_
 
 /* * we simulate that flowers are air block in order to display adjacent blocks properly
    * also use this for all 'see-through' blocks like leaves, water..*/
-static int air_flower( int value, bool air_leaves )
+static int air_flower( int value, bool air_leaves, bool air_water )
 {
-	if (value == blocks::SKY) {
+	if (air_water && value == blocks::WATER) {
 		return (value);
 	}
 	if (value >= blocks::POPPY || value == blocks::CACTUS || (air_leaves && value == blocks::OAK_LEAVES)) {
@@ -66,22 +77,22 @@ static int air_flower( int value, bool air_leaves )
 
 GLint Chunk::get_empty_faces( int type, int row, int col, int level, bool isNotLeaves )
 {
-	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true) * (1 << 2)
-				+ !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves) * (1 << 3)
-				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true) * (1 << 0)
-				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves) * (1 << 1);
+	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, false) * (1 << 2)
+				+ !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves, false) * (1 << 3)
+				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true, false) * (1 << 0)
+				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false) * (1 << 1);
 	switch (level) {
 		case 0:
 			res += (1 << 5);
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves) * (1 << 4);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false) * (1 << 4);
 			break ;
 		case 255:
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true) * (1 << 5);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false) * (1 << 5);
 			// res += (1 << 4); // don't wan't to hide face from above, because we can be at pos 257 and looking at block 255
 			break ;
 		default:
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true) * (1 << 5);
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves) * (1 << 4);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false) * (1 << 5);
+			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false) * (1 << 4);
 	}
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented block
 		std::map<int, int>::iterator search = _orientations.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
@@ -103,21 +114,44 @@ bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves )
 	switch (level) {
 		case 0:
 			below = false;
-			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves);
+			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false);
 			break ;
 		case 255:
-			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves);
+			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves, false);
 			above = true;
 			break ;
 		default:
-			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves);
-			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves);
+			below = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], isNotLeaves, false);
+			above = !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false);
 	}
-	return (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves)
-		|| !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves)
-		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], isNotLeaves)
-		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves)
+	return (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves, false)
+		|| !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves, false)
+		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], isNotLeaves, false)
+		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false)
 		|| below || above);
+}
+
+int Chunk::exposed_water_faces( int row, int col, int level )
+{
+	int res = 0;
+	switch (level) {
+		case 0:
+			res += 1;
+			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], true, true);
+			break ;
+		case 255:
+			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, true);
+			res += 1;
+			break ;
+		default:
+			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, true);
+			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], true, true);
+	}
+	res += !air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, true);
+	res += !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, true);
+	res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true, true);
+	res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], true, true);
+	return (res);
 }
 
 int Chunk::get_block_type_cave( int row, int col, int level, int ground_level,
@@ -416,7 +450,7 @@ void Chunk::generate_blocks( void )
 				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
 				if (value) {
 					if (value == blocks::WATER) {
-						// do nothing
+						_water_count += exposed_water_faces(row, col, level);
 					} else if (exposed_block(row, col, level, value != blocks::OAK_LEAVES)) {
 						_displayed_blocks++;
 					} else {
@@ -450,8 +484,8 @@ void Chunk::generate_sky( void )
 			}
 		}
 	}
-// *18 because 2 triangles/face, which is (3 coord * 3 points * 2 triang) int
-	_sky_vert = new GLint[_sky_count * 18]; // will be filled in later with a call to sort_sky
+// *18 because 2 triangles/face, which is (4 coord * 3 points * 2 triang) int
+	_sky_vert = new GLint[_sky_count * 24]; // will be filled in later with a call to sort_sky
 }
 
 int Chunk::sand_fall_endz( glm::ivec3 pos )
@@ -548,7 +582,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		_displayed_blocks--;
 		_mtx.unlock();
 	}
-	handle_border_block(pos, air_flower(value, true), false); // if block at border of chunk gets deleted, we update neighbours
+	handle_border_block(pos, air_flower(value, true, false), false); // if block at border of chunk gets deleted, we update neighbours
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
@@ -566,7 +600,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	}
 	if (endZ != -1) { // sand fall
 		remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1));
-	} else if (pos.z < 255 && block_above >= blocks::POPPY && block_above < blocks::WATER) { // del flower if block underneath deleted
+	} else if (pos.z < 255 && ((block_above >= blocks::POPPY && block_above < blocks::WATER) || block_above == blocks::CACTUS)) { // del flower if block underneath deleted
 		(block_above == blocks::GRASS)
 			? remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1)) // if grass above breaked block, don't collect it
 			: remove_block(inventory, glm::ivec3(pos.x, pos.y, pos.z + 1));
@@ -595,7 +629,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		pos.z = sand_fall_endz(pos);
 	}
-	handle_border_block(pos, air_flower(type, false), true); // if block at border of chunk gets added, we update neighbours
+	handle_border_block(pos, air_flower(type, false, false), true); // if block at border of chunk gets added, we update neighbours
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
 	_removed.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
 	_added[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
@@ -695,12 +729,38 @@ void Chunk::setup_sky_array_buffer( void )
 	glBindVertexArray(_skyVao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
-	glBufferData(GL_ARRAY_BUFFER, _sky_count * 18 * sizeof(GLint), _sky_vert, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _sky_count * 24 * sizeof(GLint), _sky_vert, GL_STATIC_DRAW);
 
 	_skyVaoReset = false;
+	_skyVaoVIP = false;
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribIPointer(0, 3, GL_INT, 3 * sizeof(GLint), 0);
+	glVertexAttribIPointer(0, 4, GL_INT, 4 * sizeof(GLint), 0);
+
+	check_glstate("NO");
+}
+
+void Chunk::setup_water_array_buffer( void )
+{
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+
+	if (!_waterVaoSet) {
+		glGenVertexArrays(1, &_waterVao);
+		glGenBuffers(1, &_waterVbo);
+		_waterVaoSet = true;
+	}
+	glBindVertexArray(_waterVao);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _waterVbo);
+	glBufferData(GL_ARRAY_BUFFER, _water_count * 24 * sizeof(GLint), _water_vert, GL_STATIC_DRAW);
+
+	_waterVaoReset = false;
+	_waterVaoVIP = false;
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribIPointer(0, 4, GL_INT, 4 * sizeof(GLint), 0);
 
 	check_glstate("NO");
 }
@@ -764,6 +824,7 @@ void Chunk::generation( void )
 	generate_blocks();
 	_vertices = new GLint[_displayed_blocks * 6]; // blocktype, break frame, adjacents blocks, X Y Z
 	fill_vertex_array();
+	_water_vert = new GLint[_water_count * 24]; // each face is 2 tri of 3 points of 4 coords
 	_sky = new GLboolean[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2)];
 	generate_sky();
 }
@@ -799,7 +860,7 @@ void Chunk::generate_chunk( std::list<Chunk *> *chunks )
 	_thread = std::thread(thread_setup_chunk, chunks, this);
 }
 
-void Chunk::sort_sky( glm::vec3 pos )
+void Chunk::sort_sky( glm::vec3 pos, bool vip )
 {
 	// std::cout << "in sort sky" << std::endl;
 	if (!_sky_count) {
@@ -812,31 +873,29 @@ void Chunk::sort_sky( glm::vec3 pos )
 			if (_sky[row * (CHUNK_SIZE + 2) + col]) {
 				int pX = _startX + row - 1;
 				int pY = _startY + col - 1;
-				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 156.0f)), {pX, pY + 1, 156, 1, -1, 0}));
-				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 155.0f)), {pX, pY, 155, 1, 1, 0}));
+				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 156.0f)), {pX, pY + 1, 156, 1, -1, 0, }));
+				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 155.0f)), {pX, pY, 155, 1, 1, 0, }));
 				if (!_sky[(row - 1) * (CHUNK_SIZE + 2) + col]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX, pY + 0.5f, 155.5f)), {pX, pY + 1, 156, 0, -1, -1}));
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX, pY + 0.5f, 155.5f)), {pX, pY + 1, 156, 0, -1, -1, }));
 				}
 				if (!_sky[(row + 1) * (CHUNK_SIZE + 2) + col]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 1, pY + 0.5f, 155.5f)), {pX + 1, pY, 156, 0, 1, -1}));
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 1, pY + 0.5f, 155.5f)), {pX + 1, pY, 156, 0, 1, -1, }));
 				}
 				if (!_sky[row * (CHUNK_SIZE + 2) + col - 1]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY, 155.5f)), {pX, pY, 156, 1, 0, -1}));
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY, 155.5f)), {pX, pY, 156, 1, 0, -1, }));
 				}
 				if (!_sky[row * (CHUNK_SIZE + 2) + col + 1]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 1, 155.5f)), {pX + 1, pY + 1, 156, -1, 0, -1}));
+					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 1, 155.5f)), {pX + 1, pY + 1, 156, -1, 0, -1, }));
 				}
 			}
 		}
 	}
 	// std::cout << "before sort" << std::endl;
-	// 	std::cout << "_sky_vert malloc " << _sky_count * 18 << std::endl;
+	// 	std::cout << "_sky_vert malloc " << _sky_count * 24 << std::endl;
 	// 	std::cout << "order size " << order.size() << std::endl;
 	
-	if (!order.size()) {
-		if (_sky_count) {
-			std::cerr << "sort_sky, order size 0 but _sky_count is " << _sky_count << std::endl;
-		}
+	if (order.size() != _sky_count) {
+		std::cerr << "sort_sky, order size " << order.size() << ", but _sky_count " << _sky_count << std::endl;
 		return ;
 	}
 
@@ -858,15 +917,15 @@ void Chunk::sort_sky( glm::vec3 pos )
 
 	int vindex = 0;
 	for (auto& o: order) {
-		glm::ivec3 start = {o.second[0], o.second[1], o.second[2]}, offset0, offset1, offset2;
+		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], 0}, offset0, offset1, offset2;
 		if (!o.second[5]) {
-			offset0 = {o.second[3], 0, 0};
-			offset1 = {0, o.second[4], 0};
-			offset2 = {o.second[3], o.second[4], 0};
+			offset0 = {o.second[3], 0, 0, 0};
+			offset1 = {0, o.second[4], 0, 0};
+			offset2 = {o.second[3], o.second[4], 0, 0};
 		} else {
-			offset0 = {o.second[3], o.second[4], 0};
-			offset1 = {0, 0, o.second[5]};
-			offset2 = {o.second[3], o.second[4], o.second[5]};
+			offset0 = {o.second[3], o.second[4], 0, 0};
+			offset1 = {0, 0, o.second[5], 0};
+			offset2 = {o.second[3], o.second[4], o.second[5], 0};
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		face_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex);
@@ -874,6 +933,94 @@ void Chunk::sort_sky( glm::vec3 pos )
 	order.clear();
 	_mtx.lock();
 	_skyVaoReset = true;
+	if (vip) {
+		_skyVaoVIP = true;
+	}
+	_mtx.unlock();
+}
+
+void Chunk::sort_water( glm::vec3 pos, bool vip )
+{
+	// std::cout << "in sort sky" << std::endl;
+	if (!_water_count) {
+		return ;
+	}
+	// pos = glm::vec3(pos.x - _startX, pos.y - _startY, pos.z);
+	std::vector<std::pair<float, std::array<int, 7>>> order;
+	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
+		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
+			for (int level = 1; level < 244; level++) { // TODO handle water when at level 255..
+				if (_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] == blocks::WATER) {
+					int pX = _startX + row - 1;
+					int pY = _startY + col - 1;
+					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], true, true)) { // TODO if block above != water, we display anyway
+						order.push_back(std::pair<float, std::array<int, 7>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level + (7.0f / 8.0f))), {pX, pY + 1, level + 1, 1, -1, 0, 1}));
+					}
+					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, true)) {
+						order.push_back(std::pair<float, std::array<int, 7>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level)), {pX, pY, level, 1, 1, 0, 0}));
+					}
+					if (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, true)) {
+						order.push_back(std::pair<float, std::array<int, 7>>(glm::distance(pos, glm::vec3(pX, pY + 0.5f, level + 0.5f)), {pX, pY + 1, level + 1, 0, -1, -1, 1}));
+					}
+					if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, true)) {
+						order.push_back(std::pair<float, std::array<int, 7>>(glm::distance(pos, glm::vec3(pX + 1, pY + 0.5f, level + 0.5f)), {pX + 1, pY, level + 1, 0, 1, -1, 1}));
+					}
+					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true, true)) {
+						order.push_back(std::pair<float, std::array<int, 7>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY, level + 0.5f)), {pX, pY, level + 1, 1, 0, -1, 1}));
+					}
+					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], true, true)) {
+						order.push_back(std::pair<float, std::array<int, 7>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 1, level + 0.5f)), {pX + 1, pY + 1, level + 1, -1, 0, -1, 1}));
+					}
+				}
+			}
+		}
+	}
+	// std::cout << "before sort" << std::endl;
+	// 	std::cout << "_water_vert malloc " << _water_count * 24 << std::endl;
+	// 	std::cout << "order size " << order.size() * 24 << std::endl;
+	
+	if (order.size() != _water_count) {
+		std::cerr << "sort_water, order size " << order.size() << ", but _water_count " << _water_count << std::endl;
+		return ;
+	}
+
+	for (size_t index = 0; index < order.size() - 1; index++) {
+		float minDist = order[index].first;
+		size_t minIndex = index;
+		for (size_t jindex = index + 1; jindex < order.size(); jindex++) {
+			if (order[jindex].first > minDist) {
+				minIndex = jindex;
+				minDist = order[minIndex].first;
+			}
+		}
+		if (minIndex != index) {
+			std::pair<float, std::array<int, 7>> tmp = order[minIndex];
+			order[minIndex] = order[index];
+			order[index] = tmp;
+		}
+	}
+
+	int vindex = 0;
+	for (auto& o: order) {
+		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], o.second[6]}, offset0, offset1, offset2;
+		if (!o.second[5]) {
+			offset0 = {o.second[3], 0, 0, 0};
+			offset1 = {0, o.second[4], 0, 0};
+			offset2 = {o.second[3], o.second[4], 0, 0};
+		} else {
+			offset0 = {o.second[3], o.second[4], 0, 0};
+			offset1 = {0, 0, o.second[5], -start.w};
+			offset2 = {o.second[3], o.second[4], o.second[5], -start.w};
+		}
+		// std::cout << "vindex " << vindex << std::endl;
+		face_vertices(_water_vert, start, start + offset0, start + offset1, start + offset2, vindex);
+	}
+	order.clear();
+	_mtx.lock();
+	_waterVaoReset = true;
+	if (vip) {
+		_waterVaoVIP = true;
+	}
 	_mtx.unlock();
 }
 
@@ -970,7 +1117,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	for (int index = 0; index < _displayed_blocks * 6; index += 6) {
+	for (size_t index = 0; index < _displayed_blocks * 6; index += 6) {
 		_mtx.lock();
 		if (_vertices[index + 5] == block_hit.z && _vertices[index + 3] == block_hit.x && _vertices[index + 4] == block_hit.y) {
 			_vaoReset = false;
@@ -1011,7 +1158,7 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
 		if (exposed_block(target.x, target.y, level, true)) { // block still visible, no change in display_blocks, only in vixible faces
-			for (int index = 0; index < _displayed_blocks * 6; index += 6) {
+			for (size_t index = 0; index < _displayed_blocks * 6; index += 6) {
 				_mtx.lock();
 				if (_vertices[index + 5] == level && _vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1) {
 					_vertices[index + 2] = get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true);
@@ -1039,7 +1186,7 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		if (exposed_block(target.x, target.y, level, true)) { // block was already exposed, no change in displayed_blocks, only in visible faces
 			// std::cout << "displayed blocks same" << std::endl;
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
-			for (int index = 0; index < _displayed_blocks * 6; index += 6) {
+			for (size_t index = 0; index < _displayed_blocks * 6; index += 6) {
 				_mtx.lock();
 				if (_vertices[index + 5] == level && _vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1) {
 					_vertices[index + 2] = get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true);
@@ -1075,7 +1222,7 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 		std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top0 " << top0.x << ", " << top0.y << ", " << top0.z << std::endl;
 		return (true);
 	}
-	if (air_flower(_blocks[((top0.x + 1) * (CHUNK_SIZE + 2) + top0.y + 1) * WORLD_HEIGHT + top0.z], false)) {
+	if (air_flower(_blocks[((top0.x + 1) * (CHUNK_SIZE + 2) + top0.y + 1) * WORLD_HEIGHT + top0.z], false, false)) {
 		return (true);
 	}
 	glm::ivec3 top1 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height));
@@ -1084,7 +1231,7 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top1 " << top1.x << ", " << top1.y << ", " << top1.z << std::endl;
 			return (true);
 		}
-		if (air_flower(_blocks[((top1.x + 1) * (CHUNK_SIZE + 2) + top1.y + 1) * WORLD_HEIGHT + top1.z], false)) {
+		if (air_flower(_blocks[((top1.x + 1) * (CHUNK_SIZE + 2) + top1.y + 1) * WORLD_HEIGHT + top1.z], false, false)) {
 			return (true);
 		}
 	}
@@ -1094,7 +1241,7 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top2 " << top2.x << ", " << top2.y << ", " << top2.z << std::endl;
 			return (true);
 		}
-		if (air_flower(_blocks[((top2.x + 1) * (CHUNK_SIZE + 2) + top2.y + 1) * WORLD_HEIGHT + top2.z], false)) {
+		if (air_flower(_blocks[((top2.x + 1) * (CHUNK_SIZE + 2) + top2.y + 1) * WORLD_HEIGHT + top2.z], false, false)) {
 			return (true);
 		}
 	}
@@ -1104,7 +1251,7 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 			std::cout << "ERROR COLLISION BLOCK OUT OF CHUNK top3 " << top3.x << ", " << top3.y << ", " << top3.z << std::endl;
 			return (true);
 		}
-		if (air_flower(_blocks[((top3.x + 1) * (CHUNK_SIZE + 2) + top3.y + 1) * WORLD_HEIGHT + top3.z], false)) {
+		if (air_flower(_blocks[((top3.x + 1) * (CHUNK_SIZE + 2) + top3.y + 1) * WORLD_HEIGHT + top3.z], false, false)) {
 			return (true);
 		}
 	}
@@ -1219,9 +1366,9 @@ void Chunk::drawSky( GLint & counter, GLint &triangle_counter )
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		_mtx.unlock();
 		++counter;
-		if (!_skyVaoSet && counter > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
+		if (!_skyVaoVIP && !_skyVaoSet && counter > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
 			return ;
-		} else if (counter < 6) {
+		} else if (_skyVaoVIP || counter < 6) {
 			setup_sky_array_buffer();
 		}
 		_mtx.lock();
@@ -1230,6 +1377,30 @@ void Chunk::drawSky( GLint & counter, GLint &triangle_counter )
 	glDrawArrays(GL_TRIANGLES, 0, _sky_count * 6); // 6 points/face
 	// std::cout << "draw sky" << std::endl;
 	triangle_counter += _sky_count * 2; // 2 triang/face
+	_mtx.unlock();
+}
+
+void Chunk::drawWater( GLint & counter, GLint &triangle_counter )
+{
+	if (!_water_count) {
+		return ;
+	}
+	_mtx.lock();
+	if (_waterVaoReset) {
+		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
+		_mtx.unlock();
+		++counter;
+		if (!_waterVaoVIP && !_waterVaoSet && counter > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
+			return ;
+		} else if (_waterVaoVIP || counter < 6) {
+			setup_water_array_buffer();
+		}
+		_mtx.lock();
+	}
+    glBindVertexArray(_waterVao);
+	glDrawArrays(GL_TRIANGLES, 0, _water_count * 6); // 6 points/face
+	// std::cout << "draw water" << std::endl;
+	triangle_counter += _water_count * 2; // 2 triang/face
 	_mtx.unlock();
 }
 

@@ -222,6 +222,8 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	_skyUniProj = glGetUniformLocation(_skyShaderProgram, "proj");
 	update_cam_perspective();
 
+	_skyUniColor = glGetUniformLocation(_skyShaderProgram, "color");
+
 	// _uniPV = glGetUniformLocation(_shaderProgram, "pv");
 	// update_cam_matrix();
 
@@ -326,7 +328,7 @@ void OpenGL_Manager::main_loop( void )
 		}
 		previousFrame = currentTime;
 
-		GLint newVaoCounter = 0, blockCounter = 0, skyTriangles = 0;
+		GLint newVaoCounter = 0, blockCounter = 0, waterTriangles = 0, skyTriangles = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, blockCounter);
 			c->updateFurnaces(currentTime);
@@ -334,8 +336,14 @@ void OpenGL_Manager::main_loop( void )
 
 		// std::cout << "DEBUG b" << std::endl;
 		glUseProgram(_skyShaderProgram);
+		glm::vec3 color;
 		for (auto& c: _visible_chunks) {
+			color = {1.0f, 1.0f, 1.0f};
+			glUniform3f(_skyUniColor, color.r, color.g, color.b);
 			c->drawSky(newVaoCounter, skyTriangles);
+			color = {0.24705882f, 0.4627451f, 0.89411765f};
+			glUniform3f(_skyUniColor, color.r, color.g, color.b);
+			c->drawWater(newVaoCounter, waterTriangles);
 		}
 		// std::cout << "DEBUG" << std::endl;
 

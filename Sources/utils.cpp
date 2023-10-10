@@ -140,7 +140,8 @@ std::list<Chunk *> sort_chunks( glm::vec3 pos, std::list<Chunk *> chunks )
 
 	chunks.clear();
 	for (auto& d: dists) {
-		d.second->sort_sky(pos);
+		d.second->sort_sky(pos, false);
+		d.second->sort_water(pos, false);
 		chunks.push_back(d.second);
 	}
 	dists.clear();
@@ -148,29 +149,35 @@ std::list<Chunk *> sort_chunks( glm::vec3 pos, std::list<Chunk *> chunks )
 	return (chunks);
 }
 
-void face_vertices( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, int & vindex )
+void face_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, int & vindex )
 {
 	vertices[vindex] = v0.x;
 	vertices[vindex + 1] = v0.y;
 	vertices[vindex + 2] = v0.z;
-	vertices[vindex + 3] = v1.x;
-	vertices[vindex + 4] = v1.y;
-	vertices[vindex + 5] = v1.z;
-	vertices[vindex + 6] = v2.x;
-	vertices[vindex + 7] = v2.y;
-	vertices[vindex + 8] = v2.z;
-	vindex += 9;
+	vertices[vindex + 3] = v0.w;
+	vertices[vindex + 4] = v1.x;
+	vertices[vindex + 5] = v1.y;
+	vertices[vindex + 6] = v1.z;
+	vertices[vindex + 7] = v1.w;
+	vertices[vindex + 8] = v2.x;
+	vertices[vindex + 9] = v2.y;
+	vertices[vindex + 10] = v2.z;
+	vertices[vindex + 11] = v2.w;
+	vindex += 12;
 
 	vertices[vindex] = v1.x;
 	vertices[vindex + 1] = v1.y;
 	vertices[vindex + 2] = v1.z;
-	vertices[vindex + 3] = v3.x;
-	vertices[vindex + 4] = v3.y;
-	vertices[vindex + 5] = v3.z;
-	vertices[vindex + 6] = v2.x;
-	vertices[vindex + 7] = v2.y;
-	vertices[vindex + 8] = v2.z;
-	vindex += 9;
+	vertices[vindex + 3] = v1.w;
+	vertices[vindex + 4] = v3.x;
+	vertices[vindex + 5] = v3.y;
+	vertices[vindex + 6] = v3.z;
+	vertices[vindex + 7] = v3.w;
+	vertices[vindex + 8] = v2.x;
+	vertices[vindex + 9] = v2.y;
+	vertices[vindex + 10] = v2.z;
+	vertices[vindex + 11] = v2.w;
+	vindex += 12;
 }
 
 // # include <glm/glm.hpp>

@@ -12,7 +12,7 @@ double gradient( double value, double start, double end, double value_start, dou
 int blockAtlasX( int block );
 int blockAtlasY( int block );
 std::list<Chunk *> sort_chunks( glm::vec3 pos, std::list<Chunk *> chunks );
-void face_vertices( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, int & vindex );
+void face_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, int & vindex );
 std::vector<glm::ivec3> voxel_traversal(glm::vec3 ray_start, glm::vec3 ray_end);
 
 #endif

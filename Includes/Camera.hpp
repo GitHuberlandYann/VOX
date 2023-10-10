@@ -44,6 +44,7 @@ class Camera
 	
 	public:
 		glm::vec3 _position;
+		glm::ivec3 _current_block;
 		int _movement_speed, _health_points;
 		bool _update, _fovUpdate, _inJump, _touchGround, _fall_immunity;
 		float _fall_distance;

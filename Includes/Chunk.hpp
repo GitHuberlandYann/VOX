@@ -60,13 +60,13 @@ struct s_backup {
 class Chunk
 {
     private:
-        GLuint _vao, _vbo, _skyVao, _skyVbo;
-        bool _isVisible, _vaoSet, _vaoReset, _vaoVIP, _skyVaoSet, _skyVaoReset;
+        GLuint _vao, _vbo, _waterVao, _waterVbo, _skyVao, _skyVbo;
+        bool _isVisible, _vaoSet, _vaoReset, _vaoVIP, _waterVaoSet, _waterVaoReset, _waterVaoVIP, _skyVaoSet, _skyVaoReset, _skyVaoVIP;
         GLint _startX, _startY;
 		GLint _continent;
-		GLint *_blocks, *_vertices, *_sky_vert;
+		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
 		GLboolean *_sky;
-		GLint _displayed_blocks, _sky_count;
+		size_t _displayed_blocks, _water_count, _sky_count;
 		std::list<Chunk *> _vis_chunks;
 		Camera *_camera;
 		std::map<int,int> _orientations, _added, _removed;
@@ -77,6 +77,7 @@ class Chunk
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		GLint get_empty_faces( int type, int row, int col, int level, bool isNotLeaves );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves );
+		int exposed_water_faces( int row, int col, int level );
 		int get_block_type_cave( int row, int col, int level, int ground_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
@@ -93,6 +94,7 @@ class Chunk
         void fill_vertex_array( void );
         void setup_array_buffer( void );
 		void setup_sky_array_buffer( void );
+		void setup_water_array_buffer( void );
 
     public:
         Chunk( Camera *camera, int posX, int posY );
@@ -107,7 +109,8 @@ class Chunk
 		void generation( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( std::list<Chunk *> *chunks );
-		void sort_sky( glm::vec3 pos );
+		void sort_sky( glm::vec3 pos, bool vip );
+		void sort_water( glm::vec3 pos, bool vip );
 	
 		bool inPerimeter( int posX, int posY, GLint render_dist );
 		int manhattanDist( int posX, int posY );
@@ -127,6 +130,7 @@ class Chunk
         void drawArray( GLint & counter, GLint &block_counter );
 		void updateFurnaces( double currentTime );
 		void drawSky( GLint & counter, GLint &triangle_counter );
+		void drawWater( GLint & counter, GLint &triangle_counter );
 		std::string getAddsRmsString( void );
 };
 
