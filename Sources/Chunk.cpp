@@ -574,7 +574,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 			}
 			return (remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1)));
 		} else {
-			add_block(NULL, glm::ivec3(pos.x, pos.y, endZ), above_value);
+			add_block(NULL, glm::ivec3(pos.x, pos.y, endZ), above_value, blocks::AIR);
 		}
 	}
 	if (value > blocks::AIR) { // if invisible block gets deleted, same amount of displayed_blocks
@@ -582,7 +582,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		_displayed_blocks--;
 		_mtx.unlock();
 	}
-	handle_border_block(pos, air_flower(value, true, false), false); // if block at border of chunk gets deleted, we update neighbours
+	handle_border_block(pos, air_flower(value, true, true), false); // if block at border of chunk gets deleted, we update neighbours
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
@@ -595,6 +595,9 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 				_mtx.lock();
 				_displayed_blocks++;
 				_mtx.unlock();
+			} else if (adj == blocks::WATER) {
+				++_water_count;
+				// std::cout << "++water count" << std::endl;
 			}
 		}
 	}
@@ -608,15 +611,34 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
-void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
+void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
-	if (type >= blocks::POPPY && pos.z - 1 > 0) {
+	if (type >= blocks::POPPY && pos.z > 0) {
+		if (previous == blocks::WATER) {
+			return ;
+		}
 		int block_below = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z - 1];
 		if (block_below != blocks::GRASS_BLOCK && block_below != blocks::DIRT && block_below != blocks::SAND) {
 			return ; // can't place flower on something else than grass/dirt block
 		}
+	} else if (previous == blocks::WATER) { // replace water block with something else
+		_water_count -= exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
+		// std::cout << "added water, _water_count reduced by " << exposed_water_faces(pos.x + 1, pos.y + 1, pos.z) << std::endl;
+	} else { // we loop through neighbours to check if they are water blocks to be updated
+		for (int index = 0; index < 6; index++) {
+		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+
+		} else {
+			int adj = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
+			if (adj == blocks::WATER) {
+				--_water_count;
+				// std::cout << "--water count" << std::endl;
+			}
+		}
+	}
 	}
 	mtx_inventory.lock();
 	if (inventory) {
@@ -629,7 +651,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type )
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		pos.z = sand_fall_endz(pos);
 	}
-	handle_border_block(pos, air_flower(type, false, false), true); // if block at border of chunk gets added, we update neighbours
+	handle_border_block(pos, air_flower(type, false, true), true); // if block at border of chunk gets added, we update neighbours
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
 	_removed.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
 	_added[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
@@ -831,6 +853,7 @@ void Chunk::generation( void )
 
 void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding )
 {
+	size_t waterSave = _water_count;
 	if (!adding) {
 		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] == blocks::BEDROCK) { // can't rm bedrock
 			return ;
@@ -841,7 +864,15 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 		if ((value != blocks::AIR && value != blocks::WATER) || type == blocks::AIR) { // can't replace block
 			return ;
 		}
-		add_block(inventory, pos, type);
+		add_block(inventory, pos, type, value);
+	}
+	if (waterSave != _water_count) {
+		delete [] _water_vert;
+		_water_vert = new GLint[_water_count * 24];
+		_mtx.lock();
+		_waterVaoReset = false;
+		_waterVaoVIP = true;
+		_mtx.unlock(); // TODO sort water to update it, one way would be to manualy modify camera's current block
 	}
 	delete [] _vertices;
 	_vertices = new GLint[_displayed_blocks * 6];
@@ -1154,6 +1185,12 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		target = glm::ivec2(posX, CHUNK_SIZE);
 	}
 	if (adding) {
+		if (_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] == blocks::WATER
+			&& _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] != blocks::WATER) {
+			--_water_count;
+			delete [] _water_vert;
+			_water_vert = new GLint[_water_count * 24];
+		}
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
 		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
@@ -1181,6 +1218,11 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_mtx.unlock();
 		}
 	} else {
+		if (_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] == blocks::WATER) {
+			++_water_count;
+			delete [] _water_vert;
+			_water_vert = new GLint[_water_count * 24];
+		}
 		_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_removed[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = 1;
 		if (exposed_block(target.x, target.y, level, true)) { // block was already exposed, no change in displayed_blocks, only in visible faces

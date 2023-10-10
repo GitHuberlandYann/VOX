@@ -90,7 +90,7 @@ class Chunk
 		int sand_fall_endz( glm::ivec3 pos );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
-		void add_block( Inventory *inventory, glm::ivec3 pos, int type );
+		void add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous );
         void fill_vertex_array( void );
         void setup_array_buffer( void );
 		void setup_sky_array_buffer( void );

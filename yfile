@@ -26,6 +26,8 @@ Project Requirements:
         - different biomes
 
 TODOS:
+	- water flow
+	- change physics in water
     - skybox
 	- particles ?
     - items on ground after break
@@ -37,7 +39,6 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-	- Water flow + update when add/rm blocks around
     - main menu
         - play
             - random seed / custom seed
@@ -80,6 +81,7 @@ DONE:
     - FOV changed on isRunning change
     - stop fov run if player idle
 	- water if air && level > surface_level && level < 64
+	- Water update when add/rm blocks around
 	- clouds
     - load menu
     - inventory menu
