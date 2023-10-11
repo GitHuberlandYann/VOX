@@ -130,6 +130,7 @@ class Chunk
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &block_counter );
 		void updateFurnaces( double currentTime );
+		bool addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int level );
 		void updateFluids( void );
 		void drawSky( GLint & counter, GLint &triangle_counter );
 		void drawWater( GLint & counter, GLint &triangle_counter );

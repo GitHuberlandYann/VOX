@@ -26,7 +26,6 @@ Project Requirements:
         - different biomes
 
 TODOS:
-	- water flow
 	- change physics in water
     - skybox
 	- particles ?
@@ -39,6 +38,7 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+	- water flow
     - main menu
         - play
             - random seed / custom seed

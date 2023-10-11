@@ -137,7 +137,7 @@ int Chunk::exposed_water_faces( int row, int col, int level )
 	switch (level) {
 		case 0:
 			res += 1;
-			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], true, true);
+			res += _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1] < blocks::WATER;
 			break ;
 		case 255:
 			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, true);
@@ -145,7 +145,7 @@ int Chunk::exposed_water_faces( int row, int col, int level )
 			break ;
 		default:
 			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, true);
-			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], true, true);
+			res += _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1] < blocks::WATER;
 	}
 	res += !air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, true);
 	res += !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, true);
@@ -577,7 +577,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 			add_block(NULL, glm::ivec3(pos.x, pos.y, endZ), above_value, blocks::AIR);
 		}
 	}
-	if (value > blocks::AIR && value != blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
+	if (value > blocks::AIR && value < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
 		_mtx.lock();
 		_displayed_blocks--;
 		_mtx.unlock();
@@ -586,20 +586,22 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	}
 	handle_border_block(pos, air_flower(value, true, true), false); // if block at border of chunk gets deleted, we update neighbours
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
-	for (int index = 0; index < 6; index++) {
-		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+	if (air_flower(value, true, true)) {
+		for (int index = 0; index < 6; index++) {
+			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+			if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
 
-		} else {
-			int adj = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
-			if (adj < blocks::AIR) {
-				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] += blocks::NOTVISIBLE;
-				_mtx.lock();
-				_displayed_blocks++;
-				_mtx.unlock();
-			} else if (adj >= blocks::WATER) {
-				++_water_count;
-				// std::cout << "++water count" << std::endl;
+			} else {
+				int adj = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
+				if (adj < blocks::AIR) {
+					_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] += blocks::NOTVISIBLE;
+					_mtx.lock();
+					_displayed_blocks++;
+					_mtx.unlock();
+				} else if (index != 4 && adj >= blocks::WATER) { // if water under, top was already displayed
+					++_water_count;
+					// std::cout << "++water count" << std::endl;
+				}
 			}
 		}
 	}
@@ -622,7 +624,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	if (type == blocks::WATER) { // we place water
-		_fluids.insert(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
+		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
 		if (previous < blocks::WATER) {
 			_water_count += exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
 			for (int index = 0; index < 6; index++) {
@@ -648,6 +650,9 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 		}
 	} else if (previous >= blocks::WATER) { // replace water block with something else
 		_water_count -= exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
+		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z - 1] >= blocks::WATER) {
+			_water_count++;
+		}
 		// std::cout << "added water, _water_count reduced by " << exposed_water_faces(pos.x + 1, pos.y + 1, pos.z) << std::endl;
 	} else { // we loop through neighbours to check if they are water blocks to be updated
 		for (int index = 0; index < 6; index++) {
@@ -656,7 +661,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 
 			} else {
 				int adj = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
-				if (adj >= blocks::WATER) {
+				if (index != 4 && adj >= blocks::WATER) { // if we add block above water, still display water top
 					--_water_count;
 					// std::cout << "--water count" << std::endl;
 				}
@@ -1016,7 +1021,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 					int pY = _startY + col - 1;
 					int above = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1];
 					int height = ((above < blocks::WATER) ? value - blocks::WATER + (value == blocks::WATER) : 0);
-					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], true, true)) { // TODO if block above != water, we display anyway
+					if (_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1] < blocks::WATER) { // TODO if block above != water, we display anyway
 						order.push_back(std::pair<float, std::array<int, 7>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level + ((8.0f - height) / 8.0f))), {pX, pY + 1, level + 1, 1, -1, 0, height}));
 					}
 					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, true)) {
@@ -1433,11 +1438,65 @@ void Chunk::updateFurnaces( double currentTime )
 	}
 }
 
+bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int level )
+{
+	if (posX < 1 || posX > CHUNK_SIZE || posY < 1 || posY > CHUNK_SIZE) {
+		return (false);
+	}
+	int value = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
+	if (value == blocks::AIR) { // TODO break flowers if on the path, but have to modify _displayed_blocks ..
+		// std::cout << "column expension, water count before: " << _water_count << std::endl;
+		_water_count += exposed_water_faces(posX, posY, posZ);
+		for (int index = 0; index < 6; index++) {
+			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+			if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
+			} else {
+				int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
+				if (adj >= blocks::WATER) {
+					--_water_count;
+				}
+			}
+		}
+		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = level;
+		newFluids.insert(posX + (posY << 8) + (posZ << 16));
+		// std::cout << "column expension, water count after: " << _water_count << std::endl;
+		return (true);
+	} else if (value >= blocks::WATER) {
+		return (true);
+	}
+
+	return (false);
+}
+
 void Chunk::updateFluids( void )
 {
-	// for (auto& f: _fluids) {
-	// 	// TODO add code here
-	// }
+	size_t waterSave = _water_count;
+	std::set<int> newFluids;
+	for (auto f = _fluids.begin(); f != _fluids.end();) {
+		// TODO add code here
+		int posX = *f & 0xFF;
+		int posY = (*f >> 8) & 0xFF;
+		int posZ = (*f >> 16) & 0xFF;
+		int level = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
+		if (addFlow(newFluids, posX, posY, posZ - 1, blocks::WATER1)) {
+		} else if (level == blocks::WATER7) { // stop flow
+		} else {
+			// std::cout << "block under fluid: " << s_blocks[_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ - 1]].name << std::endl;
+			if (addFlow(newFluids, posX - 1, posY, posZ, level + 1)) {
+			} else if (addFlow(newFluids, posX + 1, posY, posZ, level + 1)) {
+			} else if (addFlow(newFluids, posX, posY - 1, posZ, level + 1)) {
+			} else (addFlow(newFluids, posX, posY + 1, posZ, level + 1));
+		}
+		std::cout << "fluid at " << posX << ", " << posY << ", " << posZ << std::endl;
+		f = _fluids.erase(f);
+	}
+	_fluids = newFluids;
+	newFluids.clear();
+	if (waterSave != _water_count) {
+		delete [] _water_vert;
+		_water_vert = new GLint[_water_count * 24];
+		sort_water({_startX, _startY, 65}, true);
+	}
 }
 
 void Chunk::drawSky( GLint & counter, GLint &triangle_counter )
