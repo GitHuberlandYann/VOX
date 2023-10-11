@@ -542,6 +542,7 @@ struct Water : Block {
 	public:
 		Water() {
 			name = "WATER";
+			mined = blocks::WATER_BUCKET;
 		}
 };
 

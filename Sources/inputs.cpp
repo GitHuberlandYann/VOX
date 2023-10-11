@@ -103,7 +103,11 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	int type = _inventory->getCurrentSlot();
-	if (type == blocks::AIR || type >= blocks::STICK) {
+	if (type == blocks::WATER_BUCKET) { // use it like any other block
+		type = blocks::WATER;
+	} else if (type == blocks::BUCKET) { // special case, add but remove water instead
+		adding = false;
+	} else if (type == blocks::AIR || type >= blocks::STICK) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
 	}

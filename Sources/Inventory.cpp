@@ -533,6 +533,21 @@ void Inventory::setModif( bool value )
 
 void Inventory::addBlock( int type )
 {
+	if (type == blocks::WATER) {
+		// std::cout << "adding water bucket to inventory" << std::endl;
+		if (_content[_slot].x == blocks::BUCKET) {
+			if (_content[_slot].y == 1) {
+				_content[_slot].x = blocks::WATER_BUCKET;
+				_modif = true;
+				// std::cout << "and replacing current slot with it" << std::endl;
+				return ;
+			}
+			// std::cout << "and storing it out of slot" << std::endl;
+			_content[_slot].y--;
+		} else {
+			return ;
+		}
+	}
 	glm::ivec2 block = glm::ivec2(s_blocks[type].mined, 1);
 	restoreBlock(block, true);
 }
@@ -566,7 +581,10 @@ void Inventory::removeBlock( void )
     if (_content[_slot].x == blocks::AIR) {
         return ;
     }
-    if (--_content[_slot].y <= 0) {
+	if (_content[_slot].x == blocks::WATER_BUCKET) {
+		_content[_slot].x = blocks::BUCKET;
+		_modif = true;
+	} else if (--_content[_slot].y <= 0) {
 		if (s_blocks[_content[_slot].x].durability) {
 			getrmDura(_slot);
 		}
