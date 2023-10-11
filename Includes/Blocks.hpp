@@ -34,7 +34,14 @@ enum blocks {
 	GRASS,
 	SUGAR_CANE,
 	DEAD_BUSH,
-	WATER = 78,
+	WATER = 72,
+	WATER1,
+	WATER2,
+	WATER3,
+	WATER4,
+	WATER5,
+	WATER6,
+	WATER7,
 	STICK = 80,
 	WOODEN_SHOVEL,
 	STONE_SHOVEL,
@@ -546,6 +553,55 @@ struct Water : Block {
 		}
 };
 
+struct Water1 : Block {
+	public:
+		Water1() {
+			name = "WATER 1";
+		}
+};
+
+struct Water2 : Block {
+	public:
+		Water2() {
+			name = "WATER 2";
+		}
+};
+
+struct Water3 : Block {
+	public:
+		Water3() {
+			name = "WATER 3";
+		}
+};
+
+struct Water4 : Block {
+	public:
+		Water4() {
+			name = "WATER 4";
+		}
+};
+
+struct Water5 : Block {
+	public:
+		Water5() {
+			name = "WATER 5";
+		}
+};
+
+struct Water6 : Block {
+	public:
+		Water6() {
+			name = "WATER 6";
+		}
+};
+
+struct Water7 : Block {
+	public:
+		Water7() {
+			name = "WATER 7";
+		}
+};
+
 struct Stick : Block {
 	public:
 		Stick() {
@@ -721,7 +777,7 @@ const Block s_blocks[112] = {
 	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), StoneBrick(), CrackedStoneBrick(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), CoalBlock(), IronBlock(), DiamondBlock(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), Water(), TBD(),
+	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), Water(), Water1(), Water2(), Water3(), Water4(), Water5(), Water6(), Water7(),
 	Stick(), WoodenShovel(), StoneShovel(), IronShovel(), DiamondShovel(), WoodenAxe(), StoneAxe(), IronAxe(), DiamondAxe(), WoodenPickaxe(), StonePickaxe(), IronPickaxe(), DiamondPickaxe(), TBD(), TBD(), TBD(),
 	Coal(), Charcoal(), IronIngot(), Diamond(), Bucket(), WaterBucket(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 };

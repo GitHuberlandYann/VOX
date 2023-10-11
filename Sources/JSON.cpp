@@ -122,7 +122,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 				res += ", ";
 			}
 			rmstart = false;
-			res += "[" + std::to_string(rm.first) + ", " + std::to_string(rm.second) + ']';
+			res += "[" + std::to_string(rm) + ']';
 		}
 		res += "],\n\t\t\"furnaces\": [";
 		bool fstart = true;
@@ -360,11 +360,10 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 				} else if (!line.compare(0, 11, "\"removed\": ")) {
 					index = 11;
 					while (line[index + 1] == '[') {
-						int rmkey = std::atoi(&line[index + 2]);
-						for (; line[index] && line[index] != ','; index++);
-						backups_value.removed[rmkey] = std::atoi(&line[index + 2]);
-						ofs << "backups new removed " << rmkey << ", " << backups_value.removed[rmkey] << std::endl;
-						for (; line[index + 1] && line[index + 1] != '['; index++);
+						int rmvalue = std::atoi(&line[index + 2]);
+						backups_value.removed.insert(rmvalue);
+						ofs << "backups new removed " << rmvalue << std::endl;
+						for (index++; line[index + 1] && line[index + 1] != '['; index++);
 					}
 				} else if (!line.compare(0, 12, "\"furnaces\": ")) {
 					index = 12;

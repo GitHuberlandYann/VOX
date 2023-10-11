@@ -53,7 +53,7 @@ const GLint oak_normal[61][3] = {
 struct s_backup {
 	std::map<int, int> orientations;
 	std::map<int, int> added;
-	std::map<int, int> removed; // TODO change this to set
+	std::set<int> removed;
 	std::map<int, FurnaceInstance> furnaces;
 };
 
@@ -69,7 +69,8 @@ class Chunk
 		size_t _displayed_blocks, _water_count, _sky_count;
 		std::list<Chunk *> _vis_chunks;
 		Camera *_camera;
-		std::map<int,int> _orientations, _added, _removed;
+		std::map<int,int> _orientations, _added;
+		std::set<int> _removed, _fluids; // TODO add fluids to backups
 		std::map<int, FurnaceInstance> _furnaces;
 		std::thread _thread;
 		std::mutex _mtx;
@@ -129,6 +130,7 @@ class Chunk
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &block_counter );
 		void updateFurnaces( double currentTime );
+		void updateFluids( void );
 		void drawSky( GLint & counter, GLint &triangle_counter );
 		void drawWater( GLint & counter, GLint &triangle_counter );
 		std::string getAddsRmsString( void );

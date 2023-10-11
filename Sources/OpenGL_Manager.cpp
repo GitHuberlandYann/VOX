@@ -294,12 +294,14 @@ void OpenGL_Manager::main_loop( void )
 	check_glstate("setup done, entering main loop\n");
 
 	// std::cout << "60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame." << std::endl; 
-	double lastTime = glfwGetTime();
+	double lastTime = glfwGetTime(), lastTimeFluidUpdate = lastTime;
 	int nbFrames = 0;
 	int nbFramesLastSecond = 0;
 
 	double previousFrame = lastTime;
 	int backFromMenu = 0;
+
+	bool fluidUpdate = false;
 
 	// main loop cheking for inputs and rendering everything
 	while (!glfwWindowShouldClose(_window))
@@ -314,6 +316,12 @@ void OpenGL_Manager::main_loop( void )
 			nbFramesLastSecond = nbFrames;
 			nbFrames = 0;
 			lastTime += 1.0;
+		}
+		if (!_paused && currentTime - lastTimeFluidUpdate >= 0.25) {
+			fluidUpdate = true;
+			lastTimeFluidUpdate += 0.25;
+		} else {
+			fluidUpdate = false;
 		}
 
 		glEnable(GL_DEPTH_TEST);
@@ -332,13 +340,16 @@ void OpenGL_Manager::main_loop( void )
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, blockCounter);
 			c->updateFurnaces(currentTime);
+			if (fluidUpdate) {
+				c->updateFluids();
+			}
 		}
 
 		// std::cout << "DEBUG b" << std::endl;
 		glUseProgram(_skyShaderProgram);
 		glm::vec3 color;
 		for (auto& c: _visible_chunks) {
-			color = {1.0f, 1.0f, 1.0f};
+			color = {0.2f, 0.0f, 0.2f};
 			glUniform3f(_skyUniColor, color.r, color.g, color.b);
 			c->drawSky(newVaoCounter, skyTriangles);
 			color = {0.24705882f, 0.4627451f, 0.89411765f};
@@ -364,6 +375,7 @@ void OpenGL_Manager::main_loop( void )
 				+ '/' + std::to_string(_perimeter_chunks.size()) + '/' + std::to_string(_chunks.size())
 				+ "\nDisplayed blocks\t> " + std::to_string(blockCounter)
 				+ "\nSky triangles\t> " + std::to_string(skyTriangles)
+				+ "\nWater triangles\t> " + std::to_string(waterTriangles)
 				+ "\n\nRender Distance\t> " + std::to_string(_render_distance)
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				+ "\nBackups\t> " + std::to_string(_backups.size())
