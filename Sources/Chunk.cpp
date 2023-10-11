@@ -1122,7 +1122,7 @@ bool Chunk::isInChunk( int posX, int posY )
 	return (posX == _startX && posY == _startY);
 }
 
-int Chunk::isHit( glm::ivec3 pos )
+int Chunk::isHit( glm::ivec3 pos, bool waterIsBlock )
 {
 	// std::cout << "current_chunk is " << _startX << ", " << _startY << std::endl;
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
@@ -1137,7 +1137,7 @@ int Chunk::isHit( glm::ivec3 pos )
 		_thread.join();
 	}
 	int value = _blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * WORLD_HEIGHT + chunk_pos.z];
-	if (value == blocks::WATER) {
+	if (!waterIsBlock && value == blocks::WATER) {
 		return (blocks::AIR);
 	}
 	return (value);

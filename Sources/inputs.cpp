@@ -56,7 +56,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 			first_loop = false;
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
-		int value = chunk->isHit(i);
+		int value = chunk->isHit(i, false);
 		if (value) {
 			chunk_hit = chunk;
 			return (glm::ivec4(i, (value > 0) ? value : value + blocks::NOTVISIBLE));
@@ -103,10 +103,12 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	int type = _inventory->getCurrentSlot();
+	bool find_water = false;
 	if (type == blocks::WATER_BUCKET) { // use it like any other block
 		type = blocks::WATER;
 	} else if (type == blocks::BUCKET) { // special case, add but remove water instead
 		adding = false;
+		find_water = true;
 	} else if (type == blocks::AIR || type >= blocks::STICK) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
@@ -141,21 +143,26 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			}
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
-		if (chunk->isHit(i)) {
+		if (find_water) {
+			if (chunk->isHit(i, true)) {
+				if (i == player_pos || i == glm::ivec3(player_pos.x, player_pos.y, player_pos.z - 1)) {
+					// std::cout << "abort because hit is player pos" << std::endl;
+					return ;
+				}
+				chunk->handleHit(((collect) ? _inventory : NULL), type, i, adding, _visible_chunks);
+				return ;
+			}
+		} else if (chunk->isHit(i, false)) {
 			// std::cout << "we have a hit ! " << i.x << ", " << i.y << ", " << i.z << ", " << std::endl;
 			if (i == player_pos || previous_block == player_pos || previous_block == glm::ivec3(player_pos.x, player_pos.y, player_pos.z - 1)) {
 				// std::cout << "abort because hit is player pos" << std::endl;
 				return ;
 			}
 			if (previous_chunk != current_chunk) {
-				(collect)
-						? prev_chunk->handleHit(_inventory, type, previous_block, adding, _visible_chunks)
-						: prev_chunk->handleHit(NULL, type, previous_block, adding, _visible_chunks);
+				prev_chunk->handleHit(((collect) ? _inventory : NULL), type, previous_block, adding, _visible_chunks);
 				return ;
 			}
-			(collect)
-					? chunk->handleHit(_inventory, type, previous_block, adding, _visible_chunks)
-					: chunk->handleHit(NULL, type, previous_block, adding, _visible_chunks);
+			chunk->handleHit(((collect) ? _inventory : NULL), type, previous_block, adding, _visible_chunks);
 			return ;
 		}
 		previous_block = i;

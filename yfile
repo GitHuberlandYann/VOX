@@ -82,6 +82,7 @@ DONE:
     - stop fov run if player idle
 	- water if air && level > surface_level && level < 64
 	- Water update when add/rm blocks around
+    - Water buckets
 	- clouds
     - load menu
     - inventory menu

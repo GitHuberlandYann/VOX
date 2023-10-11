@@ -119,7 +119,7 @@ class Chunk
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
 
-		int isHit( glm::ivec3 pos );
+		int isHit( glm::ivec3 pos, bool waterIsBlock );
 		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding, std::list<Chunk *> vis_chunks );
 		void updateBreak( glm::ivec4 block_hit, int frame );
 		void update_border(int posX, int posY, int level, int type, bool adding);
