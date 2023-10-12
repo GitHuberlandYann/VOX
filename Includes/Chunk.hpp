@@ -65,7 +65,7 @@ class Chunk
         GLint _startX, _startY;
 		GLint _continent;
 		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
-		GLboolean *_sky;
+		GLboolean *_sky, _hasWater;
 		size_t _displayed_blocks, _water_count, _sky_count;
 		std::list<Chunk *> *_vis_chunks;
 		Camera *_camera;

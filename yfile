@@ -38,7 +38,6 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-	- water flow
     - main menu
         - play
             - random seed / custom seed
@@ -83,6 +82,7 @@ DONE:
 	- water if air && level > surface_level && level < 64
 	- Water update when add/rm blocks around
     - Water buckets
+	- water flow
 	- clouds
     - load menu
     - inventory menu

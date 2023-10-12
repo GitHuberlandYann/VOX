@@ -5,7 +5,7 @@ Chunk::Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *perimeter_
 	_waterVaoSet(false), _waterVaoReset(false), _waterVaoVIP(false),
 	_skyVaoSet(false), _skyVaoReset(false), _skyVaoVIP(false),
 	_startX(posX), _startY(posY),
-	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _sky(NULL), _displayed_blocks(0), _water_count(0), _sky_count(0),
+	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _sky(NULL), _hasWater(true), _displayed_blocks(0), _water_count(0), _sky_count(0),
 	_vis_chunks(perimeter_chunks), _camera(camera)
 {
 }
@@ -408,7 +408,7 @@ void Chunk::generate_blocks( void )
 				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
 				if (value) {
 					if (value >= blocks::WATER) {
-						_water_count += exposed_water_faces(row, col, level);
+						// _water_count += exposed_water_faces(row, col, level);
 					} else if (exposed_block(row, col, level, value != blocks::OAK_LEAVES)) {
 						_displayed_blocks++;
 					} else {
@@ -540,10 +540,10 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		_displayed_blocks--;
 		_mtx.unlock();
 	} else if (value == blocks::WATER) { // use bucket on water source
-		_water_count -= exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
+		// _water_count -= exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
 		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
 	}
-	handle_border_block(pos, air_flower(value, true, true), false); // if block at border of chunk gets deleted, we update neighbours
+	handle_border_block(pos, air_flower(value, true, true), false); // if block at border of chunk gets deleted, we update neighbours // TODO might use false, true to update leaves too ?
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	if (air_flower(value, true, true)) {
 		for (int index = 0; index < 6; index++) {
@@ -558,7 +558,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 					_displayed_blocks++;
 					_mtx.unlock();
 				} else if (index != 4 && adj >= blocks::WATER) { // if water under, top was already displayed
-					++_water_count;
+					// ++_water_count;
 					if (value != blocks::WATER) { // block added and not water bucket
 						_fluids.insert((pos.x + 1 + delta[0]) + ((pos.y + 1 + delta[1]) << 8) + ((pos.z + delta[2]) << 16));
 					}
@@ -587,19 +587,20 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	if (type == blocks::WATER) { // we place water
 		if (previous < blocks::WATER) {
-			_water_count += exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
-			for (int index = 0; index < 6; index++) {
-				const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-				if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+			_hasWater = true;
+			// _water_count += exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
+			// for (int index = 0; index < 6; index++) {
+			// 	const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+			// 	if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
 
-				} else {
-					int adj = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
-					if (adj >= blocks::WATER) {
-						--_water_count;
-						// std::cout << "--water count" << std::endl;
-					}
-				}
-			}
+			// 	} else {
+			// 		int adj = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
+			// 		if (adj >= blocks::WATER) {
+			// 			--_water_count;
+			// 			// std::cout << "--water count" << std::endl;
+			// 		}
+			// 	}
+			// }
 		}
 	} else if (type >= blocks::POPPY && pos.z > 0) {
 		if (previous >= blocks::WATER) {
@@ -610,25 +611,25 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 			return ; // can't place flower on something else than grass/dirt block
 		}
 	} else if (previous >= blocks::WATER) { // replace water block with something else
-		_water_count -= exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
+		// _water_count -= exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
 		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
-		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z - 1] >= blocks::WATER) {
-			_water_count++;
-		}
+		// if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z - 1] >= blocks::WATER) {
+		// 	_water_count++;
+		// }
 		// std::cout << "added water, _water_count reduced by " << exposed_water_faces(pos.x + 1, pos.y + 1, pos.z) << std::endl;
 	} else { // we loop through neighbours to check if they are water blocks to be updated
-		for (int index = 0; index < 6; index++) {
-			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-			if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+		// for (int index = 0; index < 6; index++) {
+		// 	const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+		// 	if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
 
-			} else {
-				int adj = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
-				if (index != 4 && adj >= blocks::WATER) { // if we add block above water, still display water top
-					--_water_count;
-					// std::cout << "--water count" << std::endl;
-				}
-			}
-		}
+		// 	} else {
+		// 		int adj = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
+		// 		if (index != 4 && adj >= blocks::WATER) { // if we add block above water, still display water top
+		// 			--_water_count;
+		// 			// std::cout << "--water count" << std::endl;
+		// 		}
+		// 	}
+		// }
 	}
 	mtx_inventory.lock();
 	if (inventory) {
@@ -841,7 +842,7 @@ void Chunk::generation( void )
 	generate_blocks();
 	_vertices = new GLint[_displayed_blocks * 6]; // blocktype, break frame, adjacents blocks, X Y Z
 	fill_vertex_array();
-	_water_vert = new GLint[_water_count * 24]; // each face is 2 tri of 3 points of 4 coords
+	// _water_vert = new GLint[_water_count * 24]; // each face is 2 tri of 3 points of 4 coords
 	_sky = new GLboolean[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2)];
 	generate_sky();
 }
@@ -863,8 +864,8 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 		add_block(inventory, pos, type, value);
 	}
 	if (waterSave != _water_count) {
-		delete [] _water_vert;
-		_water_vert = new GLint[_water_count * 24];
+		// delete [] _water_vert;
+		// _water_vert = new GLint[_water_count * 24];
 		sort_water(_camera->_position, true);
 	}
 	if (type == blocks::WATER || type == blocks::BUCKET) {
@@ -1100,12 +1101,12 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		target = glm::ivec2(posX, CHUNK_SIZE);
 	}
 	if (adding) {
-		if (_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] >= blocks::WATER
-			&& _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] < blocks::WATER) {
-			--_water_count;
-			delete [] _water_vert;
-			_water_vert = new GLint[_water_count * 24];
-		}
+		// if (_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] >= blocks::WATER
+		// 	&& _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] < blocks::WATER) {
+		// 	--_water_count;
+		// 	delete [] _water_vert;
+		// 	_water_vert = new GLint[_water_count * 24];
+		// }
 		// std::cout << '[' << _startX << ", " << _startY << "] block at border " << posX << ", " << posY << ", " << level << ": " << s_blocks[type].name << std::endl;
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
 		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
@@ -1134,14 +1135,15 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_mtx.unlock();
 		}
 	} else {
-		std::cout << '[' << _startX << ", " << _startY << "] rm block at border " << posX << ", " << posY << ", " << level << ": " << s_blocks[type].name << std::endl;
+		// std::cout << '[' << _startX << ", " << _startY << "] rm block at border " << posX << ", " << posY << ", " << level << ": " << s_blocks[type].name << std::endl;
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
 		_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		if (_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] >= blocks::WATER) {
-			++_water_count;
-			delete [] _water_vert;
-			_water_vert = new GLint[_water_count * 24];
+			_hasWater = true;
+			// ++_water_count;
+			// delete [] _water_vert;
+			// _water_vert = new GLint[_water_count * 24];
 			_fluids.insert(target.x + (target.y << 8) + (level << 16));
 		}
 		if (exposed_block(target.x, target.y, level, true)) { // block was already exposed, no change in displayed_blocks, only in visible faces
