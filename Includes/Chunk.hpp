@@ -79,6 +79,9 @@ class Chunk
 		GLint get_empty_faces( int type, int row, int col, int level, bool isNotLeaves );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves );
 		int exposed_water_faces( int row, int col, int level );
+		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );
+		bool endFlow( std::set<int> &newFluids, int &value, int posX, int posY, int posZ );
+		bool addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int level );
 		int get_block_type_cave( int row, int col, int level, int ground_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
@@ -130,7 +133,6 @@ class Chunk
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &block_counter );
 		void updateFurnaces( double currentTime );
-		bool addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int level );
 		void updateFluids( void );
 		void drawSky( GLint & counter, GLint &triangle_counter );
 		void drawWater( GLint & counter, GLint &triangle_counter );
