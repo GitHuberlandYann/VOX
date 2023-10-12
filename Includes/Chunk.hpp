@@ -67,7 +67,7 @@ class Chunk
 		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
 		GLboolean *_sky;
 		size_t _displayed_blocks, _water_count, _sky_count;
-		std::list<Chunk *> _vis_chunks;
+		std::list<Chunk *> *_vis_chunks;
 		Camera *_camera;
 		std::map<int,int> _orientations, _added;
 		std::set<int> _removed, _fluids; // TODO add fluids to backups
@@ -92,6 +92,7 @@ class Chunk
 		void generate_blocks( void );
 		void generate_sky( void );
 		int sand_fall_endz( glm::ivec3 pos );
+		void handle_border_flow( int posX, int posY, int posZ, int value, int level, bool adding );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
 		void add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous );
@@ -101,7 +102,7 @@ class Chunk
 		void setup_water_array_buffer( void );
 
     public:
-        Chunk( Camera *camera, int posX, int posY );
+        Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *perimeter_chunks );
         ~Chunk( void );
 
 		GLint getStartX( void );
@@ -124,8 +125,9 @@ class Chunk
         bool isInChunk( int posX, int posY );
 
 		int isHit( glm::ivec3 pos, bool waterIsBlock );
-		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding, std::list<Chunk *> vis_chunks );
+		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void updateBreak( glm::ivec4 block_hit, int frame );
+		void update_border_flow( int posX, int posY, int posZ, int previous_value, int wlevel, bool adding );
 		void update_border(int posX, int posY, int level, int type, bool adding);
 		bool collisionBox( glm::vec3 pos, float width, float height );
 		void applyGravity( Camera *camera );

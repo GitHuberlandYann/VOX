@@ -79,8 +79,8 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			if (c->isInChunk(posX, posY)) {
 				// std::cout << "handle hit at pos " << _block_hit.x << ", " << _block_hit.y << ", " << _block_hit.z << std::endl;
 				(collect)
-					? c->handleHit(_inventory, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding, _visible_chunks)
-					: c->handleHit(NULL, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding, _visible_chunks);
+					? c->handleHit(_inventory, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding)
+					: c->handleHit(NULL, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding);
 				return ;
 			}
 		}
@@ -149,7 +149,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 					// std::cout << "abort because hit is player pos" << std::endl;
 					return ;
 				}
-				chunk->handleHit(((collect) ? _inventory : NULL), type, i, adding, _visible_chunks);
+				chunk->handleHit(((collect) ? _inventory : NULL), type, i, adding);
 				return ;
 			}
 		} else if (chunk->isHit(i, false)) {
@@ -159,10 +159,10 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 				return ;
 			}
 			if (previous_chunk != current_chunk) {
-				prev_chunk->handleHit(((collect) ? _inventory : NULL), type, previous_block, adding, _visible_chunks);
+				prev_chunk->handleHit(((collect) ? _inventory : NULL), type, previous_block, adding);
 				return ;
 			}
-			chunk->handleHit(((collect) ? _inventory : NULL), type, previous_block, adding, _visible_chunks);
+			chunk->handleHit(((collect) ? _inventory : NULL), type, previous_block, adding);
 			return ;
 		}
 		previous_block = i;
@@ -261,7 +261,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 
 			if (!isInChunk) {
 				//create new chunk where player stands
-				Chunk *newChunk = new Chunk(camera, posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE);
+				Chunk *newChunk = new Chunk(camera, posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE, perimeter_chunks); // TODO pass pointer to visible_chunks instead
 				std::map<std::pair<int, int>, s_backup>::iterator search = backups->find(std::pair<int, int>(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE));
 				if (search != backups->end()) {
 					newChunk->restoreBackup(search->second);

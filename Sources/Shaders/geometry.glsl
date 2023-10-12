@@ -81,46 +81,6 @@ void cross_image( void )
 	emitFace(v0, v5, v2, v7, start);
 }
 
-void sky_block( void )
-{
-	vec4 v0 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 1.0, 0.0));
-    vec4 v1 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 0.0, 1.0, 0.0));
-    vec4 v2 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 0.0, 0.0));
-    vec4 v3 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 0.0, 0.0, 0.0));
-
-    vec4 v4 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 1.0, 1.0, 0.0));
-    vec4 v5 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 1.0, 1.0, 0.0));
-    vec4 v6 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 1.0, 0.0, 0.0));
-    vec4 v7 = proj * view * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
-
-	vec2 start = vec2(7.0f / 16.0f, 15.0f / 16.0f);
-	
-	if ((vsData[0].Adj_blocks & (1 << 4)) == 0) {
-		FaceShadow = 1.0;
-		emitFace(v4, v5, v0, v1, start);
-	}
-	if ((vsData[0].Adj_blocks & (1 << 0)) == 0) {
-		FaceShadow = 0.92;
-		emitFace(v0, v1, v2, v3, start);
-	}
-	if ((vsData[0].Adj_blocks & (1 << 1)) == 0) {
-		FaceShadow = 0.88;
-		emitFace(v5, v4, v7, v6, start);
-	}
-	if ((vsData[0].Adj_blocks & (1 << 2)) == 0) {
-		FaceShadow = 0.84;
-		emitFace(v4, v0, v6, v2, start);
-	}
-	if ((vsData[0].Adj_blocks & (1 << 3)) == 0) {
-		FaceShadow = 0.80;
-		emitFace(v1, v5, v3, v7, start);
-	}
-	if ((vsData[0].Adj_blocks & (1 << 5)) == 0) {
-		FaceShadow = 0.74;
-		emitFace(v2, v3, v6, v7, start);
-	}
-}
-
 void default_block( bool ores )
 {
 	vec4 v0 = proj * view * (gl_in[0].gl_Position + vec4(0.0, 0.0, 1.0, 0.0));
@@ -220,10 +180,7 @@ void oriented_block( void )
 
 void main( void )
 {
-	if (vsData[0].Block_type == 79) { // sky
-		sky_block();
-		return ;
-	} else if ((vsData[0].Block_type & 48) == 48) { // flower
+	if ((vsData[0].Block_type & 48) == 48) { // flower
 		cross_image();
 		return ;
 	} else if (vsData[0].Block_type >= 16) { // same texture on 4 faces
