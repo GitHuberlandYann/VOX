@@ -16,12 +16,12 @@ enum cont {
 };
 
 enum face_dir {
-	MINUSZ,
-	PLUSZ,
 	MINUSX,
 	PLUSX,
 	MINUSY,
-	PLUSY
+	PLUSY,
+	MINUSZ,
+	PLUSZ
 };
 
 const GLint adj_blocks[6][3] = {

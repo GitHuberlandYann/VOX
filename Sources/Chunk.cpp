@@ -236,10 +236,17 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 			if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
-			} else {
+			} else if (index != face_dir::MINUSZ) { // if not block underneath
 				int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
 				if (adj >= blocks::WATER) {
-					if (adj < value) {
+					if (index == face_dir::PLUSZ) { // flow from above
+						if (value > blocks::WATER1) {
+							value = blocks::WATER1;
+							_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
+							_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
+						}
+						stop = false;
+					} else if (adj < value) {
 						if (adj < value - 1) {
 							value = adj + 1; // update
 							_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
@@ -262,7 +269,7 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 				if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
 				} else {
 					int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-					if (index != 4 && adj >= blocks::WATER) { // if water under, top was already displayed
+					if (adj >= blocks::WATER) {
 						++_water_count;
 						// std::cout << "++water count" << std::endl;
 					}
@@ -283,16 +290,18 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 		return (false);
 	}
 	int value = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
-	if (value == blocks::AIR) { // TODO break flowers if on the path, but have to modify _displayed_blocks ..
+	if (value == blocks::AIR || value > level) { // TODO break flowers if on the path, but have to modify _displayed_blocks ..
 		// std::cout << "column expension, water count before: " << _water_count << std::endl;
-		_water_count += exposed_water_faces(posX, posY, posZ);
-		for (int index = 0; index < 6; index++) {
-			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-			if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
-			} else {
-				int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-				if (adj >= blocks::WATER) {
-					--_water_count;
+		if (value == blocks::AIR) {
+			_water_count += exposed_water_faces(posX, posY, posZ);
+			for (int index = 0; index < 6; index++) {
+				const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+				if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
+				} else {
+					int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
+					if (adj >= blocks::WATER) {
+						--_water_count;
+					}
 				}
 			}
 		}
@@ -755,6 +764,9 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 					_mtx.unlock();
 				} else if (index != 4 && adj >= blocks::WATER) { // if water under, top was already displayed
 					++_water_count;
+					if (value != blocks::WATER) { // block added and not water bucket
+						_fluids.insert((pos.x + 1 + delta[0]) + ((pos.y + 1 + delta[1]) << 8) + ((pos.z + delta[2]) << 16));
+					}
 					// std::cout << "++water count" << std::endl;
 				}
 			}
@@ -779,7 +791,6 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	if (type == blocks::WATER) { // we place water
-		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
 		if (previous < blocks::WATER) {
 			_water_count += exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
 			for (int index = 0; index < 6; index++) {
@@ -840,6 +851,8 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	_removed.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
 	_added[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
 	if (type == blocks::WATER) {
+		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
+		// std::cout << "adding water" << std::endl;
 		return ;
 	}
 	if (type == blocks::FURNACE) {
@@ -1402,10 +1415,10 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 				}
 				_mtx.unlock();
 			}
-		} else { // we need to redo it all because on less exposed block
+		} else { // we need to redo it all because one less exposed block
 			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
-			delete [] _vertices;
 			_displayed_blocks--;
+			delete [] _vertices;
 			_vertices = new GLint[_displayed_blocks * 6];
 			fill_vertex_array();
 			_mtx.lock();
@@ -1598,7 +1611,9 @@ void Chunk::updateFluids( void )
 {
 	size_t waterSave = _water_count;
 	std::set<int> newFluids;
+	bool fluid_modif = false;
 	for (auto f = _fluids.begin(); f != _fluids.end();) {
+		fluid_modif = true;
 		int posX = *f & 0xFF;
 		int posY = (*f >> 8) & 0xFF;
 		int posZ = (*f >> 16) & 0xFF;
@@ -1613,7 +1628,7 @@ void Chunk::updateFluids( void )
 			addFlow(newFluids, posX, posY - 1, posZ, level + 1);
 			addFlow(newFluids, posX, posY + 1, posZ, level + 1);
 		}
-		std::cout << "fluid at " << posX << ", " << posY << ", " << posZ << std::endl;
+		// std::cout << "fluid at " << posX << ", " << posY << ", " << posZ << std::endl;
 		f = _fluids.erase(f);
 	}
 	_fluids = newFluids;
@@ -1621,6 +1636,8 @@ void Chunk::updateFluids( void )
 	if (waterSave != _water_count) {
 		delete [] _water_vert;
 		_water_vert = new GLint[_water_count * 24];
+	}
+	if (fluid_modif) {
 		sort_water({_startX, _startY, 65}, true);
 	}
 }
