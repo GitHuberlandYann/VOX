@@ -1134,16 +1134,18 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_mtx.unlock();
 		}
 	} else {
-		if (_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] == blocks::WATER) {
+		std::cout << '[' << _startX << ", " << _startY << "] rm block at border " << posX << ", " << posY << ", " << level << ": " << s_blocks[type].name << std::endl;
+		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
+		_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
+		_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
+		if (_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] >= blocks::WATER) {
 			++_water_count;
 			delete [] _water_vert;
 			_water_vert = new GLint[_water_count * 24];
+			_fluids.insert(target.x + (target.y << 8) + (level << 16));
 		}
-		_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
-		_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		if (exposed_block(target.x, target.y, level, true)) { // block was already exposed, no change in displayed_blocks, only in visible faces
 			// std::cout << "displayed blocks same" << std::endl;
-			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
 			for (size_t index = 0; index < _displayed_blocks * 6; index += 6) {
 				_mtx.lock();
 				if (_vertices[index + 5] == level && _vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1) {
@@ -1158,7 +1160,6 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		} else { // we need to redo it all because one new exposed block
 			// std::cout << "redo it all" << std::endl;
 			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] += blocks::NOTVISIBLE;
-			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
 			delete [] _vertices;
 			_displayed_blocks++;
 			_vertices = new GLint[_displayed_blocks * 6];

@@ -104,7 +104,7 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 		return (true);
 	}
 	if (value > blocks::WATER) {
-		// std::cout << "update water" << value << std::endl;
+		std::cout << "update water" << value << std::endl;
 		bool stop = true;
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
@@ -133,7 +133,8 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 			}
 		}
 		if (stop) {
-			// std::cout << "stop flow of " << s_blocks[value].name << std::endl;
+			std::cout << "stop flow of " << s_blocks[value].name << std::endl;
+			handle_border_block({posX - 1, posY - 1, posZ}, value, false);
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = blocks::AIR;
 			_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
 			_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
@@ -410,7 +411,7 @@ void Chunk::updateFluids( void )
 			addFlow(newFluids, posX, posY - 1, posZ, level + 1);
 			addFlow(newFluids, posX, posY + 1, posZ, level + 1);
 		}
-		// std::cout << "fluid at " << posX << ", " << posY << ", " << posZ << std::endl;
+		std::cout << "fluid at " << posX << ", " << posY << ", " << posZ << std::endl;
 		f = _fluids.erase(f);
 	}
 	_fluids = newFluids;
@@ -420,7 +421,7 @@ void Chunk::updateFluids( void )
 		_water_vert = new GLint[_water_count * 24];
 	}
 	if (fluid_modif) {
-		// std::cout << "s" << std::endl;
+		std::cout << "s" << std::endl;
 		sort_water(_camera->_position, true);
 	}
 }
