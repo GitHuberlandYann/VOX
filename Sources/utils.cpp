@@ -111,6 +111,19 @@ int blockAtlasY( int block ) // y coord in blockAtlas in pxl
 	return ((block % 16) * 16);
 }
 
+/* * we simulate that flowers are air block in order to display adjacent blocks properly
+   * also use this for all 'see-through' blocks like leaves, water..*/
+int air_flower( int value, bool air_leaves, bool air_water )
+{
+	if (air_water && value >= blocks::WATER) {
+		return (value);
+	}
+	if (value >= blocks::POPPY || value == blocks::CACTUS || (air_leaves && value == blocks::OAK_LEAVES)) {
+		return (0);
+	}
+	return (value);
+}
+
 std::list<Chunk *> sort_chunks( glm::vec3 pos, std::list<Chunk *> chunks )
 {
 	int posX = chunk_pos(pos.x);
