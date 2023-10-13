@@ -32,6 +32,7 @@ extern std::mutex mtx_deleted_chunks;
 extern std::mutex mtx_inventory;
 
 # include "utils.h"
+# include "Benchmark.hpp"
 # include "Camera.hpp"
 # include "PerlinNoise.hpp"
 # include "Blocks.hpp"

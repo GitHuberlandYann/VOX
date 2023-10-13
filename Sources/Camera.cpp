@@ -136,7 +136,6 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h )
 void Camera::applyGravity( void )
 {
 	// std::cout << "Gravity applied" << std::endl;
-	_touchGround = false;
 	_fall_time += _deltaTime;
 	if (_inJump) {
 		if (INITIAL_JUMP + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time < FALL_SPEED) {

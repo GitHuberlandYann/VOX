@@ -119,7 +119,7 @@ class Chunk
 	
 		bool inPerimeter( int posX, int posY, GLint render_dist );
 		int manhattanDist( int posX, int posY );
-        void setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist );
+        void show( void );
 		void hide( void );
         bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );

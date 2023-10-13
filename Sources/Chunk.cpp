@@ -983,12 +983,9 @@ int Chunk::manhattanDist( int posX, int posY )
 	return (distX + distY);
 }
 
-void Chunk::setVisibility( std::list<Chunk *> *visible_chunks, int posX, int posY, GLint render_dist )
+void Chunk::show( void )
 {
-	_isVisible = inPerimeter(posX, posY, render_dist);
-	if (_isVisible) {
-		visible_chunks->push_back(this);
-	}
+	_isVisible = true;
 }
 
 void Chunk::hide( void )
@@ -1232,6 +1229,7 @@ void Chunk::applyGravity( Camera *camera )
 	glm::vec3 pos = _camera->_position;
 	float distZ = saved_posZ - pos.z;
 	if (distZ < 0) { // jumping
+		camera->_touchGround = false;
 		// std::cout << "DEBUG: " << std::to_string(camera->_position.z) << std::endl;
 		for (float posZ = saved_posZ; posZ < pos.z; posZ++) {
 			// std::cout << "testing with posZ " << posZ << std::endl;
@@ -1275,6 +1273,7 @@ void Chunk::applyGravity( Camera *camera )
 		}
 	}
 	camera->_update = true;
+	camera->_touchGround = false;
 }
 
 int Chunk::isLoaded( GLint &counter )

@@ -198,7 +198,8 @@ void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread
 	mtx_perimeter.lock();
 	for (auto& peri: _perimeter_chunks) {
 		if (_camera->chunkInFront(_current_chunk, peri->getStartX(), peri->getStartY())) {
-			peri->setVisibility(&newvis_chunks, _current_chunk.x, _current_chunk.y, _render_distance * CHUNK_SIZE);
+			peri->show();
+			newvis_chunks.push_back(peri);
 		} else {
 			peri->hide();
 		}
@@ -234,7 +235,9 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 		++it;
 		mtx.unlock();
 	}
+	// Bench b;
 	newperi_chunks = sort_chunks(camera->_position, newperi_chunks);
+	// b.stop("sort chunks");
 	mtx_perimeter.lock();
 	*perimeter_chunks = newperi_chunks;
 	mtx_perimeter.unlock();
