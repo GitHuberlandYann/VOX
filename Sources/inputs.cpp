@@ -26,7 +26,7 @@ void OpenGL_Manager::update_cam_matrix( void )
 
 glm::ivec4 OpenGL_Manager::get_block_hit( void )
 {
-	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : 10);
+	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
 	Chunk *chunk = NULL;
@@ -68,10 +68,10 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 
 void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 {
-	if (_block_hit.w == blocks::AIR) {
-		return ;
-	}
 	if (!adding) {
+		if (_block_hit.w == blocks::AIR) {
+			return ;
+		}
 		int posX = chunk_pos(_block_hit.x);
 		int posY = chunk_pos(_block_hit.y);
 		
@@ -107,13 +107,15 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	if (type == blocks::WATER_BUCKET) { // use it like any other block
 		type = blocks::WATER;
 	} else if (type == blocks::BUCKET) { // special case, add but remove water instead
-		adding = false;
 		find_water = true;
 	} else if (type == blocks::AIR || type >= blocks::STICK) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
 	}
-	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : 10);
+	if (!find_water && _block_hit.w == blocks::AIR) {
+		return ;
+	}
+	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
 	glm::ivec3 player_pos, previous_block;
@@ -149,7 +151,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 					// std::cout << "abort because hit is player pos" << std::endl;
 					return ;
 				}
-				chunk->handleHit(((collect) ? _inventory : NULL), type, i, adding);
+				chunk->handleHit(((collect) ? _inventory : NULL), type, i, false);
 				return ;
 			}
 		} else if (chunk->isHit(i, false)) {

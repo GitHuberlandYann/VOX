@@ -95,7 +95,7 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 			if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
 			} else {
 				int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-				if (adj > blocks::WATER) {
+				if (adj >= blocks::WATER) {
 					// std::cout << "updating neighbour" << std::endl;
 					newFluids.insert((posX + delta[0]) + ((posY + delta[1]) << 8) + ((posZ + delta[2]) << 16));
 				}
@@ -105,11 +105,12 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 	}
 	if (value > blocks::WATER) {
 		// std::cout << "update water" << value << std::endl;
-		bool stop = true;
+		bool stop = true, onGround = false;
+		int sourceCount = 0;
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+			int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
 			if (index != face_dir::MINUSZ) { // if not block underneath
-				int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
 				if (adj >= blocks::WATER) {
 					if (index == face_dir::PLUSZ) { // flow from above
 						if (value > blocks::WATER1) {
@@ -120,6 +121,7 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 						}
 						stop = false;
 					} else if (adj < value) {
+						sourceCount += (adj == blocks::WATER);
 						if (adj < value - 1) {
 							value = adj + 1; // update
 							_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
@@ -130,6 +132,8 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 						// std::cout << "supplyed by water" << adj << std::endl;
 					}
 				}
+			} else if (air_flower(adj, false, true)) { // check block underneath
+				onGround = true;
 			}
 		}
 		if (stop) {
@@ -154,6 +158,12 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 				}
 			}
 			return (true);
+		} else if (onGround && sourceCount > 1) {
+			// std::cout << "infinite water source" << std::endl;
+			value = blocks::WATER; // infinite water baby
+			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
+			_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
+			_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
 		}
 	}
 	return (false);
@@ -166,7 +176,7 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 	// }
 	int value = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
 	// std::cout << "checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[value].name << std::endl;
-	if (!air_flower(value, false, true) || value > level) {
+	if (!air_flower(value, false, true) || value > level || (value == level && level == blocks::WATER1)) {
 		// std::cout << "column expension, water count before: " << _water_count << std::endl;
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = level;
 		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = level;

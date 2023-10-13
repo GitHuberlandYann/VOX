@@ -535,16 +535,17 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 			add_block(NULL, glm::ivec3(pos.x, pos.y, endZ), above_value, blocks::AIR);
 		}
 	}
+	handle_border_block(pos, air_flower(value, true, true), false); // if block at border of chunk gets deleted, we update neighbours // TODO might use false, true to update leaves too ?
+	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	if (value > blocks::AIR && value < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
 		_mtx.lock();
 		_displayed_blocks--;
 		_mtx.unlock();
 	} else if (value == blocks::WATER) { // use bucket on water source
 		// _water_count -= exposed_water_faces(pos.x + 1, pos.y + 1, pos.z);
+		// std::cout << "bucket on water" << std::endl;
 		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
 	}
-	handle_border_block(pos, air_flower(value, true, true), false); // if block at border of chunk gets deleted, we update neighbours // TODO might use false, true to update leaves too ?
-	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	if (air_flower(value, true, true)) {
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};

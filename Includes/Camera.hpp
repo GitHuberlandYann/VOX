@@ -14,6 +14,7 @@ enum Camera_Movement {
 	// _cam_angles = glm::vec2(225.0f, -37.0f);
 # define YAW          90.0f
 # define PITCH        0.0f
+# define REACH		  4.5f
 # define SPEED        20
 # define WALK_SPEED   4.317
 # define RUN_SPEED    5.612

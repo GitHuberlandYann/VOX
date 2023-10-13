@@ -27,6 +27,8 @@ Project Requirements:
 
 TODOS:
 	- change physics in water
+	- hitbox change + no fall on sneak
+	- overall lightning
     - skybox
 	- particles ?
     - items on ground after break
