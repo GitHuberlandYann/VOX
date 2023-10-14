@@ -334,8 +334,7 @@ void OpenGL_Manager::main_loop( void )
 			}
 			chunk_update();
 		}
-		previousFrame = currentTime;
-
+		// Bench b;
 		GLint newVaoCounter = 0, blockCounter = 0, waterTriangles = 0, skyTriangles = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, blockCounter);
@@ -344,19 +343,24 @@ void OpenGL_Manager::main_loop( void )
 				c->updateFluids();
 			}
 		}
+		// b.stop("solids");
 
-		// std::cout << "DEBUG b" << std::endl;
+		#if 1
+		// b.reset();
 		glUseProgram(_skyShaderProgram);
 		glm::vec3 color;
-		for (auto& c: _visible_chunks) {
 			color = {0.2f, 0.0f, 0.2f};
 			glUniform3f(_skyUniColor, color.r, color.g, color.b);
+		for (auto& c: _visible_chunks) {
 			c->drawSky(newVaoCounter, skyTriangles);
+		}
 			color = {0.24705882f, 0.4627451f, 0.89411765f};
 			glUniform3f(_skyUniColor, color.r, color.g, color.b);
+		for (auto&c: _visible_chunks) {
 			c->drawWater(newVaoCounter, waterTriangles);
 		}
-		// std::cout << "DEBUG" << std::endl;
+		// b.stop("display water sky");
+		#endif
 
 		// glClear(GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
@@ -365,7 +369,8 @@ void OpenGL_Manager::main_loop( void )
 		mtx_perimeter.lock();
 		std::string str = (_debug_mode)
 			? "Timer: " + std::to_string(currentTime)
-				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + '\n' + _camera->getCamString(_game_mode)
+				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((currentTime - previousFrame) * 1000)
+				+ '\n' + _camera->getCamString(_game_mode)
 				+ "\nBlock\t> " + ((_block_hit.w >= blocks::AIR) ? s_blocks[_block_hit.w].name : s_blocks[_block_hit.w + blocks::NOTVISIBLE].name)
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
 				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "")
@@ -425,6 +430,7 @@ void OpenGL_Manager::main_loop( void )
 		_deleted_chunks.clear();
 		mtx_deleted_chunks.unlock();
 
+		previousFrame = currentTime;
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
 	}
