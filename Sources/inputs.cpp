@@ -194,7 +194,8 @@ void OpenGL_Manager::update_cam_perspective( void )
 
 void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread ?
 {
-	std::list<Chunk *> newvis_chunks;
+	std::vector<Chunk *> newvis_chunks;
+	newvis_chunks.reserve(_visible_chunks.capacity());
 	mtx_perimeter.lock();
 	for (auto& peri: _perimeter_chunks) {
 		if (_camera->chunkInFront(_current_chunk, peri->getStartX(), peri->getStartY())) {
@@ -208,11 +209,13 @@ void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread
 	_visible_chunks = newvis_chunks;
 }
 
-static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> *perimeter_chunks, std::list<Chunk *> *deleted_chunks, std::map<std::pair<int, int>, s_backup> *backups,
+static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *> *perimeter_chunks, std::vector<Chunk *> *deleted_chunks, std::map<std::pair<int, int>, s_backup> *backups,
 								 Camera *camera, GLint render_dist, int posX, int posY )
 {
-	std::list<Chunk *> newperi_chunks;
-	std::list<Chunk *> newdel_chunks;
+	std::vector<Chunk *> newperi_chunks;
+	newperi_chunks.reserve(perimeter_chunks->capacity());
+	std::vector<Chunk *> newdel_chunks;
+	newdel_chunks.reserve(deleted_chunks->capacity());
 	mtx.lock();
 	std::list<Chunk *>::iterator ite = chunks->end();
 	std::list<Chunk *>::iterator it = chunks->begin();
@@ -270,7 +273,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::list<Chunk *> 
 				std::map<std::pair<int, int>, s_backup>::iterator search = backups->find(std::pair<int, int>(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE));
 				if (search != backups->end()) {
 					newChunk->restoreBackup(search->second);
-					backups->erase(search);
+					backups->erase(search); // TODO mtx lock backups
 				}
 				newChunk->generate_chunk(chunks); // TODO remove this from thread because it launches its own thread and there's data races..
 			}

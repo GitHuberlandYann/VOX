@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Chunk::Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *perimeter_chunks )
+Chunk::Chunk( Camera *camera, int posX, int posY, std::vector<Chunk *> *perimeter_chunks )
 	: _isVisible(true), _vaoSet(false), _vaoReset(false), _vaoVIP(false),
 	_waterVaoSet(false), _waterVaoReset(false), _waterVaoVIP(false),
 	_skyVaoSet(false), _skyVaoReset(false), _skyVaoVIP(false),
@@ -959,7 +959,7 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 			offset2 = {o.second[3], o.second[4], o.second[5], 0};
 		}
 		// std::cout << "vindex " << vindex << std::endl;
-		face_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex);
+		face_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex); // TODO mtx lock sky vert
 	}
 	order.clear();
 	_mtx.lock();

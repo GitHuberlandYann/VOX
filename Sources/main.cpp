@@ -13,7 +13,7 @@ int main( int ac, char **av )
 		return (1);
 	}
 	std::cout << std::endl << " ---- Hello ----" << std::endl;
-
+	// std::cout << "hardware concurrency of this computer: " << std::thread::hardware_concurrency() << std::endl;
 
 	OpenGL_Manager *render = new OpenGL_Manager();
 	std::string texture_file = (ac == 2) ? av[1] : "Resources/blockAtlas.png";

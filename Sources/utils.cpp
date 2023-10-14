@@ -124,13 +124,14 @@ int air_flower( int value, bool air_leaves, bool air_water )
 	return (value);
 }
 
-std::list<Chunk *> sort_chunks( glm::vec3 pos, std::list<Chunk *> chunks )
+std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 {
 	int posX = chunk_pos(pos.x);
 	int posY = chunk_pos(pos.y);
 
 	int size = chunks.size();
 	std::vector<std::pair<int, Chunk *>> dists;
+	dists.reserve(chunks.capacity());
 	for (auto& c: chunks) {
 		dists.push_back(std::pair<int, Chunk *>(c->manhattanDist(posX, posY), c));
 	}

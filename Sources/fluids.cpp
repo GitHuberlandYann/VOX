@@ -273,6 +273,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 	}
 	// pos = glm::vec3(pos.x - _startX, pos.y - _startY, pos.z);
 	std::vector<std::pair<float, std::array<int, 10>>> order;
+	order.reserve(_water_count);
 	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
 		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
 			for (int level = 1; level < 244; level++) { // TODO handle water when at level 255..

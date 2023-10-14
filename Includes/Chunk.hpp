@@ -67,7 +67,7 @@ class Chunk
 		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
 		GLboolean *_sky, _hasWater;
 		size_t _displayed_blocks, _water_count, _sky_count;
-		std::list<Chunk *> *_vis_chunks;
+		std::vector<Chunk *> *_vis_chunks;
 		Camera *_camera;
 		std::map<int,int> _orientations, _added;
 		std::set<int> _removed, _fluids; // TODO add fluids to backups
@@ -102,7 +102,7 @@ class Chunk
 		void setup_water_array_buffer( void );
 
     public:
-        Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *perimeter_chunks );
+        Chunk( Camera *camera, int posX, int posY, std::vector<Chunk *> *perimeter_chunks );
         ~Chunk( void );
 
 		GLint getStartX( void );

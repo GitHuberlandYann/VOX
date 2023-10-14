@@ -49,9 +49,7 @@ class OpenGL_Manager
 		int _break_frame;
 		std::string _world_name;
 		std::list<Chunk *> _chunks;
-		std::list<Chunk *> _visible_chunks;
-		std::list<Chunk *> _perimeter_chunks;
-		std::list<Chunk *> _deleted_chunks;
+		std::vector<Chunk *> _visible_chunks, _perimeter_chunks, _deleted_chunks;
 		std::map<std::pair<int, int>, s_backup> _backups;
 		std::thread _thread;
 		glm::ivec4 _block_hit;
