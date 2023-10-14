@@ -148,10 +148,6 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 				if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
 				} else {
 					int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-					// if (adj >= blocks::WATER) {
-					// 	++_water_count;
-					// 	// std::cout << "++water count" << std::endl;
-					// }
 					if (adj > blocks::WATER) {
 						newFluids.insert((posX + delta[0]) + ((posY + delta[1]) << 8) + ((posZ + delta[2]) << 16));
 					}
@@ -171,9 +167,6 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 
 bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int level )
 {
-	// if (posX < 1 || posX > CHUNK_SIZE || posY < 1 || posY > CHUNK_SIZE) {
-	// 	return (false);
-	// }
 	int value = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
 	// std::cout << "checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[value].name << std::endl;
 	if (!air_flower(value, false, true) || value > level || (value == level && level == blocks::WATER1)) {
@@ -201,17 +194,6 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 		} else {
 			if (!air_flower(value, false, true)) {
 				_hasWater = true;
-				// _water_count += exposed_water_faces(posX, posY, posZ);
-				// for (int index = 0; index < 6; index++) {
-				// 	const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-				// 	if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
-				// 	} else {
-				// 		int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-				// 		if (adj >= blocks::WATER) {
-				// 			--_water_count;
-				// 		}
-				// 	}
-				// }
 			} else {
 				// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[value].name << " with " << s_blocks[level].name << std::endl; 
 			}
@@ -305,9 +287,6 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 			}
 		}
 	}
-	// std::cout << "before sort" << std::endl;
-	// 	std::cout << "_water_vert malloc " << _water_count * 24 << std::endl;
-	// 	std::cout << "order size " << order.size() * 24 << std::endl;
 	
 	if (!order.size()) {
 		_water_count = 0;
@@ -340,18 +319,23 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 
 	int vindex = 0;
 	for (auto& o: order) {
-		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], o.second[6]}, offset0, offset1, offset2;
-		if (!o.second[5]) {
-			offset0 = {o.second[3], 0, 0, o.second[7] - start.w};
-			offset1 = {0, o.second[4], 0, o.second[8] - start.w};
-			offset2 = {o.second[3], o.second[4], 0, o.second[9] - start.w};
+		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], o.second[6]}, offset0, offset1, offset2, offset3;
+		if (!o.second[5]) { // top/down faces
+			std::array<int, 5> texcoord_offsets = compute_texcoord_offsets(o.second[6], o.second[7], o.second[8], o.second[9]);
+			offset0 = {0, 0, 0, texcoord_offsets[0]};
+			offset1 = {o.second[3], 0, 0, o.second[7] - start.w + texcoord_offsets[1]};// (1 << 10)};
+			offset2 = {0, o.second[4], 0, o.second[8] - start.w + texcoord_offsets[2]};// (1 << 11)};
+			offset3 = {o.second[3], o.second[4], 0, o.second[9] - start.w + texcoord_offsets[3]};//(1 << 10) + (1 << 11)};
+			start.w += texcoord_offsets[4];//(1 << 8); // waterStill || waterFlow
 		} else {
-			offset0 = {o.second[3], o.second[4], 0, o.second[7] - start.w};
-			offset1 = {0, 0, o.second[5], -start.w};
-			offset2 = {o.second[3], o.second[4], o.second[5], -start.w};
+			offset0 = {0, 0, 0, 0}; // TODO for now side faces' texture is "squished"
+			offset1 = {o.second[3], o.second[4], 0, o.second[7] - start.w + (1 << 10)};
+			offset2 = {0, 0, o.second[5], -start.w + (1 << 11)};
+			offset3 = {o.second[3], o.second[4], o.second[5], -start.w + (1 << 10) + (1 << 11)};
+			start.w += (1 << 8); // waterStill
 		}
 		// std::cout << "vindex " << vindex << std::endl;
-		face_vertices(_water_vert, start, start + offset0, start + offset1, start + offset2, vindex);
+		face_vertices(_water_vert, start + offset0, start + offset1, start + offset2, start + offset3, vindex);
 	}
 	order.clear();
 	_mtx.lock();
@@ -391,21 +375,8 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int previous_value
 					_mtx.unlock();
 				}
 				_hasWater = true;
-				// _water_count += exposed_water_faces(posX, posY, posZ);
-				// for (int index = 0; index < 6; index++) {
-				// 	const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-				// 	if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
-				// 	} else {
-				// 		int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-				// 		if (adj >= blocks::WATER) {
-				// 			--_water_count;
-				// 		}
-				// 	}
-				// }
 			}
 			_fluids.insert(posX + (posY << 8) + (posZ << 16));
-			// delete [] _water_vert;
-			// _water_vert = new GLint[_water_count * 24];
 			sort_water(_camera->_position, true);
 		}
 	} else {
@@ -413,20 +384,7 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int previous_value
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = blocks::AIR;
 			_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
 			_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
-			// _water_count -= exposed_water_faces(posX, posY, posZ);
-			// for (int index = 0; index < 6; index++) {
-			// 	const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-			// 	if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
-			// 	} else {
-			// 		int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-			// 		if (adj >= blocks::WATER) {
-			// 			++_water_count;
-			// 		}
-			// 	}
-			// }
 			_fluids.insert(posX + (posY << 8) + (posZ << 16));
-			// delete [] _water_vert;
-			// _water_vert = new GLint[_water_count * 24];
 			sort_water(_camera->_position, true);
 		}
 	}
@@ -434,7 +392,6 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int previous_value
 
 void Chunk::updateFluids( void )
 {
-	// size_t waterSave = _water_count;
 	std::set<int> newFluids;
 	bool fluid_modif = false;
 	for (auto f = _fluids.begin(); f != _fluids.end();) {
@@ -459,10 +416,6 @@ void Chunk::updateFluids( void )
 	}
 	_fluids = newFluids;
 	newFluids.clear();
-	// if (waterSave != _water_count) {
-	// 	delete [] _water_vert;
-	// 	_water_vert = new GLint[_water_count * 24];
-	// }
 	if (fluid_modif) {
 		// std::cout << "s" << std::endl;
 		sort_water(_camera->_position, true);

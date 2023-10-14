@@ -39,7 +39,7 @@ class OpenGL_Manager
 		GLFWwindow* _window;
 		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
 		GLuint _skyShaderProgram, _skyVertexShader, _skyFragmentShader;
-		GLint _uniView, _uniProj, _skyUniView, _skyUniProj, _skyUniColor;
+		GLint _uniView, _uniProj, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim;
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
 		glm::vec3 _background_color;
@@ -68,6 +68,7 @@ class OpenGL_Manager
 		void handle_add_rm_block( bool adding, bool collect );
 		void update_cam_view( void );
 		void update_cam_perspective( void );
+		void update_anim_frame( void );
 		void saveWorld( void );
 		std::string saveBackupString( void );
 		void loadWorld( std::string file );

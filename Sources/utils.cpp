@@ -163,6 +163,47 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 	return (chunks);
 }
 
+/* takes offsets of face's corners and compute texture coordinates to represent direction of liquid's flow
+ * offsets [0:7], 0 being highest
+ * 1 << 8 => waterStill
+ * 1 << 9 => waterFlow
+ * 1 << 10 => texture point +1 x
+ * 1 << 11 => texture point +1 y
+ * res[0] = top left
+ * res[1] = top right
+ * res[2] = bottom left
+ * res[3] = bottom right
+ * res[4] = texture used
+*/
+std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 )
+{
+	if (o0 == o1 && o0 == o2 && o0 == o3) {
+		return {0, 1 << 10, 2 << 10, 3 << 10, 1 << 8}; // still water
+	}
+	// from now on, flowing water
+	int max = std::min({o0, o1, o2, o3}); // min is highest point
+	if (max == o0) {
+		if (o0 == o2) {
+			return {1 << 10, 3 << 10, 0, 2 << 10, 1 << 9}; // +x 0y
+		} else if (o0 == o1) {
+			return {0, 1 << 10, 2 << 10, 3 << 10, 1 << 9}; // 0x -y
+		}
+		return {4 << 10, 9 << 10, 8 << 10, 6 << 10, 1 << 9}; // +x -y
+	} else if (max == o1) {
+		if (o1 == o3) {
+			return {2 << 10, 0, 3 << 10, 1 << 10, 1 << 9}; // -x 0y
+		}
+		return {8 << 10, 4 << 10, 6 << 10, 9 << 10, 1 << 9}; // -x -y
+	} else if (max == o2) {
+		if (o2 == o3) {
+			return {3 << 10, 2 << 10, 1 << 10, 0, 1 << 9}; // 0x +y
+		}
+		return {9 << 10, 6 << 10, 4 << 10, 8 << 10, 1 << 9}; // +x +y
+
+	}
+	return {6 << 10, 8 << 10, 9 << 10, 4 << 10, 1 << 9}; // -x +y
+}
+
 void face_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, int & vindex )
 {
 	vertices[vindex] = v0.x;

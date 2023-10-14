@@ -192,6 +192,15 @@ void OpenGL_Manager::update_cam_perspective( void )
 	glUseProgram(_shaderProgram);
 }
 
+void OpenGL_Manager::update_anim_frame( void )
+{
+	static int current_frame;
+	glUniform1i(_skyUniAnim, current_frame);
+	if (++current_frame == 31) {
+		current_frame = 0;
+	}
+}
+
 void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread ?
 {
 	std::vector<Chunk *> newvis_chunks;

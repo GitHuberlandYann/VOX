@@ -27,7 +27,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	}
 
 	if (_textures) {
-		glDeleteTextures(1, _textures);
+		glDeleteTextures(3, _textures);
 		delete [] _textures;
 	}
 	glDeleteProgram(_shaderProgram);
@@ -223,6 +223,7 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	update_cam_perspective();
 
 	_skyUniColor = glGetUniformLocation(_skyShaderProgram, "color");
+	_skyUniAnim = glGetUniformLocation(_skyShaderProgram, "animFrame");
 
 	// _uniPV = glGetUniformLocation(_shaderProgram, "pv");
 	// update_cam_matrix();
@@ -232,8 +233,8 @@ void OpenGL_Manager::setup_communication_shaders( void )
 
 void OpenGL_Manager::load_texture( std::string texture_file )
 {
-	_textures = new GLuint[1];
-	glGenTextures(1, _textures);
+	_textures = new GLuint[3];
+	glGenTextures(3, _textures);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, _textures[0]);
@@ -264,6 +265,69 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	delete texture;
 
 	check_glstate("Succesfully loaded " + texture_file + " to shader");
+
+
+
+	glUseProgram(_skyShaderProgram);
+	glActiveTexture(GL_TEXTURE0 + 4);
+	glBindTexture(GL_TEXTURE_2D, _textures[1]);
+
+	// load image
+	texture = new t_tex;
+	texture->content = SOIL_load_image("Resources/waterStill.png", &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
+	if (!texture->content) {
+		std::cerr << "failed to load image Resources/waterStill.png because:" << std::endl << SOIL_last_result() << std::endl;
+		exit(1);
+	}
+
+	// load image as texture
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
+
+	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterStill"), 4); // sampler2D #index in fragment shader
+			
+	// set settings for texture wraping and size modif
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	if (texture) {
+		SOIL_free_image_data(texture->content);
+	}
+	delete texture;
+
+	check_glstate("Succesfully loaded Resources/waterStill.png to shader");
+
+	glActiveTexture(GL_TEXTURE0 + 5);
+	glBindTexture(GL_TEXTURE_2D, _textures[2]);
+
+	// load image
+	texture = new t_tex;
+	texture->content = SOIL_load_image("Resources/waterFlow.png", &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
+	if (!texture->content) {
+		std::cerr << "failed to load image Resources/waterFlow.png because:" << std::endl << SOIL_last_result() << std::endl;
+		exit(1);
+	}
+
+	// load image as texture
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
+
+	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterFlow"), 5); // sampler2D #index in fragment shader
+			
+	// set settings for texture wraping and size modif
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	if (texture) {
+		SOIL_free_image_data(texture->content);
+	}
+	delete texture;
+
+	check_glstate("Succesfully loaded Resources/waterFlow.png to shader");
 }
 
 void OpenGL_Manager::main_loop( void )
@@ -294,14 +358,14 @@ void OpenGL_Manager::main_loop( void )
 	check_glstate("setup done, entering main loop\n");
 
 	// std::cout << "60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame." << std::endl; 
-	double lastTime = glfwGetTime(), lastTimeFluidUpdate = lastTime;
+	double lastTime = glfwGetTime(), lastTimeFluidUpdate = lastTime, lastTimeAnimUpdate = lastTime;
 	int nbFrames = 0;
 	int nbFramesLastSecond = 0;
 
 	double previousFrame = lastTime;
 	int backFromMenu = 0;
 
-	bool fluidUpdate = false;
+	bool fluidUpdate = false, animUpdate = false;
 
 	// main loop cheking for inputs and rendering everything
 	while (!glfwWindowShouldClose(_window))
@@ -322,6 +386,12 @@ void OpenGL_Manager::main_loop( void )
 			lastTimeFluidUpdate += 0.25;
 		} else {
 			fluidUpdate = false;
+		}
+		if (currentTime - lastTimeAnimUpdate >= 0.1) {
+			animUpdate = true;
+			lastTimeAnimUpdate += 0.1;
+		} else {
+			animUpdate = false;
 		}
 
 		glEnable(GL_DEPTH_TEST);
@@ -348,6 +418,9 @@ void OpenGL_Manager::main_loop( void )
 		#if 1
 		// b.reset();
 		glUseProgram(_skyShaderProgram);
+		if (animUpdate) {
+			update_anim_frame();
+		}
 		glm::vec3 color;
 			color = {0.2f, 0.0f, 0.2f};
 			glUniform3f(_skyUniColor, color.r, color.g, color.b);

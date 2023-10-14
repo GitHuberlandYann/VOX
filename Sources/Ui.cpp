@@ -55,7 +55,6 @@ void UI::load_texture( std::string texstr, std::string shname, int index )
 	delete texture;
 
 	check_glstate("Succesfully loaded " + texstr + " to shader\n");
-
 }
 
 void UI::add_inventory_elem( GLint *vertices, int mult, int index, int & vindex )
