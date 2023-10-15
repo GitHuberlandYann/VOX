@@ -295,7 +295,7 @@ void UI::display_slot_value( int index )
 	}
 	int mult = 4, value = _inventory.getSlotBlock(index).y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 3 - 12 - 4 * (value > 9), WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 3 - 6, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->addText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 3 - 12 - 4 * (value > 9), WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 3 - 6, 12, true, std::to_string(value));
 	}
 }
 
@@ -373,7 +373,7 @@ void UI::setup_shader( void )
 void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 {
 	if (f5_mode) {
-		return (_text->displayText(12, 24, 12, glm::vec3(1.0f, 1.0f, 1.0f), str));
+		return (_text->addText(12, 24, 12, true, str));
 	}
 	mtx_inventory.lock();
 	if (!_vaoSet || _inventory.getModif() || _camera.getModif()) {
@@ -383,6 +383,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 		mtx_inventory.lock();
 	}
 	mtx_inventory.unlock();
+	Bench b;
 	glUseProgram(_shaderProgram);
     glBindVertexArray(_vao);
 	mtx_inventory.lock();
@@ -390,9 +391,20 @@ void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 		? glDrawArrays(GL_POINTS, 0, _nb_points)
 		: glDrawArrays(GL_POINTS, 0, 3 + _inventory.countSlots() + 2 * _inventory.countDura(false));
 	mtx_inventory.unlock();
-
-	_text->displayText(12, 24, 12, glm::vec3(1.0f, 1.0f, 1.0f), str);
+	b.stop("drawArrays");
+	b.reset();
+	_text->addText(12, 24, 12, true, str);
+	b.stop("display text");
+	b.reset();
 	for (int index = 0; index < 9; index++) {
 		display_slot_value(index);
 	}
+	b.stop("display numbers");
+}
+
+void UI::textToScreen( void )
+{
+	Bench b;
+	_text->toScreen();
+	b.stop("text to screen");
 }

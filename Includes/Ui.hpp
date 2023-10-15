@@ -39,6 +39,7 @@ class UI
 		GLuint getShaderProgram( void );
         void setup_shader( void );
         void drawUserInterface( std::string str, bool game_mode, bool f5_mode );
+		void textToScreen( void );
 };
 
 #endif

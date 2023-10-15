@@ -4,7 +4,8 @@
 enum {
     TEXT_POSATTRIB,
     TEXT_SIZEATTRIB,
-    TEXT_CHARATTRIB
+    TEXT_CHARATTRIB,
+	TEXT_COLORATTRIB
 };
 
 class Text
@@ -12,8 +13,8 @@ class Text
 	private:
         GLuint _vao, _vbo;
 		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
-		GLint _uniColor;
 		GLuint *_textures;
+		std::vector<int> _texts;
 
         void setup_array_buffer( void );
 
@@ -23,7 +24,8 @@ class Text
 
         void setup_shader( void );
 		void load_texture( void );
-        void displayText( int posX, int posY, int font_size, glm::vec3 color, std::string str );
+        void addText( int posX, int posY, int font_size, bool white, std::string str );
+		void toScreen( void );
 };
 
 #endif

@@ -7,9 +7,8 @@ in Prim
 {
     vec2 Size;
 	int Character;
+	int Color;
 } vsData[];
-
-uniform vec3 color;
 
 out vec2 Texcoord;
 out vec4 Color;
@@ -50,7 +49,7 @@ void emitFace( vec4 v0, vec4 v1, vec4 v2, vec4 v3 )
 
 void main()
 {
-	Color = vec4(color, 1.0f);
+	Color = vec4(vsData[0].Color, vsData[0].Color, vsData[0].Color, 1.0f);
 
 	vec4 v0 = gl_in[0].gl_Position;
     vec4 v1 = gl_in[0].gl_Position + vec4(vsData[0].Size.x, 0.0, 0.0, 0.0);

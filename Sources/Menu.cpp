@@ -76,21 +76,21 @@ int Menu::main_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	_text->displayText(WIN_WIDTH / 2 - 220, WIN_HEIGHT / 2 - 120 * 3, 24, glm::vec3(1.0f, 1.0f, 1.0f), "Press space to start");
+	_text->addText(WIN_WIDTH / 2 - 220, WIN_HEIGHT / 2 - 120 * 3, 24, true, "Press space to start");
 
 	int mult = 3;
 	// shadows
-	_text->displayText(WIN_WIDTH / 2 - 110 + mult, WIN_HEIGHT / 2 - 10 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Singleplayer");
-	_text->displayText(WIN_WIDTH / 2 - 100 + mult, WIN_HEIGHT / 2 + 15 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Multiplayer");
-	_text->displayText(WIN_WIDTH / 2 - 150 + mult, WIN_HEIGHT / 2 + 40 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Minecraft Realms");
-	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 80 + mult, WIN_HEIGHT / 2 + 80 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Options...");
-	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 75 + mult, WIN_HEIGHT / 2 + 80 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Quit Game");
+	_text->addText(WIN_WIDTH / 2 - 110 + mult, WIN_HEIGHT / 2 - 10 * mult + 6 * mult + mult, 20, false, "Singleplayer");
+	_text->addText(WIN_WIDTH / 2 - 100 + mult, WIN_HEIGHT / 2 + 15 * mult + 6 * mult + mult, 20, false, "Multiplayer");
+	_text->addText(WIN_WIDTH / 2 - 150 + mult, WIN_HEIGHT / 2 + 40 * mult + 6 * mult + mult, 20, false, "Minecraft Realms");
+	_text->addText(WIN_WIDTH / 2 - 50 * mult - 80 + mult, WIN_HEIGHT / 2 + 80 * mult + 6 * mult + mult, 20, false, "Options...");
+	_text->addText(WIN_WIDTH / 2 + 50 * mult - 75 + mult, WIN_HEIGHT / 2 + 80 * mult + 6 * mult + mult, 20, false, "Quit Game");
 	// white
-	_text->displayText(WIN_WIDTH / 2 - 110, WIN_HEIGHT / 2 - 10 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Singleplayer");
-	_text->displayText(WIN_WIDTH / 2 - 100, WIN_HEIGHT / 2 + 15 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Multiplayer");
-	_text->displayText(WIN_WIDTH / 2 - 150, WIN_HEIGHT / 2 + 40 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Minecraft Realms");
-	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 80, WIN_HEIGHT / 2 + 80 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Options...");
-	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 75, WIN_HEIGHT / 2 + 80 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Quit Game");
+	_text->addText(WIN_WIDTH / 2 - 110, WIN_HEIGHT / 2 - 10 * mult + 6 * mult, 20, true, "Singleplayer");
+	_text->addText(WIN_WIDTH / 2 - 100, WIN_HEIGHT / 2 + 15 * mult + 6 * mult, 20, true, "Multiplayer");
+	_text->addText(WIN_WIDTH / 2 - 150, WIN_HEIGHT / 2 + 40 * mult + 6 * mult, 20, true, "Minecraft Realms");
+	_text->addText(WIN_WIDTH / 2 - 50 * mult - 80, WIN_HEIGHT / 2 + 80 * mult + 6 * mult, 20, true, "Options...");
+	_text->addText(WIN_WIDTH / 2 + 50 * mult - 75, WIN_HEIGHT / 2 + 80 * mult + 6 * mult, 20, true, "Quit Game");
 	return (0);
 }
 
@@ -122,28 +122,28 @@ int Menu::world_select_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	_text->displayText(WIN_WIDTH / 2 - 120, 30, 24, glm::vec3(1.0f, 1.0f, 1.0f), "Select World");
+	_text->addText(WIN_WIDTH / 2 - 120, 30, 24, true, "Select World");
 
 	int mult = 3;
 	// shadows
-	_text->displayText(WIN_WIDTH / 2 - 406 + mult, WIN_HEIGHT / 2 + 90 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Play Selected World");
-	_text->displayText(WIN_WIDTH / 2 - 390 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Edit");
-	_text->displayText(WIN_WIDTH / 2 - 180 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Delete");
-	_text->displayText(WIN_WIDTH / 2 + 76 + mult, WIN_HEIGHT / 2 + 90 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Create New World");
-	_text->displayText(WIN_WIDTH / 2 + 40 * mult - 80 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Re-Create");
-	_text->displayText(WIN_WIDTH / 2 + 128 * mult - 80 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Cancel");
+	_text->addText(WIN_WIDTH / 2 - 406 + mult, WIN_HEIGHT / 2 + 90 * mult + 6 * mult + mult, 20, false, "Play Selected World");
+	_text->addText(WIN_WIDTH / 2 - 390 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, false, "Edit");
+	_text->addText(WIN_WIDTH / 2 - 180 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, false, "Delete");
+	_text->addText(WIN_WIDTH / 2 + 76 + mult, WIN_HEIGHT / 2 + 90 * mult + 6 * mult + mult, 20, false, "Create New World");
+	_text->addText(WIN_WIDTH / 2 + 40 * mult - 80 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, false, "Re-Create");
+	_text->addText(WIN_WIDTH / 2 + 128 * mult - 80 + mult, WIN_HEIGHT / 2 + 115 * mult + 6 * mult + mult, 20, false, "Cancel");
 	// white
-	_text->displayText(WIN_WIDTH / 2 - 406, WIN_HEIGHT / 2 + 90 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Play Selected World");
-	_text->displayText(WIN_WIDTH / 2 - 390, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Edit");
-	_text->displayText(WIN_WIDTH / 2 - 180, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Delete");
-	_text->displayText(WIN_WIDTH / 2 + 76, WIN_HEIGHT / 2 + 90 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Create New World");
-	_text->displayText(WIN_WIDTH / 2 + 40 * mult - 80, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Re-Create");
-	_text->displayText(WIN_WIDTH / 2 + 128 * mult - 80, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Cancel");
+	_text->addText(WIN_WIDTH / 2 - 406, WIN_HEIGHT / 2 + 90 * mult + 6 * mult, 20, true, "Play Selected World");
+	_text->addText(WIN_WIDTH / 2 - 390, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, true, "Edit");
+	_text->addText(WIN_WIDTH / 2 - 180, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, true, "Delete");
+	_text->addText(WIN_WIDTH / 2 + 76, WIN_HEIGHT / 2 + 90 * mult + 6 * mult, 20, true, "Create New World");
+	_text->addText(WIN_WIDTH / 2 + 40 * mult - 80, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, true, "Re-Create");
+	_text->addText(WIN_WIDTH / 2 + 128 * mult - 80, WIN_HEIGHT / 2 + 115 * mult + 6 * mult, 20, true, "Cancel");
 
 	for (int index = 0; index < static_cast<int>(_worlds.size()) && index < 8; index++) {
 		std::string str = _worlds[index].substr(0, _worlds[index].size() - 5);
-		_text->displayText(WIN_WIDTH / 2 - str.size() * 10 + mult, (30 + 20 * index) * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), str);
-		_text->displayText(WIN_WIDTH / 2 - str.size() * 10, (30 + 20 * index) * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), str);
+		_text->addText(WIN_WIDTH / 2 - str.size() * 10 + mult, (30 + 20 * index) * mult + 6 * mult + mult, 20, false, str);
+		_text->addText(WIN_WIDTH / 2 - str.size() * 10, (30 + 20 * index) * mult + 6 * mult, 20, true, str);
 	}
 	return (0);
 }
@@ -171,7 +171,7 @@ int Menu::loading_screen( GLint render_dist )
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
 	std::string str = "LOADING.. " + std::to_string(percentage) + '%' + " (" + std::to_string(current_size) + '/' + std::to_string(goal) + ')';
-	_text->displayText(WIN_WIDTH / 2 - 24 * str.length() / 2, WIN_HEIGHT / 2 - 150, 24, glm::vec3(1.0f, 1.0f, 1.0f), str);
+	_text->addText(WIN_WIDTH / 2 - 24 * str.length() / 2, WIN_HEIGHT / 2 - 150, 24, true, str);
 	return (0);
 }
 
@@ -201,26 +201,26 @@ int Menu::pause_menu( void )
 
 	int mult = 3;
 	// first draw text shadow
-	// _text->displayText(WIN_WIDTH / 2 - 100 + mult, WIN_HEIGHT / 2 - 60 * mult - 40 + mult, 24, glm::vec3(0.0f, 0.0f, 0.0f), "Game Menu");
-	_text->displayText(WIN_WIDTH / 2 - 110 + mult, WIN_HEIGHT / 2 - 60 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Back to Game");
-	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 120 + mult, WIN_HEIGHT / 2 - 35 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Advancements");
-	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 125 + mult, WIN_HEIGHT / 2 - 10 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Give Feedback");
-	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 80 + mult, WIN_HEIGHT / 2 + 15 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Options...");
-	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 70 + mult, WIN_HEIGHT / 2 - 35 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Statistics");
-	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 100 + mult, WIN_HEIGHT / 2 - 10 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Report Bugs");
-	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 100 + mult, WIN_HEIGHT / 2 + 15 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Open to LAN");
-	_text->displayText(WIN_WIDTH / 2 - 200 + mult, WIN_HEIGHT / 2 + 40 * mult + 6 * mult + mult, 20, glm::vec3(0.0f, 0.0f, 0.0f), "Save and Quit to Title");
+	// _text->addText(WIN_WIDTH / 2 - 100 + mult, WIN_HEIGHT / 2 - 60 * mult - 40 + mult, 24, false, "Game Menu");
+	_text->addText(WIN_WIDTH / 2 - 110 + mult, WIN_HEIGHT / 2 - 60 * mult + 6 * mult + mult, 20, false, "Back to Game");
+	_text->addText(WIN_WIDTH / 2 - 50 * mult - 120 + mult, WIN_HEIGHT / 2 - 35 * mult + 6 * mult + mult, 20, false, "Advancements");
+	_text->addText(WIN_WIDTH / 2 - 50 * mult - 125 + mult, WIN_HEIGHT / 2 - 10 * mult + 6 * mult + mult, 20, false, "Give Feedback");
+	_text->addText(WIN_WIDTH / 2 - 50 * mult - 80 + mult, WIN_HEIGHT / 2 + 15 * mult + 6 * mult + mult, 20, false, "Options...");
+	_text->addText(WIN_WIDTH / 2 + 50 * mult - 70 + mult, WIN_HEIGHT / 2 - 35 * mult + 6 * mult + mult, 20, false, "Statistics");
+	_text->addText(WIN_WIDTH / 2 + 50 * mult - 100 + mult, WIN_HEIGHT / 2 - 10 * mult + 6 * mult + mult, 20, false, "Report Bugs");
+	_text->addText(WIN_WIDTH / 2 + 50 * mult - 100 + mult, WIN_HEIGHT / 2 + 15 * mult + 6 * mult + mult, 20, false, "Open to LAN");
+	_text->addText(WIN_WIDTH / 2 - 200 + mult, WIN_HEIGHT / 2 + 40 * mult + 6 * mult + mult, 20, false, "Save and Quit to Title");
 
 	// then draw text in white
-	_text->displayText(WIN_WIDTH / 2 - 100, WIN_HEIGHT / 2 - 60 * mult - 40, 24, glm::vec3(1.0f, 1.0f, 1.0f), "Game Menu");
-	_text->displayText(WIN_WIDTH / 2 - 110, WIN_HEIGHT / 2 - 60 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Back to Game");
-	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 120, WIN_HEIGHT / 2 - 35 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Advancements");
-	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 125, WIN_HEIGHT / 2 - 10 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Give Feedback");
-	_text->displayText(WIN_WIDTH / 2 - 50 * mult - 80, WIN_HEIGHT / 2 + 15 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Options...");
-	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 70, WIN_HEIGHT / 2 - 35 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Statistics");
-	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 100, WIN_HEIGHT / 2 - 10 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Report Bugs");
-	_text->displayText(WIN_WIDTH / 2 + 50 * mult - 100, WIN_HEIGHT / 2 + 15 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Open to LAN");
-	_text->displayText(WIN_WIDTH / 2 - 200, WIN_HEIGHT / 2 + 40 * mult + 6 * mult, 20, glm::vec3(1.0f, 1.0f, 1.0f), "Save and Quit to Title");
+	_text->addText(WIN_WIDTH / 2 - 100, WIN_HEIGHT / 2 - 60 * mult - 40, 24, true, "Game Menu");
+	_text->addText(WIN_WIDTH / 2 - 110, WIN_HEIGHT / 2 - 60 * mult + 6 * mult, 20, true, "Back to Game");
+	_text->addText(WIN_WIDTH / 2 - 50 * mult - 120, WIN_HEIGHT / 2 - 35 * mult + 6 * mult, 20, true, "Advancements");
+	_text->addText(WIN_WIDTH / 2 - 50 * mult - 125, WIN_HEIGHT / 2 - 10 * mult + 6 * mult, 20, true, "Give Feedback");
+	_text->addText(WIN_WIDTH / 2 - 50 * mult - 80, WIN_HEIGHT / 2 + 15 * mult + 6 * mult, 20, true, "Options...");
+	_text->addText(WIN_WIDTH / 2 + 50 * mult - 70, WIN_HEIGHT / 2 - 35 * mult + 6 * mult, 20, true, "Statistics");
+	_text->addText(WIN_WIDTH / 2 + 50 * mult - 100, WIN_HEIGHT / 2 - 10 * mult + 6 * mult, 20, true, "Report Bugs");
+	_text->addText(WIN_WIDTH / 2 + 50 * mult - 100, WIN_HEIGHT / 2 + 15 * mult + 6 * mult, 20, true, "Open to LAN");
+	_text->addText(WIN_WIDTH / 2 - 200, WIN_HEIGHT / 2 + 40 * mult + 6 * mult, 20, true, "Save and Quit to Title");
 	return (0);
 }
 
@@ -375,10 +375,10 @@ int Menu::ingame_menu( void )
 	if (value > 1) {
 		switch (_state) {
 			case (INVENTORY_MENU):
-				_text->displayText((WIN_WIDTH - (166 * 3)) / 2 + 155 * 3, WIN_HEIGHT / 2 - 49 * 3, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+				_text->addText((WIN_WIDTH - (166 * 3)) / 2 + 155 * 3, WIN_HEIGHT / 2 - 49 * 3, 12, true, std::to_string(value));
 				break ;
 			case (CRAFTING_MENU):
-				_text->displayText((WIN_WIDTH - (166 * 3)) / 2 + 125 * 3, WIN_HEIGHT / 2 - 42 * 3, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+				_text->addText((WIN_WIDTH - (166 * 3)) / 2 + 125 * 3, WIN_HEIGHT / 2 - 42 * 3, 12, true, std::to_string(value));
 				break ;
 		}
 	}
@@ -386,7 +386,7 @@ int Menu::ingame_menu( void )
 		double mouseX, mouseY;
 		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		value = _selected_block.y;
-		_text->displayText(mouseX - 6, mouseY - 6, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->addText(mouseX - 6, mouseY - 6, 12, true, std::to_string(value));
 	}
 	return (0);
 }
@@ -549,7 +549,7 @@ void Menu::display_slot_value( int index )
 	}
 	int mult = 3, value = _inventory.getSlotBlock(index).y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 18 * index * mult + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 + (59 + 6) * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 18 * index * mult + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 + (59 + 6) * mult, 12, true, std::to_string(value));
 	}
 }
 
@@ -560,7 +560,7 @@ void Menu::display_backpack_value( int index )
 	}
 	int mult = 3, value = _inventory.getBackpackBlock(index).y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 + 7 * mult + 18 * mult * (index / 9), 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 + 7 * mult + 18 * mult * (index / 9), 12, true, std::to_string(value));
 	}
 }
 
@@ -571,7 +571,7 @@ void Menu::display_icraft_value( int index )
 	}
 	int mult = 3, value = _inventory.getiCraftBlock(index).y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 59 * mult + 18 * mult * (index / 2), 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 59 * mult + 18 * mult * (index / 2), 12, true, std::to_string(value));
 	}
 }
 
@@ -582,15 +582,15 @@ void Menu::display_furnace_value( void )
 	}
 	int mult = 3, value = _furnace->getComposant().y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 7 - 2 * mult * (value > 9),  WIN_HEIGHT / 2 - 60 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 7 - 2 * mult * (value > 9),  WIN_HEIGHT / 2 - 60 * mult, 12, true, std::to_string(value));
 	}
 	value = _furnace->getFuel().y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 7 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 24 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 7 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 24 * mult, 12, true, std::to_string(value));
 	}
 	value = _furnace->getProduction().y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + 111 * mult + mult * 7 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 42 * mult, 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 111 * mult + mult * 7 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 42 * mult, 12, true, std::to_string(value));
 	}
 }
 
@@ -601,7 +601,7 @@ void Menu::display_craft_value( int index )
 	}
 	int mult = 3, value = _inventory.getCraftBlock(index).y;
 	if (value > 1) {
-		_text->displayText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 14 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 60 * mult + 18 * mult * (index / 3), 12, glm::vec3(1.0f, 1.0f, 1.0f), std::to_string(value));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 14 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 60 * mult + 18 * mult * (index / 3), 12, true, std::to_string(value));
 	}
 }
 

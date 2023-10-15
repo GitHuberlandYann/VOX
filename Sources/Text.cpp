@@ -15,6 +15,8 @@ Text::~Text( void )
 		delete [] _textures;
 	}
 	glDeleteProgram(_shaderProgram);
+
+	_texts.clear();
 }
 
 // ************************************************************************** //
@@ -59,6 +61,7 @@ void Text::setup_shader( void )
 	glBindAttribLocation(_shaderProgram, TEXT_POSATTRIB, "position");
 	glBindAttribLocation(_shaderProgram, TEXT_SIZEATTRIB, "size");
 	glBindAttribLocation(_shaderProgram, TEXT_CHARATTRIB, "character");
+	glBindAttribLocation(_shaderProgram, TEXT_COLORATTRIB, "color");
 
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
@@ -72,7 +75,7 @@ void Text::setup_shader( void )
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_height"), WIN_HEIGHT);
 
-	_uniColor = glGetUniformLocation(_shaderProgram, "color");
+	// _uniColor = glGetUniformLocation(_shaderProgram, "color");
 }
 
 void Text::load_texture( void )
@@ -111,21 +114,10 @@ void Text::load_texture( void )
 	check_glstate("Succesfully loaded Resources/asciiAtlas.png to shader\n");
 }
 
-void Text::displayText( int posX, int posY, int font_size, glm::vec3 color ,std::string str )
+void Text::addText( int posX, int posY, int font_size, bool white, std::string str )
 {
-	int nb_points = str.size();
-	for (size_t index = 0; index < str.size(); index++) {
-		if (str[index] == '\n' || str[index] == ' ' || str[index] == '\t') {
-			nb_points--;
-		}
-	}
-	if (!nb_points) {
-		return ;
-	}
-
 	int startX = posX;
-	GLint *vertices = new GLint[nb_points * 4];
-	for (size_t i = 0, charLine = 0, index = 0; i < str.size(); i++) {
+	for (size_t i = 0, charLine = 0; i < str.size(); i++) {
 		if (str[i] == '\n') {
 			posY += 1.2f * font_size;
 			posX = startX;
@@ -138,11 +130,11 @@ void Text::displayText( int posX, int posY, int font_size, glm::vec3 color ,std:
 			posX = startX + (currentTab * 4) * font_size;
 			charLine += 4 - charLine % 4;
 		} else {
-			vertices[index] = posX;
-			vertices[index + 1] = posY;
-			vertices[index + 2] = font_size;
-			vertices[index + 3] = str[i];
-			index += 4;
+			_texts.push_back(posX);
+			_texts.push_back(posY);
+			_texts.push_back(font_size);
+			_texts.push_back(str[i]);
+			_texts.push_back(((white) ? 1 : 0));
 			char c = str[i];
 			if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') {
 				posX += font_size * 0.5;
@@ -156,31 +148,47 @@ void Text::displayText( int posX, int posY, int font_size, glm::vec3 color ,std:
 			++charLine;
 		}
 	}
+}
+
+void Text::toScreen( void )
+{
+	size_t tSize = _texts.size();
+	if (tSize == 0) {
+		return ;
+	}
+
+	GLint *vertices = new GLint[tSize];
+	for (size_t index = 0; index < tSize; index++) {
+		vertices[index] = _texts[index];
+	}
 
 	glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, nb_points * 4 * sizeof(GLint), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, tSize * sizeof(GLint), vertices, GL_STATIC_DRAW);
 	delete [] vertices;
     
     glEnableVertexAttribArray(TEXT_POSATTRIB);
-	glVertexAttribIPointer(TEXT_POSATTRIB, 2, GL_INT, 4 * sizeof(GLint), 0);
+	glVertexAttribIPointer(TEXT_POSATTRIB, 2, GL_INT, 5 * sizeof(GLint), 0);
 	// check_glstate("text_posattrib successfully set");
 	
 	glEnableVertexAttribArray(TEXT_SIZEATTRIB);
-	glVertexAttribIPointer(TEXT_SIZEATTRIB, 1, GL_INT, 4 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
+	glVertexAttribIPointer(TEXT_SIZEATTRIB, 1, GL_INT, 5 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
 	// check_glstate("text_sizeattrib successfully set");
 
 	glEnableVertexAttribArray(TEXT_CHARATTRIB);
-	glVertexAttribIPointer(TEXT_CHARATTRIB, 1, GL_INT, 4 * sizeof(GLint), (void *)(3 * sizeof(GLint)));
+	glVertexAttribIPointer(TEXT_CHARATTRIB, 1, GL_INT, 5 * sizeof(GLint), (void *)(3 * sizeof(GLint)));
 	// check_glstate("text_charattrib successfully set");
+
+	glEnableVertexAttribArray(TEXT_COLORATTRIB);
+	glVertexAttribIPointer(TEXT_COLORATTRIB, 1, GL_INT, 5 * sizeof(GLint), (void *)(4 * sizeof(GLint)));
 
 	check_glstate("NO");
 
 	glUseProgram(_shaderProgram);
-	GLfloat vecptr[3] = {color.x, color.y, color.z};
-	glUniform3fv(_uniColor, 1, vecptr);
-	glDrawArrays(GL_POINTS, 0, nb_points);
+	glDrawArrays(GL_POINTS, 0, tSize / 5);
+
+	_texts.clear();
 }
