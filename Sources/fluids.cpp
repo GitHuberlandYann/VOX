@@ -190,7 +190,7 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 			// if (!air_flower(value, false, true)) {
 			// 	_water_count--;
 			// }
-			handle_border_flow(posX, posY, posZ, value, level, true);
+			handle_border_flow(posX, posY, posZ, level, true);
 		} else {
 			if (!air_flower(value, false, true)) {
 				_hasWater = true;
@@ -209,19 +209,19 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 	return (false);
 }
 
-void Chunk::handle_border_flow( int posX, int posY, int posZ, int value, int level, bool adding )
+void Chunk::handle_border_flow( int posX, int posY, int posZ, int level, bool adding )
 {
 	if (!posX) {
 		for (auto& c : *_vis_chunks) {
 			if (c->isInChunk(_startX - CHUNK_SIZE, _startY)) {
-				c->update_border_flow(CHUNK_SIZE, posY, posZ, value, level, adding);
+				c->update_border_flow(CHUNK_SIZE, posY, posZ, level, adding);
 				break ;
 			}
 		}
 	} else if (posX == CHUNK_SIZE + 1) {
 		for (auto& c : *_vis_chunks) {
 			if (c->isInChunk(_startX + CHUNK_SIZE, _startY)) {
-				c->update_border_flow(1, posY, posZ, value, level, adding);
+				c->update_border_flow(1, posY, posZ, level, adding);
 				break ;
 			}
 		}
@@ -229,14 +229,14 @@ void Chunk::handle_border_flow( int posX, int posY, int posZ, int value, int lev
 	if (!posY) {
 		for (auto& c : *_vis_chunks) {
 			if (c->isInChunk(_startX, _startY - CHUNK_SIZE)) {
-				c->update_border_flow(posX, CHUNK_SIZE, posZ, value, level, adding);
+				c->update_border_flow(posX, CHUNK_SIZE, posZ, level, adding);
 				break ;
 			}
 		}
 	} else if (posY == CHUNK_SIZE + 1) {
 		for (auto& c : *_vis_chunks) {
 			if (c->isInChunk(_startX, _startY + CHUNK_SIZE)) {
-				c->update_border_flow(posX, 1, posZ, value, level, adding);
+				c->update_border_flow(posX, 1, posZ, level, adding);
 				break ;
 			}
 		}
@@ -346,7 +346,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 	_mtx.unlock();
 }
 
-void Chunk::update_border_flow( int posX, int posY, int posZ, int previous_value, int wlevel, bool adding )
+void Chunk::update_border_flow( int posX, int posY, int posZ, int wlevel, bool adding )
 {
 	if (!(posX == 1 || posY == 1 || posX == CHUNK_SIZE || posY == CHUNK_SIZE)) {
 		std::cout << "ERROR update_border_flow not border block " << posX << ", " << posY << std::endl;
@@ -358,7 +358,7 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int previous_value
 	if (adding) {
 		// std::cout << "before condition" << std::endl;
 		int value = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
-		if (!air_flower(value, false, true) || (value >= blocks::WATER && previous_value > wlevel)) {
+		if (!air_flower(value, false, true) || (value >= blocks::WATER && value > wlevel)) {
 			// std::cout << '[' << _startX << ", " << _startY << "] flow at border " << posX << ", " << posY << ", " << posZ << " >>" << value << ", " << previous_value << ", " << wlevel << std::endl;
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = wlevel;
 			_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = wlevel;
@@ -377,7 +377,6 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int previous_value
 				_hasWater = true;
 			}
 			_fluids.insert(posX + (posY << 8) + (posZ << 16));
-			sort_water(_camera->_position, true);
 		}
 	} else {
 		if (_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] >= blocks::WATER) {
@@ -385,7 +384,6 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int previous_value
 			_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
 			_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
 			_fluids.insert(posX + (posY << 8) + (posZ << 16));
-			sort_water(_camera->_position, true);
 		}
 	}
 }

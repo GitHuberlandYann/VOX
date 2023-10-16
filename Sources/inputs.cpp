@@ -221,6 +221,7 @@ void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread
 static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *> *perimeter_chunks, std::vector<Chunk *> *deleted_chunks, std::map<std::pair<int, int>, s_backup> *backups,
 								 Camera *camera, GLint render_dist, int posX, int posY )
 {
+	Bench b;
 	std::vector<Chunk *> newperi_chunks;
 	newperi_chunks.reserve(perimeter_chunks->capacity());
 	std::vector<Chunk *> newdel_chunks;
@@ -257,6 +258,8 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	*deleted_chunks = newdel_chunks;
 	mtx_deleted_chunks.unlock();
 
+	b.stop("delete and sort");
+	b.reset();
 	for (int row = -render_dist; row <= render_dist; row++) {
 		for (int col = -render_dist; col <= render_dist; col++) {
 			bool isInChunk = false;
@@ -288,6 +291,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 			}
 		}
 	}
+	b.stop("loop and create new chunks");
 }
 
 void OpenGL_Manager::chunk_update( void )

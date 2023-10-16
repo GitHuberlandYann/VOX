@@ -397,15 +397,15 @@ void OpenGL_Manager::main_loop( void )
 		glEnable(GL_DEPTH_TEST);
 		glUseProgram(_shaderProgram);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		Bench b;
+		// Bench b;
 		if (!_paused) {
 			if (++backFromMenu != 1) {
 				user_inputs(currentTime - previousFrame, ++backFromMenu > 3);
 			}
 			chunk_update();
 		}
-		b.stop("user inputs");
-		b.reset();
+		// b.stop("user inputs");
+		// b.reset();
 		GLint newVaoCounter = 0, blockCounter = 0, waterTriangles = 0, skyTriangles = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, blockCounter);
@@ -414,10 +414,10 @@ void OpenGL_Manager::main_loop( void )
 				c->updateFluids();
 			}
 		}
-		b.stop("solids");
+		// b.stop("solids");
 
 		#if 1
-		b.reset();
+		// b.reset();
 		glUseProgram(_skyShaderProgram);
 		if (animUpdate) {
 			update_anim_frame();
@@ -433,9 +433,9 @@ void OpenGL_Manager::main_loop( void )
 		for (auto&c: _visible_chunks) {
 			c->drawWater(newVaoCounter, waterTriangles);
 		}
-		b.stop("display water sky");
+		// b.stop("display water sky");
 		#endif
-		b.reset();
+		// b.reset();
 		// glClear(GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 		// Chunk *chunk_ptr = get_current_chunk_ptr();
@@ -465,12 +465,12 @@ void OpenGL_Manager::main_loop( void )
 			: "";
 		mtx_perimeter.unlock();
 		mtx.unlock();
-		b.stop("stringing");
-		b.reset();
+		// b.stop("stringing");
+		// b.reset();
 		if (_menu->getState() >= PAUSE_MENU) {
 			_ui->drawUserInterface(str, _game_mode, _f5_mode);
 		}
-		b.stop("UI");
+		// b.stop("UI");
 		if (_paused) {
 			mtx.lock();
 			_menu->setChunks(_chunks);
@@ -500,22 +500,22 @@ void OpenGL_Manager::main_loop( void )
 			}
 		}
 		_ui->textToScreen();
-		b.reset();
+		// b.reset();
 		mtx_deleted_chunks.lock();
 		for (auto& todel: _deleted_chunks) {
 			delete todel;
 		}
 		_deleted_chunks.clear();
 		mtx_deleted_chunks.unlock();
-		b.stop("chunk deletion");
+		// b.stop("chunk deletion");
 
 		previousFrame = currentTime;
-		b.reset();
+		// b.reset();
 		glfwSwapBuffers(_window);
-		b.stop("swap buffer");
-		b.reset();
+		// b.stop("swap buffer");
+		// b.reset();
 		glfwPollEvents();
-		b.stop("poll events");
+		// b.stop("poll events");
 	}
 
 	check_glstate("\nmain loop successfully exited");

@@ -92,7 +92,7 @@ class Chunk
 		void generate_blocks( void );
 		void generate_sky( void );
 		int sand_fall_endz( glm::ivec3 pos );
-		void handle_border_flow( int posX, int posY, int posZ, int value, int level, bool adding );
+		void handle_border_flow( int posX, int posY, int posZ, int level, bool adding );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
 		void add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous );
@@ -127,7 +127,7 @@ class Chunk
 		int isHit( glm::ivec3 pos, bool waterIsBlock );
 		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void updateBreak( glm::ivec4 block_hit, int frame );
-		void update_border_flow( int posX, int posY, int posZ, int previous_value, int wlevel, bool adding );
+		void update_border_flow( int posX, int posY, int posZ, int wlevel, bool adding );
 		void update_border(int posX, int posY, int level, int type, bool adding);
 		bool collisionBox( glm::vec3 pos, float width, float height );
 		void applyGravity( Camera *camera );

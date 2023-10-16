@@ -383,7 +383,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 		mtx_inventory.lock();
 	}
 	mtx_inventory.unlock();
-	Bench b;
+	// Bench b;
 	glUseProgram(_shaderProgram);
     glBindVertexArray(_vao);
 	mtx_inventory.lock();
@@ -391,20 +391,20 @@ void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 		? glDrawArrays(GL_POINTS, 0, _nb_points)
 		: glDrawArrays(GL_POINTS, 0, 3 + _inventory.countSlots() + 2 * _inventory.countDura(false));
 	mtx_inventory.unlock();
-	b.stop("drawArrays");
-	b.reset();
+	// b.stop("drawArrays");
+	// b.reset();
 	_text->addText(12, 24, 12, true, str);
-	b.stop("display text");
-	b.reset();
+	// b.stop("display text");
+	// b.reset();
 	for (int index = 0; index < 9; index++) {
 		display_slot_value(index);
 	}
-	b.stop("display numbers");
+	// b.stop("display numbers");
 }
 
 void UI::textToScreen( void )
 {
-	Bench b;
+	// Bench b;
 	_text->toScreen();
-	b.stop("text to screen");
+	// b.stop("text to screen");
 }

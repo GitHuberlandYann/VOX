@@ -1093,6 +1093,7 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		}
 	} else {
 		// std::cout << '[' << _startX << ", " << _startY << "] rm block at border " << posX << ", " << posY << ", " << level << ": " << s_blocks[type].name << std::endl;
+		bool already_exposed = exposed_block(target.x, target.y, level, true);
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
 		_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
@@ -1100,7 +1101,7 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_hasWater = true;
 			_fluids.insert(target.x + (target.y << 8) + (level << 16));
 		}
-		if (exposed_block(target.x, target.y, level, true)) { // block was already exposed, no change in displayed_blocks, only in visible faces
+		if (already_exposed) { // block was already exposed, no change in displayed_blocks, only in visible faces
 			// std::cout << "displayed blocks same" << std::endl;
 			for (size_t index = 0; index < _displayed_blocks * 6; index += 6) {
 				_mtx.lock();
