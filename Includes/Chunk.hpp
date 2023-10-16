@@ -61,7 +61,8 @@ class Chunk
 {
     private:
         GLuint _vao, _vbo, _waterVao, _waterVbo, _skyVao, _skyVbo;
-        bool _isVisible, _vaoSet, _vaoReset, _vaoVIP, _waterVaoSet, _waterVaoReset, _waterVaoVIP, _skyVaoSet, _skyVaoReset, _skyVaoVIP;
+        bool _isVisible, _vaoSet, _vaoVIP, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
+		std::atomic_bool _vaoReset, _waterVaoReset, _skyVaoReset;
         GLint _startX, _startY;
 		GLint _continent;
 		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
@@ -73,7 +74,7 @@ class Chunk
 		std::set<int> _removed, _fluids; // TODO add fluids to backups
 		std::map<int, FurnaceInstance> _furnaces;
 		std::thread _thread;
-		std::mutex _mtx;
+		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		GLint get_empty_faces( int type, int row, int col, int level, bool isNotLeaves );
@@ -121,7 +122,7 @@ class Chunk
 		int manhattanDist( int posX, int posY );
         void show( void );
 		void hide( void );
-        bool shouldDelete( glm::vec3 pos, GLfloat dist );
+        // bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
 
 		int isHit( glm::ivec3 pos, bool waterIsBlock );

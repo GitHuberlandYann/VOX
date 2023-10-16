@@ -5,6 +5,7 @@
 # include <string>
 # include <thread>
 # include <mutex>
+# include <atomic>
 # include <fstream>
 # include <list>
 # include <map>
@@ -30,6 +31,7 @@ extern std::mutex mtx;
 extern std::mutex mtx_perimeter;
 extern std::mutex mtx_deleted_chunks;
 extern std::mutex mtx_inventory;
+extern std::mutex mtx_backup;
 
 # include "utils.h"
 # include "Benchmark.hpp"

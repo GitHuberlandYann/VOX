@@ -1,9 +1,10 @@
 #include "vox.h"
 
 Chunk::Chunk( Camera *camera, int posX, int posY, std::vector<Chunk *> *perimeter_chunks )
-	: _isVisible(true), _vaoSet(false), _vaoReset(false), _vaoVIP(false),
-	_waterVaoSet(false), _waterVaoReset(false), _waterVaoVIP(false),
-	_skyVaoSet(false), _skyVaoReset(false), _skyVaoVIP(false),
+	: _isVisible(true), _vaoSet(false), _vaoVIP(false),
+	_waterVaoSet(false), _waterVaoVIP(false),
+	_skyVaoSet(false), _skyVaoVIP(false),
+	_vaoReset(false), _waterVaoReset(false), _skyVaoReset(false),
 	_startX(posX), _startY(posY),
 	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _sky(NULL), _hasWater(true), _displayed_blocks(0), _water_count(0), _sky_count(0),
 	_vis_chunks(perimeter_chunks), _camera(camera)
@@ -716,7 +717,9 @@ void Chunk::setup_sky_array_buffer( void )
 	glBindVertexArray(_skyVao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
+	_mtx_sky.lock();
 	glBufferData(GL_ARRAY_BUFFER, _sky_count * 24 * sizeof(GLint), _sky_vert, GL_STATIC_DRAW);
+	_mtx_sky.unlock();
 
 	_skyVaoReset = false;
 	_skyVaoVIP = false;
@@ -741,7 +744,9 @@ void Chunk::setup_water_array_buffer( void )
 	glBindVertexArray(_waterVao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _waterVbo);
+	_mtx_fluid.lock();
 	glBufferData(GL_ARRAY_BUFFER, _water_count * 24 * sizeof(GLint), _water_vert, GL_STATIC_DRAW);
+	_mtx_fluid.unlock();
 
 	_waterVaoReset = false;
 	_waterVaoVIP = false;
@@ -769,7 +774,9 @@ GLint Chunk::getStartY( void )
 void Chunk::setBackup( std::map<std::pair<int, int>, s_backup> *backups )
 {
 	if (_orientations.size() || _added.size() || _removed.size()) {
+		mtx_backup.lock();
 		(*backups)[std::pair<int, int>(_startX, _startY)] = {_orientations, _added, _removed, _furnaces};
+		mtx_backup.unlock();
 	}
 }
 
@@ -832,7 +839,7 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 		add_block(inventory, pos, type, value);
 	}
 	if (waterSave != _water_count) {
-		sort_water(_camera->_position, true);
+		sort_water(_camera->getPos(), true);
 	}
 	if (type == blocks::WATER || type == blocks::BUCKET) {
 		// std::cout << "modif to water with " << ((type == blocks::WATER) ? "water" : "bucket") << std::endl;
@@ -842,8 +849,8 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 	delete [] _vertices;
 	_vertices = new GLint[_displayed_blocks * 6];
 	fill_vertex_array();
-	_mtx.lock();
 	_vaoReset = false;
+	_mtx.lock();
 	_vaoVIP = true;
 	_mtx.unlock();
 }
@@ -924,11 +931,13 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 			offset2 = {o.second[3], o.second[4], o.second[5], 0};
 		}
 		// std::cout << "vindex " << vindex << std::endl;
+		_mtx_sky.lock();
 		face_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex); // TODO mtx lock sky vert
+		_mtx_sky.unlock();
 	}
 	order.clear();
-	_mtx.lock();
 	_skyVaoReset = true;
+	_mtx.lock();
 	if (vip) {
 		_skyVaoVIP = true;
 	}
@@ -956,14 +965,6 @@ void Chunk::show( void )
 void Chunk::hide( void )
 {
 	_isVisible = false;
-}
-
-bool Chunk::shouldDelete( glm::vec3 pos, GLfloat dist )
-{
-	if (dist < CHUNK_SIZE * 5) {
-		dist = CHUNK_SIZE * 5;
-	}
-	return (glm::distance(glm::vec2(pos.x, pos.y), glm::vec2(_startX, _startY)) > dist);
 }
 
 bool Chunk::isInChunk( int posX, int posY )
@@ -1030,10 +1031,10 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	for (size_t index = 0; index < _displayed_blocks * 6; index += 6) {
 		_mtx.lock();
 		if (_vertices[index + 5] == block_hit.z && _vertices[index + 3] == block_hit.x && _vertices[index + 4] == block_hit.y) {
-			_vaoReset = false;
 			_vaoVIP = true;
 			_vertices[index + 1] = frame;
 			_mtx.unlock();
+			_vaoReset = false;
 			return ;
 		}
 		_mtx.unlock();
@@ -1073,9 +1074,9 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 				_mtx.lock();
 				if (_vertices[index + 5] == level && _vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1) {
 					_vertices[index + 2] = get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true);
-					_vaoReset = false;
 					_vaoVIP = true;
 					_mtx.unlock();
+					_vaoReset = false;
 					return ;
 				}
 				_mtx.unlock();
@@ -1086,8 +1087,8 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			delete [] _vertices;
 			_vertices = new GLint[_displayed_blocks * 6];
 			fill_vertex_array();
-			_mtx.lock();
 			_vaoReset = false;
+			_mtx.lock();
 			_vaoVIP = true;
 			_mtx.unlock();
 		}
@@ -1107,9 +1108,9 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 				_mtx.lock();
 				if (_vertices[index + 5] == level && _vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1) {
 					_vertices[index + 2] = get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true);
-					_vaoReset = false;
 					_vaoVIP = true;
 					_mtx.unlock();
+					_vaoReset = false;
 					return ;
 				}
 				_mtx.unlock();
@@ -1121,8 +1122,8 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_displayed_blocks++;
 			_vertices = new GLint[_displayed_blocks * 6];
 			fill_vertex_array();
-			_mtx.lock();
 			_vaoReset = false;
+			_mtx.lock();
 			_vaoVIP = true;
 			_mtx.unlock();
 		}
@@ -1181,9 +1182,9 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 
 void Chunk::applyGravity( Camera *camera )
 {
-	float saved_posZ = camera->_position.z;
+	float saved_posZ = camera->getPos().z;
 	_camera->applyGravity();
-	glm::vec3 pos = _camera->_position;
+	glm::vec3 pos = _camera->getPos();
 	float distZ = saved_posZ - pos.z;
 	if (distZ < 0) { // jumping
 		camera->_touchGround = false;
@@ -1191,16 +1192,16 @@ void Chunk::applyGravity( Camera *camera )
 		for (float posZ = saved_posZ; posZ < pos.z; posZ++) {
 			// std::cout << "testing with posZ " << posZ << std::endl;
 			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f)) {
-				camera->_position.z = glm::floor(posZ) + 0.19f;
+				camera->setPosZ(glm::floor(posZ) + 0.19f);
 				// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
-				camera->_fall_distance -= (camera->_position.z - posZ);
+				camera->_fall_distance -= (camera->getPos().z - posZ);
 				camera->_update = true;
 				camera->_inJump = false;
 				return ;
 			}
 		}
 		if (collisionBox(glm::vec3(pos.x, pos.y, pos.z), 0.3f, 1.8f)) {
-			camera->_position.z = glm::floor(pos.z) + 0.19f;
+			camera->setPosZ(glm::floor(pos.z) + 0.19f);
 			// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
 			camera->_fall_distance -= 1;
 			camera->_update = true;
@@ -1210,20 +1211,20 @@ void Chunk::applyGravity( Camera *camera )
 	} else { // falling
 		for (float posZ = saved_posZ; posZ - 1 > pos.z; posZ--) {
 			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f)) {
-				camera->_position.z = glm::floor((posZ + 1));
-				camera->_fall_distance -= (camera->_position.z - posZ);
+				camera->setPosZ(glm::floor((posZ + 1)));
+				camera->_fall_distance -= (camera->getPos().z - posZ);
 				camera->touchGround();
-				if (saved_posZ != camera->_position.z) {
+				if (saved_posZ != camera->getPos().z) {
 					camera->_update = true;
 				}
 				return ;
 			}
 		}
 		if (collisionBox(glm::vec3(pos), 0.3f, 1.8f)) {
-			camera->_position.z = glm::floor((pos.z + 1));
-			camera->_fall_distance -= (camera->_position.z - pos.z);
+			camera->setPosZ(glm::floor((pos.z + 1)));
+			camera->_fall_distance -= (camera->getPos().z - pos.z);
 			camera->touchGround();
-			if (saved_posZ != camera->_position.z) {
+			if (saved_posZ != camera->getPos().z) {
 				camera->_update = true;
 			}
 			return ;
@@ -1250,18 +1251,16 @@ int Chunk::isLoaded( GLint &counter )
 
 void Chunk::drawArray( GLint & counter, GLint &block_counter )
 {
-	_mtx.lock();
 	if (!_vaoReset) { // TODO change vosReset logic (swap true and false)
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
-		_mtx.unlock();
 		++counter;
 		if (!_vaoVIP && counter % 50 > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
 			return ;
 		}
 		setup_array_buffer();
-		_mtx.lock();
 	}
     glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down
+	_mtx.lock();
 	glDrawArrays(GL_POINTS, 0, _displayed_blocks);
 	block_counter += _displayed_blocks;
 	_mtx.unlock();
@@ -1279,19 +1278,17 @@ void Chunk::drawSky( GLint & counter, GLint &triangle_counter )
 	if (!_sky_count) {
 		return ;
 	}
-	_mtx.lock();
 	if (_skyVaoReset) {
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
-		_mtx.unlock();
 		++counter;
 		if (!_skyVaoVIP && !_skyVaoSet && counter > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
 			return ;
 		} else if (_skyVaoVIP || counter < 6) {
 			setup_sky_array_buffer();
 		}
-		_mtx.lock();
 	}
     glBindVertexArray(_skyVao);
+	_mtx.lock();
 	glDrawArrays(GL_TRIANGLES, 0, _sky_count * 6); // 6 points/face
 	// std::cout << "draw sky" << std::endl;
 	triangle_counter += _sky_count * 2; // 2 triang/face
@@ -1303,19 +1300,17 @@ void Chunk::drawWater( GLint & counter, GLint &triangle_counter )
 	if (!_water_count) {
 		return ;
 	}
-	_mtx.lock();
 	if (_waterVaoReset) {
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
-		_mtx.unlock();
 		++counter;
 		if (!_waterVaoVIP && !_waterVaoSet && counter > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
 			return ;
 		} else if (_waterVaoVIP || counter < 6) {
 			setup_water_array_buffer();
 		}
-		_mtx.lock();
 	}
     glBindVertexArray(_waterVao);
+	_mtx.lock();
 	glDrawArrays(GL_TRIANGLES, 0, _water_count * 6); // 6 points/face
 	// std::cout << "draw water" << std::endl;
 	triangle_counter += _water_count * 2; // 2 triang/face

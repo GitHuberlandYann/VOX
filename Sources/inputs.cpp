@@ -1,7 +1,6 @@
 #include "vox.h"
 
 Chunk *current_chunk_ptr = NULL;
-// Chunk *prev_chunk_ptr = NULL;
 Chunk *chunk_hit = NULL;
 
 Chunk *OpenGL_Manager::get_current_chunk_ptr( void )
@@ -12,17 +11,8 @@ Chunk *OpenGL_Manager::get_current_chunk_ptr( void )
 void OpenGL_Manager::resetInputsPtrs( void )
 {
 	current_chunk_ptr = NULL;
-	// prev_chunk_ptr = NULL;
 	chunk_hit = NULL;
 }
-/*
-void OpenGL_Manager::update_cam_matrix( void )
-{
-	glm::mat4 proj = _camera->getPerspectiveMatrix();
-	glm::mat4 view = _camera->getViewMatrix();
-
-	glUniformMatrix4fv(_uniPV, 1, GL_FALSE, glm::value_ptr(proj * view));
-}*/
 
 glm::ivec4 OpenGL_Manager::get_block_hit( void )
 {
@@ -51,7 +41,6 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 			}
 		}
 		if (first_loop) {
-			// (current_chunk_ptr) ? prev_chunk_ptr = current_chunk_ptr : prev_chunk_ptr = chunk;
 			current_chunk_ptr = chunk;
 			first_loop = false;
 		}
@@ -180,7 +169,7 @@ void OpenGL_Manager::update_cam_view( void )
 	glUniformMatrix4fv(_skyUniView, 1, GL_FALSE, glm::value_ptr(view));
 	glUseProgram(_shaderProgram);
 
-	// glUniform3fv(_uniCamPos, 1, glm::value_ptr(_camera->_position));
+	// glUniform3fv(_uniCamPos, 1, glm::value_ptr(_camera->getPos()));
 }
 
 void OpenGL_Manager::update_cam_perspective( void )
@@ -222,6 +211,14 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 								 Camera *camera, GLint render_dist, int posX, int posY )
 {
 	Bench b;
+	std::set<std::pair<int, int>> coords;
+	for (int row = -render_dist; row <= render_dist; row++) {
+		for (int col = -render_dist; col <= render_dist; col++) {
+			coords.insert({posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE});
+		}
+	}
+	b.stop("gen coordinates set");
+
 	std::vector<Chunk *> newperi_chunks;
 	newperi_chunks.reserve(perimeter_chunks->capacity());
 	std::vector<Chunk *> newdel_chunks;
@@ -233,7 +230,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	// std::cout << "IN THREAD UPDATE, nb chunks: " << chunks->size() << std::endl;
 	for (; it != ite;) {
 		mtx.lock();
-		if ((*it)->shouldDelete(camera->_position, render_dist * 2 * CHUNK_SIZE)) {
+		if (!(*it)->inPerimeter(posX, posY, render_dist * 2 * CHUNK_SIZE)) {
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
 			mtx.unlock();
@@ -244,12 +241,13 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 		} else if ((*it)->inPerimeter(posX, posY, render_dist * CHUNK_SIZE)) {
 			// std::cout << "IN PERIMETER" << std::endl;
 			newperi_chunks.push_back(*it);
+			coords.erase({(*it)->getStartX(), (*it)->getStartY()});
 		}
 		++it;
 		mtx.unlock();
 	}
 	// Bench b;
-	newperi_chunks = sort_chunks(camera->_position, newperi_chunks);
+	newperi_chunks = sort_chunks(camera->getPos(), newperi_chunks);
 	// b.stop("sort chunks");
 	mtx_perimeter.lock();
 	*perimeter_chunks = newperi_chunks;
@@ -259,45 +257,48 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	mtx_deleted_chunks.unlock();
 
 	b.stop("delete and sort");
-	b.reset();
-	for (int row = -render_dist; row <= render_dist; row++) {
-		for (int col = -render_dist; col <= render_dist; col++) {
-			bool isInChunk = false;
+	// int count = 0;
+	// for (int row = -render_dist; row <= render_dist; row++) {
+	// 	for (int col = -render_dist; col <= render_dist; col++) {
+	// 		bool isInChunk = false;
 			
-			mtx.lock();
-			ite = chunks->end();
-			it = chunks->begin();
-			mtx.unlock();
-			for (; it != ite;) {
-				mtx.lock();
-				if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
-					isInChunk = true;
-					mtx.unlock();
-					break ;
-				}
-				it++;
-				mtx.unlock();
-			}
+	// 		mtx.lock();
+	// 		ite = chunks->end();
+	// 		it = chunks->begin();
+	// 		mtx.unlock();
+	// 		for (; it != ite;) {
+	// 			mtx.lock();
+	// 			if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
+	// 				isInChunk = true;
+	// 				mtx.unlock();
+	// 				break ;
+	// 			}
+	// 			it++;
+	// 			mtx.unlock();
+	// 		}
 
-			if (!isInChunk) {
-				//create new chunk where player stands
-				Chunk *newChunk = new Chunk(camera, posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE, perimeter_chunks); // TODO pass pointer to visible_chunks instead
-				std::map<std::pair<int, int>, s_backup>::iterator search = backups->find(std::pair<int, int>(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE));
-				if (search != backups->end()) {
-					newChunk->restoreBackup(search->second);
-					backups->erase(search); // TODO mtx lock backups
-				}
-				newChunk->generate_chunk(chunks); // TODO remove this from thread because it launches its own thread and there's data races..
-			}
+	for (auto& c: coords) {
+		//create new chunk where player stands
+		Chunk *newChunk = new Chunk(camera, c.first, c.second, perimeter_chunks); // TODO pass pointer to visible_chunks instead
+		mtx_backup.lock();
+		std::map<std::pair<int, int>, s_backup>::iterator search = backups->find(std::pair<int, int>(c.first, c.second));
+		if (search != backups->end()) {
+			newChunk->restoreBackup(search->second);
+			backups->erase(search);
 		}
+		mtx_backup.unlock();
+		newChunk->generate_chunk(chunks); // TODO remove this from thread because it launches its own thread and there's data races..
 	}
+	// 	}
+	// }
 	b.stop("loop and create new chunks");
+	// std::cout << "for now " << count << " new chunks, computed " << coords.size() << std::endl;
 }
 
 void OpenGL_Manager::chunk_update( void )
 {
-	int posX = chunk_pos(static_cast<int>(glm::floor(_camera->_position.x)));
-	int posY = chunk_pos(static_cast<int>(glm::floor(_camera->_position.y)));
+	int posX = chunk_pos(static_cast<int>(glm::floor(_camera->getPos().x)));
+	int posY = chunk_pos(static_cast<int>(glm::floor(_camera->getPos().y)));
 	
 	if (posX == _current_chunk.x && posY == _current_chunk.y) {
 		return ;
@@ -491,18 +492,16 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			}
 			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h); // move on X_AXIS
 			mtx.lock();
-			if (current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f)) {
+			if (current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, 1.8f)) {
 				mtx.unlock();
 				_camera->moveHuman(X_AXIS, -key_cam_v, -key_cam_h); // if collision after movement, undo movement
-				// prev_chunk_ptr->collision(_camera->_position, *_camera);
-				// current_chunk_ptr = prev_chunk_ptr;
 				_camera->setRun(false);
 				mtx.lock();
 			}
 			mtx.unlock();
 			_camera->moveHuman(Y_AXIS, key_cam_v, key_cam_h); // move on Y_AXIS
 			mtx.lock();
-			if (current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f)) {
+			if (current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, 1.8f)) {
 				mtx.unlock();
 				_camera->moveHuman(Y_AXIS, -key_cam_v, -key_cam_h); // if collision after movement, undo movement
 				_camera->setRun(false);
@@ -510,7 +509,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			}
 			mtx.unlock();
 			mtx.lock();
-			if (!current_chunk_ptr->collisionBox(_camera->_position, 0.3f, 1.8f)) {
+			if (!current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, 1.8f)) {
 				current_chunk_ptr->applyGravity(_camera); // move on Z_AXIS
 			}
 		}
@@ -530,12 +529,12 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			_break_frame = _outline;
 		}
 	}
-	glm::ivec3 current_block = {glm::floor(_camera->_position.x), glm::floor(_camera->_position.y), glm::floor(_camera->_position.z)};
+	glm::ivec3 current_block = {glm::floor(_camera->getPos().x), glm::floor(_camera->getPos().y), glm::floor(_camera->getPos().z)};
 	if (current_block != _camera->_current_block) {
 		_camera->_current_block = current_block;
 		if (current_chunk_ptr) {
-			current_chunk_ptr->sort_sky(_camera->_position, true);
-			current_chunk_ptr->sort_water(_camera->_position, true);
+			current_chunk_ptr->sort_sky(_camera->getPos(), true);
+			current_chunk_ptr->sort_water(_camera->getPos(), true);
 		}
 	}
 

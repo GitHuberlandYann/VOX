@@ -57,7 +57,9 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
 	_chunks.clear();
 	mtx.unlock();
+	mtx_backup.lock();
 	_backups.clear();
+	mtx_backup.unlock();
 
 	check_glstate("OpengGL_Manager destructed");
 }
@@ -441,6 +443,7 @@ void OpenGL_Manager::main_loop( void )
 		// Chunk *chunk_ptr = get_current_chunk_ptr();
 		mtx.lock();
 		mtx_perimeter.lock();
+		mtx_backup.lock();
 		std::string str = (_debug_mode)
 			? "Timer: " + std::to_string(currentTime)
 				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((currentTime - previousFrame) * 1000)
@@ -463,6 +466,7 @@ void OpenGL_Manager::main_loop( void )
 				// + _inventory->getDuraString()
 				// + _inventory->getInventoryString()
 			: "";
+		mtx_backup.unlock();
 		mtx_perimeter.unlock();
 		mtx.unlock();
 		// b.stop("stringing");

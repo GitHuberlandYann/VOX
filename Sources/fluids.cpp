@@ -180,8 +180,8 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 			delete [] _vertices;
 			_vertices = new GLint[_displayed_blocks * 6];
 			fill_vertex_array();
-			_mtx.lock();
 			_vaoReset = false;
+			_mtx.lock();
 			_vaoVIP = true;
 			_mtx.unlock();
 		}
@@ -297,8 +297,10 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 		// std::cerr << '[' << _startX << ", " << _startY << "] \033[31msort_water\033[0m, order size " << order.size() << ", but _water_count " << _water_count << std::endl;
 		// std::cerr << "block at 1 1 141: " << _blocks[((CHUNK_SIZE + 2) + 1) * WORLD_HEIGHT + 141] << std::endl;
 		_water_count = order.size();
+		_mtx_fluid.lock();
 		delete [] _water_vert;
 		_water_vert = new GLint[_water_count * 24];
+		_mtx_fluid.unlock();
 	}
 
 	for (size_t index = 0; index < order.size() - 1; index++) {
@@ -335,11 +337,13 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 			start.w += (1 << 8); // waterStill
 		}
 		// std::cout << "vindex " << vindex << std::endl;
+		_mtx_fluid.lock();
 		face_vertices(_water_vert, start + offset0, start + offset1, start + offset2, start + offset3, vindex);
+		_mtx_fluid.unlock();
 	}
 	order.clear();
-	_mtx.lock();
 	_waterVaoReset = true;
+	_mtx.lock();
 	if (vip) {
 		_waterVaoVIP = true;
 	}
@@ -369,8 +373,8 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int wlevel, bool a
 					delete [] _vertices;
 					_vertices = new GLint[_displayed_blocks * 6];
 					fill_vertex_array();
-					_mtx.lock();
 					_vaoReset = false;
+					_mtx.lock();
 					_vaoVIP = true;
 					_mtx.unlock();
 				}
@@ -416,6 +420,6 @@ void Chunk::updateFluids( void )
 	newFluids.clear();
 	if (fluid_modif) {
 		// std::cout << "s" << std::endl;
-		sort_water(_camera->_position, true);
+		sort_water(_camera->getPos(), true);
 	}
 }

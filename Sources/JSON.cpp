@@ -45,6 +45,7 @@ void OpenGL_Manager::saveWorld( void )
 
 std::string Camera::saveString( void )
 {
+	_mtx.lock();
 	std::string res = "\"camera\": {\n\t\t\"pos\": {\"x\": "
 		+ std::to_string(_position.x) + ", \"y\": " + std::to_string(_position.y) + ", \"z\": " + std::to_string(_position.z)
 		+ "},\n\t\t\"yaw\": " + std::to_string(_yaw)
@@ -53,6 +54,7 @@ std::string Camera::saveString( void )
 		+ ",\n\t\t\"health_points\": " + std::to_string(_health_points)
 		+ ",\n\t\t\"touch_ground\": " + ((_touchGround) ? "true" : "false")
 		+ "\n\t},\n\t";
+	_mtx.unlock();
 	return (res);
 }
 
@@ -91,6 +93,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 {
 	std::string res = "\"backups\": [";
 	bool start = true;
+	mtx_backup.lock();
 	for (auto& bup: _backups) {
 		if (!start) {
 			res += ',';
@@ -140,6 +143,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 		res += "]}";
 	}
 	_backups.clear();
+	mtx_backup.unlock();
 	res += "\n\t]";
 	return (res);
 }
@@ -227,12 +231,14 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 		if (line.empty() || line[0] == '#') {
 			continue ;
 		} else if (!line.compare(0, 7, "\"pos\": ")) {
+			_mtx.lock();
 			_position.x = std::stof(&line[13]);
 			for (index = 13; line[index] && line[index] != ':'; index++);
 			_position.y = std::stof(&line[index + 2]);
 			for (index = index + 2; line[index] && line[index] != ':'; index++);
 			_position.z = std::stof(&line[index + 2]);
 			ofs << "camera pos set to " << _position.x << ", " << _position.y << ", " << _position.z << std::endl;
+			_mtx.unlock();
 		} else if (!line.compare(0, 7, "\"yaw\": ")) {
 			_yaw = std::stof(&line[7]);
 			ofs << "camera yaw set to " << _yaw << std::endl;
@@ -395,7 +401,9 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 					std::cerr << "foreigh line in backup: " << line << std::endl;
 				}
 			}
+			mtx_backup.lock();
 			_backups[key] = backups_value;
+			mtx_backup.unlock();
 		} else if (line == "]") {
 			return ;
 		} else {

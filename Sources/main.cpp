@@ -1,9 +1,6 @@
 #include "vox.h"
 
-std::mutex mtx;
-std::mutex mtx_perimeter;
-std::mutex mtx_deleted_chunks;
-std::mutex mtx_inventory;
+std::mutex mtx, mtx_perimeter, mtx_deleted_chunks, mtx_inventory, mtx_backup;
 siv::PerlinNoise::seed_type perlin_seed = 123456u;
 
 int main( int ac, char **av )

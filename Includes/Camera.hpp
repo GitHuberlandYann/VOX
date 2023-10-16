@@ -33,7 +33,7 @@ enum Camera_Movement {
 class Camera
 {
 	private:
-		glm::vec3 _front, _up, _right, _world_up;
+		glm::vec3 _position, _front, _up, _right, _world_up;
 		glm::vec2 _front2, _right2;
 		float _yaw, _pitch;
 		// double _mouse_sensitivity;
@@ -41,10 +41,11 @@ class Camera
 		float _fov;
 		float _fall_speed;
 		bool _isRunning, _healthUpdate;
+		std::mutex _mtx;
+
     	void updateCameraVectors( void );
 	
 	public:
-		glm::vec3 _position;
 		glm::ivec3 _current_block;
 		int _movement_speed, _health_points;
 		bool _update, _fovUpdate, _inJump, _touchGround, _fall_immunity;
@@ -57,6 +58,8 @@ class Camera
 		glm::mat4 getPerspectiveMatrix( void );
 		bool chunkInFront( glm::ivec2 current_chunk, int posX, int posY );
 		int getOrientation( void );
+		glm::vec3 getPos( void );
+		void setPosZ( float value );
 		void setRun( bool value );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );

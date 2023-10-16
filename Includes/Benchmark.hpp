@@ -33,7 +33,9 @@ class Bench
 			auto duration = end - start;
 			double ms = duration * 0.001;
 
-			std::cout << "Bench [" << msg << "] result: " << duration << "us ( " << ms << "ms)" << std::endl;
+			std::cerr << "Bench [" << msg << "] result: " << duration << "us ( " << ms << "ms)" << std::endl;
+
+			reset();
 		}
 };
 

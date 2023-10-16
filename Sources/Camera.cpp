@@ -69,6 +69,21 @@ int Camera::getOrientation( void )
 	return (_front.y < 0);
 }
 
+glm::vec3 Camera::getPos( void )
+{
+	_mtx.lock();
+	glm::vec3 res = _position;
+	_mtx.unlock();
+	return (res);
+}
+
+void Camera::setPosZ( float value )
+{
+	_mtx.lock();
+	_position.z = value;
+	_mtx.unlock();
+}
+
 void Camera::setRun( bool value )
 {
 	_isRunning = value;
@@ -110,9 +125,11 @@ void Camera::moveFly( GLint v, GLint h, GLint z )
 	glm::vec3 norm = glm::normalize(glm::vec3(v * _front.x + h * _right.x + z * _up.x,
 												v * _front.y + h * _right.y + z * _up.y,
 												v * _front.z + h * _right.z + z * _up.z));
+	_mtx.lock();
 	_position.x += norm.x * speed_frame;
 	_position.y += norm.y * speed_frame;
 	_position.z += norm.z * speed_frame;
+	_mtx.unlock();
 }
 
 void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h )
@@ -127,10 +144,12 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h )
 	_update = true;
 
 	float speed_frame = _deltaTime * ((_isRunning) ?  ((_touchGround) ? RUN_SPEED : RUN_JUMP_SPEED ) : WALK_SPEED);
+	_mtx.lock();
 	if (direction == X_AXIS)
 		_position.x += glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).x * speed_frame;
 	else if (direction == Y_AXIS)
 		_position.y += glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).y * speed_frame;
+	_mtx.unlock();
 }
 
 void Camera::applyGravity( void )
@@ -145,7 +164,9 @@ void Camera::applyGravity( void )
 		_fall_speed = INITIAL_FALL + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time;
 	}
 
+	_mtx.lock();
 	_position.z -= _deltaTime * _fall_speed;
+	_mtx.unlock();
 	_fall_distance += _deltaTime * _fall_speed;
 }
 
@@ -204,7 +225,9 @@ void Camera::processYaw( GLint offset )
 
 std::vector<glm::ivec3> Camera::get_ray_casting( GLfloat radius )
 {
+	_mtx.lock();
 	glm::vec3 pos = _position;
+	_mtx.unlock();
 	pos.z += 1.0f + EYE_LEVEL;
 	return (voxel_traversal(pos, pos + _front * radius));
 }
@@ -230,16 +253,16 @@ void Camera::processMouseMovement( float x_offset, float y_offset )
 
 std::string Camera::getCamString( bool game_mode )
 {
-	if (game_mode == CREATIVE) {
-		return ("\nPos\t\t> x: " + std::to_string(_position.x)
+	_mtx.lock();
+	std::string str =  ((game_mode == CREATIVE)
+		? ("\nPos\t\t> x: " + std::to_string(_position.x)
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 				+ "\niPos\t> x:" + std::to_string(_current_block.x)
 				+ " y: " + std::to_string(_current_block.y) + " z: " + std::to_string(_current_block.z)
 				+ "\nDir\t\t> x: " + std::to_string(_front.x)
 				+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
-				+ "\nSpeed\t> " + ((_isRunning) ? std::to_string(_movement_speed * 2) : std::to_string(_movement_speed)));
-	}
-	return ("\nPos\t\t> x: " + std::to_string(_position.x)
+				+ "\nSpeed\t> " + ((_isRunning) ? std::to_string(_movement_speed * 2) : std::to_string(_movement_speed)))
+		: ("\nPos\t\t> x: " + std::to_string(_position.x)
 			+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 			+ "\niPos\t> x:" + std::to_string(_current_block.x)
 				+ " y: " + std::to_string(_current_block.y) + " z: " + std::to_string(_current_block.z)
@@ -250,5 +273,7 @@ std::string Camera::getCamString( bool game_mode )
 			+ "\nFall Distance\t> " + std::to_string(_fall_distance)
 			+ "\nHealth\t> " + std::to_string(_health_points)
 			+ "\nGounded\t> " + ((_touchGround) ? "true" : "false")
-			+ "\nJumping\t> " + ((_inJump) ? "true" : "false"));
+			+ "\nJumping\t> " + ((_inJump) ? "true" : "false")));
+	_mtx.unlock();
+	return (str);
 }
