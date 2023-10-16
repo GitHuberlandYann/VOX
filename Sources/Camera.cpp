@@ -1,6 +1,9 @@
 #include "vox.h"
 
-Camera::Camera( glm::vec3 position ) : _fall_time(0), _fov(FOV), _fall_speed(0), _isRunning(false), _movement_speed(SPEED), _health_points(20), _inJump(false), _touchGround(false), _fall_immunity(true), _fall_distance(0)
+Camera::Camera( glm::vec3 position )
+	: _fall_time(0), _fov(FOV), _fall_speed(0), _isRunning(false), _healthUpdate(false),
+	_waterHead(false), _waterFeet(false), _movement_speed(SPEED), _health_points(20),
+	_inJump(false), _touchGround(false), _fall_immunity(true), _fall_distance(0)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -82,6 +85,27 @@ void Camera::setPosZ( float value )
 	_mtx.lock();
 	_position.z = value;
 	_mtx.unlock();
+}
+
+void Camera::setWaterStatus( bool head, bool underwater )
+{
+	if (head) {
+		if (underwater) {
+			if (!_waterHead) {
+				_breathTime = 0;
+			} else {
+				_breathTime += _deltaTime;
+				if (_breathTime > 16.0) {
+					_breathTime -= 1;
+					_health_points = glm::max(0, _health_points - 2);
+					_healthUpdate = true;
+				}
+			}
+		}
+		_waterHead = underwater;
+	} else {
+		_waterFeet = underwater;
+	}
 }
 
 void Camera::setRun( bool value )
@@ -271,6 +295,8 @@ std::string Camera::getCamString( bool game_mode )
 			+ "\nSpeed\t> " + ((_isRunning) ?  ((_touchGround) ? std::to_string(RUN_SPEED) : std::to_string(RUN_JUMP_SPEED) ) : std::to_string(WALK_SPEED))
 			+ "\nFall\t> " + std::to_string(_fall_speed)
 			+ "\nFall Distance\t> " + std::to_string(_fall_distance)
+			+ "\nWater head\t> " + ((_waterHead) ? "TRUE - " + std::to_string(_breathTime) : "FALSE")
+			+ "\nWater feet\t> " + ((_waterFeet) ? "TRUE" : "FALSE")
 			+ "\nHealth\t> " + std::to_string(_health_points)
 			+ "\nGounded\t> " + ((_touchGround) ? "true" : "false")
 			+ "\nJumping\t> " + ((_inJump) ? "true" : "false")));

@@ -37,10 +37,10 @@ class Camera
 		glm::vec2 _front2, _right2;
 		float _yaw, _pitch;
 		// double _mouse_sensitivity;
-		float _deltaTime, _fall_time;
+		float _deltaTime, _fall_time, _breathTime;
 		float _fov;
 		float _fall_speed;
-		bool _isRunning, _healthUpdate;
+		bool _isRunning, _healthUpdate, _waterHead, _waterFeet;
 		std::mutex _mtx;
 
     	void updateCameraVectors( void );
@@ -60,6 +60,7 @@ class Camera
 		int getOrientation( void );
 		glm::vec3 getPos( void );
 		void setPosZ( float value );
+		void setWaterStatus( bool head, bool underwater );
 		void setRun( bool value );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );

@@ -827,7 +827,7 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 	size_t waterSave = _water_count;
 	if (!adding) {
 		int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
-		if (value == blocks::AIR || value == blocks::BEDROCK) { // can't rm bedrock
+		if (value == blocks::AIR || value == blocks::BEDROCK || value + blocks::NOTVISIBLE == blocks::BEDROCK) { // can't rm bedrock
 			return ;
 		}
 		remove_block(inventory, pos);
@@ -1176,6 +1176,56 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 		return (collisionBox(pos, width, height - 1));
 	} else if (top0.z != glm::floor(pos.z)) {
 		return (collisionBox(pos, width, 0));
+	}
+	return (false);
+}
+
+/* collisionBoxWater takes feet position of object, dimension of its hitbox and returns wether object is inside water or not */
+bool Chunk::collisionBoxWater( glm::vec3 pos, float width, float height )
+{
+	// WATCHOUT if width > 0.5 problemos because we check block left and right but not middle
+	glm::ivec3 top0 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height));
+	if (top0.x < -1 || top0.x > CHUNK_SIZE || top0.y < -1 || top0.y > CHUNK_SIZE || top0.z < 0 || top0.z > 255) {
+		std::cout << "ERROR COLLISION WATER OUT OF CHUNK top0 " << top0.x << ", " << top0.y << ", " << top0.z << std::endl;
+		return (true);
+	}
+	if (_blocks[((top0.x + 1) * (CHUNK_SIZE + 2) + top0.y + 1) * WORLD_HEIGHT + top0.z] >= blocks::WATER) {
+		return (true);
+	}
+	glm::ivec3 top1 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height));
+	if (top1 != top0) {
+		if (top1.x < -1 || top1.x > CHUNK_SIZE || top1.y < -1 || top1.y > CHUNK_SIZE || top1.z < 0 || top1.z > 255) {
+			std::cout << "ERROR COLLISION WATER OUT OF CHUNK top1 " << top1.x << ", " << top1.y << ", " << top1.z << std::endl;
+			return (true);
+		}
+		if (_blocks[((top1.x + 1) * (CHUNK_SIZE + 2) + top1.y + 1) * WORLD_HEIGHT + top1.z] >= blocks::WATER) {
+			return (true);
+		}
+	}
+	glm::ivec3 top2 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height));
+	if (top2 != top0) {
+		if (top2.x < -1 || top2.x > CHUNK_SIZE || top2.y < -1 || top2.y > CHUNK_SIZE || top2.z < 0 || top2.z > 255) {
+			std::cout << "ERROR COLLISION WATER OUT OF CHUNK top2 " << top2.x << ", " << top2.y << ", " << top2.z << std::endl;
+			return (true);
+		}
+		if (_blocks[((top2.x + 1) * (CHUNK_SIZE + 2) + top2.y + 1) * WORLD_HEIGHT + top2.z] >= blocks::WATER) {
+			return (true);
+		}
+	}
+	glm::ivec3 top3 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height));
+	if (top3 != top0) {
+		if (top3.x < -1 || top3.x > CHUNK_SIZE || top3.y < -1 || top3.y > CHUNK_SIZE || top3.z < 0 || top3.z > 255) {
+			std::cout << "ERROR COLLISION WATER OUT OF CHUNK top3 " << top3.x << ", " << top3.y << ", " << top3.z << std::endl;
+			return (true);
+		}
+		if (_blocks[((top3.x + 1) * (CHUNK_SIZE + 2) + top3.y + 1) * WORLD_HEIGHT + top3.z] >= blocks::WATER) {
+			return (true);
+		}
+	}
+	if (height > 1) {
+		return (collisionBoxWater(pos, width, height - 1));
+	} else if (top0.z != glm::floor(pos.z)) {
+		return (collisionBoxWater(pos, width, 0));
 	}
 	return (false);
 }

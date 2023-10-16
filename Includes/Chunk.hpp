@@ -131,6 +131,7 @@ class Chunk
 		void update_border_flow( int posX, int posY, int posZ, int wlevel, bool adding );
 		void update_border(int posX, int posY, int level, int type, bool adding);
 		bool collisionBox( glm::vec3 pos, float width, float height );
+		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( Camera *camera );
 
 		int isLoaded( GLint &counter );

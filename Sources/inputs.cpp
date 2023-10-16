@@ -210,14 +210,14 @@ void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread
 static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *> *perimeter_chunks, std::vector<Chunk *> *deleted_chunks, std::map<std::pair<int, int>, s_backup> *backups,
 								 Camera *camera, GLint render_dist, int posX, int posY )
 {
-	Bench b;
+	// Bench b;
 	std::set<std::pair<int, int>> coords;
 	for (int row = -render_dist; row <= render_dist; row++) {
 		for (int col = -render_dist; col <= render_dist; col++) {
 			coords.insert({posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE});
 		}
 	}
-	b.stop("gen coordinates set");
+	// b.stop("gen coordinates set");
 
 	std::vector<Chunk *> newperi_chunks;
 	newperi_chunks.reserve(perimeter_chunks->capacity());
@@ -256,7 +256,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	*deleted_chunks = newdel_chunks;
 	mtx_deleted_chunks.unlock();
 
-	b.stop("delete and sort");
+	// b.stop("delete and sort");
 	// int count = 0;
 	// for (int row = -render_dist; row <= render_dist; row++) {
 	// 	for (int col = -render_dist; col <= render_dist; col++) {
@@ -291,7 +291,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	}
 	// 	}
 	// }
-	b.stop("loop and create new chunks");
+	// b.stop("loop and create new chunks");
 	// std::cout << "for now " << count << " new chunks, computed " << coords.size() << std::endl;
 }
 
@@ -512,6 +512,12 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			if (!current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, 1.8f)) {
 				current_chunk_ptr->applyGravity(_camera); // move on Z_AXIS
 			}
+			mtx.unlock();
+			glm::vec3 camPos = _camera->getPos();
+			mtx.lock();
+			_camera->setWaterStatus(false, current_chunk_ptr->collisionBoxWater(camPos, 0.3f, 0));
+			camPos.z += 1 + EYE_LEVEL;
+			_camera->setWaterStatus(true, current_chunk_ptr->collisionBoxWater(camPos, 0.05f, 0));
 		}
 		mtx.unlock();
 
