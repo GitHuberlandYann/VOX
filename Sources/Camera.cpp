@@ -91,15 +91,16 @@ void Camera::setWaterStatus( bool head, bool underwater )
 {
 	if (head) {
 		if (underwater) {
-			if (!_waterHead) {
+			_breathTime += _deltaTime;
+			if (_breathTime > 16.0) {
+				_breathTime -= 1;
+				_health_points = glm::max(0, _health_points - 2);
+				_healthUpdate = true;
+			}
+		} else {
+			_breathTime -= _deltaTime;
+			if (_breathTime < 0) {
 				_breathTime = 0;
-			} else {
-				_breathTime += _deltaTime;
-				if (_breathTime > 16.0) {
-					_breathTime -= 1;
-					_health_points = glm::max(0, _health_points - 2);
-					_healthUpdate = true;
-				}
 			}
 		}
 		_waterHead = underwater;

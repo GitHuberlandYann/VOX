@@ -136,17 +136,15 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		if (find_water) {
 			if (chunk->isHit(i, true)) {
-				if (i == player_pos || i == glm::ivec3(player_pos.x, player_pos.y, player_pos.z - 1)) {
-					// std::cout << "abort because hit is player pos" << std::endl;
-					return ;
-				}
 				chunk->handleHit(((collect) ? _inventory : NULL), type, i, false);
 				return ;
 			}
 		} else if (chunk->isHit(i, false)) {
 			// std::cout << "we have a hit ! " << i.x << ", " << i.y << ", " << i.z << ", " << std::endl;
-			if (i == player_pos || previous_block == player_pos || previous_block == glm::ivec3(player_pos.x, player_pos.y, player_pos.z - 1)) {
+			if (type != blocks::WATER
+				&& (i == player_pos || previous_block == player_pos || previous_block == glm::ivec3(player_pos.x, player_pos.y, player_pos.z - 1))) {
 				// std::cout << "abort because hit is player pos" << std::endl;
+				// DODO better collision check here because you can still put block "at your feet" due to +0.3 offset
 				return ;
 			}
 			if (previous_chunk != current_chunk) {

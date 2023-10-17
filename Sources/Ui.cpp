@@ -168,7 +168,7 @@ void UI::add_armor( GLint *vertices, int mult, int index, int & vindex )
 void UI::add_food_holder( GLint *vertices, int mult, int index, int & vindex )
 {
 	vertices[vindex + 0] = 1;
-	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - mult - (index * 8 * mult);
+	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - 9 * mult - (index * 8 * mult);
 	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
 	vertices[vindex + 3] = 8 * mult;
 	vertices[vindex + 4] = 8 * mult;
@@ -182,7 +182,7 @@ void UI::add_food_holder( GLint *vertices, int mult, int index, int & vindex )
 void UI::add_food( GLint *vertices, int mult, int index, int & vindex )
 {
 	vertices[vindex + 0] = 1;
-	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - mult - (index * 8 * mult);
+	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - 9 * mult - (index * 8 * mult);
 	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
 	vertices[vindex + 3] = 8 * mult;
 	vertices[vindex + 4] = 8 * mult;
