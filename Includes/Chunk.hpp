@@ -67,7 +67,7 @@ class Chunk
 		GLint _continent;
 		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
 		GLboolean *_sky, _hasWater;
-		size_t _displayed_blocks, _water_count, _sky_count;
+		size_t _displayed_faces, _water_count, _sky_count;
 		std::vector<Chunk *> *_vis_chunks;
 		Camera *_camera;
 		std::map<int,int> _orientations, _added;
@@ -77,6 +77,7 @@ class Chunk
 		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
+		GLint face_count( int type, int row, int col, int level, bool isNotLeaves );
 		GLint get_empty_faces( int type, int row, int col, int level, bool isNotLeaves );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves );
 		int exposed_water_faces( int row, int col, int level );

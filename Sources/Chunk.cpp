@@ -6,7 +6,7 @@ Chunk::Chunk( Camera *camera, int posX, int posY, std::vector<Chunk *> *perimete
 	_skyVaoSet(false), _skyVaoVIP(false),
 	_vaoReset(false), _waterVaoReset(false), _skyVaoReset(false),
 	_startX(posX), _startY(posY),
-	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _sky(NULL), _hasWater(true), _displayed_blocks(0), _water_count(0), _sky_count(0),
+	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _sky(NULL), _hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
 	_vis_chunks(perimeter_chunks), _camera(camera)
 {
 }
@@ -55,6 +55,30 @@ void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int & blob_
 		++dir;
 		gen_ore_blob(ore_type, row + delta[0], col + delta[1], level + delta[2], blob_size, dir);
 	}
+}
+
+GLint Chunk::face_count( int type, int row, int col, int level, bool isNotLeaves )
+{
+	if (type >= blocks::POPPY) {
+		return (2);
+	}
+	GLint res = !air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, false)
+				+ !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves, false)
+				+ !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true, false)
+				+ !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false);
+	switch (level) {
+		case 0:
+			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false);
+			break ;
+		case 255:
+			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false);
+			res += 1;
+			break ;
+		default:
+			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false);
+			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false);
+	}
+	return (res);
 }
 
 GLint Chunk::get_empty_faces( int type, int row, int col, int level, bool isNotLeaves )
@@ -407,13 +431,16 @@ void Chunk::generate_blocks( void )
 		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
-				if (value) {
-					if (value >= blocks::WATER) {
-						// _water_count += exposed_water_faces(row, col, level);
-					} else if (exposed_block(row, col, level, value != blocks::OAK_LEAVES)) {
-						_displayed_blocks++;
+				if (value && value < blocks::WATER) {
+					GLint count = face_count(value, row, col, level, value != blocks::OAK_LEAVES);
+					if (count) {
+						// std::cout << "count is " << count << std::endl;
+						_displayed_faces += count;
 					} else {
 						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
+						if (value != blocks::OAK_LEAVES && exposed_block(row, col, level, true)) {
+							std::cerr << "BLOCK EXPOSED BUT COUNT IS 0: " << s_blocks[value].name << std::endl;
+						}
 					}
 				}
 			}
@@ -457,11 +484,11 @@ int Chunk::sand_fall_endz( glm::ivec3 pos )
 	return (1);
 }
 
-static bool isSandOrGravel( int type )
-{
-	type += blocks::NOTVISIBLE * (type < blocks::AIR);
-	return (type == blocks::SAND || type == blocks::GRAVEL);
-}
+// static bool isSandOrGravel( int type )
+// {
+// 	type += blocks::NOTVISIBLE * (type < blocks::AIR);
+// 	return (type == blocks::SAND || type == blocks::GRAVEL);
+// }
 
 void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 {
@@ -502,6 +529,9 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 
 void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 {
+	(void)inventory;
+	(void) pos;
+	/*
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
@@ -526,11 +556,11 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		int above_value = (block_above == blocks::SAND || block_above + blocks::NOTVISIBLE == blocks::SAND) ? blocks::SAND : blocks::GRAVEL;
 		if (endZ == pos.z) {
 			_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = above_value - (value < 0) * blocks::NOTVISIBLE;
-			if (block_above < 0 && value > 0) {
-				_mtx.lock();
-				++_displayed_blocks;
-				_mtx.unlock();
-			}
+			// if (block_above < 0 && value > 0) { // HERE
+			// 	_mtx.lock();
+			// 	++_displayed_blocks;
+			// 	_mtx.unlock();
+			// }
 			return (remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1)));
 		} else {
 			add_block(NULL, glm::ivec3(pos.x, pos.y, endZ), above_value, blocks::AIR);
@@ -580,10 +610,15 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 			: remove_block(inventory, glm::ivec3(pos.x, pos.y, pos.z + 1));
 	}
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
+	*/
 }
 
 void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous )
 {
+	(void)inventory;
+	(void)pos;
+	(void)type;
+	(void)previous;/*
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	if (type == blocks::WATER) { // we place water
@@ -642,28 +677,100 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 			}
 		}
 	}
-	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
+	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;*/
 }
 
 void Chunk::fill_vertex_array( void )
 {
-	int index = 0;
+	size_t index = 0;
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint block_type = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level];
 				if (block_type > blocks::AIR && block_type < blocks::WATER) {
-					// if (index + 5 > _displayed_blocks * 5) {
-					// 	std::cout << "ERROR index is " << index / 5 << std::endl;
-					// }
-					_vertices[index] = block_type + (0 << 8) + (get_empty_faces(block_type, row + 1, col + 1, level, block_type != blocks::OAK_LEAVES) << 16);
-					_vertices[index + 1] = _startX + row;
-					_vertices[index + 2] = _startY + col;
-					_vertices[index + 3] = level;
-					index += 4;
+					glm::ivec3 p0 = {_startX + row + 0, _startY + col + 0, level + 1};
+					glm::ivec3 p1 = {_startX + row + 1, _startY + col + 0, level + 1};
+					glm::ivec3 p2 = {_startX + row + 0, _startY + col + 0, level + 0};
+					glm::ivec3 p3 = {_startX + row + 1, _startY + col + 0, level + 0};
+
+					glm::ivec3 p4 = {_startX + row + 0, _startY + col + 1, level + 1};
+					glm::ivec3 p5 = {_startX + row + 1, _startY + col + 1, level + 1};
+					glm::ivec3 p6 = {_startX + row + 0, _startY + col + 1, level + 0};
+					glm::ivec3 p7 = {_startX + row + 1, _startY + col + 1, level + 0};
+
+					if (block_type < blocks::POPPY) {
+						bool isNotLeaves = (block_type != blocks::OAK_LEAVES);
+						if (!air_flower(_blocks[((row + 1 - 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], true, false)) {
+							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (84 << 16);
+							glm::ivec4 v0 = {spec, p4};
+							glm::ivec4 v1 = {spec + 1 + (1 << 8), p0};
+							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 12), p6};
+							glm::ivec4 v3 = {spec + 1 + (1 << 4) + (1 << 8) + (1 << 12), p2};
+							// std::cout << "debug spec v0 " << s_blocks[block_type].name << ": x = " << ((v0.x >> 8) & 0xF) << ", y = " << ((v0.x >> 12) & 0xF) << std::endl;
+							// std::cout << "debug spec v1 " << s_blocks[block_type].name << ": x = " << ((v1.x >> 8) & 0xF) << ", y = " << ((v1.x >> 12) & 0xF) << std::endl;
+							// std::cout << "debug spec v2 " << s_blocks[block_type].name << ": x = " << ((v2.x >> 8) & 0xF) << ", y = " << ((v2.x >> 12) & 0xF) << std::endl;
+							// std::cout << "debug spec v3 " << s_blocks[block_type].name << ": x = " << ((v3.x >> 8) & 0xF) << ", y = " << ((v3.x >> 12) & 0xF) << std::endl;
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+						if (!air_flower(_blocks[((row + 1 + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false)) {
+							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (80 << 16);
+							glm::ivec4 v0 = {spec, p1};
+							glm::ivec4 v1 = {spec + 1 + (1 << 8), p5};
+							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 12), p3};
+							glm::ivec4 v3 = {spec + 1 + (1 << 4) + (1 << 8) + (1 << 12), p7};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1 - 1) * WORLD_HEIGHT + level], true, false)) {
+							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (92 << 16);
+							glm::ivec4 v0 = {spec, p0};
+							glm::ivec4 v1 = {spec + 1 + (1 << 8), p1};
+							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 12), p2};
+							glm::ivec4 v3 = {spec + 1 + (1 << 4) + (1 << 8) + (1 << 12), p3};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1 + 1) * WORLD_HEIGHT + level], isNotLeaves, false)) {
+							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (88 << 16);
+							glm::ivec4 v0 = {spec, p5};
+							glm::ivec4 v1 = {spec + 1 + (1 << 8), p4};
+							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 12), p7};
+							glm::ivec4 v3 = {spec + 1 + (1 << 4) + (1 << 8) + (1 << 12), p6};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level + 1], isNotLeaves, false)) {
+							int spec = blockGridX(block_type, 1) + (blockGridY(block_type) << 4) + (0 << 12) + (100 << 16);
+							glm::ivec4 v0 = {spec, p4};
+							glm::ivec4 v1 = {spec + 1 + (1 << 8), p5};
+							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 12), p0};
+							glm::ivec4 v3 = {spec + 1 + (1 << 4) + (1 << 8) + (1 << 12), p1};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level - 1], true, false)) {
+							int spec = blockGridX(block_type, 1) + (blockGridY(block_type) << 4) + (0 << 12) + (74 << 16);
+							glm::ivec4 v0 = {spec, p2};
+							glm::ivec4 v1 = {spec + 1 + (1 << 8), p3};
+							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 12), p6};
+							glm::ivec4 v3 = {spec + 1 + (1 << 4) + (1 << 8) + (1 << 12), p7};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+					} else {
+						int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (100 << 16);
+							glm::ivec4 v0 = {spec, p0};
+							glm::ivec4 v1 = {spec + 1 + (1 << 8), p5};
+							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 12), p2};
+							glm::ivec4 v3 = {spec + 1 + (1 << 4) + (1 << 8) + (1 << 12), p7};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+							v0 = {spec, p1};
+							v1 = {spec + 1 + (1 << 8), p4};
+							v2 = {spec + (1 << 4) + (1 << 12), p3};
+							v3 = {spec + 1 + (1 << 4) + (1 << 8) + (1 << 12), p6};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+					}
 				}
 			}
 		}
+	}
+	if (index != _displayed_faces * 24) {
+		std::cout << "index at end is " << index << " vs " << _displayed_faces << " | " << _displayed_faces * 4 * 6 << std::endl;
 	}
 }
 
@@ -681,7 +788,7 @@ void Chunk::setup_array_buffer( void )
 	glBindVertexArray(_vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 4 * sizeof(GLint), _vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _displayed_faces * 4 * 6 * sizeof(GLint), _vertices, GL_STATIC_DRAW);
 
 	_vaoReset = true;
 	_vaoVIP = false;
@@ -817,7 +924,7 @@ void Chunk::generation( void )
 {
 	_blocks = new GLint[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT];
 	generate_blocks();
-	_vertices = new GLint[_displayed_blocks * 4]; // specifications, X Y Z
+	_vertices = new GLint[_displayed_faces * 4 * 6]; // specifications, X Y Z
 	// _vertices = new GLint[_displayed_blocks * 6]; // blocktype, break frame, adjacents blocks, X Y Z
 	fill_vertex_array();
 	_sky = new GLboolean[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2)];
@@ -849,7 +956,7 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 		return ;
 	}
 	delete [] _vertices;
-	_vertices = new GLint[_displayed_blocks * 4];
+	_vertices = new GLint[_displayed_faces * 4 * 6];
 	fill_vertex_array();
 	_vaoReset = false;
 	_mtx.lock();
@@ -920,7 +1027,7 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 		}
 	}
 
-	int vindex = 0;
+	size_t vindex = 0;
 	for (auto& o: order) {
 		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], 0}, offset0, offset1, offset2;
 		if (!o.second[5]) {
@@ -1030,7 +1137,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	for (size_t index = 0; index < _displayed_blocks * 4; index += 4) {
+	for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 		_mtx.lock();
 		if (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 			_vaoVIP = true;
@@ -1047,6 +1154,12 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 // posX and posY in [0; CHUNK_SIZE + 1] === _blocks compatible
 void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 {
+	(void)posX;
+	(void) posY;
+	(void) level;
+	(void) type;
+	(void) adding;
+	/*
 	// std::cout << "got into update border of chunk " << _startX << ", " << _startY << std::endl;
 	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << adding << std::endl;
 	if (!(!posX || !posY || posX == CHUNK_SIZE + 1 || posY == CHUNK_SIZE + 1)) {
@@ -1072,7 +1185,7 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
 		if (exposed_block(target.x, target.y, level, true)) { // block still visible, no change in display_blocks, only in vixible faces
-			for (size_t index = 0; index < _displayed_blocks * 4; index += 4) {
+			for (size_t index = 0; index < _displayed_faces * 24; index += 24) {
 				_mtx.lock();
 				if (_vertices[index + 3] == level && _vertices[index + 1] == _startX + target.x - 1 && _vertices[index + 2] == _startY + target.y - 1) {
 					_vertices[index] = (_vertices[index] & 0xFFFF) + (get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true) << 16);
@@ -1130,6 +1243,7 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_mtx.unlock();
 		}
 	}
+	*/
 }
 
 /* collisionBox takes feet position of object, dimension of its hitbox and returns wether object is inside block or not */
@@ -1313,8 +1427,8 @@ void Chunk::drawArray( GLint & counter, GLint &block_counter )
 	}
     glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down
 	_mtx.lock();
-	glDrawArrays(GL_POINTS, 0, _displayed_blocks);
-	block_counter += _displayed_blocks;
+	glDrawArrays(GL_TRIANGLES, 0, _displayed_faces * 6);
+	block_counter += _displayed_faces;
 	_mtx.unlock();
 }
 

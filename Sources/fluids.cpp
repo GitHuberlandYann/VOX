@@ -167,6 +167,12 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 
 bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int level )
 {
+	(void)newFluids;
+	(void) posX;
+	(void) posY;
+	(void) posZ;
+	(void) level;
+	/*
 	int value = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
 	// std::cout << "checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[value].name << std::endl;
 	if (!air_flower(value, false, true) || value > level || (value == level && level == blocks::WATER1)) {
@@ -205,7 +211,7 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 	} else if (value >= blocks::WATER) {
 		return (true);
 	}
-
+	*/
 	return (false);
 }
 
@@ -319,7 +325,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 		}
 	}
 
-	int vindex = 0;
+	size_t vindex = 0;
 	for (auto& o: order) {
 		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], o.second[6]}, offset0, offset1, offset2, offset3;
 		if (!o.second[5]) { // top/down faces
@@ -352,6 +358,12 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 
 void Chunk::update_border_flow( int posX, int posY, int posZ, int wlevel, bool adding )
 {
+	(void)posX;
+	(void) posY;
+	(void) posZ;
+	(void) wlevel;
+	(void) adding;
+	/*
 	if (!(posX == 1 || posY == 1 || posX == CHUNK_SIZE || posY == CHUNK_SIZE)) {
 		std::cout << "ERROR update_border_flow not border block " << posX << ", " << posY << std::endl;
 		return ;
@@ -390,6 +402,7 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int wlevel, bool a
 			_fluids.insert(posX + (posY << 8) + (posZ << 16));
 		}
 	}
+	*/
 }
 
 void Chunk::updateFluids( void )

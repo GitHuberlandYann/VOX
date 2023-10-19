@@ -1,7 +1,7 @@
 #version 150 core
 
 // in float face_num;
-in int specifications;
+in int specifications; // 0xF = x coord, 0xF0 = y coord, 0xF00 x break, 0xF000 y break, 0xFF0000 shading [0:100]
 // in int block_type;
 // in int break_frame;
 // in int adj_blocks;
@@ -17,8 +17,8 @@ in ivec3 position;
 // uniform int use_light;
 
 // uniform mat4 model;
-// uniform mat4 view;
-// uniform mat4 proj;
+uniform mat4 view;
+uniform mat4 proj;
 // uniform mat4 scale;
 
 // // uniform vec3 camPos;
@@ -38,12 +38,16 @@ in ivec3 position;
 // flat out int Tex_index;
 // flat out int Invert;
 
-out Prim
-{
-    int Block_type;
-	int Break_frame;
-	int Adj_blocks;
-};
+// out Prim
+// {
+//     int Block_type;
+// 	int Break_frame;
+// 	int Adj_blocks;
+// };
+
+out vec2 Texcoord;
+out vec2 Breakcoord;
+out float FaceShadow;
 
 // vec3 gray()
 // {
@@ -95,11 +99,16 @@ void main()
 	// 	Color = vec3(0.0, 0.0, 1.0);
 	// }
 
-	// gl_Position = proj * view * model * scale * vec4(position, 1.0);
-	gl_Position = vec4(position, 1.0);
-	Block_type = (specifications & 0xFF);
-	Break_frame = ((specifications >> 8) & 0xFF);
-	Adj_blocks = ((specifications >> 16) & 0xFF);
+	gl_Position = proj * view * vec4(position, 1.0);
+	Texcoord = vec2((specifications & 0xF) / 16.0f, ((specifications >> 4) & 0xF) / 16.0f);
+	Breakcoord = vec2((15.0f + ((specifications >> 8) & 0xF)) / 16.0f, ((specifications >> 12) & 0xF) / 16.0f);
+	FaceShadow = ((specifications >> 16) & 0xFF) / 100.0f;
+	// 0xF = x coord, 0xF0 = y coord, 0xF00 x break, 0xF000 y break, 0xFF0000 shading [0:100]
+
+	// gl_Position = vec4(position, 1.0);
+	// Block_type = (specifications & 0xFF);
+	// Break_frame = ((specifications >> 8) & 0xFF);
+	// Adj_blocks = ((specifications >> 16) & 0xFF);
 	// Block_type = block_type;
 	// Break_frame = break_frame;
 	// Adj_blocks = adj_blocks;

@@ -98,6 +98,19 @@ double gradient( double value, double start, double end, double value_start, dou
 	return (value_start + progress * (value_end - value_start));
 }
 
+int blockGridX( int block, int offset ) // x coord in blockAtlas grid
+{
+	if (block < 16) {
+		return (offset);
+	}
+	return (3 + block / 16);
+}
+
+int blockGridY( int block ) // y coord in blockAtlas grid
+{
+	return (block % 16);
+}
+
 int blockAtlasX( int block ) // x coord in blockAtlas in pxl
 {
 	if (block < 16) {
@@ -204,7 +217,7 @@ std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 )
 	return {6 << 10, 8 << 10, 9 << 10, 4 << 10, 1 << 9}; // -x +y
 }
 
-void face_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, int & vindex )
+void face_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, size_t & vindex )
 {
 	vertices[vindex] = v0.x;
 	vertices[vindex + 1] = v0.y;

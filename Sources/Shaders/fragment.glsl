@@ -2,7 +2,7 @@
 
 // in vec3 Color;
 in vec2 Texcoord;
-in vec3 Breakcoord;
+in vec2 Breakcoord;
 in float FaceShadow;
 // // in vec3 CamPos;
 // in vec3 LightPos;
@@ -27,8 +27,8 @@ void main()
 	if(outColor.a < 0.01) {
 		discard ;
 	}
-	if (Breakcoord.z != 0) {
-		vec4 break_ = texture(blockAtlas, Breakcoord.xy);
+	if (Breakcoord.y != 0) {
+		vec4 break_ = texture(blockAtlas, Breakcoord);
 		if (break_.a > 0.01) {
 			outColor = outColor * break_;
 		}

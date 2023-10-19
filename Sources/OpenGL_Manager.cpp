@@ -141,21 +141,21 @@ void OpenGL_Manager::create_shaders( void )
 	std::string sky_vertex_shader_data = get_file_content("Sources/Shaders/sky_vertex.glsl");
 	char *sky_vertexSource = &sky_vertex_shader_data[0];
 
-	_skyVertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(_skyVertexShader, 1, &sky_vertexSource, NULL);
-	compile_shader(_skyVertexShader, "sky_vertex");
+	GLuint skyVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(skyVertexShader, 1, &sky_vertexSource, NULL);
+	compile_shader(skyVertexShader, "sky_vertex");
 
 	std::string sky_fragment_shader_data = get_file_content("Sources/Shaders/sky_fragment.glsl");
 	char *sky_fragmentSource = &sky_fragment_shader_data[0];
 
-	_skyFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(_skyFragmentShader, 1, &sky_fragmentSource, NULL);
-	compile_shader(_skyFragmentShader, "sky_fragment");
+	GLuint skyFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(skyFragmentShader, 1, &sky_fragmentSource, NULL);
+	compile_shader(skyFragmentShader, "sky_fragment");
 
 	// Combining shaders into a program
 	_skyShaderProgram = glCreateProgram();
-	glAttachShader(_skyShaderProgram, _skyVertexShader);
-	glAttachShader(_skyShaderProgram, _skyFragmentShader);
+	glAttachShader(_skyShaderProgram, skyVertexShader);
+	glAttachShader(_skyShaderProgram, skyFragmentShader);
 
 	glBindFragDataLocation(_skyShaderProgram, 0, "outColor");
 
@@ -164,8 +164,8 @@ void OpenGL_Manager::create_shaders( void )
 	glLinkProgram(_skyShaderProgram);
 	glUseProgram(_skyShaderProgram);
 
-	glDeleteShader(_skyFragmentShader);
-    glDeleteShader(_skyVertexShader);
+	glDeleteShader(skyFragmentShader);
+    glDeleteShader(skyVertexShader);
 
 	check_glstate("skyShader program successfully created");
 	
@@ -173,44 +173,32 @@ void OpenGL_Manager::create_shaders( void )
 	std::string vertex_shader_data = get_file_content("Sources/Shaders/vertex.glsl");
 	char *vertexSource = &vertex_shader_data[0];
 
-	_vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(_vertexShader, 1, &vertexSource, NULL);
-	compile_shader(_vertexShader, "vertex");
-
-	std::string geometry_shader_data = get_file_content("Sources/Shaders/geometry.glsl");
-	char *geometrySource = &geometry_shader_data[0];
-
-	_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
-	glShaderSource(_geometryShader, 1, &geometrySource, NULL);
-	compile_shader(_geometryShader, "geometry");
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexSource, NULL);
+	compile_shader(vertexShader, "vertex");
 
 	std::string fragment_shader_data = get_file_content("Sources/Shaders/fragment.glsl");
 	char *fragmentSource = &fragment_shader_data[0];
 
-	_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(_fragmentShader, 1, &fragmentSource, NULL);
-	compile_shader(_fragmentShader, "fragment");
+	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+	compile_shader(fragmentShader, "fragment");
 
 	// Combining shaders into a program
 	_shaderProgram = glCreateProgram();
-	glAttachShader(_shaderProgram, _vertexShader);
-	glAttachShader(_shaderProgram, _geometryShader);
-	glAttachShader(_shaderProgram, _fragmentShader);
+	glAttachShader(_shaderProgram, vertexShader);
+	glAttachShader(_shaderProgram, fragmentShader);
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
 	glBindAttribLocation(_shaderProgram, SPECATTRIB, "specifications");
-	// glBindAttribLocation(_shaderProgram, BLOCKATTRIB, "block_type");
-	// glBindAttribLocation(_shaderProgram, BREAKATTRIB, "break_frame");
-	// glBindAttribLocation(_shaderProgram, ADJATTRIB, "adj_blocks");
 	glBindAttribLocation(_shaderProgram, POSATTRIB, "position");
 
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
 
-	glDeleteShader(_fragmentShader);
-    glDeleteShader(_geometryShader);
-    glDeleteShader(_vertexShader);
+	glDeleteShader(fragmentShader);
+    glDeleteShader(vertexShader);
 
 	check_glstate("Shader program successfully created");
 }
