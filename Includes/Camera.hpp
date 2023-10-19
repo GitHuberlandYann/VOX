@@ -61,6 +61,7 @@ class Camera
 		glm::vec3 getPos( void );
 		void setPosZ( float value );
 		void setWaterStatus( bool head, bool underwater );
+		int getWaterStatus( void );
 		void setRun( bool value );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );

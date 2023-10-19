@@ -193,13 +193,27 @@ void UI::add_food( GLint *vertices, int mult, int index, int & vindex )
 	vindex += 9;
 }
 
+void UI::add_bubbles( GLint *vertices, int mult, int index, int & vindex )
+{
+	vertices[vindex + 0] = 1;
+	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - 9 * mult - (index * 8 * mult);
+	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3);
+	vertices[vindex + 3] = 8 * mult;
+	vertices[vindex + 4] = 8 * mult;
+	vertices[vindex + 5] = 81 + 9 * (_camera.getWaterStatus() == (1 + 2 * index));
+	vertices[vindex + 6] = 16;
+	vertices[vindex + 7] = 9;
+	vertices[vindex + 8] = 9;
+	vindex += 9;
+}
+
 void UI::setup_array_buffer( void )
 {
 	mtx_inventory.lock();
 	int countSlot = _inventory.countSlots();
 	int duras = _inventory.countDura(false);
 	mtx_inventory.unlock();
-    _nb_points = 3 + countSlot + 2 * duras + 10 + _camera._health_points / 2 + _camera._health_points % 2 + 10 + 4 + 10 + 2;
+    _nb_points = 3 + countSlot + 2 * duras + 10 + _camera._health_points / 2 + _camera._health_points % 2 + _camera.getWaterStatus() / 2 + _camera.getWaterStatus() % 2 + 10 + 4 + 10 + 2;
 	int mult = 4;
 	GLint *vertices = new GLint[_nb_points * 9];
 
@@ -260,6 +274,9 @@ void UI::setup_array_buffer( void )
 	}
 	for (int index = 0; index < 2; index++) {
 		add_food(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < _camera.getWaterStatus() / 2 + _camera.getWaterStatus() % 2; index++) {
+		add_bubbles(vertices, mult, index, vindex);
 	}
 	if (vindex / 9 != _nb_points) {
 		std::cout << "ERROR ui nb points is " << _nb_points << std::endl;

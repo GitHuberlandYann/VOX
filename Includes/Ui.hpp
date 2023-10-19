@@ -28,6 +28,7 @@ class UI
         void add_armor( GLint *vertices, int mult, int index, int & vindex );
         void add_food_holder( GLint *vertices, int mult, int index, int & vindex );
         void add_food( GLint *vertices, int mult, int index, int & vindex );
+        void add_bubbles( GLint *vertices, int mult, int index, int & vindex );
         void setup_array_buffer( void );
         void display_slot_value( int index );
 

@@ -900,13 +900,13 @@ void Menu::add_furnace_value( GLint *vertices, int mult, int & vindex )
 	if (_furnace->getFuelTime()) {
 		vertices[vindex + 0] = 1;
 		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult;
-		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult + (14 - progress) * mult + mult;
+		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult + progress * mult + mult;
 		vertices[vindex + 3] = 14 * mult;
-		vertices[vindex + 4] = progress * mult;
+		vertices[vindex + 4] = (14 - progress) * mult;
 		vertices[vindex + 5] = 24;
-		vertices[vindex + 6] = 47 + (14 - progress);
+		vertices[vindex + 6] = 47 + progress;
 		vertices[vindex + 7] = 14;
-		vertices[vindex + 8] = progress;
+		vertices[vindex + 8] = 14 - progress;
 		vindex += 9;
 	}
 	progress = 1 + glm::floor(_furnace->getComposantTime() * 23);

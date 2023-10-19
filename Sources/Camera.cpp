@@ -1,7 +1,7 @@
 #include "vox.h"
 
 Camera::Camera( glm::vec3 position )
-	: _fall_time(0), _fov(FOV), _fall_speed(0), _isRunning(false), _healthUpdate(false),
+	: _fall_time(0), _breathTime(0), _fov(FOV), _fall_speed(0), _isRunning(false), _healthUpdate(false),
 	_waterHead(false), _waterFeet(false), _movement_speed(SPEED), _health_points(20),
 	_inJump(false), _touchGround(false), _fall_immunity(true), _fall_distance(0)
 {
@@ -89,6 +89,7 @@ void Camera::setPosZ( float value )
 
 void Camera::setWaterStatus( bool head, bool underwater )
 {
+	int statusSave = getWaterStatus();
 	if (head) {
 		if (underwater) {
 			_breathTime += _deltaTime;
@@ -98,7 +99,7 @@ void Camera::setWaterStatus( bool head, bool underwater )
 				_healthUpdate = true;
 			}
 		} else {
-			_breathTime -= _deltaTime;
+			_breathTime -= _deltaTime * 2;
 			if (_breathTime < 0) {
 				_breathTime = 0;
 			}
@@ -107,6 +108,23 @@ void Camera::setWaterStatus( bool head, bool underwater )
 	} else {
 		_waterFeet = underwater;
 	}
+	if (getWaterStatus() != statusSave) {
+		_healthUpdate = true;
+	}
+}
+
+// computes value [0:20] representing amount of bubbles to display on ui
+int Camera::getWaterStatus( void )
+{
+	if (_breathTime == 0 || _breathTime >= 15.0f) {
+		return (0);
+	}
+	float percentage = _breathTime / 15.0f;
+	int res = 20 - glm::floor(percentage * 20);
+	if (res & 1) {
+		res += (percentage * 10 - glm::floor(percentage * 10) < 0.9f);
+	}
+	return (res);
 }
 
 void Camera::setRun( bool value )
@@ -296,7 +314,8 @@ std::string Camera::getCamString( bool game_mode )
 			+ "\nSpeed\t> " + ((_isRunning) ?  ((_touchGround) ? std::to_string(RUN_SPEED) : std::to_string(RUN_JUMP_SPEED) ) : std::to_string(WALK_SPEED))
 			+ "\nFall\t> " + std::to_string(_fall_speed)
 			+ "\nFall Distance\t> " + std::to_string(_fall_distance)
-			+ "\nWater head\t> " + ((_waterHead) ? "TRUE - " + std::to_string(_breathTime) : "FALSE")
+			+ "\nWater head\t> " + ((_waterHead) ? "TRUE" : "FALSE")
+			+ ((_breathTime > 0) ? " - " + std::to_string(_breathTime) + ": " + std::to_string(getWaterStatus()) : "")
 			+ "\nWater feet\t> " + ((_waterFeet) ? "TRUE" : "FALSE")
 			+ "\nHealth\t> " + std::to_string(_health_points)
 			+ "\nGounded\t> " + ((_touchGround) ? "true" : "false")
