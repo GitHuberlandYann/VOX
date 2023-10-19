@@ -484,12 +484,6 @@ int Chunk::sand_fall_endz( glm::ivec3 pos )
 	return (1);
 }
 
-// static bool isSandOrGravel( int type )
-// {
-// 	type += blocks::NOTVISIBLE * (type < blocks::AIR);
-// 	return (type == blocks::SAND || type == blocks::GRAVEL);
-// }
-
 void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 {
 	if (type == blocks::AIR) {
@@ -529,9 +523,6 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 
 void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 {
-	(void)inventory;
-	(void) pos;
-	/*
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
@@ -556,7 +547,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		int above_value = (block_above == blocks::SAND || block_above + blocks::NOTVISIBLE == blocks::SAND) ? blocks::SAND : blocks::GRAVEL;
 		if (endZ == pos.z) {
 			_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = above_value - (value < 0) * blocks::NOTVISIBLE;
-			// if (block_above < 0 && value > 0) { // HERE
+			// if (block_above < 0 && value > 0) { //TODO check sand fall when previously hidden .. again
 			// 	_mtx.lock();
 			// 	++_displayed_blocks;
 			// 	_mtx.unlock();
@@ -570,7 +561,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
 	if (value > blocks::AIR && value < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
 		_mtx.lock();
-		_displayed_blocks--;
+		_displayed_faces -= face_count(value, pos.x + 1, pos.y + 1, pos.z, value != blocks::OAK_LEAVES);
 		_mtx.unlock();
 	} else if (value == blocks::WATER) { // use bucket on water source
 		// std::cout << "bucket on water" << std::endl;
@@ -586,11 +577,15 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 				if (adj < blocks::AIR) {
 					_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] += blocks::NOTVISIBLE;
 					_mtx.lock();
-					_displayed_blocks++;
+					_displayed_faces++;
+					_mtx.unlock();
+				} else if (air_flower(adj, true, false)) {
+					_mtx.lock();
+					_displayed_faces++;
 					_mtx.unlock();
 				} else if (index != 4 && adj >= blocks::WATER) { // if water under, top was already displayed
 					// ++_water_count;
-					if (value != blocks::WATER) { // block added and not water bucket
+					if (adj != blocks::WATER) { // block added and not water bucket
 						_fluids.insert((pos.x + 1 + delta[0]) + ((pos.y + 1 + delta[1]) << 8) + ((pos.z + delta[2]) << 16));
 					}
 					// std::cout << "++water count" << std::endl;
@@ -610,15 +605,10 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 			: remove_block(inventory, glm::ivec3(pos.x, pos.y, pos.z + 1));
 	}
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
-	*/
 }
 
 void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous )
 {
-	(void)inventory;
-	(void)pos;
-	(void)type;
-	(void)previous;/*
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	if (type == blocks::WATER) { // we place water
@@ -660,7 +650,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 		_furnaces[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = FurnaceInstance();
 	}
 	_mtx.lock();
-	_displayed_blocks++;
+	_displayed_faces += face_count(type, pos.x + 1, pos.y + 1, pos.z, type != blocks::OAK_LEAVES);
 	_mtx.unlock();
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
@@ -668,16 +658,18 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 
 		} else {
 			GLint value = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
+			if (air_flower(value, true, false)) {
+				_mtx.lock();
+				_displayed_faces--;
+				_mtx.unlock();
+			}
 			if (value > blocks::AIR && !exposed_block(pos.x + delta[0] + 1, pos.y + delta[1] + 1, pos.z + delta[2], _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2] + 1] != blocks::OAK_LEAVES)) {
 				// was exposed before, but isn't anymore
 				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] -= blocks::NOTVISIBLE;
-				_mtx.lock();
-				_displayed_blocks--;
-				_mtx.unlock();
 			}
 		}
 	}
-	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;*/
+	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
 void Chunk::fill_vertex_array( void )
@@ -933,7 +925,6 @@ void Chunk::generation( void )
 
 void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding )
 {
-	size_t waterSave = _water_count;
 	if (!adding) {
 		int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
 		if (value == blocks::AIR || value == blocks::BEDROCK || value + blocks::NOTVISIBLE == blocks::BEDROCK) { // can't rm bedrock
@@ -946,9 +937,6 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 			return ;
 		}
 		add_block(inventory, pos, type, value);
-	}
-	if (waterSave != _water_count) {
-		sort_water(_camera->getPos(), true);
 	}
 	if (type == blocks::WATER || type == blocks::BUCKET) {
 		// std::cout << "modif to water with " << ((type == blocks::WATER) ? "water" : "bucket") << std::endl;
@@ -1137,29 +1125,47 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
+	glm::ivec3 p0 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 1};
+	glm::ivec3 p1 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + 1};
+	glm::ivec3 p2 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 0};
+	glm::ivec3 p3 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + 0};
+
+	glm::ivec3 p4 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + 1};
+	glm::ivec3 p5 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + 1};
+	glm::ivec3 p6 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
+	glm::ivec3 p7 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
+	int value = _blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * WORLD_HEIGHT + chunk_pos.z];
+	if (value <= 0) {
+		return ;
+	}
+	int count = face_count(value, chunk_pos.x + 1, chunk_pos.y + 1, chunk_pos.z, value != blocks::OAK_LEAVES);
+	int cnt = 0;
 	for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 		_mtx.lock();
-		if (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
+		if (blockFace(_vertices, p0, p1, p2, p3, p4, p5, p6, p7, index)) {
 			_vaoVIP = true;
-			_vertices[index] = (_vertices[index] & 0xFF00FF) + (frame << 8);
+			_vertices[index] = (_vertices[index] & 0xFF0FFF) + (frame << 12);
+			_vertices[index + 4] = (_vertices[index + 4] & 0xFF0FFF) + (frame << 12);
+			_vertices[index + 8] = (_vertices[index + 8] & 0xFF0FFF) + ((frame + 1) << 12);
+			_vertices[index + 12] = (_vertices[index + 12] & 0xFF0FFF) + (frame << 12);
+			_vertices[index + 16] = (_vertices[index + 16] & 0xFF0FFF) + ((frame + 1) << 12);
+			_vertices[index + 20] = (_vertices[index + 20] & 0xFF0FFF) + ((frame + 1) << 12);
 			_mtx.unlock();
 			_vaoReset = false;
-			return ;
+			if (++cnt >= count) {
+				return ;
+			}
+			_mtx.lock();
 		}
 		_mtx.unlock();
 	}
+	std::cout << "update break not found " << cnt << std::endl;
 }
 
 // called by neighbour chunk if block change at border
 // posX and posY in [0; CHUNK_SIZE + 1] === _blocks compatible
 void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 {
-	(void)posX;
-	(void) posY;
-	(void) level;
-	(void) type;
-	(void) adding;
-	/*
 	// std::cout << "got into update border of chunk " << _startX << ", " << _startY << std::endl;
 	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << adding << std::endl;
 	if (!(!posX || !posY || posX == CHUNK_SIZE + 1 || posY == CHUNK_SIZE + 1)) {
@@ -1184,30 +1190,23 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
 		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
-		if (exposed_block(target.x, target.y, level, true)) { // block still visible, no change in display_blocks, only in vixible faces
-			for (size_t index = 0; index < _displayed_faces * 24; index += 24) {
-				_mtx.lock();
-				if (_vertices[index + 3] == level && _vertices[index + 1] == _startX + target.x - 1 && _vertices[index + 2] == _startY + target.y - 1) {
-					_vertices[index] = (_vertices[index] & 0xFFFF) + (get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true) << 16);
-					_vaoVIP = true;
-					_mtx.unlock();
-					_vaoReset = false;
-					return ;
-				}
-				_mtx.unlock();
-			}
-		} else { // we need to redo it all because one less exposed block
-			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
-			_displayed_blocks--;
-			delete [] _vertices;
-			_vertices = new GLint[_displayed_blocks * 4];
-			fill_vertex_array();
-			_vaoReset = false;
-			_mtx.lock();
-			_vaoVIP = true;
-			_mtx.unlock();
+		if (!air_flower(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], false, false)) {
+			return ;
 		}
-	} else {
+		_mtx.lock();
+		_displayed_faces--;
+		_mtx.unlock();
+		if (!exposed_block(target.x, target.y, level, true)) { // block no more visible
+			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
+		}
+		delete [] _vertices;
+		_vertices = new GLint[_displayed_faces * 24];
+		fill_vertex_array();
+		_vaoReset = false;
+		_mtx.lock();
+		_vaoVIP = true;
+		_mtx.unlock();
+	} else {/*
 		// std::cout << '[' << _startX << ", " << _startY << "] rm block at border " << posX << ", " << posY << ", " << level << ": " << s_blocks[type].name << std::endl;
 		bool already_exposed = exposed_block(target.x, target.y, level, true);
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
@@ -1241,9 +1240,8 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_mtx.lock();
 			_vaoVIP = true;
 			_mtx.unlock();
-		}
+		}*/
 	}
-	*/
 }
 
 /* collisionBox takes feet position of object, dimension of its hitbox and returns wether object is inside block or not */
