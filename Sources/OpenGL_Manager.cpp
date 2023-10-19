@@ -199,9 +199,10 @@ void OpenGL_Manager::create_shaders( void )
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
-	glBindAttribLocation(_shaderProgram, BLOCKATTRIB, "block_type");
-	glBindAttribLocation(_shaderProgram, BREAKATTRIB, "break_frame");
-	glBindAttribLocation(_shaderProgram, ADJATTRIB, "adj_blocks");
+	glBindAttribLocation(_shaderProgram, SPECATTRIB, "specifications");
+	// glBindAttribLocation(_shaderProgram, BLOCKATTRIB, "block_type");
+	// glBindAttribLocation(_shaderProgram, BREAKATTRIB, "break_frame");
+	// glBindAttribLocation(_shaderProgram, ADJATTRIB, "adj_blocks");
 	glBindAttribLocation(_shaderProgram, POSATTRIB, "position");
 
 	glLinkProgram(_shaderProgram);

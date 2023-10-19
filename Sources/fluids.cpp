@@ -178,7 +178,7 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 			// std::cout << "value before: " << s_blocks[value].name << std::endl;
 			--_displayed_blocks;
 			delete [] _vertices;
-			_vertices = new GLint[_displayed_blocks * 6];
+			_vertices = new GLint[_displayed_blocks * 4];
 			fill_vertex_array();
 			_vaoReset = false;
 			_mtx.lock();
@@ -371,7 +371,7 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int wlevel, bool a
 				if (value != blocks::AIR) { // replace flower with water
 					--_displayed_blocks;
 					delete [] _vertices;
-					_vertices = new GLint[_displayed_blocks * 6];
+					_vertices = new GLint[_displayed_blocks * 4];
 					fill_vertex_array();
 					_vaoReset = false;
 					_mtx.lock();

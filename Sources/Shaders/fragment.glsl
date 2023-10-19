@@ -24,17 +24,16 @@ void main()
 	// if (gl_FrontFacing) // this works but doesn't gain fps
 	// 	discard ;
 	outColor = texture(blockAtlas, Texcoord);
+	if(outColor.a < 0.01) {
+		discard ;
+	}
 	if (Breakcoord.z != 0) {
 		vec4 break_ = texture(blockAtlas, Breakcoord.xy);
 		if (break_.a > 0.01) {
 			outColor = outColor * break_;
 		}
 	}
-	if(outColor.a < 0.01) {
-		discard ;
-	} else {
-		outColor = outColor * vec4(FaceShadow, FaceShadow, FaceShadow, 1.0);
-	}
+	outColor = outColor * vec4(FaceShadow, FaceShadow, FaceShadow, 1.0);
 	
 	// if (Invert == 1) {
 	// 	outColor = vec4(1.0, 1.0, 1.0, 2.0) - outColor;

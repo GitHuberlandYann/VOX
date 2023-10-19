@@ -1,9 +1,10 @@
 #version 150 core
 
 // in float face_num;
-in int block_type;
-in int break_frame;
-in int adj_blocks;
+in int specifications;
+// in int block_type;
+// in int break_frame;
+// in int adj_blocks;
 in ivec3 position;
 // in vec3 color;
 // in vec2 texcoord;
@@ -96,7 +97,10 @@ void main()
 
 	// gl_Position = proj * view * model * scale * vec4(position, 1.0);
 	gl_Position = vec4(position, 1.0);
-	Block_type = block_type;
-	Break_frame = break_frame;
-	Adj_blocks = adj_blocks;
+	Block_type = (specifications & 0xFF);
+	Break_frame = ((specifications >> 8) & 0xFF);
+	Adj_blocks = ((specifications >> 16) & 0xFF);
+	// Block_type = block_type;
+	// Break_frame = break_frame;
+	// Adj_blocks = adj_blocks;
 }

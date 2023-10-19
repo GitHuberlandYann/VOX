@@ -656,13 +656,11 @@ void Chunk::fill_vertex_array( void )
 					// if (index + 5 > _displayed_blocks * 5) {
 					// 	std::cout << "ERROR index is " << index / 5 << std::endl;
 					// }
-					_vertices[index] = block_type;
-					_vertices[index + 1] = 0;
-					_vertices[index + 2] = get_empty_faces(block_type, row + 1, col + 1, level, block_type != blocks::OAK_LEAVES);
-					_vertices[index + 3] = _startX + row;
-					_vertices[index + 4] = _startY + col;
-					_vertices[index + 5] = level;
-					index += 6;
+					_vertices[index] = block_type + (0 << 8) + (get_empty_faces(block_type, row + 1, col + 1, level, block_type != blocks::OAK_LEAVES) << 16);
+					_vertices[index + 1] = _startX + row;
+					_vertices[index + 2] = _startY + col;
+					_vertices[index + 3] = level;
+					index += 4;
 				}
 			}
 		}
@@ -683,22 +681,25 @@ void Chunk::setup_array_buffer( void )
 	glBindVertexArray(_vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 6 * sizeof(GLint), _vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _displayed_blocks * 4 * sizeof(GLint), _vertices, GL_STATIC_DRAW);
 
 	_vaoReset = true;
 	_vaoVIP = false;
 
-	glEnableVertexAttribArray(BLOCKATTRIB);
-	glVertexAttribIPointer(BLOCKATTRIB, 1, GL_INT, 6 * sizeof(GLint), 0);
+	glEnableVertexAttribArray(SPECATTRIB);
+	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
+
+	// glEnableVertexAttribArray(BLOCKATTRIB);
+	// glVertexAttribIPointer(BLOCKATTRIB, 1, GL_INT, 6 * sizeof(GLint), 0);
 	
-	glEnableVertexAttribArray(BREAKATTRIB);
-	glVertexAttribIPointer(BREAKATTRIB, 1, GL_INT, 6 * sizeof(GLint), (void *)(sizeof(GLint)));
+	// glEnableVertexAttribArray(BREAKATTRIB);
+	// glVertexAttribIPointer(BREAKATTRIB, 1, GL_INT, 6 * sizeof(GLint), (void *)(sizeof(GLint)));
 	
-	glEnableVertexAttribArray(ADJATTRIB);
-	glVertexAttribIPointer(ADJATTRIB, 1, GL_INT, 6 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
+	// glEnableVertexAttribArray(ADJATTRIB);
+	// glVertexAttribIPointer(ADJATTRIB, 1, GL_INT, 6 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
 
 	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribIPointer(POSATTRIB, 3, GL_INT, 6 * sizeof(GLint), (void *)(3 * sizeof(GLint)));
+	glVertexAttribIPointer(POSATTRIB, 3, GL_INT, 4 * sizeof(GLint), (void *)(1 * sizeof(GLint)));
 
 	check_glstate("NO");
 }
@@ -816,7 +817,8 @@ void Chunk::generation( void )
 {
 	_blocks = new GLint[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT];
 	generate_blocks();
-	_vertices = new GLint[_displayed_blocks * 6]; // blocktype, break frame, adjacents blocks, X Y Z
+	_vertices = new GLint[_displayed_blocks * 4]; // specifications, X Y Z
+	// _vertices = new GLint[_displayed_blocks * 6]; // blocktype, break frame, adjacents blocks, X Y Z
 	fill_vertex_array();
 	_sky = new GLboolean[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2)];
 	generate_sky();
@@ -847,7 +849,7 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 		return ;
 	}
 	delete [] _vertices;
-	_vertices = new GLint[_displayed_blocks * 6];
+	_vertices = new GLint[_displayed_blocks * 4];
 	fill_vertex_array();
 	_vaoReset = false;
 	_mtx.lock();
@@ -1028,11 +1030,11 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	for (size_t index = 0; index < _displayed_blocks * 6; index += 6) {
+	for (size_t index = 0; index < _displayed_blocks * 4; index += 4) {
 		_mtx.lock();
-		if (_vertices[index + 5] == block_hit.z && _vertices[index + 3] == block_hit.x && _vertices[index + 4] == block_hit.y) {
+		if (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 			_vaoVIP = true;
-			_vertices[index + 1] = frame;
+			_vertices[index] = (_vertices[index] & 0xFF00FF) + (frame << 8);
 			_mtx.unlock();
 			_vaoReset = false;
 			return ;
@@ -1070,10 +1072,10 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
 		if (exposed_block(target.x, target.y, level, true)) { // block still visible, no change in display_blocks, only in vixible faces
-			for (size_t index = 0; index < _displayed_blocks * 6; index += 6) {
+			for (size_t index = 0; index < _displayed_blocks * 4; index += 4) {
 				_mtx.lock();
-				if (_vertices[index + 5] == level && _vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1) {
-					_vertices[index + 2] = get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true);
+				if (_vertices[index + 3] == level && _vertices[index + 1] == _startX + target.x - 1 && _vertices[index + 2] == _startY + target.y - 1) {
+					_vertices[index] = (_vertices[index] & 0xFFFF) + (get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true) << 16);
 					_vaoVIP = true;
 					_mtx.unlock();
 					_vaoReset = false;
@@ -1085,7 +1087,7 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
 			_displayed_blocks--;
 			delete [] _vertices;
-			_vertices = new GLint[_displayed_blocks * 6];
+			_vertices = new GLint[_displayed_blocks * 4];
 			fill_vertex_array();
 			_vaoReset = false;
 			_mtx.lock();
@@ -1104,10 +1106,10 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		}
 		if (already_exposed) { // block was already exposed, no change in displayed_blocks, only in visible faces
 			// std::cout << "displayed blocks same" << std::endl;
-			for (size_t index = 0; index < _displayed_blocks * 6; index += 6) {
+			for (size_t index = 0; index < _displayed_blocks * 4; index += 4) {
 				_mtx.lock();
-				if (_vertices[index + 5] == level && _vertices[index + 3] == _startX + target.x - 1 && _vertices[index + 4] == _startY + target.y - 1) {
-					_vertices[index + 2] = get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true);
+				if (_vertices[index + 3] == level && _vertices[index + 1] == _startX + target.x - 1 && _vertices[index + 2] == _startY + target.y - 1) {
+					_vertices[index] = (_vertices[index] & 0xFFFF) + (get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true) << 16);
 					_vaoVIP = true;
 					_mtx.unlock();
 					_vaoReset = false;
@@ -1120,7 +1122,7 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] += blocks::NOTVISIBLE;
 			delete [] _vertices;
 			_displayed_blocks++;
-			_vertices = new GLint[_displayed_blocks * 6];
+			_vertices = new GLint[_displayed_blocks * 4];
 			fill_vertex_array();
 			_vaoReset = false;
 			_mtx.lock();
