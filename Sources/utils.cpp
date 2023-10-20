@@ -116,7 +116,7 @@ int blockGridX( int block, int offset ) // x coord in blockAtlas grid
 
 int blockGridY( int block ) // y coord in blockAtlas grid
 {
-	return (block % 16);
+	return (block & 0xF); // block % 16
 }
 
 int blockAtlasX( int block ) // x coord in blockAtlas in pxl

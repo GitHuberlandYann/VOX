@@ -141,3 +141,6 @@ Some info:
                 If 0.7~1, "Peaks".
                 Not that the PV value is defined no matter what the weirdness is, but these 5 PV levels are defined only when weirdness is between -1.0 and 1.0.
     - DEPTH is used for cave generation .. not sure I'll use it for now
+
+    - objdump -d --dis-symname=_main vox
+    - nm vox | grep <function>
