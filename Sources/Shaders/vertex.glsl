@@ -1,7 +1,7 @@
 #version 150 core
 
 // in float face_num;
-in int specifications; // 0xF = x coord, 0xF0 = y coord, 0xF00 x break, 0xF000 y break, 0xFF0000 shading [0:100]
+in int specifications; // 0xF = x coord, 0xF0 = y coord, 0x100 = x break, 0x200 = xoffset, 0x400 = yoffset, 0xF000 y break, 0xFF0000 shading [0:100]
 // in int block_type;
 // in int break_frame;
 // in int adj_blocks;
@@ -100,10 +100,10 @@ void main()
 	// }
 
 	gl_Position = proj * view * vec4(position, 1.0);
-	Texcoord = vec2((specifications & 0xF) / 16.0f, ((specifications >> 4) & 0xF) / 16.0f);
-	Breakcoord = vec2((15.0f + ((specifications >> 8) & 0xF)) / 16.0f, ((specifications >> 12) & 0xF) / 16.0f);
+	Texcoord = vec2(((specifications & 0xF) - ((specifications >> 9) & 0x1) * 0.01f) / 16.0f, (((specifications >> 4) & 0xF) - ((specifications >> 10) & 0x1) * 0.01f) / 16.0f);
+	Breakcoord = vec2((15.0f + ((specifications >> 8) & 0x1) * 0.99f) / 16.0f, (((specifications >> 12) & 0xF) - ((specifications >> 10) & 0x1) * 0.01f) / 16.0f);
 	FaceShadow = ((specifications >> 16) & 0xFF) / 100.0f;
-	// 0xF = x coord, 0xF0 = y coord, 0xF00 x break, 0xF000 y break, 0xFF0000 shading [0:100]
+	// 0xF = x coord, 0xF0 = y coord, 0x100 = x break, 0x200 = xoffset, 0x400 = yoffset, 0xF000 = y break, 0xFF0000 = shading [0:100]
 
 	// gl_Position = vec4(position, 1.0);
 	// Block_type = (specifications & 0xFF);

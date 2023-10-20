@@ -136,11 +136,11 @@ class Chunk
 		void applyGravity( Camera *camera );
 
 		int isLoaded( GLint &counter );
-        void drawArray( GLint & counter, GLint &block_counter );
+        void drawArray( GLint & counter, GLint &face_counter );
 		void updateFurnaces( double currentTime );
 		void updateFluids( void );
-		void drawSky( GLint & counter, GLint &triangle_counter );
-		void drawWater( GLint & counter, GLint &triangle_counter );
+		void drawSky( GLint & counter, GLint &face_counter );
+		void drawWater( GLint & counter, GLint &face_counter );
 		std::string getAddsRmsString( void );
 };
 

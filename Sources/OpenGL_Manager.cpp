@@ -397,9 +397,9 @@ void OpenGL_Manager::main_loop( void )
 		}
 		// b.stop("user inputs");
 		// b.reset();
-		GLint newVaoCounter = 0, blockCounter = 0, waterTriangles = 0, skyTriangles = 0;
+		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
 		for (auto& c: _visible_chunks) {
-			c->drawArray(newVaoCounter, blockCounter);
+			c->drawArray(newVaoCounter, faceCounter);
 			c->updateFurnaces(currentTime);
 			if (fluidUpdate) {
 				c->updateFluids();
@@ -415,11 +415,11 @@ void OpenGL_Manager::main_loop( void )
 		}
 		glUniform3f(_skyUniColor, 0.5f, 0.5f, 0.5f);
 		for (auto& c: _visible_chunks) {
-			c->drawSky(newVaoCounter, skyTriangles);
+			c->drawSky(newVaoCounter, skyFaces);
 		}
 		glUniform3f(_skyUniColor, 0.24705882f, 0.4627451f, 0.89411765f);
 		for (auto&c: _visible_chunks) {
-			c->drawWater(newVaoCounter, waterTriangles);
+			c->drawWater(newVaoCounter, waterFaces);
 		}
 		// b.stop("display water sky");
 		#endif
@@ -441,9 +441,9 @@ void OpenGL_Manager::main_loop( void )
 				// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
 				+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size())
 				+ '/' + std::to_string(_perimeter_chunks.size()) + '/' + std::to_string(_chunks.size())
-				+ "\nDisplayed blocks\t> " + std::to_string(blockCounter)
-				+ "\nSky triangles\t> " + std::to_string(skyTriangles)
-				+ "\nWater triangles\t> " + std::to_string(waterTriangles)
+				+ "\nDisplayed faces\t> " + std::to_string(faceCounter)
+				+ "\nSky faces\t> " + std::to_string(skyFaces)
+				+ "\nWater faces\t> " + std::to_string(waterFaces)
 				+ "\n\nRender Distance\t> " + std::to_string(_render_distance)
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				+ "\nBackups\t> " + std::to_string(_backups.size())
