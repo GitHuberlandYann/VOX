@@ -9,6 +9,7 @@ void compile_shader( GLuint ptrShader, std::string name );
 void check_glstate( std::string str );
 int chunk_pos( int pos );
 double gradient( double value, double start, double end, double value_start, double value_end );
+float dist2( glm::vec3 pa, glm::vec3 pb );
 int blockGridX( int block, int offset );
 int blockGridY( int block );
 int blockAtlasX( int block );

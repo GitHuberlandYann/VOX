@@ -98,6 +98,14 @@ double gradient( double value, double start, double end, double value_start, dou
 	return (value_start + progress * (value_end - value_start));
 }
 
+float dist2( glm::vec3 pa, glm::vec3 pb )
+{
+	float a = pb.x - pa.x;
+	float b = pb.y - pa.y;
+	float c = pb.z - pa.z;
+	return (a * a + b * b + c * c);
+}
+
 int blockGridX( int block, int offset ) // x coord in blockAtlas grid
 {
 	if (block < 16) {
@@ -145,9 +153,11 @@ bool isSandOrGravel( int type )
 
 std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 {
+	Bench b;
 	int posX = chunk_pos(pos.x);
 	int posY = chunk_pos(pos.y);
 
+	#if 0
 	int size = chunks.size();
 	std::vector<std::pair<int, Chunk *>> dists;
 	dists.reserve(chunks.capacity());
@@ -155,7 +165,7 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 		dists.push_back(std::pair<int, Chunk *>(c->manhattanDist(posX, posY), c));
 	}
 	// std::cout << "in sort chunks, dists size = " << dists.size() << std::endl;
-
+	b.stop("SORT - manhattan");
 	for (int index = 0; index < size; index++) {
 		int minDist = dists[index].first, minIndex = index;
 		for (int jindex = index + 1; jindex < size; jindex++) {
@@ -170,14 +180,38 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 			dists[index] = tmp;
 		}
 	}
+	b.stop("SORT - chunks");
 
 	chunks.clear();
+	chunks.reserve(dists.capacity());
 	for (auto& d: dists) {
 		d.second->sort_sky(pos, false);
 		d.second->sort_water(pos, false);
 		chunks.push_back(d.second);
 	}
+	b.stop("SORT - sky water");
 	dists.clear();
+	#else
+	std::multimap<int, Chunk*> dists;
+	for (auto c: chunks) {
+		dists.insert({c->manhattanDist(posX, posY), c});
+	}
+	// std::cout << "in sort chunks, dists size = " << dists.size() << std::endl;
+	b.stop("SORT - manhattan");
+	// std::sort(dists.begin(), dists.end());
+	b.stop("SORT - chunks");
+
+	chunks.clear();
+	chunks.reserve(dists.size());
+	for (auto it = dists.rbegin(); it != dists.rend(); it++) {
+		it->second->sort_sky(pos, false);
+		it->second->sort_water(pos, false);
+		chunks.push_back(it->second);
+	}
+	b.stop("SORT - sky water");
+	dists.clear();
+
+	#endif
 	// std::cout << "out sort chunks, chunks size " << chunks.size() << std::endl;
 	return (chunks);
 }

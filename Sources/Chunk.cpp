@@ -432,14 +432,18 @@ void Chunk::generate_blocks( void )
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
 				if (value && value < blocks::WATER) {
-					GLint count = face_count(value, row, col, level, value != blocks::OAK_LEAVES);
-					if (count) {
-						// std::cout << "count is " << count << std::endl;
-						_displayed_faces += count;
+					if (!air_flower(value, false, true) && !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false)) {
+						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR;
 					} else {
-						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
-						if (value != blocks::OAK_LEAVES && exposed_block(row, col, level, true)) {
-							std::cerr << "BLOCK EXPOSED BUT COUNT IS 0: " << s_blocks[value].name << std::endl;
+						GLint count = face_count(value, row, col, level, value != blocks::OAK_LEAVES);
+						if (count) {
+							// std::cout << "count is " << count << std::endl;
+							_displayed_faces += count;
+						} else {
+							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
+							if (value != blocks::OAK_LEAVES && exposed_block(row, col, level, true)) {
+								std::cerr << "BLOCK EXPOSED BUT COUNT IS 0: " << s_blocks[value].name << std::endl;
+							}
 						}
 					}
 				}
@@ -761,9 +765,9 @@ void Chunk::fill_vertex_array( void )
 			}
 		}
 	}
-	if (index != _displayed_faces * 24) {
-		std::cout << "index at end is " << index << " vs " << _displayed_faces << " | " << _displayed_faces * 4 * 6 << std::endl;
-	}
+	// if (index != _displayed_faces * 24) { // TODO FIND OUT WHY LEAVES BREAK THIS CONDITION
+	// 	std::cout << "index at end is " << index << " vs " << _displayed_faces << " | " << _displayed_faces * 4 * 6 << std::endl;
+	// }
 }
 
 void Chunk::setup_array_buffer( void )
@@ -787,15 +791,6 @@ void Chunk::setup_array_buffer( void )
 
 	glEnableVertexAttribArray(SPECATTRIB);
 	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
-
-	// glEnableVertexAttribArray(BLOCKATTRIB);
-	// glVertexAttribIPointer(BLOCKATTRIB, 1, GL_INT, 6 * sizeof(GLint), 0);
-	
-	// glEnableVertexAttribArray(BREAKATTRIB);
-	// glVertexAttribIPointer(BREAKATTRIB, 1, GL_INT, 6 * sizeof(GLint), (void *)(sizeof(GLint)));
-	
-	// glEnableVertexAttribArray(ADJATTRIB);
-	// glVertexAttribIPointer(ADJATTRIB, 1, GL_INT, 6 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
 
 	glEnableVertexAttribArray(POSATTRIB);
 	glVertexAttribIPointer(POSATTRIB, 3, GL_INT, 4 * sizeof(GLint), (void *)(1 * sizeof(GLint)));
@@ -973,19 +968,19 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 			if (_sky[row * (CHUNK_SIZE + 2) + col]) {
 				int pX = _startX + row - 1;
 				int pY = _startY + col - 1;
-				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 156.0f)), {pX, pY + 1, 156, 1, -1, 0, }));
-				order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 155.0f)), {pX, pY, 155, 1, 1, 0, }));
+				order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 156.0f)), {pX, pY + 1, 156, 1, -1, 0, }});
+				order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 155.0f)), {pX, pY, 155, 1, 1, 0, }});
 				if (!_sky[(row - 1) * (CHUNK_SIZE + 2) + col]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX, pY + 0.5f, 155.5f)), {pX, pY + 1, 156, 0, -1, -1, }));
+					order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, 155.5f)), {pX, pY + 1, 156, 0, -1, -1, }});
 				}
 				if (!_sky[(row + 1) * (CHUNK_SIZE + 2) + col]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 1, pY + 0.5f, 155.5f)), {pX + 1, pY, 156, 0, 1, -1, }));
+					order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, 155.5f)), {pX + 1, pY, 156, 0, 1, -1, }});
 				}
 				if (!_sky[row * (CHUNK_SIZE + 2) + col - 1]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY, 155.5f)), {pX, pY, 156, 1, 0, -1, }));
+					order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, 155.5f)), {pX, pY, 156, 1, 0, -1, }});
 				}
 				if (!_sky[row * (CHUNK_SIZE + 2) + col + 1]) {
-					order.push_back(std::pair<float, std::array<int, 6>>(glm::distance(pos, glm::vec3(pX + 0.5f, pY + 1, 155.5f)), {pX + 1, pY + 1, 156, -1, 0, -1, }));
+					order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, 155.5f)), {pX + 1, pY + 1, 156, -1, 0, -1, }});
 				}
 			}
 		}
@@ -1138,6 +1133,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	if (value <= 0) {
 		return ;
 	}
+	// TODO add if !air_flower to handle cross image
 	int count = face_count(value, chunk_pos.x + 1, chunk_pos.y + 1, chunk_pos.z, value != blocks::OAK_LEAVES);
 	int cnt = 0;
 	for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
@@ -1159,7 +1155,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 		}
 		_mtx.unlock();
 	}
-	std::cout << "update break not found " << cnt << std::endl;
+	// std::cout << "update break not found " << cnt << std::endl; // TODO find out conditions for this to be printed
 }
 
 // called by neighbour chunk if block change at border

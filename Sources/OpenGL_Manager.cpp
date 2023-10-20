@@ -396,7 +396,6 @@ void OpenGL_Manager::main_loop( void )
 			chunk_update();
 		}
 		// b.stop("user inputs");
-		// b.reset();
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, faceCounter);
@@ -408,7 +407,6 @@ void OpenGL_Manager::main_loop( void )
 		// b.stop("solids");
 
 		#if 1
-		// b.reset();
 		glUseProgram(_skyShaderProgram);
 		if (animUpdate) {
 			update_anim_frame();
@@ -423,8 +421,6 @@ void OpenGL_Manager::main_loop( void )
 		}
 		// b.stop("display water sky");
 		#endif
-		// b.reset();
-		// glClear(GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 		// Chunk *chunk_ptr = get_current_chunk_ptr();
 		mtx.lock();
@@ -456,7 +452,6 @@ void OpenGL_Manager::main_loop( void )
 		mtx_perimeter.unlock();
 		mtx.unlock();
 		// b.stop("stringing");
-		// b.reset();
 		if (_menu->getState() >= PAUSE_MENU) {
 			_ui->drawUserInterface(str, _game_mode, _f5_mode);
 		}
@@ -500,10 +495,8 @@ void OpenGL_Manager::main_loop( void )
 		// b.stop("chunk deletion");
 
 		previousFrame = currentTime;
-		// b.reset();
 		glfwSwapBuffers(_window);
 		// b.stop("swap buffer");
-		// b.reset();
 		glfwPollEvents();
 		// b.stop("poll events");
 	}

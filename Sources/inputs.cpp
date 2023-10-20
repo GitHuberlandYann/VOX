@@ -36,7 +36,11 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 				}
 			}
 			if (!chunk) {
-				std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
+				if (!_visible_chunks.size()) {
+					update_visible_chunks();
+				} else {
+					std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
+				}
 				return (glm::ivec4(0, 0, 0, blocks::AIR));
 			}
 		}
@@ -208,14 +212,14 @@ void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread
 static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *> *perimeter_chunks, std::vector<Chunk *> *deleted_chunks, std::map<std::pair<int, int>, s_backup> *backups,
 								 Camera *camera, GLint render_dist, int posX, int posY )
 {
-	// Bench b;
+	Bench b;
 	std::set<std::pair<int, int>> coords;
 	for (int row = -render_dist; row <= render_dist; row++) {
 		for (int col = -render_dist; col <= render_dist; col++) {
 			coords.insert({posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE});
 		}
 	}
-	// b.stop("gen coordinates set");
+	b.stop("gen coordinates set");
 
 	std::vector<Chunk *> newperi_chunks;
 	newperi_chunks.reserve(perimeter_chunks->capacity());
@@ -244,9 +248,9 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 		++it;
 		mtx.unlock();
 	}
-	// Bench b;
+	b.reset();
 	newperi_chunks = sort_chunks(camera->getPos(), newperi_chunks);
-	// b.stop("sort chunks");
+	b.stop("sort chunks");
 	mtx_perimeter.lock();
 	*perimeter_chunks = newperi_chunks;
 	mtx_perimeter.unlock();
@@ -274,7 +278,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	// 			it++;
 	// 			mtx.unlock();
 	// 		}
-
+	b.reset();
 	for (auto& c: coords) {
 		//create new chunk where player stands
 		Chunk *newChunk = new Chunk(camera, c.first, c.second, perimeter_chunks); // TODO pass pointer to visible_chunks instead
@@ -289,7 +293,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	}
 	// 	}
 	// }
-	// b.stop("loop and create new chunks");
+	b.stop("loop and create new chunks");
 	// std::cout << "for now " << count << " new chunks, computed " << coords.size() << std::endl;
 }
 
