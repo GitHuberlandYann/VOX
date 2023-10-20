@@ -547,11 +547,6 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		int above_value = (block_above == blocks::SAND || block_above + blocks::NOTVISIBLE == blocks::SAND) ? blocks::SAND : blocks::GRAVEL;
 		if (endZ == pos.z) {
 			_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = above_value - (value < 0) * blocks::NOTVISIBLE;
-			// if (block_above < 0 && value > 0) { //TODO check sand fall when previously hidden .. again
-			// 	_mtx.lock();
-			// 	++_displayed_blocks;
-			// 	_mtx.unlock();
-			// }
 			return (remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1)));
 		} else {
 			add_block(NULL, glm::ivec3(pos.x, pos.y, endZ), above_value, blocks::AIR);
@@ -566,6 +561,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	} else if (value == blocks::WATER) { // use bucket on water source
 		// std::cout << "bucket on water" << std::endl;
 		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
+		return ;
 	}
 	if (air_flower(value, true, true)) {
 		for (int index = 0; index < 6; index++) {
@@ -585,6 +581,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 					_mtx.unlock();
 				} else if (index != 4 && adj >= blocks::WATER) { // if water under, top was already displayed
 					// ++_water_count;
+					std::cout << "WATER UPDATE ON " << s_blocks[adj].name << std::endl;
 					if (adj != blocks::WATER) { // block added and not water bucket
 						_fluids.insert((pos.x + 1 + delta[0]) + ((pos.y + 1 + delta[1]) << 8) + ((pos.z + delta[2]) << 16));
 					}
@@ -593,10 +590,10 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 			}
 		}
 	}
-	if (value == blocks::WATER) {
-		// std::cout << "removed water" << std::endl;
-		return ;
-	}
+	// if (value == blocks::WATER) {
+	// 	// std::cout << "removed water" << std::endl;
+	// 	return ;
+	// }
 	if (endZ != -1) { // sand fall
 		remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1));
 	} else if (pos.z < 255 && ((block_above >= blocks::POPPY && block_above < blocks::WATER) || block_above == blocks::CACTUS)) { // del flower if block underneath deleted
@@ -652,6 +649,9 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	_mtx.lock();
 	_displayed_faces += face_count(type, pos.x + 1, pos.y + 1, pos.z, type != blocks::OAK_LEAVES);
 	_mtx.unlock();
+	if (!air_flower(type, true, false)) {
+		return ;
+	}
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
@@ -663,7 +663,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 				_displayed_faces--;
 				_mtx.unlock();
 			}
-			if (value > blocks::AIR && !exposed_block(pos.x + delta[0] + 1, pos.y + delta[1] + 1, pos.z + delta[2], _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2] + 1] != blocks::OAK_LEAVES)) {
+			if (value > blocks::AIR && !exposed_block(pos.x + delta[0] + 1, pos.y + delta[1] + 1, pos.z + delta[2], value != blocks::OAK_LEAVES)) {
 				// was exposed before, but isn't anymore
 				_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] -= blocks::NOTVISIBLE;
 			}
@@ -1190,7 +1190,7 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
 		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
-		if (!air_flower(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], false, false)) {
+		if (!air_flower(type, true, false) || !air_flower(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], false, false)) {
 			return ;
 		}
 		_mtx.lock();
@@ -1199,16 +1199,11 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		if (!exposed_block(target.x, target.y, level, true)) { // block no more visible
 			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] -= blocks::NOTVISIBLE;
 		}
-		delete [] _vertices;
-		_vertices = new GLint[_displayed_faces * 24];
-		fill_vertex_array();
-		_vaoReset = false;
-		_mtx.lock();
-		_vaoVIP = true;
-		_mtx.unlock();
-	} else {/*
+	} else {
 		// std::cout << '[' << _startX << ", " << _startY << "] rm block at border " << posX << ", " << posY << ", " << level << ": " << s_blocks[type].name << std::endl;
-		bool already_exposed = exposed_block(target.x, target.y, level, true);
+		if (!exposed_block(target.x, target.y, level, true)) {
+			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] += blocks::NOTVISIBLE;
+		}
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
 		_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
@@ -1216,32 +1211,17 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_hasWater = true;
 			_fluids.insert(target.x + (target.y << 8) + (level << 16));
 		}
-		if (already_exposed) { // block was already exposed, no change in displayed_blocks, only in visible faces
-			// std::cout << "displayed blocks same" << std::endl;
-			for (size_t index = 0; index < _displayed_blocks * 4; index += 4) {
-				_mtx.lock();
-				if (_vertices[index + 3] == level && _vertices[index + 1] == _startX + target.x - 1 && _vertices[index + 2] == _startY + target.y - 1) {
-					_vertices[index] = (_vertices[index] & 0xFFFF) + (get_empty_faces(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], target.x, target.y, level, true) << 16);
-					_vaoVIP = true;
-					_mtx.unlock();
-					_vaoReset = false;
-					return ;
-				}
-				_mtx.unlock();
-			}
-		} else { // we need to redo it all because one new exposed block
-			// std::cout << "redo it all" << std::endl;
-			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] += blocks::NOTVISIBLE;
-			delete [] _vertices;
-			_displayed_blocks++;
-			_vertices = new GLint[_displayed_blocks * 4];
-			fill_vertex_array();
-			_vaoReset = false;
-			_mtx.lock();
-			_vaoVIP = true;
-			_mtx.unlock();
-		}*/
+		_mtx.lock();
+		_displayed_faces++;
+		_mtx.unlock();
 	}
+	delete [] _vertices;
+	_vertices = new GLint[_displayed_faces * 24];
+	fill_vertex_array();
+	_vaoReset = false;
+	_mtx.lock();
+	_vaoVIP = true;
+	_mtx.unlock();
 }
 
 /* collisionBox takes feet position of object, dimension of its hitbox and returns wether object is inside block or not */

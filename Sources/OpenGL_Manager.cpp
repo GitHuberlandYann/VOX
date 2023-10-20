@@ -413,14 +413,11 @@ void OpenGL_Manager::main_loop( void )
 		if (animUpdate) {
 			update_anim_frame();
 		}
-		glm::vec3 color;
-			color = {0.2f, 0.0f, 0.2f};
-			glUniform3f(_skyUniColor, color.r, color.g, color.b);
+		glUniform3f(_skyUniColor, 0.5f, 0.5f, 0.5f);
 		for (auto& c: _visible_chunks) {
 			c->drawSky(newVaoCounter, skyTriangles);
 		}
-			color = {0.24705882f, 0.4627451f, 0.89411765f};
-			glUniform3f(_skyUniColor, color.r, color.g, color.b);
+		glUniform3f(_skyUniColor, 0.24705882f, 0.4627451f, 0.89411765f);
 		for (auto&c: _visible_chunks) {
 			c->drawWater(newVaoCounter, waterTriangles);
 		}
