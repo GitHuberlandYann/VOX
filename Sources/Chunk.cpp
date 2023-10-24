@@ -285,6 +285,7 @@ int Chunk::surfaceLevel( int row, int col, siv::PerlinNoise perlin )
 
 void Chunk::generate_blocks( void )
 {
+	// Bench b;
 	const siv::PerlinNoise perlin{ perlin_seed };
 	std::minstd_rand0  generator((_startX * 19516 + _startY * 56849) * perlin_seed);
 	// std::minstd_rand0  generator(perlin.noise2D(_startX * _startX, _startY * _startY) * perlin_seed);
@@ -331,7 +332,7 @@ void Chunk::generate_blocks( void )
 			}
 		}
 	}
-
+	// b.stamp("basic");
 	// adding leaves to trees
 	for (auto& tree: trees) { // TODO put trees on chunk border and communicate with border chunks
 		for (int index = 0; index < 61; index++) {
@@ -450,6 +451,7 @@ void Chunk::generate_blocks( void )
 			}
 		}
 	}
+	// b.stamp("rest");
 }
 
 void Chunk::generate_sky( void )
@@ -909,13 +911,17 @@ static void thread_setup_chunk( std::list<Chunk *> *chunks, Chunk *current )
 
 void Chunk::generation( void )
 {
+	// Bench b;
 	_blocks = new GLint[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT];
 	generate_blocks();
+	// b.stamp("blocks");
 	_vertices = new GLint[_displayed_faces * 4 * 6]; // specifications, X Y Z
-	// _vertices = new GLint[_displayed_blocks * 6]; // blocktype, break frame, adjacents blocks, X Y Z
 	fill_vertex_array();
+	// b.stamp("vertcices");
 	_sky = new GLboolean[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2)];
 	generate_sky();
+	// b.stamp("sky");
+	// b.stop("generation");
 }
 
 void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding )
@@ -949,10 +955,14 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 
 void Chunk::generate_chunk( std::list<Chunk *> *chunks )
 {
+	#if 1
 	if (_thread.joinable()) {
 		_thread.join();
 	}
 	_thread = std::thread(thread_setup_chunk, chunks, this);
+	#else
+	thread_setup_chunk(chunks, this);
+	#endif
 }
 
 void Chunk::sort_sky( glm::vec3 pos, bool vip )
@@ -1024,7 +1034,7 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_sky.lock();
-		face_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex); // TODO mtx lock sky vert
+		face_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex);
 		_mtx_sky.unlock();
 	}
 	order.clear();

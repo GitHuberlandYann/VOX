@@ -249,7 +249,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 	if (!_water_count && !_hasWater) {
 		return ;
 	}
-	Bench b;
+	// Bench b;
 	#if 1
 	// pos = glm::vec3(pos.x - _startX, pos.y - _startY, pos.z);
 	std::vector<std::pair<float, std::array<int, 10>>> order; // TODO inherit std::pair and overload camparison operators in order to use std::sort ..............
@@ -285,7 +285,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 			}
 		}
 	}
-	if (vip)b.stop("order");
+	// if (vip)b.stamp("order");
 	if (!order.size()) {
 		_water_count = 0;
 		_hasWater = false;
@@ -299,7 +299,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 		delete [] _water_vert;
 		_water_vert = new GLint[_water_count * 24];
 		_mtx_fluid.unlock();
-		// if (vip)b.stop("alloc");
+		// if (vip)b.stamp("alloc");
 	}
 
 	for (size_t index = 0; index < order.size() - 1; index++) {
@@ -317,7 +317,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 			order[index] = tmp;
 		}
 	}
-	if (vip)b.stop("sort");
+	// if (vip)b.stamp("sort");
 
 	size_t vindex = 0;
 	for (auto& o: order) {
@@ -342,6 +342,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 		_mtx_fluid.unlock();
 	}
 	order.clear();
+	// if (vip)b.stamp("fill vertices");
 	#else
 	std::multimap<float, std::array<int, 10>> order;
 	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
@@ -375,7 +376,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 			}
 		}
 	}
-	if(vip)b.stop("order");
+	// if(vip)b.stop("order");
 	if (!order.size()) {
 		_water_count = 0;
 		_hasWater = false;
@@ -389,7 +390,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 		delete [] _water_vert;
 		_water_vert = new GLint[_water_count * 24];
 		_mtx_fluid.unlock();
-		// if (vip)b.stop("alloc");
+		// if (vip)b.stamp("alloc");
 	}
 
 	size_t vindex = 0;
@@ -420,7 +421,8 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 	_mtx.lock();
 	if (vip) {
 		_waterVaoVIP = true;
-		b.stop("fluid sorting");
+		// b.stamp("rest");
+		// b.stop("fluid sorting");
 	}
 	_mtx.unlock();
 }

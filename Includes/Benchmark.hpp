@@ -7,11 +7,13 @@ class Bench
 {
 	private:
 		std::chrono::time_point<std::chrono::high_resolution_clock> _startTimePoint;
+		std::chrono::time_point<std::chrono::high_resolution_clock> _stampTimePoint;
 
 	public:
 		Bench()
 		{
 			_startTimePoint = std::chrono::high_resolution_clock::now();
+			_stampTimePoint = _startTimePoint;
 		}
 
 		~Bench()
@@ -33,9 +35,23 @@ class Bench
 			auto duration = end - start;
 			double ms = duration * 0.001;
 
-			std::cerr << "Bench [" << msg << "] result: " << duration << "us ( " << ms << "ms)" << std::endl;
+			std::cerr << "Bench [\033[31m" << msg << "\033[0m] result: " << duration << "us | " << ms << "ms" << std::endl;
+		}
 
-			reset();
+		void stamp( std::string msg )
+		{
+			auto currentTimePoint = std::chrono::high_resolution_clock::now();
+
+			if (msg != "NO") {
+				auto start = std::chrono::time_point_cast<std::chrono::microseconds>(_stampTimePoint).time_since_epoch().count();
+				auto end = std::chrono::time_point_cast<std::chrono::microseconds>(currentTimePoint).time_since_epoch().count();
+
+				auto duration = end - start;
+				double ms = duration * 0.001;
+
+				std::cerr << "\tstamp [" << msg << "] " << duration << "us | " << ms << "ms" << std::endl;
+			}
+			_stampTimePoint = currentTimePoint;
 		}
 };
 

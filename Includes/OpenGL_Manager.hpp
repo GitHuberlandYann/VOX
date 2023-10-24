@@ -2,10 +2,13 @@
 # define OPENGL_MANAGER_HPP
 
 # if __linux__
-#  define WIN_WIDTH 1680
-#  define WIN_HEIGHT 1050
-// #  define WIN_WIDTH 1920
-// #  define WIN_HEIGHT 1080
+#  if 1
+#   define WIN_WIDTH 1680
+#   define WIN_HEIGHT 1050
+#  else
+#   define WIN_WIDTH 1920
+#   define WIN_HEIGHT 1080
+#  endif
 #  define IS_LINUX true
 # else
 #  define WIN_WIDTH 2560

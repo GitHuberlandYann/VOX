@@ -35,7 +35,7 @@ TODOS:
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
     - nether
-	- item number color in ingame menus
+	- item number color/placement/size in ingame menus
     - hitbox flowers and blocks in general -> might have to split blocks in 27 ..
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 

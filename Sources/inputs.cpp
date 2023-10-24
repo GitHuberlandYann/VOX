@@ -219,7 +219,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 			coords.insert({posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE});
 		}
 	}
-	b.stop("gen coordinates set");
+	b.stamp("gen coordinates set");
 
 	std::vector<Chunk *> newperi_chunks;
 	newperi_chunks.reserve(perimeter_chunks->capacity());
@@ -248,9 +248,9 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 		++it;
 		mtx.unlock();
 	}
-	b.reset();
+	b.stamp("NO");
 	newperi_chunks = sort_chunks(camera->getPos(), newperi_chunks);
-	b.stop("sort chunks");
+	b.stamp("sort chunks");
 	mtx_perimeter.lock();
 	*perimeter_chunks = newperi_chunks;
 	mtx_perimeter.unlock();
@@ -278,7 +278,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	// 			it++;
 	// 			mtx.unlock();
 	// 		}
-	b.reset();
+	b.stamp("NO");
 	for (auto& c: coords) {
 		//create new chunk where player stands
 		Chunk *newChunk = new Chunk(camera, c.first, c.second, perimeter_chunks); // TODO pass pointer to visible_chunks instead
@@ -293,7 +293,8 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	}
 	// 	}
 	// }
-	b.stop("loop and create new chunks");
+	b.stamp("loop and create new chunks");
+	b.stop("chunk update");
 	// std::cout << "for now " << count << " new chunks, computed " << coords.size() << std::endl;
 }
 

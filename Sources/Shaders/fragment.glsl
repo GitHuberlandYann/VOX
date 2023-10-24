@@ -4,6 +4,7 @@
 in vec2 Texcoord;
 in vec2 Breakcoord;
 in float FaceShadow;
+in float zDist;
 // // in vec3 CamPos;
 // in vec3 LightPos;
 // in vec3 LightColor;
@@ -30,10 +31,12 @@ void main()
 	if (Breakcoord.y != 0) {
 		vec4 break_ = texture(blockAtlas, Breakcoord);
 		if (break_.a > 0.01) {
-			outColor = outColor * break_;
+			outColor *= break_;
 		}
 	}
-	outColor = outColor * vec4(FaceShadow, FaceShadow, FaceShadow, 1.0);
+	float smoothies = 1.0 - smoothstep(120, 160, zDist);
+	outColor.a *= smoothies;
+	outColor *= vec4(FaceShadow, FaceShadow, FaceShadow, 1.0);
 	
 	// if (Invert == 1) {
 	// 	outColor = vec4(1.0, 1.0, 1.0, 2.0) - outColor;

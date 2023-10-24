@@ -165,7 +165,7 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 		dists.push_back(std::pair<int, Chunk *>(c->manhattanDist(posX, posY), c));
 	}
 	// std::cout << "in sort chunks, dists size = " << dists.size() << std::endl;
-	b.stop("SORT - manhattan");
+	b.stamp("SORT - manhattan");
 	for (int index = 0; index < size; index++) {
 		int minDist = dists[index].first, minIndex = index;
 		for (int jindex = index + 1; jindex < size; jindex++) {
@@ -180,7 +180,7 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 			dists[index] = tmp;
 		}
 	}
-	b.stop("SORT - chunks");
+	b.stamp("SORT - chunks");
 
 	chunks.clear();
 	chunks.reserve(dists.capacity());
@@ -189,7 +189,7 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 		d.second->sort_water(pos, false);
 		chunks.push_back(d.second);
 	}
-	b.stop("SORT - sky water");
+	b.stamp("SORT - sky water");
 	dists.clear();
 	#else
 	std::multimap<int, Chunk*> dists;
@@ -197,9 +197,9 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 		dists.insert({c->manhattanDist(posX, posY), c});
 	}
 	// std::cout << "in sort chunks, dists size = " << dists.size() << std::endl;
-	b.stop("SORT - manhattan");
+	b.stamp("SORT - manhattan");
 	// std::sort(dists.begin(), dists.end());
-	b.stop("SORT - chunks");
+	b.stamp("SORT - chunks");
 
 	chunks.clear();
 	chunks.reserve(dists.size());
@@ -208,7 +208,7 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 		it->second->sort_water(pos, false);
 		chunks.push_back(it->second);
 	}
-	b.stop("SORT - sky water");
+	b.stamp("SORT - sky water");
 	dists.clear();
 
 	#endif
