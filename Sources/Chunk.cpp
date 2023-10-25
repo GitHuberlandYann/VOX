@@ -678,8 +678,18 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
+// https://minecraft.fandom.com/wiki/Light#AO_texture_pattern fct returns (side1 + side2 + corner)
+int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets )
+{
+	// (void)row;(void)col;(void)level;(void)offsets;return (0);
+	return (!!air_flower(_blocks[((row + offsets[0]) * (CHUNK_SIZE + 2) + col + offsets[1]) * WORLD_HEIGHT + level + offsets[2]], true, false)
+			+ !!air_flower(_blocks[((row + offsets[3]) * (CHUNK_SIZE + 2) + col + offsets[4]) * WORLD_HEIGHT + level + offsets[5]], true, false)
+			+ !!air_flower(_blocks[((row + offsets[6]) * (CHUNK_SIZE + 2) + col + offsets[7]) * WORLD_HEIGHT + level + offsets[8]], true, false));
+}
+
 void Chunk::fill_vertex_array( void )
 {
+	int shadingAmplitude = 15; // TODO add border blocks to JSON to avoid lightning problems
 	size_t index = 0;
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
@@ -699,58 +709,78 @@ void Chunk::fill_vertex_array( void )
 					if (block_type < blocks::POPPY) {
 						bool isNotLeaves = (block_type != blocks::OAK_LEAVES);
 						if (!air_flower(_blocks[((row + 1 - 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], true, false)) {
-							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (84 << 16);
-							glm::ivec4 v0 = {spec, p4};
-							glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p0};
-							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p6};
-							glm::ivec4 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
-							// std::cout << "debug spec v0 " << s_blocks[block_type].name << ": x = " << ((v0.x >> 8) & 0xF) << ", y = " << ((v0.x >> 12) & 0xF) << std::endl;
-							// std::cout << "debug spec v1 " << s_blocks[block_type].name << ": x = " << ((v1.x >> 8) & 0xF) << ", y = " << ((v1.x >> 12) & 0xF) << std::endl;
-							// std::cout << "debug spec v2 " << s_blocks[block_type].name << ": x = " << ((v2.x >> 8) & 0xF) << ", y = " << ((v2.x >> 12) & 0xF) << std::endl;
-							// std::cout << "debug spec v3 " << s_blocks[block_type].name << ": x = " << ((v3.x >> 8) & 0xF) << ", y = " << ((v3.x >> 12) & 0xF) << std::endl;
+							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12);
+							int shade = 84 - shadingAmplitude * computeShade(row + 1 - 1, col + 1, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
+							glm::ivec4 v0 = {spec + (shade << 16), p4};
+							shade = 84 - shadingAmplitude * computeShade(row + 1 - 1, col + 1, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
+							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p0};
+							shade = 84 - shadingAmplitude * computeShade(row + 1 - 1, col + 1, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
+							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p6};
+							shade = 84 - shadingAmplitude * computeShade(row + 1 - 1, col + 1, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
+							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (!air_flower(_blocks[((row + 1 + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false)) {
-							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (80 << 16);
-							glm::ivec4 v0 = {spec, p1};
-							glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
-							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p3};
-							glm::ivec4 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
+							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12);
+							int shade = 80 - shadingAmplitude * computeShade(row + 1 + 1, col + 1, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
+							glm::ivec4 v0 = {spec + (shade << 16), p1};
+							shade = 80 - shadingAmplitude * computeShade(row + 1 + 1, col + 1, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
+							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p5};
+							shade = 80 - shadingAmplitude * computeShade(row + 1 + 1, col + 1, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
+							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p3};
+							shade = 80 - shadingAmplitude * computeShade(row + 1 + 1, col + 1, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
+							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1 - 1) * WORLD_HEIGHT + level], true, false)) {
-							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (92 << 16);
-							glm::ivec4 v0 = {spec, p0};
-							glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
-							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-							glm::ivec4 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12);
+							int shade = 92 - shadingAmplitude * computeShade(row + 1, col + 1 - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
+							glm::ivec4 v0 = {spec + (shade << 16), p0};
+							shade = 92 - shadingAmplitude * computeShade(row + 1, col + 1 - 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
+							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p1};
+							shade = 92 - shadingAmplitude * computeShade(row + 1, col + 1 - 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
+							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p2};
+							shade = 92 - shadingAmplitude * computeShade(row + 1, col + 1 - 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
+							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1 + 1) * WORLD_HEIGHT + level], isNotLeaves, false)) {
-							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (88 << 16);
-							glm::ivec4 v0 = {spec, p5};
-							glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p4};
-							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p7};
-							glm::ivec4 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
+							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12);
+							int shade = 88 - shadingAmplitude * computeShade(row + 1, col + 1 + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
+							glm::ivec4 v0 = {spec + (shade << 16), p5};
+							shade = 88 - shadingAmplitude * computeShade(row + 1, col + 1 + 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
+							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p4};
+							shade = 88 - shadingAmplitude * computeShade(row + 1, col + 1 + 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
+							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p7};
+							shade = 88 - shadingAmplitude * computeShade(row + 1, col + 1 + 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
+							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level + 1], isNotLeaves, false)) {
-							int spec = blockGridX(block_type, 1) + (blockGridY(block_type) << 4) + (0 << 12) + (100 << 16);
-							glm::ivec4 v0 = {spec, p4};
-							glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
-							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p0};
-							glm::ivec4 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p1};
+							int spec = blockGridX(block_type, 1) + (blockGridY(block_type) << 4) + (0 << 12);
+							int shade = 100 - shadingAmplitude * computeShade(row + 1, col + 1, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+							glm::ivec4 v0 = {spec + (shade << 16), p4};
+							shade = 100 - shadingAmplitude * computeShade(row + 1, col + 1, level + 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p5};
+							shade = 100 - shadingAmplitude * computeShade(row + 1, col + 1, level + 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p0};
+							shade = 100 - shadingAmplitude * computeShade(row + 1, col + 1, level + 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p1};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level - 1], true, false)) {
-							int spec = blockGridX(block_type, 1) + (blockGridY(block_type) << 4) + (0 << 12) + (74 << 16);
-							glm::ivec4 v0 = {spec, p2};
-							glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p3};
-							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p6};
-							glm::ivec4 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
+							int spec = blockGridX(block_type, 1) + (blockGridY(block_type) << 4) + (0 << 12);
+							int shade = 74 - shadingAmplitude * computeShade(row + 1, col + 1, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+							glm::ivec4 v0 = {spec + (shade << 16), p2};
+							shade = 74 - shadingAmplitude * computeShade(row + 1, col + 1, level - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p3};
+							shade = 74 - shadingAmplitude * computeShade(row + 1, col + 1, level - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p6};
+							shade = 74 - shadingAmplitude * computeShade(row + 1, col + 1, level - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
-					} else {
+					} else { // flowers
 						int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (100 << 16);
 						glm::ivec4 v0 = {spec, p0};
 						glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
@@ -1218,6 +1248,11 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
 		if (!air_flower(type, true, false) || !air_flower(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], false, false)) {
+			fill_vertex_array(); // this is only to update face shading TODO only update concerned faces
+			_vaoReset = false;
+			_mtx.lock();
+			_vaoVIP = true;
+			_mtx.unlock();
 			return ;
 		}
 		_mtx.lock();
