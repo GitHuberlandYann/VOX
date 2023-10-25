@@ -29,7 +29,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 		if (!chunk || posX != current_chunk.x || posY != current_chunk.y) {
 			current_chunk = glm::ivec2(posX, posY);
 			chunk = NULL;
-			for (auto& c : _visible_chunks) {
+			for (auto c : _visible_chunks) {
 				if (c->isInChunk(posX, posY)) {
 					chunk = c;
 					break ;

@@ -32,6 +32,10 @@ TODOS:
     - skybox
 	- particles ?
     - items on ground after break
+	- time pause on menu
+	- no time pause on inventory/furnace
+	- chests
+	- better border chunk handling (trees)
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
     - nether

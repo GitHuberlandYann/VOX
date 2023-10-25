@@ -495,32 +495,30 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 	if (type == blocks::AIR) {
 		return ;
 	}
-	if (!pos.x) {
+	int arrX[2] = {0, CHUNK_SIZE + 1};
+	int arrY[2] = {0, CHUNK_SIZE + 1};
+	int indexX = (!pos.x - (pos.x == (CHUNK_SIZE - 1)));
+	int indexY = (!pos.y - (pos.y == (CHUNK_SIZE - 1)));
+	if (indexX) {
 		for (auto& c : *_vis_chunks) {
-			if (c->isInChunk(_startX - CHUNK_SIZE, _startY)) {
-				c->update_border(CHUNK_SIZE + 1, pos.y + 1, pos.z, type, adding);
-				break ;
-			}
-		}
-	} else if (pos.x == CHUNK_SIZE - 1) {
-		for (auto& c : *_vis_chunks) {
-			if (c->isInChunk(_startX + CHUNK_SIZE, _startY)) {
-				c->update_border(0, pos.y + 1, pos.z, type, adding);
+			if (c->isInChunk(_startX - indexX * CHUNK_SIZE, _startY)) {
+				c->update_border(arrX[indexX > 0], pos.y + 1, pos.z, type, adding);
 				break ;
 			}
 		}
 	}
-	if (!pos.y) {
+	if (indexY) {
 		for (auto& c : *_vis_chunks) {
-			if (c->isInChunk(_startX, _startY - CHUNK_SIZE)) {
-				c->update_border(pos.x + 1, CHUNK_SIZE + 1, pos.z, type, adding);
+			if (c->isInChunk(_startX, _startY - indexY * CHUNK_SIZE)) {
+				c->update_border(pos.x + 1, arrY[indexY > 0], pos.z, type, adding);
 				break ;
 			}
 		}
-	} else if (pos.y == CHUNK_SIZE - 1) {
+	}
+	if (indexX && indexY) { // cornerChunk
 		for (auto& c : *_vis_chunks) {
-			if (c->isInChunk(_startX, _startY + CHUNK_SIZE)) {
-				c->update_border(pos.x + 1, 0, pos.z, type, adding);
+			if (c->isInChunk(_startX - indexX * CHUNK_SIZE, _startY - indexY * CHUNK_SIZE)) {
+				c->update_border(arrX[indexX > 0], arrY[indexY > 0], pos.z, type, adding);
 				break ;
 			}
 		}
@@ -689,7 +687,7 @@ int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets
 
 void Chunk::fill_vertex_array( void )
 {
-	int shadingAmplitude = 15; // TODO add border blocks to JSON to avoid lightning problems
+	int shadingAmplitude = 15;
 	size_t index = 0;
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
@@ -1232,28 +1230,25 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	glm::ivec2 target;
+	glm::ivec2 target(posX, posY);
 	if (!posX) {
-		target = glm::ivec2(1, posY);
+		target.x = 1;
 	} else if (posX == CHUNK_SIZE + 1) {
-		target = glm::ivec2(CHUNK_SIZE, posY);
-	} else if (!posY) {
-		target = glm::ivec2(posX, 1);
-	} else if (posY == CHUNK_SIZE + 1) {
-		target = glm::ivec2(posX, CHUNK_SIZE);
+		target.x = CHUNK_SIZE;
 	}
+	if (!posY) {
+		target.y = 1;
+	} else if (posY == CHUNK_SIZE + 1) {
+		target.y = CHUNK_SIZE;
+	}
+	bool cornerChunk = ((!posX + (posX == (CHUNK_SIZE + 1)) + !posY + (posY == (CHUNK_SIZE + 1))) == 2); // chunk update at corner
 	if (adding) {
 		// std::cout << '[' << _startX << ", " << _startY << "] block at border " << posX << ", " << posY << ", " << level << ": " << s_blocks[type].name << std::endl;
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
 		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
 		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
-		if (!air_flower(type, true, false) || !air_flower(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], false, false)) {
-			fill_vertex_array(); // this is only to update face shading TODO only update concerned faces
-			_vaoReset = false;
-			_mtx.lock();
-			_vaoVIP = true;
-			_mtx.unlock();
-			return ;
+		if (cornerChunk || !air_flower(type, true, false) || !air_flower(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], false, false)) {
+			goto FILL; // this is only to update face shading TODO only update concerned faces
 		}
 		_mtx.lock();
 		_displayed_faces--;
@@ -1263,7 +1258,8 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 		}
 	} else {
 		// std::cout << '[' << _startX << ", " << _startY << "] rm block at border " << posX << ", " << posY << ", " << level << ": " << s_blocks[type].name << std::endl;
-		if (!exposed_block(target.x, target.y, level, true)) {
+		if (air_flower(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], false, false)
+			&& !exposed_block(target.x, target.y, level, true)) {
 			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] += blocks::NOTVISIBLE;
 		}
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
@@ -1273,12 +1269,16 @@ void Chunk::update_border(int posX, int posY, int level, int type, bool adding)
 			_hasWater = true;
 			_fluids.insert(target.x + (target.y << 8) + (level << 16));
 		}
+		if (cornerChunk || !air_flower(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], false, false)) {
+			goto FILL;
+		}
 		_mtx.lock();
 		_displayed_faces++;
 		_mtx.unlock();
 	}
 	delete [] _vertices;
 	_vertices = new GLint[_displayed_faces * 24];
+	FILL:
 	fill_vertex_array();
 	_vaoReset = false;
 	_mtx.lock();

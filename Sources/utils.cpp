@@ -80,6 +80,12 @@ void check_glstate( std::string str )
 
 int chunk_pos( int pos )
 {
+	if (CHUNK_SIZE == 16) {
+		(pos >= 0 || !(pos & 0xF))
+				? pos -= pos & 0xF
+				: pos -= CHUNK_SIZE + pos & 0xF;
+		return (pos);
+	}
 	(pos >= 0 || !(pos % CHUNK_SIZE))
 			? pos -= pos % CHUNK_SIZE
 			: pos -= CHUNK_SIZE + pos % CHUNK_SIZE;
@@ -133,7 +139,9 @@ int blockAtlasY( int block ) // y coord in blockAtlas in pxl
 }
 
 /* * we simulate that flowers are air block in order to display adjacent blocks properly
-   * also use this for all 'see-through' blocks like leaves, water..*/
+   * also use this for all 'see-through' blocks like leaves, water..
+   * if air_leaves, leaves are considered as air
+   * if air_water, water is NOT considered as air (I know this is dumb)*/
 int air_flower( int value, bool air_leaves, bool air_water )
 {
 	if (air_water && value >= blocks::WATER) {
