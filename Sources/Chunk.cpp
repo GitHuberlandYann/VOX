@@ -569,7 +569,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
 		return ;
 	}
-	if (air_flower(value, true, true)) {
+	if (air_flower(value, false, true)) {
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 			if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
@@ -581,7 +581,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 					_mtx.lock();
 					_displayed_faces++;
 					_mtx.unlock();
-				} else if (air_flower(adj, true, false)) {
+				} else if (air_flower(adj, false, false)) {
 					_mtx.lock();
 					_displayed_faces++;
 					_mtx.unlock();
@@ -752,16 +752,16 @@ void Chunk::fill_vertex_array( void )
 						}
 					} else {
 						int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (100 << 16);
-							glm::ivec4 v0 = {spec, p0};
-							glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
-							glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-							glm::ivec4 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
-							face_vertices(_vertices, v0, v1, v2, v3, index);
-							v0 = {spec, p1};
-							v1 = {spec + 1 + (1 << 9) + (1 << 8), p4};
-							v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p3};
-							v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
-							face_vertices(_vertices, v0, v1, v2, v3, index);
+						glm::ivec4 v0 = {spec, p0};
+						glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
+						glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
+						glm::ivec4 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
+						face_vertices(_vertices, v0, v1, v2, v3, index);
+						v0 = {spec, p1};
+						v1 = {spec + 1 + (1 << 9) + (1 << 8), p4};
+						v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p3};
+						v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
+						face_vertices(_vertices, v0, v1, v2, v3, index);
 					}
 				}
 			}
@@ -1142,8 +1142,29 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	int value = _blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * WORLD_HEIGHT + chunk_pos.z];
 	if (value <= 0) {
 		return ;
+	} else if (!air_flower(value, false, true)) { // cross image
+		int count = 2, cnt = 0;
+		for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
+			_mtx.lock();
+			if (crossFace(_vertices, p0, p1, p2, p3, p4, p5, index)) {
+				_vaoVIP = true;
+				_vertices[index] = (_vertices[index] & 0xFF0FFF) + (frame << 12);
+				_vertices[index + 4] = (_vertices[index + 4] & 0xFF0FFF) + (frame << 12);
+				_vertices[index + 8] = (_vertices[index + 8] & 0xFF0FFF) + ((frame + 1) << 12);
+				_vertices[index + 12] = (_vertices[index + 12] & 0xFF0FFF) + (frame << 12);
+				_vertices[index + 16] = (_vertices[index + 16] & 0xFF0FFF) + ((frame + 1) << 12);
+				_vertices[index + 20] = (_vertices[index + 20] & 0xFF0FFF) + ((frame + 1) << 12);
+				_mtx.unlock();
+				_vaoReset = false;
+				if (++cnt >= count) {
+					return ;
+				}
+				_mtx.lock();
+			}
+			_mtx.unlock();
+		}
+		return ;
 	}
-	// TODO add if !air_flower to handle cross image
 	int count = face_count(value, chunk_pos.x + 1, chunk_pos.y + 1, chunk_pos.z, value != blocks::OAK_LEAVES);
 	int cnt = 0;
 	for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {

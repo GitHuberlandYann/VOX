@@ -436,6 +436,10 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	GLint key_render_dist = (glfwGetKey(_window, GLFW_KEY_EQUAL) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_MINUS) == GLFW_PRESS);
 	if (key_render_dist && ++_key_rdist == 1 && _render_distance + key_render_dist > 0) {
 		_render_distance += key_render_dist;
+		glUniform1f(_uniFog, (1 + _render_distance) * CHUNK_SIZE);
+		glUseProgram(_skyShaderProgram);
+		glUniform1f(_skyUniFog, (1 + _render_distance) * CHUNK_SIZE);
+		glUseProgram(_shaderProgram);
 		if (_thread.joinable()) {
 			_thread.join();
 		}

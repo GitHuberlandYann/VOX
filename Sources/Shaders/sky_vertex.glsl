@@ -10,6 +10,7 @@ uniform int animFrame;
 out vec3 Color;
 out vec2 TexCoord;
 flat out int Atlas;
+out float zDist;
 
 void main()
 {
@@ -24,4 +25,5 @@ void main()
 		int shiftY2 = position.w >> 13;
 		TexCoord = vec2((shiftX & 1) + (shiftX2 & 1) * 0.5f, (animFrame + (shiftY & 1) + (shiftY2 & 1) * 0.5f) / 32.0f);
 	}
+	zDist = gl_Position.z;
 }

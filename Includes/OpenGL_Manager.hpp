@@ -42,7 +42,7 @@ class OpenGL_Manager
 	private:
 		GLFWwindow* _window;
 		GLuint _shaderProgram, _skyShaderProgram;
-		GLint _uniView, _uniProj, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim;
+		GLint _uniFog, _uniView, _uniProj, _skyUniFog, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim;
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
 		glm::vec3 _background_color;

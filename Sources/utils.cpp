@@ -288,6 +288,25 @@ void face_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2
 	vindex += 12;
 }
 
+// looks though vertices to check if elements starting at pos index represent a face of the flower v012345678
+bool crossFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, glm::ivec3 v4, glm::ivec3 v5, size_t index )
+{
+	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
+	// 4062, 1537, 0123, 5476, 4501, 2367
+	if (vertices[index + 3] == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
+		&& vertices[index + 4 + 3] == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
+		&& vertices[index + 8 + 3] == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
+		return (true);
+	}
+	if (vertices[index + 3] == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
+		&& vertices[index + 4 + 3] == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
+		&& vertices[index + 8 + 3] == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
+		return (true);
+	}
+
+	return (false);
+}
+
 // looks though vertices to check if elements starting at pos index represent a face of the cube v012345678
 bool blockFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, glm::ivec3 v4, glm::ivec3 v5, glm::ivec3 v6, glm::ivec3 v7, size_t index )
 {

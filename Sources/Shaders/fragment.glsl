@@ -16,6 +16,8 @@ in float zDist;
 // flat in int Tex_index;
 // flat in int Invert;
 
+uniform float fogDist;
+
 out vec4 outColor;
 
 uniform sampler2D blockAtlas;
@@ -34,7 +36,7 @@ void main()
 			outColor *= break_;
 		}
 	}
-	float smoothies = 1.0 - smoothstep(120, 160, zDist);
+	float smoothies = 1.0 - smoothstep(fogDist / 2, fogDist, zDist);
 	outColor.a *= smoothies;
 	outColor *= vec4(FaceShadow, FaceShadow, FaceShadow, 1.0);
 	

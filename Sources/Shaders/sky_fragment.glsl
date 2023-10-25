@@ -3,6 +3,9 @@
 in vec3 Color;
 in vec2 TexCoord;
 flat in int Atlas;
+in float zDist;
+
+uniform float fogDist;
 
 out vec4 outColor;
 
@@ -24,4 +27,5 @@ void main()
 		return ;
 	}
 	outColor *= vec4(tex.rgb, 1.0);
+	outColor.a *= 1.0 - smoothstep(fogDist / 2, fogDist, zDist);
 }
