@@ -1,6 +1,12 @@
 #ifndef FURNACEINSTANCE_HPP
 # define FURNACEINSTANCE_HPP
 
+enum furnace_state {
+	NOCHANGE, // same state as previous frame
+	ON,	// turned on this frame
+	OFF // turned off this frame
+};
+
 class FurnaceInstance
 {
 	private:
@@ -26,7 +32,7 @@ class FurnaceInstance
 		void removeFuel( void );
 		glm::ivec2 pickProduction( void );
 		glm::ivec2 *pickCompoFuel( bool fuel );
-		void updateTimes( float currentTime );
+		int updateTimes( float currentTime );
 
 		std::string getInfoString( void );
 

@@ -470,11 +470,11 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	// this will be commented at some point
 	GLint key_cam_yaw = (glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS);
 	if (key_cam_yaw) {
-		_camera->processYaw(key_cam_yaw);
+		_camera->processYaw((_game_mode == CREATIVE) ? key_cam_yaw : key_cam_yaw * 5);
 	}
 	GLint key_cam_pitch = (glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS);
 	if (key_cam_pitch) {
-		_camera->processPitch(key_cam_pitch);
+		_camera->processPitch((_game_mode == CREATIVE) ? key_cam_pitch : key_cam_pitch * 5);
 	}
 
 	if (!key_cam_v && !key_cam_h) {

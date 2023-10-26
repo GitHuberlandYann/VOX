@@ -28,10 +28,10 @@ Project Requirements:
 TODOS:
 	- change physics in water
 	- hitbox change + no fall on sneak
-	- overall lightning
     - skybox
 	- particles ?
     - items on ground after break
+	- time 20 min = 1 day
 	- time pause on menu
 	- no time pause on inventory/furnace
 	- chests
@@ -44,6 +44,9 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+	- overall lighting (corner shade done, sky light + decrease 1 per block = dark in caves)
+	- fluid at border
+	- torches
     - main menu
         - play
             - random seed / custom seed

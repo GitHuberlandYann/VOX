@@ -15,11 +15,11 @@ enum cont {
 	CONT_FAR_INLAND
 };
 
-enum face_dir {
-	MINUSX,
-	PLUSX,
+enum face_dir { // if change this, then change cam->getOrientation
 	MINUSY,
 	PLUSY,
+	MINUSX,
+	PLUSX,
 	MINUSZ,
 	PLUSZ
 };
@@ -78,7 +78,7 @@ class Chunk
 
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		GLint face_count( int type, int row, int col, int level, bool isNotLeaves );
-		GLint get_empty_faces( int type, int row, int col, int level, bool isNotLeaves );
+		// GLint get_empty_faces( int type, int row, int col, int level, bool isNotLeaves );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves );
 		int exposed_water_faces( int row, int col, int level );
 		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );

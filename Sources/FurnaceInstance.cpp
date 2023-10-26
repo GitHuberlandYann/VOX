@@ -97,7 +97,7 @@ glm::ivec2 *FurnaceInstance::pickCompoFuel( bool fuel )
 	return (&_composant);
 }
 
-void FurnaceInstance::updateTimes( float currentTime )
+int FurnaceInstance::updateTimes( float currentTime )
 {
 	_current_time = currentTime; // used for display
 	float deltaTime;
@@ -138,6 +138,7 @@ void FurnaceInstance::updateTimes( float currentTime )
 				}
 			} else {
 				_fuel_time = 0;
+				return (furnace_state::OFF);
 			}
 		}
 	} else if (s_blocks[_fuel.x].isFuel && s_blocks[_composant.x].isComposant
@@ -148,8 +149,10 @@ void FurnaceInstance::updateTimes( float currentTime )
 			if (--_fuel.y == 0) {
 				_fuel.x = blocks::AIR;
 			}
+			return (furnace_state::ON);
 		}
 	}
+	return (furnace_state::NOCHANGE);
 }
 
 // coal 80 seconds

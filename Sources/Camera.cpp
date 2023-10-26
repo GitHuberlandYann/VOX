@@ -64,7 +64,7 @@ bool Camera::chunkInFront( glm::ivec2 current_chunk, int posX, int posY )
 }
 
 // return orientation of block we just placed 0 = -y, 1 = +y, 2 = -x, 3 = +x (it is opposite of cam dir)
-int Camera::getOrientation( void )
+int Camera::getOrientation( void ) // if change this, then change face_dir in Chunk.hpp
 {
 	if (glm::abs(_front.x) > glm::abs(_front.y)) {
 		return (2 + (_front.x < 0));

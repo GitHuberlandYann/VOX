@@ -81,33 +81,33 @@ GLint Chunk::face_count( int type, int row, int col, int level, bool isNotLeaves
 	return (res);
 }
 
-GLint Chunk::get_empty_faces( int type, int row, int col, int level, bool isNotLeaves )
-{
-	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, false) * (1 << 2)
-				+ !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves, false) * (1 << 3)
-				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true, false) * (1 << 0)
-				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false) * (1 << 1);
-	switch (level) {
-		case 0:
-			res += (1 << 5);
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false) * (1 << 4);
-			break ;
-		case 255:
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false) * (1 << 5);
-			// res += (1 << 4); // don't wan't to hide face from above, because we can be at pos 257 and looking at block 255
-			break ;
-		default:
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false) * (1 << 5);
-			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false) * (1 << 4);
-	}
-	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented block
-		std::map<int, int>::iterator search = _orientations.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
-		if (search != _orientations.end()) {
-			res += (1 << (6 + search->second));
-		}
-	}
-	return (res);
-}
+// GLint Chunk::get_empty_faces( int type, int row, int col, int level, bool isNotLeaves )
+// {
+// 	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, false) * (1 << 2)
+// 				+ !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves, false) * (1 << 3)
+// 				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true, false) * (1 << 0)
+// 				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false) * (1 << 1);
+// 	switch (level) {
+// 		case 0:
+// 			res += (1 << 5);
+// 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false) * (1 << 4);
+// 			break ;
+// 		case 255:
+// 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false) * (1 << 5);
+// 			// res += (1 << 4); // don't wan't to hide face from above, because we can be at pos 257 and looking at block 255
+// 			break ;
+// 		default:
+// 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false) * (1 << 5);
+// 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false) * (1 << 4);
+// 	}
+// 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented block
+// 		std::map<int, int>::iterator search = _orientations.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
+// 		if (search != _orientations.end()) {
+// 			res += (1 << (6 + search->second));
+// 		}
+// 	}
+// 	return (res);
+// }
 
 // takes a block and check if player can see it at some point
 bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves )
@@ -633,7 +633,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	}
 	mtx_inventory.unlock();
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
-		_orientations[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = _camera->getOrientation();
+		_orientations[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = _camera->getOrientation() + (furnace_state::OFF << 4);
 	}
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		pos.z = sand_fall_endz(pos);
@@ -687,7 +687,7 @@ int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets
 
 void Chunk::fill_vertex_array( void )
 {
-	int shadingAmplitude = 15;
+	int shadingAmplitude = 17;
 	size_t index = 0;
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
@@ -705,9 +705,17 @@ void Chunk::fill_vertex_array( void )
 					glm::ivec3 p7 = {_startX + row + 1, _startY + col + 1, level + 0};
 
 					if (block_type < blocks::POPPY) {
+						int orientation = -1, litFurnace = 0;
+						if (block_type >= blocks::CRAFTING_TABLE && block_type < blocks::BEDROCK) {
+							auto o = _orientations.find(((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level);
+							if (o != _orientations.end()) {
+								orientation = (o->second & 0xF);
+								litFurnace = ((o->second >> 4) & 0xF) == furnace_state::ON;
+							}
+						}
 						bool isNotLeaves = (block_type != blocks::OAK_LEAVES);
 						if (!air_flower(_blocks[((row + 1 - 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], true, false)) {
-							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12);
+							int spec = blockGridX(block_type, 2 * (orientation == face_dir::MINUSX) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
 							int shade = 84 - shadingAmplitude * computeShade(row + 1 - 1, col + 1, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 							glm::ivec4 v0 = {spec + (shade << 16), p4};
 							shade = 84 - shadingAmplitude * computeShade(row + 1 - 1, col + 1, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
@@ -719,7 +727,7 @@ void Chunk::fill_vertex_array( void )
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (!air_flower(_blocks[((row + 1 + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false)) {
-							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12);
+							int spec = blockGridX(block_type, 2 * (orientation == face_dir::PLUSX) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
 							int shade = 80 - shadingAmplitude * computeShade(row + 1 + 1, col + 1, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 							glm::ivec4 v0 = {spec + (shade << 16), p1};
 							shade = 80 - shadingAmplitude * computeShade(row + 1 + 1, col + 1, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
@@ -731,7 +739,7 @@ void Chunk::fill_vertex_array( void )
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1 - 1) * WORLD_HEIGHT + level], true, false)) {
-							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12);
+							int spec = blockGridX(block_type, 2 * (orientation == face_dir::MINUSY) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
 							int shade = 92 - shadingAmplitude * computeShade(row + 1, col + 1 - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
 							glm::ivec4 v0 = {spec + (shade << 16), p0};
 							shade = 92 - shadingAmplitude * computeShade(row + 1, col + 1 - 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
@@ -743,7 +751,7 @@ void Chunk::fill_vertex_array( void )
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1 + 1) * WORLD_HEIGHT + level], isNotLeaves, false)) {
-							int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12);
+							int spec = blockGridX(block_type, 2 * (orientation == face_dir::PLUSY) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
 							int shade = 88 - shadingAmplitude * computeShade(row + 1, col + 1 + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
 							glm::ivec4 v0 = {spec + (shade << 16), p5};
 							shade = 88 - shadingAmplitude * computeShade(row + 1, col + 1 + 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
@@ -767,7 +775,7 @@ void Chunk::fill_vertex_array( void )
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level - 1], true, false)) {
-							int spec = blockGridX(block_type, 1) + (blockGridY(block_type) << 4) + (0 << 12);
+							int spec = blockGridX(block_type, 1 + (block_type == blocks::GRASS_BLOCK)) + (blockGridY(block_type) << 4) + (0 << 12);
 							int shade = 74 - shadingAmplitude * computeShade(row + 1, col + 1, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
 							glm::ivec4 v0 = {spec + (shade << 16), p2};
 							shade = 74 - shadingAmplitude * computeShade(row + 1, col + 1, level - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
@@ -1475,7 +1483,20 @@ void Chunk::drawArray( GLint & counter, GLint &face_counter )
 void Chunk::updateFurnaces( double currentTime )
 {
 	for (auto& fur: _furnaces) {
-		fur.second.updateTimes(currentTime);
+		int state = fur.second.updateTimes(currentTime);
+		if (state != furnace_state::NOCHANGE) {
+			// std::cout << "FURNACE STATE CHANGE TO " << state << std::endl;
+			auto o = _orientations.find(fur.first);
+			if (o != _orientations.end()) {
+				// std::cout << "ORIENTATION FOUND" << std::endl;
+				o->second = (o->second & 0xF) + (state << 4);
+				fill_vertex_array();
+				_vaoReset = false;
+				_mtx.lock();
+				_vaoVIP = true;
+				_mtx.unlock();
+			}
+		}
 	}
 }
 
