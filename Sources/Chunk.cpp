@@ -60,7 +60,7 @@ void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int & blob_
 GLint Chunk::face_count( int type, int row, int col, int level, bool isNotLeaves )
 {
 	if (type >= blocks::POPPY) {
-		return (2);
+		return (2 << (type == blocks::TORCH));
 	}
 	GLint res = !air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, false)
 				+ !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves, false)
@@ -409,22 +409,11 @@ void Chunk::generate_blocks( void )
 	}
 
 	// loading backup, MUST be done after all randomness to not alter anything
-	if (_added.size() || _removed.size()) {
-		for (int row = 0; row < CHUNK_SIZE + 2; row++) {
-			for (int col = 0; col < CHUNK_SIZE + 2; col++) {
-				for (int level = 0; level < WORLD_HEIGHT; level++) {
-					std::map<int, int>::iterator search = _added.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
-					if (search != _added.end()) {
-						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = search->second;
-					} else {
-						std::set<int>::iterator rmsearch = _removed.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
-						if (rmsearch != _removed.end()) {
-							_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR;
-						}
-					}
-				}
-			}
-		}
+	for (auto r: _removed) {
+		_blocks[r] = blocks::AIR;
+	}
+	for (auto a: _added) {
+		_blocks[a.first] = a.second;
 	}
 
 	// counting displayed blocks and hiding unseen blocks
@@ -495,14 +484,13 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 	if (type == blocks::AIR) {
 		return ;
 	}
-	int arrX[2] = {0, CHUNK_SIZE + 1};
-	int arrY[2] = {0, CHUNK_SIZE + 1};
+	const int arr[2] = {0, CHUNK_SIZE + 1};
 	int indexX = (!pos.x - (pos.x == (CHUNK_SIZE - 1)));
 	int indexY = (!pos.y - (pos.y == (CHUNK_SIZE - 1)));
 	if (indexX) {
 		for (auto& c : *_vis_chunks) {
 			if (c->isInChunk(_startX - indexX * CHUNK_SIZE, _startY)) {
-				c->update_border(arrX[indexX > 0], pos.y + 1, pos.z, type, adding);
+				c->update_border(arr[indexX > 0], pos.y + 1, pos.z, type, adding);
 				break ;
 			}
 		}
@@ -510,7 +498,7 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 	if (indexY) {
 		for (auto& c : *_vis_chunks) {
 			if (c->isInChunk(_startX, _startY - indexY * CHUNK_SIZE)) {
-				c->update_border(pos.x + 1, arrY[indexY > 0], pos.z, type, adding);
+				c->update_border(pos.x + 1, arr[indexY > 0], pos.z, type, adding);
 				break ;
 			}
 		}
@@ -518,7 +506,7 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 	if (indexX && indexY) { // cornerChunk
 		for (auto& c : *_vis_chunks) {
 			if (c->isInChunk(_startX - indexX * CHUNK_SIZE, _startY - indexY * CHUNK_SIZE)) {
-				c->update_border(arrX[indexX > 0], arrY[indexY > 0], pos.z, type, adding);
+				c->update_border(arr[indexX > 0], arr[indexY > 0], pos.z, type, adding);
 				break ;
 			}
 		}
@@ -621,8 +609,10 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 			return ;
 		}
 		int block_below = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z - 1];
-		if (block_below != blocks::GRASS_BLOCK && block_below != blocks::DIRT && block_below != blocks::SAND) {
+		if (type != blocks::TORCH && block_below != blocks::GRASS_BLOCK && block_below != blocks::DIRT && block_below != blocks::SAND) {
 			return ; // can't place flower on something else than grass/dirt block
+		} else if (!(block_below > blocks::AIR && block_below < blocks::POPPY)) {
+			return ;
 		}
 	} else if (previous >= blocks::WATER) { // replace water block with something else
 		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
@@ -786,6 +776,33 @@ void Chunk::fill_vertex_array( void )
 							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
+					} else if (block_type == blocks::TORCH) {
+						// for now torches only in default middle-of-block configuration
+						int baseSpec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4);
+						int spec = baseSpec + (84 << 16) + (7 << 24);
+						glm::ivec4 v0 = {spec, p4};
+						glm::ivec4 v1 = {spec + 1 + (1 << 8), p0};
+						glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p6};
+						glm::ivec4 v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
+						face_vertices(_vertices, v0, v1, v2, v3, index); // -x
+						spec = baseSpec + (80 << 16) + (9 << 24);
+						v0 = {spec, p0};
+						v1 = {spec + 1 + (1 << 8), p4};
+						v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
+						v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
+						face_vertices(_vertices, v0, v1, v2, v3, index); // +x
+						spec = baseSpec + (92 << 16) + (7 << 28);
+						v0 = {spec, p0};
+						v1 = {spec + 1 + (1 << 8), p1};
+						v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
+						v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+						face_vertices(_vertices, v0, v1, v2, v3, index); // -y
+						spec = baseSpec + (88 << 16) + (9 << 28);
+						v0 = {spec, p1};
+						v1 = {spec + 1 + (1 << 8), p0};
+						v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p3};
+						v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
+						face_vertices(_vertices, v0, v1, v2, v3, index); // +y
 					} else { // flowers
 						int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (100 << 16);
 						glm::ivec4 v0 = {spec, p0};
@@ -1490,7 +1507,7 @@ void Chunk::updateFurnaces( double currentTime )
 			if (o != _orientations.end()) {
 				// std::cout << "ORIENTATION FOUND" << std::endl;
 				o->second = (o->second & 0xF) + (state << 4);
-				fill_vertex_array();
+				fill_vertex_array(); // TODO ONLY UPDATE ONE FACE
 				_vaoReset = false;
 				_mtx.lock();
 				_vaoVIP = true;

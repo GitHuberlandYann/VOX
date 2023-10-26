@@ -1,8 +1,8 @@
 #ifndef INVENTORY_HPP
 # define INVENTORY_HPP
 
-# define IRECEIPT_SIZE 20
-# define RECEIPT_SIZE 67
+# define IRECEIPT_SIZE 24
+# define RECEIPT_SIZE 79
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
@@ -23,6 +23,10 @@ const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
 	{blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::STICK, 4},
 	{blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::STICK, 4},
+	{blocks::COAL, blocks::AIR, blocks::STICK, blocks::AIR, blocks::TORCH, 4},
+	{blocks::AIR, blocks::COAL, blocks::AIR, blocks::STICK, blocks::TORCH, 4},
+	{blocks::CHARCOAL, blocks::AIR, blocks::STICK, blocks::AIR, blocks::TORCH, 4},
+	{blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::STICK, blocks::TORCH, 4},
 	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::CRAFTING_TABLE, 1},
 	{blocks::STONE, blocks::STONE, blocks::STONE, blocks::STONE, blocks::STONE_BRICKS, 4},
 };
@@ -44,6 +48,20 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::AIR, blocks::STICK, 4},
 	{blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::STICK, 4},
 	{blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::STICK, 4},
+
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::TORCH, 4},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::TORCH, 4},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
+	{blocks::AIR, blocks::AIR, blocks::COAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
+	{blocks::AIR, blocks::COAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
+	{blocks::COAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
+
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::TORCH, 4},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::TORCH, 4},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
+	{blocks::AIR, blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
+	{blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
+	{blocks::CHARCOAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
 
 	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::CRAFTING_TABLE, 1},
 	{blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::AIR, blocks::CRAFTING_TABLE, 1},

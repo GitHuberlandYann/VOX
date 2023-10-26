@@ -34,6 +34,7 @@ enum blocks {
 	GRASS,
 	SUGAR_CANE,
 	DEAD_BUSH,
+	TORCH,
 	WATER = 72,
 	WATER1,
 	WATER2,
@@ -545,6 +546,16 @@ struct DeadBush : Block {
 		}
 };
 
+struct Torch : Block {
+	public:
+		Torch() {
+			name = "TORCH";
+			mined = blocks::TORCH;
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
 struct Water : Block {
 	public:
 		Water() {
@@ -776,7 +787,7 @@ const Block s_blocks[112] = {
 	Air(), GrassBlock(), OakLog(), Cactus(), TBD(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), StoneBrick(), CrackedStoneBrick(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), CoalBlock(), IronBlock(), DiamondBlock(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), Torch(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), Water(), Water1(), Water2(), Water3(), Water4(), Water5(), Water6(), Water7(),
 	Stick(), WoodenShovel(), StoneShovel(), IronShovel(), DiamondShovel(), WoodenAxe(), StoneAxe(), IronAxe(), DiamondAxe(), WoodenPickaxe(), StonePickaxe(), IronPickaxe(), DiamondPickaxe(), TBD(), TBD(), TBD(),
 	Coal(), Charcoal(), IronIngot(), Diamond(), Bucket(), WaterBucket(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),

@@ -178,7 +178,7 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 			// std::cout << "value before: " << s_blocks[value].name << std::endl;
 			_displayed_faces -= 2;
 			delete [] _vertices;
-			_vertices = new GLint[_displayed_faces * 24];
+			_vertices = new GLint[_displayed_faces * 24]; // TODO set flag to true and update vert array once on this frame instead of once per destroyed flower
 			fill_vertex_array();
 			_vaoReset = false;
 			_mtx.lock();
@@ -207,32 +207,29 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 
 void Chunk::handle_border_flow( int posX, int posY, int posZ, int level, bool adding )
 {
-	if (!posX) {
+	const int arr[2] = {1, CHUNK_SIZE};
+	int indexX = (!posX - (posX == (CHUNK_SIZE + 1)));
+	int indexY = (!posY - (posY == (CHUNK_SIZE + 1)));
+	if (indexX) {
 		for (auto& c : *_vis_chunks) {
-			if (c->isInChunk(_startX - CHUNK_SIZE, _startY)) {
-				c->update_border_flow(CHUNK_SIZE, posY, posZ, level, adding);
-				break ;
-			}
-		}
-	} else if (posX == CHUNK_SIZE + 1) {
-		for (auto& c : *_vis_chunks) {
-			if (c->isInChunk(_startX + CHUNK_SIZE, _startY)) {
-				c->update_border_flow(1, posY, posZ, level, adding);
+			if (c->isInChunk(_startX - indexX * CHUNK_SIZE, _startY)) {
+				c->update_border_flow(arr[indexX > 0], posY, posZ, level, adding);
 				break ;
 			}
 		}
 	}
-	if (!posY) {
+	if (indexY) {
 		for (auto& c : *_vis_chunks) {
-			if (c->isInChunk(_startX, _startY - CHUNK_SIZE)) {
-				c->update_border_flow(posX, CHUNK_SIZE, posZ, level, adding);
+			if (c->isInChunk(_startX, _startY - indexY * CHUNK_SIZE)) {
+				c->update_border_flow(posX, arr[indexY > 0], posZ, level, adding);
 				break ;
 			}
 		}
-	} else if (posY == CHUNK_SIZE + 1) {
+	}
+	if (indexX && indexY) { // cornerChunk
 		for (auto& c : *_vis_chunks) {
-			if (c->isInChunk(_startX, _startY + CHUNK_SIZE)) {
-				c->update_border_flow(posX, 1, posZ, level, adding);
+			if (c->isInChunk(_startX - indexX * CHUNK_SIZE, _startY - indexY * CHUNK_SIZE)) {
+				c->update_border_flow(arr[indexX > 0], arr[indexY > 0], posZ, level, adding);
 				break ;
 			}
 		}
