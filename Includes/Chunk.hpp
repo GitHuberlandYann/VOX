@@ -66,7 +66,7 @@ class Chunk
         GLint _startX, _startY;
 		GLint _continent;
 		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
-		// GLchar *_sky_light, *_block_light;
+		GLchar *_sky_light, *_block_light;
 		GLboolean *_sky, _hasWater;
 		size_t _displayed_faces, _water_count, _sky_count;
 		std::vector<Chunk *> *_vis_chunks;
@@ -93,12 +93,16 @@ class Chunk
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
 		int surfaceLevel( int row, int col, siv::PerlinNoise perlin );
 		void generate_blocks( void );
+		void light_spread( GLchar *arr, int posX, int posY, int level );
+		void generate_sky_light( void );
+		void generate_block_light( void );
 		void generate_sky( void );
 		int sand_fall_endz( glm::ivec3 pos );
 		void handle_border_flow( int posX, int posY, int posZ, int level, bool adding );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
 		void add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous );
+		int computeLight( int row, int col, int level );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
         void fill_vertex_array( void );
         void setup_array_buffer( void );
@@ -111,6 +115,8 @@ class Chunk
 
 		GLint getStartX( void );
 		GLint getStartY( void );
+		GLint getSkyLightLevel( glm::ivec3 location );
+		GLint getBlockLightLevel( glm::ivec3 location );
 		void setBackup( std::map<std::pair<int, int>, s_backup> *backups );
 		void restoreBackup( s_backup backup);
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );

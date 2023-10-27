@@ -42,6 +42,7 @@ class Camera
 		float _fall_speed;
 		bool _isRunning, _healthUpdate, _waterHead, _waterFeet;
 		std::mutex _mtx;
+		Chunk *_current_chunk_ptr;
 
     	void updateCameraVectors( void );
 	
@@ -62,6 +63,7 @@ class Camera
 		void setPosZ( float value );
 		void setWaterStatus( bool head, bool underwater );
 		int getWaterStatus( void );
+		void setCurrentChunkPtr( Chunk *ptr );
 		void setRun( bool value );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );

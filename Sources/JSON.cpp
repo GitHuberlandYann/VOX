@@ -21,6 +21,7 @@ void OpenGL_Manager::saveWorld( void )
 	}
 	_chunks.clear();
 	mtx.unlock();
+	_camera->setCurrentChunkPtr(NULL);
 
 	// then store everything
 	std::string json = "{\n\t\"seed\": " + std::to_string(perlin_seed)

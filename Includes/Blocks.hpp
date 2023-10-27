@@ -70,6 +70,7 @@ struct Block {
 		std::string name = "DEFAULT";
 		int mined = blocks::AIR;
 		bool stackable = true;
+		char light_level = 0;
 		bool isFuel = false;
 		float fuel_time = 0;
 		bool isComposant = false;
@@ -551,6 +552,7 @@ struct Torch : Block {
 		Torch() {
 			name = "TORCH";
 			mined = blocks::TORCH;
+			light_level = 14;
 			byHand = true;
 			break_time_hand = 0.05f;
 		}

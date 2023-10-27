@@ -6,7 +6,8 @@ Chunk::Chunk( Camera *camera, int posX, int posY, std::vector<Chunk *> *perimete
 	_skyVaoSet(false), _skyVaoVIP(false),
 	_vaoReset(false), _waterVaoReset(false), _skyVaoReset(false),
 	_startX(posX), _startY(posY),
-	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _sky(NULL), _hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
+	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _sky_light(NULL), _block_light(NULL),
+	_sky(NULL), _hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
 	_vis_chunks(perimeter_chunks), _camera(camera)
 {
 }
@@ -23,14 +24,16 @@ Chunk::~Chunk( void )
 	glDeleteVertexArrays(1, &_skyVao);
 
 	delete [] _blocks;
+	delete [] _sky_light;
+	delete [] _block_light;
 	delete [] _vertices;
 	delete [] _water_vert;
 	delete [] _sky;
 	delete [] _sky_vert;
 
-	_orientations.clear();
-	_added.clear();
-	_removed.clear();
+	// _orientations.clear();
+	// _added.clear();
+	// _removed.clear();
 	// std::cout << "chunk deleted " << _startX << ", " << _startY << std::endl;
 }
 
@@ -80,34 +83,6 @@ GLint Chunk::face_count( int type, int row, int col, int level, bool isNotLeaves
 	}
 	return (res);
 }
-
-// GLint Chunk::get_empty_faces( int type, int row, int col, int level, bool isNotLeaves )
-// {
-// 	GLint res = !!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], true, false) * (1 << 2)
-// 				+ !!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], isNotLeaves, false) * (1 << 3)
-// 				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], true, false) * (1 << 0)
-// 				+ !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false) * (1 << 1);
-// 	switch (level) {
-// 		case 0:
-// 			res += (1 << 5);
-// 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false) * (1 << 4);
-// 			break ;
-// 		case 255:
-// 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false) * (1 << 5);
-// 			// res += (1 << 4); // don't wan't to hide face from above, because we can be at pos 257 and looking at block 255
-// 			break ;
-// 		default:
-// 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false) * (1 << 5);
-// 			res += !!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1], isNotLeaves, false) * (1 << 4);
-// 	}
-// 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented block
-// 		std::map<int, int>::iterator search = _orientations.find((row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level);
-// 		if (search != _orientations.end()) {
-// 			res += (1 << (6 + search->second));
-// 		}
-// 	}
-// 	return (res);
-// }
 
 // takes a block and check if player can see it at some point
 bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves )
@@ -517,14 +492,15 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
-	int value = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z];
+	int offset = ((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z;
+	int value = _blocks[offset];
 	if (value >= blocks::CRAFTING_TABLE && value < blocks::BEDROCK) { // oriented blocks
-		_orientations.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
+		_orientations.erase(offset);
 	}
-	_added.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
-	_removed.insert(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
+	_added.erase(offset);
+	_removed.insert(offset);
 	if (value == blocks::FURNACE) {
-		_furnaces.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z); // TODO drop furnace's items/ put them in inventory
+		_furnaces.erase(offset); // TODO drop furnace's items/ put them in inventory
 	}
 	mtx_inventory.lock();
 	if (inventory) {
@@ -532,24 +508,30 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	}
 	mtx_inventory.unlock();
 	int endZ = -1;
-	int block_above = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z + 1];
+	int block_above = _blocks[offset + 1];
 	if (pos.z < 255 && isSandOrGravel(block_above)) { // sand falls if block underneath deleted
-		_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
+		_blocks[offset] = blocks::AIR;
 		endZ = sand_fall_endz(pos);
 		int above_value = (block_above == blocks::SAND || block_above + blocks::NOTVISIBLE == blocks::SAND) ? blocks::SAND : blocks::GRAVEL;
 		if (endZ == pos.z) {
-			_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = above_value - (value < 0) * blocks::NOTVISIBLE;
+			_blocks[offset] = above_value - (value < 0) * blocks::NOTVISIBLE;
 			return (remove_block(NULL, glm::ivec3(pos.x, pos.y, pos.z + 1)));
 		} else {
 			add_block(NULL, glm::ivec3(pos.x, pos.y, endZ), above_value, blocks::AIR);
 		}
 	}
 	handle_border_block(pos, air_flower(value, true, true), false); // if block at border of chunk gets deleted, we update neighbours // TODO might use false, true to update leaves too ?
-	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = blocks::AIR;
+	_blocks[offset] = blocks::AIR;
 	if (value > blocks::AIR && value < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
 		_mtx.lock();
 		_displayed_faces -= face_count(value, pos.x + 1, pos.y + 1, pos.z, value != blocks::OAK_LEAVES);
 		_mtx.unlock();
+		if (value == blocks::TORCH) {
+			std::cout << "rm light" << std::endl;
+			_block_light[offset] = 0;
+			light_spread(_block_light, pos.x + 1, pos.y + 1, pos.z);
+			std::cout << "over" << std::endl;
+		}
 	} else if (value == blocks::WATER) { // use bucket on water source
 		// std::cout << "bucket on water" << std::endl;
 		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
@@ -600,6 +582,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
+	int offset = ((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z;
 	if (type == blocks::WATER) { // we place water
 		if (previous < blocks::WATER) {
 			_hasWater = true;
@@ -608,7 +591,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 		if (previous >= blocks::WATER) {
 			return ;
 		}
-		int block_below = _blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z - 1];
+		int block_below = _blocks[offset - 1];
 		if (type != blocks::TORCH && block_below != blocks::GRASS_BLOCK && block_below != blocks::DIRT && block_below != blocks::SAND) {
 			return ; // can't place flower on something else than grass/dirt block
 		} else if (!(block_below > blocks::AIR && block_below < blocks::POPPY)) {
@@ -623,22 +606,27 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	}
 	mtx_inventory.unlock();
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
-		_orientations[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = _camera->getOrientation() + (furnace_state::OFF << 4);
+		_orientations[offset] = _camera->getOrientation() + (furnace_state::OFF << 4);
 	}
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		pos.z = sand_fall_endz(pos);
 	}
 	handle_border_block(pos, air_flower(type, false, true), true); // if block at border of chunk gets added, we update neighbours
-	_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
-	_removed.erase(((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z);
-	_added[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = type;
+	_blocks[offset] = type;
+	_removed.erase(offset);
+	_added[offset] = type;
 	if (type == blocks::WATER) {
 		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
 		// std::cout << "adding water" << std::endl;
 		return ;
 	}
 	if (type == blocks::FURNACE) {
-		_furnaces[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + pos.z] = FurnaceInstance();
+		_furnaces[offset] = FurnaceInstance();
+	} else if (type == blocks::TORCH) {
+		std::cout << "add light" << std::endl;
+		_block_light[offset] = s_blocks[type].light_level + (1 << 4);
+		light_spread(_block_light, pos.x + 1, pos.y + 1, pos.z);
+		std::cout << "over" << std::endl;
 	}
 	_mtx.lock();
 	_displayed_faces += face_count(type, pos.x + 1, pos.y + 1, pos.z, type != blocks::OAK_LEAVES);
@@ -664,165 +652,6 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 		}
 	}
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
-}
-
-// https://minecraft.fandom.com/wiki/Light#AO_texture_pattern fct returns (side1 + side2 + corner)
-int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets )
-{
-	// (void)row;(void)col;(void)level;(void)offsets;return (0);
-	return (!!air_flower(_blocks[((row + offsets[0]) * (CHUNK_SIZE + 2) + col + offsets[1]) * WORLD_HEIGHT + level + offsets[2]], true, false)
-			+ !!air_flower(_blocks[((row + offsets[3]) * (CHUNK_SIZE + 2) + col + offsets[4]) * WORLD_HEIGHT + level + offsets[5]], true, false)
-			+ !!air_flower(_blocks[((row + offsets[6]) * (CHUNK_SIZE + 2) + col + offsets[7]) * WORLD_HEIGHT + level + offsets[8]], true, false));
-}
-
-void Chunk::fill_vertex_array( void )
-{
-	int shadingAmplitude = 17;
-	size_t index = 0;
-	for (int row = 0; row < CHUNK_SIZE; row++) {
-		for (int col = 0; col < CHUNK_SIZE; col++) {
-			for (int level = 0; level < WORLD_HEIGHT; level++) {
-				GLint block_type = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level];
-				if (block_type > blocks::AIR && block_type < blocks::WATER) {
-					glm::ivec3 p0 = {_startX + row + 0, _startY + col + 0, level + 1};
-					glm::ivec3 p1 = {_startX + row + 1, _startY + col + 0, level + 1};
-					glm::ivec3 p2 = {_startX + row + 0, _startY + col + 0, level + 0};
-					glm::ivec3 p3 = {_startX + row + 1, _startY + col + 0, level + 0};
-
-					glm::ivec3 p4 = {_startX + row + 0, _startY + col + 1, level + 1};
-					glm::ivec3 p5 = {_startX + row + 1, _startY + col + 1, level + 1};
-					glm::ivec3 p6 = {_startX + row + 0, _startY + col + 1, level + 0};
-					glm::ivec3 p7 = {_startX + row + 1, _startY + col + 1, level + 0};
-
-					if (block_type < blocks::POPPY) {
-						int orientation = -1, litFurnace = 0;
-						if (block_type >= blocks::CRAFTING_TABLE && block_type < blocks::BEDROCK) {
-							auto o = _orientations.find(((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level);
-							if (o != _orientations.end()) {
-								orientation = (o->second & 0xF);
-								litFurnace = ((o->second >> 4) & 0xF) == furnace_state::ON;
-							}
-						}
-						bool isNotLeaves = (block_type != blocks::OAK_LEAVES);
-						if (!air_flower(_blocks[((row + 1 - 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], true, false)) {
-							int spec = blockGridX(block_type, 2 * (orientation == face_dir::MINUSX) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
-							int shade = 84 - shadingAmplitude * computeShade(row + 1 - 1, col + 1, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
-							glm::ivec4 v0 = {spec + (shade << 16), p4};
-							shade = 84 - shadingAmplitude * computeShade(row + 1 - 1, col + 1, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p0};
-							shade = 84 - shadingAmplitude * computeShade(row + 1 - 1, col + 1, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p6};
-							shade = 84 - shadingAmplitude * computeShade(row + 1 - 1, col + 1, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
-							face_vertices(_vertices, v0, v1, v2, v3, index);
-						}
-						if (!air_flower(_blocks[((row + 1 + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false)) {
-							int spec = blockGridX(block_type, 2 * (orientation == face_dir::PLUSX) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
-							int shade = 80 - shadingAmplitude * computeShade(row + 1 + 1, col + 1, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-							glm::ivec4 v0 = {spec + (shade << 16), p1};
-							shade = 80 - shadingAmplitude * computeShade(row + 1 + 1, col + 1, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
-							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p5};
-							shade = 80 - shadingAmplitude * computeShade(row + 1 + 1, col + 1, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p3};
-							shade = 80 - shadingAmplitude * computeShade(row + 1 + 1, col + 1, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
-							face_vertices(_vertices, v0, v1, v2, v3, index);
-						}
-						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1 - 1) * WORLD_HEIGHT + level], true, false)) {
-							int spec = blockGridX(block_type, 2 * (orientation == face_dir::MINUSY) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
-							int shade = 92 - shadingAmplitude * computeShade(row + 1, col + 1 - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
-							glm::ivec4 v0 = {spec + (shade << 16), p0};
-							shade = 92 - shadingAmplitude * computeShade(row + 1, col + 1 - 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
-							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p1};
-							shade = 92 - shadingAmplitude * computeShade(row + 1, col + 1 - 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
-							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p2};
-							shade = 92 - shadingAmplitude * computeShade(row + 1, col + 1 - 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
-							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
-							face_vertices(_vertices, v0, v1, v2, v3, index);
-						}
-						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1 + 1) * WORLD_HEIGHT + level], isNotLeaves, false)) {
-							int spec = blockGridX(block_type, 2 * (orientation == face_dir::PLUSY) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
-							int shade = 88 - shadingAmplitude * computeShade(row + 1, col + 1 + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
-							glm::ivec4 v0 = {spec + (shade << 16), p5};
-							shade = 88 - shadingAmplitude * computeShade(row + 1, col + 1 + 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
-							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p4};
-							shade = 88 - shadingAmplitude * computeShade(row + 1, col + 1 + 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
-							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p7};
-							shade = 88 - shadingAmplitude * computeShade(row + 1, col + 1 + 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
-							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
-							face_vertices(_vertices, v0, v1, v2, v3, index);
-						}
-						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level + 1], isNotLeaves, false)) {
-							int spec = blockGridX(block_type, 1) + (blockGridY(block_type) << 4) + (0 << 12);
-							int shade = 100 - shadingAmplitude * computeShade(row + 1, col + 1, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
-							glm::ivec4 v0 = {spec + (shade << 16), p4};
-							shade = 100 - shadingAmplitude * computeShade(row + 1, col + 1, level + 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
-							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p5};
-							shade = 100 - shadingAmplitude * computeShade(row + 1, col + 1, level + 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
-							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p0};
-							shade = 100 - shadingAmplitude * computeShade(row + 1, col + 1, level + 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
-							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p1};
-							face_vertices(_vertices, v0, v1, v2, v3, index);
-						}
-						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level - 1], true, false)) {
-							int spec = blockGridX(block_type, 1 + (block_type == blocks::GRASS_BLOCK)) + (blockGridY(block_type) << 4) + (0 << 12);
-							int shade = 74 - shadingAmplitude * computeShade(row + 1, col + 1, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
-							glm::ivec4 v0 = {spec + (shade << 16), p2};
-							shade = 74 - shadingAmplitude * computeShade(row + 1, col + 1, level - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
-							glm::ivec4 v1 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 8), p3};
-							shade = 74 - shadingAmplitude * computeShade(row + 1, col + 1, level - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
-							glm::ivec4 v2 = {spec + (shade << 16) + (1 << 4) + (1 << 10) + (1 << 12), p6};
-							shade = 74 - shadingAmplitude * computeShade(row + 1, col + 1, level - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
-							glm::ivec4 v3 = {spec + (shade << 16) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
-							face_vertices(_vertices, v0, v1, v2, v3, index);
-						}
-					} else if (block_type == blocks::TORCH) {
-						// for now torches only in default middle-of-block configuration
-						int baseSpec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4);
-						int spec = baseSpec + (84 << 16) + (7 << 24);
-						glm::ivec4 v0 = {spec, p4};
-						glm::ivec4 v1 = {spec + 1 + (1 << 8), p0};
-						glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p6};
-						glm::ivec4 v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
-						face_vertices(_vertices, v0, v1, v2, v3, index); // -x
-						spec = baseSpec + (80 << 16) + (9 << 24);
-						v0 = {spec, p0};
-						v1 = {spec + 1 + (1 << 8), p4};
-						v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-						v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
-						face_vertices(_vertices, v0, v1, v2, v3, index); // +x
-						spec = baseSpec + (92 << 16) + (7 << 28);
-						v0 = {spec, p0};
-						v1 = {spec + 1 + (1 << 8), p1};
-						v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-						v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
-						face_vertices(_vertices, v0, v1, v2, v3, index); // -y
-						spec = baseSpec + (88 << 16) + (9 << 28);
-						v0 = {spec, p1};
-						v1 = {spec + 1 + (1 << 8), p0};
-						v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p3};
-						v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
-						face_vertices(_vertices, v0, v1, v2, v3, index); // +y
-					} else { // flowers
-						int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12) + (100 << 16);
-						glm::ivec4 v0 = {spec, p0};
-						glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
-						glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-						glm::ivec4 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
-						face_vertices(_vertices, v0, v1, v2, v3, index);
-						v0 = {spec, p1};
-						v1 = {spec + 1 + (1 << 9) + (1 << 8), p4};
-						v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p3};
-						v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
-						face_vertices(_vertices, v0, v1, v2, v3, index);
-					}
-				}
-			}
-		}
-	}
-	// if (index != _displayed_faces * 24) { // TODO FIND OUT WHY LEAVES BREAK THIS CONDITION
-	// 	std::cout << "index at end is " << index << " vs " << _displayed_faces << " | " << _displayed_faces * 4 * 6 << std::endl;
-	// }
 }
 
 void Chunk::setup_array_buffer( void )
@@ -968,6 +797,12 @@ void Chunk::generation( void )
 	_blocks = new GLint[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT];
 	generate_blocks();
 	// b.stamp("blocks");
+	_sky_light = new GLchar[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT];
+	generate_sky_light();
+	// b.stamp("sky_light");
+	_block_light = new GLchar[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT];
+	generate_block_light();
+	// b.stamp("block_light");
 	_vertices = new GLint[_displayed_faces * 4 * 6]; // specifications, X Y Z
 	fill_vertex_array();
 	// b.stamp("vertcices");

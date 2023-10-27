@@ -2,7 +2,7 @@
 
 Camera::Camera( glm::vec3 position )
 	: _fall_time(0), _breathTime(0), _fov(FOV), _fall_speed(0), _isRunning(false), _healthUpdate(false),
-	_waterHead(false), _waterFeet(false), _movement_speed(SPEED), _health_points(20),
+	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(SPEED), _health_points(20),
 	_inJump(false), _touchGround(false), _fall_immunity(true), _fall_distance(0)
 {
 	_position = position;
@@ -125,6 +125,11 @@ int Camera::getWaterStatus( void )
 		res += (percentage * 10 - glm::floor(percentage * 10) < 0.9f);
 	}
 	return (res);
+}
+
+void Camera::setCurrentChunkPtr( Chunk *ptr )
+{
+	_current_chunk_ptr = ptr;
 }
 
 void Camera::setRun( bool value )
@@ -300,11 +305,14 @@ std::string Camera::getCamString( bool game_mode )
 	std::string str =  ((game_mode == CREATIVE)
 		? ("\nPos\t\t> x: " + std::to_string(_position.x)
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
-				+ "\niPos\t> x:" + std::to_string(_current_block.x)
+				+ "\niPos\t> x:" + std::to_string(_current_block.x) // TODO might sometimes want to use current_block instea of _position when dealing with chunks
 				+ " y: " + std::to_string(_current_block.y) + " z: " + std::to_string(_current_block.z)
 				+ "\nDir\t\t> x: " + std::to_string(_front.x)
 				+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
 				+ "\nSpeed\t> " + ((_isRunning) ? std::to_string(_movement_speed * 2) : std::to_string(_movement_speed)))
+				+ ((_current_chunk_ptr) 
+					? "\nSky Light\t> " + std::to_string(_current_chunk_ptr->getSkyLightLevel(_current_block))
+						+ "\nBlock Light\t> " + std::to_string(_current_chunk_ptr->getBlockLightLevel(_current_block)) : "")
 		: ("\nPos\t\t> x: " + std::to_string(_position.x)
 			+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 			+ "\niPos\t> x:" + std::to_string(_current_block.x)
@@ -312,6 +320,9 @@ std::string Camera::getCamString( bool game_mode )
 			+ "\nDir\t\t> x: " + std::to_string(_front.x)
 			+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
 			+ "\nSpeed\t> " + ((_isRunning) ?  ((_touchGround) ? std::to_string(RUN_SPEED) : std::to_string(RUN_JUMP_SPEED) ) : std::to_string(WALK_SPEED))
+			+ ((_current_chunk_ptr) 
+				? "\nSky Light\t> " + std::to_string(_current_chunk_ptr->getSkyLightLevel(_current_block))
+					+ "\nBlock Light\t> " + std::to_string(_current_chunk_ptr->getBlockLightLevel(_current_block)) : "")
 			+ "\nFall\t> " + std::to_string(_fall_speed)
 			+ "\nFall Distance\t> " + std::to_string(_fall_distance)
 			+ "\nWater head\t> " + ((_waterHead) ? "TRUE" : "FALSE")

@@ -61,7 +61,6 @@ class OpenGL_Manager
 		UI *_ui;
 		Menu *_menu;
 
-		Chunk *get_current_chunk_ptr( void );
 		void resetInputsPtrs( void );
 
 		void update_visible_chunks( void );

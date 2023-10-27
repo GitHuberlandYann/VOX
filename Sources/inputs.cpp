@@ -3,11 +3,6 @@
 Chunk *current_chunk_ptr = NULL;
 Chunk *chunk_hit = NULL;
 
-Chunk *OpenGL_Manager::get_current_chunk_ptr( void )
-{
-	return (current_chunk_ptr);
-}
-
 void OpenGL_Manager::resetInputsPtrs( void )
 {
 	current_chunk_ptr = NULL;
@@ -46,6 +41,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 		}
 		if (first_loop) {
 			current_chunk_ptr = chunk;
+			_camera->setCurrentChunkPtr(chunk);
 			first_loop = false;
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
