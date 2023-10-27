@@ -1183,6 +1183,10 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
+	int value = _blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * WORLD_HEIGHT + chunk_pos.z];
+	if (value <= 0) {
+		return ;
+	}
 	glm::ivec3 p0 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 1};
 	glm::ivec3 p1 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + 1};
 	glm::ivec3 p2 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 0};
@@ -1192,11 +1196,30 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	glm::ivec3 p5 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + 1};
 	glm::ivec3 p6 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
 	glm::ivec3 p7 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
-	int value = _blocks[((chunk_pos.x + 1) * (CHUNK_SIZE + 2) + chunk_pos.y + 1) * WORLD_HEIGHT + chunk_pos.z];
-	if (value <= 0) {
+	int count = face_count(value, chunk_pos.x + 1, chunk_pos.y + 1, chunk_pos.z, value != blocks::OAK_LEAVES);
+	int cnt = 0;
+	if (value == blocks::TORCH) {
+		for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
+			_mtx.lock();
+			if (torchFace(_vertices, p0, p1, p2, p3, p4, p6, index)) { // TODO add top(/bottom ?) face too
+				_vaoVIP = true;
+				_vertices[index] = (_vertices[index] & 0xFFFF0FFF) + (frame << 12);
+				_vertices[index + 4] = (_vertices[index + 4] & 0xFFFF0FFF) + (frame << 12);
+				_vertices[index + 8] = (_vertices[index + 8] & 0xFFFF0FFF) + ((frame + 1) << 12);
+				_vertices[index + 12] = (_vertices[index + 12] & 0xFFFF0FFF) + (frame << 12);
+				_vertices[index + 16] = (_vertices[index + 16] & 0xFFFF0FFF) + ((frame + 1) << 12);
+				_vertices[index + 20] = (_vertices[index + 20] & 0xFFFF0FFF) + ((frame + 1) << 12);
+				_mtx.unlock();
+				_vaoReset = false;
+				if (++cnt >= count) {
+					return ;
+				}
+				_mtx.lock();
+			}
+			_mtx.unlock();
+		}
 		return ;
 	} else if (!air_flower(value, false, true)) { // cross image
-		int count = 2, cnt = 0;
 		for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 			_mtx.lock();
 			if (crossFace(_vertices, p0, p1, p2, p3, p4, p5, index)) {
@@ -1218,8 +1241,6 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 		}
 		return ;
 	}
-	int count = face_count(value, chunk_pos.x + 1, chunk_pos.y + 1, chunk_pos.z, value != blocks::OAK_LEAVES);
-	int cnt = 0;
 	for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 		_mtx.lock();
 		if (blockFace(_vertices, p0, p1, p2, p3, p4, p5, p6, p7, index)) {
