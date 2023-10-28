@@ -3,7 +3,7 @@
 Chunk::Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *chunks )
 	: _isVisible(true), _vaoSet(false), _vaoVIP(false),
 	_waterVaoSet(false), _waterVaoVIP(false),
-	_skyVaoSet(false), _skyVaoVIP(false),
+	_skyVaoSet(false), _skyVaoVIP(false), _genDone(false), _light_update(false),
 	_vaoReset(false), _waterVaoReset(false), _skyVaoReset(false),
 	_startX(posX), _startY(posY),
 	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _sky_light(NULL), _block_light(NULL),
@@ -11,7 +11,7 @@ Chunk::Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *chunks )
 	_neighbours({NULL, NULL, NULL, NULL}), _camera(camera)
 {
 	int cnt = 0;
-
+// std::cout << "new chunk at " << posX << ", " << posY << std::endl;
 	for (auto c : *chunks) { // TODO load backups if needed .. + lighting backup
 		if (c->isInChunk(_startX - CHUNK_SIZE, _startY)) {
 			_neighbours[face_dir::MINUSX] = c;
@@ -45,15 +45,19 @@ Chunk::~Chunk( void )
 
 	if (_neighbours[face_dir::MINUSX]) {
 		_neighbours[face_dir::MINUSX]->setNeighbour(NULL, face_dir::PLUSX);
+		_neighbours[face_dir::MINUSX] = NULL;
 	}
 	if (_neighbours[face_dir::PLUSX]) {
 		_neighbours[face_dir::PLUSX]->setNeighbour(NULL, face_dir::MINUSX);
+		_neighbours[face_dir::PLUSX] = NULL;
 	}
 	if (_neighbours[face_dir::MINUSY]) {
 		_neighbours[face_dir::MINUSY]->setNeighbour(NULL, face_dir::PLUSY);
+		_neighbours[face_dir::MINUSY] = NULL;
 	}
 	if (_neighbours[face_dir::PLUSY]) {
 		_neighbours[face_dir::PLUSY]->setNeighbour(NULL, face_dir::MINUSY);
+		_neighbours[face_dir::PLUSY] = NULL;
 	}
 
 	glDeleteBuffers(1, &_vbo);
@@ -554,6 +558,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		if (value == blocks::TORCH) {
 			std::cout << "rm light" << std::endl;
 			_block_light[offset] = 0;
+			handle_border_block(pos, value, false); // torch is special case flower
 			light_spread(_block_light, pos.x + 1, pos.y + 1, pos.z);
 			std::cout << "over" << std::endl;
 		}
@@ -650,6 +655,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	} else if (type == blocks::TORCH) {
 		std::cout << "add light" << std::endl;
 		_block_light[offset] = s_blocks[type].light_level + (1 << 4);
+		handle_border_block(pos, type, true); // torch is special case flower. first share with neighbours, then spread light
 		light_spread(_block_light, pos.x + 1, pos.y + 1, pos.z);
 		std::cout << "over" << std::endl;
 	}
@@ -777,6 +783,12 @@ GLint Chunk::getStartY( void )
 
 void Chunk::setNeighbour( Chunk *neighbour, face_dir index )
 {
+	if (_neighbours[index] && neighbour) {
+		std::cerr << "setNeighbour ERROR DUPLICATE " << neighbour->getStartX() << ", " << neighbour->getStartY() << " vs " << _neighbours[index]->getStartX() << ", " << _neighbours[index]->getStartY() << std::endl;
+		if (_neighbours[index] == neighbour) {
+			std::cerr << "but they are the same.." << std::endl;
+		}
+	}
 	_neighbours[index] = neighbour;
 }
 
@@ -836,6 +848,7 @@ void Chunk::generation( void )
 	generate_sky();
 	// b.stamp("sky");
 	// b.stop("generation");
+	_genDone = true;
 }
 
 void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding )
@@ -962,6 +975,7 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 
 bool Chunk::inPerimeter( int posX, int posY, GLint render_dist )
 {
+	while (!_genDone); // wait for generation taking place in another thread to be done
 	return (_startX >= posX - render_dist && _startX <= posX + render_dist
 			&& _startY >= posY - render_dist && _startY <= posY + render_dist);
 }
@@ -1128,7 +1142,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 // posX and posY in [0; CHUNK_SIZE + 1] === _blocks compatible
 void Chunk::update_border( int posX, int posY, int level, int type, bool adding )
 {
-	// std::cout << "got into update border of chunk " << _startX << ", " << _startY << std::endl;
+	std::cout << "got into update border of chunk " << _startX << ", " << _startY << std::endl;
 	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << ((adding) ? "add" : "rm") << " " << s_blocks[type].name << " | real pos is " << _startX + posX - 1 << ", " << _startY + posY - 1 << std::endl;
 	if (!(!posX || !posY || posX == CHUNK_SIZE + 1 || posY == CHUNK_SIZE + 1)) {
 		std::cout << "ERROR update_border not border block " << posX << ", " << posY << std::endl;
@@ -1163,15 +1177,18 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 		target.y = CHUNK_SIZE;
 	}
 	bool cornerChunk = ((!posX + (posX == (CHUNK_SIZE + 1)) + !posY + (posY == (CHUNK_SIZE + 1))) == 2); // chunk update at corner
+	int offset = (posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level;
 	if (adding) {
-		// if (_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] && _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] < blocks::WATER) {
-		// 	std::cout << "\033[31mADDING IS REMOVING BLOCK\033[0m " << s_blocks[_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level]].name << std::endl;
+		// if (_blocks[offset] && _blocks[offset] < blocks::WATER) {
+		// 	std::cout << "\033[31mADDING IS REMOVING BLOCK\033[0m " << s_blocks[_blocks[offset]].name << std::endl;
 		// }
 		// std::cout << '[' << _startX << ", " << _startY << "] block at border " << posX << ", " << posY << ", " << level << ": " << s_blocks[type].name << std::endl;
-		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
-		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
-		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = type;
-		if (type >= blocks::WATER) {
+		_blocks[offset] = type;
+		_removed.erase(offset);
+		_added[offset] = type;
+		if (type == blocks::TORCH) {
+			_block_light[offset] = s_blocks[type].light_level +  + (s_blocks[type].light_level << 4);
+		}else if (type >= blocks::WATER) {
 			return ;
 		}
 		if (cornerChunk || !air_flower(type, true, false) || !air_flower(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], false, false)) {
@@ -1189,14 +1206,16 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 		if (_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] < blocks::AIR) {
 			_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] += blocks::NOTVISIBLE;
 		}
-		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level] = blocks::AIR;
-		_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
-		_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + level);
+		_blocks[offset] = blocks::AIR;
+		_added.erase(offset);
+		_removed.insert(offset);
 		if (_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level] >= blocks::WATER) {
 			_hasWater = true;
 			_fluids.insert(target.x + (target.y << 8) + (level << 16));
 		}
-		if (type >= blocks::WATER) {
+		if (type == blocks::TORCH) {
+			_block_light[offset] = 0;
+		} else if (type >= blocks::WATER) {
 			return ;
 		}
 		if (cornerChunk || !air_flower(_blocks[(target.x * (CHUNK_SIZE + 2) + target.y) * WORLD_HEIGHT + level], false, false)) {
@@ -1387,6 +1406,16 @@ int Chunk::isLoaded( GLint &counter )
 
 void Chunk::drawArray( GLint & counter, GLint &face_counter )
 {
+	if (_light_update) {
+		std::cout << _startX << ", " << _startY << " light update" << std::endl;
+		fill_vertex_array();
+		_vaoReset = false;
+		_mtx.lock();
+		_vaoVIP = true;
+		_mtx.unlock();
+		_light_update = false;
+		return ;
+	}
 	if (!_vaoReset) { // TODO change vosReset logic (swap true and false)
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		++counter;

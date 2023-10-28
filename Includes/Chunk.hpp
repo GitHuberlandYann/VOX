@@ -62,7 +62,7 @@ class Chunk
     private:
         GLuint _vao, _vbo, _waterVao, _waterVbo, _skyVao, _skyVbo;
         bool _isVisible, _vaoSet, _vaoVIP, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
-		std::atomic_bool _vaoReset, _waterVaoReset, _skyVaoReset;
+		std::atomic_bool _genDone, _light_update, _vaoReset, _waterVaoReset, _skyVaoReset;
         GLint _startX, _startY;
 		GLint _continent;
 		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
@@ -81,10 +81,12 @@ class Chunk
 		GLint face_count( int type, int row, int col, int level, bool isNotLeaves );
 		// GLint get_empty_faces( int type, int row, int col, int level, bool isNotLeaves );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves );
+	
 		int exposed_water_faces( int row, int col, int level );
 		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );
 		bool endFlow( std::set<int> &newFluids, int &value, int posX, int posY, int posZ );
 		bool addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int level );
+	
 		int get_block_type_cave( int row, int col, int level, int ground_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
@@ -93,17 +95,22 @@ class Chunk
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
 		int surfaceLevel( int row, int col, siv::PerlinNoise perlin );
 		void generate_blocks( void );
-		void light_spread( GLchar *arr, int posX, int posY, int level );
-		void generate_sky_light( void );
-		void generate_block_light( void );
 		void generate_sky( void );
+	
 		int sand_fall_endz( glm::ivec3 pos );
 		void handle_border_flow( int posX, int posY, int posZ, int level, bool adding );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
 		void add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous );
+
+		void handle_border_light_spread( int posX, int posY, int posZ, char lightLevel );
+		void handle_border_light( glm::ivec3 pos, char lightLevel );
+		void light_spread( GLchar *arr, int posX, int posY, int level );
+		void generate_sky_light( void );
+		void generate_block_light( void );
 		int computeLight( int row, int col, int level );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
+	
         void fill_vertex_array( void );
         void setup_array_buffer( void );
 		void setup_sky_array_buffer( void );
@@ -138,6 +145,8 @@ class Chunk
 		int isHit( glm::ivec3 pos, bool waterIsBlock );
 		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void updateBreak( glm::ivec4 block_hit, int frame );
+		void update_border_light( int posX, int posY, int posZ, char lightLevel );
+		void update_border_light_spread( int posX, int posY, int posZ, char lightLevel, face_dir origin );
 		void update_border_flow( int posX, int posY, int posZ, int wlevel, bool adding, face_dir origin );
 		void update_border( int posX, int posY, int level, int type, bool adding );
 		bool collisionBox( glm::vec3 pos, float width, float height );

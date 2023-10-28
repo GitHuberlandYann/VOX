@@ -196,7 +196,7 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 			} else {
 				// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[value].name << " with " << s_blocks[level].name << std::endl; 
 			}
-				std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[value].name << " with " << s_blocks[level].name << " at " << posX << ", " << posY << ", " << posZ << std::endl; 
+				// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[value].name << " with " << s_blocks[level].name << " at " << posX << ", " << posY << ", " << posZ << std::endl; 
 			newFluids.insert(posX + (posY << 8) + (posZ << 16));
 			handle_border_block({posX - 1, posY - 1, posZ}, level, true);
 		}
@@ -462,7 +462,7 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int wlevel, bool a
 		// std::cout << "before condition" << std::endl;
 		int value = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
 		if (!air_flower(value, false, true) || (value >= blocks::WATER && value > wlevel)) {
-			std::cout << '[' << _startX << ", " << _startY << "] flow at border " << posX << ", " << posY << ", " << posZ << " >>" << value << " into " << wlevel << std::endl;
+			// std::cout << '[' << _startX << ", " << _startY << "] flow at border " << posX << ", " << posY << ", " << posZ << " >>" << value << " into " << wlevel << std::endl;
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = wlevel;
 			_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = wlevel;
 			_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);

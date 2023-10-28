@@ -228,7 +228,11 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	// std::cout << "IN THREAD UPDATE, nb chunks: " << chunks->size() << std::endl;
 	for (; it != ite;) {
 		mtx.lock();
-		if (!(*it)->inPerimeter(posX, posY, render_dist * 2 * CHUNK_SIZE)) {
+		if ((*it)->inPerimeter(posX, posY, render_dist * CHUNK_SIZE)) {
+			// std::cout << "IN PERIMETER" << std::endl;
+			newperi_chunks.push_back(*it);
+			coords.erase({(*it)->getStartX(), (*it)->getStartY()});
+		} else if (!(*it)->inPerimeter(posX, posY, render_dist * 2 * CHUNK_SIZE)) {
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
 			mtx.unlock();
@@ -236,10 +240,6 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 			newdel_chunks.push_back(*tmp);
 			mtx.lock();
 			chunks->erase(tmp);
-		} else if ((*it)->inPerimeter(posX, posY, render_dist * CHUNK_SIZE)) {
-			// std::cout << "IN PERIMETER" << std::endl;
-			newperi_chunks.push_back(*it);
-			coords.erase({(*it)->getStartX(), (*it)->getStartY()});
 		}
 		++it;
 		mtx.unlock();

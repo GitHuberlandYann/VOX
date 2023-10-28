@@ -4,6 +4,36 @@
 //                                Private                                     //
 // ************************************************************************** //
 
+void Chunk::handle_border_light_spread( int posX, int posY, int posZ, char lightLevel )
+{
+	// std::cout << "handle border light spread " << posX << " " << posY << " " << posZ << " | "  << _startX << " " << _startY << std::endl;
+	if (!posX && _neighbours[face_dir::MINUSX]) {
+		_neighbours[face_dir::MINUSX]->update_border_light_spread(CHUNK_SIZE, posY, posZ, lightLevel, face_dir::PLUSX);
+	} else if (posX == CHUNK_SIZE + 1 && _neighbours[face_dir::PLUSX]) {
+		_neighbours[face_dir::PLUSX]->update_border_light_spread(1, posY, posZ, lightLevel, face_dir::MINUSX);
+	}
+	if (!posY && _neighbours[face_dir::MINUSY]) {
+		_neighbours[face_dir::MINUSY]->update_border_light_spread(posX, CHUNK_SIZE, posZ, lightLevel, face_dir::PLUSY);
+	} else if (posY == CHUNK_SIZE + 1 && _neighbours[face_dir::PLUSY]) {
+		_neighbours[face_dir::PLUSY]->update_border_light_spread(posX, 1, posZ, lightLevel, face_dir::MINUSY);
+	}
+}
+
+void Chunk::handle_border_light( glm::ivec3 pos, char lightLevel )
+{
+	// std::cout << "handle border light " << pos.x << " " << pos.y << " " << pos.z << " | "  << _startX << " " << _startY << std::endl;
+	if (!pos.x && _neighbours[face_dir::MINUSX]) {
+		_neighbours[face_dir::MINUSX]->update_border_light(CHUNK_SIZE + 1, pos.y + 1, pos.z, lightLevel);
+	} else if (pos.x == CHUNK_SIZE - 1 && _neighbours[face_dir::PLUSX]) {
+		_neighbours[face_dir::PLUSX]->update_border_light(0, pos.y + 1, pos.z, lightLevel);
+	}
+	if (!pos.y && _neighbours[face_dir::MINUSY]) {
+		_neighbours[face_dir::MINUSY]->update_border_light(pos.x + 1, CHUNK_SIZE + 1, pos.z, lightLevel);
+	} else if (pos.y == CHUNK_SIZE - 1 && _neighbours[face_dir::PLUSY]) {
+		_neighbours[face_dir::PLUSY]->update_border_light(pos.x + 1, 0, pos.z, lightLevel);
+	}
+}
+
 void Chunk::light_spread( GLchar *arr, int posX, int posY, int posZ )
 {
 	char level = arr[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
@@ -22,6 +52,18 @@ void Chunk::light_spread( GLchar *arr, int posX, int posY, int posZ )
 		if ((maxLevel && maxLevel - 1 != level) || (!maxLevel && level)) {
 			level = maxc(0, maxLevel - 1);
 			arr[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = level;
+			_light_update = true;
+			if (posX == 1 || posX == CHUNK_SIZE || posY == 1 || posY == CHUNK_SIZE) {
+				// neighbours update
+	// std::cout << "handle border light " << posX << " " << posY << " " << posZ << " | "  << _startX << " " << _startY << std::endl;
+	// 			handle_border_light({posX - 1, posY - 1, posZ}, level);
+			}
+			if (posX == 0 || posX == CHUNK_SIZE + 1 || posY == 0 || posY == CHUNK_SIZE + 1) {
+				// neighbours spread
+	// std::cout << "handle border light spread " << posX << " " << posY << " " << posZ << " | "  << _startX << " " << _startY << std::endl;
+	// 			handle_border_light_spread(posX, posY, posZ, level);
+				return ;
+			}
 		} else if (level == saveLevel) {
 			return ; // stop spread when not source and level is unchanged
 		}
@@ -78,6 +120,7 @@ void Chunk::generate_sky_light( void )
 			}
 		}
 	}
+	_light_update = false;
 }
 
 void Chunk::generate_block_light( void )
@@ -99,6 +142,7 @@ void Chunk::generate_block_light( void )
 			}
 		}
 	}
+	_light_update = false;
 }
 
 // uses sky light and block light to output a shade value
@@ -295,4 +339,90 @@ GLint Chunk::getBlockLightLevel( glm::ivec3 location )
 {
 	int posX = location.x - _startX, posY = location.y - _startY;
 	return (_block_light[((posX + 1) * (CHUNK_SIZE + 2) + posY + 1) * WORLD_HEIGHT + location.z] & 0xF);
+}
+
+void Chunk::update_border_light( int posX, int posY, int posZ, char lightLevel )
+{
+	// std::cout << "got into update border light of chunk " << _startX << ", " << _startY << std::endl;
+	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << ((adding) ? "add" : "rm") << " " << s_blocks[type].name << " | real pos is " << _startX + posX - 1 << ", " << _startY + posY - 1 << std::endl;
+	if (!(!posX || !posY || posX == CHUNK_SIZE + 1 || posY == CHUNK_SIZE + 1)) {
+		std::cout << "ERROR update_border_light not border block " << posX << ", " << posY << std::endl;
+		return ;
+	}
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+	if (!posX) {
+		if (posY == 1 && _neighbours[face_dir::MINUSY]) {
+			// std::cout << "corner " << _startX << ", " << _startY - CHUNK_SIZE << std::endl;
+			_neighbours[face_dir::MINUSY]->update_border_light(posX, CHUNK_SIZE + 1, posZ, lightLevel);
+		} else if (posY == CHUNK_SIZE && _neighbours[face_dir::PLUSY]) {
+			// std::cout << "corner " << _startX << ", " << _startY + CHUNK_SIZE << std::endl;
+			_neighbours[face_dir::PLUSY]->update_border_light(posX, 0, posZ, lightLevel);
+		}
+	} else if (posX == CHUNK_SIZE + 1) {
+		if (posY == 1 && _neighbours[face_dir::MINUSY]) {
+			// std::cout << "corner " << _startX << ", " << _startY - CHUNK_SIZE << std::endl;
+			_neighbours[face_dir::MINUSY]->update_border_light(posX, CHUNK_SIZE + 1, posZ, lightLevel);
+		} else if (posY == CHUNK_SIZE && _neighbours[face_dir::PLUSY]) {
+			// std::cout << "corner " << _startX << ", " << _startY + CHUNK_SIZE << std::endl;
+			_neighbours[face_dir::PLUSY]->update_border_light(posX, 0, posZ, lightLevel);
+		}
+	}
+	if (_block_light[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] < lightLevel) {
+		_block_light[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = lightLevel;
+	}
+}
+
+void Chunk::update_border_light_spread( int posX, int posY, int posZ, char lightLevel, face_dir origin )
+{
+	if (!(posX == 1 || posY == 1 || posX == CHUNK_SIZE || posY == CHUNK_SIZE)) {
+		std::cout << "ERROR update_border_light spread not border block " << posX << ", " << posY << std::endl;
+		return ;
+	}
+	if (_thread.joinable()) {
+		_thread.join();
+	}
+	std::cout << "update border light spread " << _startX << ", " << _startY << " | rpos " << _startX + posX - 1 << ", " << _startY + posY - 1 << std::endl;
+	if (posX == 1) {
+		if (posY == 1) {
+			if (origin == face_dir::MINUSX && _neighbours[face_dir::MINUSY]) {
+				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY - CHUNK_SIZE << std::endl;
+				_neighbours[face_dir::MINUSY]->update_border_light(posX, CHUNK_SIZE + 1, posZ, lightLevel);
+			} else if (origin == face_dir::MINUSY && _neighbours[face_dir::MINUSX]) {
+				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX - CHUNK_SIZE << ", " << _startY << std::endl;
+				_neighbours[face_dir::MINUSX]->update_border_light(CHUNK_SIZE + 1, posY, posZ, lightLevel);
+			}
+		} else if (posY == CHUNK_SIZE) {
+			if (origin == face_dir::MINUSX && _neighbours[face_dir::PLUSY]) {
+				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY + CHUNK_SIZE << std::endl;
+				_neighbours[face_dir::PLUSY]->update_border_light(posX, 0, posZ, lightLevel);
+			} else if (origin == face_dir::PLUSY && _neighbours[face_dir::MINUSX]) {
+				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX - CHUNK_SIZE << ", " << _startY << std::endl;
+				_neighbours[face_dir::MINUSX]->update_border_light(CHUNK_SIZE + 1, posY, posZ, lightLevel);
+			}
+		}
+	} else if (posX == CHUNK_SIZE) {
+		if (posY == 1) {
+			if (origin == face_dir::PLUSX && _neighbours[face_dir::MINUSY]) {
+				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY - CHUNK_SIZE << std::endl;
+				_neighbours[face_dir::MINUSY]->update_border_light(posX, CHUNK_SIZE + 1, posZ, lightLevel);
+			} else if (origin == face_dir::MINUSY && _neighbours[face_dir::PLUSX]) {
+				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX + CHUNK_SIZE << ", " << _startY << std::endl;
+				_neighbours[face_dir::PLUSX]->update_border_light(0, posY, posZ, lightLevel);
+			}
+		} else if (posY == CHUNK_SIZE) {
+			if (origin == face_dir::PLUSX && _neighbours[face_dir::PLUSY]) {
+				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY + CHUNK_SIZE << std::endl;
+				_neighbours[face_dir::PLUSY]->update_border_light(posX, 0, posZ, lightLevel);
+			} else if (origin == face_dir::PLUSY && _neighbours[face_dir::PLUSX]) {
+				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX + CHUNK_SIZE << ", " << _startY << std::endl;
+				_neighbours[face_dir::PLUSX]->update_border_light(0, posY, posZ, lightLevel);
+			}
+		}
+	}
+
+			// std::cout << '[' << _startX << ", " << _startY << "] light spread at border " << posX << ", " << posY << ", " << posZ << " >>" << value << " into " << wlevel << std::endl;
+	_block_light[((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT) + posZ] = lightLevel;
+	light_spread(_block_light, posX, posY, posZ);
 }
