@@ -15,7 +15,7 @@ enum cont {
 	CONT_FAR_INLAND
 };
 
-enum face_dir { // if change this, then change cam->getOrientation
+enum face_dir {
 	MINUSY,
 	PLUSY,
 	MINUSX,
@@ -69,7 +69,7 @@ class Chunk
 		GLchar *_sky_light, *_block_light;
 		GLboolean *_sky, _hasWater;
 		size_t _displayed_faces, _water_count, _sky_count;
-		std::vector<Chunk *> *_vis_chunks;
+		std::array<Chunk *, 4> _neighbours;
 		Camera *_camera;
 		std::map<int,int> _orientations, _added;
 		std::set<int> _removed, _fluids; // TODO add fluids to backups
@@ -110,20 +110,21 @@ class Chunk
 		void setup_water_array_buffer( void );
 
     public:
-        Chunk( Camera *camera, int posX, int posY, std::vector<Chunk *> *perimeter_chunks );
+        Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *chunks );
         ~Chunk( void );
 
 		GLint getStartX( void );
 		GLint getStartY( void );
 		GLint getSkyLightLevel( glm::ivec3 location );
 		GLint getBlockLightLevel( glm::ivec3 location );
+		void setNeighbour( Chunk *neighbour, face_dir index );
 		void setBackup( std::map<std::pair<int, int>, s_backup> *backups );
 		void restoreBackup( s_backup backup);
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
 
 		void generation( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
-		void generate_chunk( std::list<Chunk *> *chunks );
+		void generate_chunk( void );
 		void sort_sky( glm::vec3 pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
 	
@@ -137,8 +138,8 @@ class Chunk
 		int isHit( glm::ivec3 pos, bool waterIsBlock );
 		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void updateBreak( glm::ivec4 block_hit, int frame );
-		void update_border_flow( int posX, int posY, int posZ, int wlevel, bool adding );
-		void update_border(int posX, int posY, int level, int type, bool adding);
+		void update_border_flow( int posX, int posY, int posZ, int wlevel, bool adding, face_dir origin );
+		void update_border( int posX, int posY, int level, int type, bool adding );
 		bool collisionBox( glm::vec3 pos, float width, float height );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( Camera *camera );

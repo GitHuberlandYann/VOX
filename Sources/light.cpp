@@ -8,7 +8,8 @@ void Chunk::light_spread( GLchar *arr, int posX, int posY, int posZ )
 {
 	char level = arr[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
 	// std::cout << "light_spread, level is " << (int)level << std::endl;
-	if (!(level & 0x10)) { // not a source block, we check if level should change
+	// TODO once diff light sources exist with diff light_level, rework this fonction
+	if (!(level & 0xF0)) { // not a source block, we check if level should change
 		char maxLevel = 0;
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
@@ -32,9 +33,8 @@ void Chunk::light_spread( GLchar *arr, int posX, int posY, int posZ )
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 		if (posX + delta[0] < 0 || posX + delta[0] > CHUNK_SIZE + 1 || posY + delta[1] < 0 || posY + delta[1] > CHUNK_SIZE + 1 || posZ + delta[2] < 0 || posZ + delta[2] > 255) {
 		} else if (!air_flower(_blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]], true, false)) {
-			int neighbour = arr[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-			// TODO once source blocks of diff levels exist, handle source 15 next ot source 3 correctly..
-			if (!(neighbour & 0x10) && ((neighbour & 0xF) != maxc(0, level - 1))) { // || (level & 0x10) only spread to non source blocks whose value is not expected value. source block always spread
+			char neighbour = arr[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
+			if (!(neighbour & 0xF0) && ((neighbour & 0xF) != maxc(0, (level & 0xF) - 1))) { // || (level & 0xF0) only spread to non source blocks whose value is not expected value. source block always spread
 				light_spread(arr, posX + delta[0], posY + delta[1], posZ + delta[2]);
 			}
 		}
@@ -43,23 +43,36 @@ void Chunk::light_spread( GLchar *arr, int posX, int posY, int posZ )
 
 void Chunk::generate_sky_light( void )
 {
-	// fill arr with 0, because light_spread uses neighbours - even if not set yet
-	for (int index = 0; index < (CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT; index++) {
-		_sky_light[index] = 0;
-	}
-
+	// fill sky_light with 0 for underground and 15 (- leaves and water damper) for rest
+	// voxel is considered underground if there is at least 1 solid block above it
 	for (int row = 0; row < CHUNK_SIZE + 2; row++) {
 		for (int col = 0; col < CHUNK_SIZE + 2; col++) {
 			char light_level = 15;
 			for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
+				_sky_light[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = light_level + (light_level << 4); // we consider blocks directly under sky as light source
 				if (light_level) {
-					_sky_light[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = light_level + ((light_level == 0xF) << 4); // we consider blocks directly under sky as light source
 					int value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
 					if (air_flower(value, true, false)) { // block hit
-						// spread_light watch out for leaves and water light damping..
 						light_level = 0;
 					} else if (value == blocks::OAK_LEAVES || value >= blocks::WATER) {
 						--light_level;
+					}
+				}
+			}
+		}
+	}
+
+	// second loop, this time spread light underground
+	for (int row = 0; row < CHUNK_SIZE + 2; row++) {
+		for (int col = 0; col < CHUNK_SIZE + 2; col++) {
+			for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
+				if (!_sky_light[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level]) {
+					int value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
+					if (!air_flower(value, true, false)) { // underground hole
+						// spread_light watch out for leaves and water light damping..
+						// std::cout << "light_spread" << std::endl;
+						light_spread(_sky_light, row, col, level);
+						// std::cout << "over" << std::endl;
 					}
 				}
 			}
@@ -80,7 +93,7 @@ void Chunk::generate_block_light( void )
 				char light_level = s_blocks[_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level]].light_level;
 				if (light_level) {
 					// std::cout << "LIGHT SOURCE [" << _startX << ", " << _startY << "] at [" << row - 1 << ", " << col - 1 << ", " << level << "]" << std::endl;
-					_block_light[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = light_level + (1 << 4); // 0x10 = light source. & 0xF = light level
+					_block_light[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = light_level + (light_level << 4); // 0xF0 = light source. & 0xF = light level
 					light_spread(_block_light, row, col, level);
 				}
 			}

@@ -277,7 +277,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	b.stamp("NO");
 	for (auto& c: coords) {
 		//create new chunk where player stands
-		Chunk *newChunk = new Chunk(camera, c.first, c.second, perimeter_chunks); // TODO pass pointer to visible_chunks instead
+		Chunk *newChunk = new Chunk(camera, c.first, c.second, chunks);
 		mtx_backup.lock();
 		std::map<std::pair<int, int>, s_backup>::iterator search = backups->find(std::pair<int, int>(c.first, c.second));
 		if (search != backups->end()) {
@@ -285,7 +285,10 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 			backups->erase(search);
 		}
 		mtx_backup.unlock();
-		newChunk->generate_chunk(chunks); // TODO remove this from thread because it launches its own thread and there's data races..
+		mtx.lock();
+		chunks->push_back(newChunk);
+		mtx.unlock();
+		newChunk->generate_chunk(); // TODO remove this from thread because it launches its own thread and there's data races..
 	}
 	// 	}
 	// }
