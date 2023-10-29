@@ -69,7 +69,6 @@ void Chunk::generate_lights( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			char light_level = 15;
 			for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
-				_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
 				if (light_level) {
 					int value = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level];
 					if (air_flower(value, true, false)) { // block hit
@@ -78,43 +77,10 @@ void Chunk::generate_lights( void )
 						--light_level;
 					}
 				}
+				_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
 			}
 		}
 	}
-
-	// second loop, this time spread sky_light underground
-	// for (int row = 0; row < CHUNK_SIZE; row++) {
-	// 	for (int col = 0; col < CHUNK_SIZE; col++) {
-	// 		for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
-	// 			if (!_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level]) {
-	// 				int value = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level];
-	// 				if (!air_flower(value, true, false)) { // underground hole
-	// 					// spread_light TODO watch out for leaves and water light damping..
-	// 					// std::cout << "light_spread" << std::endl;
-	// 					light_spread(row, col, level, true);
-	// 					// std::cout << "over" << std::endl;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	// doing this in Chunk::CheckFillVertices
-	// // loops through blocks and spread block light sources (for now only torches) if found
-	// for (int row = 0; row < CHUNK_SIZE; row++) {
-	// 	for (int col = 0; col < CHUNK_SIZE; col++) {
-	// 		for (int level = 0; level < WORLD_HEIGHT; level++) {
-	// 			char light_level = s_blocks[_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level]].light_level;
-	// 			if (light_level) {
-	// 				// std::cout << "LIGHT SOURCE [" << _startX << ", " << _startY << "] at [" << row - 1 << ", " << col - 1 << ", " << level << "]" << std::endl;
-	// 				_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
-	// 				_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] += light_level + (light_level << 4); // 0xF0 = light source. & 0xF = light level
-	// 				light_spread(row, col, level, false);
-	// 			}
-	// 		}
-	// 	}
-	// }
-	_light_update = false;
 }
 
 // uses sky light and block light to output a shade value

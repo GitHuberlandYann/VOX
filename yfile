@@ -45,9 +45,6 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-	- overall lighting (corner shade done, sky light + decrease 1 per block = dark in caves + block light)
-	- torches
-	- fluid at border
     - main menu
         - play
             - random seed / custom seed
@@ -87,10 +84,13 @@ DONE:
     - tools durabitlity
     - block break animation
     - chunk border fix
+	- overall lighting (corner shade, sky light + decrease 1 per block = dark in caves + block light)
+	- torches
     - FOV changed on isRunning change
     - stop fov run if player idle
 	- water if air && level > surface_level && level < 64
 	- Water update when add/rm blocks around
+	- fluid at border
     - Water buckets
 	- water flow
 	- clouds

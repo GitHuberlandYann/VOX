@@ -566,6 +566,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		return ;
 	}
 	if (air_flower(value, false, true)) {
+		light_spread(pos.x, pos.y, pos.z, true); // spread sky light
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 			if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
@@ -666,6 +667,8 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 				_mtx.lock();
 				_displayed_faces--;
 				_mtx.unlock();
+			} else if (index != face_dir::PLUSZ) {
+				light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 0, true); // spread sky light, but not upwards duh
 			}
 			if (value > blocks::AIR && !exposed_block(pos.x + delta[0] + 1, pos.y + delta[1] + 1, pos.z + delta[2], value != blocks::OAK_LEAVES)) {
 				// was exposed before, but isn't anymore
@@ -856,7 +859,7 @@ void Chunk::checkFillVertices( void )
 	}
 	if (cnt > _nb_neighbours) {
 		_nb_neighbours = cnt;
-		for (auto a: _added) {
+		for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
 			if (a.second == blocks::TORCH) {
 				int row = (a.first & 0xFF) - 1;
 				int col = ((a.first >> 8) & 0xFF) - 1;
@@ -864,9 +867,23 @@ void Chunk::checkFillVertices( void )
 				_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
 				_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] += 14 + (14 << 4); // 0xF0 = light source. & 0xF = light level
 				light_spread(row, col, level, false);
-				_light_update = false;
 			}
 		}
+		// this time spread sky_light underground
+		for (int row = 0; row < CHUNK_SIZE; row++) {
+			for (int col = 0; col < CHUNK_SIZE; col++) {
+				for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
+					if (!(_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] & 0xFF00)) {
+						int value = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level];
+						if (!air_flower(value, true, false)) { // underground hole
+							// spread_light TODO watch out for leaves and water light damping..
+							light_spread(row, col, level, true);
+						}
+					}
+				}
+			}
+		}
+		_light_update = false;
 		fill_vertex_array();
 	} else if (!cnt) {
 		std::cerr << "ERROR chunk has no neighbours" << std::endl;
@@ -1163,7 +1180,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 // posX and posY in [0; CHUNK_SIZE + 1] === _blocks compatible
 void Chunk::update_border( int posX, int posY, int level, int type, bool adding )
 {
-	std::cout << "got into update border of chunk " << _startX << ", " << _startY << std::endl;
+	// std::cout << "got into update border of chunk " << _startX << ", " << _startY << std::endl;
 	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << ((adding) ? "add" : "rm") << " " << s_blocks[type].name << " | real pos is " << _startX + posX - 1 << ", " << _startY + posY - 1 << std::endl;
 	if (!(!posX || !posY || posX == CHUNK_SIZE + 1 || posY == CHUNK_SIZE + 1)) {
 		std::cout << "ERROR update_border not border block " << posX << ", " << posY << std::endl;
