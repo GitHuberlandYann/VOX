@@ -25,7 +25,7 @@ enum face_dir {
 };
 
 const GLint adj_blocks[6][3] = {
-	{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}
+	{0, -1, 0}, {0, 1, 0}, {-1, 0, 0}, {1, 0, 0}, {0, 0, -1}, {0, 0, 1}
 };
 
 const GLint oak_normal[61][3] = {
@@ -63,10 +63,10 @@ class Chunk
         GLuint _vao, _vbo, _waterVao, _waterVbo, _skyVao, _skyVbo;
         bool _isVisible, _vaoSet, _vaoVIP, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
 		std::atomic_bool _genDone, _light_update, _vaoReset, _waterVaoReset, _skyVaoReset;
-        GLint _startX, _startY;
+        GLint _startX, _startY, _nb_neighbours;
 		GLint _continent;
 		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
-		GLchar *_sky_light, *_block_light;
+		short *_lights; // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
 		GLboolean *_sky, _hasWater;
 		size_t _displayed_faces, _water_count, _sky_count;
 		std::array<Chunk *, 4> _neighbours;
@@ -103,11 +103,8 @@ class Chunk
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
 		void add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous );
 
-		void handle_border_light_spread( int posX, int posY, int posZ, char lightLevel );
-		void handle_border_light( glm::ivec3 pos, char lightLevel );
-		void light_spread( GLchar *arr, int posX, int posY, int level );
-		void generate_sky_light( void );
-		void generate_block_light( void );
+		void light_spread( int posX, int posY, int level, bool skySpread );
+		void generate_lights( void );
 		int computeLight( int row, int col, int level );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
 	
@@ -124,12 +121,16 @@ class Chunk
 		GLint getStartY( void );
 		GLint getSkyLightLevel( glm::ivec3 location );
 		GLint getBlockLightLevel( glm::ivec3 location );
+		short getLightLevel( int posX, int posY, int posZ );
+		void waitGenDone( void );
+
 		void setNeighbour( Chunk *neighbour, face_dir index );
 		void setBackup( std::map<std::pair<int, int>, s_backup> *backups );
 		void restoreBackup( s_backup backup);
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
 
 		void generation( void );
+		void checkFillVertices( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( void );
 		void sort_sky( glm::vec3 pos, bool vip );
@@ -145,8 +146,7 @@ class Chunk
 		int isHit( glm::ivec3 pos, bool waterIsBlock );
 		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void updateBreak( glm::ivec4 block_hit, int frame );
-		void update_border_light( int posX, int posY, int posZ, char lightLevel );
-		void update_border_light_spread( int posX, int posY, int posZ, char lightLevel, face_dir origin );
+		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread );
 		void update_border_flow( int posX, int posY, int posZ, int wlevel, bool adding, face_dir origin );
 		void update_border( int posX, int posY, int level, int type, bool adding );
 		bool collisionBox( glm::vec3 pos, float width, float height );

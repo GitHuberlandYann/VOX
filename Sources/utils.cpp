@@ -113,11 +113,15 @@ float dist2( glm::vec3 pa, glm::vec3 pb )
 }
 
 int maxi( int a, int b ) {
-	return ((a > b) ? a : b); 
+	return ((a > b) ? a : b);
 }
 
 char maxc( char a, char b ) {
-	return ((a > b) ? a : b); 
+	return ((a > b) ? a : b);
+}
+
+short maxs( short a, short b ) {
+	return ((a > b) ? a : b);
 }
 
 int blockGridX( int block, int offset ) // x coord in blockAtlas grid

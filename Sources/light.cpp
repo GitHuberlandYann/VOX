@@ -4,67 +4,50 @@
 //                                Private                                     //
 // ************************************************************************** //
 
-void Chunk::handle_border_light_spread( int posX, int posY, int posZ, char lightLevel )
+// if skySpread, _lights[offset] is bitshifted by 4 to work on sky light and not block light
+// posX, posY are in [0; CHUNK_SIZE[
+void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 {
-	// std::cout << "handle border light spread " << posX << " " << posY << " " << posZ << " | "  << _startX << " " << _startY << std::endl;
-	if (!posX && _neighbours[face_dir::MINUSX]) {
-		_neighbours[face_dir::MINUSX]->update_border_light_spread(CHUNK_SIZE, posY, posZ, lightLevel, face_dir::PLUSX);
-	} else if (posX == CHUNK_SIZE + 1 && _neighbours[face_dir::PLUSX]) {
-		_neighbours[face_dir::PLUSX]->update_border_light_spread(1, posY, posZ, lightLevel, face_dir::MINUSX);
-	}
-	if (!posY && _neighbours[face_dir::MINUSY]) {
-		_neighbours[face_dir::MINUSY]->update_border_light_spread(posX, CHUNK_SIZE, posZ, lightLevel, face_dir::PLUSY);
-	} else if (posY == CHUNK_SIZE + 1 && _neighbours[face_dir::PLUSY]) {
-		_neighbours[face_dir::PLUSY]->update_border_light_spread(posX, 1, posZ, lightLevel, face_dir::MINUSY);
-	}
-}
-
-void Chunk::handle_border_light( glm::ivec3 pos, char lightLevel )
-{
-	// std::cout << "handle border light " << pos.x << " " << pos.y << " " << pos.z << " | "  << _startX << " " << _startY << std::endl;
-	if (!pos.x && _neighbours[face_dir::MINUSX]) {
-		_neighbours[face_dir::MINUSX]->update_border_light(CHUNK_SIZE + 1, pos.y + 1, pos.z, lightLevel);
-	} else if (pos.x == CHUNK_SIZE - 1 && _neighbours[face_dir::PLUSX]) {
-		_neighbours[face_dir::PLUSX]->update_border_light(0, pos.y + 1, pos.z, lightLevel);
-	}
-	if (!pos.y && _neighbours[face_dir::MINUSY]) {
-		_neighbours[face_dir::MINUSY]->update_border_light(pos.x + 1, CHUNK_SIZE + 1, pos.z, lightLevel);
-	} else if (pos.y == CHUNK_SIZE - 1 && _neighbours[face_dir::PLUSY]) {
-		_neighbours[face_dir::PLUSY]->update_border_light(pos.x + 1, 0, pos.z, lightLevel);
-	}
-}
-
-void Chunk::light_spread( GLchar *arr, int posX, int posY, int posZ )
-{
-	char level = arr[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
+	int shift = 8 * skySpread;
+	short saveLight = _lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ];
+	short level = ((saveLight >> shift) & 0xFF);
 	// std::cout << "light_spread, level is " << (int)level << std::endl;
-	// TODO once diff light sources exist with diff light_level, rework this fonction
+	// TODO once diff light sources exist with diff light_level, rework this condition
 	if (!(level & 0xF0)) { // not a source block, we check if level should change
-		char maxLevel = 0;
+		short maxLevel = 0;
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-			if (posX + delta[0] < 0 || posX + delta[0] > CHUNK_SIZE + 1 || posY + delta[1] < 0 || posY + delta[1] > CHUNK_SIZE + 1 || posZ + delta[2] < 0 || posZ + delta[2] > 255) {
-			} else if (!air_flower(_blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]], true, false)) {
-				maxLevel = maxc(maxLevel, arr[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]] & 0xF);
+			if (posZ + delta[2] < 0 || posZ + delta[2] > 255) {
+			} else if (posX + delta[0] < 0 || posX + delta[0] >= CHUNK_SIZE || posY + delta[1] < 0 || posY + delta[1] >= CHUNK_SIZE) {
+				// ask neighbour
+				short light = 0;
+				if (posX + delta[0] == -1) {
+					if (_neighbours[face_dir::MINUSX]) {
+						light = _neighbours[face_dir::MINUSX]->getLightLevel(CHUNK_SIZE - 1, posY + delta[1], posZ + delta[2]);
+					}
+				} else if (posY + delta[1] == -1) {
+					if (_neighbours[face_dir::MINUSY]) {
+						light = _neighbours[face_dir::MINUSY]->getLightLevel(posX + delta[0], CHUNK_SIZE - 1, posZ + delta[2]);
+					}
+				} else if (posX + delta[0] == CHUNK_SIZE) {
+					if (_neighbours[face_dir::PLUSX]) {
+						light = _neighbours[face_dir::PLUSX]->getLightLevel(0, posY + delta[1], posZ + delta[2]);
+					}
+				} else if (posY + delta[1] == CHUNK_SIZE) {
+					if (_neighbours[face_dir::PLUSY]) {
+						light = _neighbours[face_dir::PLUSY]->getLightLevel(posX + delta[0], 0, posZ + delta[2]);
+					}
+				}
+				maxLevel = maxs(maxLevel, (light >> shift) & 0xF);
+			} else if (!air_flower(_blocks[((posX + 1 + delta[0]) * (CHUNK_SIZE + 2) + posY + 1 + delta[1]) * WORLD_HEIGHT + posZ + delta[2]], true, false)) {
+				maxLevel = maxs(maxLevel, (_lights[((posX + delta[0]) * CHUNK_SIZE + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]] >> shift) & 0xF);
 			}
 		}
-		int saveLevel = level;
 		if ((maxLevel && maxLevel - 1 != level) || (!maxLevel && level)) {
-			level = maxc(0, maxLevel - 1);
-			arr[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = level;
+			level = maxs(0, maxLevel - 1);
+			_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] = (saveLight & (0xFF << (8 - shift))) + (level << shift);
 			_light_update = true;
-			if (posX == 1 || posX == CHUNK_SIZE || posY == 1 || posY == CHUNK_SIZE) {
-				// neighbours update
-	// std::cout << "handle border light " << posX << " " << posY << " " << posZ << " | "  << _startX << " " << _startY << std::endl;
-	// 			handle_border_light({posX - 1, posY - 1, posZ}, level);
-			}
-			if (posX == 0 || posX == CHUNK_SIZE + 1 || posY == 0 || posY == CHUNK_SIZE + 1) {
-				// neighbours spread
-	// std::cout << "handle border light spread " << posX << " " << posY << " " << posZ << " | "  << _startX << " " << _startY << std::endl;
-	// 			handle_border_light_spread(posX, posY, posZ, level);
-				return ;
-			}
-		} else if (level == saveLevel) {
+		} else {
 			return ; // stop spread when not source and level is unchanged
 		}
 	}
@@ -73,27 +56,22 @@ void Chunk::light_spread( GLchar *arr, int posX, int posY, int posZ )
 	// spread in all 6 directions
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-		if (posX + delta[0] < 0 || posX + delta[0] > CHUNK_SIZE + 1 || posY + delta[1] < 0 || posY + delta[1] > CHUNK_SIZE + 1 || posZ + delta[2] < 0 || posZ + delta[2] > 255) {
-		} else if (!air_flower(_blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]], true, false)) {
-			char neighbour = arr[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-			if (!(neighbour & 0xF0) && ((neighbour & 0xF) != maxc(0, (level & 0xF) - 1))) { // || (level & 0xF0) only spread to non source blocks whose value is not expected value. source block always spread
-				light_spread(arr, posX + delta[0], posY + delta[1], posZ + delta[2]);
-			}
-		}
+		light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], level, skySpread);
 	}
 }
 
-void Chunk::generate_sky_light( void )
+void Chunk::generate_lights( void )
 {
 	// fill sky_light with 0 for underground and 15 (- leaves and water damper) for rest
 	// voxel is considered underground if there is at least 1 solid block above it
-	for (int row = 0; row < CHUNK_SIZE + 2; row++) {
-		for (int col = 0; col < CHUNK_SIZE + 2; col++) {
+	// this also fills block_light with 0
+	for (int row = 0; row < CHUNK_SIZE; row++) {
+		for (int col = 0; col < CHUNK_SIZE; col++) {
 			char light_level = 15;
 			for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
-				_sky_light[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = light_level + (light_level << 4); // we consider blocks directly under sky as light source
+				_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
 				if (light_level) {
-					int value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
+					int value = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level];
 					if (air_flower(value, true, false)) { // block hit
 						light_level = 0;
 					} else if (value == blocks::OAK_LEAVES || value >= blocks::WATER) {
@@ -104,54 +82,69 @@ void Chunk::generate_sky_light( void )
 		}
 	}
 
-	// second loop, this time spread light underground
-	for (int row = 0; row < CHUNK_SIZE + 2; row++) {
-		for (int col = 0; col < CHUNK_SIZE + 2; col++) {
-			for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
-				if (!_sky_light[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level]) {
-					int value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
-					if (!air_flower(value, true, false)) { // underground hole
-						// spread_light watch out for leaves and water light damping..
-						// std::cout << "light_spread" << std::endl;
-						light_spread(_sky_light, row, col, level);
-						// std::cout << "over" << std::endl;
-					}
-				}
-			}
-		}
-	}
-	_light_update = false;
-}
+	// second loop, this time spread sky_light underground
+	// for (int row = 0; row < CHUNK_SIZE; row++) {
+	// 	for (int col = 0; col < CHUNK_SIZE; col++) {
+	// 		for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
+	// 			if (!_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level]) {
+	// 				int value = _blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level];
+	// 				if (!air_flower(value, true, false)) { // underground hole
+	// 					// spread_light TODO watch out for leaves and water light damping..
+	// 					// std::cout << "light_spread" << std::endl;
+	// 					light_spread(row, col, level, true);
+	// 					// std::cout << "over" << std::endl;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-void Chunk::generate_block_light( void )
-{
-	// fill arr with 0, because light_spread uses neighbours - even if not set yet
-	for (int index = 0; index < (CHUNK_SIZE + 2) * (CHUNK_SIZE + 2) * WORLD_HEIGHT; index++) {
-		_block_light[index] = 0;
-	}
-
-	for (int row = 0; row < CHUNK_SIZE + 2; row++) {
-		for (int col = 0; col < CHUNK_SIZE + 2; col++) {
-			for (int level = 0; level < WORLD_HEIGHT; level++) {
-				char light_level = s_blocks[_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level]].light_level;
-				if (light_level) {
-					// std::cout << "LIGHT SOURCE [" << _startX << ", " << _startY << "] at [" << row - 1 << ", " << col - 1 << ", " << level << "]" << std::endl;
-					_block_light[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = light_level + (light_level << 4); // 0xF0 = light source. & 0xF = light level
-					light_spread(_block_light, row, col, level);
-				}
-			}
-		}
-	}
+	// doing this in Chunk::CheckFillVertices
+	// // loops through blocks and spread block light sources (for now only torches) if found
+	// for (int row = 0; row < CHUNK_SIZE; row++) {
+	// 	for (int col = 0; col < CHUNK_SIZE; col++) {
+	// 		for (int level = 0; level < WORLD_HEIGHT; level++) {
+	// 			char light_level = s_blocks[_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level]].light_level;
+	// 			if (light_level) {
+	// 				// std::cout << "LIGHT SOURCE [" << _startX << ", " << _startY << "] at [" << row - 1 << ", " << col - 1 << ", " << level << "]" << std::endl;
+	// 				_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
+	// 				_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] += light_level + (light_level << 4); // 0xF0 = light source. & 0xF = light level
+	// 				light_spread(row, col, level, false);
+	// 			}
+	// 		}
+	// 	}
+	// }
 	_light_update = false;
 }
 
 // uses sky light and block light to output a shade value
+// row and col are in [-1:CHUNK_SIZE]
 int Chunk::computeLight( int row, int col, int level )
 {
 	// (void)row;(void)col;(void)level;return (0);
+	short light = 15;
+	if (row == -1) {
+		if (_neighbours[face_dir::MINUSX]) {
+			light = _neighbours[face_dir::MINUSX]->getLightLevel(CHUNK_SIZE - 1, col, level);
+		}
+	} else if (col == -1) {
+		if (_neighbours[face_dir::MINUSY]) {
+			light = _neighbours[face_dir::MINUSY]->getLightLevel(row, CHUNK_SIZE - 1, level);
+		}
+	} else if (row == CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSX]) {
+			light = _neighbours[face_dir::PLUSX]->getLightLevel(0, col, level);
+		}
+	} else if (col == CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSY]) {
+			light = _neighbours[face_dir::PLUSY]->getLightLevel(row, 0, level);
+		}
+	} else {
+		light = _lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level];
+	}
 	int blockLightAmplitude = 5; // amount by which light decreases on each block
-	int blockLight = _block_light[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] & 0xF;
-	int skyLight = _sky_light[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] & 0xF;
+	int blockLight = light & 0xF;
+	int skyLight = (light >> 8) & 0xF;
 	return (blockLightAmplitude * (15 - maxi(skyLight, blockLight)));
 }
 
@@ -197,7 +190,7 @@ void Chunk::fill_vertex_array( void )
 						bool isNotLeaves = (block_type != blocks::OAK_LEAVES);
 						if (!air_flower(_blocks[((row + 1 - 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], true, false)) {
 							int spec = blockGridX(block_type, 2 * (orientation == face_dir::MINUSX) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
-							int faceLight = maxi(minLightLevel, 84 - computeLight(row + 1 - 1, col + 1, level));
+							int faceLight = maxi(minLightLevel, 84 - computeLight(row - 1, col, level));
 							int shade = maxi(0, faceLight - computeShade(row + 1 - 1, col + 1, level, {0, 1, 0, 0, 1, 1, 0, 0, 1}));
 							glm::ivec4 v0 = {spec + (shade << 16), p4};
 							shade = maxi(0, faceLight - computeShade(row + 1 - 1, col + 1, level, {0, -1, 0, 0, -1, 1, 0, 0, 1}));
@@ -210,7 +203,7 @@ void Chunk::fill_vertex_array( void )
 						}
 						if (!air_flower(_blocks[((row + 1 + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false)) {
 							int spec = blockGridX(block_type, 2 * (orientation == face_dir::PLUSX) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
-							int faceLight = maxi(minLightLevel, 80 - computeLight(row + 1 + 1, col + 1, level));
+							int faceLight = maxi(minLightLevel, 80 - computeLight(row + 1, col, level));
 							int shade = maxi(0, faceLight - computeShade(row + 1 + 1, col + 1, level, {0, -1, 0, 0, -1, 1, 0, 0, 1}));
 							glm::ivec4 v0 = {spec + (shade << 16), p1};
 							shade = maxi(0, faceLight - computeShade(row + 1 + 1, col + 1, level, {0, 1, 0, 0, 1, 1, 0, 0, 1}));
@@ -223,7 +216,7 @@ void Chunk::fill_vertex_array( void )
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1 - 1) * WORLD_HEIGHT + level], true, false)) {
 							int spec = blockGridX(block_type, 2 * (orientation == face_dir::MINUSY) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
-							int faceLight = maxi(minLightLevel, 92 - computeLight(row + 1, col + 1 - 1, level));
+							int faceLight = maxi(minLightLevel, 92 - computeLight(row, col - 1, level));
 							int shade = maxi(0, faceLight - computeShade(row + 1, col + 1 - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1}));
 							glm::ivec4 v0 = {spec + (shade << 16), p0};
 							shade = maxi(0, faceLight - computeShade(row + 1, col + 1 - 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1}));
@@ -236,7 +229,7 @@ void Chunk::fill_vertex_array( void )
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1 + 1) * WORLD_HEIGHT + level], isNotLeaves, false)) {
 							int spec = blockGridX(block_type, 2 * (orientation == face_dir::PLUSY) + litFurnace) + (blockGridY(block_type) << 4) + (0 << 12);
-							int faceLight = maxi(minLightLevel, 88 - computeLight(row + 1, col + 1 + 1, level));
+							int faceLight = maxi(minLightLevel, 88 - computeLight(row, col + 1, level));
 							int shade = maxi(0, faceLight - computeShade(row + 1, col + 1 + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1}));
 							glm::ivec4 v0 = {spec + (shade << 16), p5};
 							shade = maxi(0, faceLight - computeShade(row + 1, col + 1 + 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1}));
@@ -249,7 +242,7 @@ void Chunk::fill_vertex_array( void )
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level + 1], isNotLeaves, false)) {
 							int spec = blockGridX(block_type, 1) + (blockGridY(block_type) << 4) + (0 << 12);
-							int faceLight = maxi(minLightLevel, 100 - computeLight(row + 1, col + 1, level + 1));
+							int faceLight = maxi(minLightLevel, 100 - computeLight(row, col, level + 1));
 							int shade = maxi(0, faceLight - computeShade(row + 1, col + 1, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0}));
 							// if (shade & 0xFF)std::cout << "shade is " << shade << std::endl;
 							// if (shade & 0xFFFFFF00)std::cout << "problem" << std::endl;
@@ -264,7 +257,7 @@ void Chunk::fill_vertex_array( void )
 						}
 						if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level - 1], true, false)) {
 							int spec = blockGridX(block_type, 1 + (block_type == blocks::GRASS_BLOCK)) + (blockGridY(block_type) << 4) + (0 << 12);
-							int faceLight = maxi(minLightLevel, 74 - computeLight(row + 1, col + 1, level - 1));
+							int faceLight = maxi(minLightLevel, 74 - computeLight(row, col, level - 1));
 							int shade = maxi(0, faceLight - computeShade(row + 1, col + 1, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0}));
 							glm::ivec4 v0 = {spec + (shade << 16), p2};
 							shade = maxi(0, faceLight - computeShade(row + 1, col + 1, level - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0}));
@@ -304,7 +297,7 @@ void Chunk::fill_vertex_array( void )
 						face_vertices(_vertices, v0, v1, v2, v3, index); // +y
 					} else { // flowers
 						int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (0 << 12);
-						spec += (maxi(minLightLevel, 100 - computeLight(row + 1, col + 1, level)) << 16);
+						spec += (maxi(minLightLevel, 100 - computeLight(row, col, level)) << 16);
 						glm::ivec4 v0 = {spec, p0};
 						glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
 						glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
@@ -323,6 +316,10 @@ void Chunk::fill_vertex_array( void )
 	// if (index != _displayed_faces * 24) { // TODO FIND OUT WHY LEAVES BREAK THIS CONDITION
 	// 	std::cout << "index at end is " << index << " vs " << _displayed_faces << " | " << _displayed_faces * 4 * 6 << std::endl;
 	// }
+	_vaoReset = false;
+	_mtx.lock();
+	_vaoVIP = true;
+	_mtx.unlock();
 }
 
 // ************************************************************************** //
@@ -332,97 +329,58 @@ void Chunk::fill_vertex_array( void )
 GLint Chunk::getSkyLightLevel( glm::ivec3 location )
 {
 	int posX = location.x - _startX, posY = location.y - _startY;
-	return (_sky_light[((posX + 1) * (CHUNK_SIZE + 2) + posY + 1) * WORLD_HEIGHT + location.z] & 0xF);
+	return ((_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + location.z] >> 8) & 0xF);
 }
 
 GLint Chunk::getBlockLightLevel( glm::ivec3 location )
 {
 	int posX = location.x - _startX, posY = location.y - _startY;
-	return (_block_light[((posX + 1) * (CHUNK_SIZE + 2) + posY + 1) * WORLD_HEIGHT + location.z] & 0xF);
+	return (_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + location.z] & 0xF);
 }
 
-void Chunk::update_border_light( int posX, int posY, int posZ, char lightLevel )
+short Chunk::getLightLevel( int posX, int posY, int posZ )
 {
-	// std::cout << "got into update border light of chunk " << _startX << ", " << _startY << std::endl;
-	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << ((adding) ? "add" : "rm") << " " << s_blocks[type].name << " | real pos is " << _startX + posX - 1 << ", " << _startY + posY - 1 << std::endl;
-	if (!(!posX || !posY || posX == CHUNK_SIZE + 1 || posY == CHUNK_SIZE + 1)) {
-		std::cout << "ERROR update_border_light not border block " << posX << ", " << posY << std::endl;
-		return ;
+	if (!_lights) {
+		return (0);
+		// std::cout << "getLightLevel too soon " << _startX << ", " << _startY << std::endl;
+		// while (!_genDone); // hello neighbour please wait for me to finish to load my light and blocks
+		// if (_lights) {
+		// 	std::cout << "done waiting " << _startX << ", " << _startY << std::endl;
+		// } else {
+		// 	std::cout << "ABORT" << std::endl;
+		// }
 	}
-	if (_thread.joinable()) {
-		_thread.join();
-	}
-	if (!posX) {
-		if (posY == 1 && _neighbours[face_dir::MINUSY]) {
-			// std::cout << "corner " << _startX << ", " << _startY - CHUNK_SIZE << std::endl;
-			_neighbours[face_dir::MINUSY]->update_border_light(posX, CHUNK_SIZE + 1, posZ, lightLevel);
-		} else if (posY == CHUNK_SIZE && _neighbours[face_dir::PLUSY]) {
-			// std::cout << "corner " << _startX << ", " << _startY + CHUNK_SIZE << std::endl;
-			_neighbours[face_dir::PLUSY]->update_border_light(posX, 0, posZ, lightLevel);
-		}
-	} else if (posX == CHUNK_SIZE + 1) {
-		if (posY == 1 && _neighbours[face_dir::MINUSY]) {
-			// std::cout << "corner " << _startX << ", " << _startY - CHUNK_SIZE << std::endl;
-			_neighbours[face_dir::MINUSY]->update_border_light(posX, CHUNK_SIZE + 1, posZ, lightLevel);
-		} else if (posY == CHUNK_SIZE && _neighbours[face_dir::PLUSY]) {
-			// std::cout << "corner " << _startX << ", " << _startY + CHUNK_SIZE << std::endl;
-			_neighbours[face_dir::PLUSY]->update_border_light(posX, 0, posZ, lightLevel);
-		}
-	}
-	if (_block_light[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] < lightLevel) {
-		_block_light[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = lightLevel;
-	}
+	return (_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ]);
 }
 
-void Chunk::update_border_light_spread( int posX, int posY, int posZ, char lightLevel, face_dir origin )
+void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool skySpread )
 {
-	if (!(posX == 1 || posY == 1 || posX == CHUNK_SIZE || posY == CHUNK_SIZE)) {
-		std::cout << "ERROR update_border_light spread not border block " << posX << ", " << posY << std::endl;
+	if (posZ < 0 || posZ > 255) {
 		return ;
 	}
-	if (_thread.joinable()) {
-		_thread.join();
-	}
-	std::cout << "update border light spread " << _startX << ", " << _startY << " | rpos " << _startX + posX - 1 << ", " << _startY + posY - 1 << std::endl;
-	if (posX == 1) {
-		if (posY == 1) {
-			if (origin == face_dir::MINUSX && _neighbours[face_dir::MINUSY]) {
-				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY - CHUNK_SIZE << std::endl;
-				_neighbours[face_dir::MINUSY]->update_border_light(posX, CHUNK_SIZE + 1, posZ, lightLevel);
-			} else if (origin == face_dir::MINUSY && _neighbours[face_dir::MINUSX]) {
-				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX - CHUNK_SIZE << ", " << _startY << std::endl;
-				_neighbours[face_dir::MINUSX]->update_border_light(CHUNK_SIZE + 1, posY, posZ, lightLevel);
+	if (posX < 0 || posX >= CHUNK_SIZE || posY < 0 || posY >= CHUNK_SIZE) {
+		// spread neighbour
+		if (posX == -1) {
+			if (_neighbours[face_dir::MINUSX]) {
+				_neighbours[face_dir::MINUSX]->light_try_spread(CHUNK_SIZE - 1, posY, posZ, level, skySpread);
+			}
+		} else if (posY == -1) {
+			if (_neighbours[face_dir::MINUSY]) {
+				_neighbours[face_dir::MINUSY]->light_try_spread(posX, CHUNK_SIZE - 1, posZ, level, skySpread);
+			}
+		} else if (posX == CHUNK_SIZE) {
+			if (_neighbours[face_dir::PLUSX]) {
+				_neighbours[face_dir::PLUSX]->light_try_spread(0, posY, posZ, level, skySpread);
 			}
 		} else if (posY == CHUNK_SIZE) {
-			if (origin == face_dir::MINUSX && _neighbours[face_dir::PLUSY]) {
-				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY + CHUNK_SIZE << std::endl;
-				_neighbours[face_dir::PLUSY]->update_border_light(posX, 0, posZ, lightLevel);
-			} else if (origin == face_dir::PLUSY && _neighbours[face_dir::MINUSX]) {
-				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX - CHUNK_SIZE << ", " << _startY << std::endl;
-				_neighbours[face_dir::MINUSX]->update_border_light(CHUNK_SIZE + 1, posY, posZ, lightLevel);
+			if (_neighbours[face_dir::PLUSY]) {
+				_neighbours[face_dir::PLUSY]->light_try_spread(posX, 0, posZ, level, skySpread);
 			}
 		}
-	} else if (posX == CHUNK_SIZE) {
-		if (posY == 1) {
-			if (origin == face_dir::PLUSX && _neighbours[face_dir::MINUSY]) {
-				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY - CHUNK_SIZE << std::endl;
-				_neighbours[face_dir::MINUSY]->update_border_light(posX, CHUNK_SIZE + 1, posZ, lightLevel);
-			} else if (origin == face_dir::MINUSY && _neighbours[face_dir::PLUSX]) {
-				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX + CHUNK_SIZE << ", " << _startY << std::endl;
-				_neighbours[face_dir::PLUSX]->update_border_light(0, posY, posZ, lightLevel);
-			}
-		} else if (posY == CHUNK_SIZE) {
-			if (origin == face_dir::PLUSX && _neighbours[face_dir::PLUSY]) {
-				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY + CHUNK_SIZE << std::endl;
-				_neighbours[face_dir::PLUSY]->update_border_light(posX, 0, posZ, lightLevel);
-			} else if (origin == face_dir::PLUSY && _neighbours[face_dir::PLUSX]) {
-				// std::cout << "light spread corner " << s_blocks[wlevel].name << " " << _startX + CHUNK_SIZE << ", " << _startY << std::endl;
-				_neighbours[face_dir::PLUSX]->update_border_light(0, posY, posZ, lightLevel);
-			}
+	} else if (!air_flower(_blocks[((posX + 1) * (CHUNK_SIZE + 2) + posY + 1) * WORLD_HEIGHT + posZ], true, false)) {
+		short neighbour = (_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] >> (8 * skySpread));
+		if (!(neighbour & 0xF0) && ((neighbour & 0xF) != maxs(0, (level & 0xF) - 1))) { // || (level & 0xF0) only spread to non source blocks whose value is not expected value. source block always spread
+			light_spread(posX, posY, posZ, skySpread);
 		}
 	}
-
-			// std::cout << '[' << _startX << ", " << _startY << "] light spread at border " << posX << ", " << posY << ", " << posZ << " >>" << value << " into " << wlevel << std::endl;
-	_block_light[((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT) + posZ] = lightLevel;
-	light_spread(_block_light, posX, posY, posZ);
 }

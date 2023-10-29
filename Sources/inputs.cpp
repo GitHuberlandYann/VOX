@@ -230,6 +230,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 		mtx.lock();
 		if ((*it)->inPerimeter(posX, posY, render_dist * CHUNK_SIZE)) {
 			// std::cout << "IN PERIMETER" << std::endl;
+			(*it)->checkFillVertices();
 			newperi_chunks.push_back(*it);
 			coords.erase({(*it)->getStartX(), (*it)->getStartY()});
 		} else if (!(*it)->inPerimeter(posX, posY, render_dist * 2 * CHUNK_SIZE)) {

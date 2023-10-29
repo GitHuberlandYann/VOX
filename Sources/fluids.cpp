@@ -117,8 +117,8 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 						if (value > blocks::WATER1) {
 							value = blocks::WATER1;
 							_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
-							_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
-							_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
+							_added[posX + (posY << 8) + (posZ << 16)] = value;
+							_removed.erase(posX + (posY << 8) + (posZ << 16));
 						}
 						stop = false;
 					} else if (adj < value) {
@@ -126,8 +126,8 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 						if (adj < value - 1) {
 							value = adj + 1; // update
 							_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
-							_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
-							_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
+							_added[posX + (posY << 8) + (posZ << 16)] = value;
+							_removed.erase(posX + (posY << 8) + (posZ << 16));
 						}
 						stop = false; // still supplyed
 						// std::cout << "supplyed by water" << adj << std::endl;
@@ -141,8 +141,8 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 			// std::cout << "stop flow of " << s_blocks[value].name << std::endl;
 			handle_border_block({posX - 1, posY - 1, posZ}, value, false);
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = blocks::AIR;
-			_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
-			_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
+			_added.erase(posX + (posY << 8) + (posZ << 16));
+			_removed.insert(posX + (posY << 8) + (posZ << 16));
 			// _water_count -= exposed_water_faces(posX, posY, posZ);
 			for (int index = 0; index < 6; index++) {
 				const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
@@ -159,8 +159,8 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 			// std::cout << "infinite water source" << std::endl;
 			value = blocks::WATER; // infinite water baby
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
-			_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
-			_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
+			_added[posX + (posY << 8) + (posZ << 16)] = value;
+			_removed.erase(posX + (posY << 8) + (posZ << 16));
 		}
 	}
 	return (false);
@@ -173,8 +173,8 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 	if (!air_flower(value, false, true) || value > level) {// || (value == level && level == blocks::WATER1)) {
 		// std::cout << "column expension, water count before: " << _water_count << std::endl;
 		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = level;
-		_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = level;
-		_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
+		_added[posX + (posY << 8) + (posZ << 16)] = level;
+		_removed.erase(posX + (posY << 8) + (posZ << 16));
 		if (!air_flower(value, false, true) && value != blocks::AIR) { // replace flower with water
 			// std::cout << _startX << ", " << _startY << " value before: " << s_blocks[value].name << ". displayed: " << _displayed_faces << std::endl;
 			_displayed_faces -= (2 + 2 * (value == blocks::TORCH));
@@ -182,10 +182,6 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 			delete [] _vertices;
 			_vertices = new GLint[_displayed_faces * 24]; // TODO set flag to true and update vert array once on this frame instead of once per destroyed flower
 			fill_vertex_array();
-			_vaoReset = false;
-			_mtx.lock();
-			_vaoVIP = true;
-			_mtx.unlock();
 		}
 		if (posX < 1 || posX > CHUNK_SIZE || posY < 1 || posY > CHUNK_SIZE) {
 			// std::cout << "addFlow at border" << std::endl;
@@ -464,18 +460,14 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int wlevel, bool a
 		if (!air_flower(value, false, true) || (value >= blocks::WATER && value > wlevel)) {
 			// std::cout << '[' << _startX << ", " << _startY << "] flow at border " << posX << ", " << posY << ", " << posZ << " >>" << value << " into " << wlevel << std::endl;
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = wlevel;
-			_added[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = wlevel;
-			_removed.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
+			_added[posX + (posY << 8) + (posZ << 16)] = wlevel;
+			_removed.erase(posX + (posY << 8) + (posZ << 16));
 			if (!air_flower(value, false, true)) {
 				if (value != blocks::AIR) { // replace flower with water
 					_displayed_faces += 2;
 					delete [] _vertices;
 					_vertices = new GLint[_displayed_faces * 24];
 					fill_vertex_array();
-					_vaoReset = false;
-					_mtx.lock();
-					_vaoVIP = true;
-					_mtx.unlock();
 				}
 				_hasWater = true;
 			}
@@ -484,8 +476,8 @@ void Chunk::update_border_flow( int posX, int posY, int posZ, int wlevel, bool a
 	} else { // never used for now
 		if (_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] >= blocks::WATER) {
 			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = blocks::AIR;
-			_added.erase((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
-			_removed.insert((posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ);
+			_added.erase(posX + (posY << 8) + (posZ << 16));
+			_removed.insert(posX + (posY << 8) + (posZ << 16));
 			_fluids.insert(posX + (posY << 8) + (posZ << 16));
 		}
 	}
