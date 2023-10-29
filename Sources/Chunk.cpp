@@ -915,7 +915,9 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 	}
 	delete [] _vertices;
 	_vertices = new GLint[_displayed_faces * 4 * 6];
-	fill_vertex_array();
+	if (!_light_update) {
+		fill_vertex_array();
+	}
 }
 
 void Chunk::generate_chunk( void )
