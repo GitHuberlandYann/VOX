@@ -220,6 +220,9 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	_skyUniProj = glGetUniformLocation(_skyShaderProgram, "proj");
 	update_cam_perspective();
 
+	_uniInternalLight = glGetUniformLocation(_shaderProgram, "internal_light");
+	glUniform1i(_uniInternalLight, 15);
+
 	_skyUniColor = glGetUniformLocation(_skyShaderProgram, "color");
 	_skyUniAnim = glGetUniformLocation(_skyShaderProgram, "animFrame");
 
@@ -401,6 +404,7 @@ void OpenGL_Manager::main_loop( void )
 				user_inputs(currentTime - previousFrame, ++backFromMenu > 3);
 			}
 			chunk_update();
+			DayCycle::Get()->update(currentTime - previousFrame);
 		}
 		// b.stop("user inputs");
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
@@ -435,6 +439,7 @@ void OpenGL_Manager::main_loop( void )
 		mtx_backup.lock();
 		std::string str = (_debug_mode)
 			? "Timer: " + std::to_string(currentTime)
+				+ '\n' + DayCycle::Get()->getInfos()
 				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((currentTime - previousFrame) * 1000)
 				+ '\n' + _camera->getCamString(_game_mode)
 				+ "\nBlock\t> " + ((_block_hit.w >= blocks::AIR) ? s_blocks[_block_hit.w].name : s_blocks[_block_hit.w + blocks::NOTVISIBLE].name)

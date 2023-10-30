@@ -150,6 +150,14 @@ int blockAtlasY( int block ) // y coord in blockAtlas in pxl
 	return ((block % 16) * 16);
 }
 
+std::string doubleDigits( int nb )
+{
+	if (nb < 10) {
+		return (std::string("0") + static_cast<char>('0' + nb));
+	}
+	return (std::to_string(nb));
+}
+
 /* * we simulate that flowers are air block in order to display adjacent blocks properly
    * also use this for all 'see-through' blocks like leaves, water..
    * if air_leaves, leaves are considered as air
@@ -313,24 +321,24 @@ bool torchFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, gl
 {
 	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
-	if (vertices[index + 3] == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& vertices[index + 4 + 3] == v1.z && vertices[index + 4 + 1] == v1.x && vertices[index + 4 + 2] == v1.y
-		&& vertices[index + 8 + 3] == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
+	if ((vertices[index + 3] & 0xFF) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v1.z && vertices[index + 4 + 1] == v1.x && vertices[index + 4 + 2] == v1.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
 		return (true);
 	}
-	if (vertices[index + 3] == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
-		&& vertices[index + 4 + 3] == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
-		&& vertices[index + 8 + 3] == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
+	if ((vertices[index + 3] & 0xFF) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
 		return (true);
 	}
-	if (vertices[index + 3] == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
-		&& vertices[index + 4 + 3] == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
-		&& vertices[index + 8 + 3] == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
+	if ((vertices[index + 3] & 0xFF) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
 		return (true);
 	}
-	if (vertices[index + 3] == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& vertices[index + 4 + 3] == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
-		&& vertices[index + 8 + 3] == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
+	if ((vertices[index + 3] & 0xFF) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
 		return (true);
 	}
 
@@ -342,14 +350,14 @@ bool crossFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, gl
 {
 	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
-	if (vertices[index + 3] == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& vertices[index + 4 + 3] == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
-		&& vertices[index + 8 + 3] == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
+	if ((vertices[index + 3] & 0xFF) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
 		return (true);
 	}
-	if (vertices[index + 3] == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
-		&& vertices[index + 4 + 3] == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
-		&& vertices[index + 8 + 3] == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
+	if ((vertices[index + 3] & 0xFF) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
 		return (true);
 	}
 
@@ -361,34 +369,34 @@ bool blockFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, gl
 {
 	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
-	if (vertices[index + 3] == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
-		&& vertices[index + 4 + 3] == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
-		&& vertices[index + 8 + 3] == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
+	if ((vertices[index + 3] & 0xFF) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
 		return (true);
 	}
-	if (vertices[index + 3] == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
-		&& vertices[index + 4 + 3] == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
-		&& vertices[index + 8 + 3] == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
+	if ((vertices[index + 3] & 0xFF) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
 		return (true);
 	}
-	if (vertices[index + 3] == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& vertices[index + 4 + 3] == v1.z && vertices[index + 4 + 1] == v1.x && vertices[index + 4 + 2] == v1.y
-		&& vertices[index + 8 + 3] == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
+	if ((vertices[index + 3] & 0xFF) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v1.z && vertices[index + 4 + 1] == v1.x && vertices[index + 4 + 2] == v1.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
 		return (true);
 	}
-	if (vertices[index + 3] == v5.z && vertices[index + 1] == v5.x && vertices[index + 2] == v5.y
-		&& vertices[index + 4 + 3] == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
-		&& vertices[index + 8 + 3] == v7.z && vertices[index + 8 + 1] == v7.x && vertices[index + 8 + 2] == v7.y) {
+	if ((vertices[index + 3] & 0xFF) == v5.z && vertices[index + 1] == v5.x && vertices[index + 2] == v5.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v7.z && vertices[index + 8 + 1] == v7.x && vertices[index + 8 + 2] == v7.y) {
 		return (true);
 	}
-	if (vertices[index + 3] == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
-		&& vertices[index + 4 + 3] == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
-		&& vertices[index + 8 + 3] == v0.z && vertices[index + 8 + 1] == v0.x && vertices[index + 8 + 2] == v0.y) {
+	if ((vertices[index + 3] & 0xFF) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v0.z && vertices[index + 8 + 1] == v0.x && vertices[index + 8 + 2] == v0.y) {
 		return (true);
 	}
-	if (vertices[index + 3] == v2.z && vertices[index + 1] == v2.x && vertices[index + 2] == v2.y
-		&& vertices[index + 4 + 3] == v3.z && vertices[index + 4 + 1] == v3.x && vertices[index + 4 + 2] == v3.y
-		&& vertices[index + 8 + 3] == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
+	if ((vertices[index + 3] & 0xFF) == v2.z && vertices[index + 1] == v2.x && vertices[index + 2] == v2.y
+		&& (vertices[index + 4 + 3] & 0xFF) == v3.z && vertices[index + 4 + 1] == v3.x && vertices[index + 4 + 2] == v3.y
+		&& (vertices[index + 8 + 3] & 0xFF) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
 		return (true);
 	}
 

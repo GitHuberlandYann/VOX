@@ -30,6 +30,7 @@ void OpenGL_Manager::saveWorld( void )
 		+ ",\n\t\"f5_mode\": " + ((_f5_mode) ? "true" : "false")
 		+ ",\n\t\"outline\": " + ((_outline) ? "true" : "false")
 		+ ",\n\t\"render_distance\": " + std::to_string(_render_distance) + ",\n\t"
+		+ DayCycle::Get()->saveString()
 		+ _camera->saveString()
 		+ _inventory->saveString()
 		+ saveBackupString()
@@ -42,6 +43,15 @@ void OpenGL_Manager::saveWorld( void )
 	catch (std::exception & e) {
 		std::cerr << e.what() << std::endl << "world save on Worlds/" << _world_name << " failure .. hope you did some snapshot" << std::endl;
 	}
+}
+
+std::string DayCycle::saveString( void )
+{
+	std::string res = "\"dayCycle\": {\"day\": "
+		+ std::to_string(_day) + ", \"hour\": " + std::to_string(_hour) + ", \"minute\": " + std::to_string(_minute)
+		+ ", \"light\": " + std::to_string(_internal_light) + ", \"state\": " + std::to_string(_state)
+		+ "},\n\t";
+	return (res);
 }
 
 std::string Camera::saveString( void )
@@ -210,6 +220,8 @@ void OpenGL_Manager::loadWorld( std::string file )
 				glUniform1f(_skyUniFog, (1 + _render_distance) * CHUNK_SIZE);
 				glUseProgram(_shaderProgram);
 				ofs << "render dist set to " << _render_distance << std::endl;
+			} else if (!line.compare(0, 12, "\"dayCycle\": ")) {
+				DayCycle::Get()->loadWorld(ofs, line);
 			} else if (!line.compare(0, 10, "\"camera\": ")) {
 				_camera->loadWorld(ofs, indata);
 			} else if (!line.compare(0, 13, "\"inventory\": ")) {
@@ -225,6 +237,37 @@ void OpenGL_Manager::loadWorld( std::string file )
 		std::cerr << e.what() << std::endl;
 		exit (1); // TODO might want to return to main menu instead
 	}
+}
+
+void DayCycle::loadWorld( std::ofstream & ofs, std::string line )
+{
+	int index = 12;
+	for (index = 12; line[index] && line[index] != ':'; index++);
+	_day = std::atoi(&line[index + 1]);
+	for (index += 2; line[index] && line[index] != ':'; index++);
+	_hour = std::atoi(&line[index + 1]);
+	for (index += 2; line[index] && line[index] != ':'; index++);
+	_minute = std::atoi(&line[index + 1]);
+	for (index += 2; line[index] && line[index] != ':'; index++);
+	_internal_light = std::atoi(&line[index + 1]);
+	for (index += 2; line[index] && line[index] != ':'; index++);
+	int value = std::atoi(&line[index + 1]);
+	switch (value) {
+		case 0:
+			_state = dayCycle_state::DAYTIME;
+			break ;
+		case 1:
+			_state = dayCycle_state::SUNSET;
+			break ;
+		case 2:
+			_state = dayCycle_state::NIGHTTIME;
+			break ;
+		case 3:
+			_state = dayCycle_state::SUNRISE;
+			break ;
+	}
+	const std::string dayCycle_states[4] = {"DAYTIME", "SUNSET", "NIGHTTIME", "SUNRISE"};
+	ofs << "dayCycle " << dayCycle_states[_state] << " set to day " << _day << " " << _hour << ":" << _minute << " (light " << _internal_light << ")" << std::endl;
 }
 
 void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )

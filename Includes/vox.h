@@ -35,6 +35,7 @@ extern std::mutex mtx_backup;
 
 # include "utils.h"
 # include "Benchmark.hpp"
+# include "DayCycle.hpp"
 # include "Camera.hpp"
 # include "PerlinNoise.hpp"
 # include "Blocks.hpp"
