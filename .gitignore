@@ -27,7 +27,7 @@
 *.lib
 
 # Logs
-Worlds/loading.log
+*.log
 
 # Executables
 *.exe

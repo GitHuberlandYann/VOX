@@ -484,8 +484,6 @@ void Chunk::generate_sky( void )
 			}
 		}
 	}
-// *18 because 2 triangles/face, which is (4 coord * 3 points * 2 triang) int
-	_sky_vert = new GLint[_sky_count * 24]; // will be filled in later with a call to sort_sky
 }
 
 int Chunk::sand_fall_endz( glm::ivec3 pos )
@@ -550,14 +548,11 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	handle_border_block(pos, air_flower(value, true, true), false); // if block at border of chunk gets deleted, we update neighbours // TODO might use false, true to update leaves too ?
 	_blocks[offset] = blocks::AIR;
 	if (value > blocks::AIR && value < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
-		_mtx.lock();
 		_displayed_faces -= face_count(value, pos.x + 1, pos.y + 1, pos.z, value != blocks::OAK_LEAVES);
-		_mtx.unlock();
 		if (value == blocks::TORCH) {
 			std::cout << "rm light" << std::endl;
 			_lights[(pos.x * CHUNK_SIZE + pos.y) * WORLD_HEIGHT + pos.z] &= 0xFF00;
-			light_spread(pos.x, pos.y, pos.z, false);
-			_light_update = false;
+			light_spread(pos.x, pos.y, pos.z, false); // spread block light
 			std::cout << "over" << std::endl;
 		}
 	} else if (value == blocks::WATER) { // use bucket on water source
@@ -567,6 +562,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	}
 	if (air_flower(value, false, true)) {
 		light_spread(pos.x, pos.y, pos.z, true); // spread sky light
+		light_spread(pos.x, pos.y, pos.z, false); // spread block light
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 			if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
@@ -575,13 +571,9 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 				int adj = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
 				if (adj < blocks::AIR) {
 					_blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]] += blocks::NOTVISIBLE;
-					_mtx.lock();
 					_displayed_faces++;
-					_mtx.unlock();
 				} else if (air_flower(adj, false, false)) {
-					_mtx.lock();
 					_displayed_faces++;
-					_mtx.unlock();
 				} else if (index != face_dir::MINUSZ && adj >= blocks::WATER) { // if water under, it is not updated
 					_fluids.insert((pos.x + 1 + delta[0]) + ((pos.y + 1 + delta[1]) << 8) + ((pos.z + delta[2]) << 16));
 				}
@@ -651,12 +643,11 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 		_light_update = false;
 		std::cout << "over" << std::endl;
 	}
-	_mtx.lock();
 	_displayed_faces += face_count(type, pos.x + 1, pos.y + 1, pos.z, type != blocks::OAK_LEAVES);
-	_mtx.unlock();
 	if (!air_flower(type, true, false)) {
 		return ;
 	}
+	_lights[(pos.x * CHUNK_SIZE + pos.y) * WORLD_HEIGHT + pos.z] = 0; // rm light if solid block added
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
@@ -664,11 +655,12 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 		} else {
 			GLint value = _blocks[((pos.x + delta[0] + 1) * (CHUNK_SIZE + 2) + pos.y + delta[1] + 1) * WORLD_HEIGHT + pos.z + delta[2]];
 			if (air_flower(value, true, false)) {
-				_mtx.lock();
 				_displayed_faces--;
-				_mtx.unlock();
-			} else if (index != face_dir::PLUSZ) {
-				light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 0, true); // spread sky light, but not upwards duh
+			} else {
+				if (index != face_dir::PLUSZ) {
+					light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 0, true); // spread sky light, but not upwards duh
+				}
+				light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 0, false);
 			}
 			if (value > blocks::AIR && !exposed_block(pos.x + delta[0] + 1, pos.y + delta[1] + 1, pos.z + delta[2], value != blocks::OAK_LEAVES)) {
 				// was exposed before, but isn't anymore
@@ -693,10 +685,14 @@ void Chunk::setup_array_buffer( void )
 	glBindVertexArray(_vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+	_mtx.lock();
 	glBufferData(GL_ARRAY_BUFFER, _displayed_faces * 4 * 6 * sizeof(GLint), _vertices, GL_STATIC_DRAW);
+	_mtx.unlock();
 
 	_vaoReset = true;
+	_mtx.lock();
 	_vaoVIP = false;
+	_mtx.unlock();
 
 	glEnableVertexAttribArray(SPECATTRIB);
 	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
@@ -837,12 +833,17 @@ void Chunk::generation( void )
 	_lights = new short[CHUNK_SIZE * CHUNK_SIZE * WORLD_HEIGHT];
 	generate_lights();
 	// b.stamp("lights");
-	_genDone = true;
+	_mtx.lock();
 	_vertices = new GLint[_displayed_faces * 4 * 6]; // specifications, X Y Z
+	_mtx.unlock();
+	_genDone = true;
 	// fill_vertex_array();
 	// b.stamp("vertcices");
+	_mtx_sky.lock();
 	_sky = new GLboolean[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2)];
 	generate_sky();
+	_sky_vert = new GLint[_sky_count * 24]; // will be filled in later with a call to sort_sky
+	_mtx_sky.unlock();
 	// b.stamp("sky");
 	// b.stop("generation");
 }
@@ -883,7 +884,6 @@ void Chunk::checkFillVertices( void )
 				}
 			}
 		}
-		_light_update = false;
 		fill_vertex_array();
 	} else if (!cnt) {
 		std::cerr << "ERROR chunk has no neighbours" << std::endl;
@@ -939,6 +939,7 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 		return ;
 	}
 	// pos = glm::vec3(pos.x - _startX, pos.y - _startY, pos.z);
+	_mtx_sky.lock();
 	std::vector<std::pair<float, std::array<int, 6>>> order;
 	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
 		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
@@ -962,6 +963,7 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 			}
 		}
 	}
+	_mtx_sky.unlock();
 	// std::cout << "before sort" << std::endl;
 	// 	std::cout << "_sky_vert malloc " << _sky_count * 24 << std::endl;
 	// 	std::cout << "order size " << order.size() << std::endl;
@@ -1234,9 +1236,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 			// std::cout << "took jump" << std::endl;
 			goto FILL; // this is only to update face shading TODO only update concerned faces
 		}
-		_mtx.lock();
 		_displayed_faces--;
-		_mtx.unlock();
 		if (!exposed_block(target.x, target.y, level, true)) { // block no more visible
 			_blocks[target_offset] -= blocks::NOTVISIBLE;
 		}
@@ -1258,9 +1258,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 		if (cornerChunk || !air_flower(_blocks[target_offset], false, false)) {
 			goto FILL;
 		}
-		_mtx.lock();
 		_displayed_faces++;
-		_mtx.unlock();
 	}
 	delete [] _vertices;
 	_vertices = new GLint[_displayed_faces * 24];
@@ -1442,8 +1440,8 @@ void Chunk::drawArray( GLint & counter, GLint &face_counter )
 	if (_light_update) {
 		std::cout << _startX << ", " << _startY << " light update" << std::endl;
 		fill_vertex_array();
-		_light_update = false;
-	} else if (!_vaoReset) { // TODO change vosReset logic (swap true and false)
+	}
+	if (!_vaoReset) { // TODO change vosReset logic (swap true and false)
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		++counter;
 		if (!_vaoVIP && counter % 50 > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
@@ -1452,10 +1450,8 @@ void Chunk::drawArray( GLint & counter, GLint &face_counter )
 		setup_array_buffer();
 	}
     glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down
-	_mtx.lock();
 	glDrawArrays(GL_TRIANGLES, 0, _displayed_faces * 6);
 	face_counter += _displayed_faces;
-	_mtx.unlock();
 }
 
 void Chunk::updateFurnaces( double currentTime )
@@ -1489,11 +1485,9 @@ void Chunk::drawSky( GLint & counter, GLint &face_counter )
 		}
 	}
     glBindVertexArray(_skyVao);
-	_mtx.lock();
 	glDrawArrays(GL_TRIANGLES, 0, _sky_count * 6); // 6 points/face
 	// std::cout << "draw sky" << std::endl;
 	face_counter += _sky_count;
-	_mtx.unlock();
 }
 
 void Chunk::drawWater( GLint & counter, GLint &face_counter )
@@ -1511,11 +1505,9 @@ void Chunk::drawWater( GLint & counter, GLint &face_counter )
 		}
 	}
     glBindVertexArray(_waterVao);
-	_mtx.lock();
 	glDrawArrays(GL_TRIANGLES, 0, _water_count * 6); // 6 points/face
 	// std::cout << "draw water" << std::endl;
 	face_counter += _water_count;
-	_mtx.unlock();
 }
 
 std::string Chunk::getAddsRmsString( void )

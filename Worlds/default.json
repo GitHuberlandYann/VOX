@@ -4,7 +4,7 @@
 	"debug_mode": true,
 	"f5_mode": false,
 	"outline": true,
-	"render_distance": 10,
+	"render_distance": 32,
 	"camera": {
 		"pos": {"x": -11.007291, "y": 84.538948, "z": 142.000000},
 		"yaw": 55.500240,

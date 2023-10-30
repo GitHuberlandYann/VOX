@@ -68,7 +68,7 @@ class Chunk
 		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
 		short *_lights; // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
 		GLboolean *_sky, _hasWater;
-		size_t _displayed_faces, _water_count, _sky_count;
+		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
 		std::array<Chunk *, 4> _neighbours;
 		Camera *_camera;
 		std::map<int,int> _orientations, _added;

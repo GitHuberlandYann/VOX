@@ -245,7 +245,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 		++it;
 		mtx.unlock();
 	}
-	b.stamp("NO");
+	b.stamp("delperi");
 	newperi_chunks = sort_chunks(camera->getPos(), newperi_chunks);
 	b.stamp("sort chunks");
 	mtx_perimeter.lock();
