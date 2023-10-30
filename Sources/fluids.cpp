@@ -29,23 +29,25 @@ int Chunk::exposed_water_faces( int row, int col, int level )
 
 static int max_water_level( int v0, int v1, int v2, int v3, int u0, int u1, int u2 )
 {
-	int res = 0;
+	int res = blocks::NOTVISIBLE;
 	if (u0 >= blocks::WATER || u1 >= blocks::WATER || u2 >= blocks::WATER) {
-		return (res);
+		return (0);
 	}
-	if (v0 >= blocks::WATER && v0 > res) {
+	if (v0 >= blocks::WATER && v0 < res) {
 		res = v0;
 	}
-	if (v1 >= blocks::WATER && v1 > res) {
+	if (v1 >= blocks::WATER && v1 < res) {
 		res = v1;
 	}
-	if (v2 >= blocks::WATER && v2 > res) {
+	if (v2 >= blocks::WATER && v2 < res) {
 		res = v2;
 	}
-	if (v3 >= blocks::WATER && v3 > res) {
+	if (v3 >= blocks::WATER && v3 < res) {
 		res = v3;
 	}
-	if (res == blocks::WATER) {
+	if (res == blocks::NOTVISIBLE) {
+		res = 0;
+	} else {
 		++res;
 	}
 	return (res - blocks::WATER);
@@ -232,7 +234,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 	// Bench b;
 	#if 1
 	// pos = glm::vec3(pos.x - _startX, pos.y - _startY, pos.z);
-	std::vector<std::pair<float, std::array<int, 10>>> order; // TODO inherit std::pair and overload camparison operators in order to use std::sort ..............
+	std::vector<std::pair<float, std::array<int, 10>>> order;
 	order.reserve(_water_count);
 	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
 		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
@@ -314,7 +316,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 			offset1 = {o.second[3], o.second[4], 0, o.second[7] - start.w + (1 << 10)};
 			offset2 = {0, 0, o.second[5], -start.w + (1 << 11)};
 			offset3 = {o.second[3], o.second[4], o.second[5], -start.w + (1 << 10) + (1 << 11)};
-			start.w += (1 << 8); // waterStill
+			start.w += (1 << 9); // waterFlow
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_fluid.lock();

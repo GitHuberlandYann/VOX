@@ -79,7 +79,6 @@ class Chunk
 
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		GLint face_count( int type, int row, int col, int level, bool isNotLeaves );
-		// GLint get_empty_faces( int type, int row, int col, int level, bool isNotLeaves );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves );
 	
 		int exposed_water_faces( int row, int col, int level );
@@ -87,9 +86,9 @@ class Chunk
 		bool endFlow( std::set<int> &newFluids, int &value, int posX, int posY, int posZ );
 		bool addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int level );
 	
-		int get_block_type_cave( int row, int col, int level, int ground_level,
-			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
-			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
+		// int get_block_type_cave( int row, int col, int level, int ground_level,
+		// 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
+		// 	bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
 		int get_block_type( siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );

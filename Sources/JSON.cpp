@@ -204,6 +204,11 @@ void OpenGL_Manager::loadWorld( std::string file )
 				ofs << "outline set to " << _outline << std::endl;
 			} else if (!line.compare(0, 19, "\"render_distance\": ")) {
 				_render_distance = std::atoi(&line[19]);
+				glUseProgram(_shaderProgram);
+				glUniform1f(_uniFog, (1 + _render_distance) * CHUNK_SIZE);
+				glUseProgram(_skyShaderProgram);
+				glUniform1f(_skyUniFog, (1 + _render_distance) * CHUNK_SIZE);
+				glUseProgram(_shaderProgram);
 				ofs << "render dist set to " << _render_distance << std::endl;
 			} else if (!line.compare(0, 10, "\"camera\": ")) {
 				_camera->loadWorld(ofs, indata);
@@ -280,7 +285,7 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			ofs << "inventory slot set to " << _slot << std::endl;
 		} else if (!line.compare(0, 11, "\"content\": ")) {
 			index = 12;
-			for (int cindex = 0; cindex < 8 && line[index]; cindex++) {
+			for (int cindex = 0; cindex < 9 && line[index]; cindex++) {
 				_content[cindex].x = std::atoi(&line[index + 1]);
 				for (; line[index] && line[index] != ','; index++);
 				_content[cindex].y = std::atoi(&line[index + 2]);

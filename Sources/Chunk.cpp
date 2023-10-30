@@ -156,7 +156,7 @@ bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves )
 		|| !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], isNotLeaves, false)
 		|| below || above);
 }
-
+/*
 int Chunk::get_block_type_cave( int row, int col, int level, int ground_level,
 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 	bool grass, bool tree_gen, std::vector<glm::ivec3> & trees )
@@ -189,7 +189,7 @@ int Chunk::get_block_type_cave( int row, int col, int level, int ground_level,
 		}
 	}
 	return (value);
-}
+}*/
 
 int Chunk::get_block_type( siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
@@ -460,6 +460,7 @@ void Chunk::generate_blocks( void )
 		}
 	}
 	// b.stamp("rest");
+	// b.stop("blocks");
 }
 
 void Chunk::generate_sky( void )
