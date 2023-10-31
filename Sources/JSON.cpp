@@ -43,6 +43,7 @@ void OpenGL_Manager::saveWorld( void )
 	catch (std::exception & e) {
 		std::cerr << e.what() << std::endl << "world save on Worlds/" << _world_name << " failure .. hope you did some snapshot" << std::endl;
 	}
+	glClearColor(0, 0, 0, 1);
 }
 
 std::string DayCycle::saveString( void )
@@ -250,6 +251,8 @@ void DayCycle::loadWorld( std::ofstream & ofs, std::string line )
 	_minute = std::atoi(&line[index + 1]);
 	for (index += 2; line[index] && line[index] != ':'; index++);
 	_internal_light = std::atoi(&line[index + 1]);
+	glUniform1i(_uniInternalLight, _internal_light);
+	glClearColor(gradient(_internal_light, 4, 15, 0, 120 / 255.0), gradient(_internal_light, 4, 15, 0, 169 / 255.0), gradient(_internal_light, 4, 15, 0, 1), 1.0f);
 	for (index += 2; line[index] && line[index] != ':'; index++);
 	int value = std::atoi(&line[index + 1]);
 	switch (value) {

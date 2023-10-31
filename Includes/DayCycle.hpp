@@ -17,7 +17,8 @@ class DayCycle
 		static std::mutex _mtx;
 
 		double _gameTime;
-		int _day, _hour, _minute, _internal_light;
+		int _day, _hour, _minute, _internal_light, _time_multiplier;
+		GLint _uniInternalLight;
 		dayCycle_state _state;
 
 		DayCycle( void );
@@ -30,7 +31,10 @@ class DayCycle
 		void operator=( const DayCycle &other ) = delete;
 
 		static DayCycle *Get( void );
+		void setUniInternalLight( GLint internal_light_location );
+		void setCloudsColor( GLint uniform_location );
 		void update( double deltaTime );
+		void updateTimeMultiplier( GLint mul );
 		std::string getInfos( void );
 		std::string saveString( void );
 		void loadWorld( std::ofstream & ofs, std::string line );

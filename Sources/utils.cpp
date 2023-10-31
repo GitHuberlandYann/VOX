@@ -69,7 +69,7 @@ void check_glstate( std::string str )
 {
 	GLenum error_check = glGetError();	
 	if (error_check) {
-		std::cerr << "glGetError set to " << error_check << ", quitting now" << std::endl;
+		std::cerr << "glGetError set to " << error_check << "when trying to " << str << ", quitting now" << std::endl;
 		exit(1);
 	}
 	if (str == "NO") {
@@ -92,6 +92,8 @@ int chunk_pos( int pos )
 	return (pos);
 }
 
+// takes value in range [start; end] and outputs gradient in range [value_start; value_end]
+// if value out of range, outputs value_start or value_end
 double gradient( double value, double start, double end, double value_start, double value_end )
 {
 	if (value <= start) {

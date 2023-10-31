@@ -366,6 +366,13 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	} else if (glfwGetKey(_window, GLFW_KEY_O) == GLFW_RELEASE) {
 		_key_o = 0;
 	}
+	// change time multiplier
+	GLint mul = (glfwGetKey(_window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS);
+	if (mul && ++_key_time_mul == 1) {
+		DayCycle::Get()->updateTimeMultiplier(mul);
+	} else if (!mul) {
+		_key_time_mul = 0;
+	}
 
 	// add and remove blocks
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
@@ -448,17 +455,6 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		// std::cout << "render distance set to " << _render_distance << std::endl;
 	} else if (!key_render_dist) {
 		_key_rdist = 0;
-	}
-
-	// change background color
-	GLint key_col_r = (glfwGetKey(_window, GLFW_KEY_KP_7) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_4) == GLFW_PRESS);
-	GLint key_col_g = (glfwGetKey(_window, GLFW_KEY_KP_8) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_5) == GLFW_PRESS);
-	GLint key_col_b = (glfwGetKey(_window, GLFW_KEY_KP_9) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_6) == GLFW_PRESS);
-	if (key_col_r || key_col_g || key_col_b) {
-		_background_color.x = glm::clamp(_background_color.x + key_col_r * 0.01f, 0.f, 1.f);
-		_background_color.y = glm::clamp(_background_color.y + key_col_g * 0.01f, 0.f, 1.f);
-		_background_color.z = glm::clamp(_background_color.z + key_col_b * 0.01f, 0.f, 1.f);
-		glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
 	}
 
 	// camera work 

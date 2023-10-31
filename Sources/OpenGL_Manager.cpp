@@ -1,10 +1,10 @@
 # include "vox.h"
 
 OpenGL_Manager::OpenGL_Manager( void )
-	: _window(NULL), _textures(NULL), _background_color(0.0f, 0.0f, 0.0f),
+	: _window(NULL), _textures(NULL),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE),
 		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0),
-		_key_h(0), _key_g(0), _key_j(0), _key_o(0), _key_jump(0), _key_1(0), _key_2(0), _key_3(0),
+		_key_h(0), _key_g(0), _key_j(0), _key_o(0), _key_time_mul(0), _key_jump(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _outline(true), _paused(true),
 		_esc_released(true), _e_released(true),
@@ -220,14 +220,10 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	_skyUniProj = glGetUniformLocation(_skyShaderProgram, "proj");
 	update_cam_perspective();
 
-	_uniInternalLight = glGetUniformLocation(_shaderProgram, "internal_light");
-	glUniform1i(_uniInternalLight, 15);
+	DayCycle::Get()->setUniInternalLight(glGetUniformLocation(_shaderProgram, "internal_light"));
 
 	_skyUniColor = glGetUniformLocation(_skyShaderProgram, "color");
 	_skyUniAnim = glGetUniformLocation(_skyShaderProgram, "animFrame");
-
-	// _uniPV = glGetUniformLocation(_shaderProgram, "pv");
-	// update_cam_matrix();
 
 	check_glstate("\nCommunication with shader program successfully established");
 }
@@ -349,7 +345,7 @@ void OpenGL_Manager::main_loop( void )
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glfwSwapInterval(1);
-	glClearColor(_background_color.x, _background_color.y, _background_color.z, 1.0f);
+	glClearColor(0, 0, 0, 1.0f); // start of black, will be changed in game by DayCycle
 
 	set_cursor_position_callback( NULL, _menu );
 	set_scroll_callback(NULL);
@@ -422,11 +418,11 @@ void OpenGL_Manager::main_loop( void )
 		if (animUpdate) {
 			update_anim_frame();
 		}
-		glUniform3f(_skyUniColor, 0.5f, 0.5f, 0.5f);
+		DayCycle::Get()->setCloudsColor(_skyUniColor);
 		for (auto& c: _visible_chunks) {
 			c->drawSky(newVaoCounter, skyFaces);
 		}
-		glUniform3f(_skyUniColor, 0.24705882f, 0.4627451f, 0.89411765f);
+		glUniform3f(_skyUniColor, 0.24705882f, 0.4627451f, 0.89411765f); // water color
 		for (auto&c: _visible_chunks) {
 			c->drawWater(newVaoCounter, waterFaces);
 		}
@@ -475,6 +471,7 @@ void OpenGL_Manager::main_loop( void )
 			int menu_ret = _menu->run(_render_distance);
 			if (menu_ret == 2) {
 				_world_name = _menu->getWorldFile();
+				glUseProgram(_shaderProgram); // used by dayCycle to modif internal light
 				loadWorld("Worlds/" + _world_name);
 				initWorld();
 			} else if (menu_ret == 1) { // back to game
