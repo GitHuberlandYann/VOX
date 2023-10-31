@@ -39,6 +39,6 @@ void main()
 	int skyLight = internal_light - (15 - ((position.z >> 28) & 0xF));
 	int shadow = 15 - max(blockLight, skyLight);
 	int cornerLight = ((position.z >> 16) & 3);
-	FaceShadow = max(0.2, (max(25, ((specifications >> 16) & 0xFF) - 5 * shadow) - 17 * cornerLight) / 100.0f);
+	FaceShadow = max(0.05, (max(10, ((specifications >> 16) & 0xFF) - 7 * shadow) - 17 * cornerLight) / 100.0f);
 	zDist = gl_Position.z;
 }

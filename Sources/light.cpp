@@ -40,7 +40,11 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 				}
 				maxLevel = maxs(maxLevel, (light >> shift) & 0xF);
 			} else if (!air_flower(_blocks[((posX + 1 + delta[0]) * (CHUNK_SIZE + 2) + posY + 1 + delta[1]) * WORLD_HEIGHT + posZ + delta[2]], true, false)) {
-				maxLevel = maxs(maxLevel, (_lights[((posX + delta[0]) * CHUNK_SIZE + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]] >> shift) & 0xF);
+				short adj = _lights[((posX + delta[0]) * CHUNK_SIZE + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]] >> shift;
+				maxLevel = maxs(maxLevel, adj & 0xF);
+				if (skySpread && index == face_dir::PLUSZ && (adj & 0xF0)) {
+					maxLevel = (adj & 0xFF) + 1; // if sky light above is source, own sky light becomes source too
+				}
 			}
 		}
 		if ((maxLevel && maxLevel - 1 != level) || (!maxLevel && level)) {
@@ -49,6 +53,12 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 			_light_update = true;
 		} else {
 			return ; // stop spread when not source and level is unchanged
+		}
+	} else if (skySpread && posZ + 1 < 254) { // skySpread + source block
+		short above = _lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ + 1] >> shift;
+		if (!(above & 0xF0)) { // if block above is not a source anymore
+			_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] &= (0xFF << (8 - shift));
+			return (light_spread(posX, posY, posZ, skySpread));
 		}
 	}
 	// std::cout << "level is " << (int)level << std::endl;
@@ -267,7 +277,7 @@ void Chunk::fill_vertex_array( void )
 						int spec = blockGridX(block_type, 0) + (blockGridY(block_type) << 4) + (100 << 16);
 						int faceLight = computeLight(row, col, level);
 						glm::ivec4 v0 = {spec, p0.x, p0.y, p0.z + (faceLight << 24)};
-						glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
+						glm::ivec4 v1 = {spec + 1 + (1 << 9) + (1 << 8), p5.x, p5.y, p5.z + (faceLight << 24)};
 						glm::ivec4 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2.x, p2.y, p2.z + (faceLight << 24)};
 						glm::ivec4 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7.x, p7.y, p7.z + (faceLight << 24)};
 						face_vertices(_vertices, v0, v1, v2, v3, index);
@@ -349,7 +359,7 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 		}
 	} else if (!air_flower(_blocks[((posX + 1) * (CHUNK_SIZE + 2) + posY + 1) * WORLD_HEIGHT + posZ], true, false)) {
 		short neighbour = (_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] >> (8 * skySpread));
-		if (!(neighbour & 0xF0) && ((neighbour & 0xF) != maxs(0, (level & 0xF) - 1))) { // || (level & 0xF0) only spread to non source blocks whose value is not expected value. source block always spread
+		if ((!(neighbour & 0xF0) || (skySpread && !(level & 0xF0))) && ((neighbour & 0xF) != maxs(0, (level & 0xF) - 1))) { // only spread to non source blocks whose value is not expected value. Also spread to source block if from non source block and skySpread
 			light_spread(posX, posY, posZ, skySpread);
 		}
 	}

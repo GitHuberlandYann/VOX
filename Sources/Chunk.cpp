@@ -318,14 +318,16 @@ void Chunk::generate_blocks( void )
 		for (int col = 0; col < (CHUNK_SIZE + 2); col++) {
 			// int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 100);
 			int surface_level = surfaceLevel(row, col, perlin);
-			bool tree_gen = (distribution(generator) <= 2 && row > 2 && row < CHUNK_SIZE - 1 && col > 2 && col < CHUNK_SIZE - 1);
-			bool poppy = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
-			bool dandelion = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
-			bool blue_orchid = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
-			bool allium = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
-			bool cornflower = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
-			bool pink_tulip = (distribution(generator) <= 2 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
-			bool grass = (distribution(generator) <= 100 && row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
+			int gen = distribution(generator);
+			bool tree_gen = (gen <= 2 && row > 2 && row < CHUNK_SIZE - 1 && col > 2 && col < CHUNK_SIZE - 1);
+			bool interior = (row >= 1 && row <= CHUNK_SIZE && col >= 1 && col <= CHUNK_SIZE);
+			bool poppy = (gen <= 5 && interior);
+			bool dandelion = (gen <= 8 && interior);
+			bool blue_orchid = (gen <= 11 && interior);
+			bool allium = (gen <= 14 && interior);
+			bool cornflower = (gen <= 17 && interior);
+			bool pink_tulip = (gen <= 20 && interior);
+			bool grass = (gen <= 121 && interior);
 			double pillar = perlin.noise2D_01((_startX + row) / 20.0f, (_startY + col) / 20.0f);
 			int ground_cave = 7 + perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) * 14;
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
@@ -441,7 +443,8 @@ void Chunk::generate_blocks( void )
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
 				if (value && value < blocks::WATER) {
-					if (!air_flower(value, false, true) && !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], true, false)) {
+					GLint below = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1];
+					if (!air_flower(value, false, true) && value != blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
 						_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level] = blocks::AIR;
 					} else {
 						GLint count = face_count(value, row, col, level, value != blocks::OAK_LEAVES);
