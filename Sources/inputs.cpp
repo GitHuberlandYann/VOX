@@ -538,12 +538,13 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			_break_frame = _outline;
 		}
 	}
-	glm::ivec3 current_block = {glm::floor(_camera->getPos().x), glm::floor(_camera->getPos().y), glm::floor(_camera->getPos().z)};
+	glm::vec3 camPos = _camera->getPos();
+	glm::ivec3 current_block = {glm::floor(camPos.x), glm::floor(camPos.y), glm::floor(camPos.z)};
 	if (current_block != _camera->_current_block) {
 		_camera->_current_block = current_block;
 		if (current_chunk_ptr) {
-			current_chunk_ptr->sort_sky(_camera->getPos(), true);
-			current_chunk_ptr->sort_water(_camera->getPos(), true);
+			current_chunk_ptr->sort_sky(camPos, true);
+			current_chunk_ptr->sort_water(camPos, true);
 		}
 	}
 

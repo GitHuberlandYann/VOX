@@ -106,13 +106,6 @@ void DayCycle::updateInternalLight( void )
 	}
 	if (saveInternal != _internal_light) {
 		glUniform1i(_uniInternalLight, _internal_light);
-		// glClearColor(gradient(_internal_light, 4, 15, 0, 120 / 255.0), gradient(_internal_light, 4, 15, 0, 169 / 255.0), gradient(_internal_light, 4, 15, 0, 1), 1.0f);
-	}
-	int minutes = _hour * 60 + _minute;
-	if (minutes > 18 * 60 - 5 && minutes < 19 * 60 + 40 + 5) {
-		glClearColor(gradient(minutes, 18 * 60, 19 * 60 + 40, 120 / 255.0, 0), gradient(minutes, 18 * 60, 19 * 60 + 40, 169 / 255.0, 0), gradient(minutes, 18 * 60, 19 * 60 + 40, 1, 0), 1.0f);
-	} else if (minutes > 4 * 60 + 40 - 5 && minutes < 6 * 60 + 5) {
-		glClearColor(gradient(minutes, 4 * 60 + 40, 6 * 60, 0, 120 / 255.0), gradient(minutes, 4 * 60 + 40, 6 * 60, 0, 169 / 255.0), gradient(minutes, 4 * 60 + 40, 6 * 60, 0, 1), 1.0f);
 	}
 }
 
@@ -156,6 +149,12 @@ void DayCycle::setCloudsColor( GLint uniform_location )
 void DayCycle::update( double deltaTime )
 {
 	_gameTime += deltaTime * _time_multiplier;
+	int minutes = _hour * 60 + _minute;
+	if (minutes > 18 * 60 - 5 && minutes < 19 * 60 + 40 + 5) {
+		glClearColor(gradient(minutes, 18 * 60, 19 * 60 + 40, 120 / 255.0, 0), gradient(minutes, 18 * 60, 19 * 60 + 40, 169 / 255.0, 0), gradient(minutes, 18 * 60, 19 * 60 + 40, 1, 0), 1.0f);
+	} else if (minutes > 4 * 60 + 40 - 5 && minutes < 6 * 60 + 5) {
+		glClearColor(gradient(minutes, 4 * 60 + 40, 6 * 60, 0, 120 / 255.0), gradient(minutes, 4 * 60 + 40, 6 * 60, 0, 169 / 255.0), gradient(minutes, 4 * 60 + 40, 6 * 60, 0, 1), 1.0f);
+	}
 	if (_gameTime < MINECRAFT_MINUTE) {
 		return ;
 	}

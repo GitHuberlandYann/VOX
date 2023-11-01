@@ -401,6 +401,8 @@ void OpenGL_Manager::main_loop( void )
 			}
 			chunk_update();
 			DayCycle::Get()->update(currentTime - previousFrame);
+		} else if (_menu->getState() >= INVENTORY_MENU) {
+			DayCycle::Get()->update(currentTime - previousFrame);
 		}
 		// b.stop("user inputs");
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;

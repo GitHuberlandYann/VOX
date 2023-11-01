@@ -1468,7 +1468,22 @@ void Chunk::updateFurnaces( double currentTime )
 			if (o != _orientations.end()) {
 				// std::cout << "ORIENTATION FOUND" << std::endl;
 				o->second = (o->second & 0xF) + (state << 4);
-				fill_vertex_array(); // TODO ONLY UPDATE ONE FACE
+				// TODO set/unset furnace position as light source of 13 using state
+				int posZ = o->first & 0xFF;
+				int posY = ((o->first >> 8) % 18) - 1;
+				int posX = ((o->first >> 8) / 18) - 1;
+				std::cout << "furnace at " << _startX + posX << ", " << _startY + posY << ", " << posZ << std::endl;
+				if (state == furnace_state::ON) {
+					_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] = 13 + (13 << 4);
+					light_spread(posX, posY, posZ, false); // spread block light
+				} else {
+					_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] = 0;
+					for (int index = 0; index < 6; index++) {
+						const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+						light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0, false);
+					}
+				}
+				_light_update = true;
 			}
 		}
 	}

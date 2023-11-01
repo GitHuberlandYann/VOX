@@ -31,9 +31,6 @@ TODOS:
     - skybox
 	- particles ?
     - items on ground after break
-	- time 20 min = 1 day
-	- time pause on menu
-	- no time pause on inventory/furnace
 	- chests
 	- better border chunk handling (trees)
     - Sound https://www.ambiera.com/irrklang/tutorials.html
@@ -83,6 +80,9 @@ DONE:
     - right click and drag in inventory
     - tools durabitlity
     - block break animation
+	- time 20 min = 1 day
+	- time pause on menu
+	- no time pause on inventory/furnace
     - chunk border fix
 	- overall lighting (corner shade, sky light + decrease 1 per block = dark in caves + block light)
 	- torches

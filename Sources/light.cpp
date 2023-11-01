@@ -39,7 +39,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 					}
 				}
 				maxLevel = maxs(maxLevel, (light >> shift) & 0xF);
-			} else if (!air_flower(_blocks[((posX + 1 + delta[0]) * (CHUNK_SIZE + 2) + posY + 1 + delta[1]) * WORLD_HEIGHT + posZ + delta[2]], true, false)) {
+			} else {// if (!air_flower(_blocks[((posX + 1 + delta[0]) * (CHUNK_SIZE + 2) + posY + 1 + delta[1]) * WORLD_HEIGHT + posZ + delta[2]], true, false)) {
 				short adj = _lights[((posX + delta[0]) * CHUNK_SIZE + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]] >> shift;
 				maxLevel = maxs(maxLevel, adj & 0xF);
 				if (skySpread && index == face_dir::PLUSZ && (adj & 0xF0)) {
