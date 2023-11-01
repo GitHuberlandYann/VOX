@@ -301,6 +301,8 @@ void Camera::processMouseMovement( float x_offset, float y_offset )
 
 std::string Camera::getCamString( bool game_mode )
 {
+	const std::string strtrue = "TRUE";
+	const std::string strfalse = "FALSE";
 	_mtx.lock();
 	std::string str =  ((game_mode == CREATIVE)
 		? ("\nPos\t\t> x: " + std::to_string(_position.x)
@@ -325,12 +327,12 @@ std::string Camera::getCamString( bool game_mode )
 					+ "\nBlock Light\t> " + std::to_string(_current_chunk_ptr->getBlockLightLevel(_current_block)) : "")
 			+ "\nFall\t> " + std::to_string(_fall_speed)
 			+ "\nFall Distance\t> " + std::to_string(_fall_distance)
-			+ "\nWater head\t> " + ((_waterHead) ? "TRUE" : "FALSE")
+			+ "\nWater head\t> " + ((_waterHead) ? strtrue : strfalse)
 			+ ((_breathTime > 0) ? " - " + std::to_string(_breathTime) + ": " + std::to_string(getWaterStatus()) : "")
-			+ "\nWater feet\t> " + ((_waterFeet) ? "TRUE" : "FALSE")
+			+ "\nWater feet\t> " + ((_waterFeet) ? strtrue : strfalse)
 			+ "\nHealth\t> " + std::to_string(_health_points)
-			+ "\nGounded\t> " + ((_touchGround) ? "true" : "false")
-			+ "\nJumping\t> " + ((_inJump) ? "true" : "false")));
+			+ "\nGounded\t> " + ((_touchGround) ? strtrue : strfalse)
+			+ "\nJumping\t> " + ((_inJump) ? strtrue : strfalse)));
 	_mtx.unlock();
 	return (str);
 }

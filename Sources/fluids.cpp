@@ -60,23 +60,23 @@ std::array<int, 4> Chunk::water_heights( int value, int above, int row, int col,
 		res = {0, 0, 0, 0};
 		return (res);
 	}
-	std::array<int, 9> quads = {_blocks[((row - 1) * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level],
-								_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level],
-								_blocks[((row - 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level],
-								_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level],
+	std::array<int, 9> quads = {getBlockAt(row - 1, col - 1, level, true),
+								getBlockAt(row - 1, col, level, true),
+								getBlockAt(row - 1, col + 1, level, true),
+								getBlockAt(row, col - 1, level, true),
 								value,
-								_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level],
-								_blocks[((row + 1) * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level],
-								_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level],
-								_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level]};
-	std::array<int, 8> quadsup = {_blocks[((row - 1) * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level + 1],
-								_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1],
-								_blocks[((row - 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level + 1],
-								_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level + 1],
-								_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level + 1],
-								_blocks[((row + 1) * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level + 1],
-								_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1],
-								_blocks[((row + 1) * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level + 1]};
+								getBlockAt(row, col + 1, level, true),
+								getBlockAt(row + 1, col - 1, level, true),
+								getBlockAt(row + 1, col, level, true),
+								getBlockAt(row + 1, col + 1, level, true)};
+	std::array<int, 8> quadsup = {getBlockAt(row - 1, col - 1, level + 1, true),
+								getBlockAt(row - 1, col, level + 1, true),
+								getBlockAt(row - 1, col + 1, level + 1, true),
+								getBlockAt(row, col - 1, level + 1, true),
+								getBlockAt(row, col + 1, level + 1, true),
+								getBlockAt(row + 1, col - 1, level + 1, true),
+								getBlockAt(row + 1, col, level + 1, true),
+								getBlockAt(row + 1, col + 1, level + 1, true)};
 
 	res[0] = max_water_level(quads[0], quads[1], quads[3], quads[4], quadsup[0], quadsup[1], quadsup[3]);
 	res[1] = max_water_level(quads[1], quads[2], quads[4], quads[5], quadsup[1], quadsup[2], quadsup[4]);
@@ -236,31 +236,31 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 	// pos = glm::vec3(pos.x - _startX, pos.y - _startY, pos.z);
 	std::vector<std::pair<float, std::array<int, 10>>> order;
 	order.reserve(_water_count);
-	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
-		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
+	for (int row = 0; row < CHUNK_SIZE; row++) {
+		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 1; level < 244; level++) { // TODO handle water when at level 255..
-				int value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
+				int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
 				if (value >= blocks::WATER) {
-					int pX = _startX + row - 1;
-					int pY = _startY + col - 1;
-					int above = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1];
+					int pX = _startX + row;
+					int pY = _startY + col;
+					int above = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1];
 					std::array<int, 4> heights = water_heights(value, above, row, col, level);
-					if (_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1] < blocks::WATER) {
+					if (above < blocks::WATER) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level + ((8.0f - heights[0]) / 8.0f))), {pX, pY + 1, level + 1, 1, -1, 0, heights[1], heights[3], heights[0], heights[2]}});
 					}
-					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], false, true)) {
+					if (!air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], false, true)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level)), {pX, pY, level, 1, 1, 0, 0, 0, 0, 0}});
 					}
-					if (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, true)) {
+					if (!air_flower(getBlockAt(row - 1, col, level, true), false, true)) {
 						order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, level + 0.5f)), {pX, pY + 1, level + 1, 0, -1, -1, heights[1], heights[0], 0, 0}});
 					}
-					if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, true)) {
+					if (!air_flower(getBlockAt(row + 1, col, level, true), false, true)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, level + 0.5f)), {pX + 1, pY, level + 1, 0, 1, -1, heights[2], heights[3], 0, 0}});
 					}
-					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], false, true)) {
+					if (!air_flower(getBlockAt(row, col - 1, level, true), false, true)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, level + 0.5f)), {pX, pY, level + 1, 1, 0, -1, heights[0], heights[2], 0, 0}});
 					}
-					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], false, true)) {
+					if (!air_flower(getBlockAt(row, col + 1, level, true), false, true)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, level + 0.5f)), {pX + 1, pY + 1, level + 1, -1, 0, -1, heights[3], heights[1], 0, 0}});
 					}
 				}

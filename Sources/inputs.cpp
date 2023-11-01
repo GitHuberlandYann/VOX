@@ -255,26 +255,6 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	*deleted_chunks = newdel_chunks;
 	mtx_deleted_chunks.unlock();
 
-	// b.stop("delete and sort");
-	// int count = 0;
-	// for (int row = -render_dist; row <= render_dist; row++) {
-	// 	for (int col = -render_dist; col <= render_dist; col++) {
-	// 		bool isInChunk = false;
-			
-	// 		mtx.lock();
-	// 		ite = chunks->end();
-	// 		it = chunks->begin();
-	// 		mtx.unlock();
-	// 		for (; it != ite;) {
-	// 			mtx.lock();
-	// 			if ((*it)->isInChunk(posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE)) {
-	// 				isInChunk = true;
-	// 				mtx.unlock();
-	// 				break ;
-	// 			}
-	// 			it++;
-	// 			mtx.unlock();
-	// 		}
 	b.stamp("NO");
 	for (auto& c: coords) {
 		//create new chunk where player stands
@@ -291,8 +271,6 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 		mtx.unlock();
 		newChunk->generate_chunk(); // TODO remove this from thread because it launches its own thread and there's data races..
 	}
-	// 	}
-	// }
 	b.stamp("loop and create new chunks");
 	b.stop("chunk update");
 	// std::cout << "for now " << count << " new chunks, computed " << coords.size() << std::endl;

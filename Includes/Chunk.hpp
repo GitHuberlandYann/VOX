@@ -3,7 +3,10 @@
 
 # define SEA_LEVEL 64
 # define CHUNK_SIZE 16
+# define CHUNK_SHIFT 4
 # define WORLD_HEIGHT 256
+# define WORLD_SHIFT 8
+# define ALLOC_SIZE 1 << 16 // represents CHUNK_SIZE * CHUNK_SIZE * WORLD_HEIGHT 
 
 enum cont {
 	CONT_MUSHROOM_FIELDS,
@@ -94,6 +97,7 @@ class Chunk
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
 		int surfaceLevel( int row, int col, siv::PerlinNoise perlin );
 		void generate_blocks( void );
+		void resetDisplayedFaces( void );
 		void generate_sky( void );
 	
 		int sand_fall_endz( glm::ivec3 pos );
@@ -127,6 +131,7 @@ class Chunk
 		void setBackup( std::map<std::pair<int, int>, s_backup> *backups );
 		void restoreBackup( s_backup backup);
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
+		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours );
 
 		void generation( void );
 		void checkFillVertices( void );
