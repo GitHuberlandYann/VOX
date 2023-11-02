@@ -65,7 +65,7 @@ class Chunk
     private:
         GLuint _vao, _vbo, _waterVao, _waterVbo, _skyVao, _skyVbo;
         bool _isVisible, _vaoSet, _vaoVIP, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
-		std::atomic_bool _genDone, _light_update, _vaoReset, _waterVaoReset, _skyVaoReset;
+		std::atomic_bool _genDone, _light_update, _vaoReset, _waterVaoReset, _skyVaoReset, _sortedOnce;
         GLint _startX, _startY, _nb_neighbours;
 		GLint _continent;
 		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
@@ -121,6 +121,7 @@ class Chunk
 
 		GLint getStartX( void );
 		GLint getStartY( void );
+		bool getSortedOnce( void );
 		GLint getSkyLightLevel( glm::ivec3 location );
 		GLint getBlockLightLevel( glm::ivec3 location );
 		short getLightLevel( int posX, int posY, int posZ );
@@ -143,7 +144,6 @@ class Chunk
 		int manhattanDist( int posX, int posY );
         void show( void );
 		void hide( void );
-        // bool shouldDelete( glm::vec3 pos, GLfloat dist );
         bool isInChunk( int posX, int posY );
 
 		int isHit( glm::ivec3 pos, bool waterIsBlock );

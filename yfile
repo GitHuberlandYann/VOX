@@ -32,7 +32,9 @@ TODOS:
 	- particles ?
     - items on ground after break
 	- chests
-	- better border chunk handling (trees)
+	- doors
+	- windows
+	- rework clouds
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
 	- upon world generation, place player on ground
@@ -56,6 +58,7 @@ DONE:
 	- pthread chunk creation
     - only display chunks in fieldview + little offset
 	- write stuff on screen
+	- better border chunk handling (trees)
     - better spacing between characters displayed
     - full screen mode
     - mouse movements

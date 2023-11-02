@@ -206,6 +206,7 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 
 void Chunk::sort_water( glm::vec3 pos, bool vip )
 {
+	_sortedOnce = true;
 	// std::cout << "in sort water" << std::endl;
 	if (!_water_count && !_hasWater) {
 		return ;

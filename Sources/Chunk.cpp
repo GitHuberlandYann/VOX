@@ -4,7 +4,7 @@ Chunk::Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *chunks )
 	: _isVisible(true), _vaoSet(false), _vaoVIP(false),
 	_waterVaoSet(false), _waterVaoVIP(false),
 	_skyVaoSet(false), _skyVaoVIP(false), _genDone(false), _light_update(false),
-	_vaoReset(false), _waterVaoReset(false), _skyVaoReset(false),
+	_vaoReset(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
 	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _lights(NULL),
 	_sky(NULL), _hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
@@ -748,6 +748,11 @@ GLint Chunk::getStartY( void )
 	return (_startY);
 }
 
+bool Chunk::getSortedOnce( void )
+{
+	return (_sortedOnce);
+}
+
 void Chunk::waitGenDone( void )
 {
 	while (!_genDone);
@@ -953,6 +958,7 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 	// pos = glm::vec3(pos.x - _startX, pos.y - _startY, pos.z);
 	_mtx_sky.lock();
 	std::vector<std::pair<float, std::array<int, 6>>> order;
+	order.reserve(_sky_count);
 	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
 		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
 			if (_sky[row * (CHUNK_SIZE + 2) + col]) {

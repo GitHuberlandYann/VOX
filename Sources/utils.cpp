@@ -187,7 +187,7 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 	int posX = chunk_pos(pos.x);
 	int posY = chunk_pos(pos.y);
 
-	#if 0
+	#if 1
 	int size = chunks.size();
 	std::vector<std::pair<int, Chunk *>> dists;
 	dists.reserve(chunks.capacity());
@@ -214,11 +214,20 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 
 	chunks.clear();
 	chunks.reserve(dists.capacity());
-	for (auto& d: dists) {
-		d.second->sort_sky(pos, false);
-		d.second->sort_water(pos, false);
-		chunks.push_back(d.second);
+	// int cnt = 0;
+	// sky and water sorted only if new chunk or chunk in cross centered on player
+	for (auto d: dists) {
+		Chunk *c = d.second;
+		int diffX = posX - c->getStartX();
+		int diffY = posY - c->getStartY();
+		if (!c->getSortedOnce() || (diffX <= CHUNK_SIZE && diffX >= -CHUNK_SIZE) || (diffY <= CHUNK_SIZE && diffY >= -CHUNK_SIZE)) {
+			c->sort_sky(pos, false);
+			c->sort_water(pos, false);
+			// ++cnt;
+		}
+		chunks.push_back(c);
 	}
+	// std::cout << "\tsorted " << cnt << std::endl;
 	b.stamp("SORT - sky water");
 	dists.clear();
 	#else
@@ -228,17 +237,26 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 	}
 	// std::cout << "in sort chunks, dists size = " << dists.size() << std::endl;
 	b.stamp("SORT - manhattan");
-	// std::sort(dists.begin(), dists.end());
+	std::sort(dists.begin(), dists.end());
 	b.stamp("SORT - chunks");
 
 	chunks.clear();
 	chunks.reserve(dists.size());
+	// int cnt = 0;
+	// sky and water sorted only if new chunk or chunk in cross centered on player
 	for (auto it = dists.rbegin(); it != dists.rend(); it++) {
-		it->second->sort_sky(pos, false);
-		it->second->sort_water(pos, false);
-		chunks.push_back(it->second);
+		Chunk *c = it->second;
+		int diffX = posX - c->getStartX();
+		int diffY = posY - c->getStartY();
+		if (!c->getSortedOnce() || (diffX <= CHUNK_SIZE && diffX >= -CHUNK_SIZE) || (diffY <= CHUNK_SIZE && diffY >= -CHUNK_SIZE)) {
+			c->sort_sky(pos, false);
+			c->sort_water(pos, false);
+			// ++cnt;
+		}
+		chunks.push_back(c);
 	}
-	b.stamp("SORT - sky water");
+	// std::cout << "\tsorted " << cnt << std::endl;
+ 	b.stamp("SORT - sky water");
 	dists.clear();
 
 	#endif
