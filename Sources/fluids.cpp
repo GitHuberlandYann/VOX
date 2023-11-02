@@ -85,51 +85,46 @@ std::array<int, 4> Chunk::water_heights( int value, int above, int row, int col,
 	return (res);
 }
 
-bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, int posZ )
+bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, int posZ )
 {
-	if (posX < 1 || posX > CHUNK_SIZE || posY < 1 || posY > CHUNK_SIZE) {
-		return (false);
-	}
 	if (value < blocks::WATER) {
 		// std::cout << "water turned into " << s_blocks[value].name << std::endl;
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-			if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
-			} else {
-				int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-				if (adj >= blocks::WATER) {
-					// std::cout << "updating neighbour" << std::endl;
-					newFluids.insert((posX + delta[0]) + ((posY + delta[1]) << 8) + ((posZ + delta[2]) << 16));
-				}
+			int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2], true);
+			if (adj >= blocks::WATER) {
+				// std::cout << "updating neighbour" << std::endl;
+				insertFluidAt(newFluids, posX + delta[0], posY + delta[1], posZ + delta[2]);
 			}
 		}
 		return (true);
 	}
 	if (value > blocks::WATER) {
 		// std::cout << "update water" << value << std::endl;
+		int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
 		bool stop = true, onGround = false;
 		int sourceCount = 0;
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-			int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
+			int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2], true);
 			if (index != face_dir::MINUSZ) { // if not block underneath
 			// std::cout << posX + delta[0] << ", " << posY + delta[1] << ", " << posZ + delta[2] << " is " << s_blocks[adj].name << std::endl;
 				if (adj >= blocks::WATER) {
 					if (index == face_dir::PLUSZ) { // flow from above
 						if (value > blocks::WATER1) {
 							value = blocks::WATER1;
-							_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
-							_added[posX + (posY << 8) + (posZ << 16)] = value;
-							_removed.erase(posX + (posY << 8) + (posZ << 16));
+							_blocks[offset] = value;
+							_added[offset] = value;
+							_removed.erase(offset);
 						}
 						stop = false;
 					} else if (adj < value) {
 						sourceCount += (adj == blocks::WATER);
 						if (adj < value - 1) {
 							value = adj + 1; // update
-							_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
-							_added[posX + (posY << 8) + (posZ << 16)] = value;
-							_removed.erase(posX + (posY << 8) + (posZ << 16));
+							_blocks[offset] = value;
+							_added[offset] = value;
+							_removed.erase(offset);
 						}
 						stop = false; // still supplyed
 						// std::cout << "supplyed by water" << adj << std::endl;
@@ -141,62 +136,61 @@ bool Chunk::endFlow( std::set<int> &newFluids, int &value, int posX, int posY, i
 		}
 		if (stop) {
 			// std::cout << "stop flow of " << s_blocks[value].name << std::endl;
-			handle_border_block({posX - 1, posY - 1, posZ}, value, false);
-			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = blocks::AIR;
-			_added.erase(posX + (posY << 8) + (posZ << 16));
-			_removed.insert(posX + (posY << 8) + (posZ << 16));
+			_blocks[offset] = blocks::AIR;
+			_added.erase(offset);
+			_removed.insert(offset);
 			// _water_count -= exposed_water_faces(posX, posY, posZ);
 			for (int index = 0; index < 6; index++) {
 				const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-				if (posX + delta[0] < 1 || posX + delta[0] > CHUNK_SIZE || posY + delta[1] < 1 || posY + delta[1] > CHUNK_SIZE) {
-				} else {
-					int adj = _blocks[((posX + delta[0]) * (CHUNK_SIZE + 2) + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]];
-					if (adj > blocks::WATER) {
-						newFluids.insert((posX + delta[0]) + ((posY + delta[1]) << 8) + ((posZ + delta[2]) << 16));
-					}
+				int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2], true);
+				if (adj > blocks::WATER) {
+					insertFluidAt(newFluids, posX + delta[0], posY + delta[1], posZ + delta[2]);
 				}
 			}
 			return (true);
 		} else if (onGround && sourceCount > 1) {
 			// std::cout << "infinite water source" << std::endl;
 			value = blocks::WATER; // infinite water baby
-			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = value;
-			_added[posX + (posY << 8) + (posZ << 16)] = value;
-			_removed.erase(posX + (posY << 8) + (posZ << 16));
+			_blocks[offset] = value;
+			_added[offset] = value;
+			_removed.erase(offset);
 		}
 	}
 	return (false);
 }
 
-bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int level )
+bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level )
 {
-	int value = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
+	int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
+	int value = _blocks[offset];
 	// std::cout << "checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[value].name << std::endl;
 	if (!air_flower(value, false, true) || value > level) {// || (value == level && level == blocks::WATER1)) {
 		// std::cout << "column expension, water count before: " << _water_count << std::endl;
-		_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = level;
-		_added[posX + (posY << 8) + (posZ << 16)] = level;
-		_removed.erase(posX + (posY << 8) + (posZ << 16));
+		_blocks[offset] = level;
+		_added[offset] = level;
+		_removed.erase(offset);
 		if (!air_flower(value, false, true) && value != blocks::AIR) { // replace flower with water
 			// std::cout << _startX << ", " << _startY << " value before: " << s_blocks[value].name << ". displayed: " << _displayed_faces << std::endl;
-			_displayed_faces -= (2 + 2 * (value == blocks::TORCH));
+			_displayed_faces -= (2 << (value == blocks::TORCH));
+			if (value == blocks::TORCH) {
+				_lights[offset] &= 0xFF00;
+				light_spread(posX, posY, posZ, false);
+			}
 			// std::cout << "value after: " << s_blocks[level].name << ". displayed: " << _displayed_faces << std::endl;
 			delete [] _vertices;
 			_vertices = new GLint[_displayed_faces * 24]; // TODO set flag to true and update vert array once on this frame instead of once per destroyed flower
 			fill_vertex_array();
 		}
-		if (posX < 1 || posX > CHUNK_SIZE || posY < 1 || posY > CHUNK_SIZE) {
-			// std::cout << "addFlow at border" << std::endl;
-			handle_border_flow(posX, posY, posZ, level, true);
+		if (!air_flower(value, false, true)) {
+			_hasWater = true;
 		} else {
-			if (!air_flower(value, false, true)) {
-				_hasWater = true;
-			} else {
-				// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[value].name << " with " << s_blocks[level].name << std::endl; 
-			}
-				// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[value].name << " with " << s_blocks[level].name << " at " << posX << ", " << posY << ", " << posZ << std::endl; 
-			newFluids.insert(posX + (posY << 8) + (posZ << 16));
-			handle_border_block({posX - 1, posY - 1, posZ}, level, true);
+			// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[value].name << " with " << s_blocks[level].name << std::endl; 
+		}
+			// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[value].name << " with " << s_blocks[level].name << " at " << posX << ", " << posY << ", " << posZ << std::endl; 
+		if (newFluids) {
+			newFluids->insert(offset);
+		} else {
+			_fluids.insert(offset);
 		}
 		// std::cout << "column expension, water count after: " << _water_count << std::endl;
 		return (true);
@@ -204,21 +198,6 @@ bool Chunk::addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int
 		return (true);
 	}
 	return (false);
-}
-
-void Chunk::handle_border_flow( int posX, int posY, int posZ, int level, bool adding )
-{
-	// std::cout << "handle border flow " << posX << " " << posY << " " << posZ << " | "  << _startX << " " << _startY << std::endl;
-	if (!posX && _neighbours[face_dir::MINUSX]) {
-		_neighbours[face_dir::MINUSX]->update_border_flow(CHUNK_SIZE, posY, posZ, level, adding, face_dir::PLUSX);
-	} else if (posX == CHUNK_SIZE + 1 && _neighbours[face_dir::PLUSX]) {
-		_neighbours[face_dir::PLUSX]->update_border_flow(1, posY, posZ, level, adding, face_dir::MINUSX);
-	}
-	if (!posY && _neighbours[face_dir::MINUSY]) {
-		_neighbours[face_dir::MINUSY]->update_border_flow(posX, CHUNK_SIZE, posZ, level, adding, face_dir::PLUSY);
-	} else if (posY == CHUNK_SIZE + 1 && _neighbours[face_dir::PLUSY]) {
-		_neighbours[face_dir::PLUSY]->update_border_flow(posX, 1, posZ, level, adding, face_dir::MINUSY);
-	}
 }
 
 // ************************************************************************** //
@@ -409,80 +388,61 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 	_mtx.unlock();
 }
 
-void Chunk::update_border_flow( int posX, int posY, int posZ, int wlevel, bool adding, face_dir origin )
+void Chunk::insertFluidAt( std::set<int> *newFluids, int posX, int posY, int posZ )
 {
-	if (!(posX == 1 || posY == 1 || posX == CHUNK_SIZE || posY == CHUNK_SIZE)) {
-		std::cout << "ERROR update_border_flow not border block " << posX << ", " << posY << std::endl;
+	if (posZ < 0 || posZ > 255) {
 		return ;
 	}
-	if (_thread.joinable()) {
-		_thread.join();
-	}
-	// std::cout << "update border flow " << _startX << ", " << _startY << " | rpos " << _startX + posX - 1 << ", " << _startY + posY - 1 << std::endl;
-	if (posX == 1) {
-		if (posY == 1) {
-			if (origin == face_dir::MINUSX && _neighbours[face_dir::MINUSY]) {
-				// std::cout << "flow corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY - CHUNK_SIZE << std::endl;
-				_neighbours[face_dir::MINUSY]->update_border(posX, CHUNK_SIZE + 1, posZ, wlevel, adding);
-			} else if (origin == face_dir::MINUSY && _neighbours[face_dir::MINUSX]) {
-				// std::cout << "flow corner " << s_blocks[wlevel].name << " " << _startX - CHUNK_SIZE << ", " << _startY << std::endl;
-				_neighbours[face_dir::MINUSX]->update_border(CHUNK_SIZE + 1, posY, posZ, wlevel, adding);
-			}
-		} else if (posY == CHUNK_SIZE) {
-			if (origin == face_dir::MINUSX && _neighbours[face_dir::PLUSY]) {
-				// std::cout << "flow corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY + CHUNK_SIZE << std::endl;
-				_neighbours[face_dir::PLUSY]->update_border(posX, 0, posZ, wlevel, adding);
-			} else if (origin == face_dir::PLUSY && _neighbours[face_dir::MINUSX]) {
-				// std::cout << "flow corner " << s_blocks[wlevel].name << " " << _startX - CHUNK_SIZE << ", " << _startY << std::endl;
-				_neighbours[face_dir::MINUSX]->update_border(CHUNK_SIZE + 1, posY, posZ, wlevel, adding);
-			}
+	if (posX < 0) {
+		if (_neighbours[face_dir::MINUSX]) {
+			return (_neighbours[face_dir::MINUSX]->insertFluidAt(NULL, posX + CHUNK_SIZE, posY, posZ));
 		}
-	} else if (posX == CHUNK_SIZE) {
-		if (posY == 1) {
-			if (origin == face_dir::PLUSX && _neighbours[face_dir::MINUSY]) {
-				// std::cout << "flow corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY - CHUNK_SIZE << std::endl;
-				_neighbours[face_dir::MINUSY]->update_border(posX, CHUNK_SIZE + 1, posZ, wlevel, adding);
-			} else if (origin == face_dir::MINUSY && _neighbours[face_dir::PLUSX]) {
-				// std::cout << "flow corner " << s_blocks[wlevel].name << " " << _startX + CHUNK_SIZE << ", " << _startY << std::endl;
-				_neighbours[face_dir::PLUSX]->update_border(0, posY, posZ, wlevel, adding);
-			}
-		} else if (posY == CHUNK_SIZE) {
-			if (origin == face_dir::PLUSX && _neighbours[face_dir::PLUSY]) {
-				// std::cout << "flow corner " << s_blocks[wlevel].name << " " << _startX << ", " << _startY + CHUNK_SIZE << std::endl;
-				_neighbours[face_dir::PLUSY]->update_border(posX, 0, posZ, wlevel, adding);
-			} else if (origin == face_dir::PLUSY && _neighbours[face_dir::PLUSX]) {
-				// std::cout << "flow corner " << s_blocks[wlevel].name << " " << _startX + CHUNK_SIZE << ", " << _startY << std::endl;
-				_neighbours[face_dir::PLUSX]->update_border(0, posY, posZ, wlevel, adding);
-			}
+	} else if (posX >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSX]) {
+			return (_neighbours[face_dir::PLUSX]->insertFluidAt(NULL, posX - CHUNK_SIZE, posY, posZ));
+		}
+	} else if (posY < 0) {
+		if (_neighbours[face_dir::MINUSY]) {
+			return (_neighbours[face_dir::MINUSY]->insertFluidAt(NULL, posX, posY + CHUNK_SIZE, posZ));
+		}
+	} else if (posY >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSY]) {
+			return (_neighbours[face_dir::PLUSY]->insertFluidAt(NULL, posX, posY - CHUNK_SIZE, posZ));
+		}
+	} else {
+		if (newFluids) {
+			newFluids->insert((((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ);
+		} else {
+			_fluids.insert((((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ);
 		}
 	}
-	if (adding) {
-		// std::cout << "before condition" << std::endl;
-		int value = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
-		if (!air_flower(value, false, true) || (value >= blocks::WATER && value > wlevel)) {
-			// std::cout << '[' << _startX << ", " << _startY << "] flow at border " << posX << ", " << posY << ", " << posZ << " >>" << value << " into " << wlevel << std::endl;
-			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = wlevel;
-			_added[posX + (posY << 8) + (posZ << 16)] = wlevel;
-			_removed.erase(posX + (posY << 8) + (posZ << 16));
-			if (!air_flower(value, false, true)) {
-				if (value != blocks::AIR) { // replace flower with water
-					_displayed_faces += 2;
-					delete [] _vertices;
-					_vertices = new GLint[_displayed_faces * 24];
-					fill_vertex_array();
-				}
-				_hasWater = true;
-			}
-			_fluids.insert(posX + (posY << 8) + (posZ << 16));
-		}
-	} else { // never used for now
-		if (_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] >= blocks::WATER) {
-			_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ] = blocks::AIR;
-			_added.erase(posX + (posY << 8) + (posZ << 16));
-			_removed.insert(posX + (posY << 8) + (posZ << 16));
-			_fluids.insert(posX + (posY << 8) + (posZ << 16));
-		}
+}
+
+bool Chunk::try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level )
+{
+	if (posZ < 0 || posZ > 255) {
+		return (false);
 	}
+	if (posX < 0) {
+		if (_neighbours[face_dir::MINUSX]) {
+			return (_neighbours[face_dir::MINUSX]->try_addFlow(NULL, posX + CHUNK_SIZE, posY, posZ, level));
+		}
+	} else if (posX >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSX]) {
+			return (_neighbours[face_dir::PLUSX]->try_addFlow(NULL, posX - CHUNK_SIZE, posY, posZ, level));
+		}
+	} else if (posY < 0) {
+		if (_neighbours[face_dir::MINUSY]) {
+			return (_neighbours[face_dir::MINUSY]->try_addFlow(NULL, posX, posY + CHUNK_SIZE, posZ, level));
+		}
+	} else if (posY >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSY]) {
+			return (_neighbours[face_dir::PLUSY]->try_addFlow(NULL, posX, posY - CHUNK_SIZE, posZ, level));
+		}
+	} else {
+		return (addFlow(newFluids, posX, posY, posZ, level));
+	}
+	return (false);
 }
 
 void Chunk::updateFluids( void )
@@ -491,20 +451,20 @@ void Chunk::updateFluids( void )
 	bool fluid_modif = false;
 	for (auto f = _fluids.begin(); f != _fluids.end();) {
 		fluid_modif = true;
-		int posX = *f & 0xFF;
-		int posY = (*f >> 8) & 0xFF;
-		int posZ = (*f >> 16) & 0xFF;
-		int level = _blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ];
-		if (endFlow(newFluids, level, posX, posY, posZ)) {
+		int posZ = *f & (WORLD_HEIGHT - 1);
+		int posY = ((*f >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
+		int posX = ((*f >> WORLD_SHIFT) >> CHUNK_SHIFT);
+		int level = _blocks[*f];
+		if (endFlow(&newFluids, level, posX, posY, posZ)) {
 			// std::cout << "ENDFLOW" << std::endl;
-		} else if (addFlow(newFluids, posX, posY, posZ - 1, blocks::WATER1) && level != blocks::WATER) { // source water spread to the side even if air below
+		} else if (try_addFlow(&newFluids, posX, posY, posZ - 1, blocks::WATER1) && level != blocks::WATER) { // source water spread to the side even if air below
 		} else if (level == blocks::WATER7) { // stop flow
 		} else {
-			// std::cout << "block under fluid: " << s_blocks[_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ - 1]].name << std::endl;
-			addFlow(newFluids, posX - 1, posY, posZ, level + 1);
-			addFlow(newFluids, posX + 1, posY, posZ, level + 1);
-			addFlow(newFluids, posX, posY - 1, posZ, level + 1);
-			addFlow(newFluids, posX, posY + 1, posZ, level + 1);
+			// std::cout << "block under fluid: " << s_blocks[_blocks[*f - 1]].name << std::endl;
+			try_addFlow(&newFluids, posX - 1, posY, posZ, level + 1);
+			try_addFlow(&newFluids, posX + 1, posY, posZ, level + 1);
+			try_addFlow(&newFluids, posX, posY - 1, posZ, level + 1);
+			try_addFlow(&newFluids, posX, posY + 1, posZ, level + 1);
 		}
 		// std::cout << _startX << " " << _startY << " fluid at " << posX << ", " << posY << ", " << posZ << ": before " << s_blocks[level].name << " after " << s_blocks[_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ]].name << std::endl;
 		f = _fluids.erase(f);

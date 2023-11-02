@@ -407,26 +407,27 @@ void Chunk::resetDisplayedFaces( void )
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
-				GLint value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
+				int offset = (((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level;
+				GLint value = _blocks[offset];
 				bool restore = false;
 				if (value < blocks::AIR && (!row || !col || row == CHUNK_SIZE - 1 || col == CHUNK_SIZE - 1)) {
 					value += blocks::NOTVISIBLE;
 					restore = true;
 				}
 				if (value > blocks::AIR && value < blocks::WATER) {
-					GLint below = ((level) ? _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1] : 0);
+					GLint below = ((level) ? _blocks[offset - 1] : 0);
 					if (!air_flower(value, false, true) && value != blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
-						_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::AIR;
+						_blocks[offset] = blocks::AIR;
 					} else {
 						GLint count = face_count(value, row, col, level, value != blocks::OAK_LEAVES);
 						if (count) {
 							// std::cout << "count is " << count << std::endl;
 							_displayed_faces += count;
 							if (restore) {
-								_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = value;
+								_blocks[offset] = value;
 							}
 						} else if (value > blocks::AIR) { // hide block
-							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = value - blocks::NOTVISIBLE;
+							_blocks[offset] = value - blocks::NOTVISIBLE;
 						}
 					}
 				}
@@ -462,7 +463,7 @@ void Chunk::generate_sky( void )
 int Chunk::sand_fall_endz( glm::ivec3 pos )
 {
 	for (int level = pos.z - 1; level > 0; level--) {
-		if (_blocks[((pos.x + 1) * (CHUNK_SIZE + 2) + pos.y + 1) * WORLD_HEIGHT + level] != blocks::AIR) { // and diff water later
+		if (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + level] != blocks::AIR) { // and diff water later
 			return (level + 1);
 		}
 	}
@@ -529,7 +530,7 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		}
 	} else if (value == blocks::WATER) { // use bucket on water source
 		// std::cout << "bucket on water" << std::endl;
-		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
+		_fluids.insert(offset);
 		return ;
 	}
 	if (air_flower(value, false, true)) {
@@ -540,14 +541,15 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 			if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
 
 			} else {
-				int adj = _blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]];
+				int adj_offset = ((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2];
+				int adj = _blocks[adj_offset];
 				if (adj < blocks::AIR) {
-					_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] += blocks::NOTVISIBLE;
+					_blocks[adj_offset] += blocks::NOTVISIBLE;
 					_displayed_faces++;
 				} else if (air_flower(adj, false, false)) {
 					_displayed_faces++;
 				} else if (index != face_dir::MINUSZ && adj >= blocks::WATER) { // if water under, it is not updated
-					_fluids.insert((pos.x + 1 + delta[0]) + ((pos.y + 1 + delta[1]) << 8) + ((pos.z + delta[2]) << 16));
+					_fluids.insert(adj_offset);
 				}
 			}
 		}
@@ -583,7 +585,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 			return ;
 		}
 	} else if (previous >= blocks::WATER) { // replace water block with something else
-		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
+		_fluids.insert(offset);
 	}
 	mtx_inventory.lock();
 	if (inventory) {
@@ -594,13 +596,15 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 		_orientations[offset] = _camera->getOrientation() + (furnace_state::OFF << 4);
 	}
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
+		offset -= pos.z;
 		pos.z = sand_fall_endz(pos);
+		offset += pos.z;
 	}
 	_blocks[offset] = type;
 	_removed.erase(offset);
 	_added[offset] = type;
 	if (type == blocks::WATER) {
-		_fluids.insert(pos.x + 1 + ((pos.y + 1) << 8) + (pos.z << 16));
+		_fluids.insert(offset);
 		// std::cout << "adding water" << std::endl;
 		return ;
 	}
@@ -634,7 +638,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 				}
 				light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 0, false);
 			}
-			if (value > blocks::AIR && !face_count(value, pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], value != blocks::OAK_LEAVES)) {
+			if (value > blocks::AIR && value < blocks::WATER && !face_count(value, pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], value != blocks::OAK_LEAVES)) {
 				// was exposed before, but isn't anymore
 				_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] -= blocks::NOTVISIBLE;
 			}
@@ -1224,7 +1228,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 		}
 		if (_blocks[offset] >= blocks::WATER) {
 			_hasWater = true;
-			_fluids.insert(posX + (posY << 8) + (level << 16));
+			_fluids.insert(offset);
 		}
 		if (type >= blocks::WATER) {
 			return ;

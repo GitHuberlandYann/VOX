@@ -86,8 +86,8 @@ class Chunk
 	
 		int exposed_water_faces( int row, int col, int level );
 		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );
-		bool endFlow( std::set<int> &newFluids, int &value, int posX, int posY, int posZ );
-		bool addFlow( std::set<int> &newFluids, int posX, int posY, int posZ, int level );
+		bool endFlow( std::set<int> *newFluids, int &value, int posX, int posY, int posZ );
+		bool addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
 	
 		// int get_block_type_cave( int row, int col, int level, int ground_level,
 		// 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
@@ -101,7 +101,6 @@ class Chunk
 		void generate_sky( void );
 	
 		int sand_fall_endz( glm::ivec3 pos );
-		void handle_border_flow( int posX, int posY, int posZ, int level, bool adding );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void remove_block( Inventory *inventory, glm::ivec3 pos );
 		void add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous );
@@ -151,7 +150,8 @@ class Chunk
 		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void updateBreak( glm::ivec4 block_hit, int frame );
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread );
-		void update_border_flow( int posX, int posY, int posZ, int wlevel, bool adding, face_dir origin );
+		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
+		void insertFluidAt( std::set<int> *newFluids, int posX, int posY, int posZ );
 		void update_border( int posX, int posY, int level, int type, bool adding );
 		bool collisionBox( glm::vec3 pos, float width, float height );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
