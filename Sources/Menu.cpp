@@ -1016,7 +1016,7 @@ void Menu::setup_shader( GLint *vertices )
 	glEnableVertexAttribArray(UI_TEXATTRIB);
 	glVertexAttribIPointer(UI_TEXATTRIB, 4, GL_INT, 9 * sizeof(GLint), (void *)(5 * sizeof(GLint)));
 
-	check_glstate("NO");
+	check_glstate("Menu::setup_shader", false);
 }
 
 // ************************************************************************** //

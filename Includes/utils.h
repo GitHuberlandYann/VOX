@@ -7,7 +7,7 @@ std::string get_file_content( std::string file_name );
 std::string	trim_spaces( std::string str );
 
 void compile_shader( GLuint ptrShader, std::string name );
-void check_glstate( std::string str );
+void check_glstate( std::string str, bool displayDebug );
 int chunk_pos( int pos );
 
 double gradient( double value, double start, double end, double value_start, double value_end );

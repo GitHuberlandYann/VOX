@@ -61,7 +61,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_backups.clear();
 	mtx_backup.unlock();
 
-	check_glstate("OpengGL_Manager destructed");
+	check_glstate("OpengGL_Manager destructed", true);
 }
 
 // ************************************************************************** //
@@ -120,7 +120,7 @@ void OpenGL_Manager::setup_window( void )
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	check_glstate("Window successfully created");
+	check_glstate("Window successfully created", true);
 }
 
 void OpenGL_Manager::initWorld( void )
@@ -167,7 +167,7 @@ void OpenGL_Manager::create_shaders( void )
 	glDeleteShader(skyFragmentShader);
     glDeleteShader(skyVertexShader);
 
-	check_glstate("skyShader program successfully created");
+	check_glstate("skyShader program successfully created", true);
 	
 	// then setup the main shader
 	std::string vertex_shader_data = get_file_content("Sources/Shaders/vertex.glsl");
@@ -200,7 +200,7 @@ void OpenGL_Manager::create_shaders( void )
 	glDeleteShader(fragmentShader);
     glDeleteShader(vertexShader);
 
-	check_glstate("Shader program successfully created");
+	check_glstate("Shader program successfully created", true);
 }
 
 void OpenGL_Manager::setup_communication_shaders( void )
@@ -225,7 +225,7 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	_skyUniColor = glGetUniformLocation(_skyShaderProgram, "color");
 	_skyUniAnim = glGetUniformLocation(_skyShaderProgram, "animFrame");
 
-	check_glstate("\nCommunication with shader program successfully established");
+	check_glstate("\nCommunication with shader program successfully established", true);
 }
 
 void OpenGL_Manager::load_texture( std::string texture_file )
@@ -261,7 +261,7 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	}
 	delete texture;
 
-	check_glstate("Succesfully loaded " + texture_file + " to shader");
+	check_glstate("Succesfully loaded " + texture_file + " to shader", true);
 
 
 
@@ -294,7 +294,7 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	}
 	delete texture;
 
-	check_glstate("Succesfully loaded Resources/waterStill.png to shader");
+	check_glstate("Succesfully loaded Resources/waterStill.png to shader", true);
 
 	glActiveTexture(GL_TEXTURE0 + 5);
 	glBindTexture(GL_TEXTURE_2D, _textures[2]);
@@ -324,7 +324,7 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	}
 	delete texture;
 
-	check_glstate("Succesfully loaded Resources/waterFlow.png to shader");
+	check_glstate("Succesfully loaded Resources/waterFlow.png to shader", true);
 }
 
 void OpenGL_Manager::main_loop( void )
@@ -352,7 +352,7 @@ void OpenGL_Manager::main_loop( void )
 	glfwSetCursorPosCallback(_window, cursor_position_callback);
 	glfwSetScrollCallback(_window, scroll_callback);
 
-	check_glstate("setup done, entering main loop\n");
+	check_glstate("setup done, entering main loop\n", true);
 
 	// std::cout << "60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame." << std::endl; 
 	double lastTime = glfwGetTime(), lastTimeFluidUpdate = lastTime, lastTimeAnimUpdate = lastTime;
@@ -404,7 +404,7 @@ void OpenGL_Manager::main_loop( void )
 		} else if (_menu->getState() >= INVENTORY_MENU) {
 			DayCycle::Get()->update(currentTime - previousFrame);
 		}
-		// b.stop("user inputs");
+		// b.stamp("user inputs");
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, faceCounter);
@@ -413,7 +413,10 @@ void OpenGL_Manager::main_loop( void )
 				c->updateFluids();
 			}
 		}
-		// b.stop("solids");
+		// if (newVaoCounter) {
+		// 	std::cout << "new vao counter: " << newVaoCounter << std::endl;
+		// }
+		// b.stamp("solids");
 
 		#if 1
 		glUseProgram(_skyShaderProgram);
@@ -428,7 +431,7 @@ void OpenGL_Manager::main_loop( void )
 		for (auto&c: _visible_chunks) {
 			c->drawWater(newVaoCounter, waterFaces);
 		}
-		// b.stop("display water sky");
+		// b.stamp("display water sky");
 		#endif
 		glDisable(GL_DEPTH_TEST);
 		// Chunk *chunk_ptr = get_current_chunk_ptr();
@@ -461,11 +464,11 @@ void OpenGL_Manager::main_loop( void )
 		mtx_backup.unlock();
 		mtx_perimeter.unlock();
 		mtx.unlock();
-		// b.stop("stringing");
+		// b.stamp("stringing");
 		if (_menu->getState() >= PAUSE_MENU) {
 			_ui->drawUserInterface(str, _game_mode, _f5_mode);
 		}
-		// b.stop("UI");
+		// b.stamp("UI");
 		if (_paused) {
 			mtx.lock();
 			_menu->setChunks(_chunks);
@@ -496,21 +499,22 @@ void OpenGL_Manager::main_loop( void )
 			}
 		}
 		_ui->textToScreen();
-		// b.reset();
+		// b.stamp("textoscreen");
 		mtx_deleted_chunks.lock();
 		for (auto& todel: _deleted_chunks) {
 			delete todel;
 		}
 		_deleted_chunks.clear();
 		mtx_deleted_chunks.unlock();
-		// b.stop("chunk deletion");
+		// b.stamp("chunk deletion");
 
 		previousFrame = currentTime;
 		glfwSwapBuffers(_window);
-		// b.stop("swap buffer");
+		// b.stamp("swap buffer");
 		glfwPollEvents();
-		// b.stop("poll events");
+		// b.stamp("poll events");
+		// b.stop("frame");
 	}
 
-	check_glstate("\nmain loop successfully exited");
+	check_glstate("\nmain loop successfully exited", true);
 }

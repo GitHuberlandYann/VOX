@@ -65,17 +65,16 @@ void compile_shader( GLuint ptrShader, std::string name )
 	}
 }
 
-void check_glstate( std::string str )
+void check_glstate( std::string str, bool displayDebug )
 {
 	GLenum error_check = glGetError();	
 	if (error_check) {
-		std::cerr << "glGetError set to " << error_check << "when trying to " << str << ", quitting now" << std::endl;
+		std::cerr << "glGetError set to " << error_check << " when trying to " << str << ", quitting now" << std::endl;
 		exit(1);
 	}
-	if (str == "NO") {
-		return ;
+	if (displayDebug) {
+		std::cout << str << std::endl;
 	}
-	std::cout << str << std::endl;
 }
 
 int chunk_pos( int pos )

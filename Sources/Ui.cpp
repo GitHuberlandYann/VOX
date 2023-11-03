@@ -54,7 +54,7 @@ void UI::load_texture( std::string texstr, std::string shname, int index )
 	}
 	delete texture;
 
-	check_glstate("Succesfully loaded " + texstr + " to shader\n");
+	check_glstate("Succesfully loaded " + texstr + " to shader\n", true);
 }
 
 void UI::add_inventory_elem( GLint *vertices, int mult, int index, int & vindex )
@@ -302,7 +302,7 @@ void UI::setup_array_buffer( void )
 	glEnableVertexAttribArray(UI_TEXATTRIB);
 	glVertexAttribIPointer(UI_TEXATTRIB, 4, GL_INT, 9 * sizeof(GLint), (void *)(5 * sizeof(GLint)));
 
-	check_glstate("NO");
+	check_glstate("UI::setup_array_buffer", false);
 }
 
 void UI::display_slot_value( int index )
@@ -375,7 +375,7 @@ void UI::setup_shader( void )
 	glDeleteShader(_geometryShader);
     glDeleteShader(_vertexShader);
 
-	check_glstate("UI_Shader program successfully created\n");
+	check_glstate("UI_Shader program successfully created\n", true);
 
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_height"), WIN_HEIGHT);

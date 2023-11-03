@@ -1,10 +1,10 @@
 #include "vox.h"
 
 Chunk::Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *chunks )
-	: _isVisible(true), _vaoSet(false), _vaoVIP(false),
+	: _isVisible(true), _vaoSet(false),
 	_waterVaoSet(false), _waterVaoVIP(false),
 	_skyVaoSet(false), _skyVaoVIP(false), _genDone(false), _light_update(false),
-	_vaoReset(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
+	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
 	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _lights(NULL),
 	_sky(NULL), _hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
@@ -677,9 +677,7 @@ void Chunk::setup_array_buffer( void )
 	_mtx.unlock();
 
 	_vaoReset = true;
-	_mtx.lock();
 	_vaoVIP = false;
-	_mtx.unlock();
 
 	glEnableVertexAttribArray(SPECATTRIB);
 	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
@@ -687,7 +685,7 @@ void Chunk::setup_array_buffer( void )
 	glEnableVertexAttribArray(POSATTRIB);
 	glVertexAttribIPointer(POSATTRIB, 3, GL_INT, 4 * sizeof(GLint), (void *)(1 * sizeof(GLint)));
 
-	check_glstate("NO");
+	check_glstate("Chunk::setup_array_buffer", false);
 }
 
 void Chunk::setup_sky_array_buffer( void )
@@ -696,25 +694,33 @@ void Chunk::setup_sky_array_buffer( void )
 		_thread.join();
 	}
 
+	check_glstate("BEFORE Chunk::setup_sky_array_buffer", false);
 	if (!_skyVaoSet) {
 		glGenVertexArrays(1, &_skyVao);
 		glGenBuffers(1, &_skyVbo);
 		_skyVaoSet = true;
-	}
+		check_glstate("GEN Chunk::setup_sky_array_buffer", false);
 	glBindVertexArray(_skyVao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
+	check_glstate("BIND GEN Chunk::setup_sky_array_buffer", false);
+	}else{
+	glBindVertexArray(_skyVao);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
+	check_glstate("BIND Chunk::setup_sky_array_buffer", false);}
 	_mtx_sky.lock();
 	glBufferData(GL_ARRAY_BUFFER, _sky_count * 24 * sizeof(GLint), _sky_vert, GL_STATIC_DRAW);
 	_mtx_sky.unlock();
 
+	check_glstate("BUFFERDATA Chunk::setup_sky_array_buffer", false);
 	_skyVaoReset = false;
 	_skyVaoVIP = false;
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribIPointer(0, 4, GL_INT, 4 * sizeof(GLint), 0);
 
-	check_glstate("NO");
+	check_glstate("Chunk::setup_sky_array_buffer", false);
 }
 
 void Chunk::setup_water_array_buffer( void )
@@ -741,7 +747,7 @@ void Chunk::setup_water_array_buffer( void )
 	glEnableVertexAttribArray(0);
 	glVertexAttribIPointer(0, 4, GL_INT, 4 * sizeof(GLint), 0);
 
-	check_glstate("NO");
+	check_glstate("Chunk::setup_water_array_buffer", false);
 }
 
 // ************************************************************************** //
@@ -863,7 +869,9 @@ void Chunk::generation( void )
 	_mtx_sky.lock();
 	_sky = new GLboolean[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2)];
 	generate_sky();
-	_sky_vert = new GLint[_sky_count * 24]; // will be filled in later with a call to sort_sky
+	if (_sky_count) {
+		_sky_vert = new GLint[_sky_count * 24]; // will be filled in later with a call to sort_sky
+	}
 	_mtx_sky.unlock();
 	// b.stamp("sky");
 	// b.stop("generation");
@@ -912,10 +920,11 @@ void Chunk::checkFillVertices( void )
 		_vertices = new GLint[_displayed_faces * 4 * 6];
 		_mtx.unlock();
 		fill_vertex_array();
-	} else if (!cnt) {
-		std::cerr << "ERROR chunk has no neighbours" << std::endl;
+		_vaoVIP = false;
 	} else if (cnt < _nb_neighbours) {
 		_nb_neighbours = cnt;
+	} else if (!cnt) {
+		std::cerr << "ERROR chunk has no neighbours" << std::endl;
 	}
 }
 
@@ -1147,7 +1156,6 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 		for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 			_mtx.lock();
 			if (torchFace(_vertices, p0, p1, p2, p3, p4, p6, index)) { // TODO add top(/bottom ?) face too
-				_vaoVIP = true;
 				_vertices[index] = (_vertices[index] & 0xFFFF0FFF) + (frame << 12);
 				_vertices[index + 4] = (_vertices[index + 4] & 0xFFFF0FFF) + (frame << 12);
 				_vertices[index + 8] = (_vertices[index + 8] & 0xFFFF0FFF) + ((frame + 1) << 12);
@@ -1155,6 +1163,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 				_vertices[index + 16] = (_vertices[index + 16] & 0xFFFF0FFF) + ((frame + 1) << 12);
 				_vertices[index + 20] = (_vertices[index + 20] & 0xFFFF0FFF) + ((frame + 1) << 12);
 				_mtx.unlock();
+				_vaoVIP = true;
 				_vaoReset = false;
 				if (++cnt >= count) {
 					return ;
@@ -1168,7 +1177,6 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 		for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 			_mtx.lock();
 			if (crossFace(_vertices, p0, p1, p2, p3, p4, p5, index)) {
-				_vaoVIP = true;
 				_vertices[index] = (_vertices[index] & 0xFF0FFF) + (frame << 12);
 				_vertices[index + 4] = (_vertices[index + 4] & 0xFF0FFF) + (frame << 12);
 				_vertices[index + 8] = (_vertices[index + 8] & 0xFF0FFF) + ((frame + 1) << 12);
@@ -1176,6 +1184,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 				_vertices[index + 16] = (_vertices[index + 16] & 0xFF0FFF) + ((frame + 1) << 12);
 				_vertices[index + 20] = (_vertices[index + 20] & 0xFF0FFF) + ((frame + 1) << 12);
 				_mtx.unlock();
+				_vaoVIP = true;
 				_vaoReset = false;
 				if (++cnt >= count) {
 					return ;
@@ -1189,7 +1198,6 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 		_mtx.lock();
 		if (blockFace(_vertices, p0, p1, p2, p3, p4, p5, p6, p7, index)) {
-			_vaoVIP = true;
 			_vertices[index] = (_vertices[index] & 0xFF0FFF) + (frame << 12);
 			_vertices[index + 4] = (_vertices[index + 4] & 0xFF0FFF) + (frame << 12);
 			_vertices[index + 8] = (_vertices[index + 8] & 0xFF0FFF) + ((frame + 1) << 12);
@@ -1197,6 +1205,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 			_vertices[index + 16] = (_vertices[index + 16] & 0xFF0FFF) + ((frame + 1) << 12);
 			_vertices[index + 20] = (_vertices[index + 20] & 0xFF0FFF) + ((frame + 1) << 12);
 			_mtx.unlock();
+			_vaoVIP = true;
 			_vaoReset = false;
 			if (++cnt >= count) {
 				return ;
@@ -1407,7 +1416,8 @@ void Chunk::drawArray( GLint & counter, GLint &face_counter )
 	if (!_vaoReset) { // TODO change vosReset logic (swap true and false)
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		++counter;
-		if (!_vaoVIP && counter % 50 > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
+		if (!_vaoVIP && (counter & 63) > 6) { // we don't load more than 5 new chunks per 50 new chunks per frame
+		// std::cout << "skip one" << std::endl;
 			return ;
 		}
 		setup_array_buffer();
@@ -1456,7 +1466,7 @@ void Chunk::drawSky( GLint & counter, GLint &face_counter )
 	if (_skyVaoReset) {
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		++counter;
-		if (!_skyVaoVIP && !_skyVaoSet && counter > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
+		if (!_skyVaoVIP && !_skyVaoSet && counter > 5) { // we don't load more than 5 new chunks per frame
 			return ;
 		} else if (_skyVaoVIP || counter < 6) {
 			setup_sky_array_buffer();
@@ -1476,7 +1486,7 @@ void Chunk::drawWater( GLint & counter, GLint &face_counter )
 	if (_waterVaoReset) {
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		++counter;
-		if (!_waterVaoVIP && !_waterVaoSet && counter > 5) { // we don't load more than 5 new chunks per 50 new chunks per frame
+		if (!_waterVaoVIP && !_waterVaoSet && counter > 5) { // we don't load more than 5 new chunks per frame
 			return ;
 		} else if (_waterVaoVIP || counter < 6) {
 			setup_water_array_buffer();

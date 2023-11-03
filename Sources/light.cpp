@@ -296,9 +296,7 @@ void Chunk::fill_vertex_array( void )
 	// }
 	_light_update = false;
 	_vaoReset = false;
-	_mtx.lock();
 	_vaoVIP = true;
-	_mtx.unlock();
 }
 
 // ************************************************************************** //

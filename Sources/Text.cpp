@@ -70,7 +70,7 @@ void Text::setup_shader( void )
 	glDeleteShader(_geometryShader);
     glDeleteShader(_vertexShader);
 
-	check_glstate("text_Shader program successfully created");
+	check_glstate("text_Shader program successfully created", true);
 
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_height"), WIN_HEIGHT);
@@ -111,7 +111,7 @@ void Text::load_texture( void )
 	}
 	delete texture;
 
-	check_glstate("Succesfully loaded Resources/asciiAtlas.png to shader\n");
+	check_glstate("Succesfully loaded Resources/asciiAtlas.png to shader\n", true);
 }
 
 void Text::addText( int posX, int posY, int font_size, bool white, std::string str )
@@ -185,7 +185,7 @@ void Text::toScreen( void )
 	glEnableVertexAttribArray(TEXT_COLORATTRIB);
 	glVertexAttribIPointer(TEXT_COLORATTRIB, 1, GL_INT, 5 * sizeof(GLint), (void *)(4 * sizeof(GLint)));
 
-	check_glstate("NO");
+	check_glstate("Text::toScreen", false);
 
 	glUseProgram(_shaderProgram);
 	glDrawArrays(GL_POINTS, 0, tSize / 5);
