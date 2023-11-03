@@ -37,7 +37,7 @@ TODOS:
 	- rework clouds
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
-	- upon world generation, place player on ground
+	- upon world generation, place player on ground by using continentalness
     - nether
 	- item number color/placement/size in ingame menus
     - hitbox flowers and blocks in general -> might have to split blocks in 27 ..

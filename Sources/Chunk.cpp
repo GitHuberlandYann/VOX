@@ -293,14 +293,20 @@ void Chunk::generate_blocks( void )
 			double pillar = perlin.noise2D_01((_startX + row) / 20.0f, (_startY + col) / 20.0f);
 			int ground_cave = 7 + perlin.octave2D_01((_startX + row) / 100.0f, (_startY + col) / 100.0f, 4) * 14;
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
-				// // double cave = perlin.octave3D_01((_startX + row) / 100.0f, (_startY + col) / 100.0f, (level) / 100.0f, 4);
 				// // double cheese = perlin.octave3D_01((_startX + row) / 100.0f, (_startY + col) / 100.0f, (level) / 100.0f, 4);
 				// // double bridge = perlin.noise2D_01((_startX + row) / 60.0f, (level) / 15.0f);
 				// // double obridge = perlin.noise2D_01((_startY + col) / 60.0f, (level) / 15.0f);
 				// // (level < surface_level - 5 && ((cave >= 0.459 && cave <= 0.551f) && !(pillar < 0.3f - 0.7f * (surface_level / 2 - glm::abs(level - surface_level / 2)) / (5.0f * surface_level)) && !(bridge < 0.2f) && !(obridge < 0.2f)) && level > ground_cave)
 				// // (level < surface_level - 5 && cave <= 0.2f && level > 0) //  * (1 - (0.5 + glm::abs(level - surface_level / 2) / surface_level))
-				double cave = perlin.octave3D_01((_startX + row) / 750.0f, (_startY + col) / 750.0f, (level) / 750.0f, 4); // big holes
-				(level < surface_level - 5 && ((cave >= 0.459 && cave <= 0.551f) && !(pillar < 0.3f - 0.7f * (surface_level / 2 - glm::abs(level - surface_level / 2)) / (5.0f * surface_level))) && level > ground_cave)
+				double cave = -1;
+				if (level < surface_level - 5 && level > ground_cave) {
+					#if 1
+					cave = perlin.octave3D_01((_startX + row) / 100.0f, (_startY + col) / 100.0f, (level) / 100.0f, 4);
+					#else
+					cave = perlin.octave3D_01((_startX + row) / 750.0f, (_startY + col) / 750.0f, (level) / 750.0f, 4); // big holes
+					#endif
+				}
+				(((cave >= 0.459 && cave <= 0.551f) && !(pillar < 0.3f - 0.7f * (surface_level / 2 - glm::abs(level - surface_level / 2)) / (5.0f * surface_level))))
 					? _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::AIR//get_block_type_cave(row, col, level, ground_cave, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees)
 					: _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
 				// _blocks[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
@@ -463,7 +469,8 @@ void Chunk::generate_sky( void )
 int Chunk::sand_fall_endz( glm::ivec3 pos )
 {
 	for (int level = pos.z - 1; level > 0; level--) {
-		if (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + level] != blocks::AIR) { // and diff water later
+		int value = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + level];
+		if (value != blocks::AIR && value < blocks::WATER) {
 			return (level + 1);
 		}
 	}
@@ -515,9 +522,10 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 		if (endZ == pos.z) {
 			_blocks[offset] = above_value - (value < 0) * blocks::NOTVISIBLE;
 			return (remove_block(NULL, {pos.x, pos.y, pos.z + 1}));
-		} else {
-			add_block(NULL, {pos.x, pos.y, endZ}, above_value, blocks::AIR);
 		}
+		_blocks[offset] = value; // putting it back temporarily to avoid segfault in neighbour on addblock
+		add_block(NULL, {pos.x, pos.y, endZ}, above_value, blocks::AIR);
+		_blocks[offset] = blocks::AIR;
 	}
 	_blocks[offset] = blocks::AIR;
 	if (value > blocks::AIR && value < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
@@ -569,6 +577,13 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":add block " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
+	if (type == blocks::SAND || type == blocks::GRAVEL) {
+		pos.z = sand_fall_endz(pos);
+		previous = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z];
+		// if (previous == blocks::TORCH) {
+		// 	return ;
+		// }
+	}
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	if (type == blocks::WATER) { // we place water
 		if (previous < blocks::WATER) {
@@ -594,11 +609,6 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	mtx_inventory.unlock();
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
 		_orientations[offset] = _camera->getOrientation() + (furnace_state::OFF << 4);
-	}
-	if (type == blocks::SAND || type == blocks::GRAVEL) {
-		offset -= pos.z;
-		pos.z = sand_fall_endz(pos);
-		offset += pos.z;
 	}
 	_blocks[offset] = type;
 	_removed.erase(offset);
