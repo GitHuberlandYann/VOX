@@ -804,12 +804,12 @@ void Chunk::restoreBackup( s_backup backup )
 
 FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
 {
-	int key = ((pos.x - _startX + 1) * (CHUNK_SIZE + 2) + pos.y - _startY + 1) * WORLD_HEIGHT + pos.z;
+	int key = ((((pos.x - _startX) << CHUNK_SHIFT) + pos.y - _startY) << WORLD_SHIFT) + pos.z;
 	std::map<int, FurnaceInstance>::iterator search = _furnaces.find(key);
 	if (search != _furnaces.end()) {
 		return (&search->second);
 	}
-	std::cout << "failed to find furnace at " << key << std::endl;
+	std::cout << "failed to find furnace at " << key << " from " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	std::cout << "furnaces values are " << std::endl;
 	for (auto& fur: _furnaces) {
 		std::cout << fur.first << std::endl;
