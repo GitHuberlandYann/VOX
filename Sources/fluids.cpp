@@ -164,7 +164,7 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 	int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
 	int value = _blocks[offset];
 	// std::cout << "checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[value].name << std::endl;
-	if (!air_flower(value, false, true) || value > level) {// || (value == level && level == blocks::WATER1)) {
+	if (!air_flower(value, false, true) || value > level || (value == level && level == blocks::WATER1)) {
 		// std::cout << "column expension, water count before: " << _water_count << std::endl;
 		_blocks[offset] = level;
 		_added[offset] = level;
@@ -467,7 +467,7 @@ void Chunk::updateFluids( void )
 			try_addFlow(&newFluids, posX, posY - 1, posZ, level + 1);
 			try_addFlow(&newFluids, posX, posY + 1, posZ, level + 1);
 		}
-		// std::cout << _startX << " " << _startY << " fluid at " << posX << ", " << posY << ", " << posZ << ": before " << s_blocks[level].name << " after " << s_blocks[_blocks[(posX * (CHUNK_SIZE + 2) + posY) * WORLD_HEIGHT + posZ]].name << std::endl;
+		// std::cout << _startX << " " << _startY << " fluid at " << posX << " (" << _startX + posX << "), " << posY << " (" << _startY + posY << "), " << posZ << ": before " << s_blocks[level].name << " after " << s_blocks[_blocks[*f]].name << std::endl;
 		f = _fluids.erase(f);
 	}
 	_fluids = newFluids;
