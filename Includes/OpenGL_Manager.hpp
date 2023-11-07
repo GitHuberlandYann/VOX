@@ -41,7 +41,7 @@ class OpenGL_Manager
 {
 	private:
 		GLFWwindow* _window;
-		GLuint _shaderProgram, _skyShaderProgram;
+		GLuint _vaoEntities, _vboEntities, _shaderProgram, _skyShaderProgram;
 		GLint _uniFog, _uniView, _uniProj, _skyUniFog, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim;
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
@@ -52,6 +52,7 @@ class OpenGL_Manager
 		std::string _world_name;
 		std::list<Chunk *> _chunks;
 		std::vector<Chunk *> _visible_chunks, _perimeter_chunks, _deleted_chunks;
+		std::vector<std::pair<int, glm::vec3>> _entities;
 		std::map<std::pair<int, int>, s_backup> _backups;
 		std::thread _thread;
 		glm::ivec4 _block_hit;
@@ -74,6 +75,8 @@ class OpenGL_Manager
 		std::string saveBackupString( void );
 		void loadWorld( std::string file );
 		void loadBackups( std::ofstream & ofs, std::ifstream & indata );
+
+		void drawEntities( int size );
 
 	public:
 		OpenGL_Manager( void );

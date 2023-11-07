@@ -33,6 +33,9 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	glDeleteProgram(_shaderProgram);
 	glDeleteProgram(_skyShaderProgram);
 
+	glDeleteBuffers(1, &_vboEntities);
+	glDeleteVertexArrays(1, &_vaoEntities);
+
 	set_cursor_position_callback(NULL, NULL);
 	set_scroll_callback(NULL);
 	delete _camera;
@@ -67,6 +70,38 @@ OpenGL_Manager::~OpenGL_Manager( void )
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
+
+void OpenGL_Manager::drawEntities( int size )
+{
+	void *vertices = new GLint[size * 4];
+	GLint *vertInt = static_cast<GLint *>(vertices);
+	GLfloat *vertFloat = static_cast<GLfloat *>(vertices);
+
+	size_t index = 0;
+	for (auto e: _entities) {
+		vertInt[index] = e.first;
+		vertFloat[index + 1] = e.second.x;
+		vertFloat[index + 2] = e.second.y;
+		vertFloat[index + 3] = e.second.z;
+		index += 4;
+	}
+
+	glBindVertexArray(_vaoEntities);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _vboEntities);
+	glBufferData(GL_ARRAY_BUFFER, size * 4 * sizeof(GLint), vertices, GL_STATIC_DRAW);
+	delete [] static_cast<GLint*>(vertices);
+
+	glEnableVertexAttribArray(SPECATTRIB);
+	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
+
+	glEnableVertexAttribArray(POSATTRIB);
+	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(1 * sizeof(GLint)));
+
+	check_glstate("OpenGL_Manager::drawEntities", false);
+
+	glDrawArrays(GL_TRIANGLES, 0, size);
+}
 
 // ************************************************************************** //
 //                                Public                                      //
@@ -226,6 +261,10 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	_skyUniAnim = glGetUniformLocation(_skyShaderProgram, "animFrame");
 
 	check_glstate("\nCommunication with shader program successfully established", true);
+
+	glGenVertexArrays(1, &_vaoEntities);
+	glGenBuffers(1, &_vboEntities);
+	check_glstate("VAO and VBO for entities", false);
 }
 
 void OpenGL_Manager::load_texture( std::string texture_file )
@@ -412,11 +451,18 @@ void OpenGL_Manager::main_loop( void )
 			if (fluidUpdate) {
 				c->updateFluids();
 			}
+			c->updateEntities(_entities, currentTime);
 		}
 		// if (newVaoCounter) {
 		// 	std::cout << "new vao counter: " << newVaoCounter << std::endl;
 		// }
 		// b.stamp("solids");
+
+		if (int size = _entities.size()) {
+			drawEntities(size);
+			_entities.clear();
+			_entities.reserve(size);
+		}
 
 		#if 1
 		glUseProgram(_skyShaderProgram);

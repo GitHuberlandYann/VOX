@@ -496,7 +496,7 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 
 void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 {
-	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+	std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	int value = _blocks[offset];
@@ -510,7 +510,8 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	}
 	mtx_inventory.lock();
 	if (inventory) {
-		inventory->addBlock(value + (value < 0) * blocks::NOTVISIBLE);
+		// inventory->addBlock(value + (value < 0) * blocks::NOTVISIBLE);
+		_entities.push_back(Entity({pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), s_blocks[value].mined));
 	}
 	mtx_inventory.unlock();
 	int endZ = -1;
@@ -1274,6 +1275,11 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 	fill_vertex_array();
 }
 
+int Chunk::computePosLight( glm::vec3 pos )
+{
+	return (computeLight(pos.x - _startX, pos.y - _startY, pos.z));
+}
+
 /* collisionBox takes feet position of object, dimension of its hitbox and returns wether object is inside block or not */
 bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 {
@@ -1458,6 +1464,17 @@ void Chunk::updateFurnaces( double currentTime )
 				}
 				_light_update = true;
 			}
+		}
+	}
+}
+
+void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double currentTime )
+{
+	for (auto e = _entities.begin(); e != _entities.end();) {
+		if (e->update(this, arr, currentTime)) {
+			e = _entities.erase(e);
+		} else {
+			++e;
 		}
 	}
 }

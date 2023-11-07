@@ -78,6 +78,7 @@ class Chunk
 		std::map<int,int> _orientations, _added;
 		std::set<int> _removed, _fluids; // TODO add fluids to backups
 		std::map<int, FurnaceInstance> _furnaces;
+		std::vector<Entity> _entities;
 		std::thread _thread;
 		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 
@@ -154,6 +155,7 @@ class Chunk
 		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
 		void insertFluidAt( std::set<int> *newFluids, int posX, int posY, int posZ );
 		void update_border( int posX, int posY, int level, int type, bool adding );
+		int computePosLight( glm::vec3 pos );
 		bool collisionBox( glm::vec3 pos, float width, float height );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( Camera *camera );
@@ -161,6 +163,7 @@ class Chunk
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &face_counter );
 		void updateFurnaces( double currentTime );
+		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double currentTime );
 		void updateFluids( void );
 		void drawSky( GLint & counter, GLint &face_counter );
 		void drawWater( GLint & counter, GLint &face_counter );

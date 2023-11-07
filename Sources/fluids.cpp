@@ -130,7 +130,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 						// std::cout << "supplyed by water" << adj << std::endl;
 					}
 				}
-			} else if (air_flower(adj, false, true)) { // check block underneath
+			} else if (air_flower(adj, false, false)) { // check block underneath
 				onGround = true;
 			}
 		}
