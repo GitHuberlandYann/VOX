@@ -304,7 +304,41 @@ std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 )
 	return {6 << 10, 8 << 10, 9 << 10, 4 << 10, 1 << 9}; // -x +y
 }
 
-void face_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, size_t & vindex )
+void face_vertices( void *vertices, std::pair<int, glm::vec3> v0, std::pair<int, glm::vec3> v1, std::pair<int, glm::vec3> v2, std::pair<int, glm::vec3> v3, size_t & vindex )
+{
+	GLfloat *vertFloat = static_cast<GLfloat*>(vertices);
+	GLint *vertInt = static_cast<GLint*>(vertices);
+
+	vertInt[vindex] = v0.first;
+	vertFloat[vindex + 1] = v0.second.x;
+	vertFloat[vindex + 2] = v0.second.y;
+	vertFloat[vindex + 3] = v0.second.z;
+	vertInt[vindex + 4] = v1.first;
+	vertFloat[vindex + 5] = v1.second.x;
+	vertFloat[vindex + 6] = v1.second.y;
+	vertFloat[vindex + 7] = v1.second.z;
+	vertInt[vindex + 8] = v2.first;
+	vertFloat[vindex + 9] = v2.second.x;
+	vertFloat[vindex + 10] = v2.second.y;
+	vertFloat[vindex + 11] = v2.second.z;
+	vindex += 12;
+
+	vertInt[vindex] = v1.first;
+	vertFloat[vindex + 1] = v1.second.x;
+	vertFloat[vindex + 2] = v1.second.y;
+	vertFloat[vindex + 3] = v1.second.z;
+	vertInt[vindex + 4] = v3.first;
+	vertFloat[vindex + 5] = v3.second.x;
+	vertFloat[vindex + 6] = v3.second.y;
+	vertFloat[vindex + 7] = v3.second.z;
+	vertInt[vindex + 8] = v2.first;
+	vertFloat[vindex + 9] = v2.second.x;
+	vertFloat[vindex + 10] = v2.second.y;
+	vertFloat[vindex + 11] = v2.second.z;
+	vindex += 12;
+}
+
+void face_water_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, size_t & vindex )
 {
 	vertices[vindex] = v0.x;
 	vertices[vindex + 1] = v0.y;
@@ -336,28 +370,28 @@ void face_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2
 }
 
 // looks though vertices to check if elements starting at pos index represent a face of the torch v012345678
-bool torchFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, glm::ivec3 v4, glm::ivec3 v6, size_t index )
+bool torchFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v6, size_t index )
 {
 	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
-	if ((vertices[index + 3] & 0xFF) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v1.z && vertices[index + 4 + 1] == v1.x && vertices[index + 4 + 2] == v1.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
+	if ((vertices[index + 3]) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
+		&& (vertices[index + 4 + 3]) == v1.z && vertices[index + 4 + 1] == v1.x && vertices[index + 4 + 2] == v1.y
+		&& (vertices[index + 8 + 3]) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
 		return (true);
 	}
-	if ((vertices[index + 3] & 0xFF) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
+	if ((vertices[index + 3]) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
+		&& (vertices[index + 4 + 3]) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
+		&& (vertices[index + 8 + 3]) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
 		return (true);
 	}
-	if ((vertices[index + 3] & 0xFF) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
+	if ((vertices[index + 3]) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
+		&& (vertices[index + 4 + 3]) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
+		&& (vertices[index + 8 + 3]) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
 		return (true);
 	}
-	if ((vertices[index + 3] & 0xFF) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
+	if ((vertices[index + 3]) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
+		&& (vertices[index + 4 + 3]) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
+		&& (vertices[index + 8 + 3]) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
 		return (true);
 	}
 
@@ -365,18 +399,18 @@ bool torchFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, gl
 }
 
 // looks though vertices to check if elements starting at pos index represent a face of the flower v012345678
-bool crossFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, glm::ivec3 v4, glm::ivec3 v5, size_t index )
+bool crossFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v5, size_t index )
 {
 	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
-	if ((vertices[index + 3] & 0xFF) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
+	if ((vertices[index + 3]) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
+		&& (vertices[index + 4 + 3]) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
+		&& (vertices[index + 8 + 3]) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
 		return (true);
 	}
-	if ((vertices[index + 3] & 0xFF) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
+	if ((vertices[index + 3]) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
+		&& (vertices[index + 4 + 3]) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
+		&& (vertices[index + 8 + 3]) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
 		return (true);
 	}
 
@@ -384,38 +418,38 @@ bool crossFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, gl
 }
 
 // looks though vertices to check if elements starting at pos index represent a face of the cube v012345678
-bool blockFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, glm::ivec3 v4, glm::ivec3 v5, glm::ivec3 v6, glm::ivec3 v7, size_t index )
+bool blockFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v5, glm::vec3 v6, glm::vec3 v7, size_t index )
 {
 	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
-	if ((vertices[index + 3] & 0xFF) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
+	if ((vertices[index + 3]) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
+		&& (vertices[index + 4 + 3]) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
+		&& (vertices[index + 8 + 3]) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
 		return (true);
 	}
-	if ((vertices[index + 3] & 0xFF) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
+	if ((vertices[index + 3]) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
+		&& (vertices[index + 4 + 3]) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
+		&& (vertices[index + 8 + 3]) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
 		return (true);
 	}
-	if ((vertices[index + 3] & 0xFF) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v1.z && vertices[index + 4 + 1] == v1.x && vertices[index + 4 + 2] == v1.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
+	if ((vertices[index + 3]) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
+		&& (vertices[index + 4 + 3]) == v1.z && vertices[index + 4 + 1] == v1.x && vertices[index + 4 + 2] == v1.y
+		&& (vertices[index + 8 + 3]) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
 		return (true);
 	}
-	if ((vertices[index + 3] & 0xFF) == v5.z && vertices[index + 1] == v5.x && vertices[index + 2] == v5.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v7.z && vertices[index + 8 + 1] == v7.x && vertices[index + 8 + 2] == v7.y) {
+	if ((vertices[index + 3]) == v5.z && vertices[index + 1] == v5.x && vertices[index + 2] == v5.y
+		&& (vertices[index + 4 + 3]) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
+		&& (vertices[index + 8 + 3]) == v7.z && vertices[index + 8 + 1] == v7.x && vertices[index + 8 + 2] == v7.y) {
 		return (true);
 	}
-	if ((vertices[index + 3] & 0xFF) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v0.z && vertices[index + 8 + 1] == v0.x && vertices[index + 8 + 2] == v0.y) {
+	if ((vertices[index + 3]) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
+		&& (vertices[index + 4 + 3]) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
+		&& (vertices[index + 8 + 3]) == v0.z && vertices[index + 8 + 1] == v0.x && vertices[index + 8 + 2] == v0.y) {
 		return (true);
 	}
-	if ((vertices[index + 3] & 0xFF) == v2.z && vertices[index + 1] == v2.x && vertices[index + 2] == v2.y
-		&& (vertices[index + 4 + 3] & 0xFF) == v3.z && vertices[index + 4 + 1] == v3.x && vertices[index + 4 + 2] == v3.y
-		&& (vertices[index + 8 + 3] & 0xFF) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
+	if ((vertices[index + 3]) == v2.z && vertices[index + 1] == v2.x && vertices[index + 2] == v2.y
+		&& (vertices[index + 4 + 3]) == v3.z && vertices[index + 4 + 1] == v3.x && vertices[index + 4 + 2] == v3.y
+		&& (vertices[index + 8 + 3]) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
 		return (true);
 	}
 

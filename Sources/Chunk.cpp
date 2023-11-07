@@ -6,7 +6,7 @@ Chunk::Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *chunks )
 	_skyVaoSet(false), _skyVaoVIP(false), _genDone(false), _light_update(false),
 	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
-	_blocks(NULL), _vertices(NULL), _water_vert(NULL), _sky_vert(NULL), _lights(NULL),
+	_blocks(NULL), _water_vert(NULL), _sky_vert(NULL), _vertices(NULL), _lights(NULL),
 	_sky(NULL), _hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
 	_neighbours({NULL, NULL, NULL, NULL}), _camera(camera)
 {
@@ -67,7 +67,7 @@ Chunk::~Chunk( void )
 
 	delete [] _blocks;
 	delete [] _lights;
-	delete [] _vertices;
+	delete [] static_cast<GLint*>(_vertices);
 	delete [] _water_vert;
 	delete [] _sky;
 	delete [] _sky_vert;
@@ -658,6 +658,8 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 		// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
+// works as long as sizeof(int) == sizeof(float)
+// we output 1 int and 3 floats to shader
 void Chunk::setup_array_buffer( void )
 {
 	if (_thread.joinable()) {
@@ -683,7 +685,7 @@ void Chunk::setup_array_buffer( void )
 	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
 
 	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribIPointer(POSATTRIB, 3, GL_INT, 4 * sizeof(GLint), (void *)(1 * sizeof(GLint)));
+	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(1 * sizeof(GLint)));
 
 	check_glstate("Chunk::setup_array_buffer", false);
 }
@@ -694,26 +696,26 @@ void Chunk::setup_sky_array_buffer( void )
 		_thread.join();
 	}
 
-	check_glstate("BEFORE Chunk::setup_sky_array_buffer", false);
+	// check_glstate("BEFORE Chunk::setup_sky_array_buffer", false);
 	if (!_skyVaoSet) {
 		glGenVertexArrays(1, &_skyVao);
 		glGenBuffers(1, &_skyVbo);
 		_skyVaoSet = true;
-		check_glstate("GEN Chunk::setup_sky_array_buffer", false);
+		// check_glstate("GEN Chunk::setup_sky_array_buffer", false);
+	// glBindVertexArray(_skyVao);
+
+	// glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
+	// check_glstate("BIND GEN Chunk::setup_sky_array_buffer", false);
+	}//else{
 	glBindVertexArray(_skyVao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
-	check_glstate("BIND GEN Chunk::setup_sky_array_buffer", false);
-	}else{
-	glBindVertexArray(_skyVao);
-
-	glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
-	check_glstate("BIND Chunk::setup_sky_array_buffer", false);}
+	// check_glstate("BIND Chunk::setup_sky_array_buffer", false);}
 	_mtx_sky.lock();
 	glBufferData(GL_ARRAY_BUFFER, _sky_count * 24 * sizeof(GLint), _sky_vert, GL_STATIC_DRAW);
 	_mtx_sky.unlock();
 
-	check_glstate("BUFFERDATA Chunk::setup_sky_array_buffer", false);
+	// check_glstate("BUFFERDATA Chunk::setup_sky_array_buffer", false);
 	_skyVaoReset = false;
 	_skyVaoVIP = false;
 
@@ -916,7 +918,7 @@ void Chunk::checkFillVertices( void )
 		resetDisplayedFaces();
 		// std::cout << "chunk " << _startX << ", " << _startY << ": " << _displayed_faces << std::endl;
 		_mtx.lock();
-		delete [] _vertices;
+		delete [] static_cast<GLint*>(_vertices);
 		_vertices = new GLint[_displayed_faces * 4 * 6];
 		_mtx.unlock();
 		fill_vertex_array();
@@ -949,7 +951,7 @@ void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool a
 		// std::cout << "water count before " << waterSave << ", after " << _water_count << std::endl;
 		return ;
 	}
-	delete [] _vertices;
+	delete [] static_cast<GLint*>(_vertices);
 	_vertices = new GLint[_displayed_faces * 4 * 6];
 	if (!_light_update) {
 		fill_vertex_array();
@@ -1040,7 +1042,7 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_sky.lock();
-		face_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex);
+		face_water_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex);
 		_mtx_sky.unlock();
 	}
 	order.clear();
@@ -1152,16 +1154,18 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	glm::ivec3 p7 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
 	int count = face_count(value, chunk_pos.x, chunk_pos.y, chunk_pos.z, value != blocks::OAK_LEAVES);
 	int cnt = 0;
+	GLfloat *vertFloat = static_cast<GLfloat*>(_vertices);
+	GLint *vertInt = static_cast<GLint*>(_vertices);
 	if (value == blocks::TORCH) {
 		for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 			_mtx.lock();
-			if (torchFace(_vertices, p0, p1, p2, p3, p4, p6, index)) { // TODO add top(/bottom ?) face too
-				_vertices[index] = (_vertices[index] & 0xFFFF0FFF) + (frame << 12);
-				_vertices[index + 4] = (_vertices[index + 4] & 0xFFFF0FFF) + (frame << 12);
-				_vertices[index + 8] = (_vertices[index + 8] & 0xFFFF0FFF) + ((frame + 1) << 12);
-				_vertices[index + 12] = (_vertices[index + 12] & 0xFFFF0FFF) + (frame << 12);
-				_vertices[index + 16] = (_vertices[index + 16] & 0xFFFF0FFF) + ((frame + 1) << 12);
-				_vertices[index + 20] = (_vertices[index + 20] & 0xFFFF0FFF) + ((frame + 1) << 12);
+			if (torchFace(vertFloat, p0, p1, p2, p3, p4, p6, index)) { // TODO add top(/bottom ?) face too
+				vertInt[index] = (vertInt[index] & 0xFFFF0FFF) + (frame << 12);
+				vertInt[index + 4] = (vertInt[index + 4] & 0xFFFF0FFF) + (frame << 12);
+				vertInt[index + 8] = (vertInt[index + 8] & 0xFFFF0FFF) + ((frame + 1) << 12);
+				vertInt[index + 12] = (vertInt[index + 12] & 0xFFFF0FFF) + (frame << 12);
+				vertInt[index + 16] = (vertInt[index + 16] & 0xFFFF0FFF) + ((frame + 1) << 12);
+				vertInt[index + 20] = (vertInt[index + 20] & 0xFFFF0FFF) + ((frame + 1) << 12);
 				_mtx.unlock();
 				_vaoVIP = true;
 				_vaoReset = false;
@@ -1176,13 +1180,13 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	} else if (!air_flower(value, false, true)) { // cross image
 		for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 			_mtx.lock();
-			if (crossFace(_vertices, p0, p1, p2, p3, p4, p5, index)) {
-				_vertices[index] = (_vertices[index] & 0xFF0FFF) + (frame << 12);
-				_vertices[index + 4] = (_vertices[index + 4] & 0xFF0FFF) + (frame << 12);
-				_vertices[index + 8] = (_vertices[index + 8] & 0xFF0FFF) + ((frame + 1) << 12);
-				_vertices[index + 12] = (_vertices[index + 12] & 0xFF0FFF) + (frame << 12);
-				_vertices[index + 16] = (_vertices[index + 16] & 0xFF0FFF) + ((frame + 1) << 12);
-				_vertices[index + 20] = (_vertices[index + 20] & 0xFF0FFF) + ((frame + 1) << 12);
+			if (crossFace(vertFloat, p0, p1, p2, p3, p4, p5, index)) {
+				vertInt[index] = (vertInt[index] & 0xFFFF0FFF) + (frame << 12);
+				vertInt[index + 4] = (vertInt[index + 4] & 0xFFFF0FFF) + (frame << 12);
+				vertInt[index + 8] = (vertInt[index + 8] & 0xFFFF0FFF) + ((frame + 1) << 12);
+				vertInt[index + 12] = (vertInt[index + 12] & 0xFFFF0FFF) + (frame << 12);
+				vertInt[index + 16] = (vertInt[index + 16] & 0xFFFF0FFF) + ((frame + 1) << 12);
+				vertInt[index + 20] = (vertInt[index + 20] & 0xFFFF0FFF) + ((frame + 1) << 12);
 				_mtx.unlock();
 				_vaoVIP = true;
 				_vaoReset = false;
@@ -1197,13 +1201,13 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	}
 	for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 		_mtx.lock();
-		if (blockFace(_vertices, p0, p1, p2, p3, p4, p5, p6, p7, index)) {
-			_vertices[index] = (_vertices[index] & 0xFF0FFF) + (frame << 12);
-			_vertices[index + 4] = (_vertices[index + 4] & 0xFF0FFF) + (frame << 12);
-			_vertices[index + 8] = (_vertices[index + 8] & 0xFF0FFF) + ((frame + 1) << 12);
-			_vertices[index + 12] = (_vertices[index + 12] & 0xFF0FFF) + (frame << 12);
-			_vertices[index + 16] = (_vertices[index + 16] & 0xFF0FFF) + ((frame + 1) << 12);
-			_vertices[index + 20] = (_vertices[index + 20] & 0xFF0FFF) + ((frame + 1) << 12);
+		if (blockFace(vertFloat, p0, p1, p2, p3, p4, p5, p6, p7, index)) {
+			vertInt[index] = (vertInt[index] & 0xFFFF0FFF) + (frame << 12);
+			vertInt[index + 4] = (vertInt[index + 4] & 0xFFFF0FFF) + (frame << 12);
+			vertInt[index + 8] = (vertInt[index + 8] & 0xFFFF0FFF) + ((frame + 1) << 12);
+			vertInt[index + 12] = (vertInt[index + 12] & 0xFFFF0FFF) + (frame << 12);
+			vertInt[index + 16] = (vertInt[index + 16] & 0xFFFF0FFF) + ((frame + 1) << 12);
+			vertInt[index + 20] = (vertInt[index + 20] & 0xFFFF0FFF) + ((frame + 1) << 12);
 			_mtx.unlock();
 			_vaoVIP = true;
 			_vaoReset = false;
@@ -1264,7 +1268,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 		_displayed_faces++;
 	}
 	// std::cout << "got here" << std::endl;
-	delete [] _vertices;
+	delete [] static_cast<GLint*>(_vertices);
 	_vertices = new GLint[_displayed_faces * 24];
 	FILL:
 	fill_vertex_array();

@@ -177,7 +177,7 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 				light_spread(posX, posY, posZ, false);
 			}
 			// std::cout << "value after: " << s_blocks[level].name << ". displayed: " << _displayed_faces << std::endl;
-			delete [] _vertices;
+			delete [] static_cast<GLint*>(_vertices);
 			_vertices = new GLint[_displayed_faces * 24]; // TODO set flag to true and update vert array once on this frame instead of once per destroyed flower
 			fill_vertex_array();
 		}
@@ -300,7 +300,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_fluid.lock();
-		face_vertices(_water_vert, start + offset0, start + offset1, start + offset2, start + offset3, vindex);
+		face_water_vertices(_water_vert, start + offset0, start + offset1, start + offset2, start + offset3, vindex);
 		_mtx_fluid.unlock();
 	}
 	order.clear();
@@ -374,7 +374,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_fluid.lock();
-		face_vertices(_water_vert, start + offset0, start + offset1, start + offset2, start + offset3, vindex);
+		face_water_vertices(_water_vert, start + offset0, start + offset1, start + offset2, start + offset3, vindex);
 		_mtx_fluid.unlock();
 	}
 

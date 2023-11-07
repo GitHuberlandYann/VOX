@@ -27,10 +27,11 @@ bool isSandOrGravel( int type );
 std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks );
 
 std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 );
-void face_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, size_t & vindex );
-bool torchFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, glm::ivec3 v4, glm::ivec3 v6, size_t index );
-bool crossFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, glm::ivec3 v4, glm::ivec3 v5, size_t index );
-bool blockFace( GLint *vertices, glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, glm::ivec3 v4, glm::ivec3 v5, glm::ivec3 v6, glm::ivec3 v7, size_t index );
+void face_vertices( void *vertices, std::pair<int, glm::vec3> v0, std::pair<int, glm::vec3> v1, std::pair<int, glm::vec3> v2, std::pair<int, glm::vec3> v3, size_t & vindex );
+void face_water_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, size_t & vindex );
+bool torchFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v6, size_t index );
+bool crossFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v5, size_t index );
+bool blockFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v5, glm::vec3 v6, glm::vec3 v7, size_t index );
 std::vector<glm::ivec3> voxel_traversal( glm::vec3 ray_start, glm::vec3 ray_end );
 
 #endif

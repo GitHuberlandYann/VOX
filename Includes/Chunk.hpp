@@ -68,7 +68,8 @@ class Chunk
 		std::atomic_bool _genDone, _light_update, _vaoReset, _vaoVIP, _waterVaoReset, _skyVaoReset, _sortedOnce;
         GLint _startX, _startY, _nb_neighbours;
 		GLint _continent;
-		GLint *_blocks, *_vertices, *_water_vert, *_sky_vert;
+		GLint *_blocks, *_water_vert, *_sky_vert;
+		void *_vertices;
 		short *_lights; // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
 		GLboolean *_sky, _hasWater;
 		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
