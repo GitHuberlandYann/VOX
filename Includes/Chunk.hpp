@@ -139,6 +139,7 @@ class Chunk
 		void checkFillVertices( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( void );
+		void addEntity( Inventory *inventory, int value, int amount, int dura );
 		void sort_sky( glm::vec3 pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
 	
@@ -158,12 +159,12 @@ class Chunk
 		int computePosLight( glm::vec3 pos );
 		bool collisionBox( glm::vec3 pos, float width, float height );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
-		void applyGravity( Camera *camera );
+		void applyGravity( void );
 
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &face_counter );
 		void updateFurnaces( double currentTime );
-		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double currentTime );
+		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
 		void updateFluids( void );
 		void drawSky( GLint & counter, GLint &face_counter );
 		void drawWater( GLint & counter, GLint &face_counter );

@@ -391,7 +391,14 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_key_add_block = 0;
 	}
 	if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
-		_inventory->removeBlock();
+		mtx_inventory.lock();
+		glm::ivec3 details = _inventory->removeBlock(true);
+		mtx_inventory.unlock();
+		if (details.x != blocks::AIR) {
+			mtx.lock();
+			current_chunk_ptr->addEntity(_inventory, details.x, details.y, details.z);
+			mtx.unlock();
+		}
 	}
 	if (_game_mode == CREATIVE && _block_hit.w != blocks::AIR && _key_rm_block != 1 && _key_add_block != 1
 		&& glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_MIDDLE) && ++_key_pick_block == 1) { // pick up in creative mode
@@ -491,7 +498,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			mtx.unlock();
 			mtx.lock();
 			if (!current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, 1.8f)) {
-				current_chunk_ptr->applyGravity(_camera); // move on Z_AXIS
+				current_chunk_ptr->applyGravity(); // move on Z_AXIS
 			}
 			mtx.unlock();
 			glm::vec3 camPos = _camera->getPos();

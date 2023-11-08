@@ -447,11 +447,13 @@ void OpenGL_Manager::main_loop( void )
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, faceCounter);
-			c->updateFurnaces(currentTime);
-			if (fluidUpdate) {
-				c->updateFluids();
+			if (!_paused || _menu->getState() >= INVENTORY_MENU) {
+				c->updateFurnaces(currentTime);
+				if (fluidUpdate) {
+					c->updateFluids();
+				}
+				c->updateEntities(_entities, currentTime - previousFrame);
 			}
-			c->updateEntities(_entities, currentTime);
 		}
 		// if (newVaoCounter) {
 		// 	std::cout << "new vao counter: " << newVaoCounter << std::endl;

@@ -496,7 +496,7 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 
 void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 {
-	std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	int value = _blocks[offset];
@@ -510,8 +510,9 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	}
 	mtx_inventory.lock();
 	if (inventory) {
-		// inventory->addBlock(value + (value < 0) * blocks::NOTVISIBLE);
-		_entities.push_back(Entity({pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), s_blocks[value].mined));
+		(value == blocks::WATER)
+			? inventory->addBlock(value)// + (value < 0) * blocks::NOTVISIBLE)
+			: _entities.push_back(Entity(this, inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), false, s_blocks[value].mined));
 	}
 	mtx_inventory.unlock();
 	int endZ = -1;
@@ -605,7 +606,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	}
 	mtx_inventory.lock();
 	if (inventory) {
-		inventory->removeBlock();
+		inventory->removeBlock(false);
 	}
 	mtx_inventory.unlock();
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
@@ -971,6 +972,14 @@ void Chunk::generate_chunk( void )
 	#endif
 }
 
+void Chunk::addEntity( Inventory *inventory, int value, int amount, int dura )
+{
+	glm::vec3 camPos = _camera->getPos(), camDir = _camera->getDir();
+	camPos.z += 1;
+	camPos += camDir;
+	_entities.push_back(Entity(this, inventory, camPos, camDir, true, value, amount, dura));
+}
+
 void Chunk::sort_sky( glm::vec3 pos, bool vip )
 {
 	// std::cout << "in sort sky" << std::endl;
@@ -1277,7 +1286,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 
 int Chunk::computePosLight( glm::vec3 pos )
 {
-	return (computeLight(pos.x - _startX, pos.y - _startY, pos.z));
+	return (computeLight(glm::floor(pos.x - _startX), glm::floor(pos.y - _startY), glm::floor(pos.z)));
 }
 
 /* collisionBox takes feet position of object, dimension of its hitbox and returns wether object is inside block or not */
@@ -1348,58 +1357,58 @@ bool Chunk::collisionBoxWater( glm::vec3 pos, float width, float height )
 	return (false);
 }
 
-void Chunk::applyGravity( Camera *camera )
+void Chunk::applyGravity( void )
 {
-	float saved_posZ = camera->getPos().z;
+	float saved_posZ = _camera->getPos().z;
 	_camera->applyGravity();
 	glm::vec3 pos = _camera->getPos();
 	float distZ = saved_posZ - pos.z;
 	if (distZ < 0) { // jumping
-		camera->_touchGround = false;
-		// std::cout << "DEBUG: " << std::to_string(camera->_position.z) << std::endl;
+		_camera->_touchGround = false;
+		// std::cout << "DEBUG: " << std::to_string(_camera->_position.z) << std::endl;
 		for (float posZ = saved_posZ; posZ < pos.z; posZ++) {
 			// std::cout << "testing with posZ " << posZ << std::endl;
 			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f)) {
-				camera->setPosZ(glm::floor(posZ) + 0.19f);
-				// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
-				camera->_fall_distance -= (camera->getPos().z - posZ);
-				camera->_update = true;
-				camera->_inJump = false;
+				_camera->setPosZ(glm::floor(posZ) + 0.19f);
+				// std::cout << "value z spam: " << std::to_string(_camera->_position.z) << std::endl;
+				_camera->_fall_distance -= (_camera->getPos().z - posZ);
+				_camera->_update = true;
+				_camera->_inJump = false;
 				return ;
 			}
 		}
 		if (collisionBox(glm::vec3(pos.x, pos.y, pos.z), 0.3f, 1.8f)) {
-			camera->setPosZ(glm::floor(pos.z) + 0.19f);
-			// std::cout << "value z spam: " << std::to_string(camera->_position.z) << std::endl;
-			camera->_fall_distance -= 1;
-			camera->_update = true;
-			camera->_inJump = false;
+			_camera->setPosZ(glm::floor(pos.z) + 0.19f);
+			// std::cout << "value z spam: " << std::to_string(_camera->_position.z) << std::endl;
+			_camera->_fall_distance -= 1;
+			_camera->_update = true;
+			_camera->_inJump = false;
 			return ;
 		}
 	} else { // falling
 		for (float posZ = saved_posZ; posZ - 1 > pos.z; posZ--) {
 			if (collisionBox(glm::vec3(pos.x, pos.y, posZ), 0.3f, 1.8f)) {
-				camera->setPosZ(glm::floor((posZ + 1)));
-				camera->_fall_distance -= (camera->getPos().z - posZ);
-				camera->touchGround();
-				if (saved_posZ != camera->getPos().z) {
-					camera->_update = true;
+				_camera->setPosZ(glm::floor((posZ + 1)));
+				_camera->_fall_distance -= (_camera->getPos().z - posZ);
+				_camera->touchGround();
+				if (saved_posZ != _camera->getPos().z) {
+					_camera->_update = true;
 				}
 				return ;
 			}
 		}
 		if (collisionBox(glm::vec3(pos), 0.3f, 1.8f)) {
-			camera->setPosZ(glm::floor((pos.z + 1)));
-			camera->_fall_distance -= (camera->getPos().z - pos.z);
-			camera->touchGround();
-			if (saved_posZ != camera->getPos().z) {
-				camera->_update = true;
+			_camera->setPosZ(glm::floor((pos.z + 1)));
+			_camera->_fall_distance -= (_camera->getPos().z - pos.z);
+			_camera->touchGround();
+			if (saved_posZ != _camera->getPos().z) {
+				_camera->_update = true;
 			}
 			return ;
 		}
 	}
-	camera->_update = true;
-	camera->_touchGround = false;
+	_camera->_update = true;
+	_camera->_touchGround = false;
 }
 
 int Chunk::isLoaded( GLint &counter )
@@ -1468,10 +1477,13 @@ void Chunk::updateFurnaces( double currentTime )
 	}
 }
 
-void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double currentTime )
+void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime )
 {
+	// TODO merge identical close(3/4 of a block) stackable items together
+	// on merge, item timer set to longest of 2
+
 	for (auto e = _entities.begin(); e != _entities.end();) {
-		if (e->update(this, arr, currentTime)) {
+		if (e->update(arr, _camera->getPos(), deltaTime)) {
 			e = _entities.erase(e);
 		} else {
 			++e;

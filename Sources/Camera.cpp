@@ -80,6 +80,11 @@ glm::vec3 Camera::getPos( void )
 	return (res);
 }
 
+glm::vec3 Camera::getDir( void )
+{
+	return (_front);
+}
+
 void Camera::setPosZ( float value )
 {
 	_mtx.lock();

@@ -164,13 +164,14 @@ class Inventory
 		glm::ivec2 putBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace );
 		glm::ivec2 putOneBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace );
 		void restoreBlock( glm::ivec2 block, bool swap = false );
+		bool absorbItem( glm::ivec2 block, int dura );
 		void restoreiCraft( void );
 		void restoreCraft( void );
 		bool getModif( void );
 		void setModif( bool value );
         void addBlock( int type );
 		void removeBlockAt( int value, FurnaceInstance *furnace );
-        void removeBlock( void );
+        glm::ivec3 removeBlock( bool thrown );
 		void replaceSlot( int type );
 		void swapCells( int slot, int location );
 		void decrementDurabitilty( void );

@@ -493,6 +493,24 @@ void Inventory::restoreBlock( glm::ivec2 block, bool swap )
 	}
 }
 
+bool Inventory::absorbItem( glm::ivec2 block, int dura )
+{
+	int location = findEmptyCell(block, true);
+	if (location == -1) {
+		return (false);
+	}
+	if (dura && s_blocks[block.x].durability) {
+		_durabilities.push_back(glm::ivec3(location, dura, s_blocks[block.x].durability));
+	}
+	if (location < 9) {
+		_content[location] = glm::ivec2(block.x, block.y + _content[location].y);
+		_modif = true;
+	} else {
+		_backpack[location - 9] = glm::ivec2(block.x, block.y + _backpack[location - 9].y);
+	}
+	return (true);
+}
+
 void Inventory::restoreiCraft( void )
 {
 	for (int index = 0; index < 4; index++) {
@@ -576,21 +594,23 @@ void Inventory::removeBlockAt( int value, FurnaceInstance *furnace )
 	}
 }
 
-void Inventory::removeBlock( void )
+glm::ivec3 Inventory::removeBlock( bool thrown )
 {
-    if (_content[_slot].x == blocks::AIR) {
-        return ;
+	glm::ivec3 res = {_content[_slot].x, 1, 0}; // block_type, amount, dura
+    if (res.x == blocks::AIR) {
+        return (res);
     }
-	if (_content[_slot].x == blocks::WATER_BUCKET) {
+	if (!thrown && res.x == blocks::WATER_BUCKET) {
 		_content[_slot].x = blocks::BUCKET;
 		_modif = true;
 	} else if (--_content[_slot].y <= 0) {
-		if (s_blocks[_content[_slot].x].durability) {
-			getrmDura(_slot);
+		if (s_blocks[res.x].durability) {
+			res.z = getrmDura(_slot);
 		}
         _content[_slot] = glm::ivec2(blocks::AIR, 0);
 		_modif = true;
     }
+	return (res);
 }
 
 void Inventory::replaceSlot( int type )
@@ -658,7 +678,7 @@ void Inventory::decrementDurabitilty( void )
 			if (dura.x == _slot) {
 				dura.y--;
 				if (!dura.y) {
-					removeBlock();
+					removeBlock(false);
 					_durabilities.remove(dura);
 				}
 				return ;

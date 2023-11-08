@@ -60,6 +60,7 @@ class Camera
 		bool chunkInFront( glm::ivec2 current_chunk, int posX, int posY );
 		int getOrientation( void );
 		glm::vec3 getPos( void );
+		glm::vec3 getDir( void );
 		void setPosZ( float value );
 		void setWaterStatus( bool head, bool underwater );
 		int getWaterStatus( void );

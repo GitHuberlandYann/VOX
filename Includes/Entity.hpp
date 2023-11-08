@@ -3,19 +3,24 @@
 
 # define ENTITY_LIFETIME 5
 
+class Inventory;
+
 class Entity
 {
 	private:
-		int _value, _amount, _dura, _tool_dura;
-		float _rotation;
-		double _startTime;
-		glm::vec3 _position, _dir;
+		int _value, _amount, _dura;
+		bool _thrown;
+		double _lifeTime;
+		glm::vec3 _pos, _dir;
+		glm::ivec2 _chunk_pos;
+		Chunk *_chunk;
+		Inventory *_inventory;
 
 	public:
-		Entity( glm::vec3 position, glm::vec2 dir, int value, int amount = 1 );
+		Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec2 dir, bool thrown, int value, int amount = 1, int dura = 0 );
 		~Entity( void );
 
-		bool update( Chunk *chunk, std::vector<std::pair<int, glm::vec3>> &arr, double currentTime );
+		bool update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camPos, double deltaTime );
 };
 
 #endif
