@@ -168,7 +168,8 @@ int air_flower( int value, bool air_leaves, bool air_water )
 	if (air_water && value >= blocks::WATER) {
 		return (value);
 	}
-	if (value >= blocks::POPPY || value == blocks::CACTUS || (air_leaves && value == blocks::OAK_LEAVES)) {
+	if (value >= blocks::POPPY || value == blocks::CACTUS
+		|| (air_leaves && (value + (value < 0) * blocks::NOTVISIBLE) == blocks::OAK_LEAVES)) {
 		return (0);
 	}
 	return (value);
@@ -182,7 +183,7 @@ bool isSandOrGravel( int type )
 
 std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 {
-	Bench b;
+	// Bench b;
 	int posX = chunk_pos(pos.x);
 	int posY = chunk_pos(pos.y);
 
@@ -194,7 +195,7 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 		dists.push_back(std::pair<int, Chunk *>(c->manhattanDist(posX, posY), c));
 	}
 	// std::cout << "in sort chunks, dists size = " << dists.size() << std::endl;
-	b.stamp("SORT - manhattan");
+	// b.stamp("SORT - manhattan");
 	for (int index = 0; index < size; index++) {
 		int minDist = dists[index].first, minIndex = index;
 		for (int jindex = index + 1; jindex < size; jindex++) {
@@ -209,7 +210,7 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 			dists[index] = tmp;
 		}
 	}
-	b.stamp("SORT - chunks");
+	// b.stamp("SORT - chunks");
 
 	chunks.clear();
 	chunks.reserve(dists.capacity());
@@ -227,7 +228,7 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 		chunks.push_back(c);
 	}
 	// std::cout << "\tsorted " << cnt << std::endl;
-	b.stamp("SORT - sky water");
+	// b.stamp("SORT - sky water");
 	dists.clear();
 	#else
 	std::multimap<int, Chunk*> dists;

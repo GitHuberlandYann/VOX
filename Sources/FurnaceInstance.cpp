@@ -18,7 +18,7 @@ FurnaceInstance::~FurnaceInstance( void )
 
 int FurnaceInstance::count( void )
 {
-	return ((_composant.x != blocks::AIR) +( _fuel.x != blocks::AIR) + (_production.x != blocks::AIR) + (_fuel_time > 0) + (_composant_time > 0));
+	return ((_composant.x != blocks::AIR) + ( _fuel.x != blocks::AIR) + (_production.x != blocks::AIR) + (_fuel_time > 0) + (_composant_time > 0));
 }
 
 float FurnaceInstance::getComposantTime( void )

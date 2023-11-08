@@ -30,7 +30,6 @@ TODOS:
 	- hitbox change + no fall on sneak
     - skybox
 	- particles ?
-    - items on ground after break
 	- chests
 	- doors
 	- windows
@@ -54,6 +53,8 @@ IN PROGRES:
         - quit
     - biomes
 
+	- save entities
+
 DONE:
 	- pthread chunk creation
     - only display chunks in fieldview + little offset
@@ -70,6 +71,7 @@ DONE:
     - save block changed into backup map
     - player gravity
     - hitbox around player for collisions - https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
+    - items on ground after break
     - fix fall going through blocks + fix jump into block above head
 	- strafing speed reduction + rework movements
     - better fall damage

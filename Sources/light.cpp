@@ -137,6 +137,7 @@ int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets
 
 void Chunk::fill_vertex_array( void )
 {
+	// std::cout << "filling " << _startX << ", " << _startY << "; expecting " << _displayed_faces << std::endl;
 	_mtx.lock();
 	size_t index = 0;
 	for (int row = 0; row < CHUNK_SIZE; row++) {
@@ -293,8 +294,8 @@ void Chunk::fill_vertex_array( void )
 		}
 	}
 	_mtx.unlock();
-	// if (index != _displayed_faces * 24) { // TODO FIND OUT WHY LEAVES BREAK THIS CONDITION
-	// 	std::cout << "index at end is " << index << " vs " << _displayed_faces << " | " << _displayed_faces * 4 * 6 << std::endl;
+	// if (index != _displayed_faces * 24) { // TODO if segfault on fill_vertex_array, use this condition to try and debug it
+	// 	std::cout << "ERROR fill_vertex_array " << _startX << ", " << _startY << "\n\tindex at end is " << (index >> 2) / 6 << " | " << index << " vs " << _displayed_faces << " | " << _displayed_faces * 4 * 6 << std::endl;
 	// }
 	_light_update = false;
 	_vaoReset = false;

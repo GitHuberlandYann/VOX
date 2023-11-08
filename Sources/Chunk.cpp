@@ -499,20 +499,35 @@ void Chunk::remove_block( Inventory *inventory, glm::ivec3 pos )
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
-	int value = _blocks[offset];
+	int value = _blocks[offset]; // TODO better handling of invis block gets deleted
 	if (value >= blocks::CRAFTING_TABLE && value < blocks::BEDROCK) { // oriented blocks
 		_orientations.erase(offset);
 	}
 	_added.erase(offset);
 	_removed.insert(offset);
 	if (value == blocks::FURNACE) {
-		_furnaces.erase(offset); // TODO drop furnace's items/ put them in inventory
+		auto search = _furnaces.find(offset); // drop furnace's items
+		if (search != _furnaces.end()) {
+			glm::ivec2 items = search->second.getComposant();
+			if (items.y) {
+				_entities.push_back(Entity(this, inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(-1, -1)), false, items.x, items.y));
+			}
+			items = search->second.getFuel();
+			if (items.y) {
+				_entities.push_back(Entity(this, inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(1, 9)), false, items.x, items.y));
+			}
+			items = search->second.getProduction();
+			if (items.y) {
+				_entities.push_back(Entity(this, inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(-4, 5)), false, items.x, items.y));
+			}
+		}
+		_furnaces.erase(offset);
 	}
 	mtx_inventory.lock();
 	if (inventory) {
 		(value == blocks::WATER)
-			? inventory->addBlock(value)// + (value < 0) * blocks::NOTVISIBLE)
-			: _entities.push_back(Entity(this, inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), false, s_blocks[value].mined));
+			? inventory->addBlock(value)
+			: _entities.push_back(Entity(this, inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), false, s_blocks[value + (value < 0) * blocks::NOTVISIBLE].mined));
 	}
 	mtx_inventory.unlock();
 	int endZ = -1;
@@ -582,7 +597,7 @@ void Chunk::add_block( Inventory *inventory, glm::ivec3 pos, int type, int previ
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		pos.z = sand_fall_endz(pos);
 		previous = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z];
-		// if (previous == blocks::TORCH) {
+		// if (previous == blocks::TORCH) { // TODO implement sand/gravel breaking into entity
 		// 	return ;
 		// }
 	}
@@ -893,25 +908,27 @@ void Chunk::checkFillVertices( void )
 	}
 	if (cnt > _nb_neighbours) {
 		_nb_neighbours = cnt;
-		for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
-			if (a.second == blocks::TORCH) {
-				int level = a.first & (WORLD_HEIGHT - 1);
-				int col = ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-				int row = ((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
-				_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
-				_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] += 14 + (14 << 4); // 0xF0 = light source. & 0xF = light level
-				light_spread(row, col, level, false);
+		if (cnt == 4) {
+			for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
+				if (a.second == blocks::TORCH) {
+					int level = a.first & (WORLD_HEIGHT - 1);
+					int col = ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
+					int row = ((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
+					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
+					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] += 14 + (14 << 4); // 0xF0 = light source. & 0xF = light level
+					light_spread(row, col, level, false);
+				}
 			}
-		}
-		// this time spread sky_light underground
-		for (int row = 0; row < CHUNK_SIZE; row++) {
-			for (int col = 0; col < CHUNK_SIZE; col++) {
-				for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
-					if (!(_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xFF00)) {
-						int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-						if (!air_flower(value, true, false)) { // underground hole
-							// spread_light TODO watch out for leaves and water light damping..
-							light_spread(row, col, level, true);
+			// this time spread sky_light underground
+			for (int row = 0; row < CHUNK_SIZE; row++) {
+				for (int col = 0; col < CHUNK_SIZE; col++) {
+					for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
+						if (!(_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xFF00)) {
+							int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
+							if (!air_flower(value, true, false)) { // underground hole
+								// spread_light TODO watch out for leaves and water light damping..
+								light_spread(row, col, level, true);
+							}
 						}
 					}
 				}
@@ -931,7 +948,6 @@ void Chunk::checkFillVertices( void )
 		std::cerr << "ERROR chunk has no neighbours" << std::endl;
 	}
 }
-
 
 void Chunk::regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding )
 {
@@ -1428,11 +1444,11 @@ int Chunk::isLoaded( GLint &counter )
 
 void Chunk::drawArray( GLint & counter, GLint &face_counter )
 {
-	if (_light_update) {
+	if (_light_update && _nb_neighbours == 4) {
 		std::cout << _startX << ", " << _startY << " light update" << std::endl;
 		fill_vertex_array();
 	}
-	if (!_vaoReset) { // TODO change vosReset logic (swap true and false)
+	if (!_vaoReset) { // TODO change vaoReset logic (swap true and false)
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		++counter;
 		if (!_vaoVIP && (counter & 63) > 6) { // we don't load more than 5 new chunks per 50 new chunks per frame
@@ -1456,11 +1472,11 @@ void Chunk::updateFurnaces( double currentTime )
 			if (o != _orientations.end()) {
 				// std::cout << "ORIENTATION FOUND" << std::endl;
 				o->second = (o->second & 0xF) + (state << 4);
-				// TODO set/unset furnace position as light source of 13 using state
+				// set/unset furnace position as light source of 13 using state
 				int posZ = o->first & (WORLD_HEIGHT - 1);
 				int posY = ((o->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 				int posX = ((o->first >> WORLD_SHIFT) >> CHUNK_SHIFT);
-				std::cout << "furnace at " << _startX + posX << ", " << _startY + posY << ", " << posZ << std::endl;
+				// std::cout << "furnace at " << _startX + posX << ", " << _startY + posY << ", " << posZ << std::endl;
 				if (state == furnace_state::ON) {
 					_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] = 13 + (13 << 4);
 					light_spread(posX, posY, posZ, false); // spread block light

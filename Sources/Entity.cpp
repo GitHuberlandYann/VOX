@@ -85,7 +85,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	glm::vec3 p7 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
 
 	if (_value < blocks::POPPY) {
-	    bool orientedItem = 2 * (_value >= blocks::CRAFTING_TABLE && _value < blocks::BEDROCK);
+	    int orientedItem = 2 * (_value >= blocks::CRAFTING_TABLE && _value < blocks::BEDROCK);
 	    int itemLight = _chunk->computePosLight(_pos);
 
 	    int spec = blockGridX(_value, 0) + (blockGridY(_value) << 4) + (3 << 19) + (itemLight << 24);
@@ -155,7 +155,6 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v3);
 	    arr.push_back(v2);
 	/*} else if (_value == blocks::TORCH) {
-	    // TODO for now torches only in default middle-of-block configuration
 	    int spec = blockGridX(_value, 0) + (blockGridY(_value) << 4) + (0 << 19) + (15 << 24);
 	    p4 = {_pos.x + 7.0f / 16 - 0.17f * sinRot, _pos.y + 0.17f * cosRot, _pos.z + 0.125f + cosRot / 4};
 	    std::pair<int, glm::vec3> v0 = {spec, p4};

@@ -188,7 +188,7 @@ void OpenGL_Manager::update_anim_frame( void )
 	}
 }
 
-void OpenGL_Manager::update_visible_chunks( void ) // TODO turn this into thread ?
+void OpenGL_Manager::update_visible_chunks( void )
 {
 	std::vector<Chunk *> newvis_chunks;
 	newvis_chunks.reserve(_visible_chunks.capacity());

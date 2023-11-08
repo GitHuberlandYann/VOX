@@ -69,7 +69,7 @@ class Chunk
         GLint _startX, _startY, _nb_neighbours;
 		GLint _continent;
 		GLint *_blocks, *_water_vert, *_sky_vert;
-		void *_vertices;
+		void *_vertices; // int, vec3
 		short *_lights; // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
 		GLboolean *_sky, _hasWater;
 		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
@@ -137,6 +137,7 @@ class Chunk
 
 		void generation( void );
 		void checkFillVertices( void );
+		void execFillVertices( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( void );
 		void addEntity( Inventory *inventory, int value, int amount, int dura );
