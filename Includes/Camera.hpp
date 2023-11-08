@@ -58,12 +58,14 @@ class Camera
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
 		bool chunkInFront( glm::ivec2 current_chunk, int posX, int posY );
+
 		int getOrientation( void );
 		glm::vec3 getPos( void );
 		glm::vec3 getDir( void );
 		void setPosZ( float value );
 		void setWaterStatus( bool head, bool underwater );
 		int getWaterStatus( void );
+
 		void setCurrentChunkPtr( Chunk *ptr );
 		void setRun( bool value );
 		void setDelta( float deltaTime );
@@ -73,14 +75,16 @@ class Camera
 		void applyGravity( void );
 		void touchGround( void );
 		bool getModif( void );
+
 		void processPitch( GLint offset );
 		void processYaw( GLint offset );
 		std::vector<glm::ivec3> get_ray_casting( GLfloat radius );
 		void processMouseMovement( float x_offset, float y_offset );
-		// void processMouseScroll( float offset );
+
 		std::string getCamString( bool game_mode );
 		std::string saveString( void );
 		void loadWorld( std::ofstream & ofs, std::ifstream & indata );
+		void respawn( void );
 };
 
 #endif

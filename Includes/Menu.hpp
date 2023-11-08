@@ -5,6 +5,7 @@ enum {
 	MAIN_MENU,
 	WORLD_SELECT_MENU,
 	LOAD_MENU,
+	DEATH_MENU,
 	PAUSE_MENU,
 	INVENTORY_MENU,
 	CRAFTING_MENU,
@@ -33,25 +34,31 @@ class Menu
 		int main_menu( void );
 		int world_select_menu( void );
 		int loading_screen( GLint render_dist );
+		int death_menu( void );
 		int pause_menu( void );
 		int ingame_inputs( void );
 		int ingame_menu( void );
+
 		void fill_vertices( GLint *vertices, GLint values[9], int & vindex);
         void setup_array_buffer_main( void );
         void setup_array_buffer_select( void );
 		void setup_array_buffer_load( int completion );
+		void setup_array_buffer_death( void );
         void setup_array_buffer_pause( void );
+
 		void display_slot_value( int index );
 		void display_backpack_value( int index );
 		void display_icraft_value( int index );
 		void display_furnace_value( void );
 		void display_craft_value( int index );
+
 		void add_slot_value( GLint *vertices, int mult, int index, int & vindex );
 		void add_backpack_value( GLint *vertices, int mult, int index, int & vindex );
 		void add_icraft_value( GLint *vertices, int mult, int index, int & vindex );
 		void add_craft_value( GLint *vertices, int mult, int index, int & vindex );
 		void add_dura_value( GLint *vertices, int mult, int index, int & vindex );
 		void add_crafted_value( GLint *vertices, int mult, int & vindex );
+
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );
 		void add_furnace_value( GLint *vertices, int mult, int & vindex );

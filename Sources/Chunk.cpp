@@ -988,12 +988,12 @@ void Chunk::generate_chunk( void )
 	#endif
 }
 
-void Chunk::addEntity( Inventory *inventory, int value, int amount, int dura )
+void Chunk::addEntity( Inventory *inventory, glm::vec3 dir, int value, int amount, int dura )
 {
-	glm::vec3 camPos = _camera->getPos(), camDir = _camera->getDir();
+	glm::vec3 camPos = _camera->getPos();
 	camPos.z += 1;
-	camPos += camDir;
-	_entities.push_back(Entity(this, inventory, camPos, camDir, true, value, amount, dura));
+	camPos += dir;
+	_entities.push_back(Entity(this, inventory, camPos, dir, true, value, amount, dura));
 }
 
 void Chunk::sort_sky( glm::vec3 pos, bool vip )

@@ -341,3 +341,29 @@ std::string Camera::getCamString( bool game_mode )
 	_mtx.unlock();
 	return (str);
 }
+
+void Camera::respawn( void )
+{
+	_fall_time = 0;
+	_breathTime = 0;
+	// _fov(FOV)
+	_fall_speed = 0;
+	_isRunning = false;
+	_healthUpdate = true;
+	_waterHead = false;
+	_waterFeet = false;
+	_current_chunk_ptr = NULL;
+	_movement_speed = SPEED;
+	_health_points = 20;
+	_inJump = false;
+	_touchGround = false;
+	_fall_immunity = true;
+	_fall_distance = 0;
+
+	_position = {1.0f, -2.0f, 66.0f}; // TODO respawn in bed or at default position
+	_yaw = YAW;
+	_pitch = PITCH;
+	_update = false;
+	_fovUpdate = false;
+	updateCameraVectors();
+}

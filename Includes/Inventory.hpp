@@ -176,6 +176,8 @@ class Inventory
 		void swapCells( int slot, int location );
 		void decrementDurabitilty( void );
 
+		void spillInventory( Chunk *chunk );
+
         std::string getInventoryString( void );
 		std::string getDuraString( void );
 		std::string getSlotString( void );

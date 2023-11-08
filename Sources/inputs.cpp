@@ -396,7 +396,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		mtx_inventory.unlock();
 		if (details.x != blocks::AIR) {
 			mtx.lock();
-			current_chunk_ptr->addEntity(_inventory, details.x, details.y, details.z);
+			current_chunk_ptr->addEntity(_inventory, _camera->getDir(), details.x, details.y, details.z);
 			mtx.unlock();
 		}
 	}
@@ -521,6 +521,13 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			}
 			_break_time = 0;
 			_break_frame = _outline;
+		}
+
+		if (!_camera->_health_points) { // dead
+			_inventory->spillInventory(current_chunk_ptr);
+			_paused = true;
+			_menu->setState(DEATH_MENU);
+			return ;
 		}
 	}
 	glm::vec3 camPos = _camera->getPos();

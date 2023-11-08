@@ -687,6 +687,33 @@ void Inventory::decrementDurabitilty( void )
 	}
 }
 
+void Inventory::spillInventory( Chunk *chunk )
+{
+	glm::ivec3 details; // block_type, amount, dura
+
+	for (int index = 0; index < 9; index++) {
+		if (_content[index].x != blocks::AIR) {
+			details = {_content[index].x, _content[index].y, 0};
+			if (s_blocks[details.x].durability) {
+				details.z = getrmDura(index);
+			}
+			_content[index] = {blocks::AIR, 0};
+			chunk->addEntity(this, {glm::cos(index), glm::sin(index), 0}, details.x, details.y, details.z); // might want to lock this
+		}
+	}
+	for (int index = 0; index < 27; index++) {
+		if (_backpack[index].x != blocks::AIR) {
+			details = {_backpack[index].x, _backpack[index].y, 0};
+			if (s_blocks[details.x].durability) {
+				details.z = getrmDura(index + 9);
+			}
+			_backpack[index] = {blocks::AIR, 0};
+			chunk->addEntity(this, {glm::cos(index + 9), glm::sin(index + 9), 0}, details.x, details.y, details.z); // might want to lock this
+		}
+	}
+	_modif = true;
+}
+
 // TODO DEL THOSE
 std::string Inventory::getInventoryString( void )
 {

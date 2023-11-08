@@ -175,6 +175,38 @@ int Menu::loading_screen( GLint render_dist )
 	return (0);
 }
 
+int Menu::death_menu( void )
+{
+	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		if (_selection == 1) { // Respawn
+			_state = LOAD_MENU;
+			reset_values();
+			return (5);
+		} else if (_selection == 2) { // Save and Quit to Title
+			_state = MAIN_MENU;
+			reset_values();
+			return (6);
+		}
+	}
+
+	setup_array_buffer_death();
+	glUseProgram(_shaderProgram);
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_POINTS, 0, _nb_points);
+
+	int mult = 3;
+	// first draw text shadow
+	_text->addText(WIN_WIDTH / 2 - 150 + mult, WIN_HEIGHT / 2 - 60 * mult - 29 + mult, 40, false, "You Died!");
+	_text->addText(WIN_WIDTH / 2 - 70 + mult, WIN_HEIGHT / 2 - 5 * mult + 6 * mult + mult, 20, false, "Respawn");
+	_text->addText(WIN_WIDTH / 2 - 110 + mult, WIN_HEIGHT / 2 + 30 * mult + 6 * mult + mult, 20, false, "Title Screen");
+
+	// then draw text in white
+	_text->addText(WIN_WIDTH / 2 - 150, WIN_HEIGHT / 2 - 60 * mult - 29, 40, true, "You Died!");
+	_text->addText(WIN_WIDTH / 2 - 70, WIN_HEIGHT / 2 + - 5 * mult + 6 * mult, 20, true, "Respawn");
+	_text->addText(WIN_WIDTH / 2 - 110, WIN_HEIGHT / 2 + 30 * mult + 6 * mult, 20, true, "Title Screen");
+	return (0);
+}
+
 int Menu::pause_menu( void )
 {
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
@@ -518,6 +550,19 @@ void Menu::setup_array_buffer_load( int completion )
 
 	setup_shader(vertices);
 	delete [] vertices;
+}
+
+void Menu::setup_array_buffer_death( void )
+{
+	_nb_points = 3;
+	int mult = 3;
+	GLint vertices[] = { // pos: x y width height textcoord: x y width height
+		1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 16, 15, 1, 1, // occult window in redish
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 5 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 1), 200, 20, // Respawn
+        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 30 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 2), 200, 20, // Title Screen
+    };
+
+	setup_shader(vertices);
 }
 
 void Menu::setup_array_buffer_pause( void )
@@ -1054,6 +1099,14 @@ void Menu::processMouseMovement( float posX, float posY )
 				_selection = index + 7;
 			}
 		}
+	} else if (_state == DEATH_MENU) {
+		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 5 * mult, 200 * mult, 20 * mult)) {
+			_selection = 1;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 30 * mult, 200 * mult, 20 * mult)) {
+			_selection = 2;
+		} else {
+			_selection = 0;
+		}
 	} else if (_state == PAUSE_MENU) {
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 60 * mult, 200 * mult, 20 * mult)) {
 			_selection = 1;
@@ -1174,6 +1227,8 @@ int Menu::run( GLint render_dist )
 			return (world_select_menu());
 		case LOAD_MENU:
 			return (loading_screen(render_dist));
+		case DEATH_MENU:
+			return (death_menu());
 		case PAUSE_MENU:
 			return (pause_menu());
 		case INVENTORY_MENU:

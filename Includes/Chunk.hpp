@@ -140,7 +140,7 @@ class Chunk
 		void execFillVertices( void );
 		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( void );
-		void addEntity( Inventory *inventory, int value, int amount, int dura );
+		void addEntity( Inventory *inventory, glm::vec3 dir, int value, int amount, int dura );
 		void sort_sky( glm::vec3 pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
 	

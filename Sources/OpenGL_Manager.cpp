@@ -447,7 +447,7 @@ void OpenGL_Manager::main_loop( void )
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, faceCounter);
-			if (!_paused || _menu->getState() >= INVENTORY_MENU) {
+			if (!_paused || _menu->getState() >= INVENTORY_MENU || _menu->getState() == DEATH_MENU) {
 				c->updateFurnaces(currentTime);
 				if (fluidUpdate) {
 					c->updateFluids();
@@ -522,7 +522,7 @@ void OpenGL_Manager::main_loop( void )
 			_menu->setChunks(_chunks);
 			mtx.unlock();
 			int menu_ret = _menu->run(_render_distance);
-			if (menu_ret == 2) {
+			if (menu_ret == 2) { // world selected, go into loading mode
 				_world_name = _menu->getWorldFile();
 				glUseProgram(_shaderProgram); // used by dayCycle to modif internal light
 				loadWorld("Worlds/" + _world_name);
@@ -544,6 +544,13 @@ void OpenGL_Manager::main_loop( void )
 				saveWorld();
 			} else if (menu_ret == 4) { // skip world selection and play with default seed of 123456
 				initWorld();
+			} else if (menu_ret == 5) { // Respawn player, init world again
+				_camera->respawn();
+				initWorld();	
+			} else if (menu_ret == 6) { // Respawn player, then save and quit to menu
+				_camera->respawn();
+				resetInputsPtrs();
+				saveWorld();
 			}
 		}
 		_ui->textToScreen();
