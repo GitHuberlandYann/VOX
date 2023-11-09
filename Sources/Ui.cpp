@@ -312,7 +312,12 @@ void UI::display_slot_value( int index )
 	}
 	int mult = 4, value = _inventory.getSlotBlock(index).y;
 	if (value > 1) {
-		_text->addText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 3 - 12 - 4 * (value > 9), WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 3 - 6, 12, true, std::to_string(value));
+		if (value > 9) {
+			_text->addText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 4 - 6 * mult + mult, WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 6 - 6 + mult, 30, false, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 4 - 6 * mult, WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 6 - 6, 30, true, std::to_string(value / 10));
+		}
+		_text->addText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 4 + mult, WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 6 - 6 + mult, 30, false, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 4, WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 6 - 6, 30, true, std::to_string(value % 10));
 	}
 }
 

@@ -37,8 +37,7 @@ TODOS:
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
 	- upon world generation, place player on ground by using continentalness
-    - nether
-	- item number color/placement/size in ingame menus
+    - lava + nether
     - hitbox flowers and blocks in general -> might have to split blocks in 27 ..
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
@@ -72,6 +71,7 @@ DONE:
     - player gravity
     - hitbox around player for collisions - https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
     - items on ground after break
+	- item number color/placement/size in ingame menus
     - fix fall going through blocks + fix jump into block above head
 	- strafing speed reduction + rework movements
     - better fall damage

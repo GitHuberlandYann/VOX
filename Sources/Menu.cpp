@@ -291,6 +291,7 @@ int Menu::ingame_inputs( void )
 			if (_selected_block.x == blocks::AIR) {
 				if (_right_released) {
 					_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1, _furnace);
+					_selection_list.push_back(_selection);
 				}
 			} else {
 				bool inList = false;
@@ -401,16 +402,27 @@ int Menu::ingame_menu( void )
 	if (_state == FURNACE_MENU) {
 		display_furnace_value();
 	}
+	int mult = 3;
 	mtx_inventory.lock();
 	int value = _inventory.getCrafted().y;
 	mtx_inventory.unlock();
 	if (value > 1) {
 		switch (_state) {
 			case (INVENTORY_MENU):
-				_text->addText((WIN_WIDTH - (166 * 3)) / 2 + 155 * 3, WIN_HEIGHT / 2 - 49 * 3, 12, true, std::to_string(value));
+				if (value > 9) {
+					_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 160 * mult - 6 * mult + mult, WIN_HEIGHT / 2 - 46 * mult + 1 + mult, 22, false, std::to_string(value / 10));
+					_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 160 * mult - 6 * mult, WIN_HEIGHT / 2 - 46 * mult + 2, 22, true, std::to_string(value / 10));
+				}
+				_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 160 * mult + mult, WIN_HEIGHT / 2 - 46 * mult + 1 + mult, 22, false, std::to_string(value % 10));
+				_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 160 * mult, WIN_HEIGHT / 2 - 46 * mult + 2, 22, true, std::to_string(value % 10));
 				break ;
 			case (CRAFTING_MENU):
-				_text->addText((WIN_WIDTH - (166 * 3)) / 2 + 125 * 3, WIN_HEIGHT / 2 - 42 * 3, 12, true, std::to_string(value));
+				if (value > 9) {
+					_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 130 * mult - 6 * mult + mult, WIN_HEIGHT / 2 - 39 * mult + 1 + mult, 22, false, std::to_string(value / 10));
+					_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 130 * mult - 6 * mult, WIN_HEIGHT / 2 - 39 * mult + 2, 22, true, std::to_string(value / 10));
+				}
+				_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 130 * mult + mult, WIN_HEIGHT / 2 - 39 * mult + 1 + mult, 22, false, std::to_string(value % 10));
+				_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 130 * mult, WIN_HEIGHT / 2 - 39 * mult + 2, 22, true, std::to_string(value % 10));
 				break ;
 		}
 	}
@@ -418,7 +430,14 @@ int Menu::ingame_menu( void )
 		double mouseX, mouseY;
 		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		value = _selected_block.y;
-		_text->addText(mouseX - 6, mouseY - 6, 12, true, std::to_string(value));
+		if (value > 1) {
+			if (value > 9) {
+				_text->addText(mouseX + 3 * mult - 6 * mult + mult, mouseY + mult + 1 + mult, 22, false, std::to_string(value / 10));
+				_text->addText(mouseX + 3 * mult - 6 * mult, mouseY + mult + 2, 22, true, std::to_string(value / 10));
+			}
+			_text->addText(mouseX + 3 * mult + mult, mouseY + mult + 1 + mult, 22, false, std::to_string(value % 10));
+			_text->addText(mouseX + 3 * mult, mouseY + mult + 2, 22, true, std::to_string(value % 10));
+		}
 	}
 	return (0);
 }
@@ -593,8 +612,14 @@ void Menu::display_slot_value( int index )
 		return ;
 	}
 	int mult = 3, value = _inventory.getSlotBlock(index).y;
+	/*	 + 11 * mult X, + 9 * mult + 2 (only + 1 for shadow) Y  */
 	if (value > 1) {
-		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 18 * index * mult + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 + (59 + 6) * mult, 12, true, std::to_string(value));
+		if (value > 9) {
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 18 * index * mult + mult * 14 - 6 * mult + mult, WIN_HEIGHT / 2 + 1 + (59 + 9) * mult + mult, 22, false, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 18 * index * mult + mult * 14 - 6 * mult, WIN_HEIGHT / 2 + 2 + (59 + 9) * mult, 22, true, std::to_string(value / 10));
+		}
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 18 * index * mult + mult * 14 + mult, WIN_HEIGHT / 2 + 1 + (59 + 9) * mult + mult, 22, false, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 18 * index * mult + mult * 14, WIN_HEIGHT / 2 + 2 + (59 + 9) * mult, 22, true, std::to_string(value % 10));
 	}
 }
 
@@ -605,7 +630,12 @@ void Menu::display_backpack_value( int index )
 	}
 	int mult = 3, value = _inventory.getBackpackBlock(index).y;
 	if (value > 1) {
-		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 + 7 * mult + 18 * mult * (index / 9), 12, true, std::to_string(value));
+		if (value > 9) {
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 14 - 6 * mult + mult, WIN_HEIGHT / 2 + 10 * mult + 18 * mult * (index / 9) + 1 + mult, 22, false, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 14 - 6 * mult, WIN_HEIGHT / 2 + 10 * mult + 18 * mult * (index / 9) + 2, 22, true, std::to_string(value / 10));
+		}
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 14 + mult, WIN_HEIGHT / 2 + 10 * mult + 18 * mult * (index / 9) + 1 + mult, 22, false, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 14, WIN_HEIGHT / 2 + 10 * mult + 18 * mult * (index / 9) + 2, 22, true, std::to_string(value % 10));
 	}
 }
 
@@ -616,7 +646,12 @@ void Menu::display_icraft_value( int index )
 	}
 	int mult = 3, value = _inventory.getiCraftBlock(index).y;
 	if (value > 1) {
-		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 10 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 59 * mult + 18 * mult * (index / 2), 12, true, std::to_string(value));
+		if (value > 9) {
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 14 - 6 * mult + mult, WIN_HEIGHT / 2 - 56 * mult + 18 * mult * (index / 2) + 1 + mult, 22, false, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 14 - 6 * mult, WIN_HEIGHT / 2 - 56 * mult + 18 * mult * (index / 2) + 2, 22, true, std::to_string(value / 10));
+		}
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 14 + mult, WIN_HEIGHT / 2 - 56 * mult + 18 * mult * (index / 2) + 1 + mult, 22, false, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 14, WIN_HEIGHT / 2 - 56 * mult + 18 * mult * (index / 2) + 2, 22, true, std::to_string(value % 10));
 	}
 }
 
@@ -627,15 +662,30 @@ void Menu::display_furnace_value( void )
 	}
 	int mult = 3, value = _furnace->getComposant().y;
 	if (value > 1) {
-		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 7 - 2 * mult * (value > 9),  WIN_HEIGHT / 2 - 60 * mult, 12, true, std::to_string(value));
+		if (value > 9) {
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 62 * mult - 6 * mult + mult, WIN_HEIGHT / 2 - 57 * mult + 1 + mult, 22, false, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 62 * mult - 6 * mult, WIN_HEIGHT / 2 - 57 * mult + 2, 22, true, std::to_string(value / 10));
+		}
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 62 * mult + mult, WIN_HEIGHT / 2 - 57 * mult + 1 + mult, 22, false, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 62 * mult, WIN_HEIGHT / 2 - 57 * mult + 2, 22, true, std::to_string(value % 10));
 	}
 	value = _furnace->getFuel().y;
 	if (value > 1) {
-		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 51 * mult + mult * 7 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 24 * mult, 12, true, std::to_string(value));
+		if (value > 9) {
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 62 * mult - 6 * mult + mult, WIN_HEIGHT / 2 - 21 * mult + 1 + mult, 22, false, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 62 * mult - 6 * mult, WIN_HEIGHT / 2 - 21 * mult + 2, 22, true, std::to_string(value / 10));
+		}
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 62 * mult + mult, WIN_HEIGHT / 2 - 21 * mult + 1 + mult, 22, false, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 62 * mult, WIN_HEIGHT / 2 - 21 * mult + 2, 22, true, std::to_string(value % 10));
 	}
 	value = _furnace->getProduction().y;
 	if (value > 1) {
-		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 111 * mult + mult * 7 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 42 * mult, 12, true, std::to_string(value));
+		if (value > 9) {
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 122 * mult - 6 * mult + mult, WIN_HEIGHT / 2 - 39 * mult + 1 + mult, 22, false, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 122 * mult - 6 * mult, WIN_HEIGHT / 2 - 39 * mult + 2, 22, true, std::to_string(value / 10));
+		}
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 122 * mult + mult, WIN_HEIGHT / 2 - 39 * mult + 1 + mult, 22, false, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + 122 * mult, WIN_HEIGHT / 2 - 39 * mult + 2, 22, true, std::to_string(value % 10));
 	}
 }
 
@@ -646,7 +696,12 @@ void Menu::display_craft_value( int index )
 	}
 	int mult = 3, value = _inventory.getCraftBlock(index).y;
 	if (value > 1) {
-		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 14 - 2 * mult * (value > 9), WIN_HEIGHT / 2 - 60 * mult + 18 * mult * (index / 3), 12, true, std::to_string(value));
+		if (value > 9) {
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 18 - 6 * mult + mult, WIN_HEIGHT / 2 - 57 * mult + 18 * mult * (index / 3) + 1 + mult, 22, false, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 18 - 6 * mult, WIN_HEIGHT / 2 - 57 * mult + 18 * mult * (index / 3) + 2, 22, true, std::to_string(value / 10));
+		}
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 18 + mult, WIN_HEIGHT / 2 - 57 * mult + 18 * mult * (index / 3) + 1 + mult, 22, false, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 18, WIN_HEIGHT / 2 - 57 * mult + 18 * mult * (index / 3) + 2, 22, true, std::to_string(value % 10));
 	}
 }
 

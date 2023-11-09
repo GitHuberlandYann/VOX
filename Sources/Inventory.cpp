@@ -191,17 +191,17 @@ void Inventory::pickAllCrafted( int craft )
 	} else {
 		bat = &_backpack[location - 9];
 	}
-	while (_crafted.x != blocks::AIR && bat->y < 64) {
-			*bat = pickCrafted(craft, *bat);
-			if (s_blocks[bat->x].durability) {
-				_durabilities.push_back(glm::ivec3(location, _saved_durability, s_blocks[bat->x].durability));
-			}
-			if (_crafted.x != bat->x && _crafted.x != blocks::AIR) {
-				return (pickAllCrafted(craft));
-			}
-			if (!s_blocks[bat->x].stackable) {
-				return (pickAllCrafted(craft));
-			}
+	while (_crafted.x != blocks::AIR && bat->y + _crafted.y <= 64) {
+		*bat = pickCrafted(craft, *bat);
+		if (s_blocks[bat->x].durability) {
+			_durabilities.push_back(glm::ivec3(location, _saved_durability, s_blocks[bat->x].durability));
+		}
+		if (_crafted.x != bat->x && _crafted.x != blocks::AIR) {
+			return (pickAllCrafted(craft));
+		}
+		if (!s_blocks[bat->x].stackable) {
+			return (pickAllCrafted(craft));
+		}
 	}
 	if (_crafted.x != blocks::AIR) {
 		return (pickAllCrafted(craft));
@@ -378,8 +378,8 @@ glm::ivec2 Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *fu
 	}
 	if (bat->x != blocks::AIR) {
 		glm::ivec2 res = *bat;
-		res.y = res.y / 2 + (res.y % 2);
-		bat->y /= 2;
+		res.y = (res.y >> 1) + (res.y & 1);
+		bat->y >>= 1;
 		if (!bat->y) {
 			*bat = glm::ivec2(blocks::AIR, 0);
 		}
