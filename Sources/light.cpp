@@ -8,8 +8,13 @@
 // posX, posY are in [0; CHUNK_SIZE[
 void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 {
+	// if (skySpread && _startX == 256 && _startY == 320) {
+	// 	static int cnt;
+	// 	std::cout << _startX << ", " << _startY << " at " << posX << ", " << posY << ", " << posZ << " light_spread " << ((skySpread) ? "SKY" : "BLOCK") << " recurse level " << ++cnt << std::endl;
+	// }
 	int shift = 8 * skySpread;
-	short saveLight = _lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ];
+	int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
+	short saveLight = _lights[offset];
 	short level = ((saveLight >> shift) & 0xFF);
 	// std::cout << "light_spread, level is " << (int)level << std::endl;
 	// TODO once diff light sources exist with diff light_level, rework this condition
@@ -40,7 +45,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 				}
 				maxLevel = maxs(maxLevel, (light >> shift) & 0xF);
 			} else {
-				short adj = _lights[((posX + delta[0]) * CHUNK_SIZE + posY + delta[1]) * WORLD_HEIGHT + posZ + delta[2]] >> shift;
+				short adj = _lights[((((posX + delta[0]) << CHUNK_SHIFT) + posY + delta[1]) << WORLD_SHIFT) + posZ + delta[2]] >> shift;
 				maxLevel = maxs(maxLevel, adj & 0xF);
 				if (skySpread && index == face_dir::PLUSZ && (adj & 0xF0)) {
 					maxLevel = (adj & 0xFF) + 1; // if sky light above is source, own sky light becomes source too
@@ -49,15 +54,18 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 		}
 		if ((maxLevel && maxLevel - 1 != level) || (!maxLevel && level)) {
 			level = maxs(0, maxLevel - 1);
-			_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] = (saveLight & (0xFF << (8 - shift))) + (level << shift);
+			// if (level < ((saveLight >> shift) & 0xFF)) { // if light gets dimmer, we accelerate process and put it to 0, it will spread to a nearby light source which will spread again
+			// 	level = 0;
+			// }
+			_lights[offset] = (saveLight & (0xFF << (8 - shift))) + (level << shift);
 			_light_update = true;
 		} else {
 			return ; // stop spread when not source and level is unchanged
 		}
 	} else if (skySpread && posZ + 1 < 254) { // skySpread + source block
-		short above = _lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ + 1] >> shift;
+		short above = _lights[offset + 1] >> shift;
 		if (!(above & 0xF0)) { // if block above is not a source anymore
-			_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] &= (0xFF << (8 - shift));
+			_lights[offset] &= (0xFF << (8 - shift));
 			return (light_spread(posX, posY, posZ, skySpread));
 		}
 	}
@@ -87,7 +95,7 @@ void Chunk::generate_lights( void )
 						--light_level;
 					}
 				}
-				_lights[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
+				_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
 			}
 		}
 	}
@@ -309,13 +317,13 @@ void Chunk::fill_vertex_array( void )
 GLint Chunk::getSkyLightLevel( glm::ivec3 location )
 {
 	int posX = location.x - _startX, posY = location.y - _startY;
-	return ((_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + location.z] >> 8) & 0xF);
+	return ((_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + location.z] >> 8) & 0xF);
 }
 
 GLint Chunk::getBlockLightLevel( glm::ivec3 location )
 {
 	int posX = location.x - _startX, posY = location.y - _startY;
-	return (_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + location.z] & 0xF);
+	return (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + location.z] & 0xF);
 }
 
 short Chunk::getLightLevel( int posX, int posY, int posZ )
@@ -330,7 +338,7 @@ short Chunk::getLightLevel( int posX, int posY, int posZ )
 		// 	std::cout << "ABORT" << std::endl;
 		// }
 	}
-	return (_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ]);
+	return (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ]);
 }
 
 void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool skySpread )

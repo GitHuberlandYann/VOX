@@ -171,6 +171,9 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 		_removed.erase(offset);
 		if (!air_flower(value, false, true) && value != blocks::AIR) { // replace flower with water
 			// std::cout << _startX << ", " << _startY << " value before: " << s_blocks[value].name << ". displayed: " << _displayed_faces << std::endl;
+			// if (value != blocks::GRASS) { // item
+			// 	_entities.push_back(Entity(this, inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, value));
+			// }
 			_displayed_faces -= (2 << (value == blocks::TORCH));
 			if (value == blocks::TORCH) {
 				_lights[offset] &= 0xFF00;

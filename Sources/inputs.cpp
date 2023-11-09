@@ -11,7 +11,7 @@ void OpenGL_Manager::resetInputsPtrs( void )
 
 glm::ivec4 OpenGL_Manager::get_block_hit( void )
 {
-	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : REACH);
+	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (_render_distance << CHUNK_SHIFT) >> 1 : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
 	Chunk *chunk = NULL;
@@ -104,7 +104,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	if (!find_water && _block_hit.w == blocks::AIR) {
 		return ;
 	}
-	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? _render_distance * CHUNK_SIZE / 2 : REACH);
+	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (_render_distance << CHUNK_SHIFT) >> 1 : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
 	glm::ivec3 player_pos, previous_block;
@@ -212,7 +212,7 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	std::set<std::pair<int, int>> coords;
 	for (int row = -render_dist; row <= render_dist; row++) {
 		for (int col = -render_dist; col <= render_dist; col++) {
-			coords.insert({posX + row * CHUNK_SIZE, posY + col * CHUNK_SIZE});
+			coords.insert({posX + (row << CHUNK_SHIFT), posY + (col << CHUNK_SHIFT)});
 		}
 	}
 	b.stamp("gen coordinates set");
@@ -228,12 +228,12 @@ static void thread_chunk_update( std::list<Chunk *> *chunks, std::vector<Chunk *
 	// std::cout << "IN THREAD UPDATE, nb chunks: " << chunks->size() << std::endl;
 	for (; it != ite;) {
 		mtx.lock();
-		if ((*it)->inPerimeter(posX, posY, render_dist * CHUNK_SIZE)) {
+		if ((*it)->inPerimeter(posX, posY, render_dist << CHUNK_SHIFT)) {
 			// std::cout << "IN PERIMETER" << std::endl;
 			(*it)->checkFillVertices();
 			newperi_chunks.push_back(*it);
 			coords.erase({(*it)->getStartX(), (*it)->getStartY()});
-		} else if (!(*it)->inPerimeter(posX, posY, render_dist * 2 * CHUNK_SIZE)) {
+		} else if (!(*it)->inPerimeter(posX, posY, (render_dist << CHUNK_SHIFT) * 2)) {
 			std::list<Chunk *>::iterator tmp = it;
 			--it;
 			mtx.unlock();
@@ -428,9 +428,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	GLint key_render_dist = (glfwGetKey(_window, GLFW_KEY_EQUAL) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_MINUS) == GLFW_PRESS);
 	if (key_render_dist && ++_key_rdist == 1 && _render_distance + key_render_dist > 0) {
 		_render_distance += key_render_dist;
-		glUniform1f(_uniFog, (1 + _render_distance) * CHUNK_SIZE);
+		glUniform1f(_uniFog, (1 + _render_distance) << CHUNK_SHIFT);
 		glUseProgram(_skyShaderProgram);
-		glUniform1f(_skyUniFog, (1 + _render_distance) * CHUNK_SIZE);
+		glUniform1f(_skyUniFog, (1 + _render_distance) << CHUNK_SHIFT);
 		glUseProgram(_shaderProgram);
 		if (_thread.joinable()) {
 			_thread.join();

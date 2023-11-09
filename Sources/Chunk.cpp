@@ -12,7 +12,7 @@ Chunk::Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *chunks )
 {
 	int cnt = 0;
 // std::cout << "new chunk at " << posX << ", " << posY << std::endl;
-	for (auto c : *chunks) { // TODO load backups if needed .. + lighting backup
+	for (auto c : *chunks) { // TODO load backups if needed. for trees
 		if (c->isInChunk(_startX - CHUNK_SIZE, _startY)) {
 			_neighbours[face_dir::MINUSX] = c;
 			c->setNeighbour(this, face_dir::PLUSX);
@@ -83,10 +83,10 @@ void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int & blob_
 {
 	if (row == -1 || col == -1 || !level || !blob_size
 		|| row == CHUNK_SIZE || col == CHUNK_SIZE || level == WORLD_HEIGHT
-		|| _blocks[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] != blocks::STONE) {
+		|| _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] != blocks::STONE) {
 		return ;
 	}
-	_blocks[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] = ore_type;
+	_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = ore_type;
 	--blob_size;
 	for (int i = 0; i < 6; i++) {
 		if (dir == 6) {
@@ -1478,10 +1478,10 @@ void Chunk::updateFurnaces( double currentTime )
 				int posX = ((o->first >> WORLD_SHIFT) >> CHUNK_SHIFT);
 				// std::cout << "furnace at " << _startX + posX << ", " << _startY + posY << ", " << posZ << std::endl;
 				if (state == furnace_state::ON) {
-					_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] = 13 + (13 << 4);
+					_lights[o->first] = 13 + (13 << 4);
 					light_spread(posX, posY, posZ, false); // spread block light
 				} else {
-					_lights[(posX * CHUNK_SIZE + posY) * WORLD_HEIGHT + posZ] = 0;
+					_lights[o->first] = 0;
 					for (int index = 0; index < 6; index++) {
 						const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 						light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0, false);
@@ -1497,6 +1497,7 @@ void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double 
 {
 	// TODO merge identical close(3/4 of a block) stackable items together
 	// on merge, item timer set to longest of 2
+	// double for loop, use bool given as parameter to do this once per second at most
 
 	for (auto e = _entities.begin(); e != _entities.end();) {
 		if (e->update(arr, _camera->getPos(), deltaTime)) {

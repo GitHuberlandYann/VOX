@@ -241,10 +241,10 @@ void OpenGL_Manager::create_shaders( void )
 void OpenGL_Manager::setup_communication_shaders( void )
 {
 	_uniFog = glGetUniformLocation(_shaderProgram, "fogDist");
-	glUniform1f(_uniFog, (1 + _render_distance) * CHUNK_SIZE);
+	glUniform1f(_uniFog, (1 + _render_distance) << CHUNK_SHIFT);
 	_skyUniFog = glGetUniformLocation(_skyShaderProgram, "fogDist");
 	glUseProgram(_skyShaderProgram);
-	glUniform1f(_skyUniFog, (1 + _render_distance) * CHUNK_SIZE);
+	glUniform1f(_skyUniFog, (1 + _render_distance) << CHUNK_SHIFT);
 	glUseProgram(_shaderProgram);
 
 	_uniView = glGetUniformLocation(_shaderProgram, "view");

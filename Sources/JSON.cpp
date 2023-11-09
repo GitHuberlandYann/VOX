@@ -216,9 +216,9 @@ void OpenGL_Manager::loadWorld( std::string file )
 			} else if (!line.compare(0, 19, "\"render_distance\": ")) {
 				_render_distance = std::atoi(&line[19]);
 				glUseProgram(_shaderProgram);
-				glUniform1f(_uniFog, (1 + _render_distance) * CHUNK_SIZE);
+				glUniform1f(_uniFog, (1 + _render_distance) << CHUNK_SHIFT);
 				glUseProgram(_skyShaderProgram);
-				glUniform1f(_skyUniFog, (1 + _render_distance) * CHUNK_SIZE);
+				glUniform1f(_skyUniFog, (1 + _render_distance) << CHUNK_SHIFT);
 				glUseProgram(_shaderProgram);
 				ofs << "render dist set to " << _render_distance << std::endl;
 			} else if (!line.compare(0, 12, "\"dayCycle\": ")) {

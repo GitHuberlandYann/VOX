@@ -55,7 +55,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 		}
 	}
 
-
+	// TODO disable this once player died
 	// time to pick up: 0.5 sec if dropped, 2 sec if thrown by a player
 	// hitbox to pick: + 1 on sides and + 0.5 verticaly from player's hitbox (0.3, 1.8)
 	if (_lifeTime > 0.5 + 1.5 * _thrown) {
