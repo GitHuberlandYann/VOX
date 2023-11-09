@@ -67,9 +67,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		for (auto& c : _visible_chunks) {
 			if (c->isInChunk(posX, posY)) {
 				// std::cout << "handle hit at pos " << _block_hit.x << ", " << _block_hit.y << ", " << _block_hit.z << std::endl;
-				(collect)
-					? c->handleHit(_inventory, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding)
-					: c->handleHit(NULL, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding);
+				c->handleHit(collect, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding);
 				return ;
 			}
 		}
@@ -136,7 +134,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		if (find_water) {
 			if (chunk->isHit(i, true)) {
-				chunk->handleHit(((collect) ? _inventory : NULL), type, i, false);
+				chunk->handleHit(collect, type, i, false);
 				return ;
 			}
 		} else if (chunk->isHit(i, false)) {
@@ -148,10 +146,10 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 				return ;
 			}
 			if (previous_chunk != current_chunk) {
-				prev_chunk->handleHit(((collect) ? _inventory : NULL), type, previous_block, adding);
+				prev_chunk->handleHit(collect, type, previous_block, adding);
 				return ;
 			}
-			chunk->handleHit(((collect) ? _inventory : NULL), type, previous_block, adding);
+			chunk->handleHit(collect, type, previous_block, adding);
 			return ;
 		}
 		previous_block = i;
@@ -257,7 +255,7 @@ static void thread_chunk_update( OpenGL_Manager *render, GLint render_dist, int 
 	b.stamp("NO");
 	for (auto& c: coords) {
 		//create new chunk where player stands
-		Chunk *newChunk = new Chunk(render->_camera, c.first, c.second, &render->_chunks);
+		Chunk *newChunk = new Chunk(render->_camera, render->_inventory, c.first, c.second, &render->_chunks);
 		mtx_backup.lock();
 		std::map<std::pair<int, int>, s_backup>::iterator search = render->_backups.find(std::pair<int, int>(c.first, c.second));
 		if (search != render->_backups.end()) {
@@ -395,7 +393,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		mtx_inventory.unlock();
 		if (details.x != blocks::AIR) {
 			mtx.lock();
-			current_chunk_ptr->addEntity(_inventory, _camera->getDir(), details.x, details.y, details.z);
+			current_chunk_ptr->addEntity(_camera->getDir(), details.x, details.y, details.z);
 			mtx.unlock();
 		}
 	}

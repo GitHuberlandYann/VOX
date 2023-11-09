@@ -75,6 +75,7 @@ class Chunk
 		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
 		std::array<Chunk *, 4> _neighbours;
 		Camera *_camera;
+		Inventory *_inventory;
 		std::map<int,int> _orientations, _added;
 		std::set<int> _removed, _fluids; // TODO add fluids to backups
 		std::map<int, FurnaceInstance> _furnaces;
@@ -104,8 +105,8 @@ class Chunk
 	
 		int sand_fall_endz( glm::ivec3 pos );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
-		void remove_block( Inventory *inventory, glm::ivec3 pos );
-		void add_block( Inventory *inventory, glm::ivec3 pos, int type, int previous );
+		void remove_block( bool useInventory, glm::ivec3 pos );
+		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 
 		void light_spread( int posX, int posY, int level, bool skySpread );
 		void generate_lights( void );
@@ -118,7 +119,7 @@ class Chunk
 		void setup_water_array_buffer( void );
 
     public:
-        Chunk( Camera *camera, int posX, int posY, std::list<Chunk *> *chunks );
+        Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::list<Chunk *> *chunks );
         ~Chunk( void );
 
 		GLint getStartX( void );
@@ -138,9 +139,9 @@ class Chunk
 		void generation( void );
 		void checkFillVertices( void );
 		void execFillVertices( void );
-		void regeneration( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
+		void regeneration( bool useInventory, int type, glm::ivec3 pos, bool adding );
 		void generate_chunk( void );
-		void addEntity( Inventory *inventory, glm::vec3 dir, int value, int amount, int dura );
+		void addEntity( glm::vec3 dir, int value, int amount, int dura );
 		void sort_sky( glm::vec3 pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
 	
@@ -151,7 +152,7 @@ class Chunk
         bool isInChunk( int posX, int posY );
 
 		int isHit( glm::ivec3 pos, bool waterIsBlock );
-		void handleHit( Inventory *inventory, int type, glm::ivec3 pos, bool adding );
+		void handleHit( bool useInventory, int type, glm::ivec3 pos, bool adding );
 		void updateBreak( glm::ivec4 block_hit, int frame );
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread );
 		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );

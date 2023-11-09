@@ -698,7 +698,7 @@ void Inventory::spillInventory( Chunk *chunk )
 				details.z = getrmDura(index);
 			}
 			_content[index] = {blocks::AIR, 0};
-			chunk->addEntity(this, {glm::cos(index), glm::sin(index), 0}, details.x, details.y, details.z); // might want to lock this
+			chunk->addEntity({glm::cos(index), glm::sin(index), 0}, details.x, details.y, details.z); // might want to lock line
 		}
 	}
 	for (int index = 0; index < 27; index++) {
@@ -708,7 +708,7 @@ void Inventory::spillInventory( Chunk *chunk )
 				details.z = getrmDura(index + 9);
 			}
 			_backpack[index] = {blocks::AIR, 0};
-			chunk->addEntity(this, {glm::cos(index + 9), glm::sin(index + 9), 0}, details.x, details.y, details.z); // might want to lock this
+			chunk->addEntity({glm::cos(index + 9), glm::sin(index + 9), 0}, details.x, details.y, details.z); // might want to lock line
 		}
 	}
 	_modif = true;
