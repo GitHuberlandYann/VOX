@@ -539,7 +539,7 @@ struct DeadBush : Block {
 	public:
 		DeadBush() {
 			name = "DEAD_BUSH";
-			mined = blocks::DEAD_BUSH;
+			mined = blocks::STICK;
 			isFuel = true;
 			fuel_time = 5;
 			byHand = true;

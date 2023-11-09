@@ -907,7 +907,6 @@ void Chunk::checkFillVertices( void )
 		}
 	}
 	if (cnt > _nb_neighbours) {
-		_nb_neighbours = cnt;
 		if (cnt == 4) {
 			for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
 				if (a.second == blocks::TORCH) {
@@ -942,6 +941,7 @@ void Chunk::checkFillVertices( void )
 		_mtx.unlock();
 		fill_vertex_array();
 		_vaoVIP = false;
+		_nb_neighbours = cnt; // do this at end to make sure resetDisplayedFaces is called before any light_update shinanigans
 	} else if (cnt < _nb_neighbours) {
 		_nb_neighbours = cnt;
 	} else if (!cnt) {
