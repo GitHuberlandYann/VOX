@@ -130,7 +130,7 @@ class Chunk
 		void waitGenDone( void );
 
 		void setNeighbour( Chunk *neighbour, face_dir index );
-		void setBackup( std::map<std::pair<int, int>, s_backup> *backups );
+		void setBackup( std::map<std::pair<int, int>, s_backup> &backups );
 		void restoreBackup( s_backup backup);
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
 		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours );

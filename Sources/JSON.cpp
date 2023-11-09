@@ -16,7 +16,7 @@ void OpenGL_Manager::saveWorld( void )
 	mtx_perimeter.unlock();
 	mtx.lock();
 	for (auto& c: _chunks) {
-		c->setBackup(&_backups);
+		c->setBackup(_backups);
 		delete c;
 	}
 	_chunks.clear();

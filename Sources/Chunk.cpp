@@ -804,11 +804,11 @@ void Chunk::setNeighbour( Chunk *neighbour, face_dir index )
 	_neighbours[index] = neighbour;
 }
 
-void Chunk::setBackup( std::map<std::pair<int, int>, s_backup> *backups )
+void Chunk::setBackup( std::map<std::pair<int, int>, s_backup> &backups )
 {
 	if (_orientations.size() || _added.size() || _removed.size()) {
 		mtx_backup.lock();
-		(*backups)[std::pair<int, int>(_startX, _startY)] = {_orientations, _added, _removed, _furnaces};
+		backups[std::pair<int, int>(_startX, _startY)] = {_orientations, _added, _removed, _furnaces};
 		mtx_backup.unlock();
 	}
 }

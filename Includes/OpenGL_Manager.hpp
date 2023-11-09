@@ -50,14 +50,10 @@ class OpenGL_Manager
 		float _break_time;
 		int _break_frame;
 		std::string _world_name;
-		std::list<Chunk *> _chunks;
-		std::vector<Chunk *> _visible_chunks, _perimeter_chunks, _deleted_chunks;
+		std::vector<Chunk *> _visible_chunks;
 		std::vector<std::pair<int, glm::vec3>> _entities;
-		std::map<std::pair<int, int>, s_backup> _backups;
 		std::thread _thread;
 		glm::ivec4 _block_hit;
-		Camera *_camera;
-		Inventory *_inventory;
 		UI *_ui;
 		Menu *_menu;
 
@@ -79,6 +75,12 @@ class OpenGL_Manager
 		void drawEntities( int size );
 
 	public:
+		std::list<Chunk *> _chunks;
+		std::vector<Chunk *> _perimeter_chunks, _deleted_chunks;
+		std::map<std::pair<int, int>, s_backup> _backups;
+		Camera *_camera;
+		Inventory *_inventory;
+
 		OpenGL_Manager( void );
 		~OpenGL_Manager( void );
 
