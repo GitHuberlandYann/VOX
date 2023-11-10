@@ -108,8 +108,9 @@ void Chunk::generate_lights( void )
 int Chunk::computeLight( int row, int col, int level )
 {
 	// (void)row;(void)col;(void)level;return (0);
-	short light = 15;
-	if (row == -1) {
+	short light = 0xF00;
+	if (level == 256) {
+	} else if (row == -1) {
 		if (_neighbours[face_dir::MINUSX]) {
 			light = _neighbours[face_dir::MINUSX]->getLightLevel(CHUNK_SIZE - 1, col, level);
 		}
@@ -316,12 +317,18 @@ void Chunk::fill_vertex_array( void )
 
 GLint Chunk::getSkyLightLevel( glm::ivec3 location )
 {
+	if (location.z > 255 || location.z < 0) {
+		return (0xF * (location.z > 255));
+	}
 	int posX = location.x - _startX, posY = location.y - _startY;
 	return ((_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + location.z] >> 8) & 0xF);
 }
 
 GLint Chunk::getBlockLightLevel( glm::ivec3 location )
 {
+	if (location.z > 255 || location.z < 0) {
+		return (0);
+	}
 	int posX = location.x - _startX, posY = location.y - _startY;
 	return (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + location.z] & 0xF);
 }

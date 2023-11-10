@@ -797,7 +797,7 @@ static int screenPosXFromlocation( int mult, int location )
 		return ((WIN_WIDTH - (166 * mult)) / 2 + (18 * (location % 9) * mult) + mult * 3);
 	} else if (location < 40) { // icraft
 		return ((WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + location % 2) * mult) + mult * 3);
-	} else if (location == 41) { // crafted, ignore
+	} else if (location == 40) { // crafted, ignore
 	} else { // craft
 		return ((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + (location - 41) % 3) * mult) + mult * 7);
 	}
@@ -812,7 +812,7 @@ static int screenPosYFromlocation( int mult, int location )
 		return (WIN_HEIGHT / 2 + mult + 18 * mult * ((location - 9) / 9));
 	} else if (location < 40) {
 		return (WIN_HEIGHT / 2 - 65 * mult + 18 * mult * ((location - 36) / 2));
-	} else if (location == 41) {
+	} else if (location == 40) {
 	} else {
 		return (WIN_HEIGHT / 2 - 66 * mult + 18 * mult * ((location - 41) / 3));
 	}
@@ -955,11 +955,11 @@ void Menu::setup_array_buffer_crafting( void )
 	for (int index = 0; index < 27; index++) {
 		add_backpack_value(vertices, mult, index, vindex);
 	}
-	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, mult, index, vindex);
-	}
 	for (int index = 0; index < 9; index++) {
 		add_craft_value(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < duras; index++) {
+		add_dura_value(vertices, mult, index, vindex);
 	}
 	add_crafted_value(vertices, mult, vindex);
 
@@ -1054,7 +1054,8 @@ void Menu::setup_array_buffer_furnace( void )
 {
 	int furnaceCount = (_furnace) ? _furnace->count() : 0;
 	// std::cout << "FURNACE count is " << furnaceCount << std::endl;
-	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + furnaceCount + (_selected_block.x != blocks::AIR);
+	int duras = _inventory.countDura(true);
+	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + 2 * duras + furnaceCount + (_selected_block.x != blocks::AIR);
 	int mult = 3;
     GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
 
@@ -1074,6 +1075,9 @@ void Menu::setup_array_buffer_furnace( void )
 	}
 	for (int index = 0; index < 27; index++) {
 		add_backpack_value(vertices, mult, index, vindex);
+	}
+	for (int index = 0; index < duras; index++) {
+		add_dura_value(vertices, mult, index, vindex);
 	}
 	if (furnaceCount) {
 		add_furnace_value(vertices, mult, vindex);
