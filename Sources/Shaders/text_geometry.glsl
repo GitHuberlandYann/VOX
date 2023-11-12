@@ -23,7 +23,7 @@ const vec2 bottom_right = vec2(0.99f / 16.0f, 0.99f / 8.0f);
 
 void emitFace( vec4 v0, vec4 v1, vec4 v2, vec4 v3 )
 {
-	vec2 start = vec2((vsData[0].Character - (vsData[0].Character / 16) * 16) / 16.0f, (vsData[0].Character / 16) / 8.0f);
+	vec2 start = vec2((vsData[0].Character & 0xF) / 16.0f, (vsData[0].Character >> 4) / 8.0f);
     gl_Position = v0;
 	Texcoord = start + top_left;
     EmitVertex();

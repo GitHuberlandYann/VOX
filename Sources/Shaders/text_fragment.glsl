@@ -13,5 +13,5 @@ void main()
 	if(outColor.a < 0.01) {
 		discard;
 	}
-	outColor = outColor * Color;
+	outColor *= Color;
 }

@@ -407,11 +407,15 @@ void OpenGL_Manager::main_loop( void )
 	while (!glfwWindowShouldClose(_window))
 	{
 		double currentTime = glfwGetTime();
+		double deltaTime = currentTime - previousFrame;
+		// if (deltaTime > 0.03) {
+		// 	std::cerr << "on frame " << nbFrames << ": " << deltaTime * 1000 << " ms" << std::endl;
+		// }
 		nbFrames++;
 		if ( currentTime - lastTime >= 1.0 ){
 			if (!_debug_mode) {
 				std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
-				// std::cout << "other math gives " << (currentTime - previousFrame) * 1000 << "ms/frame" << std::endl;
+				// std::cout << "other math gives " << (deltaTime) * 1000 << "ms/frame" << std::endl;
 			}
 			nbFramesLastSecond = nbFrames;
 			nbFrames = 0;
@@ -436,12 +440,12 @@ void OpenGL_Manager::main_loop( void )
 		// Bench b;
 		if (!_paused) {
 			if (++backFromMenu != 1) {
-				user_inputs(currentTime - previousFrame, ++backFromMenu > 3);
+				user_inputs(deltaTime, ++backFromMenu > 3);
 			}
 			chunk_update();
-			DayCycle::Get()->update(currentTime - previousFrame);
+			DayCycle::Get()->update(deltaTime);
 		} else if (_menu->getState() >= INVENTORY_MENU) {
-			DayCycle::Get()->update(currentTime - previousFrame);
+			DayCycle::Get()->update(deltaTime);
 		}
 		// b.stamp("user inputs");
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
@@ -452,7 +456,7 @@ void OpenGL_Manager::main_loop( void )
 				if (fluidUpdate) {
 					c->updateFluids();
 				}
-				c->updateEntities(_entities, currentTime - previousFrame);
+				c->updateEntities(_entities, deltaTime);
 			}
 		}
 		// if (newVaoCounter) {
@@ -489,7 +493,7 @@ void OpenGL_Manager::main_loop( void )
 		std::string str = (_debug_mode)
 			? "Timer: " + std::to_string(currentTime)
 				+ '\n' + DayCycle::Get()->getInfos()
-				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((currentTime - previousFrame) * 1000)
+				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
 				+ '\n' + _camera->getCamString(_game_mode)
 				+ "\nBlock\t> " + ((_block_hit.w >= blocks::AIR) ? s_blocks[_block_hit.w].name : s_blocks[_block_hit.w + blocks::NOTVISIBLE].name)
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")

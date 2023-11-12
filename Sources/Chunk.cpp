@@ -1011,19 +1011,19 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 			if (_sky[row * (CHUNK_SIZE + 2) + col]) {
 				int pX = _startX + row - 1;
 				int pY = _startY + col - 1;
-				order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 156.0f)), {pX, pY + 1, 156, 1, -1, 0, }});
-				order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 155.0f)), {pX, pY, 155, 1, 1, 0, }});
+				order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 196.0f)), {pX, pY + 1, 196, 1, -1, 0, }});
+				order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 195.0f)), {pX, pY, 195, 1, 1, 0, }});
 				if (!_sky[(row - 1) * (CHUNK_SIZE + 2) + col]) {
-					order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, 155.5f)), {pX, pY + 1, 156, 0, -1, -1, }});
+					order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, 195.5f)), {pX, pY + 1, 196, 0, -1, -1, }});
 				}
 				if (!_sky[(row + 1) * (CHUNK_SIZE + 2) + col]) {
-					order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, 155.5f)), {pX + 1, pY, 156, 0, 1, -1, }});
+					order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, 195.5f)), {pX + 1, pY, 196, 0, 1, -1, }});
 				}
 				if (!_sky[row * (CHUNK_SIZE + 2) + col - 1]) {
-					order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, 155.5f)), {pX, pY, 156, 1, 0, -1, }});
+					order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, 195.5f)), {pX, pY, 196, 1, 0, -1, }});
 				}
 				if (!_sky[row * (CHUNK_SIZE + 2) + col + 1]) {
-					order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, 155.5f)), {pX + 1, pY + 1, 156, -1, 0, -1, }});
+					order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, 195.5f)), {pX + 1, pY + 1, 196, -1, 0, -1, }});
 				}
 			}
 		}

@@ -1,6 +1,5 @@
 #version 150 core
 
-// in vec3 Color;
 flat in int Atlas;
 in vec2 Texcoord;
 
@@ -12,7 +11,6 @@ uniform sampler2D containerAtlas;
 
 void main()
 {
-	// outColor = vec4(Color, 1.0);
 	if (Atlas == 0) {
 		outColor = texture(blockAtlas, Texcoord);
 	} else if (Atlas == 1) {

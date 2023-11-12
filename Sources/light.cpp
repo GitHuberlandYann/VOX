@@ -91,11 +91,14 @@ void Chunk::generate_lights( void )
 					int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
 					if (air_flower(value, true, false)) { // block hit
 						light_level = 0;
-					} else if (value == blocks::OAK_LEAVES || value >= blocks::WATER) {
+					}
+					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
+					if (value == blocks::OAK_LEAVES || value >= blocks::WATER) {
 						--light_level;
 					}
+				} else {
+					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = 0;
 				}
-				_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
 			}
 		}
 	}

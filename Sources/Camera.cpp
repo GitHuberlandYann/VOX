@@ -1,7 +1,7 @@
 #include "vox.h"
 
 Camera::Camera( glm::vec3 position )
-	: _fall_time(0), _breathTime(0), _fov(FOV), _fall_speed(0), _isRunning(false), _healthUpdate(false),
+	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_speed(0), _isRunning(false), _healthUpdate(false),
 	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(SPEED), _health_points(20),
 	_inJump(false), _touchGround(false), _fall_immunity(true), _fall_distance(0)
 {
@@ -33,7 +33,7 @@ void Camera::updateCameraVectors( void )
 	_right = glm::normalize(glm::cross(_front, _world_up));
 	_up    = glm::normalize(glm::cross(_right, _front));
 	_front2 = glm::normalize(glm::vec2(_front)); // used in chunkInFront
-	_right2 = glm::vec2(glm::cos(glm::radians(_fov))) * glm::normalize(glm::vec2(_right));
+	_right2 = glm::vec2(glm::cos(glm::radians(_fov + _fov_offset))) * glm::normalize(glm::vec2(_right));
 }
 
 // ************************************************************************** //
@@ -50,7 +50,7 @@ void Camera::updateCameraVectors( void )
 
 glm::mat4 Camera::getPerspectiveMatrix( void )
 {
-	return (glm::perspective(glm::radians(_fov), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
+	return (glm::perspective(glm::radians(_fov + _fov_offset), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
 }
 
 bool Camera::chunkInFront( glm::ivec2 current_chunk, int posX, int posY )
@@ -140,19 +140,21 @@ void Camera::setCurrentChunkPtr( Chunk *ptr )
 void Camera::setRun( bool value )
 {
 	_isRunning = value;
-	float save_fov = _fov;
 	if (_isRunning) {
-		_fov += 1.0f;
-		if (_fov > FOV + 2) {
-			_fov = FOV + 2;
+		_fov_offset += 1.0f;
+		if (_fov_offset > 2) {
+			_fov_offset = 2;
+		} else {
+			_fovUpdate = true;
 		}
 	} else {
-		_fov -= 1.0f;
-		if (_fov < FOV) {
-			_fov = FOV;
+		_fov_offset -= 1.0f;
+		if (_fov_offset < 0) {
+			_fov_offset = 0;
+		} else {
+			_fovUpdate = true;
 		}
 	}
-	_fovUpdate = save_fov != _fov;
 }
 
 void Camera::setDelta( float deltaTime )
@@ -346,7 +348,6 @@ void Camera::respawn( void )
 {
 	_fall_time = 0;
 	_breathTime = 0;
-	// _fov(FOV)
 	_fall_speed = 0;
 	_isRunning = false;
 	_healthUpdate = true;

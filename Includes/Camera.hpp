@@ -24,8 +24,8 @@ enum Camera_Movement {
 # define INITIAL_FALL 6.605f
 # define STANDARD_GRAVITY 9.81f
 # define PLAYER_MASS 10
-# define FALL_SPEED   77.71f //77.71f
-# define FOV          70.0f // fov must be 80, but this is vertical fov/2
+# define FALL_SPEED   77.71f
+# define FOV          70.0f // if fov = -fov, world is upside down
 
 // void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
 // void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
@@ -38,7 +38,7 @@ class Camera
 		float _yaw, _pitch;
 		// double _mouse_sensitivity;
 		float _deltaTime, _fall_time, _breathTime;
-		float _fov;
+		float _fov, _fov_offset;
 		float _fall_speed;
 		bool _isRunning, _healthUpdate, _waterHead, _waterFeet;
 		std::mutex _mtx;

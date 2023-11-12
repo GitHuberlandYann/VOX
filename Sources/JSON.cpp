@@ -299,6 +299,7 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			ofs << "camera pitch set to " << _pitch << std::endl;
 		} else if (!line.compare(0, 7, "\"fov\": ")) {
 			_fov = std::stof(&line[7]);
+			_fovUpdate = true;
 			ofs << "camera fov set to " << _fov << std::endl;
 		} else if (!line.compare(0, 17, "\"health_points\": ")) {
 			_health_points = std::atoi(&line[17]);

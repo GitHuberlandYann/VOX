@@ -14,7 +14,7 @@ uniform sampler2D waterFlow;
 
 void main()
 {
-	outColor = vec4(Color, 0.7f);
+	outColor = vec4(Color, 0.7f * 1.0f - smoothstep(fogDist / 2, fogDist, zDist));
 	vec4 tex;
 	if (Atlas == 0) {
 		return ;
@@ -27,5 +27,4 @@ void main()
 		return ;
 	}
 	outColor *= vec4(tex.rgb, 1.0);
-	outColor.a *= 1.0 - smoothstep(fogDist / 2, fogDist, zDist);
 }

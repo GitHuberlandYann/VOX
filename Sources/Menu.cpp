@@ -53,8 +53,7 @@ int Menu::main_menu( void )
 			while ((dent = readdir(dir)) != NULL)
 			{
 				std::string file = dent->d_name;
-				if (file == "." || file == ".." || file == "template.json" || file.size() < 6 || file.compare(file.size() - 5, 5, ".json")) {
-				} else {
+				if (file != "." && file != ".." && file.size() >= 6 && !file.compare(file.size() - 5, 5, ".json")) {
 					_worlds.push_back(file);
 				}
 			}
