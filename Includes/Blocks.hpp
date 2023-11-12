@@ -75,6 +75,9 @@ struct Block {
 		float fuel_time = 0;
 		bool isComposant = false;
 		int getProduction = blocks::AIR;
+		bool hasHitbox = false;
+		glm::vec3 hitboxCenter = {0, 0, 0};
+		glm::vec3 hitboxHalfSize = {0, 0, 0};
 		bool byHand = false;
 		int needed_tool = blocks::NOTVISIBLE;
 		int needed_material_level = 0;
@@ -461,6 +464,9 @@ struct Poppy : Block {
 		Poppy() {
 			name = "POPPY";
 			mined = blocks::POPPY;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.3f};
+			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -471,6 +477,9 @@ struct Dandelion : Block {
 		Dandelion() {
 			name = "DANDELION";
 			mined = blocks::DANDELION;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.3f};
+			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -481,6 +490,9 @@ struct BlueOrchid : Block {
 		BlueOrchid() {
 			name = "BLUE_ORCHID";
 			mined = blocks::BLUE_ORCHID;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.3f};
+			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -491,6 +503,9 @@ struct Allium : Block {
 		Allium() {
 			name = "ALLIUM";
 			mined = blocks::ALLIUM;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.3f};
+			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -501,6 +516,9 @@ struct CornFlower : Block {
 		CornFlower() {
 			name = "CORNFLOWER";
 			mined = blocks::CORNFLOWER;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.3f};
+			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -511,6 +529,9 @@ struct PinkTulip : Block {
 		PinkTulip() {
 			name = "PINK_TULIP";
 			mined = blocks::PINK_TULIP;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.3f};
+			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -540,6 +561,9 @@ struct DeadBush : Block {
 		DeadBush() {
 			name = "DEAD_BUSH";
 			mined = blocks::STICK;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.3f};
+			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			isFuel = true;
 			fuel_time = 5;
 			byHand = true;
@@ -552,6 +576,9 @@ struct Torch : Block {
 		Torch() {
 			name = "TORCH";
 			mined = blocks::TORCH;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 5 / 16.0f};
+			hitboxHalfSize = {1 / 16.0f, 1 / 16.0f, 5 / 16.0f};
 			light_level = 14;
 			byHand = true;
 			break_time_hand = 0.05f;

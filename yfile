@@ -33,12 +33,12 @@ TODOS:
 	- chests
 	- doors
 	- windows
+	- entity shadow
 	- rework clouds
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
 	- upon world generation, place player on ground by using continentalness
     - lava + nether
-    - hitbox flowers and blocks in general -> might have to split blocks in 27 ..
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
@@ -51,7 +51,6 @@ IN PROGRES:
             - speed
         - quit
     - biomes
-
 	- save entities
 
 DONE:
@@ -80,6 +79,7 @@ DONE:
     - make gravel behave like sand
     - flower on grass only
     - flowers destroyed if block underneath destroyed
+	- custom hitboxes https://en.wikipedia.org/wiki/Line-plane_intersection
     - leaves touchy
     - inventory block count
     - right click and drag in inventory

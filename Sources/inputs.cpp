@@ -47,8 +47,11 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		int value = chunk->isHit(i, false);
 		if (value) {
-			chunk_hit = chunk;
-			return (glm::ivec4(i, (value > 0) ? value : value + blocks::NOTVISIBLE));
+			// we know cube is hit, now check if hitbox is hit (only on non cube-filling values)
+			if (!s_blocks[value].hasHitbox || line_cube_intersection(_camera->getPos() + glm::vec3(0, 0, 1 + EYE_LEVEL), _camera->getDir(), glm::vec3(i) + s_blocks[value].hitboxCenter, s_blocks[value].hitboxHalfSize)) {
+				chunk_hit = chunk;
+				return (glm::ivec4(i, (value > 0) ? value : value + blocks::NOTVISIBLE));
+			}
 		}
 		previous_chunk = current_chunk;
 	}
@@ -137,12 +140,12 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 				chunk->handleHit(collect, type, i, false);
 				return ;
 			}
-		} else if (chunk->isHit(i, false)) {
+		} else if (chunk->isHit(i, false)) { // TODO use line_cube_intersection to put block behind flower, but not if flower would be replaced
 			// std::cout << "we have a hit ! " << i.x << ", " << i.y << ", " << i.z << ", " << std::endl;
 			if (type != blocks::WATER
 				&& (i == player_pos || previous_block == player_pos || previous_block == glm::ivec3(player_pos.x, player_pos.y, player_pos.z - 1))) {
 				// std::cout << "abort because hit is player pos" << std::endl;
-				// DODO better collision check here because you can still put block "at your feet" due to +0.3 offset
+				// TODO better collision check here because you can still put block "at your feet" due to +0.3 offset
 				return ;
 			}
 			if (previous_chunk != current_chunk) {
@@ -205,14 +208,14 @@ void OpenGL_Manager::update_visible_chunks( void )
 
 static void thread_chunk_update( OpenGL_Manager *render, GLint render_dist, int posX, int posY )
 {
-	Bench b;
+	// Bench b;
 	std::set<std::pair<int, int>> coords;
 	for (int row = -render_dist; row <= render_dist; row++) {
 		for (int col = -render_dist; col <= render_dist; col++) {
 			coords.insert({posX + (row << CHUNK_SHIFT), posY + (col << CHUNK_SHIFT)});
 		}
 	}
-	b.stamp("gen coordinates set");
+	// b.stamp("gen coordinates set");
 
 	std::vector<Chunk *> newperi_chunks;
 	newperi_chunks.reserve(render->_perimeter_chunks.capacity());
@@ -242,9 +245,9 @@ static void thread_chunk_update( OpenGL_Manager *render, GLint render_dist, int 
 		++it;
 		mtx.unlock();
 	}
-	b.stamp("delperi");
+	// b.stamp("delperi");
 	newperi_chunks = sort_chunks(render->_camera->getPos(), newperi_chunks);
-	b.stamp("sort chunks");
+	// b.stamp("sort chunks");
 	mtx_perimeter.lock();
 	render->_perimeter_chunks = newperi_chunks;
 	mtx_perimeter.unlock();
@@ -252,7 +255,7 @@ static void thread_chunk_update( OpenGL_Manager *render, GLint render_dist, int 
 	render->_deleted_chunks = newdel_chunks;
 	mtx_deleted_chunks.unlock();
 
-	b.stamp("NO");
+	// b.stamp("NO");
 	for (auto& c: coords) {
 		//create new chunk where player stands
 		Chunk *newChunk = new Chunk(render->_camera, render->_inventory, c.first, c.second, &render->_chunks);
@@ -268,8 +271,8 @@ static void thread_chunk_update( OpenGL_Manager *render, GLint render_dist, int 
 		mtx.unlock();
 		newChunk->generate_chunk(); // TODO remove this from thread because it launches its own thread and there's data races..
 	}
-	b.stamp("loop and create new chunks");
-	b.stop("chunk update");
+	// b.stamp("loop and create new chunks");
+	// b.stop("chunk update");
 	// std::cout << "for now " << count << " new chunks, computed " << coords.size() << std::endl;
 }
 
@@ -532,12 +535,14 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	if (current_block != _camera->_current_block) {
 		_camera->_current_block = current_block;
 		if (current_chunk_ptr) {
+			camPos.z += 1 + EYE_LEVEL;
 			current_chunk_ptr->sort_sky(camPos, true);
 			current_chunk_ptr->sort_water(camPos, true);
 		}
 	}
 
 	if (_camera->_fovUpdate) {
+		_camera->_fovUpdate = false;
 		update_cam_perspective();
 	}
 	if (_camera->_update)

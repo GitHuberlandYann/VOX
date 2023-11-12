@@ -471,7 +471,7 @@ bool blockFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm
  *
  * J. Amanatides, A. Woo. A Fast Voxel Traversal Algorithm for Ray Tracing. Eurographics '87
  */
-std::vector<glm::ivec3> voxel_traversal(glm::vec3 ray_start, glm::vec3 ray_end) {
+std::vector<glm::ivec3> voxel_traversal( glm::vec3 ray_start, glm::vec3 ray_end ) {
 	std::vector<glm::ivec3> visited_voxels;
 
 	// This id of the first/current voxel hit by the ray.
@@ -534,8 +534,57 @@ std::vector<glm::ivec3> voxel_traversal(glm::vec3 ray_start, glm::vec3 ray_end) 
 	return (visited_voxels);
 }
 
-// int main( void )
-// {
+/**
+ * @brief returns intersection point between line and plane
+ * @param camPos : world position where the ray starts (la)
+ * @param camDir : vector director of ray (lab)
+ * @param p0 : point in plane
+ * @param cross : vectorial | cross product (p01 x p02)
+ * @return Intersection point. Or vec3 with z == -1 if no intersection.
+ *
+ * https://en.wikipedia.org/wiki/Line-plane_intersection
+ */
+static glm::vec3 line_plane_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 p0, glm::vec3 cross ) {
+	float determinant = -glm::dot(camDir, cross);
+	if (!determinant) { // div zero -> line parallel to plane -> no intersection
+		return {0, 0, -1};
+	}
+	float t = glm::dot(cross, camPos - p0) / determinant;
+	return {camPos.x + camDir.x * t, camPos.y + camDir.y * t, camPos.z + camDir.z * t};
+}
+
+static bool line_rectangle_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 p0, glm::vec3 size )
+{
+	glm::vec3 res;
+	if (size.z) {
+		res = line_plane_intersection(camPos, camDir, p0, glm::cross(glm::vec3(size.x, size.y, 0), glm::vec3(0, 0, size.z)));
+	} else {
+		res = line_plane_intersection(camPos, camDir, p0, glm::cross(glm::vec3(size.x, 0, 0), glm::vec3(0, size.y, 0)));
+	}
+	if (!res.z) {
+		return (false);
+	}
+	return (res.x >= p0.x && res.x <= p0.x + size.x
+			&& res.y >= p0.y && res.y <= p0.y + size.y
+			&& res.z >= p0.z && res.z <= p0.z + size.z);
+}
+
+// 'cube' but actually parallelepiped rectangle
+bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeCenter, glm::vec3 cubeHalfSize )
+{
+	// std::cout << "line_cube_intersection: " << camPos.x << ", " << camPos.y << ", " << camPos.z << " -> " << camDir.x << ", " << camDir.y << ", " << camDir.z << " and " << cubeCenter.x << ", " << cubeCenter.y << ", " << cubeCenter.z << " -> " << cubeHalfSize.x << ", " << cubeHalfSize.y << ", " << cubeHalfSize.z << std::endl;
+	return (line_rectangle_intersection(camPos, camDir, cubeCenter - cubeHalfSize, {2 * cubeHalfSize.x, 0, 2 * cubeHalfSize.z}) // face_dir::MINUSY
+			|| line_rectangle_intersection(camPos, camDir, cubeCenter - cubeHalfSize, {0, 2 * cubeHalfSize.y, 2 * cubeHalfSize.z}) // face_dir::MINUSX
+			|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x + cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {0, 2 * cubeHalfSize.y, 2 * cubeHalfSize.z}) // face_dir::PLUSX
+			|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y + cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {2 * cubeHalfSize.x, 0, 2 * cubeHalfSize.z}) // face_dir::PLUSY
+			|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z + cubeHalfSize.z}, {2 * cubeHalfSize.x, 2 * cubeHalfSize.y, 0}) // face_dir::PLUSZ
+			// no need for this check|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {2 * cubeHalfSize.x, 2 * cubeHalfSize.y, 0}) // face_dir::MINUSZ
+			);
+}
+
+/*
+int main( void )
+{
 // 	glm::vec3 ray_start(0.6, 0.75, 0.92468);
 // 	glm::vec3 ray_end(-10.75, -10.75, 10.91693);
 // 	std::cout << "Voxel size: 1" << std::endl;
@@ -548,4 +597,10 @@ std::vector<glm::ivec3> voxel_traversal(glm::vec3 ray_start, glm::vec3 ray_end) 
 // 		std::cout << "> " << i.x << ", " << i.y << ", " << i.z << std::endl;
 // 	}
 // 	std::cout << "Total number of traversed voxels: " << ids.size() << std::endl;
-// }
+
+
+	glm::vec3 camPos = {0.5, 0, 0}, camDir = {1, 0, 0}, p0 = {-1, -1, 0}, p1 = {1, -1, 0}, p2 = {1, 1, 0};
+
+	glm::vec3 inter = line_plane_intersection(camPos, camDir, p0, glm::cross(p1 - p0, p2 - p0));
+	std::cout << "inter is " << inter.x << ", " << inter.y << ", " << inter.z << std::endl;
+}*/

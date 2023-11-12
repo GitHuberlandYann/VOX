@@ -71,13 +71,66 @@ OpenGL_Manager::~OpenGL_Manager( void )
 //                                Private                                     //
 // ************************************************************************** //
 
+static void addLine( GLint *vertInt, GLfloat *vertFloat, glm::vec3 a, glm::vec3 b, size_t &index )
+{
+	vertInt[index] = 11;
+	vertFloat[index + 1] = a.x;
+	vertFloat[index + 2] = a.y;
+	vertFloat[index + 3] = a.z;
+	index += 4;
+	vertInt[index] = 12 + (1 << 9);
+	vertFloat[index + 1] = b.x;
+	vertFloat[index + 2] = b.y;
+	vertFloat[index + 3] = b.z;
+	index += 4;
+}
+
 void OpenGL_Manager::drawEntities( int size )
 {
-	void *vertices = new GLint[size * 4];
+	void *vertices = new GLint[(24 + size) * 4];
 	GLint *vertInt = static_cast<GLint *>(vertices);
 	GLfloat *vertFloat = static_cast<GLfloat *>(vertices);
 
 	size_t index = 0;
+	if (s_blocks[_block_hit.w].hasHitbox) {
+		glm::vec3 hitCenter = s_blocks[_block_hit.w].hitboxCenter, hitHalfSize = s_blocks[_block_hit.w].hitboxHalfSize;
+		glm::vec3 pos = {_block_hit.x + hitCenter.x - hitHalfSize.x, _block_hit.y + hitCenter.y - hitHalfSize.y, _block_hit.z + hitCenter.z - hitHalfSize.z};
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(2 * hitHalfSize.x, 0, 0), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 2 * hitHalfSize.y, 0), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, 2 * hitHalfSize.z), index);
+		pos += glm::vec3(2 * hitHalfSize.x, 2 * hitHalfSize.y, 2 * hitHalfSize.z);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z), index);
+		pos.x -= 2 * hitHalfSize.x;
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0), index);
+		pos += glm::vec3(2 * hitHalfSize.x, 0, -2 * hitHalfSize.z);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0), index);
+		pos += glm::vec3(0, -2 * hitHalfSize.y, 2 * hitHalfSize.z);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0), index);
+	} else {
+		glm::vec3 pos = {_block_hit.x - 0.001f, _block_hit.y - 0.001f, _block_hit.z - 0.001f};
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(1.0002f, 0, 0), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 1.0002f, 0), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, 1.0002f), index);
+		pos += glm::vec3(1.0002f, 1.0002f, 1.0002f);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-1.0002f, 0, 0), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -1.0002f, 0), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -1.0002f), index);
+		pos.x -= 1.0002f;
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -1.0002f), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -1.0002f, 0), index);
+		pos += glm::vec3(1.0002f, 0, -1.0002f);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -1.0002f, 0), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-1.0002f, 0, 0), index);
+		pos += glm::vec3(0, -1.0002f, 1.0002f);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -1.0002f), index);
+		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-1.0002f, 0, 0), index);
+	}
+
 	for (auto e: _entities) {
 		vertInt[index] = e.first;
 		vertFloat[index + 1] = e.second.x;
@@ -89,7 +142,7 @@ void OpenGL_Manager::drawEntities( int size )
 	glBindVertexArray(_vaoEntities);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vboEntities);
-	glBufferData(GL_ARRAY_BUFFER, size * 4 * sizeof(GLint), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (24 + size) * 4 * sizeof(GLint), vertices, GL_STATIC_DRAW);
 	delete [] static_cast<GLint*>(vertices);
 
 	glEnableVertexAttribArray(SPECATTRIB);
@@ -100,7 +153,8 @@ void OpenGL_Manager::drawEntities( int size )
 
 	check_glstate("OpenGL_Manager::drawEntities", false);
 
-	glDrawArrays(GL_TRIANGLES, 0, size);
+	glDrawArrays(GL_LINES, 0, 24);
+	glDrawArrays(GL_TRIANGLES, 24, size);
 }
 
 // ************************************************************************** //
@@ -378,8 +432,8 @@ void OpenGL_Manager::main_loop( void )
 	// 		? std::cout << "culling enabled" << std::endl
 	//		: std::cout << "culling disabled" << std::endl;
 	// }
-
-
+	// glLineWidth(2);
+	glEnable(GL_LINE_SMOOTH); // anti-aliasing
 	glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -413,7 +467,7 @@ void OpenGL_Manager::main_loop( void )
 		// }
 		nbFrames++;
 		if ( currentTime - lastTime >= 1.0 ){
-			if (!_debug_mode) {
+			if (0 && !_debug_mode) {
 				std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
 				// std::cout << "other math gives " << (deltaTime) * 1000 << "ms/frame" << std::endl;
 			}
@@ -464,11 +518,10 @@ void OpenGL_Manager::main_loop( void )
 		// }
 		// b.stamp("solids");
 
-		if (int size = _entities.size()) {
-			drawEntities(size);
-			_entities.clear();
-			_entities.reserve(size);
-		}
+		int size = _entities.size();
+		drawEntities(size);
+		_entities.clear();
+		_entities.reserve(size);
 
 		#if 1
 		glUseProgram(_skyShaderProgram);
