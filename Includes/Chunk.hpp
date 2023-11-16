@@ -85,7 +85,7 @@ class Chunk
 
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		GLint face_count( int type, int row, int col, int level, bool isNotLeaves );
-		bool exposed_block( int row, int col, int level, bool isNotLeaves );
+		bool exposed_block( int row, int col, int level, bool isNotLeaves, bool isNotGlass );
 	
 		int exposed_water_faces( int row, int col, int level );
 		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );

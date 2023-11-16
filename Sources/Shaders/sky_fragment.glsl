@@ -9,16 +9,23 @@ uniform float fogDist;
 
 out vec4 outColor;
 
+uniform sampler2D blockAtlas;
 uniform sampler2D waterStill;
 uniform sampler2D waterFlow;
 
 void main()
 {
-	outColor = vec4(Color, 0.7f * 1.0f - smoothstep(fogDist / 2, fogDist, zDist));
-	vec4 tex;
+	if (Atlas == 3) {
+		outColor = vec4(Color, 1.0f - smoothstep(fogDist / 2, fogDist, zDist)) * texture(blockAtlas, TexCoord);
+		return ;
+	}
+
+	outColor = vec4(Color, 0.7f * (1.0f - smoothstep(fogDist / 2, fogDist, zDist)));
 	if (Atlas == 0) {
 		return ;
-	} else if (Atlas == 1) {
+	}
+	vec4 tex;
+	if (Atlas == 1) {
 		tex = texture(waterStill, TexCoord);
 	} else if (Atlas == 2) {
 		tex = texture(waterFlow, TexCoord);

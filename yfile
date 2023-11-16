@@ -30,9 +30,10 @@ TODOS:
 	- hitbox change + no fall on sneak
     - skybox
 	- particles ?
+	- slabs + stairs
 	- chests
 	- doors
-	- windows
+	- wheat + bread
 	- entity shadow
 	- rework clouds
     - Sound https://www.ambiera.com/irrklang/tutorials.html
@@ -95,6 +96,7 @@ DONE:
     - stop fov run if player idle
 	- water if air && level > surface_level && level < 64
 	- Water update when add/rm blocks around
+	- windows
 	- fluid at border
     - Water buckets
 	- water flow
@@ -111,8 +113,8 @@ Some info:
   - all I need is here https://mcasset.cloud
   - ray casting in voxel grid: http://www.cse.yorku.ca/~amana/research/grid.pdf
   - how to fix broken everything in wsl: https://stackoverflow.com/questions/66497147/cant-run-opengl-on-wsl2/66506098#66506098
-      - lauch VcXsrv; xcalc worksn't
-      - DISPLAY=:0; xcalc works
+      - lauch VcXsrv; xcalc nowork
+      - DISPLAY=:0; xcalc yeswork
   - https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
   - https://stackoverflow.com/questions/54583368/how-to-draw-multiple-objects-in-opengl-using-multiple-vao-and-vbo
   
@@ -155,5 +157,5 @@ Some info:
                 Not that the PV value is defined no matter what the weirdness is, but these 5 PV levels are defined only when weirdness is between -1.0 and 1.0.
     - DEPTH is used for cave generation .. not sure I'll use it for now
 
-    - objdump -d --dis-symname=_main vox
+    - objdump -d --disassemble=_main -Mintel vox
     - nm vox | grep <function>

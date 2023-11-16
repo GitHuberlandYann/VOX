@@ -19,6 +19,7 @@ enum blocks {
 	GRAVEL,
 	OAK_LEAVES,
 	OAK_PLANKS,
+	GLASS,
 	COAL_ORE = 32,
 	IRON_ORE,
 	DIAMOND_ORE,
@@ -306,6 +307,8 @@ struct Sand : Block {
 		Sand() {
 			name = "SAND";
 			mined = blocks::SAND;
+			isComposant = true;
+			getProduction = blocks::GLASS;
 			byHand = true;
 			needed_tool = WOODEN_SHOVEL;
 			break_time_hand = 0.75f;
@@ -354,6 +357,14 @@ struct OakPlanks : Block {
 			break_time_stone = 0.75f;
 			break_time_iron = 0.5f;
 			break_time_diamond = 0.4f;
+		}
+};
+
+struct Glass : Block {
+	public:
+		Glass() {
+			name = "GLASS";
+			break_time_hand = 0.45f;
 		}
 };
 
@@ -814,7 +825,7 @@ struct WaterBucket : Block {
 
 const Block s_blocks[112] = {
 	Air(), GrassBlock(), OakLog(), Cactus(), TBD(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), StoneBrick(), CrackedStoneBrick(), Sand(), Gravel(), OakLeaves(), OakPlanks(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), StoneBrick(), CrackedStoneBrick(), Sand(), Gravel(), OakLeaves(), OakPlanks(), Glass(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), CoalBlock(), IronBlock(), DiamondBlock(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), Torch(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), Water(), Water1(), Water2(), Water3(), Water4(), Water5(), Water6(), Water7(),

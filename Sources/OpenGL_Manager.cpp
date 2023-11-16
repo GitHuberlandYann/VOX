@@ -359,6 +359,7 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 
 
 	glUseProgram(_skyShaderProgram);
+	glUniform1i(glGetUniformLocation(_skyShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
 	glActiveTexture(GL_TEXTURE0 + 4);
 	glBindTexture(GL_TEXTURE_2D, _textures[1]);
 

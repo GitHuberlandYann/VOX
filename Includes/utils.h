@@ -21,7 +21,7 @@ int blockGridY( int block );
 int blockAtlasX( int block );
 int blockAtlasY( int block );
 std::string doubleDigits( int nb );
-int air_flower( int value, bool air_leaves, bool air_water );
+int air_flower( int value, bool air_leaves, bool air_glass, bool air_water );
 bool isSandOrGravel( int type );
 
 std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks );

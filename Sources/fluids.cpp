@@ -13,17 +13,17 @@ int Chunk::exposed_water_faces( int row, int col, int level )
 			res += _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1] < blocks::WATER;
 			break ;
 		case 255:
-			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], false, true);
+			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], false, false, true);
 			res += 1;
 			break ;
 		default:
-			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], false, true);
+			res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], false, false, true);
 			res += _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1] < blocks::WATER;
 	}
-	res += !air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, true);
-	res += !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, true);
-	res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], false, true);
-	res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], false, true);
+	res += !air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, false, true);
+	res += !air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, false, true);
+	res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], false, false, true);
+	res += !air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], false, false, true);
 	return (res);
 }
 
@@ -130,7 +130,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 						// std::cout << "supplyed by water" << adj << std::endl;
 					}
 				}
-			} else if (air_flower(adj, false, false)) { // check block underneath
+			} else if (air_flower(adj, false, false, false)) { // check block underneath
 				onGround = true;
 			}
 		}
@@ -164,12 +164,12 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 	int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
 	int value = _blocks[offset];
 	// std::cout << "checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[value].name << std::endl;
-	if (!air_flower(value, false, true) || value > level || (value == level && level == blocks::WATER1)) {
+	if (!air_flower(value, false, false, true) || value > level || (value == level && level == blocks::WATER1)) {
 		// std::cout << "column expension, water count before: " << _water_count << std::endl;
 		_blocks[offset] = level;
 		_added[offset] = level;
 		_removed.erase(offset);
-		if (!air_flower(value, false, true) && value != blocks::AIR) { // replace flower with water
+		if (!air_flower(value, false, false, true) && value != blocks::AIR) { // replace flower with water
 			// std::cout << _startX << ", " << _startY << " value before: " << s_blocks[value].name << ". displayed: " << _displayed_faces << std::endl;
 			if (value != blocks::GRASS) { // drop item
 				_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, s_blocks[value].mined));
@@ -184,7 +184,7 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 			_vertices = new GLint[_displayed_faces * 24]; // TODO set flag to true and update vert array once on this frame instead of once per destroyed flower
 			fill_vertex_array();
 		}
-		if (!air_flower(value, false, true)) {
+		if (!air_flower(value, false, false, true)) {
 			_hasWater = true;
 		} else {
 			// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[value].name << " with " << s_blocks[level].name << std::endl; 
@@ -217,7 +217,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 	// Bench b;
 	#if 1
 	// pos = glm::vec3(pos.x - _startX, pos.y - _startY, pos.z);
-	std::vector<std::pair<float, std::array<int, 10>>> order;
+	std::vector<std::pair<float, std::array<int, 11>>> order;
 	order.reserve(_water_count);
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
@@ -229,22 +229,44 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 					int above = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1];
 					std::array<int, 4> heights = water_heights(value, above, row, col, level);
 					if (above < blocks::WATER) {
-						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level + ((8.0f - heights[0]) / 8.0f))), {pX, pY + 1, level + 1, 1, -1, 0, heights[1], heights[3], heights[0], heights[2]}});
+						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level + ((8.0f - heights[0]) / 8.0f))), {pX, pY + 1, level + 1, 1, -1, 0, heights[1], heights[3], heights[0], heights[2], 1}});
 					}
-					if (!air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], false, true)) {
-						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level)), {pX, pY, level, 1, 1, 0, 0, 0, 0, 0}});
+					if (!air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], false, false, true)) {
+						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level)), {pX, pY, level, 1, 1, 0, 0, 0, 0, 0, 1}});
 					}
-					if (!air_flower(getBlockAt(row - 1, col, level, true), false, true)) {
-						order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, level + 0.5f)), {pX, pY + 1, level + 1, 0, -1, -1, heights[1], heights[0], 0, 0}});
+					if (!air_flower(getBlockAt(row - 1, col, level, true), false, false, true)) {
+						order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, level + 0.5f)), {pX, pY + 1, level + 1, 0, -1, -1, heights[1], heights[0], 0, 0, 1}});
 					}
-					if (!air_flower(getBlockAt(row + 1, col, level, true), false, true)) {
-						order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, level + 0.5f)), {pX + 1, pY, level + 1, 0, 1, -1, heights[2], heights[3], 0, 0}});
+					if (!air_flower(getBlockAt(row + 1, col, level, true), false, false, true)) {
+						order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, level + 0.5f)), {pX + 1, pY, level + 1, 0, 1, -1, heights[2], heights[3], 0, 0, 1}});
 					}
-					if (!air_flower(getBlockAt(row, col - 1, level, true), false, true)) {
-						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, level + 0.5f)), {pX, pY, level + 1, 1, 0, -1, heights[0], heights[2], 0, 0}});
+					if (!air_flower(getBlockAt(row, col - 1, level, true), false, false, true)) {
+						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, level + 0.5f)), {pX, pY, level + 1, 1, 0, -1, heights[0], heights[2], 0, 0, 1}});
 					}
-					if (!air_flower(getBlockAt(row, col + 1, level, true), false, true)) {
-						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, level + 0.5f)), {pX + 1, pY + 1, level + 1, -1, 0, -1, heights[3], heights[1], 0, 0}});
+					if (!air_flower(getBlockAt(row, col + 1, level, true), false, false, true)) {
+						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, level + 0.5f)), {pX + 1, pY + 1, level + 1, -1, 0, -1, heights[3], heights[1], 0, 0, 1}});
+					}
+				} else if (value == blocks::GLASS) {
+					int pX = _startX + row;
+					int pY = _startY + col;
+					std::array<int, 4> heights = {0, 0, 0, 0};
+					if (!air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1], false, false, false)) {
+						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level + ((8.0f - heights[0]) / 8.0f))), {pX, pY + 1, level + 1, 1, -1, 0, heights[1], heights[3], heights[0], heights[2], 0}});
+					}
+					if (!air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], false, false, false)) {
+						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level)), {pX, pY, level, 1, 1, 0, 0, 0, 0, 0, 0}});
+					}
+					if (!air_flower(getBlockAt(row - 1, col, level, true), false, false, false)) {
+						order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, level + 0.5f)), {pX, pY + 1, level + 1, 0, -1, -1, heights[1], heights[0], 0, 0, 0}});
+					}
+					if (!air_flower(getBlockAt(row + 1, col, level, true), false, false, false)) {
+						order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, level + 0.5f)), {pX + 1, pY, level + 1, 0, 1, -1, heights[2], heights[3], 0, 0, 0}});
+					}
+					if (!air_flower(getBlockAt(row, col - 1, level, true), false, false, false)) {
+						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, level + 0.5f)), {pX, pY, level + 1, 1, 0, -1, heights[0], heights[2], 0, 0, 0}});
+					}
+					if (!air_flower(getBlockAt(row, col + 1, level, true), false, false, false)) {
+						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, level + 0.5f)), {pX + 1, pY + 1, level + 1, -1, 0, -1, heights[3], heights[1], 0, 0, 0}});
 					}
 				}
 			}
@@ -267,6 +289,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 		// if (vip)b.stamp("alloc");
 	}
 
+	std::pair<float, std::array<int, 11>> tmp;
 	for (size_t index = 0; index < order.size() - 1; index++) {
 		float minDist = order[index].first;
 		size_t minIndex = index;
@@ -277,7 +300,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 			}
 		}
 		if (minIndex != index) {
-			std::pair<float, std::array<int, 10>> tmp = order[minIndex];
+			tmp = order[minIndex];
 			order[minIndex] = order[index];
 			order[index] = tmp;
 		}
@@ -288,18 +311,23 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 	for (auto& o: order) {
 		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], o.second[6]}, offset0, offset1, offset2, offset3;
 		if (!o.second[5]) { // top/down faces
-			std::array<int, 5> texcoord_offsets = compute_texcoord_offsets(o.second[6], o.second[7], o.second[8], o.second[9]);
+			std::array<int, 5> texcoord_offsets;
+			if (o.second[10] == 1) {
+				texcoord_offsets = compute_texcoord_offsets(o.second[6], o.second[7], o.second[8], o.second[9]);
+			} else {
+				texcoord_offsets = {0, 1 << 10, 1 << 11, 3 << 10, 3 << 8};
+			}
 			offset0 = {0, 0, 0, texcoord_offsets[0]};
 			offset1 = {o.second[3], 0, 0, o.second[7] - start.w + texcoord_offsets[1]};// (1 << 10)};
 			offset2 = {0, o.second[4], 0, o.second[8] - start.w + texcoord_offsets[2]};// (1 << 11)};
 			offset3 = {o.second[3], o.second[4], 0, o.second[9] - start.w + texcoord_offsets[3]};//(1 << 10) + (1 << 11)};
-			start.w += texcoord_offsets[4];//(1 << 8); // waterStill || waterFlow
+			start.w += texcoord_offsets[4];//(1 << 8); // waterStill || waterFlow || glass
 		} else {
 			offset0 = {0, 0, 0, 0}; // TODO for now side faces' texture is "squished"
 			offset1 = {o.second[3], o.second[4], 0, o.second[7] - start.w + (1 << 10)};
 			offset2 = {0, 0, o.second[5], -start.w + (1 << 11)};
 			offset3 = {o.second[3], o.second[4], o.second[5], -start.w + (1 << 10) + (1 << 11)};
-			start.w += (1 << 9); // waterFlow
+			start.w += (1 << 9) + ((o.second[10] == 0) << 8); // waterFlow || glass
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_fluid.lock();
@@ -322,19 +350,19 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 					if (_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1] < blocks::WATER) {
 						order.insert({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level + ((8.0f - heights[0]) / 8.0f))), {pX, pY + 1, level + 1, 1, -1, 0, heights[1], heights[3], heights[0], heights[2]}});
 					}
-					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], false, true)) {
+					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], false, false, true)) {
 						order.insert({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level)), {pX, pY, level, 1, 1, 0, 0, 0, 0, 0}});
 					}
-					if (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, true)) {
+					if (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, false, true)) {
 						order.insert({dist2(pos, glm::vec3(pX, pY + 0.5f, level + 0.5f)), {pX, pY + 1, level + 1, 0, -1, -1, heights[1], heights[0], 0, 0}});
 					}
-					if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, true)) {
+					if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, false, true)) {
 						order.insert({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, level + 0.5f)), {pX + 1, pY, level + 1, 0, 1, -1, heights[2], heights[3], 0, 0}});
 					}
-					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], false, true)) {
+					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], false, false, true)) {
 						order.insert({dist2(pos, glm::vec3(pX + 0.5f, pY, level + 0.5f)), {pX, pY, level + 1, 1, 0, -1, heights[0], heights[2], 0, 0}});
 					}
-					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], false, true)) {
+					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], false, false, true)) {
 						order.insert({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, level + 0.5f)), {pX + 1, pY + 1, level + 1, -1, 0, -1, heights[3], heights[1], 0, 0}});
 					}
 				}

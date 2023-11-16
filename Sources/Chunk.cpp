@@ -107,51 +107,57 @@ GLint Chunk::face_count( int type, int row, int col, int level, bool isNotLeaves
 	if (type >= blocks::POPPY) {
 		return (2 << (type == blocks::TORCH));
 	}
-	GLint res = !air_flower(getBlockAt(row - 1, col, level, true), true, false)
-				+ !air_flower(getBlockAt(row + 1, col, level, true), isNotLeaves, false)
-				+ !air_flower(getBlockAt(row, col - 1, level, true), true, false)
-				+ !air_flower(getBlockAt(row, col + 1, level, true), isNotLeaves, false);
+	if (type == blocks::GLASS) {
+		return (0);
+	}
+	GLint res = !air_flower(getBlockAt(row - 1, col, level, true), true, isNotLeaves, false)
+				+ !air_flower(getBlockAt(row + 1, col, level, true), isNotLeaves, isNotLeaves, false)
+				+ !air_flower(getBlockAt(row, col - 1, level, true), true, isNotLeaves, false)
+				+ !air_flower(getBlockAt(row, col + 1, level, true), isNotLeaves, isNotLeaves, false);
 	switch (level) {
 		case 0:
-			res += !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1], isNotLeaves, false);
+			res += !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1], isNotLeaves, isNotLeaves, false);
 			break ;
 		case 255:
-			res += !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], true, false);
+			res += !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], true, isNotLeaves, false);
 			res += 1;
 			break ;
 		default:
-			res += !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], true, false);
-			res += !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1], isNotLeaves, false);
+			res += !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], true, isNotLeaves, false);
+			res += !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1], isNotLeaves, isNotLeaves, false);
 	}
 	return (res);
 }
 
 // takes a block and check if player can see it at some point
-bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves )
+bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves, bool isNotGlass )
 {
 	// isNotLeaves = true;
 	if (!isNotLeaves) {
 		return (true);
 	}
+	if (!isNotGlass) {
+		return (false);
+	}
 	bool below, above;
 	switch (level) {
 		case 0:
 			below = false;
-			above = !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1], isNotLeaves, false);
+			above = !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1], isNotLeaves, true, false);
 			break ;
 		case 255:
-			below = !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], isNotLeaves, false);
+			below = !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], isNotLeaves, true, false);
 			above = true;
 			break ;
 		default:
-			below = !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], isNotLeaves, false);
-			above = !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1], isNotLeaves, false);
+			below = !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], isNotLeaves, true, false);
+			above = !air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1], isNotLeaves, true, false);
 	}
 	return (below || above
-		|| !air_flower(getBlockAt(row - 1, col, level, false), isNotLeaves, false)
-		|| !air_flower(getBlockAt(row + 1, col, level, false), isNotLeaves, false)
-		|| !air_flower(getBlockAt(row, col - 1, level, false), isNotLeaves, false)
-		|| !air_flower(getBlockAt(row, col + 1, level, false), isNotLeaves, false));
+		|| !air_flower(getBlockAt(row - 1, col, level, false), isNotLeaves, true, false)
+		|| !air_flower(getBlockAt(row + 1, col, level, false), isNotLeaves, true, false)
+		|| !air_flower(getBlockAt(row, col - 1, level, false), isNotLeaves, true, false)
+		|| !air_flower(getBlockAt(row, col + 1, level, false), isNotLeaves, true, false));
 }
 
 int Chunk::get_block_type( siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
@@ -379,7 +385,7 @@ void Chunk::generate_blocks( void )
 				if (value) {
 					if (value == blocks::WATER) {
 						// do nothing
-					} else if (exposed_block(row, col, level, value != blocks::OAK_LEAVES)) {
+					} else if (exposed_block(row, col, level, value != blocks::OAK_LEAVES, value != blocks::GLASS)) {
 						if (value == blocks::IRON_ORE && distribution(generator) < 500) {
 							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::STONE;
 						} else if (value == blocks::GRAVEL && distribution(generator) < 100) {
@@ -422,7 +428,7 @@ void Chunk::resetDisplayedFaces( void )
 				}
 				if (value > blocks::AIR && value < blocks::WATER) {
 					GLint below = ((level) ? _blocks[offset - 1] : 0);
-					if (!air_flower(value, false, true) && value != blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
+					if (!air_flower(value, false, false, true) && value != blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
 						_blocks[offset] = blocks::AIR;
 					} else {
 						GLint count = face_count(value, row, col, level, value != blocks::OAK_LEAVES);
@@ -545,7 +551,9 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		_blocks[offset] = blocks::AIR;
 	}
 	_blocks[offset] = blocks::AIR;
-	if (value > blocks::AIR && value < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
+	if (value == blocks::GLASS) {
+		return ;
+	} else if (value > blocks::AIR && value < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
 		_displayed_faces -= face_count(value, pos.x, pos.y, pos.z, value != blocks::OAK_LEAVES);
 		if (value == blocks::TORCH) {
 			std::cout << "rm light" << std::endl;
@@ -558,7 +566,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		_fluids.insert(offset);
 		return ;
 	}
-	if (air_flower(value, false, true)) {
+	if (air_flower(value, false, false, true)) {
 		light_spread(pos.x, pos.y, pos.z, true); // spread sky light
 		light_spread(pos.x, pos.y, pos.z, false); // spread block light
 		for (int index = 0; index < 6; index++) {
@@ -571,7 +579,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 				if (adj < blocks::AIR) {
 					_blocks[adj_offset] += blocks::NOTVISIBLE;
 					_displayed_faces++;
-				} else if (air_flower(adj, false, false)) {
+				} else if (air_flower(adj, false, false, false)) {
 					_displayed_faces++;
 				} else if (index != face_dir::MINUSZ && adj >= blocks::WATER) { // if water under, it is not updated
 					_fluids.insert(adj_offset);
@@ -579,7 +587,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			}
 		}
 	}
-	handle_border_block(pos, air_flower(value, true, true), false); // if block at border of chunk gets deleted, we update neighbours. doing it after light spread
+	handle_border_block(pos, air_flower(value, true, false, true), false); // if block at border of chunk gets deleted, we update neighbours. doing it after light spread
 	if (endZ != -1) { // sand fall
 		remove_block(false, {pos.x, pos.y, pos.z + 1});
 	} else if (pos.z < 255 && ((block_above >= blocks::POPPY && block_above < blocks::WATER) || block_above == blocks::CACTUS)) { // del flower if block underneath deleted
@@ -645,9 +653,11 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		handle_border_block(pos, type, true); // torch is special case flower
 		_light_update = false;
 		std::cout << "over" << std::endl;
+	} else if (type == blocks::GLASS) {
+		_hasWater = true; // glass considered as invis block
 	}
 	_displayed_faces += face_count(type, pos.x, pos.y, pos.z, type != blocks::OAK_LEAVES);
-	if (!air_flower(type, true, false)) {
+	if (!air_flower(type, true, true, false)) {
 		return ;
 	}
 	_lights[offset] = 0; // rm light if solid block added
@@ -657,7 +667,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 
 		} else {
 			GLint value = _blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]];
-			if (air_flower(value, true, false)) {
+			if (air_flower(value, true, true, false)) {
 				_displayed_faces--;
 			} else {
 				if (index != face_dir::PLUSZ) {
@@ -671,7 +681,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 			}
 		}
 	}
-	handle_border_block(pos, air_flower(type, false, true), true); // if block at border of chunk gets added, we update neighbours, after light spread
+	handle_border_block(pos, air_flower(type, false, false, true), true); // if block at border of chunk gets added, we update neighbours, after light spread
 		// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
@@ -924,7 +934,7 @@ void Chunk::checkFillVertices( void )
 					for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
 						if (!(_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xFF00)) {
 							int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-							if (!air_flower(value, true, false)) { // underground hole
+							if (!air_flower(value, true, true, false)) { // underground hole
 								// spread_light TODO watch out for leaves and water light damping..
 								light_spread(row, col, level, true);
 							}
@@ -951,14 +961,13 @@ void Chunk::checkFillVertices( void )
 
 void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, bool adding )
 {
+	int value = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z];
 	if (!adding) {
-		int value = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z];
 		if (value == blocks::AIR || value == blocks::BEDROCK || value + blocks::NOTVISIBLE == blocks::BEDROCK) { // can't rm bedrock
 			return ;
 		}
 		remove_block(useInventory, pos);
 	} else {
-		int value = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z];
 		if ((value != blocks::AIR && value < blocks::WATER) || type == blocks::AIR) { // can't replace block
 			return ;
 		}
@@ -967,6 +976,9 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, bool addi
 	if (type == blocks::WATER || type == blocks::BUCKET) {
 		// std::cout << "modif to water with " << ((type == blocks::WATER) ? "water" : "bucket") << std::endl;
 		// std::cout << "water count before " << waterSave << ", after " << _water_count << std::endl;
+		return ;
+	} else if (type == blocks::GLASS || value == blocks::GLASS) {
+		sort_water(_camera->getPos(), true);
 		return ;
 	}
 	delete [] static_cast<GLint*>(_vertices);
@@ -1203,7 +1215,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 			_mtx.unlock();
 		}
 		return ;
-	} else if (!air_flower(value, false, true)) { // cross image
+	} else if (!air_flower(value, false, false, true)) { // cross image
 		for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 			_mtx.lock();
 			if (crossFace(vertFloat, p0, p1, p2, p3, p4, p5, index)) {
@@ -1269,7 +1281,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 			return ;
 		}
 		int value = _blocks[offset];
-		if (!air_flower(type, true, false) || !air_flower(value, false, false)) {
+		if (!air_flower(type, true, true, false) || !air_flower(value, false, false, false)) {
 			// std::cout << "took jump" << std::endl;
 			goto FILL; // this is only to update face shading TODO only update concerned faces
 		}
@@ -1288,7 +1300,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 		if (type >= blocks::WATER) {
 			return ;
 		}
-		if (!air_flower(_blocks[offset], false, false)) {
+		if (!air_flower(_blocks[offset], false, false, false)) {
 			goto FILL;
 		}
 		_displayed_faces++;
@@ -1310,24 +1322,24 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 {
 	// WATCHOUT if width > 0.5 problemos because we check block left and right but not middle
 	glm::ivec3 top0 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height));
-	if (air_flower(getBlockAt(top0.x, top0.y, top0.z, true), false, false)) {
+	if (air_flower(getBlockAt(top0.x, top0.y, top0.z, true), false, false, false)) {
 		return (true);
 	}
 	glm::ivec3 top1 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height));
 	if (top1 != top0) {
-		if (air_flower(getBlockAt(top1.x, top1.y, top1.z, true), false, false)) {
+		if (air_flower(getBlockAt(top1.x, top1.y, top1.z, true), false, false, false)) {
 			return (true);
 		}
 	}
 	glm::ivec3 top2 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height));
 	if (top2 != top0) {
-		if (air_flower(getBlockAt(top2.x, top2.y, top2.z, true), false, false)) {
+		if (air_flower(getBlockAt(top2.x, top2.y, top2.z, true), false, false, false)) {
 			return (true);
 		}
 	}
 	glm::ivec3 top3 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height));
 	if (top3 != top0) {
-		if (air_flower(getBlockAt(top3.x, top3.y, top3.z, true), false, false)) {
+		if (air_flower(getBlockAt(top3.x, top3.y, top3.z, true), false, false, false)) {
 			return (true);
 		}
 	}

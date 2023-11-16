@@ -162,14 +162,16 @@ std::string doubleDigits( int nb )
 /* * we simulate that flowers are air block in order to display adjacent blocks properly
    * also use this for all 'see-through' blocks like leaves, water..
    * if air_leaves, leaves are considered as air
+   * if air_glass, glass is considered as air
    * if air_water, water is NOT considered as air (I know this is dumb)*/
-int air_flower( int value, bool air_leaves, bool air_water )
+int air_flower( int value, bool air_leaves, bool air_glass, bool air_water )
 {
 	if (air_water && value >= blocks::WATER) {
 		return (value);
 	}
 	if (value >= blocks::POPPY || value == blocks::CACTUS
-		|| (air_leaves && (value + (value < 0) * blocks::NOTVISIBLE) == blocks::OAK_LEAVES)) {
+		|| (air_leaves && (value + (value < 0) * blocks::NOTVISIBLE) == blocks::OAK_LEAVES)
+		|| (air_glass && (value + (value < 0) * blocks::NOTVISIBLE) == blocks::GLASS)) {
 		return (0);
 	}
 	return (value);

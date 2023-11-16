@@ -18,7 +18,10 @@ void main()
 	gl_Position = proj * view * vec4(position.xy, position.z - (level / 8.0f), 1.0);
 	Color = color;
 	Atlas = (position.w >> 8) & 3;
-	if (Atlas != 0) {
+	if (Atlas == 3) {
+		Color = vec3(1.0f, 1.0f, 1.0f);
+		TexCoord = vec2((4 + ((position.w >> 10) & 1)) / 16.0f, (11 + ((position.w >> 11) & 1)) / 16.0f);
+	} else if (Atlas != 0) {
 		int shiftX = position.w >> 10;
 		int shiftY = position.w >> 11;
 		int shiftX2 = position.w >> 12;
