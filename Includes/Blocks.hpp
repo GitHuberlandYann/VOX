@@ -26,6 +26,7 @@ enum blocks {
 	COAL_BLOCK,
 	IRON_BLOCK,
 	DIAMOND_BLOCK,
+	OAK_SLAB = 40,
 	POPPY = 48,
 	DANDELION,
 	BLUE_ORCHID,
@@ -470,6 +471,26 @@ struct DiamondBlock : Block {
 		}
 };
 
+struct OakSlab : Block {
+	public:
+		OakSlab() {
+			name = "OAK_SLAB";
+			mined = blocks::OAK_SLAB;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.25f};
+			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = WOODEN_AXE;
+			break_time_hand = 3.0f;
+			break_time_wooden = 1.5f;
+			break_time_stone = 0.75f;
+			break_time_iron = 0.5f;
+			break_time_diamond = 0.4f;
+		}
+};
+
 struct Poppy : Block {
 	public:
 		Poppy() {
@@ -826,7 +847,7 @@ struct WaterBucket : Block {
 const Block s_blocks[112] = {
 	Air(), GrassBlock(), OakLog(), Cactus(), TBD(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), StoneBrick(), CrackedStoneBrick(), Sand(), Gravel(), OakLeaves(), OakPlanks(), Glass(), TBD(), TBD(), TBD(), TBD(),
-	CoalOre(), IronOre(), DiamondOre(), CoalBlock(), IronBlock(), DiamondBlock(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	CoalOre(), IronOre(), DiamondOre(), CoalBlock(), IronBlock(), DiamondBlock(), TBD(), TBD(), OakSlab(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), Torch(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), Water(), Water1(), Water2(), Water3(), Water4(), Water5(), Water6(), Water7(),
 	Stick(), WoodenShovel(), StoneShovel(), IronShovel(), DiamondShovel(), WoodenAxe(), StoneAxe(), IronAxe(), DiamondAxe(), WoodenPickaxe(), StonePickaxe(), IronPickaxe(), DiamondPickaxe(), TBD(), TBD(), TBD(),

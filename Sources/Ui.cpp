@@ -64,6 +64,8 @@ void UI::add_inventory_elem( GLint *vertices, int mult, int index, int & vindex 
 	mtx_inventory.unlock();
 	if (value == blocks::AIR) {
 		return ;
+	} else if (value == blocks::OAK_SLAB) { // TODO CHANGE THIS ?
+		value = blocks::OAK_PLANKS;
 	}
 	vertices[vindex + 0] = 0;
 	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * index * mult) + mult * 3;

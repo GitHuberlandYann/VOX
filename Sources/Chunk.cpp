@@ -1142,6 +1142,9 @@ int Chunk::isHit( glm::ivec3 pos, bool waterIsBlock )
 	if (value >= blocks::WATER) {
 		return (blocks::AIR);
 	}
+	if (value < blocks::AIR) {
+		value += blocks::NOTVISIBLE;
+	}
 	return (value);
 }
 

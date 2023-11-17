@@ -167,6 +167,9 @@ void Chunk::fill_vertex_array( void )
 					glm::vec3 p6 = {_startX + row + 0, _startY + col + 1, level + 0};
 					glm::vec3 p7 = {_startX + row + 1, _startY + col + 1, level + 0};
 
+					if (block_type == blocks::OAK_SLAB) {
+						block_type = blocks::OAK_PLANKS;
+					}
 					if (block_type < blocks::POPPY) {
 						int orientation = -1, litFurnace = 0;
 						if (block_type >= blocks::CRAFTING_TABLE && block_type < blocks::BEDROCK) {
