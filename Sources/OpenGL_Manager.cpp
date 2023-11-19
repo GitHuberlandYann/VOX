@@ -92,7 +92,10 @@ void OpenGL_Manager::drawEntities( int size )
 	GLfloat *vertFloat = static_cast<GLfloat *>(vertices);
 
 	size_t index = 0;
-	if (s_blocks[_block_hit.w].hasHitbox) {
+	bool hitBox = _block_hit.w != blocks::AIR;
+	if (!hitBox) {
+		index = 24 * 4;
+	} else if (s_blocks[_block_hit.w].hasHitbox) {
 		glm::vec3 hitCenter = s_blocks[_block_hit.w].hitboxCenter, hitHalfSize = s_blocks[_block_hit.w].hitboxHalfSize;
 		glm::vec3 pos = {_block_hit.x + hitCenter.x - hitHalfSize.x, _block_hit.y + hitCenter.y - hitHalfSize.y, _block_hit.z + hitCenter.z - hitHalfSize.z};
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(2 * hitHalfSize.x, 0, 0), index);
@@ -153,7 +156,9 @@ void OpenGL_Manager::drawEntities( int size )
 
 	check_glstate("OpenGL_Manager::drawEntities", false);
 
-	glDrawArrays(GL_LINES, 0, 24);
+	if (hitBox) {
+		glDrawArrays(GL_LINES, 0, 24);
+	}
 	glDrawArrays(GL_TRIANGLES, 24, size);
 }
 
@@ -330,16 +335,16 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	glBindTexture(GL_TEXTURE_2D, _textures[0]);
 
 	// load image
-	t_tex *texture = new t_tex;
-	texture->content = SOIL_load_image(texture_file.c_str(), &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
-	if (!texture->content) {
+	t_tex texture;
+	texture.content = SOIL_load_image(texture_file.c_str(), &texture.width, &texture.height, 0, SOIL_LOAD_RGBA);
+	if (!texture.content) {
 		std::cerr << "failed to load image " << texture_file << " because:" << std::endl << SOIL_last_result() << std::endl;
 		exit(1);
 	}
 
 	// load image as texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, texture.content);
 
 	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // sampler2D #index in fragment shader
 			
@@ -349,10 +354,7 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	if (texture) {
-		SOIL_free_image_data(texture->content);
-	}
-	delete texture;
+	SOIL_free_image_data(texture.content);
 
 	check_glstate("Succesfully loaded " + texture_file + " to shader", true);
 
@@ -364,16 +366,15 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	glBindTexture(GL_TEXTURE_2D, _textures[1]);
 
 	// load image
-	texture = new t_tex;
-	texture->content = SOIL_load_image("Resources/waterStill.png", &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
-	if (!texture->content) {
+	texture.content = SOIL_load_image("Resources/waterStill.png", &texture.width, &texture.height, 0, SOIL_LOAD_RGBA);
+	if (!texture.content) {
 		std::cerr << "failed to load image Resources/waterStill.png because:" << std::endl << SOIL_last_result() << std::endl;
 		exit(1);
 	}
 
 	// load image as texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, texture.content);
 
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterStill"), 4); // sampler2D #index in fragment shader
 			
@@ -383,10 +384,7 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	if (texture) {
-		SOIL_free_image_data(texture->content);
-	}
-	delete texture;
+	SOIL_free_image_data(texture.content);
 
 	check_glstate("Succesfully loaded Resources/waterStill.png to shader", true);
 
@@ -394,16 +392,15 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	glBindTexture(GL_TEXTURE_2D, _textures[2]);
 
 	// load image
-	texture = new t_tex;
-	texture->content = SOIL_load_image("Resources/waterFlow.png", &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
-	if (!texture->content) {
+	texture.content = SOIL_load_image("Resources/waterFlow.png", &texture.width, &texture.height, 0, SOIL_LOAD_RGBA);
+	if (!texture.content) {
 		std::cerr << "failed to load image Resources/waterFlow.png because:" << std::endl << SOIL_last_result() << std::endl;
 		exit(1);
 	}
 
 	// load image as texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, texture.content);
 
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterFlow"), 5); // sampler2D #index in fragment shader
 			
@@ -413,10 +410,7 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	if (texture) {
-		SOIL_free_image_data(texture->content);
-	}
-	delete texture;
+	SOIL_free_image_data(texture.content);
 
 	check_glstate("Succesfully loaded Resources/waterFlow.png to shader", true);
 }

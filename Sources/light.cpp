@@ -89,7 +89,7 @@ void Chunk::generate_lights( void )
 			for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
 				if (light_level) {
 					int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-					if (air_flower(value, true, true, false)) { // block hit
+					if (air_flower(value, true, true, false) && value != blocks::OAK_SLAB) { // block hit
 						light_level = 0;
 					}
 					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
@@ -157,20 +157,88 @@ void Chunk::fill_vertex_array( void )
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint block_type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
 				if (block_type > blocks::AIR && block_type < blocks::WATER && block_type != blocks::GLASS) {
-					glm::vec3 p0 = {_startX + row + 0, _startY + col + 0, level + 1};
-					glm::vec3 p1 = {_startX + row + 1, _startY + col + 0, level + 1};
+					float zSize = 1.0f - 0.5f * (block_type == blocks::OAK_SLAB);
+					glm::vec3 p0 = {_startX + row + 0, _startY + col + 0, level + zSize};
+					glm::vec3 p1 = {_startX + row + 1, _startY + col + 0, level + zSize};
 					glm::vec3 p2 = {_startX + row + 0, _startY + col + 0, level + 0};
 					glm::vec3 p3 = {_startX + row + 1, _startY + col + 0, level + 0};
 
-					glm::vec3 p4 = {_startX + row + 0, _startY + col + 1, level + 1};
-					glm::vec3 p5 = {_startX + row + 1, _startY + col + 1, level + 1};
+					glm::vec3 p4 = {_startX + row + 0, _startY + col + 1, level + zSize};
+					glm::vec3 p5 = {_startX + row + 1, _startY + col + 1, level + zSize};
 					glm::vec3 p6 = {_startX + row + 0, _startY + col + 1, level + 0};
 					glm::vec3 p7 = {_startX + row + 1, _startY + col + 1, level + 0};
 
 					if (block_type == blocks::OAK_SLAB) {
-						block_type = blocks::OAK_PLANKS;
-					}
-					if (block_type < blocks::POPPY) {
+						int tex_block = blocks::OAK_PLANKS;
+						if (visible_face(block_type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)) {
+							int spec = blockGridX(tex_block, 0) + (blockGridY(tex_block) << 4) + (3 << 19);
+							int faceLight = computeLight(row - 1, col, level);
+							int shade = 0;//computeShade(row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
+							spec += (faceLight << 24);
+							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p4};
+							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p0};
+							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p6};
+							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+						if (visible_face(block_type, getBlockAt(row + 1, col, level, true), face_dir::PLUSX)) {
+							int spec = blockGridX(tex_block, 0) + (blockGridY(tex_block) << 4) + (4 << 19);
+							int faceLight = computeLight(row + 1, col, level);
+							int shade = 0;//computeShade(row + 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
+							spec += (faceLight << 24);
+							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p1};
+							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p5};
+							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p3};
+							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+						if (visible_face(block_type, getBlockAt(row, col - 1, level, true), face_dir::MINUSY)) {
+							int spec = blockGridX(tex_block, 0) + (blockGridY(tex_block) << 4) + (1 << 19);
+							int faceLight = computeLight(row, col - 1, level);
+							int shade = 0;//computeShade(row, col - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
+							spec += (faceLight << 24);
+							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p0};
+							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p1};
+							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p2};
+							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+						if (visible_face(block_type, getBlockAt(row, col + 1, level, true), face_dir::PLUSY)) {
+							int spec = blockGridX(tex_block, 0) + (blockGridY(tex_block) << 4) + (2 << 19);
+							int faceLight = computeLight(row, col + 1, level);
+							int shade = 0;//computeShade(row, col + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
+							spec += (faceLight << 24);
+							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p5};
+							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p4};
+							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p7};
+							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+						if (visible_face(block_type, getBlockAt(row, col, level + 1, true), face_dir::PLUSZ)) {
+							int spec = blockGridX(tex_block, 1) + (blockGridY(tex_block) << 4) + (0 << 19);
+							int faceLight = computeLight(row, col, level + 1);
+							int shade = 0;//computeShade(row, col, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+							spec += (faceLight << 24);
+							// if (shade & 0xFF)std::cout << "shade is " << shade << std::endl;
+							// if (shade & 0xFFFFFF00)std::cout << "problem" << std::endl;
+							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p4};
+							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p5};
+							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p0};
+							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p1};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+						if (visible_face(block_type, getBlockAt(row, col, level - 1, true), face_dir::MINUSZ)) {
+							int spec = blockGridX(tex_block, 1) + (blockGridY(tex_block) << 4) + (5 << 19);
+							int faceLight = computeLight(row, col, level - 1);
+							int shade = 0;//computeShade(row, col, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+							spec += (faceLight << 24);
+							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p2};
+							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p3};
+							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p6};
+							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
+							face_vertices(_vertices, v0, v1, v2, v3, index);
+						}
+					} else if (block_type < blocks::POPPY) {
 						int orientation = -1, litFurnace = 0;
 						if (block_type >= blocks::CRAFTING_TABLE && block_type < blocks::BEDROCK) {
 							auto o = _orientations.find((((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level);
@@ -179,9 +247,7 @@ void Chunk::fill_vertex_array( void )
 								litFurnace = ((o->second >> 4) & 0xF) == furnace_state::ON;
 							}
 						}
-						bool isNotGlass = (block_type != blocks::GLASS);
-						bool isNotLeaves = (block_type != blocks::OAK_LEAVES) && isNotGlass;
-						if (!air_flower(getBlockAt(row - 1, col, level, true), true, true, false)) {
+						if (visible_face(block_type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)) {
 							int spec = blockGridX(block_type, 2 * (orientation == face_dir::MINUSX) + litFurnace) + (blockGridY(block_type) << 4) + (3 << 19);
 							int faceLight = computeLight(row - 1, col, level);
 							int shade = computeShade(row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
@@ -195,7 +261,7 @@ void Chunk::fill_vertex_array( void )
 							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
-						if (!air_flower(getBlockAt(row + 1, col, level, true), isNotLeaves, isNotGlass, false)) {
+						if (visible_face(block_type, getBlockAt(row + 1, col, level, true), face_dir::PLUSX)) {
 							int spec = blockGridX(block_type, 2 * (orientation == face_dir::PLUSX) + litFurnace) + (blockGridY(block_type) << 4) + (4 << 19);
 							int faceLight = computeLight(row + 1, col, level);
 							int shade = computeShade(row + 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
@@ -209,7 +275,7 @@ void Chunk::fill_vertex_array( void )
 							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
-						if (!air_flower(getBlockAt(row, col - 1, level, true), true, true, false)) {
+						if (visible_face(block_type, getBlockAt(row, col - 1, level, true), face_dir::MINUSY)) {
 							int spec = blockGridX(block_type, 2 * (orientation == face_dir::MINUSY) + litFurnace) + (blockGridY(block_type) << 4) + (1 << 19);
 							int faceLight = computeLight(row, col - 1, level);
 							int shade = computeShade(row, col - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
@@ -223,7 +289,7 @@ void Chunk::fill_vertex_array( void )
 							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
-						if (!air_flower(getBlockAt(row, col + 1, level, true), isNotLeaves, isNotGlass, false)) {
+						if (visible_face(block_type, getBlockAt(row, col + 1, level, true), face_dir::PLUSY)) {
 							int spec = blockGridX(block_type, 2 * (orientation == face_dir::PLUSY) + litFurnace) + (blockGridY(block_type) << 4) + (2 << 19);
 							int faceLight = computeLight(row, col + 1, level);
 							int shade = computeShade(row, col + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
@@ -237,7 +303,7 @@ void Chunk::fill_vertex_array( void )
 							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
-						if (!air_flower(getBlockAt(row, col, level + 1, true), isNotLeaves, isNotGlass, false)) {
+						if (visible_face(block_type, getBlockAt(row, col, level + 1, true), face_dir::PLUSZ)) {
 							int spec = blockGridX(block_type, 1) + (blockGridY(block_type) << 4) + (0 << 19);
 							int faceLight = computeLight(row, col, level + 1);
 							int shade = computeShade(row, col, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
@@ -253,7 +319,7 @@ void Chunk::fill_vertex_array( void )
 							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p1};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
-						if (!air_flower(getBlockAt(row, col, level - 1, true), true, true, false)) {
+						if (visible_face(block_type, getBlockAt(row, col, level - 1, true), face_dir::MINUSZ)) {
 							int spec = blockGridX(block_type, 1 + (block_type == blocks::GRASS_BLOCK)) + (blockGridY(block_type) << 4) + (5 << 19);
 							int faceLight = computeLight(row, col, level - 1);
 							int shade = computeShade(row, col, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
@@ -379,7 +445,11 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 				_neighbours[face_dir::PLUSY]->light_try_spread(posX, 0, posZ, level, skySpread);
 			}
 		}
-	} else if (!air_flower(_blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ], true, true, false)) {
+	} else {
+		int value = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ];
+		if (air_flower(value, true, true, false) && value != blocks::OAK_SLAB) {
+			return ;
+		}
 		short neighbour = (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] >> (8 * skySpread));
 		if ((!(neighbour & 0xF0) || (skySpread && !(level & 0xF0))) && ((neighbour & 0xF) != maxs(0, (level & 0xF) - 1))) { // only spread to non source blocks whose value is not expected value. Also spread to source block if from non source block and skySpread
 			light_spread(posX, posY, posZ, skySpread);

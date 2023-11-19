@@ -1,9 +1,9 @@
 #include "vox.h"
 
 Camera::Camera( glm::vec3 position )
-	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_speed(0), _isRunning(false), _healthUpdate(false),
-	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(SPEED), _health_points(20),
-	_inJump(false), _touchGround(false), _fall_immunity(true), _fall_distance(0)
+	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0), _isRunning(false), _healthUpdate(false),
+	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20),
+	_inJump(false), _touchGround(false), _fall_immunity(true), _z0(position.z)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -207,36 +207,31 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h )
 	_mtx.unlock();
 }
 
+// z = z0 + vt + at² / 2
 void Camera::applyGravity( void )
 {
 	// std::cout << "Gravity applied" << std::endl;
 	_fall_time += _deltaTime;
-	if (_inJump) {
-		if (INITIAL_JUMP + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time < FALL_SPEED) {
-			_fall_speed = INITIAL_JUMP + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time;
-		}
-	} else if (INITIAL_FALL + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time < FALL_SPEED) {
-		_fall_speed = INITIAL_FALL + STANDARD_GRAVITY * PLAYER_MASS * _fall_time * _fall_time;
-	}
+	float initial_speed = ((_inJump) ? INITIAL_JUMP : INITIAL_FALL);
 
 	_mtx.lock();
-	_position.z -= _deltaTime * _fall_speed;
+	_position.z = _z0 + initial_speed * _fall_time + 3 * STANDARD_GRAVITY * _fall_time * _fall_time * 0.5f; // TODO this '3' is a bit random ...
 	_mtx.unlock();
-	_fall_distance += _deltaTime * _fall_speed;
 }
 
 void Camera::touchGround( void )
 {
-	// std::cout << "TOUCH GROUND AT " << _fall_speed << std::endl;
-	if (_inJump && _fall_speed < 0) {
-		return ;
-	}
+	_fall_distance = _z0 - _position.z;
+	// std::cout << "TOUCH GROUND AT " << _fall_distance << std::endl;
+	// if (_inJump && _fall_distance < 0) {
+	// 	return ;
+	// }
 	if (!_touchGround) {
 		_update = true;
 	}
 	if (_fall_immunity) {
 		_fall_immunity = false;
-	} else {
+	} else if (!_waterFeet) { // TODO call this function AFTER setting waterFeet
 		_healthUpdate = (glm::max(0.0f, _fall_distance - 3) != 0);
 		_health_points -= glm::max(0.0f, _fall_distance - 3);
 		if (_health_points < 0) {
@@ -245,6 +240,7 @@ void Camera::touchGround( void )
 	}
 	_fall_time = 0;
 	_fall_distance = 0;
+	_z0 = _position.z;
 	_touchGround = true;
 	_inJump = false;
 }
@@ -332,7 +328,7 @@ std::string Camera::getCamString( bool game_mode )
 			+ ((_current_chunk_ptr) 
 				? "\nSky Light\t> " + std::to_string(_current_chunk_ptr->getSkyLightLevel(_current_block))
 					+ "\nBlock Light\t> " + std::to_string(_current_chunk_ptr->getBlockLightLevel(_current_block)) : "")
-			+ "\nFall\t> " + std::to_string(_fall_speed)
+			+ "\nFall Time\t> " + std::to_string(_fall_time)
 			+ "\nFall Distance\t> " + std::to_string(_fall_distance)
 			+ "\nWater head\t> " + ((_waterHead) ? strtrue : strfalse)
 			+ ((_breathTime > 0) ? " - " + std::to_string(_breathTime) + ": " + std::to_string(getWaterStatus()) : "")
@@ -348,13 +344,13 @@ void Camera::respawn( void )
 {
 	_fall_time = 0;
 	_breathTime = 0;
-	_fall_speed = 0;
+	_z0 = 66.0f;
 	_isRunning = false;
 	_healthUpdate = true;
 	_waterHead = false;
 	_waterFeet = false;
 	_current_chunk_ptr = NULL;
-	_movement_speed = SPEED;
+	_movement_speed = FLY_SPEED;
 	_health_points = 20;
 	_inJump = false;
 	_touchGround = false;

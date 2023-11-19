@@ -30,7 +30,7 @@ TODOS:
 	- hitbox change + no fall on sneak
     - skybox
 	- particles ?
-	- slabs + stairs
+	- stairs
 	- chests
 	- doors
 	- wheat + bread
@@ -52,6 +52,7 @@ IN PROGRES:
             - speed
         - quit
     - biomes
+	- slabs
 	- save entities
 
 DONE:

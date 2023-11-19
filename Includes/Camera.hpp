@@ -11,24 +11,21 @@ enum Camera_Movement {
 	X_AXIS,
 	Y_AXIS
 };
-	// _cam_angles = glm::vec2(225.0f, -37.0f);
+
 # define YAW          90.0f
 # define PITCH        0.0f
 # define REACH		  4.5f
-# define SPEED        20
-# define WALK_SPEED   4.317
-# define RUN_SPEED    5.612
-# define RUN_JUMP_SPEED 7.127
+# define FLY_SPEED    20
+# define WALK_SPEED   4.317f
+# define RUN_SPEED    5.612f
+# define RUN_JUMP_SPEED 7.127f
 # define EYE_LEVEL    0.62f
-# define INITIAL_JUMP -9.317f
-# define INITIAL_FALL 6.605f
-# define STANDARD_GRAVITY 9.81f
-# define PLAYER_MASS 10
-# define FALL_SPEED   77.71f
+# define INITIAL_JUMP 9.317f
+# define INITIAL_FALL -6.605f
+# define STANDARD_GRAVITY -9.81f
+// # define PLAYER_MASS 10
+// # define FALL_SPEED   77.71f
 # define FOV          70.0f // if fov = -fov, world is upside down
-
-// void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
-// void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
 
 class Camera
 {
@@ -36,10 +33,9 @@ class Camera
 		glm::vec3 _position, _front, _up, _right, _world_up;
 		glm::vec2 _front2, _right2;
 		float _yaw, _pitch;
-		// double _mouse_sensitivity;
 		float _deltaTime, _fall_time, _breathTime;
 		float _fov, _fov_offset;
-		float _fall_speed;
+		float _fall_distance;
 		bool _isRunning, _healthUpdate, _waterHead, _waterFeet;
 		std::mutex _mtx;
 		Chunk *_current_chunk_ptr;
@@ -50,7 +46,7 @@ class Camera
 		glm::ivec3 _current_block;
 		int _movement_speed, _health_points;
 		bool _update, _fovUpdate, _inJump, _touchGround, _fall_immunity;
-		float _fall_distance;
+		float _z0;
 
 		Camera( glm::vec3 position );
 		~Camera( void );

@@ -329,6 +329,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	if ((glfwGetKey(_window, GLFW_KEY_G) == GLFW_PRESS) && ++_key_g == 1) {
 		_game_mode = !_game_mode;
 		_camera->_fall_immunity = true;
+		_camera->_z0 = _camera->getPos().z;
 	} else if (glfwGetKey(_window, GLFW_KEY_G) == GLFW_RELEASE) {
 		_key_g = 0;
 	}

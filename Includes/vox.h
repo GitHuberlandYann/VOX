@@ -27,6 +27,15 @@ typedef struct {
 	int height;
 }				t_tex;
 
+enum face_dir {
+	MINUSY,
+	PLUSY,
+	MINUSX,
+	PLUSX,
+	MINUSZ,
+	PLUSZ
+};
+
 extern std::mutex mtx;
 extern std::mutex mtx_perimeter;
 extern std::mutex mtx_deleted_chunks;

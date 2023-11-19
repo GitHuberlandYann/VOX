@@ -18,15 +18,6 @@ enum cont {
 	CONT_FAR_INLAND
 };
 
-enum face_dir {
-	MINUSY,
-	PLUSY,
-	MINUSX,
-	PLUSX,
-	MINUSZ,
-	PLUSZ
-};
-
 const GLint adj_blocks[6][3] = {
 	{0, -1, 0}, {0, 1, 0}, {-1, 0, 0}, {1, 0, 0}, {0, 0, -1}, {0, 0, 1}
 };
@@ -84,7 +75,7 @@ class Chunk
 		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
-		GLint face_count( int type, int row, int col, int level, bool isNotLeaves );
+		GLint face_count( int type, int row, int col, int level );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves, bool isNotGlass );
 	
 		int exposed_water_faces( int row, int col, int level );

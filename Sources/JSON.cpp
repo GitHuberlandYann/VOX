@@ -289,6 +289,7 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			_position.y = std::stof(&line[index + 2]);
 			for (index = index + 2; line[index] && line[index] != ':'; index++);
 			_position.z = std::stof(&line[index + 2]);
+			_z0 = _position.z;
 			ofs << "camera pos set to " << _position.x << ", " << _position.y << ", " << _position.z << std::endl;
 			_mtx.unlock();
 		} else if (!line.compare(0, 7, "\"yaw\": ")) {

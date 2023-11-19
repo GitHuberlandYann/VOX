@@ -78,6 +78,7 @@ struct Block {
 		bool isComposant = false;
 		int getProduction = blocks::AIR;
 		bool hasHitbox = false;
+		bool collisionHitbox = true;
 		glm::vec3 hitboxCenter = {0, 0, 0};
 		glm::vec3 hitboxHalfSize = {0, 0, 0};
 		bool byHand = false;
@@ -113,6 +114,7 @@ struct Air : Block {
 	public:
 		Air() {
 			name = "AIR";
+			collisionHitbox = false;
 		}
 };
 
@@ -162,6 +164,7 @@ struct Cactus : Block {
 		Cactus() {
 			name = "CACTUS";
 			mined = blocks::CACTUS;
+			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.6f;
 		}
@@ -477,6 +480,7 @@ struct OakSlab : Block {
 			name = "OAK_SLAB";
 			mined = blocks::OAK_SLAB;
 			hasHitbox = true;
+			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
 			isFuel = true;
@@ -497,6 +501,7 @@ struct Poppy : Block {
 			name = "POPPY";
 			mined = blocks::POPPY;
 			hasHitbox = true;
+			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -510,6 +515,7 @@ struct Dandelion : Block {
 			name = "DANDELION";
 			mined = blocks::DANDELION;
 			hasHitbox = true;
+			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -523,6 +529,7 @@ struct BlueOrchid : Block {
 			name = "BLUE_ORCHID";
 			mined = blocks::BLUE_ORCHID;
 			hasHitbox = true;
+			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -536,6 +543,7 @@ struct Allium : Block {
 			name = "ALLIUM";
 			mined = blocks::ALLIUM;
 			hasHitbox = true;
+			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -549,6 +557,7 @@ struct CornFlower : Block {
 			name = "CORNFLOWER";
 			mined = blocks::CORNFLOWER;
 			hasHitbox = true;
+			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -562,6 +571,7 @@ struct PinkTulip : Block {
 			name = "PINK_TULIP";
 			mined = blocks::PINK_TULIP;
 			hasHitbox = true;
+			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -573,6 +583,7 @@ struct Grass : Block {
 	public:
 		Grass() {
 			name = "GRASS";
+			collisionHitbox = false;
 			byHand = false;
 			break_time_hand = 0.05f;
 		}
@@ -583,6 +594,7 @@ struct SugarCane : Block {
 		SugarCane() {
 			name = "SUGAR_CANE";
 			mined = blocks::SUGAR_CANE;
+			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.2f;
 		}
@@ -594,6 +606,7 @@ struct DeadBush : Block {
 			name = "DEAD_BUSH";
 			mined = blocks::STICK;
 			hasHitbox = true;
+			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			isFuel = true;
@@ -609,6 +622,7 @@ struct Torch : Block {
 			name = "TORCH";
 			mined = blocks::TORCH;
 			hasHitbox = true;
+			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 5 / 16.0f};
 			hitboxHalfSize = {1 / 16.0f, 1 / 16.0f, 5 / 16.0f};
 			light_level = 14;
@@ -622,6 +636,7 @@ struct Water : Block {
 		Water() {
 			name = "WATER";
 			mined = blocks::WATER_BUCKET;
+			collisionHitbox = false;
 		}
 };
 
@@ -629,6 +644,7 @@ struct Water1 : Block {
 	public:
 		Water1() {
 			name = "WATER 1";
+			collisionHitbox = false;
 		}
 };
 
@@ -636,6 +652,7 @@ struct Water2 : Block {
 	public:
 		Water2() {
 			name = "WATER 2";
+			collisionHitbox = false;
 		}
 };
 
@@ -643,6 +660,7 @@ struct Water3 : Block {
 	public:
 		Water3() {
 			name = "WATER 3";
+			collisionHitbox = false;
 		}
 };
 
@@ -650,6 +668,7 @@ struct Water4 : Block {
 	public:
 		Water4() {
 			name = "WATER 4";
+			collisionHitbox = false;
 		}
 };
 
@@ -657,6 +676,7 @@ struct Water5 : Block {
 	public:
 		Water5() {
 			name = "WATER 5";
+			collisionHitbox = false;
 		}
 };
 
@@ -664,6 +684,7 @@ struct Water6 : Block {
 	public:
 		Water6() {
 			name = "WATER 6";
+			collisionHitbox = false;
 		}
 };
 
@@ -671,6 +692,7 @@ struct Water7 : Block {
 	public:
 		Water7() {
 			name = "WATER 7";
+			collisionHitbox = false;
 		}
 };
 

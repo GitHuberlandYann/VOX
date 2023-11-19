@@ -177,6 +177,35 @@ int air_flower( int value, bool air_leaves, bool air_glass, bool air_water )
 	return (value);
 }
 
+/**
+ * @brief checks if a specific face should be drawn by using neighbour
+ * @param value  value of block being drawn
+ * @param next   value of neighbouring block
+ * @param dir    dir from value to next
+ * @return bool face_should_be_drawn
+ */
+bool visible_face( int value, int next, face_dir dir )
+{
+	if (next == blocks::AIR || next >= blocks::POPPY || next == blocks::CACTUS
+		|| (value != blocks::GLASS && (next + (next < 0) * blocks::NOTVISIBLE) == blocks::GLASS)) {
+		return (true);
+	}
+	if (value == blocks::OAK_LEAVES
+		&& (next + (next < 0) * blocks::NOTVISIBLE) == blocks::OAK_LEAVES
+		&& (dir == face_dir::PLUSX || dir == face_dir::PLUSY || dir == face_dir::PLUSZ)) {
+		return (true);
+	}
+	if (next == blocks::OAK_SLAB) {
+		if (dir == face_dir::PLUSZ) {
+			return (value == blocks::OAK_SLAB);
+		} else if (dir == face_dir::MINUSZ) {
+			return (true);
+		}
+		return (value != blocks::OAK_SLAB);
+	}
+	return (false);
+}
+
 bool isSandOrGravel( int type )
 {
 	type += blocks::NOTVISIBLE * (type < blocks::AIR);
