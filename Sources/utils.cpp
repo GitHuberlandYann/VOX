@@ -166,6 +166,7 @@ std::string doubleDigits( int nb )
    * if air_water, water is NOT considered as air (I know this is dumb)*/
 int air_flower( int value, bool air_leaves, bool air_glass, bool air_water )
 {
+	value &= 0xFF;
 	if (air_water && value >= blocks::WATER) {
 		return (value);
 	}
@@ -186,6 +187,8 @@ int air_flower( int value, bool air_leaves, bool air_glass, bool air_water )
  */
 bool visible_face( int value, int next, face_dir dir )
 {
+	value &= 0xFF;
+	next &= 0xFF;
 	if (next == blocks::AIR || next >= blocks::POPPY || next == blocks::CACTUS
 		|| (value != blocks::GLASS && (next + (next < 0) * blocks::NOTVISIBLE) == blocks::GLASS)) {
 		return (true);
@@ -578,7 +581,7 @@ std::vector<glm::ivec3> voxel_traversal( glm::vec3 ray_start, glm::vec3 ray_end 
 static glm::vec3 line_plane_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 p0, glm::vec3 cross ) {
 	float determinant = -glm::dot(camDir, cross);
 	if (!determinant) { // div zero -> line parallel to plane -> no intersection
-		return {0, 0, -1};
+		return {FLT_MIN, FLT_MIN, FLT_MIN};
 	}
 	float t = glm::dot(cross, camPos - p0) / determinant;
 	return {camPos.x + camDir.x * t, camPos.y + camDir.y * t, camPos.z + camDir.z * t};
@@ -591,9 +594,6 @@ static bool line_rectangle_intersection( glm::vec3 camPos, glm::vec3 camDir, glm
 		res = line_plane_intersection(camPos, camDir, p0, glm::cross(glm::vec3(size.x, size.y, 0), glm::vec3(0, 0, size.z)));
 	} else {
 		res = line_plane_intersection(camPos, camDir, p0, glm::cross(glm::vec3(size.x, 0, 0), glm::vec3(0, size.y, 0)));
-	}
-	if (!res.z) {
-		return (false);
 	}
 	return (res.x >= p0.x && res.x <= p0.x + size.x
 			&& res.y >= p0.y && res.y <= p0.y + size.y

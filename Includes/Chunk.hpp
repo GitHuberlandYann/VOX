@@ -44,8 +44,7 @@ const GLint oak_normal[61][3] = {
 	{0, 1, 1}
 };
 
-struct s_backup {
-	std::map<int, int> orientations;
+struct s_backup { // TODO add fluids to backups
 	std::map<int, int> added;
 	std::set<int> removed;
 	std::map<int, FurnaceInstance> furnaces;
@@ -67,8 +66,8 @@ class Chunk
 		std::array<Chunk *, 4> _neighbours;
 		Camera *_camera;
 		Inventory *_inventory;
-		std::map<int,int> _orientations, _added;
-		std::set<int> _removed, _fluids; // TODO add fluids to backups
+		std::map<int,int> _added;
+		std::set<int> _removed, _fluids;
 		std::map<int, FurnaceInstance> _furnaces;
 		std::vector<Entity> _entities;
 		std::thread _thread;

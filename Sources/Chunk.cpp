@@ -100,6 +100,7 @@ void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int & blob_
 
 GLint Chunk::face_count( int type, int row, int col, int level )
 {
+	type &= 0xFF;
 	if (!type || type >= blocks::WATER) {
 		std::cerr << "face_count ERROR counting " << s_blocks[type].name << std::endl;
 		return (0);
@@ -420,26 +421,26 @@ void Chunk::resetDisplayedFaces( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				int offset = (((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level;
-				GLint value = _blocks[offset];
+				GLint value = _blocks[offset], type = value & 0xFF;
 				bool restore = false;
-				if (value < blocks::AIR && (!row || !col || row == CHUNK_SIZE - 1 || col == CHUNK_SIZE - 1)) {
-					value += blocks::NOTVISIBLE;
+				if (value & blocks::NOTVISIBLE && (!row || !col || row == CHUNK_SIZE - 1 || col == CHUNK_SIZE - 1)) {
+					value -= blocks::NOTVISIBLE;
 					restore = true;
 				}
-				if (value > blocks::AIR && value < blocks::WATER) {
-					GLint below = ((level) ? _blocks[offset - 1] : 0);
-					if (!air_flower(value, false, false, true) && value != blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
+				if (type > blocks::AIR && type < blocks::WATER) {
+					GLint below = ((level) ? _blocks[offset - 1] : 0) & 0xFF;
+					if (!air_flower(type, false, false, true) && type != blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
 						_blocks[offset] = blocks::AIR;
 					} else {
-						GLint count = face_count(value, row, col, level);
+						GLint count = face_count(type, row, col, level);
 						if (count) {
 							// std::cout << "count is " << count << std::endl;
 							_displayed_faces += count;
 							if (restore) {
 								_blocks[offset] = value;
 							}
-						} else if (value > blocks::AIR) { // hide block
-							_blocks[offset] = value - blocks::NOTVISIBLE;
+						} else if (type > blocks::AIR) { // hide block
+							_blocks[offset] = value + blocks::NOTVISIBLE;
 						}
 					}
 				}
@@ -475,8 +476,8 @@ void Chunk::generate_sky( void )
 int Chunk::sand_fall_endz( glm::ivec3 pos )
 {
 	for (int level = pos.z - 1; level > 0; level--) {
-		int value = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + level];
-		if (value != blocks::AIR && value < blocks::WATER) {
+		int type = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + level] & 0xFF;
+		if (type != blocks::AIR && type < blocks::WATER && type != blocks::TORCH) {
 			return (level + 1);
 		}
 	}
@@ -505,13 +506,10 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
-	int value = _blocks[offset]; // TODO better handling of invis block gets deleted
-	if (value >= blocks::CRAFTING_TABLE && value < blocks::BEDROCK) { // oriented blocks
-		_orientations.erase(offset);
-	}
+	int value = _blocks[offset], type = value & 0xFF; // TODO better handling of invis block gets deleted
 	_added.erase(offset);
 	_removed.insert(offset);
-	if (value == blocks::FURNACE) {
+	if (type == blocks::FURNACE) {
 		auto search = _furnaces.find(offset); // drop furnace's items
 		if (search != _furnaces.end()) {
 			glm::ivec2 items = search->second.getComposant();
@@ -531,19 +529,19 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	}
 	if (useInventory) {
 		mtx_inventory.lock();
-		(value == blocks::WATER)
-			? _inventory->addBlock(value)
-			: _entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), false, s_blocks[value + (value < 0) * blocks::NOTVISIBLE].mined));
+		(type == blocks::WATER)
+			? _inventory->addBlock(type)
+			: _entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), false, s_blocks[type].mined));
 		mtx_inventory.unlock();
 	}
 	int endZ = -1;
-	int block_above = _blocks[offset + 1];
-	if (pos.z < 255 && isSandOrGravel(block_above)) { // sand falls if block underneath deleted
+	int type_above = _blocks[offset + 1];
+	if (pos.z < 255 && isSandOrGravel(type_above)) { // sand falls if block underneath deleted
 		_blocks[offset] = blocks::AIR;
 		endZ = sand_fall_endz(pos);
-		int above_value = (block_above == blocks::SAND || block_above + blocks::NOTVISIBLE == blocks::SAND) ? blocks::SAND : blocks::GRAVEL;
+		int above_value = (type_above == blocks::SAND || type_above - blocks::NOTVISIBLE == blocks::SAND) ? blocks::SAND : blocks::GRAVEL;
 		if (endZ == pos.z) {
-			_blocks[offset] = above_value - (value < 0) * blocks::NOTVISIBLE;
+			_blocks[offset] = above_value + (value & blocks::NOTVISIBLE);
 			return (remove_block(false, {pos.x, pos.y, pos.z + 1}));
 		}
 		_blocks[offset] = value; // putting it back temporarily to avoid segfault in neighbour on addblock
@@ -551,22 +549,22 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		_blocks[offset] = blocks::AIR;
 	}
 	_blocks[offset] = blocks::AIR;
-	if (value == blocks::GLASS) { // TODO check neighbours and spread water
+	if (type == blocks::GLASS) { // TODO check neighbours and spread water
 		return ;
-	} else if (value > blocks::AIR && value < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
-		_displayed_faces -= face_count(value, pos.x, pos.y, pos.z);
-		if (value == blocks::TORCH) {
+	} else if (type > blocks::AIR && type < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
+		_displayed_faces -= face_count(type, pos.x, pos.y, pos.z);
+		if (type == blocks::TORCH) {
 			std::cout << "rm light" << std::endl;
 			_lights[offset] &= 0xFF00;
 			light_spread(pos.x, pos.y, pos.z, false); // spread block light
 			std::cout << "over" << std::endl;
 		}
-	} else if (value == blocks::WATER) { // use bucket on water source
+	} else if (type == blocks::WATER) { // use bucket on water source
 		// std::cout << "bucket on water" << std::endl;
 		_fluids.insert(offset);
 		return ;
 	}
-	if (air_flower(value, false, false, true)) {
+	if (air_flower(type, false, false, true)) {
 		light_spread(pos.x, pos.y, pos.z, true); // spread sky light
 		light_spread(pos.x, pos.y, pos.z, false); // spread block light
 		for (int index = 0; index < 6; index++) {
@@ -576,8 +574,8 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			} else {
 				int adj_offset = ((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2];
 				int adj = _blocks[adj_offset];
-				if (adj < blocks::AIR) {
-					_blocks[adj_offset] += blocks::NOTVISIBLE;
+				if (adj & blocks::NOTVISIBLE) {
+					_blocks[adj_offset] = adj - blocks::NOTVISIBLE;
 					_displayed_faces++;
 				} else if (air_flower(adj, false, false, false)) {
 					_displayed_faces++;
@@ -590,8 +588,8 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	handle_border_block(pos, air_flower(value, true, false, true), false); // if block at border of chunk gets deleted, we update neighbours. doing it after light spread
 	if (endZ != -1) { // sand fall
 		remove_block(false, {pos.x, pos.y, pos.z + 1});
-	} else if (pos.z < 255 && ((block_above >= blocks::POPPY && block_above < blocks::WATER) || block_above == blocks::CACTUS)) { // del flower if block underneath deleted
-		(block_above == blocks::GRASS)
+	} else if (pos.z < 255 && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS)) { // del flower if block underneath deleted
+		(type_above == blocks::GRASS)
 			? remove_block(false, {pos.x, pos.y, pos.z + 1}) // if grass above breaked block, don't collect it
 			: remove_block(useInventory, {pos.x, pos.y, pos.z + 1});
 	}
@@ -605,9 +603,15 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		pos.z = sand_fall_endz(pos);
 		previous = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z];
-		// if (previous == blocks::TORCH) { // TODO implement sand/gravel breaking into entity
-		// 	return ;
-		// }
+		if (previous == blocks::TORCH) {
+			if (useInventory) {
+				mtx_inventory.lock();
+				_inventory->removeBlock(false);
+				mtx_inventory.unlock();
+			}
+			_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), false, s_blocks[type].mined));
+			return ;
+		}
 	}
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	if (type == blocks::WATER) { // we place water
@@ -633,17 +637,17 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		mtx_inventory.unlock();
 	}
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
-		_orientations[offset] = _camera->getOrientation() + (furnace_state::OFF << 4);
+		type += (_camera->getOrientation() << 9);
 	}
 	_blocks[offset] = type;
 	_removed.erase(offset);
-	_added[offset] = type;
+	_added[offset] = type; // TODO once orientation is in _blocks, give it to _added too
 	if (type == blocks::WATER) {
 		_fluids.insert(offset);
 		// std::cout << "adding water" << std::endl;
 		return ;
 	}
-	if (type == blocks::FURNACE) {
+	if ((type & 0xFF) == blocks::FURNACE) {
 		_furnaces[offset] = FurnaceInstance();
 	} else if (type == blocks::TORCH) {
 		std::cout << "add light" << std::endl;
@@ -666,8 +670,8 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
 
 		} else {
-			GLint value = _blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]];
-			if (air_flower(value, true, true, false)) {
+			GLint adj = _blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] & 0xFF;
+			if (air_flower(adj, true, true, false)) {
 				_displayed_faces--;
 			} else {
 				if (index != face_dir::PLUSZ) {
@@ -675,9 +679,9 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 				}
 				light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 0, false);
 			}
-			if (value > blocks::AIR && value < blocks::WATER && !face_count(value, pos.x + delta[0], pos.y + delta[1], pos.z + delta[2])) {
+			if (adj > blocks::AIR && adj < blocks::WATER && !face_count(adj, pos.x + delta[0], pos.y + delta[1], pos.z + delta[2])) {
 				// was exposed before, but isn't anymore
-				_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] -= blocks::NOTVISIBLE;
+				_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] += blocks::NOTVISIBLE;
 			}
 		}
 	}
@@ -816,16 +820,15 @@ void Chunk::setNeighbour( Chunk *neighbour, face_dir index )
 
 void Chunk::setBackup( std::map<std::pair<int, int>, s_backup> &backups )
 {
-	if (_orientations.size() || _added.size() || _removed.size()) {
+	if (_added.size() || _removed.size()) {
 		mtx_backup.lock();
-		backups[std::pair<int, int>(_startX, _startY)] = {_orientations, _added, _removed, _furnaces};
+		backups[std::pair<int, int>(_startX, _startY)] = {_added, _removed, _furnaces};
 		mtx_backup.unlock();
 	}
 }
 
 void Chunk::restoreBackup( s_backup backup )
 {
-	_orientations = backup.orientations;
 	_added = backup.added;
 	_removed = backup.removed;
 	_furnaces = backup.furnaces;
@@ -838,7 +841,7 @@ FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
 	if (search != _furnaces.end()) {
 		return (&search->second);
 	}
-	std::cout << "failed to find furnace at " << key << " from " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+	std::cout << _startX << ", " << _startY << " failed to find furnace at " << key << " from " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	std::cout << "furnaces values are " << std::endl;
 	for (auto& fur: _furnaces) {
 		std::cout << fur.first << std::endl;
@@ -964,23 +967,23 @@ void Chunk::checkFillVertices( void )
 
 void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, bool adding )
 {
-	int value = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z];
+	int previous_type = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z] & 0xFF;
 	if (!adding) {
-		if (value == blocks::AIR || value == blocks::BEDROCK || value + blocks::NOTVISIBLE == blocks::BEDROCK) { // can't rm bedrock
+		if (previous_type == blocks::AIR || previous_type == blocks::BEDROCK) { // can't rm bedrock
 			return ;
 		}
 		remove_block(useInventory, pos);
 	} else {
-		if ((value != blocks::AIR && value < blocks::WATER) || type == blocks::AIR) { // can't replace block
+		if ((previous_type != blocks::AIR && previous_type < blocks::WATER) || type == blocks::AIR) { // can't replace block
 			return ;
 		}
-		add_block(useInventory, pos, type, value);
+		add_block(useInventory, pos, type, previous_type);
 	}
 	if (type == blocks::WATER || type == blocks::BUCKET) {
 		// std::cout << "modif to water with " << ((type == blocks::WATER) ? "water" : "bucket") << std::endl;
 		// std::cout << "water count before " << waterSave << ", after " << _water_count << std::endl;
 		return ;
-	} else if (type == blocks::GLASS || value == blocks::GLASS) {
+	} else if (type == blocks::GLASS || previous_type == blocks::GLASS) {
 		sort_water(_camera->getPos(), true);
 		return ;
 	}
@@ -1138,17 +1141,14 @@ int Chunk::isHit( glm::ivec3 pos, bool waterIsBlock )
 	if (_thread.joinable()) {
 		_thread.join();
 	}
-	int value = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z];
+	int type = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z] & 0xFF;
 	if (waterIsBlock) {
-		return (value == blocks::WATER);
+		return (type == blocks::WATER);
 	}
-	if (value >= blocks::WATER) {
+	if (type >= blocks::WATER) {
 		return (blocks::AIR);
 	}
-	if (value < blocks::AIR) {
-		value += blocks::NOTVISIBLE;
-	}
-	return (value);
+	return (type);
 }
 
 static void thread_modif_block( Chunk *current, bool useInventory, int type, glm::ivec3 pos, bool adding )
@@ -1184,7 +1184,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 		_thread.join();
 	}
 	int value = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z];
-	if (value <= 0) {
+	if (value == blocks::AIR || value & blocks::NOTVISIBLE) {
 		return ;
 	}
 	glm::ivec3 p0 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 1};
@@ -1293,11 +1293,11 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 		}
 		_displayed_faces--;
 		if (!face_count(value, posX, posY, level)) { // block no more visible
-			_blocks[offset] -= blocks::NOTVISIBLE;
+			_blocks[offset] += blocks::NOTVISIBLE;
 		}
 	} else {
-		if (_blocks[offset] < blocks::AIR) {
-			_blocks[offset] += blocks::NOTVISIBLE;
+		if (_blocks[offset] & blocks::NOTVISIBLE) {
+			_blocks[offset] -= blocks::NOTVISIBLE;
 		}
 		if (_blocks[offset] >= blocks::WATER) {
 			_hasWater = true;
@@ -1328,24 +1328,24 @@ int Chunk::computePosLight( glm::vec3 pos )
 bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 {
 	glm::ivec3 top0 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height));
-	if (s_blocks[getBlockAt(top0.x, top0.y, top0.z, true)].collisionHitbox) {
+	if (s_blocks[getBlockAt(top0.x, top0.y, top0.z, true) & 0xFF].collisionHitbox) {
 		return (true);
 	}
 	glm::ivec3 top1 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height));
 	if (top1 != top0) {
-		if (s_blocks[getBlockAt(top1.x, top1.y, top1.z, true)].collisionHitbox) {
+		if (s_blocks[getBlockAt(top1.x, top1.y, top1.z, true) & 0xFF].collisionHitbox) {
 			return (true);
 		}
 	}
 	glm::ivec3 top2 = glm::ivec3(glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height));
 	if (top2 != top0) {
-		if (s_blocks[getBlockAt(top2.x, top2.y, top2.z, true)].collisionHitbox) {
+		if (s_blocks[getBlockAt(top2.x, top2.y, top2.z, true) & 0xFF].collisionHitbox) {
 			return (true);
 		}
 	}
 	glm::ivec3 top3 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height));
 	if (top3 != top0) {
-		if (s_blocks[getBlockAt(top3.x, top3.y, top3.z, true)].collisionHitbox) {
+		if (s_blocks[getBlockAt(top3.x, top3.y, top3.z, true) & 0xFF].collisionHitbox) {
 			return (true);
 		}
 	}
@@ -1357,10 +1357,11 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 	return (false);
 }
 
-/* collisionBoxWater takes feet position of object, dimension of its hitbox and returns wether object is inside water or not */
+/* collisionBoxWater takes feet position of object, dimension of its hitbox and returns wether object is inside water or not
+ * WATCHOUT if width > 0.5 problemos because we check block left and right but not middle
+ * WATCHOUT if _block with water has bit shifting to represent anything, need to change this function */
 bool Chunk::collisionBoxWater( glm::vec3 pos, float width, float height )
 {
-	// WATCHOUT if width > 0.5 problemos because we check block left and right but not middle
 	glm::ivec3 top0 = glm::ivec3(glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height));
 	if (getBlockAt(top0.x, top0.y, top0.z, true) >= blocks::WATER) {
 		return (true);
@@ -1482,27 +1483,24 @@ void Chunk::updateFurnaces( double currentTime )
 		int state = fur.second.updateTimes(currentTime);
 		if (state != furnace_state::NOCHANGE) {
 			// std::cout << "FURNACE STATE CHANGE TO " << state << std::endl;
-			auto o = _orientations.find(fur.first);
-			if (o != _orientations.end()) {
-				// std::cout << "ORIENTATION FOUND" << std::endl;
-				o->second = (o->second & 0xF) + (state << 4);
-				// set/unset furnace position as light source of 13 using state
-				int posZ = o->first & (WORLD_HEIGHT - 1);
-				int posY = ((o->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-				int posX = ((o->first >> WORLD_SHIFT) >> CHUNK_SHIFT);
-				// std::cout << "furnace at " << _startX + posX << ", " << _startY + posY << ", " << posZ << std::endl;
-				if (state == furnace_state::ON) {
-					_lights[o->first] = 13 + (13 << 4);
-					light_spread(posX, posY, posZ, false); // spread block light
-				} else {
-					_lights[o->first] = 0;
-					for (int index = 0; index < 6; index++) {
-						const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-						light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0, false);
-					}
+			int value = _blocks[fur.first];
+			_blocks[fur.first] = (value & 0xFFFFEFFF) + ((state == furnace_state::ON) << 12);
+			// set/unset furnace position as light source of 13 using state
+			int posZ = fur.first & (WORLD_HEIGHT - 1);
+			int posY = ((fur.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
+			int posX = ((fur.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
+			// std::cout << "furnace at " << _startX + posX << ", " << _startY + posY << ", " << posZ << std::endl;
+			if (state == furnace_state::ON) {
+				_lights[fur.first] = 13 + (13 << 4);
+				light_spread(posX, posY, posZ, false); // spread block light
+			} else {
+				_lights[fur.first] = 0;
+				for (int index = 0; index < 6; index++) {
+					const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+					light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0, false);
 				}
-				_light_update = true;
 			}
+			_light_update = true;
 		}
 	}
 }
@@ -1510,8 +1508,8 @@ void Chunk::updateFurnaces( double currentTime )
 void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime )
 {
 	// TODO merge identical close(3/4 of a block) stackable items together
-	// on merge, item timer set to longest of 2
-	// double for loop, use bool given as parameter to do this once per second at most
+	// 			on merge, item timer set to longest of 2
+	// 			double for loop, use bool given as parameter to do this once per second at most
 
 	for (auto e = _entities.begin(); e != _entities.end();) {
 		if (e->update(arr, _camera->getPos(), deltaTime)) {

@@ -88,12 +88,12 @@ void Chunk::generate_lights( void )
 			char light_level = 15;
 			for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
 				if (light_level) {
-					int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-					if (air_flower(value, true, true, false) && value != blocks::OAK_SLAB) { // block hit
+					int type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xFF;
+					if (air_flower(type, true, true, false) && type != blocks::OAK_SLAB) { // block hit
 						light_level = 0;
 					}
 					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
-					if (value == blocks::OAK_LEAVES || value >= blocks::WATER) {
+					if (type == blocks::OAK_LEAVES || type >= blocks::WATER) {
 						--light_level;
 					}
 				} else {
@@ -155,8 +155,8 @@ void Chunk::fill_vertex_array( void )
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
-				GLint block_type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-				if (block_type > blocks::AIR && block_type < blocks::WATER && block_type != blocks::GLASS) {
+				GLint block_value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level], block_type = block_value & 0xFF;
+				if (!(block_value & blocks::NOTVISIBLE) && block_type != blocks::AIR && block_type < blocks::WATER && block_type != blocks::GLASS) {
 					float zSize = 1.0f - 0.5f * (block_type == blocks::OAK_SLAB);
 					glm::vec3 p0 = {_startX + row + 0, _startY + col + 0, level + zSize};
 					glm::vec3 p1 = {_startX + row + 1, _startY + col + 0, level + zSize};
@@ -241,11 +241,8 @@ void Chunk::fill_vertex_array( void )
 					} else if (block_type < blocks::POPPY) {
 						int orientation = -1, litFurnace = 0;
 						if (block_type >= blocks::CRAFTING_TABLE && block_type < blocks::BEDROCK) {
-							auto o = _orientations.find((((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level);
-							if (o != _orientations.end()) {
-								orientation = (o->second & 0xF);
-								litFurnace = ((o->second >> 4) & 0xF) == furnace_state::ON;
-							}
+							orientation = (block_value >> 9) & 0x7;
+							litFurnace = (block_value >> 12) & 0x1;
 						}
 						if (visible_face(block_type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)) {
 							int spec = blockGridX(block_type, 2 * (orientation == face_dir::MINUSX) + litFurnace) + (blockGridY(block_type) << 4) + (3 << 19);

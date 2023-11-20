@@ -64,7 +64,7 @@ enum blocks {
 	DIAMOND,
 	BUCKET,
 	WATER_BUCKET,
-	NOTVISIBLE = 1000
+	NOTVISIBLE = 1 << 8
 };
 
 struct Block {

@@ -112,16 +112,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 		}
 		start = false;
 		res += "\n\t\t{\"pos\": [" + std::to_string(bup.first.first) + ", " + std::to_string(bup.first.second) + "],"
-			+ "\n\t\t\"orientations\": [";
-		bool ostart = true;
-		for (auto& orient: bup.second.orientations) {
-			if (!ostart) {
-				res += ", ";
-			}
-			ostart = false;
-			res += "[" + std::to_string(orient.first) + ", " + std::to_string(orient.second) + ']';
-		}
-		res += "],\n\t\t\"added\": [";
+			+ "],\n\t\t\"added\": [";
 		bool astart = true;
 		for (auto& add: bup.second.added) {
 			if (!astart) {
@@ -399,15 +390,6 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 				line = trim_spaces(line);
 				if (line.empty() || line[0] == '#') {
 					continue ;
-				} else if (!line.compare(0, 16, "\"orientations\": ")) {
-					index = 16;
-					while (line[index + 1] == '[') {
-						int okey = std::atoi(&line[index + 2]);
-						for (; line[index] && line[index] != ','; index++);
-						backups_value.orientations[okey] = std::atoi(&line[index + 2]);
-						ofs << "backups new orientation " << okey << ", " << backups_value.orientations[okey] << std::endl;
-						for (; line[index + 1] && line[index + 1] != '['; index++);
-					}
 				} else if (!line.compare(0, 9, "\"added\": ")) {
 					index = 9;
 					while (line[index + 1] == '[') {
