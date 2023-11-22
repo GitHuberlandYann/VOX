@@ -2,7 +2,7 @@
 # define INVENTORY_HPP
 
 # define IRECEIPT_SIZE 24
-# define RECEIPT_SIZE 80
+# define RECEIPT_SIZE 85
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
@@ -69,6 +69,7 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::CRAFTING_TABLE, 1},
 	
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_SLAB, 6},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::WHEAT, blocks::WHEAT, blocks::WHEAT, blocks::AIR, blocks::AIR, blocks::AIR, blocks::BREAD, 1},
 
 	{blocks::STONE, blocks::STONE, blocks::AIR, blocks::STONE, blocks::STONE, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::STONE_BRICKS, 4},
 	{blocks::AIR, blocks::STONE, blocks::STONE, blocks::AIR, blocks::STONE, blocks::STONE, blocks::AIR, blocks::AIR, blocks::AIR, blocks::STONE_BRICKS, 4},
@@ -90,6 +91,10 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_PICKAXE, 1},
 	{blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::IRON_PICKAXE, 1},
 	{blocks::DIAMOND, blocks::DIAMOND, blocks::DIAMOND, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::DIAMOND_PICKAXE, 1},
+	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::WOODEN_HOE, 1},
+	{blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_HOE, 1},
+	{blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::IRON_HOE, 1},
+	{blocks::DIAMOND, blocks::DIAMOND, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::DIAMOND_HOE, 1},
 	
 	{blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL_BLOCK, 1},
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::COAL, 9},

@@ -17,12 +17,13 @@ char maxc( char a, char b );
 short maxs( short a, short b );
 
 int blockGridX( int block, int offset );
-int blockGridY( int block );
+int blockGridY( int block, int offset );
 int blockAtlasX( int block );
 int blockAtlasY( int block );
 std::string doubleDigits( int nb );
 
 int air_flower( int value, bool air_leaves, bool air_glass, bool air_water );
+face_dir opposite_dir( int dir );
 bool visible_face( int value, int next, face_dir dir );
 bool isSandOrGravel( int type );
 

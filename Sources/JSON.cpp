@@ -112,7 +112,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 		}
 		start = false;
 		res += "\n\t\t{\"pos\": [" + std::to_string(bup.first.first) + ", " + std::to_string(bup.first.second) + "],"
-			+ "],\n\t\t\"added\": [";
+			+ "\n\t\t\"added\": [";
 		bool astart = true;
 		for (auto& add: bup.second.added) {
 			if (!astart) {

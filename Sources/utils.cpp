@@ -127,14 +127,20 @@ short maxs( short a, short b ) {
 
 int blockGridX( int block, int offset ) // x coord in blockAtlas grid
 {
+	if (block == blocks::FARMLAND) {
+		return (3);
+	}
 	if (block < 16) {
 		return (offset);
 	}
-	return (3 + block / 16);
+	return (3 + (block >> 4));
 }
 
-int blockGridY( int block ) // y coord in blockAtlas grid
+int blockGridY( int block, int offset ) // y coord in blockAtlas grid
 {
+	if (block == blocks::FARMLAND) {
+		return (offset);
+	}
 	return (block & 0xF); // block % 16
 }
 
@@ -178,6 +184,25 @@ int air_flower( int value, bool air_leaves, bool air_glass, bool air_water )
 	return (value);
 }
 
+face_dir opposite_dir( int dir )
+{
+	switch (dir) {
+		case face_dir::MINUSX:
+			return (face_dir::PLUSX);
+		case face_dir::PLUSX:
+			return (face_dir::MINUSX);
+		case face_dir::MINUSY:
+			return (face_dir::PLUSY);
+		case face_dir::PLUSY:
+			return (face_dir::MINUSY);
+		case face_dir::MINUSZ:
+			return (face_dir::PLUSZ);
+		case face_dir::PLUSZ:
+			return (face_dir::MINUSZ);
+	}
+	return (face_dir::MINUSX);
+}
+
 /**
  * @brief checks if a specific face should be drawn by using neighbour
  * @param value  value of block being drawn
@@ -198,13 +223,20 @@ bool visible_face( int value, int next, face_dir dir )
 		&& (dir == face_dir::PLUSX || dir == face_dir::PLUSY || dir == face_dir::PLUSZ)) {
 		return (true);
 	}
+	if (dir == face_dir::PLUSZ && (value == blocks::OAK_SLAB || value == blocks::FARMLAND)) {
+		return (true);
+	}
 	if (next == blocks::OAK_SLAB) {
-		if (dir == face_dir::PLUSZ) {
-			return (value == blocks::OAK_SLAB);
-		} else if (dir == face_dir::MINUSZ) {
+		if (dir == face_dir::MINUSZ) {
 			return (true);
 		}
 		return (value != blocks::OAK_SLAB);
+	}
+	if (next == blocks::FARMLAND) {
+		if (dir == face_dir::MINUSZ) {
+			return (true);
+		}
+		return (value != blocks::OAK_SLAB && value != blocks::FARMLAND);
 	}
 	return (false);
 }

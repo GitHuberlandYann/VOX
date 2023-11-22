@@ -96,6 +96,7 @@ class Chunk
 		int sand_fall_endz( glm::ivec3 pos );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void remove_block( bool useInventory, glm::ivec3 pos );
+		bool watered_farmland( int posX, int posY, int posZ );
 		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 
 		void light_spread( int posX, int posY, int level, bool skySpread );

@@ -106,7 +106,7 @@ GLint Chunk::face_count( int type, int row, int col, int level )
 		return (0);
 	}
 	if (type >= blocks::POPPY) {
-		return (2 << (type == blocks::TORCH));
+		return (2 << (type >= blocks::TORCH));
 	}
 	if (type == blocks::GLASS) {
 		return (0);
@@ -429,7 +429,7 @@ void Chunk::resetDisplayedFaces( void )
 				}
 				if (type > blocks::AIR && type < blocks::WATER) {
 					GLint below = ((level) ? _blocks[offset - 1] : 0) & 0xFF;
-					if (!air_flower(type, false, false, true) && type != blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
+					if (!air_flower(type, false, false, true) && type < blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
 						_blocks[offset] = blocks::AIR;
 					} else {
 						GLint count = face_count(type, row, col, level);
@@ -596,6 +596,20 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
+bool Chunk::watered_farmland( int posX, int posY, int posZ )
+{
+	for (int row = posX - 4; row <= posX + 4; row++) {
+		for (int col = posY - 4; col <= posY + 4; col++) {
+			for (int level = posZ; level <= posZ + 1; level++) {
+				if ((getBlockAt(row, col, level, true) & 0xFF) >= blocks::WATER) {
+					return (true);
+				}
+			}
+		}
+	}
+	return (false);
+}
+
 void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":add block " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
@@ -622,10 +636,10 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		if (previous >= blocks::WATER) {
 			return ;
 		}
-		int block_below = _blocks[offset - 1];
-		if (type != blocks::TORCH && block_below != blocks::GRASS_BLOCK && block_below != blocks::DIRT && block_below != blocks::SAND) {
+		int type_below = _blocks[offset - 1] & 0xFF;
+		if (type != blocks::TORCH && type != blocks::WHEAT_CROP && type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
 			return ; // can't place flower on something else than grass/dirt block
-		} else if (!(block_below > blocks::AIR && block_below < blocks::POPPY)) {
+		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY)) {
 			return ;
 		}
 	} else if (previous >= blocks::WATER) { // replace water block with something else
@@ -659,6 +673,30 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		std::cout << "over" << std::endl;
 	} else if (type == blocks::GLASS) {
 		_hasWater = true; // glass considered as invis block
+	}
+	if (type == blocks::FARMLAND) {
+		if (watered_farmland(pos.x, pos.y, pos.z)) { // TODO compute this over time somewhere else
+			_blocks[offset] += (1 << 9);
+		}
+		light_spread(pos.x, pos.y, pos.z, false);
+		light_spread(pos.x, pos.y, pos.z, true);
+		_light_update = false;
+		_displayed_faces -= face_count(blocks::GRASS_BLOCK, pos.x, pos.y, pos.z);
+		_displayed_faces += face_count(type, pos.x, pos.y, pos.z);
+		for (int index = 0; index < 6; index++) {
+			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+			if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+			} else {
+				GLint adj = _blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]];
+				if (visible_face(adj, type, opposite_dir(index))) {
+					if (adj & blocks::NOTVISIBLE) {
+						_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] = adj - blocks::NOTVISIBLE;
+					}
+					_displayed_faces++;
+				}
+			}
+		}
+		return ;
 	}
 	_displayed_faces += face_count(type, pos.x, pos.y, pos.z);
 	if (!air_flower(type, true, true, false)) {
@@ -974,9 +1012,13 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, bool addi
 		}
 		remove_block(useInventory, pos);
 	} else {
-		if ((previous_type != blocks::AIR && previous_type < blocks::WATER) || type == blocks::AIR) { // can't replace block
+		if (type == blocks::FARMLAND) {
+		} else if (type == blocks::WHEAT_CROP && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z - 1] & 0xFF) != blocks::FARMLAND) { // can't place crop on something other than farmland
+			return ;
+		} else if ((previous_type != blocks::AIR && previous_type < blocks::WATER) || type == blocks::AIR) { // can't replace block
 			return ;
 		}
+		// std::cout << "ADD BLOCK " << s_blocks[previous_type].name << " -> " << s_blocks[type].name << std::endl;
 		add_block(useInventory, pos, type, previous_type);
 	}
 	if (type == blocks::WATER || type == blocks::BUCKET) {
@@ -1187,15 +1229,16 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	if (value == blocks::AIR || value & blocks::NOTVISIBLE) {
 		return ;
 	}
-	glm::ivec3 p0 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 1};
-	glm::ivec3 p1 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + 1};
-	glm::ivec3 p2 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 0};
-	glm::ivec3 p3 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + 0};
+	float zSize = (((value & 0xFF) == blocks::OAK_SLAB) ? 0.5f : (((value & 0xFF) == blocks::FARMLAND) ? 15.0f / 16.0f: 1));
+	glm::vec3 p0 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + zSize};
+	glm::vec3 p1 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + zSize};
+	glm::vec3 p2 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 0};
+	glm::vec3 p3 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + 0};
 
-	glm::ivec3 p4 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + 1};
-	glm::ivec3 p5 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + 1};
-	glm::ivec3 p6 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
-	glm::ivec3 p7 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
+	glm::vec3 p4 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + zSize};
+	glm::vec3 p5 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + zSize};
+	glm::vec3 p6 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
+	glm::vec3 p7 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
 	int count = face_count(value, chunk_pos.x, chunk_pos.y, chunk_pos.z);
 	int cnt = 0;
 	GLfloat *vertFloat = static_cast<GLfloat*>(_vertices);

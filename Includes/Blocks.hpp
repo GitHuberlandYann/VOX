@@ -6,6 +6,7 @@ enum blocks {
 	GRASS_BLOCK,
 	OAK_LOG,
 	CACTUS,
+	FARMLAND,
 	CRAFTING_TABLE = 8,
 	FURNACE,
 	BEDROCK = 16,
@@ -37,6 +38,14 @@ enum blocks {
 	SUGAR_CANE,
 	DEAD_BUSH,
 	TORCH,
+	WHEAT_CROP = 64,
+	WHEAT_CROP1,
+	WHEAT_CROP2,
+	WHEAT_CROP3,
+	WHEAT_CROP4,
+	WHEAT_CROP5,
+	WHEAT_CROP6,
+	WHEAT_CROP7,
 	WATER = 72,
 	WATER1,
 	WATER2,
@@ -64,6 +73,13 @@ enum blocks {
 	DIAMOND,
 	BUCKET,
 	WATER_BUCKET,
+	WOODEN_HOE,
+	STONE_HOE,
+	IRON_HOE,
+	DIAMOND_HOE,
+	WHEAT_SEEDS,
+	WHEAT,
+	BREAD,
 	NOTVISIBLE = 1 << 8
 };
 
@@ -167,6 +183,24 @@ struct Cactus : Block {
 			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.6f;
+		}
+};
+
+struct Farmland : Block {
+	public:
+		Farmland() {
+			name = "FARMLAND";
+			mined = blocks::DIRT;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
+			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
+			byHand = true;
+			needed_tool = blocks::WOODEN_SHOVEL;
+			break_time_hand = 0.9f;
+			break_time_wooden = 0.45f;
+			break_time_stone = 0.25f;
+			break_time_iron = 0.15f;
+			break_time_diamond = 0.15f;
 		}
 };
 
@@ -583,8 +617,9 @@ struct Grass : Block {
 	public:
 		Grass() {
 			name = "GRASS";
+			mined = blocks::WHEAT_SEEDS;
 			collisionHitbox = false;
-			byHand = false;
+			byHand = true;
 			break_time_hand = 0.05f;
 		}
 };
@@ -626,6 +661,118 @@ struct Torch : Block {
 			hitboxCenter = {0.5f, 0.5f, 5 / 16.0f};
 			hitboxHalfSize = {1 / 16.0f, 1 / 16.0f, 5 / 16.0f};
 			light_level = 14;
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
+struct WheatCrop : Block {
+	public:
+		WheatCrop() {
+			name = "WHEAT_CROP";
+			mined = blocks::WHEAT_CROP;
+			hasHitbox = true;
+			collisionHitbox = false;
+			hitboxCenter = {0.5f, 0.5f, 1 / 32.0f};
+			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
+struct WheatCrop1 : Block {
+	public:
+		WheatCrop1() {
+			name = "WHEAT_CROP1";
+			mined = blocks::WHEAT_SEEDS;
+			hasHitbox = true;
+			collisionHitbox = false;
+			hitboxCenter = {0.5f, 0.5f, 3 / 32.0f};
+			hitboxHalfSize = {0.4f, 0.4f, 3 / 32.0f};
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
+struct WheatCrop2 : Block {
+	public:
+		WheatCrop2() {
+			name = "WHEAT_CROP2";
+			mined = blocks::WHEAT_SEEDS;
+			hasHitbox = true;
+			collisionHitbox = false;
+			hitboxCenter = {0.5f, 0.5f, 5 / 32.0f};
+			hitboxHalfSize = {0.4f, 0.4f, 5 / 32.0f};
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
+struct WheatCrop3 : Block {
+	public:
+		WheatCrop3() {
+			name = "WHEAT_CROP3";
+			mined = blocks::WHEAT_SEEDS;
+			hasHitbox = true;
+			collisionHitbox = false;
+			hitboxCenter = {0.5f, 0.5f, 7 / 32.0f};
+			hitboxHalfSize = {0.4f, 0.4f, 7 / 32.0f};
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
+struct WheatCrop4 : Block {
+	public:
+		WheatCrop4() {
+			name = "WHEAT_CROP4";
+			mined = blocks::WHEAT_SEEDS;
+			hasHitbox = true;
+			collisionHitbox = false;
+			hitboxCenter = {0.5f, 0.5f, 9 / 32.0f};
+			hitboxHalfSize = {0.4f, 0.4f, 9 / 32.0f};
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
+struct WheatCrop5 : Block {
+	public:
+		WheatCrop5() {
+			name = "WHEAT_CROP5";
+			mined = blocks::WHEAT_SEEDS;
+			hasHitbox = true;
+			collisionHitbox = false;
+			hitboxCenter = {0.5f, 0.5f, 11 / 32.0f};
+			hitboxHalfSize = {0.4f, 0.4f, 11 / 32.0f};
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
+struct WheatCrop6 : Block {
+	public:
+		WheatCrop6() {
+			name = "WHEAT_CROP6";
+			mined = blocks::WHEAT_SEEDS;
+			hasHitbox = true;
+			collisionHitbox = false;
+			hitboxCenter = {0.5f, 0.5f, 13 / 32.0f};
+			hitboxHalfSize = {0.4f, 0.4f, 13 / 32.0f};
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
+struct WheatCrop7 : Block {
+	public:
+		WheatCrop7() {
+			name = "WHEAT_CROP7";
+			mined = blocks::WHEAT;
+			hasHitbox = true;
+			collisionHitbox = false;
+			hitboxCenter = {0.5f, 0.5f, 15 / 32.0f};
+			hitboxHalfSize = {0.4f, 0.4f, 15 / 32.0f};
 			byHand = true;
 			break_time_hand = 0.05f;
 		}
@@ -866,13 +1013,72 @@ struct WaterBucket : Block {
 		}
 };
 
+struct WoodenHoe : Block {
+	public:
+		WoodenHoe() {
+			name = "WOODEN_HOE";
+			stackable = false;
+			isFuel = true;
+			fuel_time = 10;
+			durability = 59;
+		}
+};
+
+struct StoneHoe : Block {
+	public:
+		StoneHoe() {
+			name = "STONE_HOE";
+			stackable = false;
+			durability = 131;
+		}
+};
+
+struct IronHoe : Block {
+	public:
+		IronHoe() {
+			name = "IRON_HOE";
+			stackable = false;
+			durability = 250;
+		}
+};
+
+struct DiamondHoe : Block {
+	public:
+		DiamondHoe() {
+			name = "DIAMOND_HOE";
+			stackable = false;
+			durability = 1561;
+		}
+};
+
+struct WheatSeeds : Block {
+	public:
+		WheatSeeds() {
+			name = "WHEAT_SEEDS";
+		}
+};
+
+struct Wheat : Block {
+	public:
+		Wheat() {
+			name = "WHEAT";
+		}
+};
+
+struct Bread : Block {
+	public:
+		Bread() {
+			name = "BREAD";
+		}
+};
+
 const Block s_blocks[112] = {
-	Air(), GrassBlock(), OakLog(), Cactus(), TBD(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Air(), GrassBlock(), OakLog(), Cactus(), Farmland(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), StoneBrick(), CrackedStoneBrick(), Sand(), Gravel(), OakLeaves(), OakPlanks(), Glass(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), CoalBlock(), IronBlock(), DiamondBlock(), TBD(), TBD(), OakSlab(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), Torch(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), Water(), Water1(), Water2(), Water3(), Water4(), Water5(), Water6(), Water7(),
+	WheatCrop(), WheatCrop1(), WheatCrop2(), WheatCrop3(), WheatCrop4(), WheatCrop5(), WheatCrop6(), WheatCrop7(), Water(), Water1(), Water2(), Water3(), Water4(), Water5(), Water6(), Water7(),
 	Stick(), WoodenShovel(), StoneShovel(), IronShovel(), DiamondShovel(), WoodenAxe(), StoneAxe(), IronAxe(), DiamondAxe(), WoodenPickaxe(), StonePickaxe(), IronPickaxe(), DiamondPickaxe(), TBD(), TBD(), TBD(),
-	Coal(), Charcoal(), IronIngot(), Diamond(), Bucket(), WaterBucket(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Coal(), Charcoal(), IronIngot(), Diamond(), Bucket(), WaterBucket(), WoodenHoe(), StoneHoe(), IronHoe(), DiamondHoe(), WheatSeeds(), Wheat(), Bread(), TBD(), TBD(), TBD(),
 };
 #endif

@@ -93,11 +93,18 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	int type = _inventory->getCurrentSlot();
-	bool find_water = false;
+	// std::cout << "aiming " << s_blocks[type].name << " towards " << s_blocks[_block_hit.w].name << std::endl;;
+	bool find_water = false, replace_block = false;
 	if (type == blocks::WATER_BUCKET) { // use it like any other block
 		type = blocks::WATER;
 	} else if (type == blocks::BUCKET) { // special case, add but remove water instead
 		find_water = true;
+	} else if (type >= blocks::WOODEN_HOE && type <= blocks::DIAMOND_HOE
+		&& (_block_hit.w == blocks::DIRT || _block_hit.w == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
+		type = blocks::FARMLAND;
+		replace_block = true;
+	} else if (type == blocks::WHEAT_SEEDS) {
+		type = blocks::WHEAT_CROP;
 	} else if (type == blocks::AIR || type >= blocks::STICK) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
@@ -135,7 +142,12 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			}
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
-		if (find_water) {
+		if (replace_block) {
+			if (chunk->isHit(i, false)) {
+				chunk->handleHit(false, type, i, true);
+				return ;
+			}
+		} else if (find_water) {
 			if (chunk->isHit(i, true)) {
 				chunk->handleHit(collect, type, i, false);
 				return ;
