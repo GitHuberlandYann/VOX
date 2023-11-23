@@ -278,8 +278,7 @@ void Chunk::generate_blocks( void )
 	// Bench b;
 	const siv::PerlinNoise perlin{ perlin_seed };
 	std::minstd_rand0  generator((_startX * 19516 + _startY * 56849) * perlin_seed);
-	// std::minstd_rand0  generator(perlin.noise2D(_startX * _startX, _startY * _startY) * perlin_seed);
-	std::uniform_int_distribution<int> distribution(0, 1000);
+	_seed = (_startX * 19516 + _startY * 56849) * perlin_seed;
 
 	std::vector<glm::ivec3> trees;
 
@@ -288,7 +287,7 @@ void Chunk::generate_blocks( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			// int surface_level = glm::floor(SEA_LEVEL + (perlin.octave2D_01((_startX - 1 + row) / 100.0f, (_startY - 1 + col) / 100.0f, 4) - 0.5) * 100);
 			int surface_level = surfaceLevel(row, col, perlin);
-			int gen = distribution(generator);
+			int gen = Random::rangedNumber(_seed, 0, 1000);
 			bool tree_gen = (gen <= 2 && row > 1 && row < CHUNK_SIZE - 2 && col > 1 && col < CHUNK_SIZE - 2);
 			bool poppy = (gen <= 5);
 			bool dandelion = (gen <= 8);
@@ -349,20 +348,20 @@ void Chunk::generate_blocks( void )
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
 				if (value == blocks::STONE) {
-					if (coal_blobs < 20 && distribution(generator) <= 1) {
-						int size = (distribution(generator) + 3) / 30;
+					if (coal_blobs < 20 && Random::rangedNumber(_seed, 0, 1000) <= 1) {
+						int size = (Random::rangedNumber(_seed, 0, 1000) + 3) / 30;
 						gen_ore_blob(blocks::COAL_ORE, row, col, level, size, 0);
 						coal_blobs++;
-					} else if (iron_blobs < 10 && (level <= 56 || level > 80) && distribution(generator) <= 1) {
-						int size = (distribution(generator) + 3) / 60;
+					} else if (iron_blobs < 10 && (level <= 56 || level > 80) && Random::rangedNumber(_seed, 0, 1000) <= 1) {
+						int size = (Random::rangedNumber(_seed, 0, 1000) + 3) / 60;
 						gen_ore_blob(blocks::IRON_ORE, row, col, level, size, 0);
 						iron_blobs++;
-					} else if (!gravel_blob && distribution(generator) <= 1) {
+					} else if (!gravel_blob && Random::rangedNumber(_seed, 0, 1000) <= 1) {
 						int size = 60;
 						gen_ore_blob(blocks::GRAVEL, row, col, level, size, 0);
 						gravel_blob = true;
-					} else if (diamond_blobs < 7 && level < 15 && distribution(generator) <= 1) {
-						int size = (distribution(generator) + 5) / 200;
+					} else if (diamond_blobs < 7 && level < 15 && Random::rangedNumber(_seed, 0, 1000) <= 1) {
+						int size = (Random::rangedNumber(_seed, 0, 1000) + 5) / 200;
 						gen_ore_blob(blocks::DIAMOND_ORE, row, col, level, size, 0);
 						diamond_blobs++;
 					}
@@ -387,13 +386,13 @@ void Chunk::generate_blocks( void )
 					if (value >= blocks::WATER) {
 						// do nothing
 					} else if (exposed_block(row, col, level, value != blocks::OAK_LEAVES, value != blocks::GLASS)) {
-						if (value == blocks::IRON_ORE && distribution(generator) < 500) {
+						if (value == blocks::IRON_ORE && Random::rangedNumber(_seed, 0, 1000) < 500) {
 							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::STONE;
-						} else if (value == blocks::GRAVEL && distribution(generator) < 100) {
+						} else if (value == blocks::GRAVEL && Random::rangedNumber(_seed, 0, 1000) < 100) {
 							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::STONE;
-						} else if (value == blocks::DIAMOND_ORE && distribution(generator) < 900) {
+						} else if (value == blocks::DIAMOND_ORE && Random::rangedNumber(_seed, 0, 1000) < 900) {
 							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::STONE;
-						} else if (value == blocks::COAL_ORE && distribution(generator) < 200) {
+						} else if (value == blocks::COAL_ORE && Random::rangedNumber(_seed, 0, 1000) < 200) {
 							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::STONE;
 						} 
 					}
@@ -596,20 +595,6 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
-bool Chunk::watered_farmland( int posX, int posY, int posZ )
-{
-	for (int row = posX - 4; row <= posX + 4; row++) {
-		for (int col = posY - 4; col <= posY + 4; col++) {
-			for (int level = posZ; level <= posZ + 1; level++) {
-				if ((getBlockAt(row, col, level, true) & 0xFF) >= blocks::WATER) {
-					return (true);
-				}
-			}
-		}
-	}
-	return (false);
-}
-
 void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":add block " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
@@ -675,9 +660,6 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		_hasWater = true; // glass considered as invis block
 	}
 	if (type == blocks::FARMLAND) {
-		if (watered_farmland(pos.x, pos.y, pos.z)) { // TODO compute this over time somewhere else
-			_blocks[offset] += (1 << 9);
-		}
 		light_spread(pos.x, pos.y, pos.z, false);
 		light_spread(pos.x, pos.y, pos.z, true);
 		_light_update = false;

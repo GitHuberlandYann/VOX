@@ -139,7 +139,7 @@ int blockGridX( int block, int offset ) // x coord in blockAtlas grid
 int blockGridY( int block, int offset ) // y coord in blockAtlas grid
 {
 	if (block == blocks::FARMLAND) {
-		return (offset);
+		return (!offset);
 	}
 	return (block & 0xF); // block % 16
 }

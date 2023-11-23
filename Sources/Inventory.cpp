@@ -641,7 +641,7 @@ void Inventory::swapCells( int slot, int location )
 	} else {
 		bat = &_craft[location - 41];
 	}
-	if (_content[slot].x == bat->x && bat->x != AIR) {
+	if (_content[slot].x == bat->x && bat->x != blocks::AIR) {
 		_content[slot].y += bat->y;
 		if (_content[slot].y > 64) {
 			bat->y = _content[slot].y - 64;

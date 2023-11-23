@@ -173,20 +173,20 @@ void Chunk::fill_vertex_array( void )
 					std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), {p6.x + 3.0 / 16, p6.y, p6.z}};
 					std::pair<int, glm::vec3> v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p2.x + 3.0 / 16, p2.y, p2.z}};
 					face_vertices(_vertices, v0, v1, v2, v3, index); // -x
-					v0 = {spec, {p0.x + 13.0f / 16, p0.y, p0.z}};
-					v1 = {spec + 1 + (1 << 8), {p4.x + 13.0f / 16, p4.y, p4.z}};
-					v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), {p2.x + 13.0f / 16, p2.y, p2.z}};
-					v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p6.x + 13.0f / 16, p6.y, p6.z}};
+					v0 = {spec + 1, {p0.x + 13.0f / 16, p0.y, p0.z}};
+					v1 = {spec + (1 << 8), {p4.x + 13.0f / 16, p4.y, p4.z}};
+					v2 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 12), {p2.x + 13.0f / 16, p2.y, p2.z}};
+					v3 = {spec + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p6.x + 13.0f / 16, p6.y, p6.z}};
 					face_vertices(_vertices, v0, v1, v2, v3, index); // +x
 					v0 = {spec, {p0.x, p0.y + 3.0 / 16, p0.z}};
 					v1 = {spec + 1 + (1 << 8), {p1.x, p1.y + 3.0 / 16, p1.z}};
 					v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), {p2.x, p2.y + 3.0 / 16, p2.z}};
 					v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p3.x, p3.y + 3.0 / 16, p3.z}};
 					face_vertices(_vertices, v0, v1, v2, v3, index); // -y
-					v0 = {spec, {p1.x, p1.y + 13.0f / 16, p1.z}};
-					v1 = {spec + 1 + (1 << 8), {p0.x, p0.y + 13.0f / 16, p0.z}};
-					v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), {p3.x, p3.y + 13.0f / 16, p3.z}};
-					v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p2.x, p2.y + 13.0f / 16, p2.z}};
+					v0 = {spec + 1, {p1.x, p1.y + 13.0f / 16, p1.z}};
+					v1 = {spec + (1 << 8), {p0.x, p0.y + 13.0f / 16, p0.z}};
+					v2 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 12), {p3.x, p3.y + 13.0f / 16, p3.z}};
+					v3 = {spec + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p2.x, p2.y + 13.0f / 16, p2.z}};
 					face_vertices(_vertices, v0, v1, v2, v3, index); // +y
 				} else if (!(block_value & blocks::NOTVISIBLE) && block_type != blocks::AIR && block_type < blocks::WATER && block_type != blocks::GLASS) {
 					float zSize = ((block_type == blocks::OAK_SLAB) ? 0.5f : ((block_type == blocks::FARMLAND) ? 15.0f / 16.0f: 1));
@@ -333,7 +333,7 @@ void Chunk::fill_vertex_array( void )
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (visible_face(block_type, getBlockAt(row, col, level + 1, true), face_dir::PLUSZ)) {
-							int spec = blockGridX(block_type, 1) + (blockGridY(block_type, 0) << 4) + (0 << 19);
+							int spec = blockGridX(block_type, 1) + (blockGridY(block_type, block_value & blocks::WET_FARMLAND) << 4) + (0 << 19);
 							int faceLight = computeLight(row, col, level + 1);
 							int shade = computeShade(row, col, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 							spec += (faceLight << 24);

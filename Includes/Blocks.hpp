@@ -1,87 +1,90 @@
 #ifndef BLOCKS_HPP
 # define BLOCKS_HPP
 
-enum blocks {
-	AIR,
-	GRASS_BLOCK,
-	OAK_LOG,
-	CACTUS,
-	FARMLAND,
-	CRAFTING_TABLE = 8,
-	FURNACE,
-	BEDROCK = 16,
-	DIRT,
-	SMOOTH_STONE,
-	STONE,
-	COBBLESTONE,
-	STONE_BRICKS,
-	CRACKED_STONE_BRICKS,
-	SAND,
-	GRAVEL,
-	OAK_LEAVES,
-	OAK_PLANKS,
-	GLASS,
-	COAL_ORE = 32,
-	IRON_ORE,
-	DIAMOND_ORE,
-	COAL_BLOCK,
-	IRON_BLOCK,
-	DIAMOND_BLOCK,
-	OAK_SLAB = 40,
-	POPPY = 48,
-	DANDELION,
-	BLUE_ORCHID,
-	ALLIUM,
-	CORNFLOWER,
-	PINK_TULIP,
-	GRASS,
-	SUGAR_CANE,
-	DEAD_BUSH,
-	TORCH,
-	WHEAT_CROP = 64,
-	WHEAT_CROP1,
-	WHEAT_CROP2,
-	WHEAT_CROP3,
-	WHEAT_CROP4,
-	WHEAT_CROP5,
-	WHEAT_CROP6,
-	WHEAT_CROP7,
-	WATER = 72,
-	WATER1,
-	WATER2,
-	WATER3,
-	WATER4,
-	WATER5,
-	WATER6,
-	WATER7,
-	STICK = 80,
-	WOODEN_SHOVEL,
-	STONE_SHOVEL,
-	IRON_SHOVEL,
-	DIAMOND_SHOVEL,
-	WOODEN_AXE,
-	STONE_AXE,
-	IRON_AXE,
-	DIAMOND_AXE,
-	WOODEN_PICKAXE,
-	STONE_PICKAXE,
-	IRON_PICKAXE,
-	DIAMOND_PICKAXE,
-	COAL = 96,
-	CHARCOAL,
-	IRON_INGOT,
-	DIAMOND,
-	BUCKET,
-	WATER_BUCKET,
-	WOODEN_HOE,
-	STONE_HOE,
-	IRON_HOE,
-	DIAMOND_HOE,
-	WHEAT_SEEDS,
-	WHEAT,
-	BREAD,
-	NOTVISIBLE = 1 << 8
-};
+namespace blocks {
+	enum {
+		AIR,
+		GRASS_BLOCK,
+		OAK_LOG,
+		CACTUS,
+		FARMLAND,
+		CRAFTING_TABLE = 8,
+		FURNACE,
+		BEDROCK = 16,
+		DIRT,
+		SMOOTH_STONE,
+		STONE,
+		COBBLESTONE,
+		STONE_BRICKS,
+		CRACKED_STONE_BRICKS,
+		SAND,
+		GRAVEL,
+		OAK_LEAVES,
+		OAK_PLANKS,
+		GLASS,
+		COAL_ORE = 32,
+		IRON_ORE,
+		DIAMOND_ORE,
+		COAL_BLOCK,
+		IRON_BLOCK,
+		DIAMOND_BLOCK,
+		OAK_SLAB = 40,
+		POPPY = 48,
+		DANDELION,
+		BLUE_ORCHID,
+		ALLIUM,
+		CORNFLOWER,
+		PINK_TULIP,
+		GRASS,
+		SUGAR_CANE,
+		DEAD_BUSH,
+		TORCH,
+		WHEAT_CROP = 64,
+		WHEAT_CROP1,
+		WHEAT_CROP2,
+		WHEAT_CROP3,
+		WHEAT_CROP4,
+		WHEAT_CROP5,
+		WHEAT_CROP6,
+		WHEAT_CROP7,
+		WATER = 72,
+		WATER1,
+		WATER2,
+		WATER3,
+		WATER4,
+		WATER5,
+		WATER6,
+		WATER7,
+		STICK = 80,
+		WOODEN_SHOVEL,
+		STONE_SHOVEL,
+		IRON_SHOVEL,
+		DIAMOND_SHOVEL,
+		WOODEN_AXE,
+		STONE_AXE,
+		IRON_AXE,
+		DIAMOND_AXE,
+		WOODEN_PICKAXE,
+		STONE_PICKAXE,
+		IRON_PICKAXE,
+		DIAMOND_PICKAXE,
+		COAL = 96,
+		CHARCOAL,
+		IRON_INGOT,
+		DIAMOND,
+		BUCKET,
+		WATER_BUCKET,
+		WOODEN_HOE,
+		STONE_HOE,
+		IRON_HOE,
+		DIAMOND_HOE,
+		WHEAT_SEEDS,
+		WHEAT,
+		BREAD,
+		NOTVISIBLE = 1 << 8,
+		WET_FARMLAND = 1 << 9
+	};
+}
 
 struct Block {
 	public:
@@ -265,7 +268,7 @@ struct SmoothStone : Block {
 			name = "SMOOTH_STONE";
 			mined = blocks::SMOOTH_STONE;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 10.0f;
 			break_time_wooden = 1.5f;
 			break_time_stone = 0.75f;
@@ -282,7 +285,7 @@ struct Stone : Block {
 			isComposant = true;
 			getProduction = blocks::SMOOTH_STONE;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 7.5f;
 			break_time_wooden = 1.15f;
 			break_time_stone = 0.6f;
@@ -299,7 +302,7 @@ struct Cobblestone : Block {
 			isComposant = true;
 			getProduction = blocks::STONE;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 10.0f;
 			break_time_wooden = 1.5f;
 			break_time_stone = 0.74f;
@@ -316,7 +319,7 @@ struct StoneBrick : Block {
 			isComposant = true;
 			getProduction = blocks::CRACKED_STONE_BRICKS;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 7.5f;
 			break_time_wooden = 1.15f;
 			break_time_stone = 0.6f;
@@ -331,7 +334,7 @@ struct CrackedStoneBrick : Block {
 			name = "CRACKED_STONE_BRICK";
 			mined = blocks::CRACKED_STONE_BRICKS;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 7.5f;
 			break_time_wooden = 1.15f;
 			break_time_stone = 0.6f;
@@ -348,7 +351,7 @@ struct Sand : Block {
 			isComposant = true;
 			getProduction = blocks::GLASS;
 			byHand = true;
-			needed_tool = WOODEN_SHOVEL;
+			needed_tool = blocks::WOODEN_SHOVEL;
 			break_time_hand = 0.75f;
 			break_time_wooden = 0.4f;
 			break_time_stone = 0.2f;
@@ -363,7 +366,7 @@ struct Gravel : Block {
 			name = "GRAVEL";
 			mined = blocks::GRAVEL;
 			byHand = true;
-			needed_tool = WOODEN_SHOVEL;
+			needed_tool = blocks::WOODEN_SHOVEL;
 			break_time_hand = 0.9f;
 			break_time_wooden = 0.45f;
 			break_time_stone = 0.25f;
@@ -389,7 +392,7 @@ struct OakPlanks : Block {
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
-			needed_tool = WOODEN_AXE;
+			needed_tool = blocks::WOODEN_AXE;
 			break_time_hand = 3.0f;
 			break_time_wooden = 1.5f;
 			break_time_stone = 0.75f;
@@ -414,7 +417,7 @@ struct CoalOre : Block {
 			isComposant = true;
 			getProduction = blocks::COAL;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 15.0f;
 			break_time_wooden = 2.25f;
 			break_time_stone = 1.15f;
@@ -431,7 +434,7 @@ struct IronOre : Block {
 			isComposant = true;
 			getProduction = blocks::IRON_INGOT;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 1; // min stone to collect
 			break_time_hand = 15.0f;
 			break_time_wooden = 7.5f;
@@ -449,7 +452,7 @@ struct DiamondOre : Block {
 			isComposant = true;
 			getProduction = blocks::DIAMOND;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 2; // min iron to collect
 			break_time_hand = 15.0f;
 			break_time_wooden = 7.5f;
@@ -467,7 +470,7 @@ struct CoalBlock : Block {
 			isFuel = true;
 			fuel_time = 800;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 25.0f;
 			break_time_wooden = 3.75f;
 			break_time_stone = 1.9f;
@@ -482,7 +485,7 @@ struct IronBlock : Block {
 			name = "IRON_BLOCK";
 			mined = blocks::IRON_BLOCK;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 1; // min stone to collect
 			break_time_hand = 25.0f;
 			break_time_wooden = 12.5f;
@@ -498,7 +501,7 @@ struct DiamondBlock : Block {
 			name = "DIAMOND_BLOCK";
 			mined = blocks::DIAMOND_BLOCK;
 			byHand = false;
-			needed_tool = WOODEN_PICKAXE;
+			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 2; // min iron to collect
 			break_time_hand = 25.0f;
 			break_time_wooden = 12.5f;
@@ -520,7 +523,7 @@ struct OakSlab : Block {
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
-			needed_tool = WOODEN_AXE;
+			needed_tool = blocks::WOODEN_AXE;
 			break_time_hand = 3.0f;
 			break_time_wooden = 1.5f;
 			break_time_stone = 0.75f;
@@ -683,7 +686,7 @@ struct WheatCrop : Block {
 struct WheatCrop1 : Block {
 	public:
 		WheatCrop1() {
-			name = "WHEAT_CROP1";
+			name = "WHEAT_CROP 1";
 			mined = blocks::WHEAT_SEEDS;
 			hasHitbox = true;
 			collisionHitbox = false;
@@ -697,7 +700,7 @@ struct WheatCrop1 : Block {
 struct WheatCrop2 : Block {
 	public:
 		WheatCrop2() {
-			name = "WHEAT_CROP2";
+			name = "WHEAT_CROP 2";
 			mined = blocks::WHEAT_SEEDS;
 			hasHitbox = true;
 			collisionHitbox = false;
@@ -711,7 +714,7 @@ struct WheatCrop2 : Block {
 struct WheatCrop3 : Block {
 	public:
 		WheatCrop3() {
-			name = "WHEAT_CROP3";
+			name = "WHEAT_CROP 3";
 			mined = blocks::WHEAT_SEEDS;
 			hasHitbox = true;
 			collisionHitbox = false;
@@ -725,7 +728,7 @@ struct WheatCrop3 : Block {
 struct WheatCrop4 : Block {
 	public:
 		WheatCrop4() {
-			name = "WHEAT_CROP4";
+			name = "WHEAT_CROP 4";
 			mined = blocks::WHEAT_SEEDS;
 			hasHitbox = true;
 			collisionHitbox = false;
@@ -739,7 +742,7 @@ struct WheatCrop4 : Block {
 struct WheatCrop5 : Block {
 	public:
 		WheatCrop5() {
-			name = "WHEAT_CROP5";
+			name = "WHEAT_CROP 5";
 			mined = blocks::WHEAT_SEEDS;
 			hasHitbox = true;
 			collisionHitbox = false;
@@ -753,7 +756,7 @@ struct WheatCrop5 : Block {
 struct WheatCrop6 : Block {
 	public:
 		WheatCrop6() {
-			name = "WHEAT_CROP6";
+			name = "WHEAT_CROP 6";
 			mined = blocks::WHEAT_SEEDS;
 			hasHitbox = true;
 			collisionHitbox = false;
@@ -767,7 +770,7 @@ struct WheatCrop6 : Block {
 struct WheatCrop7 : Block {
 	public:
 		WheatCrop7() {
-			name = "WHEAT_CROP7";
+			name = "WHEAT_CROP 7";
 			mined = blocks::WHEAT;
 			hasHitbox = true;
 			collisionHitbox = false;

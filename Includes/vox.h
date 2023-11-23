@@ -48,6 +48,7 @@ extern std::mutex mtx_backup;
 # include "Camera.hpp"
 # include "PerlinNoise.hpp"
 # include "Blocks.hpp"
+# include "random.hpp"
 # include "Entity.hpp"
 # include "FurnaceInstance.hpp"
 # include "Biomes.hpp"

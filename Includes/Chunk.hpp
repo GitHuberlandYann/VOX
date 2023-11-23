@@ -57,6 +57,7 @@ class Chunk
         bool _isVisible, _vaoSet, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
 		std::atomic_bool _genDone, _light_update, _vaoReset, _vaoVIP, _waterVaoReset, _skyVaoReset, _sortedOnce;
         GLint _startX, _startY, _nb_neighbours;
+		unsigned _seed;
 		GLint _continent;
 		GLint *_blocks, *_water_vert, *_sky_vert;
 		void *_vertices; // int, vec3
@@ -96,13 +97,17 @@ class Chunk
 		int sand_fall_endz( glm::ivec3 pos );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void remove_block( bool useInventory, glm::ivec3 pos );
-		bool watered_farmland( int posX, int posY, int posZ );
 		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 
 		void light_spread( int posX, int posY, int level, bool skySpread );
 		void generate_lights( void );
 		int computeLight( int row, int col, int level );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
+
+		void updateCrop( int value, int offset );
+		bool watered_farmland( int posX, int posY, int posZ );
+		void updateFarmland( int value, int offset );
+		void spreadGrassblock( int offset );
 	
         void fill_vertex_array( void );
         void setup_array_buffer( void );
@@ -126,6 +131,7 @@ class Chunk
 		void restoreBackup( s_backup backup);
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
 		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours );
+		void turnDirtToGrass( int posX, int posY, int posZ );
 
 		void generation( void );
 		void checkFillVertices( void );
@@ -157,8 +163,9 @@ class Chunk
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &face_counter );
 		void updateFurnaces( double currentTime );
-		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
 		void updateFluids( void );
+		void updateTick( void );
+		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
 		void drawSky( GLint & counter, GLint &face_counter );
 		void drawWater( GLint & counter, GLint &face_counter );
 		std::string getAddsRmsString( void );

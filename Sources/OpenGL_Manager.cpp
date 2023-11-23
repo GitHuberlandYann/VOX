@@ -443,14 +443,13 @@ void OpenGL_Manager::main_loop( void )
 	check_glstate("setup done, entering main loop\n", true);
 
 	// std::cout << "60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame." << std::endl; 
-	double lastTime = glfwGetTime(), lastTimeFluidUpdate = lastTime, lastTimeAnimUpdate = lastTime;
-	int nbFrames = 0;
-	int nbFramesLastSecond = 0;
+	double lastTime = glfwGetTime(), lastGameTick = lastTime;
+	int nbFrames = 0, nbFramesLastSecond = 0, nbTicks = 0, nbTicksLastSecond = 0;
 
 	double previousFrame = lastTime;
-	int backFromMenu = 0;
+	int backFromMenu = 0; // TODO check this var's shinanigans
 
-	bool fluidUpdate = false, animUpdate = false;
+	bool fluidUpdate = false, animUpdate = false, tickUpdate = false;
 
 	// main loop cheking for inputs and rendering everything
 	while (!glfwWindowShouldClose(_window))
@@ -462,24 +461,25 @@ void OpenGL_Manager::main_loop( void )
 		// }
 		nbFrames++;
 		if ( currentTime - lastTime >= 1.0 ){
-			if (0 && !_debug_mode) {
-				std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
-				// std::cout << "other math gives " << (deltaTime) * 1000 << "ms/frame" << std::endl;
-			}
+			// if (0 && !_debug_mode) {
+			// 	std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
+			// 	// std::cout << "other math gives " << (deltaTime) * 1000 << "ms/frame" << std::endl;
+			// }
 			nbFramesLastSecond = nbFrames;
 			nbFrames = 0;
+			nbTicksLastSecond = nbTicks;
+			nbTicks = 0;
 			lastTime += 1.0;
 		}
-		if (!_paused && currentTime - lastTimeFluidUpdate >= 0.25) {
-			fluidUpdate = true;
-			lastTimeFluidUpdate += 0.25;
+		if (currentTime - lastGameTick >= 0.05) {
+			tickUpdate = true;
+			++nbTicks;
+			lastGameTick += 0.05;
+			fluidUpdate = (nbTicks == 5 || nbTicks == 10 || nbTicks == 15 || nbTicks == 20);
+			animUpdate = (nbTicks & 0x1);
 		} else {
+			tickUpdate = false;
 			fluidUpdate = false;
-		}
-		if (currentTime - lastTimeAnimUpdate >= 0.1) {
-			animUpdate = true;
-			lastTimeAnimUpdate += 0.1;
-		} else {
 			animUpdate = false;
 		}
 
@@ -504,6 +504,9 @@ void OpenGL_Manager::main_loop( void )
 				c->updateFurnaces(currentTime);
 				if (fluidUpdate) {
 					c->updateFluids();
+				}
+				if (tickUpdate) {
+					c->updateTick();
 				}
 				c->updateEntities(_entities, deltaTime);
 			}
@@ -542,6 +545,7 @@ void OpenGL_Manager::main_loop( void )
 			? "Timer: " + std::to_string(currentTime)
 				+ '\n' + DayCycle::Get()->getInfos()
 				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
+				+ "\nTPS: " + std::to_string(nbTicksLastSecond)
 				+ '\n' + _camera->getCamString(_game_mode)
 				+ "\nBlock\t> " + ((_block_hit.w >= blocks::AIR) ? s_blocks[_block_hit.w].name : s_blocks[_block_hit.w + blocks::NOTVISIBLE].name)
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")

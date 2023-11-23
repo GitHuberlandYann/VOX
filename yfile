@@ -33,7 +33,6 @@ TODOS:
 	- stairs
 	- chests
 	- doors
-	- wheat + bread
 	- entity shadow
 	- rework clouds
     - Sound https://www.ambiera.com/irrklang/tutorials.html
@@ -98,6 +97,9 @@ DONE:
 	- water if air && level > surface_level && level < 64
 	- Water update when add/rm blocks around
 	- windows
+	- wheat + bread + farming
+	- tick rate + block update
+	- grass spread
 	- fluid at border
     - Water buckets
 	- water flow
@@ -118,6 +120,26 @@ Some info:
       - DISPLAY=:0; xcalc yeswork
   - https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
   - https://stackoverflow.com/questions/54583368/how-to-draw-multiple-objects-in-opengl-using-multiple-vao-and-vbo
+
+  - Game tick 20 times per second
+  - Block update
+	on each game tick, in each 16x16x16 cube 3 blocks are randomly selected
+  - Grass block
+	For a dirt block to accept grass from a nearby grass block, the following requirements must be met:
+		The dirt block receiving grass must be within a 3x5x3 range of the source grass block where the source block is in the center of the second topmost layer of that range.
+		The source grass block must have a light level of 9 or brighter directly above it.
+		The block directly above the dirt block must allow light to pass through it and hit the dirt block, even though the actual light level does not matter. That means blocks that partially let light through such as stairs and slabs must not have their light-blocking side(s) facing the dirt block.
+		The block directly above the dirt block must not be lava, water, or a waterlogged variant of a block.
+	When grass is random ticked, it spreads by checking 4 blocks within range and converts any dirt blocks selected into grass.
+  - CROPS
+	During every update (block update), a crop plant gets a chance to grow to the next stage with the exact chance depending on conditions:
+
+    As noted above, growth requires a light level of at least 9 in the block above the plant.
+    The growth probability is 1/(floor(25/points) + 1), where "points" is as follows:
+        The farmland block the crop is planted on gives 2 points if dry or 4 if hydrated.
+        For each of the 8 blocks around the block on which the crop is planted, dry farmland gives 0.25 points, and hydrated farmland gives 0.75.
+            Note that if a field is bordered with anything besides more farmland, the plants at the edge grow more slowly.
+    Having a crop of the same type diagonally from another of the same type will halve the growth rates of both crops. This does not stack.
   
   - Overworld biome generation is based on 6 parameters:
     Temperature, Humidity (aka. Vegetation), Continentalness (aka. Continents), Erosion, Weirdness (aka. Ridges) and Depth, which are calculated with 6 density functions.

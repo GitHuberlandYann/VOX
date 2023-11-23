@@ -2,7 +2,7 @@ NAME		= vox
 OBJS_DIR	= Objs
 SRCS_DIR	= Sources
 
-FILES		= main callbacks fluids inputs light utils \
+FILES		= main callbacks fluids inputs light random tickUpdate utils \
 				Camera Chunk DayCycle Entity FurnaceInstance Inventory JSON Menu OpenGL_Manager Text Ui
 
 SRCS		= $(addprefix $(SRCS_DIR)/, $(addsuffix .cpp, $(FILES)))
