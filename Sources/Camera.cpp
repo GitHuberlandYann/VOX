@@ -1,8 +1,8 @@
 #include "vox.h"
 
 Camera::Camera( glm::vec3 position )
-	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0), _isRunning(false), _healthUpdate(false),
-	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20),
+	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0), _foodSaturationLevel(20), _foodTickTimer(0), _foodExhaustionLevel(0), _isRunning(false), _healthUpdate(false),
+	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
 	_inJump(false), _touchGround(false), _fall_immunity(true), _z0(position.z)
 {
 	_position = position;
@@ -140,6 +140,9 @@ void Camera::setCurrentChunkPtr( Chunk *ptr )
 void Camera::setRun( bool value )
 {
 	_isRunning = value;
+	if (_foodLevel <= 6) { // can't run when out of energy
+		_isRunning = false;
+	}
 	if (_isRunning) {
 		_fov_offset += 1.0f;
 		if (_fov_offset > 2) {
@@ -192,6 +195,7 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h )
 	if (direction == UP && _touchGround) {
 		_update = true;
 		_inJump = true;
+		updateExhaustion((_isRunning) ? 0.2f : 0.05f);
 		return ;
 	} else if (direction == UP || direction == DOWN || (!v && !h)) {
 		return ;
@@ -199,12 +203,20 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h )
 	_update = true;
 
 	float speed_frame = _deltaTime * ((_isRunning) ?  ((_touchGround) ? RUN_SPEED : RUN_JUMP_SPEED ) : WALK_SPEED);
+	float movement = 0;
 	_mtx.lock();
-	if (direction == X_AXIS)
-		_position.x += glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).x * speed_frame;
-	else if (direction == Y_AXIS)
-		_position.y += glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).y * speed_frame;
+	if (direction == X_AXIS) {
+		movement = glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).x * speed_frame;
+		_position.x += movement;
+	}
+	else if (direction == Y_AXIS) {
+		movement = glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).y * speed_frame;
+		_position.y += movement;
+	}
 	_mtx.unlock();
+	if (_isRunning && movement != 0) {
+		updateExhaustion(glm::abs(movement * 0.1f));
+	}
 }
 
 // z = z0 + vt + at² / 2
@@ -231,7 +243,7 @@ void Camera::touchGround( void )
 	}
 	if (_fall_immunity) {
 		_fall_immunity = false;
-	} else if (!_waterFeet) { // TODO call this function AFTER setting waterFeet
+	} else if (!_waterFeet && _fall_distance > 3) { // TODO call this function AFTER setting waterFeet
 		_healthUpdate = (glm::max(0.0f, _fall_distance - 3) != 0);
 		_health_points -= glm::max(0.0f, _fall_distance - 3);
 		if (_health_points < 0) {
@@ -243,6 +255,56 @@ void Camera::touchGround( void )
 	_z0 = _position.z;
 	_touchGround = true;
 	_inJump = false;
+}
+
+void Camera::tickUpdate( void )
+{
+	++_foodTickTimer;
+	if (_health_points < 20 && (_foodTickTimer == 10 || _foodTickTimer == 20 || _foodTickTimer == 30 || _foodTickTimer == 40
+		|| _foodTickTimer == 50 || _foodTickTimer == 60 || _foodTickTimer == 70)
+		&& _foodLevel == 20 && _foodSaturationLevel) {
+		++_health_points;
+		updateExhaustion(6);
+		_healthUpdate = true;
+	}
+	if (_foodTickTimer == 80) {
+		if (_health_points < 20 && _foodLevel >= 18) {
+			++_health_points;
+			updateExhaustion(6);
+			_healthUpdate = true;
+		} else if (_foodLevel == 0) {
+			if (--_health_points < 0) {
+				_health_points = 0;
+			} else {
+				_healthUpdate = true;
+			}
+		}
+		_foodTickTimer = 0;
+	}
+}
+
+void Camera::updateExhaustion( float level )
+{
+	_foodExhaustionLevel += level;
+	if (_foodExhaustionLevel >= 4) {
+		if (_foodSaturationLevel) {
+			--_foodSaturationLevel;
+		} else if (_foodLevel) {
+			--_foodLevel;
+			_healthUpdate = true;
+		}
+		_foodExhaustionLevel -= 4;
+	}
+}
+
+bool Camera::canEatFood( int type )
+{
+	if (_foodLevel == 20 && _foodSaturationLevel == 20) {
+		return (false);
+	}
+	_foodLevel = glm::min(20, _foodLevel + s_blocks[type].hunger_restauration);
+	_foodSaturationLevel = glm::min(static_cast<float>(_foodLevel), _foodSaturationLevel + s_blocks[type].saturation_restauration);
+	return (true);
 }
 
 bool Camera::getModif( void )
@@ -334,6 +396,9 @@ std::string Camera::getCamString( bool game_mode )
 			+ ((_breathTime > 0) ? " - " + std::to_string(_breathTime) + ": " + std::to_string(getWaterStatus()) : "")
 			+ "\nWater feet\t> " + ((_waterFeet) ? strtrue : strfalse)
 			+ "\nHealth\t> " + std::to_string(_health_points)
+			+ "\nFood\tLevel\t> " + std::to_string(_foodLevel)
+			+ "\n\t\tSaturation\t> " + std::to_string(_foodSaturationLevel)
+			+ "\n\t\tExhaustion\t> " + std::to_string(_foodExhaustionLevel)
 			+ "\nGounded\t> " + ((_touchGround) ? strtrue : strfalse)
 			+ "\nJumping\t> " + ((_inJump) ? strtrue : strfalse)));
 	_mtx.unlock();
@@ -352,6 +417,10 @@ void Camera::respawn( void )
 	_current_chunk_ptr = NULL;
 	_movement_speed = FLY_SPEED;
 	_health_points = 20;
+	_foodLevel = 20;
+	_foodSaturationLevel = 20;
+	_foodTickTimer = 0;
+	_foodExhaustionLevel = 0;
 	_inJump = false;
 	_touchGround = false;
 	_fall_immunity = true;

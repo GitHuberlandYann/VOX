@@ -129,6 +129,52 @@ void Chunk::spreadGrassblock( int offset )
 	}
 }
 
+bool Chunk::findLog( int posX, int posY, int posZ, int level )
+{
+	if (--level < 0) {
+		return (false);
+	}
+	int type = getBlockAt(posX, posY, posZ, true) & 0xFF;
+	bool res = type == blocks::OAK_LOG;
+	if (!res && type != blocks::OAK_LEAVES) {
+		return (false);
+	}
+	if (!res) {
+		res = findLog(posX + 1, posY, posZ, level);
+	}
+	if (!res) {
+		res = findLog(posX - 1, posY, posZ, level);
+	}
+	if (!res) {
+		res = findLog(posX, posY + 1, posZ, level);
+	}
+	if (!res) {
+		res = findLog(posX, posY - 1, posZ, level);
+	}
+	if (!res) {
+		res = findLog(posX, posY, posZ + 1, level);
+	}
+	if (!res) {
+		res = findLog(posX, posY, posZ - 1, level);
+	}
+	return (res);
+}
+
+void Chunk::decayLeaves( int offset )
+{
+	int posZ = offset & (WORLD_HEIGHT - 1);
+	int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
+	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
+
+	int logConnected = findLog(posX, posY, posZ, 6);
+	if (!logConnected) {
+		_blocks[offset] = blocks::AIR; // TODO might want to update ligth
+		_added[offset] = blocks::AIR;
+		_light_update = true;
+		entity_block(posX, posY, posZ, blocks::OAK_LEAVES);
+	}
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -179,6 +225,8 @@ void Chunk::updateTick( void )
 				updateFarmland(value, selected);
 			} else if (type == blocks::GRASS_BLOCK) {
 				spreadGrassblock(selected);
+			} else if (type == blocks::OAK_LEAVES && (value & blocks::NATURAL)) {
+				decayLeaves(selected);
 			}
 		}
 	}

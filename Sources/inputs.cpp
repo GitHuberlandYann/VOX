@@ -377,6 +377,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				_break_time = 0;
 				_break_frame = _outline;
 				handle_add_rm_block(false, can_collect);
+				_camera->updateExhaustion(0.005f);
 				_inventory->decrementDurabitilty();
 			} else {
 				int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
@@ -398,10 +399,26 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		}
 		_break_frame = _outline;
 	}
-	if (_key_rm_block != 1 && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) && ++_key_add_block == 1) { // I don't want to try to del and add at the same time
-		handle_add_rm_block(true, _game_mode == SURVIVAL);
+	if (!_key_rm_block && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT)) { // I don't want to try to del and add at the same time
+		mtx_inventory.lock();
+		int handContent = _inventory->getCurrentSlot();
+		mtx_inventory.unlock();
+		if (_game_mode == SURVIVAL && s_blocks[handContent].isFood) {
+			_eat_timer += deltaTime;
+			if (_eat_timer >= 1.61f) {
+				if (_camera->canEatFood(handContent)) {
+					mtx_inventory.lock();
+					_inventory->removeBlock(false);
+					mtx_inventory.unlock();
+				}
+				_eat_timer = 0;
+			}
+		} else if (++_key_add_block == 1) {
+			handle_add_rm_block(true, _game_mode == SURVIVAL);
+		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		_key_add_block = 0;
+		_eat_timer = 0;
 	}
 	if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
 		mtx_inventory.lock();

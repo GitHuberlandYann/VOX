@@ -188,7 +188,7 @@ void UI::add_food( GLint *vertices, int mult, int index, int & vindex )
 	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
 	vertices[vindex + 3] = 8 * mult;
 	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = 63 + 9 * (index == 1);
+	vertices[vindex + 5] = 63 + 9 * (_camera._foodLevel == (1 + 2 * index));
 	vertices[vindex + 6] = 16;
 	vertices[vindex + 7] = 9;
 	vertices[vindex + 8] = 9;
@@ -215,7 +215,7 @@ void UI::setup_array_buffer( void )
 	int countSlot = _inventory.countSlots();
 	int duras = _inventory.countDura(false);
 	mtx_inventory.unlock();
-    _nb_points = 3 + countSlot + 2 * duras + 10 + _camera._health_points / 2 + _camera._health_points % 2 + _camera.getWaterStatus() / 2 + _camera.getWaterStatus() % 2 + 10 + 4 + 10 + 2;
+    _nb_points = 3 + countSlot + 2 * duras + 10 + (_camera._health_points >> 1) + (_camera._health_points & 1) + (_camera.getWaterStatus() >> 1) + (_camera.getWaterStatus() & 1) + 10 + 4 + 10 + (_camera._foodLevel >> 1) + (_camera._foodLevel & 1);
 	int mult = 4;
 	GLint *vertices = new GLint[_nb_points * 9];
 
@@ -262,7 +262,7 @@ void UI::setup_array_buffer( void )
 	for (int index = 0; index < 10; index++) {
 		add_hearts_holder(vertices, mult, index, vindex);
 	}
-	for (int index = 0; index < _camera._health_points / 2 + _camera._health_points % 2; index++) {
+	for (int index = 0; index < (_camera._health_points >> 1) + (_camera._health_points & 1); index++) {
 		add_hearts(vertices, mult, index, vindex);
 	}
 	for (int index = 0; index < 10; index++) {
@@ -274,10 +274,10 @@ void UI::setup_array_buffer( void )
 	for (int index = 0; index < 10; index++) {
 		add_food_holder(vertices, mult, index, vindex);
 	}
-	for (int index = 0; index < 2; index++) {
+	for (int index = 0; index < (_camera._foodLevel >> 1) + (_camera._foodLevel & 1); index++) {
 		add_food(vertices, mult, index, vindex);
 	}
-	for (int index = 0; index < _camera.getWaterStatus() / 2 + _camera.getWaterStatus() % 2; index++) {
+	for (int index = 0; index < (_camera.getWaterStatus() >> 1) + (_camera.getWaterStatus() & 1); index++) {
 		add_bubbles(vertices, mult, index, vindex);
 	}
 	if (vindex / 9 != _nb_points) {

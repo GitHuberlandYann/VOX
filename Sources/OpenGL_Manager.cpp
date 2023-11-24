@@ -8,7 +8,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _outline(true), _paused(true),
 		_esc_released(true), _e_released(true),
-		_break_time(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
+		_break_time(0), _eat_timer(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_world_name = "default.json";
@@ -477,6 +477,9 @@ void OpenGL_Manager::main_loop( void )
 			lastGameTick += 0.05;
 			fluidUpdate = (nbTicks == 5 || nbTicks == 10 || nbTicks == 15 || nbTicks == 20);
 			animUpdate = (nbTicks & 0x1);
+			if (!_paused || _menu->getState() >= INVENTORY_MENU) {
+				_camera->tickUpdate();
+			}
 		} else {
 			tickUpdate = false;
 			fluidUpdate = false;

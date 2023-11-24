@@ -38,6 +38,7 @@ namespace blocks {
 		GRASS,
 		SUGAR_CANE,
 		DEAD_BUSH,
+		OAK_SAPLING,
 		TORCH,
 		WHEAT_CROP = 64,
 		WHEAT_CROP1,
@@ -81,8 +82,10 @@ namespace blocks {
 		WHEAT_SEEDS,
 		WHEAT,
 		BREAD,
+		APPLE,
 		NOTVISIBLE = 1 << 8,
-		WET_FARMLAND = 1 << 9
+		WET_FARMLAND = 1 << 9,
+		NATURAL = 1 << 9
 	};
 }
 
@@ -100,6 +103,9 @@ struct Block {
 		bool collisionHitbox = true;
 		glm::vec3 hitboxCenter = {0, 0, 0};
 		glm::vec3 hitboxHalfSize = {0, 0, 0};
+		bool isFood = false;
+		int hunger_restauration = 0;
+		float saturation_restauration = 0;
 		bool byHand = false;
 		int needed_tool = blocks::NOTVISIBLE;
 		int needed_material_level = 0;
@@ -379,7 +385,7 @@ struct OakLeaves : Block {
 	public:
 		OakLeaves() {
 			name = "OAK_LEAVES";
-			byHand = false;
+			byHand = true;
 			break_time_hand = 0.3f;
 		}
 };
@@ -643,6 +649,22 @@ struct DeadBush : Block {
 		DeadBush() {
 			name = "DEAD_BUSH";
 			mined = blocks::STICK;
+			hasHitbox = true;
+			collisionHitbox = false;
+			hitboxCenter = {0.5f, 0.5f, 0.3f};
+			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
+			isFuel = true;
+			fuel_time = 5;
+			byHand = true;
+			break_time_hand = 0.05f;
+		}
+};
+
+struct OakSapling : Block {
+	public:
+		OakSapling() {
+			name = "OAK_SAPLING";
+			mined = blocks::OAK_SAPLING;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
@@ -1072,6 +1094,19 @@ struct Bread : Block {
 	public:
 		Bread() {
 			name = "BREAD";
+			isFood = true;
+			hunger_restauration = 5;
+			saturation_restauration = 6;
+		}
+};
+
+struct Apple : Block {
+	public:
+		Apple() {
+			name = "APPLE";
+			isFood = true;
+			hunger_restauration = 4;
+			saturation_restauration = 2.4f;
 		}
 };
 
@@ -1079,9 +1114,9 @@ const Block s_blocks[112] = {
 	Air(), GrassBlock(), OakLog(), Cactus(), Farmland(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), StoneBrick(), CrackedStoneBrick(), Sand(), Gravel(), OakLeaves(), OakPlanks(), Glass(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), CoalBlock(), IronBlock(), DiamondBlock(), TBD(), TBD(), OakSlab(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
-	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), Torch(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), OakSapling(), Torch(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	WheatCrop(), WheatCrop1(), WheatCrop2(), WheatCrop3(), WheatCrop4(), WheatCrop5(), WheatCrop6(), WheatCrop7(), Water(), Water1(), Water2(), Water3(), Water4(), Water5(), Water6(), Water7(),
 	Stick(), WoodenShovel(), StoneShovel(), IronShovel(), DiamondShovel(), WoodenAxe(), StoneAxe(), IronAxe(), DiamondAxe(), WoodenPickaxe(), StonePickaxe(), IronPickaxe(), DiamondPickaxe(), TBD(), TBD(), TBD(),
-	Coal(), Charcoal(), IronIngot(), Diamond(), Bucket(), WaterBucket(), WoodenHoe(), StoneHoe(), IronHoe(), DiamondHoe(), WheatSeeds(), Wheat(), Bread(), TBD(), TBD(), TBD(),
+	Coal(), Charcoal(), IronIngot(), Diamond(), Bucket(), WaterBucket(), WoodenHoe(), StoneHoe(), IronHoe(), DiamondHoe(), WheatSeeds(), Wheat(), Bread(), Apple(), TBD(), TBD(),
 };
 #endif

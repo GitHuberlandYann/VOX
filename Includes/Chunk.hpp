@@ -96,6 +96,7 @@ class Chunk
 	
 		int sand_fall_endz( glm::ivec3 pos );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
+		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
 		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 
@@ -108,6 +109,8 @@ class Chunk
 		bool watered_farmland( int posX, int posY, int posZ );
 		void updateFarmland( int value, int offset );
 		void spreadGrassblock( int offset );
+		bool findLog( int posX, int posY, int posZ, int level );
+		void decayLeaves( int offset );
 	
         void fill_vertex_array( void );
         void setup_array_buffer( void );

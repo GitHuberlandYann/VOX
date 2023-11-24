@@ -334,7 +334,7 @@ void Chunk::generate_blocks( void )
 		for (int index = 0; index < 61; index++) {
 			const GLint delta[3] = {oak_normal[index][0], oak_normal[index][1], oak_normal[index][2]};
 			if (_blocks[((((tree.x + delta[0]) << CHUNK_SHIFT) + tree.y + delta[1]) << WORLD_SHIFT) + tree.z + delta[2]] == blocks::AIR) {
-				_blocks[((((tree.x + delta[0]) << CHUNK_SHIFT) + tree.y + delta[1]) << WORLD_SHIFT) + tree.z + delta[2]] = blocks::OAK_LEAVES;
+				_blocks[((((tree.x + delta[0]) << CHUNK_SHIFT) + tree.y + delta[1]) << WORLD_SHIFT) + tree.z + delta[2]] = blocks::OAK_LEAVES + blocks::NATURAL;
 			}
 		}
 	}
@@ -500,6 +500,45 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 	}
 }
 
+/* generate one or many entities depending on block broken */
+void Chunk::entity_block( int posX, int posY, int posZ, int type )
+{
+	// std::cout << "breaking " << s_blocks[type].name << std::endl;
+	if (type == blocks::GRASS) {
+		float random = Random::randomFloat(_seed);
+		if (random <= 0.125f) {
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, blocks::WHEAT_SEEDS));
+		}
+	} else if (type == blocks::OAK_LEAVES) {
+		float random = Random::randomFloat(_seed);
+		if (random <= 0.05f) {
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, blocks::OAK_SAPLING));
+		}
+		random = Random::randomFloat(_seed);
+		if (random <= 0.02f) {
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 4, posY - 8)), false, blocks::STICK, 2));
+		}
+		random = Random::randomFloat(_seed);
+		if (random <= 0.005f) {
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 4)), false, blocks::APPLE, 1));
+		}
+	} else if (type == blocks::WHEAT_CROP7) {
+		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 4, posY - 8)), false, blocks::WHEAT));
+		float random = Random::randomFloat(_seed);
+		if (random <= 0.0787f) {
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, blocks::WHEAT_SEEDS));
+		} else if (random <= 0.0787f + 0.3149f) {
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, blocks::WHEAT_SEEDS, 2));
+		} else if (random <= 0.0787f + 0.3149f + 0.4198f) {
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, blocks::WHEAT_SEEDS, 3));
+		} else {
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, blocks::WHEAT_SEEDS, 4));
+		}
+	} else {
+		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, s_blocks[type].mined));
+	}
+}
+
 void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
@@ -526,12 +565,12 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		}
 		_furnaces.erase(offset);
 	}
-	if (useInventory) {
+	if (useInventory && type == blocks::WATER) {
 		mtx_inventory.lock();
-		(type == blocks::WATER)
-			? _inventory->addBlock(type)
-			: _entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), false, s_blocks[type].mined));
+		_inventory->addBlock(type); // water bucket
 		mtx_inventory.unlock();
+	} else if (useInventory) {
+		entity_block(pos.x, pos.y, pos.z, type);
 	}
 	int endZ = -1;
 	int type_above = _blocks[offset + 1];

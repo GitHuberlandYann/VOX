@@ -64,6 +64,8 @@ std::string Camera::saveString( void )
 		+ ",\n\t\t\"pitch\": " + std::to_string(_pitch)
 		+ ",\n\t\t\"fov\": " + std::to_string(_fov)
 		+ ",\n\t\t\"health_points\": " + std::to_string(_health_points)
+		+ ",\n\t\t\"foodLevel\": " + std::to_string(_foodLevel)
+		+ ",\n\t\t\"foodSaturation\": " + std::to_string(_foodSaturationLevel)
 		+ ",\n\t\t\"touch_ground\": " + ((_touchGround) ? "true" : "false")
 		+ "\n\t},\n\t";
 	_mtx.unlock();
@@ -296,6 +298,12 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 		} else if (!line.compare(0, 17, "\"health_points\": ")) {
 			_health_points = std::atoi(&line[17]);
 			ofs << "camera health points set to " << _health_points << std::endl;
+		} else if (!line.compare(0, 13, "\"foodLevel\": ")) {
+			_foodLevel = std::atoi(&line[13]);
+			ofs << "camera food level set to " << _foodLevel << std::endl;
+		} else if (!line.compare(0, 18, "\"foodSaturation\": ")) {
+			_foodSaturationLevel = std::stof(&line[18]);
+			ofs << "camera food saturation level set to " << _foodSaturationLevel << std::endl;
 		} else if (!line.compare(0, 16, "\"touch_ground\": ")) {
 			_touchGround = line.substr(16, 4) == "true";
 			ofs << "camera touch ground set to " << _touchGround << std::endl;

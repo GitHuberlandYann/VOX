@@ -35,7 +35,9 @@ class Camera
 		float _yaw, _pitch;
 		float _deltaTime, _fall_time, _breathTime;
 		float _fov, _fov_offset;
-		float _fall_distance;
+		float _fall_distance, _foodSaturationLevel;
+		int _foodTickTimer;
+		float _foodExhaustionLevel;
 		bool _isRunning, _healthUpdate, _waterHead, _waterFeet;
 		std::mutex _mtx;
 		Chunk *_current_chunk_ptr;
@@ -44,7 +46,7 @@ class Camera
 	
 	public:
 		glm::ivec3 _current_block;
-		int _movement_speed, _health_points;
+		int _movement_speed, _health_points, _foodLevel;
 		bool _update, _fovUpdate, _inJump, _touchGround, _fall_immunity;
 		float _z0;
 
@@ -70,6 +72,10 @@ class Camera
 		void moveHuman( Camera_Movement direction, GLint v, GLint h );
 		void applyGravity( void );
 		void touchGround( void );
+
+		void tickUpdate( void );
+		void updateExhaustion( float level );
+		bool canEatFood( int type );
 		bool getModif( void );
 
 		void processPitch( GLint offset );
