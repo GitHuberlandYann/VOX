@@ -1,4 +1,5 @@
-#include "vox.h"
+#include "Camera.hpp"
+#include "utils.h"
 
 Camera::Camera( glm::vec3 position )
 	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0), _foodSaturationLevel(20), _foodTickTimer(0), _foodExhaustionLevel(0), _isRunning(false), _healthUpdate(false),

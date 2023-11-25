@@ -1,6 +1,8 @@
 #ifndef DAYCYCLE_HPP
 # define DAYCYCLE_HPP
 
+# include <mutex>
+
 # define MINECRAFT_MINUTE 0.8333333333333334
 
 enum dayCycle_state {

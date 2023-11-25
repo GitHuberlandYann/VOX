@@ -1,4 +1,12 @@
-#include "vox.h"
+#include "utils.h"
+#include "Text.hpp"
+
+#include "SOIL/SOIL.h"
+typedef struct {
+	unsigned char *content;
+	int width;
+	int height;
+}				t_tex;
 
 Text::Text( void ) : _textures(NULL)
 {

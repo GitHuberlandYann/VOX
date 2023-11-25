@@ -1,6 +1,10 @@
 #ifndef MENU_HPP
 # define MENU_HPP
 
+# include <Chunk.hpp>
+# include "Text.hpp"
+# include <list>
+
 enum {
 	MAIN_MENU,
 	WORLD_SELECT_MENU,

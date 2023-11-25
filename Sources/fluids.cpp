@@ -1,4 +1,5 @@
-#include "vox.h"
+#include "Camera.hpp"
+#include "utils.h"
 
 // ************************************************************************** //
 //                                Private                                     //
@@ -162,7 +163,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level )
 {
 	int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
-	int type = _blocks[offset];
+	int type = _blocks[offset] & 0xFF;
 	// std::cout << "checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[type].name << std::endl;
 	if (!air_flower(type, false, false, true) || type > level || (type == level && level == blocks::WATER1)) {
 		// std::cout << "column expension, water count before: " << _water_count << std::endl;
@@ -171,9 +172,7 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 		_removed.erase(offset);
 		if (!air_flower(type, false, false, true) && type != blocks::AIR) { // replace flower with water
 			// std::cout << _startX << ", " << _startY << " type before: " << s_blocks[type].name << ". displayed: " << _displayed_faces << std::endl;
-			if (type != blocks::GRASS) { // drop item
-				_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, s_blocks[type].mined));
-			}
+			entity_block(posX, posY, posZ, type); // drop item(s)
 			_displayed_faces -= (2 << (type == blocks::TORCH));
 			if (type == blocks::TORCH) {
 				_lights[offset] &= 0xFF00;

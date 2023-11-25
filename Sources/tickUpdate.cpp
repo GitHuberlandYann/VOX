@@ -1,4 +1,6 @@
-#include "vox.h"
+#include "Chunk.hpp"
+#include "random.hpp"
+#include "utils.h"
 
 // ************************************************************************** //
 //                                Private                                     //
@@ -100,7 +102,7 @@ void Chunk::spreadGrassblock( int offset )
 	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
 	if (posZ < 254) {
 		int above = _blocks[offset + 1];
-		if (air_flower(above, true, true, false)) {
+		if (air_flower(above, true, true, true)) {
 			_blocks[offset] = blocks::DIRT;
 			_added[offset] = blocks::DIRT;
 			_light_update = true;

@@ -1,4 +1,21 @@
-#include "vox.h"
+#include "Camera.hpp"
+#include "Menu.hpp"
+#include "Inventory.hpp"
+
+# if __linux__
+#  if 1
+#   define WIN_WIDTH 1680
+#   define WIN_HEIGHT 1050
+#  else
+#   define WIN_WIDTH 1920
+#   define WIN_HEIGHT 1080
+#  endif
+#  define IS_LINUX true
+# else
+#  define WIN_WIDTH 2560
+#  define WIN_HEIGHT 1440
+#  define IS_LINUX false
+# endif
 
 Camera *camera = NULL;
 Menu *menu = NULL;

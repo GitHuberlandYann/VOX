@@ -1,4 +1,4 @@
-#include "vox.h"
+#include "Chunk.hpp"
 
 Entity::Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec2 dir, bool thrown, int value, int amount, int dura )
     : _value(value), _amount(amount), _dura(dura), _thrown(thrown), _lifeTime(0),

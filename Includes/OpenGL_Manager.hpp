@@ -1,40 +1,26 @@
 #ifndef OPENGL_MANAGER_HPP
 # define OPENGL_MANAGER_HPP
 
-# if __linux__
-#  if 1
-#   define WIN_WIDTH 1680
-#   define WIN_HEIGHT 1050
-#  else
-#   define WIN_WIDTH 1920
-#   define WIN_HEIGHT 1080
-#  endif
-#  define IS_LINUX true
-# else
-#  define WIN_WIDTH 2560
-#  define WIN_HEIGHT 1440
-#  define IS_LINUX false
-# endif
+# include "Chunk.hpp"
+# include "DayCycle.hpp"
+# include "Camera.hpp"
+# include "Text.hpp"
+# include "Ui.hpp"
+# include "Menu.hpp"
+# include "callbacks.hpp"
+
+extern std::mutex mtx;
+extern std::mutex mtx_perimeter;
+extern std::mutex mtx_deleted_chunks;
+extern std::mutex mtx_inventory;
+extern std::mutex mtx_backup;
 
 # define RENDER_DISTANCE 10//20
-
-enum {
-	SPECATTRIB,
-	// BLOCKATTRIB,
-	// BREAKATTRIB,
-	// ADJATTRIB,
-	POSATTRIB
-};
 
 enum {
 	FILL,
 	LINE,
 	F_LAST
-};
-
-enum {
-	CREATIVE = false,
-	SURVIVAL = true
 };
 
 class OpenGL_Manager

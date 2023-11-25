@@ -1,4 +1,6 @@
-#include "vox.h"
+#include <string>
+#include "FurnaceInstance.hpp"
+#include "Blocks.hpp"
 
 FurnaceInstance::FurnaceInstance( void )
 	: _composant(blocks::AIR, 0), _fuel(blocks::AIR, 0), _production(blocks::AIR, 0),

@@ -1,4 +1,11 @@
-# include "vox.h"
+#include "OpenGL_Manager.hpp"
+
+#include "SOIL/SOIL.h"
+typedef struct {
+	unsigned char *content;
+	int width;
+	int height;
+}				t_tex;
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL),

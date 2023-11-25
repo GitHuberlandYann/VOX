@@ -1,6 +1,8 @@
 #ifndef FURNACEINSTANCE_HPP
 # define FURNACEINSTANCE_HPP
 
+# include <glm/glm.hpp>
+
 enum furnace_state {
 	NOCHANGE, // same state as previous frame
 	ON,	// turned on this frame

@@ -1,8 +1,20 @@
 #ifndef CHUNK_HPP
 # define CHUNK_HPP
 
+# include <set>
+# include <map>
+# include <atomic>
+# include <thread>
+# include <mutex>
+# include "utils.h"
+# include "PerlinNoise.hpp"
+# include "FurnaceInstance.hpp"
+class Camera;
+# include "Inventory.hpp"
+# include "Entity.hpp"
+
 # define SEA_LEVEL 64
-# define CHUNK_SIZE 16
+// # define CHUNK_SIZE 16 in utils
 # define CHUNK_SHIFT 4
 # define WORLD_HEIGHT 256
 # define WORLD_SHIFT 8
@@ -16,6 +28,14 @@ enum cont {
 	CONT_NEAR_INLAND,
 	CONT_MID_INLAND,
 	CONT_FAR_INLAND
+};
+
+enum {
+	SPECATTRIB,
+	// BLOCKATTRIB,
+	// BREAKATTRIB,
+	// ADJATTRIB,
+	POSATTRIB
 };
 
 const GLint adj_blocks[6][3] = {

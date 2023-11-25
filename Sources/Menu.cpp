@@ -1,5 +1,10 @@
-#include "vox.h"
+#include "Menu.hpp"
+#include "Ui.hpp"
+#include "callbacks.hpp"
 #include <dirent.h>
+extern std::mutex mtx;
+extern std::mutex mtx_inventory;
+extern siv::PerlinNoise::seed_type perlin_seed;
 
 Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _selection(0), _selected_world(0), _vaoSet(false),
 	_esc_released(false), _e_released(false), _left_released(false), _right_released(false),

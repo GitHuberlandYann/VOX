@@ -1,4 +1,6 @@
-#include "vox.h"
+#include "OpenGL_Manager.hpp"
+#include "utils.h"
+#include <iostream>
 
 Chunk *current_chunk_ptr = NULL;
 Chunk *chunk_hit = NULL;

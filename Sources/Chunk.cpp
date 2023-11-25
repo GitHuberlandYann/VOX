@@ -1,4 +1,9 @@
-#include "vox.h"
+#include "Camera.hpp"
+#include "random.hpp"
+
+extern std::mutex mtx_inventory;
+extern std::mutex mtx_backup;
+extern siv::PerlinNoise::seed_type perlin_seed;
 
 Chunk::Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::list<Chunk *> *chunks )
 	: _isVisible(true), _vaoSet(false),
@@ -573,17 +578,16 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		entity_block(pos.x, pos.y, pos.z, type);
 	}
 	int endZ = -1;
-	int type_above = _blocks[offset + 1];
+	int type_above = _blocks[offset + 1] & 0xFF;
 	if (pos.z < 255 && isSandOrGravel(type_above)) { // sand falls if block underneath deleted
 		_blocks[offset] = blocks::AIR;
 		endZ = sand_fall_endz(pos);
-		int above_value = (type_above == blocks::SAND || type_above - blocks::NOTVISIBLE == blocks::SAND) ? blocks::SAND : blocks::GRAVEL;
 		if (endZ == pos.z) {
-			_blocks[offset] = above_value + (value & blocks::NOTVISIBLE);
+			_blocks[offset] = type_above;
 			return (remove_block(false, {pos.x, pos.y, pos.z + 1}));
 		}
 		_blocks[offset] = value; // putting it back temporarily to avoid segfault in neighbour on addblock
-		add_block(false, {pos.x, pos.y, endZ}, above_value, blocks::AIR);
+		add_block(false, {pos.x, pos.y, endZ}, type_above, blocks::AIR);
 		_blocks[offset] = blocks::AIR;
 	}
 	_blocks[offset] = blocks::AIR;

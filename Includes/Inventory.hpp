@@ -1,6 +1,10 @@
 #ifndef INVENTORY_HPP
 # define INVENTORY_HPP
 
+# include "Blocks.hpp"
+# include <list>
+class Chunk;
+
 # define IRECEIPT_SIZE 24
 # define RECEIPT_SIZE 85
 

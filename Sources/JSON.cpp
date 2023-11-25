@@ -1,4 +1,6 @@
-#include "vox.h"
+#include "OpenGL_Manager.hpp"
+#include <fstream>
+extern siv::PerlinNoise::seed_type perlin_seed;
 
 // ************************************************************************** //
 //                                 Upload                                     //

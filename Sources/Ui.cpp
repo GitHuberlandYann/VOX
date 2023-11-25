@@ -1,4 +1,13 @@
-#include "vox.h"
+#include "Camera.hpp"
+#include "Ui.hpp"
+
+extern std::mutex mtx_inventory;
+#include "SOIL/SOIL.h"
+typedef struct {
+	unsigned char *content;
+	int width;
+	int height;
+}				t_tex;
 
 UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _inventory(inventory), _camera(camera), _vaoSet(false)
 {

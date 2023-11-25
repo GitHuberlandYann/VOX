@@ -1,6 +1,51 @@
 #ifndef UTILS_HPP
 # define UTILS_HPP
 
+# define GLEW_STATIC
+# include <GL/glew.h> // must be before glfw
+# include "GLFW/glfw3.h"
+# include <glm/glm.hpp>
+# include <glm/gtc/matrix_transform.hpp>
+# include <glm/gtc/type_ptr.hpp>
+
+# include <vector>
+# include <array>
+# include <iostream>
+# include <string>
+
+# include "Blocks.hpp"
+
+# define CHUNK_SIZE 16
+
+# if __linux__
+#  if 1
+#   define WIN_WIDTH 1680
+#   define WIN_HEIGHT 1050
+#  else
+#   define WIN_WIDTH 1920
+#   define WIN_HEIGHT 1080
+#  endif
+#  define IS_LINUX true
+# else
+#  define WIN_WIDTH 2560
+#  define WIN_HEIGHT 1440
+#  define IS_LINUX false
+# endif
+
+enum {
+	CREATIVE = false,
+	SURVIVAL = true
+};
+
+enum face_dir {
+	MINUSY,
+	PLUSY,
+	MINUSX,
+	PLUSX,
+	MINUSZ,
+	PLUSZ
+};
+
 class Chunk;
 
 std::string get_file_content( std::string file_name );

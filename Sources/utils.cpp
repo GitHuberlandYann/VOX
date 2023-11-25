@@ -1,4 +1,5 @@
-#include "vox.h"
+#include <fstream>
+#include "Chunk.hpp"
 
 std::string get_file_content( std::string file_name )
 {
@@ -141,20 +142,20 @@ int blockGridY( int block, int offset ) // y coord in blockAtlas grid
 	if (block == blocks::FARMLAND) {
 		return (!offset);
 	}
-	return (block & 0xF); // block % 16
+	return (block & 0xF);
 }
 
 int blockAtlasX( int block ) // x coord in blockAtlas in pxl
 {
 	if (block < 16) {
-		return (2 * (block >= 8) * 16);
+		return ((block >= 8) << 5);
 	}
-	return ((3 + block / 16) * 16);
+	return ((3 + (block >> 4)) << 4);
 }
 
 int blockAtlasY( int block ) // y coord in blockAtlas in pxl
 {
-	return ((block % 16) * 16);
+	return ((block & 0xF) << 4);
 }
 
 std::string doubleDigits( int nb )
@@ -215,12 +216,12 @@ bool visible_face( int value, int next, face_dir dir )
 	value &= 0xFF;
 	next &= 0xFF;
 	if (next == blocks::AIR || next >= blocks::POPPY || next == blocks::CACTUS
-		|| (value != blocks::GLASS && (next + (next < 0) * blocks::NOTVISIBLE) == blocks::GLASS)) {
+		|| (value != blocks::GLASS && next == blocks::GLASS)) {
 		return (true);
 	}
-	if (value == blocks::OAK_LEAVES
-		&& (next + (next < 0) * blocks::NOTVISIBLE) == blocks::OAK_LEAVES
-		&& (dir == face_dir::PLUSX || dir == face_dir::PLUSY || dir == face_dir::PLUSZ)) {
+	if (next == blocks::OAK_LEAVES && (value != blocks::OAK_LEAVES
+		|| (value == blocks::OAK_LEAVES
+		&& (dir == face_dir::PLUSX || dir == face_dir::PLUSY || dir == face_dir::PLUSZ)))) {
 		return (true);
 	}
 	if (dir == face_dir::PLUSZ && (value == blocks::OAK_SLAB || value == blocks::FARMLAND)) {

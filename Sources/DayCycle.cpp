@@ -1,4 +1,5 @@
-#include "vox.h"
+#include "utils.h"
+#include "DayCycle.hpp"
 
 // ************************************************************************** //
 //                                Private                                     //

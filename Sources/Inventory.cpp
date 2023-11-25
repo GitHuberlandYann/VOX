@@ -1,4 +1,4 @@
-#include "vox.h"
+#include "Chunk.hpp"
 
 Inventory::Inventory( void ) : _slot(0), _saved_durability(0), _modif(false)
 {

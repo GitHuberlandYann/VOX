@@ -1,6 +1,8 @@
 #ifndef UI_HPP
 # define UI_HPP
 
+# include "Text.hpp"
+
 enum {
     UI_ATLASATTRIB,
     UI_POSATTRIB,
