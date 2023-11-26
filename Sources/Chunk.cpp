@@ -8,7 +8,7 @@ extern siv::PerlinNoise::seed_type perlin_seed;
 Chunk::Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::list<Chunk *> *chunks )
 	: _isVisible(true), _vaoSet(false),
 	_waterVaoSet(false), _waterVaoVIP(false),
-	_skyVaoSet(false), _skyVaoVIP(false), _genDone(false), _light_update(false),
+	_skyVaoSet(false), _skyVaoVIP(false), _genDone(false), _light_update(false), _vertex_update(false),
 	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
 	_blocks(NULL), _water_vert(NULL), _sky_vert(NULL), _vertices(NULL), _lights(NULL),
@@ -667,7 +667,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		int type_below = _blocks[offset - 1] & 0xFF;
 		if (type != blocks::TORCH && type != blocks::WHEAT_CROP && type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
 			return ; // can't place flower on something else than grass/dirt block
-		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY)) {
+		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY) || s_blocks[type_below].hasHitbox) {
 			return ;
 		}
 	} else if (previous >= blocks::WATER) { // replace water block with something else
@@ -702,11 +702,11 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	} else if (type == blocks::GLASS) {
 		_hasWater = true; // glass considered as invis block
 	}
-	if (type == blocks::FARMLAND) {
+	if (type == blocks::FARMLAND || type == blocks::DIRT_PATH) {
 		light_spread(pos.x, pos.y, pos.z, false);
 		light_spread(pos.x, pos.y, pos.z, true);
 		_light_update = false;
-		_displayed_faces -= face_count(blocks::GRASS_BLOCK, pos.x, pos.y, pos.z);
+		_displayed_faces -= face_count(previous, pos.x, pos.y, pos.z);
 		_displayed_faces += face_count(type, pos.x, pos.y, pos.z);
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
@@ -1037,7 +1037,9 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, bool addi
 		}
 		remove_block(useInventory, pos);
 	} else {
-		if (type == blocks::FARMLAND) {
+		if (type == blocks::DIRT_PATH && pos.z < 254 && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z + 1] & 0xFF) != blocks::AIR) { // can't turn dirt to dirt path if anything above it
+			return ;
+		} else if (type == blocks::FARMLAND || type == blocks::DIRT_PATH) {
 		} else if (type == blocks::WHEAT_CROP && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z - 1] & 0xFF) != blocks::FARMLAND) { // can't place crop on something other than farmland
 			return ;
 		} else if ((previous_type != blocks::AIR && previous_type < blocks::WATER) || type == blocks::AIR) { // can't replace block
@@ -1359,7 +1361,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 			// std::cout << "took jump" << std::endl;
 			goto FILL; // this is only to update face shading TODO only update concerned faces
 		}
-		_displayed_faces--;
+		_displayed_faces--; // TODO handle dirt path, slabs and farmland
 		if (!face_count(value, posX, posY, level)) { // block no more visible
 			_blocks[offset] += blocks::NOTVISIBLE;
 		}
@@ -1529,6 +1531,9 @@ void Chunk::drawArray( GLint & counter, GLint &face_counter )
 {
 	if (_light_update && _nb_neighbours == 4) {
 		std::cout << _startX << ", " << _startY << " light update" << std::endl;
+		fill_vertex_array();
+	} else if (_vertex_update && _nb_neighbours == 4) {
+		// std::cout << _startX << ", " << _startY << " crop update" << std::endl;
 		fill_vertex_array();
 	}
 	if (!_vaoReset) { // TODO change vaoReset logic (swap true and false)

@@ -34,6 +34,7 @@ TODOS:
 	- chests
 	- doors
 	- entity shadow
+	- update skylight on leave break
 	- rework clouds
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
@@ -101,6 +102,8 @@ DONE:
 	- Hunger bar update + eating
 	- tick rate + block update
 	- grass spread
+	- sapling growth
+	- dirt paths
 	- fluid at border
     - Water buckets
 	- water flow
@@ -192,3 +195,4 @@ Some info:
 	- Furnace + table craft 0x7 << 9 == orientation, 0x1000 == furnace ON/OFF
 	- Farmland 0x1 << 9 == WET_FARMLAND, 0x7 << 10 == wetness
 	- Leaves 0x1 << 9 == hand placed
+	- saplings 0x1 << 9 == growth stage

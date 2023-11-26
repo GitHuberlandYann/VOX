@@ -18,8 +18,18 @@ void Chunk::updateCrop( int value, int offset )
 	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
 	// std::cout << _startX << ", " << _startY << ": update crop at " << posX << ", " << posY << ", " << posZ << std::endl;
 	int light = getLightLevel(posX, posY, posZ);
-	if (maxi(light & 0xF, (light >> 8) & 0xF) < 9) { // crop requires light level of at least 9 to grow // TODO handle night light dimming
+	light = maxi(light & 0xF, (light >> 8) & 0xF);
+	if (light < 9) { // crop requires light level of at least 9 to grow // TODO handle night light dimming
 		// std::cout << "Failure. sky light " << ((light >> 8) & 0xF) << ", block light " << (light & 0xF) << std::endl;
+		if (light <= 7) { // uproot // TODO crops can't be planted if light level <= 7
+			entity_block(posX, posY, posZ, value & 0xFF);
+			_blocks[offset] = blocks::AIR;
+			_added[offset] = blocks::AIR;
+			_displayed_faces -= 4;
+			delete [] static_cast<GLint*>(_vertices);
+			_vertices = new GLint[_displayed_faces * 4 * 6];
+			_vertex_update = true;
+		}
 		return ;
 	}
 	float points = (getBlockAt(posX, posY, posZ - 1, false) & blocks::WET_FARMLAND) ? 4 : 2;
@@ -35,7 +45,7 @@ void Chunk::updateCrop( int value, int offset )
 	if (Random::randomFloat(_seed) <= growth_probability) {
 		_blocks[offset] = value + 1;
 		_added[offset] = value + 1;
-		_light_update = true;
+		_vertex_update = true;
 		// std::cout << "Success!" << std::endl;
 	} else {
 		// std::cout << "Failure." << std::endl;
@@ -68,7 +78,7 @@ void Chunk::updateFarmland( int value, int offset )
 		if (wetness == 1) {
 			_blocks[offset] = value & 0xFF;
 			_added[offset] = value & 0xFF;
-			_light_update = true;
+			_vertex_update = true;
 			return ;
 		} else if (wetness > 1) {
 			_blocks[offset] = (value & 0xFFE1FF) + ((wetness - 1) << 10);
@@ -77,13 +87,13 @@ void Chunk::updateFarmland( int value, int offset )
 		} else if (type_above < blocks::WHEAT_CROP || type_above > blocks::WHEAT_CROP7) {
 			_blocks[offset] = blocks::DIRT;
 			_added[offset] = blocks::DIRT;
-			_light_update = true;
+			_vertex_update = true;
 			return ;
 		}
 	} else if (!(value & blocks::WET_FARMLAND)) {
 		_blocks[offset] = (value & 0xFF) + blocks::WET_FARMLAND + (0x7 << 10);
 		_added[offset] = (value & 0xFF) + blocks::WET_FARMLAND + (0x7 << 10);
-		_light_update = true;
+		_vertex_update = true;
 	}
 }
 
@@ -105,16 +115,17 @@ void Chunk::spreadGrassblock( int offset )
 		if (air_flower(above, true, true, true)) {
 			_blocks[offset] = blocks::DIRT;
 			_added[offset] = blocks::DIRT;
-			_light_update = true;
+			_vertex_update = true;
 			return ;
 		}
 	}
 	int light = getLightLevel(posX, posY, posZ + 1);
-	if (maxi(light & 0xF, (light >> 8) & 0xF) < 9) { // grass requires light level of at least 9 to spread // TODO handle night light dimming
-		if (maxi(light & 0xF, (light >> 8) & 0xF) < 5) {
+	light = maxi(light & 0xF, (light >> 8) & 0xF);
+	if (light < 9) { // grass requires light level of at least 9 to spread // TODO handle night light dimming
+		if (light < 5) {
 			_blocks[offset] = blocks::DIRT;
 			_added[offset] = blocks::DIRT;
-			_light_update = true;
+			_vertex_update = true;
 		}
 		return ;
 	}
@@ -172,9 +183,54 @@ void Chunk::decayLeaves( int offset )
 	if (!logConnected) {
 		_blocks[offset] = blocks::AIR; // TODO might want to update ligth
 		_added[offset] = blocks::AIR;
-		_light_update = true;
+		_vertex_update = true;
 		entity_block(posX, posY, posZ, blocks::OAK_LEAVES);
 	}
+}
+
+/* returns wheter there is space above position to grow an oak tree (3x3x5 needed) 
+ * dirt and grass_blocks can be in that space */
+bool Chunk::spaceForTree( int posX, int posY, int posZ )
+{
+	for (int row = -1; row < 2; row++) {
+		for (int col = -1; col < 2; col++) {
+			for (int level = 1; level < 6; level++) {
+				int type = getBlockAt(posX + row, posY + col, posZ + level, true) & 0xFF;
+				if (air_flower(type, true, false, true) && type != blocks::GRASS_BLOCK && type != blocks::DIRT) {
+					return (false);
+				}
+			}
+		}
+	}
+	return (true);
+}
+
+void Chunk::growTree( int value, int offset )
+{
+	int posZ = offset & (WORLD_HEIGHT - 1);
+	int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
+	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
+
+	int light = getLightLevel(posX, posY, posZ);
+	light = maxi(light & 0xF, (light >> 8) & 0xF);
+	std::cout << "growTree at " << posX << ", " << posY << ", " << posZ << std::endl;
+	if (light < 9 || !spaceForTree(posX, posY, posZ)) { // requirements not met
+	std::cout << "failure. light " << light << std::endl;
+		return ;
+	}
+	if (!((value >> 9) & 0x1)) { // grow into stage 1, no visual diff
+		_blocks[offset] = value + (1 << 9);
+		_added[offset] = value + (1 << 9);
+	std::cout << "grow stage 1!" << std::endl;
+		return ;
+	}
+	std::cout << "oak tree!" << std::endl;
+	// grow oak tree starting from offset
+	_blocks[offset] = blocks::AIR;
+	add_block( false, {posX, posY, posZ}, blocks::OAK_LOG, blocks::AIR );
+	delete [] static_cast<GLint*>(_vertices);
+	_vertices = new GLint[_displayed_faces * 4 * 6];
+	_vertex_update = true;
 }
 
 // ************************************************************************** //
@@ -205,7 +261,7 @@ void Chunk::turnDirtToGrass( int posX, int posY, int posZ )
 	} else {
 		_blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] = blocks::GRASS_BLOCK;
 		_added[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] = blocks::GRASS_BLOCK;
-		_light_update = true;
+		_vertex_update = true;
 	}
 }
 
@@ -229,6 +285,8 @@ void Chunk::updateTick( void )
 				spreadGrassblock(selected);
 			} else if (type == blocks::OAK_LEAVES && (value & blocks::NATURAL)) {
 				decayLeaves(selected);
+			} else if (type == blocks::OAK_SAPLING) {
+				growTree(value, selected);
 			}
 		}
 	}

@@ -75,7 +75,7 @@ class Chunk
     private:
         GLuint _vao, _vbo, _waterVao, _waterVbo, _skyVao, _skyVbo;
         bool _isVisible, _vaoSet, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
-		std::atomic_bool _genDone, _light_update, _vaoReset, _vaoVIP, _waterVaoReset, _skyVaoReset, _sortedOnce;
+		std::atomic_bool _genDone, _light_update, _vertex_update, _vaoReset, _vaoVIP, _waterVaoReset, _skyVaoReset, _sortedOnce;
         GLint _startX, _startY, _nb_neighbours;
 		unsigned _seed;
 		GLint _continent;
@@ -131,6 +131,8 @@ class Chunk
 		void spreadGrassblock( int offset );
 		bool findLog( int posX, int posY, int posZ, int level );
 		void decayLeaves( int offset );
+		bool spaceForTree( int posX, int posY, int posZ );
+		void growTree( int value, int offset );
 	
         void fill_vertex_array( void );
         void setup_array_buffer( void );

@@ -224,7 +224,7 @@ bool visible_face( int value, int next, face_dir dir )
 		&& (dir == face_dir::PLUSX || dir == face_dir::PLUSY || dir == face_dir::PLUSZ)))) {
 		return (true);
 	}
-	if (dir == face_dir::PLUSZ && (value == blocks::OAK_SLAB || value == blocks::FARMLAND)) {
+	if (dir == face_dir::PLUSZ && (value == blocks::OAK_SLAB || value == blocks::FARMLAND || value == blocks::DIRT_PATH)) {
 		return (true);
 	}
 	if (next == blocks::OAK_SLAB) {
@@ -233,11 +233,13 @@ bool visible_face( int value, int next, face_dir dir )
 		}
 		return (value != blocks::OAK_SLAB);
 	}
-	if (next == blocks::FARMLAND) {
+	if (next == blocks::FARMLAND || next == blocks::DIRT_PATH) {
 		if (dir == face_dir::MINUSZ) {
 			return (true);
+		} else if (dir == face_dir::PLUSZ) {
+			return (false);
 		}
-		return (value != blocks::OAK_SLAB && value != blocks::FARMLAND);
+		return (value != blocks::OAK_SLAB && value != blocks::FARMLAND && value != blocks::DIRT_PATH);
 	}
 	return (false);
 }

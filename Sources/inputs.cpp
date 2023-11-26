@@ -105,6 +105,10 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		&& (_block_hit.w == blocks::DIRT || _block_hit.w == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
 		type = blocks::FARMLAND;
 		replace_block = true;
+	} else if (type >= blocks::WOODEN_SHOVEL && type <= blocks::DIAMOND_SHOVEL
+		&& (_block_hit.w == blocks::DIRT || _block_hit.w == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
+		type = blocks::DIRT_PATH;
+		replace_block = true;
 	} else if (type == blocks::WHEAT_SEEDS) {
 		type = blocks::WHEAT_CROP;
 	} else if (type == blocks::AIR || type >= blocks::STICK) {

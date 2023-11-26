@@ -180,8 +180,8 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 			}
 			// std::cout << "type after: " << s_blocks[level].name << ". displayed: " << _displayed_faces << std::endl;
 			delete [] static_cast<GLint*>(_vertices);
-			_vertices = new GLint[_displayed_faces * 24]; // TODO set flag to true and update vert array once on this frame instead of once per destroyed flower
-			fill_vertex_array();
+			_vertices = new GLint[_displayed_faces * 24];
+			_vertex_update = true;
 		}
 		if (!air_flower(type, false, false, true)) {
 			_hasWater = true;

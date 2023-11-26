@@ -90,7 +90,7 @@ void Chunk::generate_lights( void )
 			for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
 				if (light_level) {
 					int type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xFF;
-					if (air_flower(type, true, true, false) && type != blocks::OAK_SLAB && type != blocks::FARMLAND) { // block hit
+					if (air_flower(type, true, true, false) && type != blocks::OAK_SLAB && type != blocks::FARMLAND && type != blocks::DIRT_PATH) { // block hit
 						light_level = 0;
 					}
 					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
@@ -338,6 +338,12 @@ void Chunk::fill_vertex_array( void )
 							int faceLight = computeLight(row, col, level + 1);
 							int shade = computeShade(row, col, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 							spec += (faceLight << 24);
+							if (block_type == blocks::DIRT_PATH) {
+								p4.z -= 1.0f / 16.0f;
+								p5.z -= 1.0f / 16.0f;
+								p0.z -= 1.0f / 16.0f;
+								p1.z -= 1.0f / 16.0f;
+							}
 							// if (shade & 0xFF)std::cout << "shade is " << shade << std::endl;
 							// if (shade & 0xFFFFFF00)std::cout << "problem" << std::endl;
 							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p4};
@@ -410,6 +416,7 @@ void Chunk::fill_vertex_array( void )
 	// 	std::cout << "ERROR fill_vertex_array " << _startX << ", " << _startY << "\n\tindex at end is " << (index >> 2) / 6 << " | " << index << " vs " << _displayed_faces << " | " << _displayed_faces * 4 * 6 << std::endl;
 	// }
 	_light_update = false;
+	_vertex_update = false;
 	_vaoReset = false;
 	_vaoVIP = true;
 }
@@ -476,8 +483,8 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 			}
 		}
 	} else {
-		int value = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] & 0xFF;
-		if (air_flower(value, true, true, false) && value != blocks::OAK_SLAB && value != blocks::FARMLAND) {
+		int type = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] & 0xFF;
+		if (air_flower(type, true, true, false) && type != blocks::OAK_SLAB && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
 			return ;
 		}
 		short neighbour = (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] >> (8 * skySpread));

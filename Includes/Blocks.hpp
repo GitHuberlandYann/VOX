@@ -8,6 +8,7 @@ namespace blocks {
 		OAK_LOG,
 		CACTUS,
 		FARMLAND,
+		DIRT_PATH,
 		CRAFTING_TABLE = 8,
 		FURNACE,
 		BEDROCK = 16,
@@ -209,6 +210,24 @@ struct Farmland : Block {
 			break_time_wooden = 0.45f;
 			break_time_stone = 0.25f;
 			break_time_iron = 0.15f;
+			break_time_diamond = 0.15f;
+		}
+};
+
+struct DirtPath : Block {
+	public:
+		DirtPath() {
+			name = "DIRT PATH";
+			mined = blocks::DIRT;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
+			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
+			byHand = true;
+			needed_tool = blocks::WOODEN_SHOVEL;
+			break_time_hand = 1.0f;
+			break_time_wooden = 0.5f;
+			break_time_stone = 0.25f;
+			break_time_iron = 0.2f;
 			break_time_diamond = 0.15f;
 		}
 };
@@ -1111,7 +1130,7 @@ struct Apple : Block {
 };
 
 const Block s_blocks[112] = {
-	Air(), GrassBlock(), OakLog(), Cactus(), Farmland(), TBD(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
+	Air(), GrassBlock(), OakLog(), Cactus(), Farmland(), DirtPath(), TBD(), TBD(), CraftingTable(), Furnace(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Bedrock(), Dirt(), SmoothStone(), Stone(), Cobblestone(), StoneBrick(), CrackedStoneBrick(), Sand(), Gravel(), OakLeaves(), OakPlanks(), Glass(), TBD(), TBD(), TBD(), TBD(),
 	CoalOre(), IronOre(), DiamondOre(), CoalBlock(), IronBlock(), DiamondBlock(), TBD(), TBD(), OakSlab(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(), TBD(),
 	Poppy(), Dandelion(), BlueOrchid(), Allium(), CornFlower(), PinkTulip(), Grass(), SugarCane(), DeadBush(), OakSapling(), Torch(), TBD(), TBD(), TBD(), TBD(), TBD(),
