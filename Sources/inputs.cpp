@@ -66,16 +66,20 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		if (_block_hit.w == blocks::AIR) {
 			return ;
 		}
+		if (chunk_hit) {
+			chunk_hit->handleHit(collect, 0, _block_hit, Modif::REMOVE);
+			return ;
+		}
 		int posX = chunk_pos(_block_hit.x);
 		int posY = chunk_pos(_block_hit.y);
 		
-		for (auto& c : _visible_chunks) {
-			if (c->isInChunk(posX, posY)) {
-				// std::cout << "handle hit at pos " << _block_hit.x << ", " << _block_hit.y << ", " << _block_hit.z << std::endl;
-				c->handleHit(collect, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), adding);
-				return ;
-			}
-		}
+		// for (auto& c : _visible_chunks) {
+		// 	if (c->isInChunk(posX, posY)) {
+		// 		// std::cout << "handle hit at pos " << _block_hit.x << ", " << _block_hit.y << ", " << _block_hit.z << std::endl;
+		// 		c->handleHit(collect, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), Modif::REMOVE);
+		// 		return ;
+		// 	}
+		// }
 		std::cout << "rm: chunk out of bound at " << posX << ", " << posY << std::endl;
 		return ;
 	}
@@ -96,7 +100,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	}
 	int type = _inventory->getCurrentSlot();
 	// std::cout << "aiming " << s_blocks[type].name << " towards " << s_blocks[_block_hit.w].name << std::endl;;
-	bool find_water = false, replace_block = false;
+	bool find_water = false;
 	if (type == blocks::WATER_BUCKET) { // use it like any other block
 		type = blocks::WATER;
 	} else if (type == blocks::BUCKET) { // special case, add but remove water instead
@@ -104,11 +108,13 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	} else if (type >= blocks::WOODEN_HOE && type <= blocks::DIAMOND_HOE
 		&& (_block_hit.w == blocks::DIRT || _block_hit.w == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
 		type = blocks::FARMLAND;
-		replace_block = true;
+		chunk_hit->handleHit(true, type, _block_hit, Modif::REPLACE);
+		return ;
 	} else if (type >= blocks::WOODEN_SHOVEL && type <= blocks::DIAMOND_SHOVEL
 		&& (_block_hit.w == blocks::DIRT || _block_hit.w == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
 		type = blocks::DIRT_PATH;
-		replace_block = true;
+		chunk_hit->handleHit(true, type, _block_hit, Modif::REPLACE);
+		return ;
 	} else if (type == blocks::WHEAT_SEEDS) {
 		type = blocks::WHEAT_CROP;
 	} else if (type == blocks::AIR || type >= blocks::STICK) {
@@ -148,14 +154,9 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			}
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
-		if (replace_block) {
-			if (chunk->isHit(i, false)) {
-				chunk->handleHit(false, type, i, true);
-				return ;
-			}
-		} else if (find_water) {
+		if (find_water) {
 			if (chunk->isHit(i, true)) {
-				chunk->handleHit(collect, type, i, false);
+				chunk->handleHit(collect, type, i, Modif::REMOVE);
 				return ;
 			}
 		} else if (chunk->isHit(i, false)) { // TODO use line_cube_intersection to put block behind flower, but not if flower would be replaced
@@ -167,10 +168,10 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 				return ;
 			}
 			if (previous_chunk != current_chunk) {
-				prev_chunk->handleHit(collect, type, previous_block, adding);
+				prev_chunk->handleHit(collect, type, previous_block, Modif::ADD);
 				return ;
 			}
-			chunk->handleHit(collect, type, previous_block, adding);
+			chunk->handleHit(collect, type, previous_block, Modif::ADD);
 			return ;
 		}
 		previous_block = i;

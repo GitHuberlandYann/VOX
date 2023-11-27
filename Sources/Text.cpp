@@ -134,17 +134,16 @@ void Text::addText( int posX, int posY, int font_size, bool white, std::string s
 			posX += font_size;
 			++charLine;
 		} else if (str[i] == '\t') {
-			int currentTab = 1 + charLine / 4;
-			posX = startX + (currentTab * 4) * font_size;
-			charLine += 4 - charLine % 4;
+			charLine += 4 - (charLine & 3);
+			posX = startX + charLine * font_size;
 		} else {
 			_texts.push_back(posX);
 			_texts.push_back(posY);
 			_texts.push_back(font_size);
 			_texts.push_back(str[i]);
-			_texts.push_back(((white) ? 1 : 0));
+			_texts.push_back(white);
 			char c = str[i];
-			if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') {
+			if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') { // TODO might want to use strchr here
 				posX += font_size * 0.5;
 			} else if (c == 'I' || c == '[' || c == ']' || c == '"' || c == '*') {
 				posX += font_size * 0.6;	
@@ -165,19 +164,13 @@ void Text::toScreen( void )
 		return ;
 	}
 
-	GLint *vertices = new GLint[tSize];
-	for (size_t index = 0; index < tSize; index++) {
-		vertices[index] = _texts[index];
-	}
-
 	glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, tSize * sizeof(GLint), vertices, GL_STATIC_DRAW);
-	delete [] vertices;
-    
+	glBufferData(GL_ARRAY_BUFFER, tSize * sizeof(GLint), &_texts[0], GL_STATIC_DRAW);
+
     glEnableVertexAttribArray(TEXT_POSATTRIB);
 	glVertexAttribIPointer(TEXT_POSATTRIB, 2, GL_INT, 5 * sizeof(GLint), 0);
 	// check_glstate("text_posattrib successfully set");

@@ -28,7 +28,7 @@ class UI
         void add_hearts( GLint *vertices, int mult, int index, int & vindex );
         void add_armor_holder( GLint *vertices, int mult, int index, int & vindex );
         void add_armor( GLint *vertices, int mult, int index, int & vindex );
-        void add_food_holder( GLint *vertices, int mult, int index, int & vindex );
+        void add_food_holder( GLint *vertices, int mult, int index, int & vindex, int saturation );
         void add_food( GLint *vertices, int mult, int index, int & vindex );
         void add_bubbles( GLint *vertices, int mult, int index, int & vindex );
         void setup_array_buffer( void );

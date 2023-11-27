@@ -176,14 +176,14 @@ void UI::add_armor( GLint *vertices, int mult, int index, int & vindex )
 	vindex += 9;
 }
 
-void UI::add_food_holder( GLint *vertices, int mult, int index, int & vindex )
+void UI::add_food_holder( GLint *vertices, int mult, int index, int & vindex, int saturation )
 {
 	vertices[vindex + 0] = 1;
-	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - 9 * mult - (index * 8 * mult);
+	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - 10 * mult - (index * 8 * mult);
 	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
 	vertices[vindex + 3] = 8 * mult;
 	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = 54;
+	vertices[vindex + 5] = ((saturation > 2 * index) ? ((saturation == 2 * index + 1) ? 54 + 18 : 54 + 9): 54);
 	vertices[vindex + 6] = 16;
 	vertices[vindex + 7] = 9;
 	vertices[vindex + 8] = 9;
@@ -197,7 +197,7 @@ void UI::add_food( GLint *vertices, int mult, int index, int & vindex )
 	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
 	vertices[vindex + 3] = 8 * mult;
 	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = 63 + 9 * (_camera._foodLevel == (1 + 2 * index));
+	vertices[vindex + 5] = 82 + 9 * (_camera._foodLevel == (1 + 2 * index));
 	vertices[vindex + 6] = 16;
 	vertices[vindex + 7] = 9;
 	vertices[vindex + 8] = 9;
@@ -211,7 +211,7 @@ void UI::add_bubbles( GLint *vertices, int mult, int index, int & vindex )
 	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3);
 	vertices[vindex + 3] = 8 * mult;
 	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = 81 + 9 * (_camera.getWaterStatus() == (1 + 2 * index));
+	vertices[vindex + 5] = 99 + 9 * (_camera.getWaterStatus() == (1 + 2 * index));
 	vertices[vindex + 6] = 16;
 	vertices[vindex + 7] = 9;
 	vertices[vindex + 8] = 9;
@@ -280,8 +280,9 @@ void UI::setup_array_buffer( void )
 	for (int index = 0; index < 4; index++) {
 		add_armor(vertices, mult, index, vindex);
 	}
+	int saturation = glm::floor(_camera._foodSaturationLevel);
 	for (int index = 0; index < 10; index++) {
-		add_food_holder(vertices, mult, index, vindex);
+		add_food_holder(vertices, mult, index, vindex, saturation);
 	}
 	for (int index = 0; index < (_camera._foodLevel >> 1) + (_camera._foodLevel & 1); index++) {
 		add_food(vertices, mult, index, vindex);

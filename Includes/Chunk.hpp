@@ -38,6 +38,12 @@ enum {
 	POSATTRIB
 };
 
+enum Modif {
+	REMOVE,
+	ADD,
+	REPLACE
+};
+
 const GLint adj_blocks[6][3] = {
 	{0, -1, 0}, {0, 1, 0}, {-1, 0, 0}, {1, 0, 0}, {0, 0, -1}, {0, 0, 1}
 };
@@ -119,6 +125,7 @@ class Chunk
 		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
 		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
+		void replace_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 
 		void light_spread( int posX, int posY, int level, bool skySpread );
 		void generate_lights( void );
@@ -148,6 +155,7 @@ class Chunk
 		bool getSortedOnce( void );
 		GLint getSkyLightLevel( glm::ivec3 location );
 		GLint getBlockLightLevel( glm::ivec3 location );
+		int computePosLight( glm::vec3 pos );
 		short getLightLevel( int posX, int posY, int posZ );
 		void waitGenDone( void );
 
@@ -161,7 +169,7 @@ class Chunk
 		void generation( void );
 		void checkFillVertices( void );
 		void execFillVertices( void );
-		void regeneration( bool useInventory, int type, glm::ivec3 pos, bool adding );
+		void regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void generate_chunk( void );
 		void addEntity( glm::vec3 dir, int value, int amount, int dura );
 		void sort_sky( glm::vec3 pos, bool vip );
@@ -174,13 +182,12 @@ class Chunk
         bool isInChunk( int posX, int posY );
 
 		int isHit( glm::ivec3 pos, bool waterIsBlock );
-		void handleHit( bool useInventory, int type, glm::ivec3 pos, bool adding );
+		void handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void updateBreak( glm::ivec4 block_hit, int frame );
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread );
 		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
 		void insertFluidAt( std::set<int> *newFluids, int posX, int posY, int posZ );
 		void update_border( int posX, int posY, int level, int type, bool adding );
-		int computePosLight( glm::vec3 pos );
 		bool collisionBox( glm::vec3 pos, float width, float height );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( void );

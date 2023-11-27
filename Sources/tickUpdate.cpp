@@ -22,12 +22,7 @@ void Chunk::updateCrop( int value, int offset )
 	if (light < 9) { // crop requires light level of at least 9 to grow // TODO handle night light dimming
 		// std::cout << "Failure. sky light " << ((light >> 8) & 0xF) << ", block light " << (light & 0xF) << std::endl;
 		if (light <= 7) { // uproot // TODO crops can't be planted if light level <= 7
-			entity_block(posX, posY, posZ, value & 0xFF);
-			_blocks[offset] = blocks::AIR;
-			_added[offset] = blocks::AIR;
-			_displayed_faces -= 4;
-			delete [] static_cast<GLint*>(_vertices);
-			_vertices = new GLint[_displayed_faces * 4 * 6];
+			remove_block(true, {posX, posY, posZ});
 			_vertex_update = true;
 		}
 		return ;
@@ -83,6 +78,7 @@ void Chunk::updateFarmland( int value, int offset )
 		} else if (wetness > 1) {
 			_blocks[offset] = (value & 0xFFE1FF) + ((wetness - 1) << 10);
 			_added[offset] = (value & 0xFFE1FF) + ((wetness - 1) << 10);
+			_removed.erase(offset);
 			return ;
 		} else if (type_above < blocks::WHEAT_CROP || type_above > blocks::WHEAT_CROP7) {
 			_blocks[offset] = blocks::DIRT;
@@ -148,29 +144,17 @@ bool Chunk::findLog( int posX, int posY, int posZ, int level )
 		return (false);
 	}
 	int type = getBlockAt(posX, posY, posZ, true) & 0xFF;
-	bool res = type == blocks::OAK_LOG;
-	if (!res && type != blocks::OAK_LEAVES) {
+	if (type == blocks::OAK_LOG) {
+		return (true);
+	} else if (type != blocks::OAK_LEAVES) {
 		return (false);
 	}
-	if (!res) {
-		res = findLog(posX + 1, posY, posZ, level);
-	}
-	if (!res) {
-		res = findLog(posX - 1, posY, posZ, level);
-	}
-	if (!res) {
-		res = findLog(posX, posY + 1, posZ, level);
-	}
-	if (!res) {
-		res = findLog(posX, posY - 1, posZ, level);
-	}
-	if (!res) {
-		res = findLog(posX, posY, posZ + 1, level);
-	}
-	if (!res) {
-		res = findLog(posX, posY, posZ - 1, level);
-	}
-	return (res);
+	return (findLog(posX + 1, posY, posZ, level)
+		|| findLog(posX - 1, posY, posZ, level)
+		|| findLog(posX, posY + 1, posZ, level)
+		|| findLog(posX, posY - 1, posZ, level)
+		|| findLog(posX, posY, posZ + 1, level)
+		|| findLog(posX, posY, posZ - 1, level));
 }
 
 void Chunk::decayLeaves( int offset )
@@ -181,10 +165,8 @@ void Chunk::decayLeaves( int offset )
 
 	int logConnected = findLog(posX, posY, posZ, 6);
 	if (!logConnected) {
-		_blocks[offset] = blocks::AIR; // TODO might want to update ligth
-		_added[offset] = blocks::AIR;
+		remove_block(true, {posX, posY, posZ}); // TODO might want to update ligth
 		_vertex_update = true;
-		entity_block(posX, posY, posZ, blocks::OAK_LEAVES);
 	}
 }
 

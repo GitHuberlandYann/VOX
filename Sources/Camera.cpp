@@ -2,9 +2,9 @@
 #include "utils.h"
 
 Camera::Camera( glm::vec3 position )
-	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0), _foodSaturationLevel(20), _foodTickTimer(0), _foodExhaustionLevel(0), _isRunning(false), _healthUpdate(false),
+	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0), _foodTickTimer(0), _foodExhaustionLevel(0), _isRunning(false), _healthUpdate(false),
 	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
-	_inJump(false), _touchGround(false), _fall_immunity(true), _z0(position.z)
+	_inJump(false), _touchGround(false), _fall_immunity(true), _z0(position.z), _foodSaturationLevel(20)
 {
 	_position = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -232,9 +232,12 @@ void Camera::applyGravity( void )
 	_mtx.unlock();
 }
 
-void Camera::touchGround( void )
+void Camera::touchGround( float value )
 {
+	_mtx.lock();
+	_position.z = value;
 	_fall_distance = _z0 - _position.z;
+	_mtx.unlock();
 	// std::cout << "TOUCH GROUND AT " << _fall_distance << std::endl;
 	// if (_inJump && _fall_distance < 0) {
 	// 	return ;
@@ -252,9 +255,19 @@ void Camera::touchGround( void )
 		}
 	}
 	_fall_time = 0;
-	_fall_distance = 0;
 	_z0 = _position.z;
 	_touchGround = true;
+	_inJump = false;
+}
+
+void Camera::touchCeiling( float value )
+{
+	_mtx.lock();
+	_position.z = value;
+	_mtx.unlock();
+	_z0 = value;
+	_fall_time = 0;
+	_update = true;
 	_inJump = false;
 }
 
@@ -292,8 +305,8 @@ void Camera::updateExhaustion( float level )
 			--_foodSaturationLevel;
 		} else if (_foodLevel) {
 			--_foodLevel;
-			_healthUpdate = true;
 		}
+		_healthUpdate = true;
 		_foodExhaustionLevel -= 4;
 	}
 }

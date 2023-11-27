@@ -112,27 +112,7 @@ void Chunk::generate_lights( void )
 int Chunk::computeLight( int row, int col, int level )
 {
 	// (void)row;(void)col;(void)level;return (0);
-	short light = 0xF00;
-	if (level == 256) {
-	} else if (row == -1) {
-		if (_neighbours[face_dir::MINUSX]) {
-			light = _neighbours[face_dir::MINUSX]->getLightLevel(CHUNK_SIZE - 1, col, level);
-		}
-	} else if (col == -1) {
-		if (_neighbours[face_dir::MINUSY]) {
-			light = _neighbours[face_dir::MINUSY]->getLightLevel(row, CHUNK_SIZE - 1, level);
-		}
-	} else if (row == CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSX]) {
-			light = _neighbours[face_dir::PLUSX]->getLightLevel(0, col, level);
-		}
-	} else if (col == CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSY]) {
-			light = _neighbours[face_dir::PLUSY]->getLightLevel(row, 0, level);
-		}
-	} else {
-		light = _lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-	}
+	short light = getLightLevel(row, col, level);
 	// int blockLightAmplitude = 5; // amount by which light decreases on each block
 	int blockLight = light & 0xF;
 	int skyLight = (light >> 8) & 0xF;
@@ -412,9 +392,9 @@ void Chunk::fill_vertex_array( void )
 		}
 	}
 	_mtx.unlock();
-	// if (index != _displayed_faces * 24) { // TODO if segfault on fill_vertex_array, use this condition to try and debug it
-	// 	std::cout << "ERROR fill_vertex_array " << _startX << ", " << _startY << "\n\tindex at end is " << (index >> 2) / 6 << " | " << index << " vs " << _displayed_faces << " | " << _displayed_faces * 4 * 6 << std::endl;
-	// }
+	if (index != _displayed_faces * 24) { // TODO if segfault on fill_vertex_array, use this condition to try and debug it
+		std::cout << "ERROR fill_vertex_array " << _startX << ", " << _startY << "\n\tindex at end is " << (index >> 2) / 6 << " | " << index << " vs " << _displayed_faces << " | " << _displayed_faces * 4 * 6 << std::endl;
+	}
 	_light_update = false;
 	_vertex_update = false;
 	_vaoReset = false;
@@ -443,19 +423,38 @@ GLint Chunk::getBlockLightLevel( glm::ivec3 location )
 	return (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + location.z] & 0xF);
 }
 
+int Chunk::computePosLight( glm::vec3 pos )
+{
+	return (computeLight(glm::floor(pos.x - _startX), glm::floor(pos.y - _startY), glm::floor(pos.z)));
+}
+
 short Chunk::getLightLevel( int posX, int posY, int posZ )
 {
-	if (!_lights) {
+	if (!_lights || posZ < 0) {
 		return (0);
-		// std::cout << "getLightLevel too soon " << _startX << ", " << _startY << std::endl;
-		// while (!_genDone); // hello neighbour please wait for me to finish to load my light and blocks
-		// if (_lights) {
-		// 	std::cout << "done waiting " << _startX << ", " << _startY << std::endl;
-		// } else {
-		// 	std::cout << "ABORT" << std::endl;
-		// }
+	} else if (posZ >= WORLD_HEIGHT) {
+		return (0xF00);
 	}
-	return (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ]);
+	if (posX < 0) {
+		if (_neighbours[face_dir::MINUSX]) {
+			return (_neighbours[face_dir::MINUSX]->getLightLevel(posX + CHUNK_SIZE, posY, posZ));
+		}
+	} else if (posX >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSX]) {
+			return (_neighbours[face_dir::PLUSX]->getLightLevel(posX - CHUNK_SIZE, posY, posZ));
+		}
+	} else if (posY < 0) {
+		if (_neighbours[face_dir::MINUSY]) {
+			return (_neighbours[face_dir::MINUSY]->getLightLevel(posX, posY + CHUNK_SIZE, posZ));
+		}
+	} else if (posY >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSY]) {
+			return (_neighbours[face_dir::PLUSY]->getLightLevel(posX, posY - CHUNK_SIZE, posZ));
+		}
+	} else {
+		return (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ]);
+	}
+	return (0xF00);
 }
 
 void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool skySpread )

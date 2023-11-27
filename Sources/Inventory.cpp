@@ -681,6 +681,7 @@ void Inventory::decrementDurabitilty( void )
 					removeBlock(false);
 					_durabilities.remove(dura);
 				}
+				_modif = true;
 				return ;
 			}
 		}

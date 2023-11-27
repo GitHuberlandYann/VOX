@@ -38,7 +38,7 @@ class Camera
 		float _yaw, _pitch;
 		float _deltaTime, _fall_time, _breathTime;
 		float _fov, _fov_offset;
-		float _fall_distance, _foodSaturationLevel;
+		float _fall_distance;
 		int _foodTickTimer;
 		float _foodExhaustionLevel;
 		bool _isRunning, _healthUpdate, _waterHead, _waterFeet;
@@ -51,7 +51,7 @@ class Camera
 		glm::ivec3 _current_block;
 		int _movement_speed, _health_points, _foodLevel;
 		bool _update, _fovUpdate, _inJump, _touchGround, _fall_immunity;
-		float _z0;
+		float _z0, _foodSaturationLevel;
 
 		Camera( glm::vec3 position );
 		~Camera( void );
@@ -74,7 +74,8 @@ class Camera
 		void moveFly( GLint v, GLint h, GLint z );
 		void moveHuman( Camera_Movement direction, GLint v, GLint h );
 		void applyGravity( void );
-		void touchGround( void );
+		void touchGround( float value );
+		void touchCeiling( float value );
 
 		void tickUpdate( void );
 		void updateExhaustion( float level );
