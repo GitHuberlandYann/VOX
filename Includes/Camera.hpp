@@ -15,20 +15,33 @@ enum Camera_Movement {
 	Y_AXIS
 };
 
-# define YAW          90.0f
-# define PITCH        0.0f
-# define REACH		  4.5f
-# define FLY_SPEED    20
-# define WALK_SPEED   4.317f
-# define RUN_SPEED    5.612f
-# define RUN_JUMP_SPEED 7.127f
-# define EYE_LEVEL    0.62f
-# define INITIAL_JUMP 9.317f
-# define INITIAL_FALL -6.605f
-# define STANDARD_GRAVITY -9.81f
+# define YAW          		90.0f
+# define PITCH        		0.0f
+
+# define REACH		  		4.5f
+# define EYE_LEVEL    		0.62f
+# define FOV          		70.0f // if fov = -fov, world is upside down
+
+# define FLY_SPEED    		20
+# define WALK_SPEED   		4.317f
+# define SPRINT_SPEED    	5.612f
+# define SPRINT_JUMP_SPEED 	7.127f
+# define SWIM_SPEED			1.97f
+# define SWIM_UP_SPEED		0.39f
+# define SWIM_DOWN_SPEED	1.81f
+
+# define INITIAL_JUMP 		9.317f
+# define INITIAL_FALL 		-6.605f
+# define STANDARD_GRAVITY 	-9.81f
 // # define PLAYER_MASS 10
 // # define FALL_SPEED   77.71f
-# define FOV          70.0f // if fov = -fov, world is upside down
+
+# define EXHAUSTION_SWIMMING 		0.01f
+# define EXHAUSTION_BREAKING_BLOCK 	0.005f
+# define EXHAUSTION_SPRINTING 		0.1f
+# define EXHAUSTION_JUMP 			0.05f
+# define EXHAUSTION_SPRINT_JUMP 	0.2f
+# define EXHAUSTION_REGEN 			6.0f
 
 class Camera
 {
@@ -41,11 +54,13 @@ class Camera
 		float _fall_distance;
 		int _foodTickTimer;
 		float _foodExhaustionLevel;
-		bool _isRunning, _healthUpdate, _waterHead, _waterFeet;
+		bool _sprinting, _sneaking, _healthUpdate, _waterHead, _waterFeet;
 		std::mutex _mtx;
 		Chunk *_current_chunk_ptr;
 
     	void updateCameraVectors( void );
+		void moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, GLint z );
+		void applyGravityUnderwater( void );
 	
 	public:
 		glm::ivec3 _current_block;
@@ -72,7 +87,7 @@ class Camera
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );
 		void moveFly( GLint v, GLint h, GLint z );
-		void moveHuman( Camera_Movement direction, GLint v, GLint h );
+		void moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z );
 		void applyGravity( void );
 		void touchGround( float value );
 		void touchCeiling( float value );

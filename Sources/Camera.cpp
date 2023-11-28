@@ -1,8 +1,10 @@
 #include "Camera.hpp"
 #include "utils.h"
+extern std::mutex mtx;
 
 Camera::Camera( glm::vec3 position )
-	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0), _foodTickTimer(0), _foodExhaustionLevel(0), _isRunning(false), _healthUpdate(false),
+	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0),
+	_foodTickTimer(0), _foodExhaustionLevel(0), _sprinting(false), _sneaking(false), _healthUpdate(false),
 	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
 	_inJump(false), _touchGround(false), _fall_immunity(true), _z0(position.z), _foodSaturationLevel(20)
 {
@@ -35,6 +37,57 @@ void Camera::updateCameraVectors( void )
 	_up    = glm::normalize(glm::cross(_right, _front));
 	_front2 = glm::normalize(glm::vec2(_front)); // used in chunkInFront
 	_right2 = glm::vec2(glm::cos(glm::radians(_fov + _fov_offset))) * glm::normalize(glm::vec2(_right));
+}
+
+void Camera::moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, GLint z )
+{
+	if (!v && !h) {
+		if (direction == UP || direction == DOWN) {
+			_inJump = z == 1;
+			_sneaking = z == -1;
+		}
+		return ;
+	}
+	_update = true;
+
+	float speed_frame = _deltaTime * ((_sprinting) ?  SPRINT_SPEED : SWIM_SPEED);
+	float movement = 0;
+	_mtx.lock();
+	if (direction == X_AXIS) {
+		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).x * speed_frame;
+		_position.x += movement;
+	}
+	else if (direction == Y_AXIS) {
+		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).y * speed_frame;
+		_position.y += movement;
+	} else {
+		_inJump = z == 1;
+		_sneaking = z == -1;
+		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).z * speed_frame;
+		_position.z += movement;
+		mtx.lock();
+		if (_current_chunk_ptr->collisionBox(_position, 0.3f, 1.8f)) {
+			_position.z -= movement;
+		}
+		mtx.unlock();
+	}
+	_mtx.unlock();
+	updateExhaustion(glm::abs(movement * EXHAUSTION_SWIMMING));
+	if (_sprinting && movement != 0) {
+		updateExhaustion(glm::abs(movement * EXHAUSTION_SPRINTING));
+	}
+}
+
+void Camera::applyGravityUnderwater( void )
+{
+	float speed_frame = _deltaTime * ((_inJump) ? ((_waterHead) ? SWIM_UP_SPEED : SWIM_DOWN_SPEED) : ((_sneaking) ? -SWIM_DOWN_SPEED : -SWIM_UP_SPEED));
+
+	_mtx.lock();
+	_position.z += speed_frame;
+	_mtx.unlock();
+	_z0 = _position.z;
+	_fall_time = 0;
+	// std::cout << "gravity underwater " << speed_frame << ", " << _inJump << ", " << _sneaking << std::endl;
 }
 
 // ************************************************************************** //
@@ -140,11 +193,11 @@ void Camera::setCurrentChunkPtr( Chunk *ptr )
 
 void Camera::setRun( bool value )
 {
-	_isRunning = value;
-	if (_foodLevel <= 6) { // can't run when out of energy
-		_isRunning = false;
+	_sprinting = value;
+	if (_foodLevel <= 6) { // can't sprint when out of energy
+		_sprinting = false;
 	}
-	if (_isRunning) {
+	if (_sprinting) {
 		_fov_offset += 1.0f;
 		if (_fov_offset > 2) {
 			_fov_offset = 2;
@@ -180,7 +233,7 @@ void Camera::moveFly( GLint v, GLint h, GLint z )
 		return ;
 	}
 	_update = true;
-	float speed_frame = _deltaTime * _movement_speed * ((_isRunning) ? 2 : 1);
+	float speed_frame = _deltaTime * _movement_speed * ((_sprinting) ? 2 : 1);
 	glm::vec3 norm = glm::normalize(glm::vec3(v * _front.x + h * _right.x + z * _up.x,
 												v * _front.y + h * _right.y + z * _up.y,
 												v * _front.z + h * _right.z + z * _up.z));
@@ -191,19 +244,22 @@ void Camera::moveFly( GLint v, GLint h, GLint z )
 	_mtx.unlock();
 }
 
-void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h )
+void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z )
 {
+	if (_waterFeet || _waterHead) {
+		return (moveHumanUnderwater(direction, v, h, z));
+	}
 	if (direction == UP && _touchGround) {
 		_update = true;
 		_inJump = true;
-		updateExhaustion((_isRunning) ? 0.2f : 0.05f);
+		updateExhaustion((_sprinting) ? EXHAUSTION_SPRINT_JUMP : EXHAUSTION_JUMP);
 		return ;
 	} else if (direction == UP || direction == DOWN || (!v && !h)) {
 		return ;
 	}
 	_update = true;
 
-	float speed_frame = _deltaTime * ((_isRunning) ?  ((_touchGround) ? RUN_SPEED : RUN_JUMP_SPEED ) : WALK_SPEED);
+	float speed_frame = _deltaTime * ((_sprinting) ?  ((_touchGround) ? SPRINT_SPEED : SPRINT_JUMP_SPEED ) : WALK_SPEED);
 	float movement = 0;
 	_mtx.lock();
 	if (direction == X_AXIS) {
@@ -215,14 +271,17 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h )
 		_position.y += movement;
 	}
 	_mtx.unlock();
-	if (_isRunning && movement != 0) {
-		updateExhaustion(glm::abs(movement * 0.1f));
+	if (_sprinting && movement != 0) {
+		updateExhaustion(glm::abs(movement * EXHAUSTION_SPRINTING));
 	}
 }
 
 // z = z0 + vt + at² / 2
 void Camera::applyGravity( void )
 {
+	if (_waterFeet || _waterHead) {
+		return (applyGravityUnderwater());
+	}
 	// std::cout << "Gravity applied" << std::endl;
 	_fall_time += _deltaTime;
 	float initial_speed = ((_inJump) ? INITIAL_JUMP : INITIAL_FALL);
@@ -236,8 +295,8 @@ void Camera::touchGround( float value )
 {
 	_mtx.lock();
 	_position.z = value;
-	_fall_distance = _z0 - _position.z;
 	_mtx.unlock();
+	_fall_distance = _z0 - _position.z;
 	// std::cout << "TOUCH GROUND AT " << _fall_distance << std::endl;
 	// if (_inJump && _fall_distance < 0) {
 	// 	return ;
@@ -247,7 +306,8 @@ void Camera::touchGround( float value )
 	}
 	if (_fall_immunity) {
 		_fall_immunity = false;
-	} else if (!_waterFeet && _fall_distance > 3) { // TODO call this function AFTER setting waterFeet
+	} else if (_waterFeet || _waterHead) {
+	} else if (_fall_distance > 3) { // TODO call this function AFTER setting waterFeet
 		_healthUpdate = (glm::max(0.0f, _fall_distance - 3) != 0);
 		_health_points -= glm::max(0.0f, _fall_distance - 3);
 		if (_health_points < 0) {
@@ -278,7 +338,7 @@ void Camera::tickUpdate( void )
 		|| _foodTickTimer == 50 || _foodTickTimer == 60 || _foodTickTimer == 70)
 		&& _foodLevel == 20 && _foodSaturationLevel) {
 		++_health_points;
-		updateExhaustion(6);
+		updateExhaustion(EXHAUSTION_REGEN);
 		_healthUpdate = true;
 	}
 	if (_foodTickTimer == 80) {
@@ -390,7 +450,7 @@ std::string Camera::getCamString( bool game_mode )
 				+ " y: " + std::to_string(_current_block.y) + " z: " + std::to_string(_current_block.z)
 				+ "\nDir\t\t> x: " + std::to_string(_front.x)
 				+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
-				+ "\nSpeed\t> " + ((_isRunning) ? std::to_string(_movement_speed * 2) : std::to_string(_movement_speed)))
+				+ "\nSpeed\t> " + ((_sprinting) ? std::to_string(_movement_speed * 2) : std::to_string(_movement_speed)))
 				+ ((_current_chunk_ptr) 
 					? "\nSky Light\t> " + std::to_string(_current_chunk_ptr->getSkyLightLevel(_current_block))
 						+ "\nBlock Light\t> " + std::to_string(_current_chunk_ptr->getBlockLightLevel(_current_block)) : "")
@@ -400,7 +460,7 @@ std::string Camera::getCamString( bool game_mode )
 				+ " y: " + std::to_string(_current_block.y) + " z: " + std::to_string(_current_block.z)
 			+ "\nDir\t\t> x: " + std::to_string(_front.x)
 			+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
-			+ "\nSpeed\t> " + ((_isRunning) ?  ((_touchGround) ? std::to_string(RUN_SPEED) : std::to_string(RUN_JUMP_SPEED) ) : std::to_string(WALK_SPEED))
+			+ "\nSpeed\t> " + ((_sprinting) ?  ((_touchGround) ? std::to_string(SPRINT_SPEED) : std::to_string(SPRINT_JUMP_SPEED) ) : std::to_string(WALK_SPEED))
 			+ ((_current_chunk_ptr) 
 				? "\nSky Light\t> " + std::to_string(_current_chunk_ptr->getSkyLightLevel(_current_block))
 					+ "\nBlock Light\t> " + std::to_string(_current_chunk_ptr->getBlockLightLevel(_current_block)) : "")
@@ -424,7 +484,7 @@ void Camera::respawn( void )
 	_fall_time = 0;
 	_breathTime = 0;
 	_z0 = 66.0f;
-	_isRunning = false;
+	_sprinting = false;
 	_healthUpdate = true;
 	_waterHead = false;
 	_waterFeet = false;

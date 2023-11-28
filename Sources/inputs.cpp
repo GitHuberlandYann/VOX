@@ -384,7 +384,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				_break_time = 0;
 				_break_frame = _outline;
 				handle_add_rm_block(false, can_collect);
-				_camera->updateExhaustion(0.005f);
+				_camera->updateExhaustion(EXHAUSTION_BREAKING_BLOCK);
 				_inventory->decrementDurabitilty();
 			} else {
 				int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
@@ -511,32 +511,30 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		mtx.lock();
 		if (_game_mode == SURVIVAL && current_chunk_ptr) { // on first frame -> no current_chunk_ptr
 			mtx.unlock();
-			_camera->moveHuman((key_cam_z == 1 && ++_key_jump == 1) ? UP : DOWN, 0, 0); // sets inJump variable, no actual movement
+			_camera->moveHuman((key_cam_z == 1 && ++_key_jump == 1) ? UP : DOWN, key_cam_v, key_cam_h, key_cam_z); // sets inJump variable, no actual movement
 			if (key_cam_z < 1) {
 				_key_jump = 0;
 			}
-			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h); // move on X_AXIS
+			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h, 0); // move on X_AXIS
 			mtx.lock();
 			if (current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, 1.8f)) {
 				mtx.unlock();
-				_camera->moveHuman(X_AXIS, -key_cam_v, -key_cam_h); // if collision after movement, undo movement
+				_camera->moveHuman(X_AXIS, -key_cam_v, -key_cam_h, 0); // if collision after movement, undo movement
 				_camera->setRun(false);
 				mtx.lock();
 			}
 			mtx.unlock();
-			_camera->moveHuman(Y_AXIS, key_cam_v, key_cam_h); // move on Y_AXIS
+			_camera->moveHuman(Y_AXIS, key_cam_v, key_cam_h, 0); // move on Y_AXIS
 			mtx.lock();
 			if (current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, 1.8f)) {
 				mtx.unlock();
-				_camera->moveHuman(Y_AXIS, -key_cam_v, -key_cam_h); // if collision after movement, undo movement
+				_camera->moveHuman(Y_AXIS, -key_cam_v, -key_cam_h, 0); // if collision after movement, undo movement
 				_camera->setRun(false);
 				mtx.lock();
 			}
 			mtx.unlock();
 			mtx.lock();
-			if (!current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, 1.8f)) {
-				current_chunk_ptr->applyGravity(); // move on Z_AXIS
-			}
+			current_chunk_ptr->applyGravity(); // move on Z_AXIS
 			mtx.unlock();
 			glm::vec3 camPos = _camera->getPos();
 			mtx.lock();

@@ -424,16 +424,14 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 
 void OpenGL_Manager::main_loop( void )
 {
-	// if (!IS_LINUX) { // face culling seems to only work on mac, but breaks flowers and gains 0 fps anyway ..
-	// 	glEnable(GL_DEPTH_TEST);
-	// 	glEnable(GL_CULL_FACE);
-	// 	glCullFace(GL_FRONT);
+	// glEnable(GL_DEPTH_TEST); // culling messes up with flower visual and doesn't seem to gain fps
+	// glEnable(GL_CULL_FACE);
+	// glCullFace(GL_FRONT);
 	// 	// glFrontFace(GL_CW);
+	// (glIsEnabled(GL_CULL_FACE))
+	// 	? std::cout << "culling enabled" << std::endl
+	// 	: std::cout << "culling disabled" << std::endl;
 
-	//	(glIsEnabled(GL_CULL_FACE))
-	// 		? std::cout << "culling enabled" << std::endl
-	//		: std::cout << "culling disabled" << std::endl;
-	// }
 	// glLineWidth(2);
 	glEnable(GL_LINE_SMOOTH); // anti-aliasing
 	glEnable(GL_BLEND);
