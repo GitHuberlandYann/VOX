@@ -1,17 +1,9 @@
 #ifndef UTILS_HPP
 # define UTILS_HPP
 
-# define GLEW_STATIC
-# include <GL/glew.h> // must be before glfw
-# include "GLFW/glfw3.h"
-# include <glm/glm.hpp>
-# include <glm/gtc/matrix_transform.hpp>
-# include <glm/gtc/type_ptr.hpp>
-
 # include <vector>
 # include <array>
 # include <iostream>
-# include <string>
 
 # include "Blocks.hpp"
 
@@ -37,15 +29,6 @@ enum {
 	SURVIVAL = true
 };
 
-enum face_dir {
-	MINUSY,
-	PLUSY,
-	MINUSX,
-	PLUSX,
-	MINUSZ,
-	PLUSZ
-};
-
 class Chunk;
 
 std::string get_file_content( std::string file_name );
@@ -61,10 +44,6 @@ int maxi( int a, int b );
 char maxc( char a, char b );
 short maxs( short a, short b );
 
-int blockGridX( int block, int offset );
-int blockGridY( int block, int offset );
-int blockAtlasX( int block );
-int blockAtlasY( int block );
 std::string doubleDigits( int nb );
 
 int air_flower( int value, bool air_leaves, bool air_glass, bool air_water );

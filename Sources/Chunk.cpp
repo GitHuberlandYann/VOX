@@ -107,7 +107,7 @@ GLint Chunk::face_count( int type, int row, int col, int level )
 {
 	type &= 0xFF;
 	if (!type || type >= blocks::WATER) {
-		std::cerr << "face_count ERROR counting " << s_blocks[type].name << std::endl;
+		std::cerr << "face_count ERROR counting " << s_blocks[type]->name << std::endl;
 		return (0);
 	}
 	if (type >= blocks::POPPY) {
@@ -508,7 +508,7 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 /* generate one or many entities depending on block broken */
 void Chunk::entity_block( int posX, int posY, int posZ, int type )
 {
-	// std::cout << "breaking " << s_blocks[type].name << std::endl;
+	// std::cout << "breaking " << s_blocks[type]->name << std::endl;
 	if (type == blocks::GRASS) {
 		float random = Random::randomFloat(_seed);
 		if (random <= 0.125f) {
@@ -540,7 +540,7 @@ void Chunk::entity_block( int posX, int posY, int posZ, int type )
 			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, blocks::WHEAT_SEEDS, 4));
 		}
 	} else {
-		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, s_blocks[type].mined));
+		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, glm::normalize(glm::vec2(posX - 8, posY - 8)), false, s_blocks[type]->mined));
 	}
 }
 
@@ -651,7 +651,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 				_inventory->removeBlock(false);
 				mtx_inventory.unlock();
 			}
-			_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), false, s_blocks[type].mined));
+			_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), false, s_blocks[type]->mined));
 			return ;
 		}
 	}
@@ -667,7 +667,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		int type_below = _blocks[offset - 1] & 0xFF;
 		if (type != blocks::TORCH && type != blocks::WHEAT_CROP && type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
 			return ; // can't place flower on something else than grass/dirt block
-		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY) || s_blocks[type_below].hasHitbox) {
+		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY) || s_blocks[type_below]->hasHitbox) {
 			return ;
 		}
 	} else if (previous >= blocks::WATER) { // replace water block with something else
@@ -694,7 +694,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	} else if (type == blocks::TORCH) {
 		std::cout << "add light" << std::endl;
 		_lights[offset] &= 0xFF00;
-		_lights[offset] += s_blocks[type].light_level + (s_blocks[type].light_level << 4);
+		_lights[offset] += s_blocks[type]->light_level + (s_blocks[type]->light_level << 4);
 		light_spread(pos.x, pos.y, pos.z, false);
 		handle_border_block(pos, type, true); // torch is special case flower
 		_light_update = false;
@@ -706,7 +706,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	if (!air_flower(type, true, true, false)) {
 		return ;
 	}
-	if (type != blocks::OAK_SLAB) { // TODO s_blocks[type].transparent or something
+	if (type != blocks::OAK_SLAB) { // TODO s_blocks[type]->transparent or something
 		_lights[offset] = 0; // rm light if solid block added
 	}
 	for (int index = 0; index < 6; index++) {
@@ -715,7 +715,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 
 		} else {
 			GLint adj = _blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] & 0xFF;
-			if (air_flower(adj, true, true, false)) {
+			if (air_flower(adj, false, true, false)) {
 				_displayed_faces -= !visible_face(adj, type,  opposite_dir(index));
 			} else {
 				if (index != face_dir::PLUSZ) {
@@ -1071,7 +1071,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 		} else if ((previous_type != blocks::AIR && previous_type < blocks::WATER) || type == blocks::AIR) { // can't replace block
 			return ;
 		}
-		// std::cout << "ADD BLOCK " << s_blocks[previous_type].name << " -> " << s_blocks[type].name << std::endl;
+		// std::cout << "ADD BLOCK " << s_blocks[previous_type]->name << " -> " << s_blocks[type]->name << std::endl;
 		add_block(useInventory, pos, type, previous_type);
 	} else if (modif == Modif::REPLACE) {
 		if (type == blocks::DIRT_PATH && pos.z < 254 && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z + 1] & 0xFF) != blocks::AIR) { // can't turn dirt to dirt path if anything above it
@@ -1374,7 +1374,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 void Chunk::update_border( int posX, int posY, int level, int type, bool adding )
 {
 	// std::cout << "got into update border of chunk " << _startX << ", " << _startY << ": " << _displayed_faces << std::endl;
-	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << ((adding) ? "add" : "rm") << " " << s_blocks[type].name << " | real pos is " << _startX + posX << ", " << _startY + posY << std::endl;
+	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << ((adding) ? "add" : "rm") << " " << s_blocks[type]->name << " | real pos is " << _startX + posX << ", " << _startY + posY << std::endl;
 	if (!(!posX || !posY || posX == CHUNK_SIZE - 1 || posY == CHUNK_SIZE - 1)) {
 		std::cout << "ERROR update_border not border block " << posX << ", " << posY << std::endl;
 		return ;
@@ -1413,7 +1413,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 		if (!air_flower(_blocks[offset], false, false, false)) {
 			goto FILL;
 		}
-		// std::cout << s_blocks[_blocks[offset] & 0xFF].name << " next " << s_blocks[type].name << std::endl;
+		// std::cout << s_blocks[_blocks[offset] & 0xFF]->name << " next " << s_blocks[type]->name << std::endl;
 		_displayed_faces += !visible_face(_blocks[offset], type, face_dir::MINUSX);
 	}
 	// std::cout << "got here" << std::endl;
@@ -1429,24 +1429,24 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 {
 	glm::ivec3 top0 = {glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height)};
-	if (s_blocks[getBlockAt(top0.x, top0.y, top0.z, true) & 0xFF].collisionHitbox) {
+	if (s_blocks[getBlockAt(top0.x, top0.y, top0.z, true) & 0xFF]->collisionHitbox) {
 		return (true);
 	}
 	glm::ivec3 top1 = {glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height)};
 	if (top1 != top0) {
-		if (s_blocks[getBlockAt(top1.x, top1.y, top1.z, true) & 0xFF].collisionHitbox) {
+		if (s_blocks[getBlockAt(top1.x, top1.y, top1.z, true) & 0xFF]->collisionHitbox) {
 			return (true);
 		}
 	}
 	glm::ivec3 top2 = {glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height)};
 	if (top2 != top0) {
-		if (s_blocks[getBlockAt(top2.x, top2.y, top2.z, true) & 0xFF].collisionHitbox) {
+		if (s_blocks[getBlockAt(top2.x, top2.y, top2.z, true) & 0xFF]->collisionHitbox) {
 			return (true);
 		}
 	}
 	glm::ivec3 top3 = {glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height)};
 	if (top3 != top0) {
-		if (s_blocks[getBlockAt(top3.x, top3.y, top3.z, true) & 0xFF].collisionHitbox) {
+		if (s_blocks[getBlockAt(top3.x, top3.y, top3.z, true) & 0xFF]->collisionHitbox) {
 			return (true);
 		}
 	}

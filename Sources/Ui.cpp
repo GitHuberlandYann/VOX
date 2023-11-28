@@ -81,8 +81,8 @@ void UI::add_inventory_elem( GLint *vertices, int mult, int index, int & vindex 
 	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 + mult * 3;
 	vertices[vindex + 3] = 16 * mult;
 	vertices[vindex + 4] = 16 * mult;
-	vertices[vindex + 5] = blockAtlasX(value);
-	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 5] = s_blocks[value]->texX() << 4;
+	vertices[vindex + 6] = s_blocks[value]->texY() << 4;
 	vertices[vindex + 7] = 16;
 	vertices[vindex + 8] = 16;
 	vindex += 9;

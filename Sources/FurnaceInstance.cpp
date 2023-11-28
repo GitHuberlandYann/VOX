@@ -103,12 +103,12 @@ int FurnaceInstance::updateTimes( float currentTime )
 {
 	_current_time = currentTime; // used for display
 	float deltaTime;
-	if (_current_fuel_time && s_blocks[_composant.x].isComposant) {
+	if (_current_fuel_time && s_blocks[_composant.x]->isComposant) {
 		if (_composant_time) {
 			deltaTime = currentTime - _composant_time;
 			if (deltaTime >= 10) { // A furnace smelts items at a speed of one item every 200 game ticks (10 seconds)
 				if (_production.x == blocks::AIR) {
-					_production = glm::ivec2(s_blocks[_composant.x].getProduction, 0);
+					_production = glm::ivec2(s_blocks[_composant.x]->getProduction, 0);
 				}
 				if (++_production.y == 64) {
 					_composant_time = 0;
@@ -121,7 +121,7 @@ int FurnaceInstance::updateTimes( float currentTime )
 				}
 			}
 		} else {
-			if (_production.x == blocks::AIR || (_production.y < 64 && _production.x == s_blocks[_composant.x].getProduction)) {
+			if (_production.x == blocks::AIR || (_production.y < 64 && _production.x == s_blocks[_composant.x]->getProduction)) {
 				_composant_time = currentTime;
 			}
 		}
@@ -133,7 +133,7 @@ int FurnaceInstance::updateTimes( float currentTime )
 		deltaTime = currentTime - _fuel_time;
 		if (deltaTime >= _current_fuel_time) {
 			_fuel_time += _current_fuel_time;
-			_current_fuel_time = s_blocks[_fuel.x].fuel_time;
+			_current_fuel_time = s_blocks[_fuel.x]->fuel_time;
 			if (_current_fuel_time) {
 				if (--_fuel.y == 0) {
 					_fuel.x = blocks::AIR;
@@ -143,9 +143,9 @@ int FurnaceInstance::updateTimes( float currentTime )
 				return (furnace_state::OFF);
 			}
 		}
-	} else if (s_blocks[_fuel.x].isFuel && s_blocks[_composant.x].isComposant
-		&& (_production.x == blocks::AIR || (_production.y < 64 && _production.x == s_blocks[_composant.x].getProduction))) {
-		_current_fuel_time = s_blocks[_fuel.x].fuel_time;
+	} else if (s_blocks[_fuel.x]->isFuel && s_blocks[_composant.x]->isComposant
+		&& (_production.x == blocks::AIR || (_production.y < 64 && _production.x == s_blocks[_composant.x]->getProduction))) {
+		_current_fuel_time = s_blocks[_fuel.x]->fuel_time;
 		if (_current_fuel_time) {
 			_fuel_time = currentTime;
 			if (--_fuel.y == 0) {
@@ -164,8 +164,8 @@ int FurnaceInstance::updateTimes( float currentTime )
 
 std::string FurnaceInstance::getInfoString( void )
 {
-	std::string res = "\n\nComposant\t> " + s_blocks[_composant.x].name + ((s_blocks[_composant.x].isComposant) ? " smelts into " + s_blocks[s_blocks[_composant.x].getProduction].name : " is not composant")
-						+ "\nFuel\t\t> " + s_blocks[_fuel.x].name + ((s_blocks[_fuel.x].isFuel) ? " lasts " + std::to_string(s_blocks[_fuel.x].fuel_time) : " is not fuel")
+	std::string res = "\n\nComposant\t> " + s_blocks[_composant.x]->name + ((s_blocks[_composant.x]->isComposant) ? " smelts into " + s_blocks[s_blocks[_composant.x]->getProduction]->name : " is not composant")
+						+ "\nFuel\t\t> " + s_blocks[_fuel.x]->name + ((s_blocks[_fuel.x]->isFuel) ? " lasts " + std::to_string(s_blocks[_fuel.x]->fuel_time) : " is not fuel")
 						+ "\nTimes\t\t> " + std::to_string((_current_time - _composant_time) * (_composant_time > 0)) + ", " + std::to_string((_current_time - _fuel_time) * (_fuel_time > 0));
 
 	return (res);

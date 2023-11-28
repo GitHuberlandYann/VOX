@@ -376,8 +376,8 @@ bool Camera::canEatFood( int type )
 	if (_foodLevel == 20 && _foodSaturationLevel == 20) {
 		return (false);
 	}
-	_foodLevel = glm::min(20, _foodLevel + s_blocks[type].hunger_restauration);
-	_foodSaturationLevel = glm::min(static_cast<float>(_foodLevel), _foodSaturationLevel + s_blocks[type].saturation_restauration);
+	_foodLevel = glm::min(20, _foodLevel + s_blocks[type]->hunger_restauration);
+	_foodSaturationLevel = glm::min(static_cast<float>(_foodLevel), _foodSaturationLevel + s_blocks[type]->saturation_restauration);
 	return (true);
 }
 

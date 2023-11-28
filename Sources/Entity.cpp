@@ -4,7 +4,7 @@ Entity::Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec
     : _value(value), _amount(amount), _dura(dura), _thrown(thrown), _lifeTime(0),
 		_pos(position), _dir(dir, 1.0f), _chunk(chunk), _inventory(inventory)
 {
-    // std::cout << "new Entity at " << position.x << ", " << position.y << ", " << position.z << ": " << s_blocks[value].name << std::endl;
+    // std::cout << "new Entity at " << position.x << ", " << position.y << ", " << position.z << ": " << s_blocks[value]->name << std::endl;
 	_chunk_pos = {chunk->getStartX(), chunk->getStartY()};
 }
 
@@ -85,10 +85,10 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	glm::vec3 p7 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
 
 	if (_value < blocks::POPPY) {
-	    int orientedItem = 2 * (_value >= blocks::CRAFTING_TABLE && _value < blocks::BEDROCK);
+		int offset = ((_value >= blocks::CRAFTING_TABLE && _value < blocks::BEDROCK) ? face_dir::MINUSX + (1 << 4): 0);
 	    int itemLight = _chunk->computePosLight(_pos);
 
-	    int spec = blockGridX(_value, 0) + (blockGridY(_value, 0) << 4) + (3 << 19) + (itemLight << 24);
+	    int spec = s_blocks[_value]->texX(face_dir::MINUSX, offset) + (s_blocks[_value]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19) + (itemLight << 24);
 	    std::pair<int, glm::vec3> v0 = {spec, p4};
 	    std::pair<int, glm::vec3> v1 = {spec + 1 + (1 << 9) + (1 << 8), p0};
 	    std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p6};
@@ -99,7 +99,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v1);
 	    arr.push_back(v3);
 	    arr.push_back(v2);
-	    spec = blockGridX(_value, 0) + (blockGridY(_value, 0) << 4) + (4 << 19) + (itemLight << 24);
+	    spec = s_blocks[_value]->texX(face_dir::PLUSX, offset) + (s_blocks[_value]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19) + (itemLight << 24);
 	    v0 = {spec, p1};
 	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
 	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p3};
@@ -110,7 +110,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v1);
 	    arr.push_back(v3);
 	    arr.push_back(v2);
-	    spec = blockGridX(_value, orientedItem) + (blockGridY(_value, 0) << 4) + (1 << 19) + (itemLight << 24);
+	    spec = s_blocks[_value]->texX(face_dir::MINUSY, offset) + (s_blocks[_value]->texY(face_dir::MINUSY, offset) << 4) + (1 << 19) + (itemLight << 24);
 	    v0 = {spec, p0};
 	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
 	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
@@ -121,7 +121,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v1);
 	    arr.push_back(v3);
 	    arr.push_back(v2);
-	    spec = blockGridX(_value, 0) + (blockGridY(_value, 0) << 4) + (2 << 19) + (itemLight << 24);
+	    spec = s_blocks[_value]->texX(face_dir::PLUSY, offset) + (s_blocks[_value]->texY(face_dir::PLUSY, offset) << 4) + (2 << 19) + (itemLight << 24);
 	    v0 = {spec, p5};
 	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p4};
 	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p7};
@@ -132,7 +132,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v1);
 	    arr.push_back(v3);
 	    arr.push_back(v2);
-	    spec = blockGridX(_value, 1) + (blockGridY(_value, 0) << 4) + (0 << 19) + (itemLight << 24);
+	    spec = s_blocks[_value]->texX(face_dir::PLUSZ, offset) + (s_blocks[_value]->texY(face_dir::PLUSZ, offset) << 4) + (0 << 19) + (itemLight << 24);
 	    v0 = {spec, p4};
 	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
 	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p0};
@@ -143,7 +143,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v1);
 	    arr.push_back(v3);
 	    arr.push_back(v2);
-	    spec = blockGridX(_value, 1 + (_value == blocks::GRASS_BLOCK)) + (blockGridY(_value, 0) << 4) + (5 << 19) + (itemLight << 24);
+	    spec = s_blocks[_value]->texX(face_dir::MINUSZ, offset) + (s_blocks[_value]->texY(face_dir::MINUSZ, offset) << 4) + (5 << 19) + (itemLight << 24);
 	    v0 = {spec, p2};
 	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p3};
 	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p6};
@@ -154,67 +154,9 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v1);
 	    arr.push_back(v3);
 	    arr.push_back(v2);
-	/*} else if (_value == blocks::TORCH) {
-	    int spec = blockGridX(_value, 0) + (blockGridY(_value, 0) << 4) + (0 << 19) + (15 << 24);
-	    p4 = {_pos.x + 7.0f / 16 - 0.17f * sinRot, _pos.y + 0.17f * cosRot, _pos.z + 0.125f + cosRot / 4};
-	    std::pair<int, glm::vec3> v0 = {spec, p4};
-	    p0 = {_pos.x + 7.0f / 16 - 0.17f * cosRot, _pos.y - 0.17f * sinRot, _pos.z + 0.125f + cosRot / 4};
-	    std::pair<int, glm::vec3> v1 = {spec + 1 + (1 << 8), p0};
-	    p6 = {_pos.x + 7.0f / 16 - 0.17f * sinRot, _pos.y + 0.17f * cosRot, _pos.z - 0.125f + cosRot / 4};
-	    std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p6};
-	    p2 = {_pos.x + 7.0f / 16 - 0.17f * cosRot, _pos.y - 0.17f * sinRot, _pos.z - 0.125f + cosRot / 4};
-	    std::pair<int, glm::vec3> v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
-	    arr.push_back(v0);
-	    arr.push_back(v1);
-	    arr.push_back(v2);
-	    arr.push_back(v1);
-	    arr.push_back(v3);
-	    arr.push_back(v2);
-	    p0 = {_pos.x + 9.0f / 16 - 0.17f * cosRot, _pos.y - 0.17f * sinRot, _pos.z + 0.125f + cosRot / 4};
-	    v0 = {spec, p0};
-	    p4 = {_pos.x + 9.0f / 16 - 0.17f * sinRot, _pos.y + 0.17f * cosRot, _pos.z + 0.125f + cosRot / 4};
-	    v1 = {spec + 1 + (1 << 8), {p4.x + 9.0 / 16, p4.y, p4.z}};
-	    p2 = {_pos.x + 9.0f / 16 - 0.17f * cosRot, _pos.y - 0.17f * sinRot, _pos.z - 0.125f + cosRot / 4};
-	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-	    p6 = {_pos.x + 9.0f / 16 - 0.17f * sinRot, _pos.y + 0.17f * cosRot, _pos.z - 0.125f + cosRot / 4};
-	    v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p6.x + 9.0 / 16, p6.y, p6.z}};
-	    arr.push_back(v0);
-	    arr.push_back(v1);
-	    arr.push_back(v2);
-	    arr.push_back(v1);
-	    arr.push_back(v3);
-	    arr.push_back(v2);
-	    p0 = {_pos.x - 0.17f * cosRot, _pos.y + 7.0f / 16 - 0.17f * sinRot, _pos.z + 0.125f + cosRot / 4};
-	    v0 = {spec, p0};
-	    p1 = {_pos.x + 0.17f * sinRot, _pos.y + 7.0f / 16 - 0.17f * cosRot, _pos.z + 0.125f + cosRot / 4};
-	    v1 = {spec + 1 + (1 << 8), p1};
-	    p2 = {_pos.x - 0.17f * cosRot, _pos.y + 7.0f / 16 - 0.17f * sinRot, _pos.z - 0.125f + cosRot / 4};
-	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-	    p3 = {_pos.x + 0.17f * sinRot, _pos.y + 7.0f / 16 - 0.17f * cosRot, _pos.z - 0.125f + cosRot / 4};
-	    v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
-	    arr.push_back(v0);
-	    arr.push_back(v1);
-	    arr.push_back(v2);
-	    arr.push_back(v1);
-	    arr.push_back(v3);
-	    arr.push_back(v2);
-	    p1 = {_pos.x + 0.17f * sinRot, _pos.y + 9.0f / 16 - 0.17f * cosRot, _pos.z + 0.125f + cosRot / 4};
-	    v0 = {spec, p1};
-	    p0 = {_pos.x - 0.17f * cosRot, _pos.y + 9.0f / 16 - 0.17f * sinRot, _pos.z + 0.125f + cosRot / 4};
-	    v1 = {spec + 1 + (1 << 8), p0};
-	    p3 = {_pos.x + 0.17f * sinRot, _pos.y + 9.0f / 16 - 0.17f * cosRot, _pos.z - 0.125f + cosRot / 4};
-	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p3};
-	    p2 = {_pos.x - 0.17f * cosRot, _pos.y + 9.0f / 16 - 0.17f * sinRot, _pos.z - 0.125f + cosRot / 4};
-	    v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
-	    arr.push_back(v0);
-	    arr.push_back(v1);
-	    arr.push_back(v2);
-	    arr.push_back(v1);
-	    arr.push_back(v3);
-	    arr.push_back(v2);*/
 	} else { // flowers
 	    int itemLight = _chunk->computePosLight(_pos);
-	    int spec = blockGridX(_value, 0) + (blockGridY(_value, 0) << 4) + (0 << 19) + (itemLight << 24);
+	    int spec = s_blocks[_value]->texX() + (s_blocks[_value]->texY() << 4) + (0 << 19) + (itemLight << 24);
 	    std::pair<int, glm::vec3> v0 = {spec, p0};
 	    std::pair<int, glm::vec3> v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
 	    std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};

@@ -50,7 +50,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 		int value = chunk->isHit(i, false);
 		if (value) {
 			// we know cube is hit, now check if hitbox is hit (only on non cube-filling values)
-			if (!s_blocks[value].hasHitbox || line_cube_intersection(_camera->getPos() + glm::vec3(0, 0, 1 + EYE_LEVEL), _camera->getDir(), glm::vec3(i) + s_blocks[value].hitboxCenter, s_blocks[value].hitboxHalfSize)) {
+			if (!s_blocks[value]->hasHitbox || line_cube_intersection(_camera->getPos() + glm::vec3(0, 0, 1 + EYE_LEVEL), _camera->getDir(), glm::vec3(i) + s_blocks[value]->hitboxCenter, s_blocks[value]->hitboxHalfSize)) {
 				chunk_hit = chunk;
 				return (glm::ivec4(i, (value > 0) ? value : value + blocks::NOTVISIBLE));
 			}
@@ -99,7 +99,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	int type = _inventory->getCurrentSlot();
-	// std::cout << "aiming " << s_blocks[type].name << " towards " << s_blocks[_block_hit.w].name << std::endl;;
+	// std::cout << "aiming " << s_blocks[type]->name << " towards " << s_blocks[_block_hit.w]->name << std::endl;;
 	bool find_water = false;
 	if (type == blocks::WATER_BUCKET) { // use it like any other block
 		type = blocks::WATER;
@@ -377,8 +377,8 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		if (_game_mode == SURVIVAL) {
 			_break_time += deltaTime;
 			mtx_inventory.lock();
-			float break_time = s_blocks[_block_hit.w].getBreakTime(_inventory->getCurrentSlot());
-			bool can_collect = s_blocks[_block_hit.w].canCollect(_inventory->getCurrentSlot());
+			float break_time = s_blocks[_block_hit.w]->getBreakTime(_inventory->getCurrentSlot());
+			bool can_collect = s_blocks[_block_hit.w]->canCollect(_inventory->getCurrentSlot());
 			mtx_inventory.unlock();
 			if (_block_hit.w != blocks::AIR && _break_time >= break_time) {
 				_break_time = 0;
@@ -410,7 +410,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		mtx_inventory.lock();
 		int handContent = _inventory->getCurrentSlot();
 		mtx_inventory.unlock();
-		if (_game_mode == SURVIVAL && s_blocks[handContent].isFood) {
+		if (_game_mode == SURVIVAL && s_blocks[handContent]->isFood) {
 			_eat_timer += deltaTime;
 			if (_eat_timer >= 1.61f) {
 				if (_camera->canEatFood(handContent)) {

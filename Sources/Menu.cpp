@@ -723,8 +723,8 @@ void Menu::add_slot_value( GLint *vertices, int mult, int index, int & vindex )
 	vertices[vindex + 2] = WIN_HEIGHT / 2 + 59 * mult;
 	vertices[vindex + 3] = 16 * mult;
 	vertices[vindex + 4] = 16 * mult;
-	vertices[vindex + 5] = blockAtlasX(value);
-	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 5] = s_blocks[value]->texX() << 4;
+	vertices[vindex + 6] = s_blocks[value]->texY() << 4;
 	vertices[vindex + 7] = 16;
 	vertices[vindex + 8] = 16;
 	vindex += 9;
@@ -744,8 +744,8 @@ void Menu::add_backpack_value( GLint *vertices, int mult, int index, int & vinde
 	vertices[vindex + 2] = WIN_HEIGHT / 2 + mult + 18 * mult * (index / 9);
 	vertices[vindex + 3] = 16 * mult;
 	vertices[vindex + 4] = 16 * mult;
-	vertices[vindex + 5] = blockAtlasX(value);
-	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 5] = s_blocks[value]->texX() << 4;
+	vertices[vindex + 6] = s_blocks[value]->texY() << 4;
 	vertices[vindex + 7] = 16;
 	vertices[vindex + 8] = 16;
 	vindex += 9;
@@ -765,8 +765,8 @@ void Menu::add_icraft_value( GLint *vertices, int mult, int index, int & vindex 
 	vertices[vindex + 2] = WIN_HEIGHT / 2 - 65 * mult + 18 * mult * (index / 2);
 	vertices[vindex + 3] = 16 * mult;
 	vertices[vindex + 4] = 16 * mult;
-	vertices[vindex + 5] = blockAtlasX(value);
-	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 5] = s_blocks[value]->texX() << 4;
+	vertices[vindex + 6] = s_blocks[value]->texY() << 4;
 	vertices[vindex + 7] = 16;
 	vertices[vindex + 8] = 16;
 	vindex += 9;
@@ -786,8 +786,8 @@ void Menu::add_craft_value( GLint *vertices, int mult, int index, int & vindex )
 	vertices[vindex + 2] = WIN_HEIGHT / 2 - 66 * mult + 18 * mult * (index / 3);
 	vertices[vindex + 3] = 16 * mult;
 	vertices[vindex + 4] = 16 * mult;
-	vertices[vindex + 5] = blockAtlasX(value);
-	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 5] = s_blocks[value]->texX() << 4;
+	vertices[vindex + 6] = s_blocks[value]->texY() << 4;
 	vertices[vindex + 7] = 16;
 	vertices[vindex + 8] = 16;
 	vindex += 9;
@@ -874,8 +874,8 @@ void Menu::add_crafted_value( GLint *vertices, int mult, int & vindex )
 	}
 	vertices[vindex + 3] = 16 * mult;
 	vertices[vindex + 4] = 16 * mult;
-	vertices[vindex + 5] = blockAtlasX(value);
-	vertices[vindex + 6] = blockAtlasY(value);
+	vertices[vindex + 5] = s_blocks[value]->texX() << 4;
+	vertices[vindex + 6] = s_blocks[value]->texY() << 4;
 	vertices[vindex + 7] = 16;
 	vertices[vindex + 8] = 16;
 	vindex += 9;
@@ -923,8 +923,8 @@ void Menu::setup_array_buffer_inventory( void )
 		vertices[vindex + 2] = mouseY - 8 * mult;
 		vertices[vindex + 3] = 16 * mult;
 		vertices[vindex + 4] = 16 * mult;
-		vertices[vindex + 5] = blockAtlasX(_selected_block.x);
-		vertices[vindex + 6] = blockAtlasY(_selected_block.x);
+		vertices[vindex + 5] = s_blocks[_selected_block.x]->texX() << 4;
+		vertices[vindex + 6] = s_blocks[_selected_block.x]->texY() << 4;
 		vertices[vindex + 7] = 16;
 		vertices[vindex + 8] = 16;
 	}
@@ -975,8 +975,8 @@ void Menu::setup_array_buffer_crafting( void )
 		vertices[vindex + 2] = mouseY - 8 * mult;
 		vertices[vindex + 3] = 16 * mult;
 		vertices[vindex + 4] = 16 * mult;
-		vertices[vindex + 5] = blockAtlasX(_selected_block.x);
-		vertices[vindex + 6] = blockAtlasY(_selected_block.x);
+		vertices[vindex + 5] = s_blocks[_selected_block.x]->texX() << 4;
+		vertices[vindex + 6] = s_blocks[_selected_block.x]->texY() << 4;
 		vertices[vindex + 7] = 16;
 		vertices[vindex + 8] = 16;
 	}
@@ -994,8 +994,8 @@ void Menu::add_furnace_value( GLint *vertices, int mult, int & vindex )
 		vertices[vindex + 2] = WIN_HEIGHT / 2 - 66 * mult;
 		vertices[vindex + 3] = 16 * mult;
 		vertices[vindex + 4] = 16 * mult;
-		vertices[vindex + 5] = blockAtlasX(value);
-		vertices[vindex + 6] = blockAtlasY(value);
+		vertices[vindex + 5] = s_blocks[value]->texX() << 4;
+		vertices[vindex + 6] = s_blocks[value]->texY() << 4;
 		vertices[vindex + 7] = 16;
 		vertices[vindex + 8] = 16;
 		vindex += 9;
@@ -1033,8 +1033,8 @@ void Menu::add_furnace_value( GLint *vertices, int mult, int & vindex )
 		vertices[vindex + 2] = WIN_HEIGHT / 2 - 30 * mult;
 		vertices[vindex + 3] = 16 * mult;
 		vertices[vindex + 4] = 16 * mult;
-		vertices[vindex + 5] = blockAtlasX(value);
-		vertices[vindex + 6] = blockAtlasY(value);
+		vertices[vindex + 5] = s_blocks[value]->texX() << 4;
+		vertices[vindex + 6] = s_blocks[value]->texY() << 4;
 		vertices[vindex + 7] = 16;
 		vertices[vindex + 8] = 16;
 		vindex += 9;
@@ -1046,8 +1046,8 @@ void Menu::add_furnace_value( GLint *vertices, int mult, int & vindex )
 		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult;
 		vertices[vindex + 3] = 16 * mult;
 		vertices[vindex + 4] = 16 * mult;
-		vertices[vindex + 5] = blockAtlasX(value);
-		vertices[vindex + 6] = blockAtlasY(value);
+		vertices[vindex + 5] = s_blocks[value]->texX() << 4;
+		vertices[vindex + 6] = s_blocks[value]->texY() << 4;
 		vertices[vindex + 7] = 16;
 		vertices[vindex + 8] = 16;
 		vindex += 9;
@@ -1095,8 +1095,8 @@ void Menu::setup_array_buffer_furnace( void )
 		vertices[vindex + 2] = mouseY - 8 * mult;
 		vertices[vindex + 3] = 16 * mult;
 		vertices[vindex + 4] = 16 * mult;
-		vertices[vindex + 5] = blockAtlasX(_selected_block.x);
-		vertices[vindex + 6] = blockAtlasY(_selected_block.x);
+		vertices[vindex + 5] = s_blocks[_selected_block.x]->texX() << 4;
+		vertices[vindex + 6] = s_blocks[_selected_block.x]->texY() << 4;
 		vertices[vindex + 7] = 16;
 		vertices[vindex + 8] = 16;
 	}

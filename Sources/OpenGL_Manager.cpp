@@ -102,8 +102,8 @@ void OpenGL_Manager::drawEntities( int size )
 	bool hitBox = _block_hit.w != blocks::AIR;
 	if (!hitBox) {
 		index = 24 * 4;
-	} else if (s_blocks[_block_hit.w].hasHitbox) {
-		glm::vec3 hitCenter = s_blocks[_block_hit.w].hitboxCenter, hitHalfSize = s_blocks[_block_hit.w].hitboxHalfSize;
+	} else if (s_blocks[_block_hit.w]->hasHitbox) {
+		glm::vec3 hitCenter = s_blocks[_block_hit.w]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.w]->hitboxHalfSize;
 		glm::vec3 pos = {_block_hit.x + hitCenter.x - hitHalfSize.x, _block_hit.y + hitCenter.y - hitHalfSize.y, _block_hit.z + hitCenter.z - hitHalfSize.z};
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(2 * hitHalfSize.x, 0, 0), index);
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 2 * hitHalfSize.y, 0), index);
@@ -555,7 +555,7 @@ void OpenGL_Manager::main_loop( void )
 				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
 				+ "\nTPS: " + std::to_string(nbTicksLastSecond)
 				+ '\n' + _camera->getCamString(_game_mode)
-				+ "\nBlock\t> " + ((_block_hit.w >= blocks::AIR) ? s_blocks[_block_hit.w].name : s_blocks[_block_hit.w + blocks::NOTVISIBLE].name)
+				+ "\nBlock\t> " + s_blocks[_block_hit.w]->name
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
 				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "")
 				+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)

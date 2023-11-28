@@ -9,6 +9,9 @@ int main( int ac, char **av )
 {
 	if (ac > 2) {
 		std::cerr << "Error\nFormat required: ./vox [path-to-texture]" << std::endl;
+		for (int index = 0; index < S_BLOCKS_SIZE; index++) {
+			delete s_blocks[index];
+		}
 		return (1);
 	}
 	std::cout << std::endl << " ---- Hello ----" << std::endl;
@@ -26,6 +29,9 @@ int main( int ac, char **av )
 	render->main_loop();
 
 	delete render;
+	for (int index = 0; index < S_BLOCKS_SIZE; index++) {
+		delete s_blocks[index];
+	}
 	std::cout << std::endl << " ---- Goodbye ----" << std::endl;
 	return (0);
 }

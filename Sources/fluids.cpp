@@ -89,7 +89,7 @@ std::array<int, 4> Chunk::water_heights( int value, int above, int row, int col,
 bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, int posZ )
 {
 	if (value < blocks::WATER) {
-		// std::cout << "water turned into " << s_blocks[value].name << std::endl;
+		// std::cout << "water turned into " << s_blocks[value]->name << std::endl;
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 			int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2], true) & 0xFF;
@@ -109,7 +109,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 			int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2], true) & 0xFF;
 			if (index != face_dir::MINUSZ) { // if not block underneath
-			// std::cout << posX + delta[0] << ", " << posY + delta[1] << ", " << posZ + delta[2] << " is " << s_blocks[adj].name << std::endl;
+			// std::cout << posX + delta[0] << ", " << posY + delta[1] << ", " << posZ + delta[2] << " is " << s_blocks[adj]->name << std::endl;
 				if (adj >= blocks::WATER) {
 					if (index == face_dir::PLUSZ) { // flow from above
 						if (value > blocks::WATER1) {
@@ -136,7 +136,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 			}
 		}
 		if (stop) {
-			// std::cout << "stop flow of " << s_blocks[value].name << std::endl;
+			// std::cout << "stop flow of " << s_blocks[value]->name << std::endl;
 			_blocks[offset] = blocks::AIR;
 			_added.erase(offset);
 			_removed.insert(offset);
@@ -164,21 +164,21 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 {
 	int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
 	int type = _blocks[offset] & 0xFF;
-	// std::cout << "checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[type].name << std::endl;
+	// std::cout << "checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[type]->name << std::endl;
 	if (!air_flower(type, false, false, true) || type > level || (type == level && level == blocks::WATER1)) {
 		// std::cout << "column expension, water count before: " << _water_count << std::endl;
 		_blocks[offset] = level;
 		_added[offset] = level;
 		_removed.erase(offset);
 		if (!air_flower(type, false, false, true) && type != blocks::AIR) { // replace flower with water
-			// std::cout << _startX << ", " << _startY << " type before: " << s_blocks[type].name << ". displayed: " << _displayed_faces << std::endl;
+			// std::cout << _startX << ", " << _startY << " type before: " << s_blocks[type]->name << ". displayed: " << _displayed_faces << std::endl;
 			entity_block(posX, posY, posZ, type); // drop item(s)
 			_displayed_faces -= (2 << (type == blocks::TORCH));
 			if (type == blocks::TORCH) {
 				_lights[offset] &= 0xFF00;
 				light_spread(posX, posY, posZ, false);
 			}
-			// std::cout << "type after: " << s_blocks[level].name << ". displayed: " << _displayed_faces << std::endl;
+			// std::cout << "type after: " << s_blocks[level]->name << ". displayed: " << _displayed_faces << std::endl;
 			delete [] static_cast<GLint*>(_vertices);
 			_vertices = new GLint[_displayed_faces * 24];
 			_vertex_update = true;
@@ -186,9 +186,9 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 		if (!air_flower(type, false, false, true)) {
 			_hasWater = true;
 		} else {
-			// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[type].name << " with " << s_blocks[level].name << std::endl; 
+			// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[type]->name << " with " << s_blocks[level]->name << std::endl; 
 		}
-			// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[type].name << " with " << s_blocks[level].name << " at " << posX << ", " << posY << ", " << posZ << std::endl; 
+			// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[type]->name << " with " << s_blocks[level]->name << " at " << posX << ", " << posY << ", " << posZ << std::endl; 
 		if (newFluids) {
 			newFluids->insert(offset);
 		} else {
@@ -497,7 +497,7 @@ void Chunk::updateFluids( void )
 			try_addFlow(&newFluids, posX, posY - 1, posZ, level + 1);
 			try_addFlow(&newFluids, posX, posY + 1, posZ, level + 1);
 		}
-		// std::cout << _startX << " " << _startY << " fluid at " << posX << " (" << _startX + posX << "), " << posY << " (" << _startY + posY << "), " << posZ << ": before " << s_blocks[level].name << " after " << s_blocks[_blocks[*f]].name << std::endl;
+		// std::cout << _startX << " " << _startY << " fluid at " << posX << " (" << _startX + posX << "), " << posY << " (" << _startY + posY << "), " << posZ << ": before " << s_blocks[level]->name << " after " << s_blocks[_blocks[*f]].name << std::endl;
 		f = _fluids.erase(f);
 	}
 	_fluids = newFluids;

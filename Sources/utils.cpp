@@ -126,38 +126,6 @@ short maxs( short a, short b ) {
 	return ((a > b) ? a : b);
 }
 
-int blockGridX( int block, int offset ) // x coord in blockAtlas grid
-{
-	if (block == blocks::FARMLAND) {
-		return (3);
-	}
-	if (block < 16) {
-		return (offset);
-	}
-	return (3 + (block >> 4));
-}
-
-int blockGridY( int block, int offset ) // y coord in blockAtlas grid
-{
-	if (block == blocks::FARMLAND) {
-		return (!offset);
-	}
-	return (block & 0xF);
-}
-
-int blockAtlasX( int block ) // x coord in blockAtlas in pxl
-{
-	if (block < 16) {
-		return ((block >= 8) << 5);
-	}
-	return ((3 + (block >> 4)) << 4);
-}
-
-int blockAtlasY( int block ) // y coord in blockAtlas in pxl
-{
-	return ((block & 0xF) << 4);
-}
-
 std::string doubleDigits( int nb )
 {
 	if (nb < 10) {
