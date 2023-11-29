@@ -572,7 +572,7 @@ void OpenGL_Manager::main_loop( void )
 				+ _menu->getFurnaceString()
 				// + _inventory->getDuraString()
 				// + _inventory->getInventoryString()
-			: "";
+			: "\n\nFPS: " + std::to_string(nbFramesLastSecond) + "\nTPS: " + std::to_string(nbTicksLastSecond);
 		mtx_backup.unlock();
 		mtx_perimeter.unlock();
 		mtx.unlock();
@@ -585,36 +585,42 @@ void OpenGL_Manager::main_loop( void )
 			mtx.lock();
 			_menu->setChunks(_chunks);
 			mtx.unlock();
-			int menu_ret = _menu->run(_render_distance);
-			if (menu_ret == 2) { // world selected, go into loading mode
-				_world_name = _menu->getWorldFile();
-				glUseProgram(_shaderProgram); // used by dayCycle to modif internal light
-				loadWorld("Worlds/" + _world_name);
-				initWorld();
-			} else if (menu_ret == 1) { // back to game
-				if (!IS_LINUX) {
-					glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-					if (glfwRawMouseMotionSupported()) {
-						glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+			switch (_menu->run(_render_distance)) {
+				case (1): // back to game
+					if (!IS_LINUX) {
+						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+						if (glfwRawMouseMotionSupported()) {
+							glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+						}
 					}
-				}
-				set_cursor_position_callback( _camera, NULL );
-				set_scroll_callback(_inventory);
-				_paused = false;
-				backFromMenu = 0;
-				_camera->_update = true;
-			} else if (menu_ret == 3) { // save and quit to menu
-				resetInputsPtrs();
-				saveWorld();
-			} else if (menu_ret == 4) { // skip world selection and play with default seed of 123456
-				initWorld();
-			} else if (menu_ret == 5) { // Respawn player, init world again
-				_camera->respawn();
-				initWorld();	
-			} else if (menu_ret == 6) { // Respawn player, then save and quit to menu
-				_camera->respawn();
-				resetInputsPtrs();
-				saveWorld();
+					set_cursor_position_callback( _camera, NULL );
+					set_scroll_callback(_inventory);
+					_paused = false;
+					backFromMenu = 0;
+					_camera->_update = true;
+					break ;
+				case (2): // world selected, go into loading mode
+					_world_name = _menu->getWorldFile();
+					glUseProgram(_shaderProgram); // used by dayCycle to modif internal light
+					loadWorld("Worlds/" + _world_name);
+					initWorld();
+					break ;
+				case (3): // save and quit to menu
+					resetInputsPtrs();
+					saveWorld();
+					break ;
+				case (4): // skip world selection and play with default seed of 123456
+					initWorld();
+					break ;
+				case (5): // Respawn player, init world again
+					_camera->respawn();
+					initWorld();
+					break ;
+				case (6): // Respawn player, then save and quit to menu
+					_camera->respawn();
+					resetInputsPtrs();
+					saveWorld();
+					break ;
 			}
 		}
 		_ui->textToScreen();

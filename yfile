@@ -26,7 +26,6 @@ Project Requirements:
         - different biomes
 
 TODOS:
-	- change physics in water
 	- hitbox change + no fall on sneak
     - skybox
 	- particles ?
@@ -70,6 +69,7 @@ DONE:
     - hide faces not oriented towards us // face culling .. only on mac, gains no fps
     - save block changed into backup map
     - player gravity
+	- change physics in water
     - hitbox around player for collisions - https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
     - items on ground after break
 	- item number color/placement/size in ingame menus

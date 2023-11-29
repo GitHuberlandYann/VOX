@@ -135,6 +135,9 @@ struct Block {
 		float break_time_stone = FLT_MAX;
 		float break_time_iron = FLT_MAX;
 		float break_time_diamond = FLT_MAX;
+		int textureX = 1;
+		int textureY = 15;
+
 		float getBreakTime( int tool ) const {
 			if (tool == needed_tool) {
 				return (break_time_wooden);
@@ -155,11 +158,11 @@ struct Block {
 		}
 		virtual int texX( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
 			(void)dir;(void)offset;
-			return (1);
+			return (textureX);
 		}
 		virtual int texY( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
 			(void)dir;(void)offset;
-			return (15);
+			return (textureY);
 		}
 		virtual ~Block() {}
 };
@@ -191,6 +194,7 @@ struct GrassBlock : Block {
 			break_time_stone = 0.25f;
 			break_time_iron = 0.15f;
 			break_time_diamond = 0.15f;
+			textureY = 1;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
 			(void)offset;
@@ -200,10 +204,6 @@ struct GrassBlock : Block {
 				return (4);
 			}
 			return (0);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (1);
 		}
 };
 
@@ -223,6 +223,7 @@ struct OakLog : Block {
 			break_time_stone = 0.75f;
 			break_time_iron = 0.5f;
 			break_time_diamond = 0.4f;
+			textureY = 2;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
 			(void)offset;
@@ -230,10 +231,6 @@ struct OakLog : Block {
 				return (1);
 			}
 			return (0);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (2);
 		}
 };
 
@@ -245,6 +242,7 @@ struct Cactus : Block {
 			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.6f;
+			textureY = 3;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
 			(void)offset;
@@ -254,10 +252,6 @@ struct Cactus : Block {
 				return (2);
 			}
 			return (0);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (3);
 		}
 };
 
@@ -276,16 +270,13 @@ struct Farmland : Block {
 			break_time_stone = 0.25f;
 			break_time_iron = 0.15f;
 			break_time_diamond = 0.15f;
+			textureY = 1;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
 			if (dir == face_dir::PLUSZ) {
 				return (2 + !offset);
 			}
 			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (1);
 		}
 };
 
@@ -337,6 +328,7 @@ struct CraftingTable : Block {
 			break_time_stone = 0.95f;
 			break_time_iron = 0.65f;
 			break_time_diamond = 0.5f;
+			textureY = 8;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
 			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
@@ -345,10 +337,6 @@ struct CraftingTable : Block {
 				return (2);
 			}
 			return (0);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
 		}
 };
 
@@ -364,6 +352,7 @@ struct Furnace : Block {
 			break_time_stone = 1.35f;
 			break_time_iron = 0.9f;
 			break_time_diamond = 0.7f;
+			textureY = 9;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
 			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
@@ -373,10 +362,6 @@ struct Furnace : Block {
 			}
 			return (0);
 		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
 };
 
 struct Bedrock : Block {
@@ -384,14 +369,8 @@ struct Bedrock : Block {
 		Bedrock() {
 			name = "BEDROCK";
 			byHand = false;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (0);
+			textureX = 4;
+			textureY = 0;
 		}
 };
 
@@ -407,14 +386,8 @@ struct Dirt : Block {
 			break_time_stone = 0.2f;
 			break_time_iron = 0.15f;
 			break_time_diamond = 0.1f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (1);
+			textureX = 4;
+			textureY = 1;
 		}
 };
 
@@ -430,14 +403,8 @@ struct SmoothStone : Block {
 			break_time_stone = 0.75f;
 			break_time_iron = 0.5f;
 			break_time_diamond = 0.4f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (2);
+			textureX = 4;
+			textureY = 2;
 		}
 };
 
@@ -455,14 +422,8 @@ struct Stone : Block {
 			break_time_stone = 0.6f;
 			break_time_iron = 0.4f;
 			break_time_diamond = 0.3f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (3);
+			textureX = 4;
+			textureY = 3;
 		}
 };
 
@@ -480,14 +441,8 @@ struct Cobblestone : Block {
 			break_time_stone = 0.74f;
 			break_time_iron = 0.5f;
 			break_time_diamond = 0.4f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
+			textureX = 4;
+			textureY = 4;
 		}
 };
 
@@ -505,14 +460,8 @@ struct StoneBrick : Block {
 			break_time_stone = 0.6f;
 			break_time_iron = 0.4f;
 			break_time_diamond = 0.3f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
+			textureX = 4;
+			textureY = 5;
 		}
 };
 
@@ -528,14 +477,8 @@ struct CrackedStoneBrick : Block {
 			break_time_stone = 0.6f;
 			break_time_iron = 0.4f;
 			break_time_diamond = 0.3f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
+			textureX = 4;
+			textureY = 6;
 		}
 };
 
@@ -553,14 +496,8 @@ struct Sand : Block {
 			break_time_stone = 0.2f;
 			break_time_iron = 0.15f;
 			break_time_diamond = 0.1f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (7);
+			textureX = 4;
+			textureY = 7;
 		}
 };
 
@@ -576,14 +513,8 @@ struct Gravel : Block {
 			break_time_stone = 0.25f;
 			break_time_iron = 0.15f;
 			break_time_diamond = 0.15f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
+			textureX = 4;
+			textureY = 8;
 		}
 };
 
@@ -593,14 +524,8 @@ struct OakLeaves : Block {
 			name = "OAK_LEAVES";
 			byHand = true;
 			break_time_hand = 0.3f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
+			textureX = 4;
+			textureY = 9;
 		}
 };
 
@@ -618,14 +543,8 @@ struct OakPlanks : Block {
 			break_time_stone = 0.75f;
 			break_time_iron = 0.5f;
 			break_time_diamond = 0.4f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (10);
+			textureX = 4;
+			textureY = 10;
 		}
 };
 
@@ -634,14 +553,8 @@ struct Glass : Block {
 		Glass() {
 			name = "GLASS";
 			break_time_hand = 0.45f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (11);
+			textureX = 4;
+			textureY = 11;
 		}
 };
 
@@ -659,14 +572,8 @@ struct CoalOre : Block {
 			break_time_stone = 1.15f;
 			break_time_iron = 0.75f;
 			break_time_diamond = 0.6f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (0);
+			textureX = 5;
+			textureY = 0;
 		}
 };
 
@@ -685,14 +592,8 @@ struct IronOre : Block {
 			break_time_stone = 1.15f;
 			break_time_iron = 0.75f;
 			break_time_diamond = 0.6f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (1);
+			textureX = 5;
+			textureY = 1;
 		}
 };
 
@@ -711,14 +612,8 @@ struct DiamondOre : Block {
 			break_time_stone = 3.75f;
 			break_time_iron = 0.75f;
 			break_time_diamond = 0.6f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (2);
+			textureX = 5;
+			textureY = 2;
 		}
 };
 
@@ -736,14 +631,8 @@ struct CoalBlock : Block {
 			break_time_stone = 1.9f;
 			break_time_iron = 1.25f;
 			break_time_diamond = 0.95f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (3);
+			textureX = 5;
+			textureY = 3;
 		}
 };
 
@@ -760,14 +649,8 @@ struct IronBlock : Block {
 			break_time_stone = 1.9f;
 			break_time_iron = 1.25f;
 			break_time_diamond = 0.95f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
+			textureX = 5;
+			textureY = 4;
 		}
 };
 
@@ -784,14 +667,8 @@ struct DiamondBlock : Block {
 			break_time_stone = 6.25f;
 			break_time_iron = 1.25f;
 			break_time_diamond = 0.95f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
+			textureX = 5;
+			textureY = 5;
 		}
 };
 
@@ -813,14 +690,8 @@ struct OakSlab : Block {
 			break_time_stone = 0.75f;
 			break_time_iron = 0.5f;
 			break_time_diamond = 0.4f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (10);
+			textureX = 4;
+			textureY = 10;
 		}
 };
 
@@ -835,14 +706,8 @@ struct Poppy : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (0);
+			textureX = 6;
+			textureY = 0;
 		}
 };
 
@@ -857,14 +722,8 @@ struct Dandelion : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (1);
+			textureX = 6;
+			textureY = 1;
 		}
 };
 
@@ -879,14 +738,8 @@ struct BlueOrchid : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (2);
+			textureX = 6;
+			textureY = 2;
 		}
 };
 
@@ -901,14 +754,8 @@ struct Allium : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (3);
+			textureX = 6;
+			textureY = 3;
 		}
 };
 
@@ -923,14 +770,8 @@ struct CornFlower : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
+			textureX = 6;
+			textureY = 4;
 		}
 };
 
@@ -945,14 +786,8 @@ struct PinkTulip : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
+			textureX = 6;
+			textureY = 5;
 		}
 };
 
@@ -964,14 +799,8 @@ struct Grass : Block {
 			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
+			textureX = 6;
+			textureY = 6;
 		}
 };
 
@@ -983,14 +812,8 @@ struct SugarCane : Block {
 			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.2f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (7);
+			textureX = 6;
+			textureY = 7;
 		}
 };
 
@@ -1007,14 +830,8 @@ struct DeadBush : Block {
 			fuel_time = 5;
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
+			textureX = 6;
+			textureY = 8;
 		}
 };
 
@@ -1031,14 +848,8 @@ struct OakSapling : Block {
 			fuel_time = 5;
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
+			textureX = 6;
+			textureY = 9;
 		}
 };
 
@@ -1054,14 +865,8 @@ struct Torch : Block {
 			light_level = 14;
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (10);
+			textureX = 6;
+			textureY = 10;
 		}
 };
 
@@ -1076,10 +881,7 @@ struct WheatCrop : Block {
 			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
 			byHand = true;
 			break_time_hand = 0.05f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (7);
+			textureX = 7;
 		}
 		virtual int texY(  face_dir dir, int offset ) const {
 			(void)dir;
@@ -1256,14 +1058,8 @@ struct Stick : Block {
 			name = "STICK";
 			isFuel = true;
 			fuel_time = 5;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (0);
+			textureX = 8;
+			textureY = 0;
 		}
 };
 
@@ -1275,14 +1071,8 @@ struct WoodenShovel : Block {
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (1);
+			textureX = 8;
+			textureY = 1;
 		}
 };
 
@@ -1292,14 +1082,8 @@ struct StoneShovel : Block {
 			name = "STONE_SHOVEL";
 			stackable = false;
 			durability = 131;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (2);
+			textureX = 8;
+			textureY = 2;
 		}
 };
 
@@ -1309,14 +1093,8 @@ struct IronShovel : Block {
 			name = "IRON_SHOVEL";
 			stackable = false;
 			durability = 250;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (3);
+			textureX = 8;
+			textureY = 3;
 		}
 };
 
@@ -1326,14 +1104,8 @@ struct DiamondShovel : Block {
 			name = "DIAMOND_SHOVEL";
 			stackable = false;
 			durability = 1561;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
+			textureX = 8;
+			textureY = 4;
 		}
 };
 
@@ -1345,14 +1117,8 @@ struct WoodenAxe : Block {
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
+			textureX = 8;
+			textureY = 5;
 		}
 };
 
@@ -1362,14 +1128,8 @@ struct StoneAxe : Block {
 			name = "STONE_AXE";
 			stackable = false;
 			durability = 131;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
+			textureX = 8;
+			textureY = 6;
 		}
 };
 
@@ -1379,14 +1139,8 @@ struct IronAxe : Block {
 			name = "IRON_AXE";
 			stackable = false;
 			durability = 250;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
+			textureX = 8;
+			textureY = 7;
 		}
 };
 
@@ -1396,14 +1150,8 @@ struct DiamondAxe : Block {
 			name = "DIAMOND_AXE";
 			stackable = false;
 			durability = 1561;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
+			textureX = 8;
+			textureY = 8;
 		}
 };
 
@@ -1415,14 +1163,8 @@ struct WoodenPickaxe : Block {
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
+			textureX = 8;
+			textureY = 9;
 		}
 };
 
@@ -1432,14 +1174,8 @@ struct StonePickaxe : Block {
 			name = "STONE_PICKAXE";
 			stackable = false;
 			durability = 131;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (10);
+			textureX = 8;
+			textureY = 10;
 		}
 };
 
@@ -1449,14 +1185,8 @@ struct IronPickaxe : Block {
 			name = "IRON_PICKAXE";
 			stackable = false;
 			durability = 250;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (11);
+			textureX = 8;
+			textureY = 11;
 		}
 };
 
@@ -1466,14 +1196,8 @@ struct DiamondPickaxe : Block {
 			name = "DIAMOND_PICKAXE";
 			stackable = false;
 			durability = 1561;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (12);
+			textureX = 8;
+			textureY = 12;
 		}
 };
 
@@ -1483,14 +1207,8 @@ struct Coal : Block {
 			name = "COAL";
 			isFuel = true;
 			fuel_time = 80;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (0);
+			textureX = 9;
+			textureY = 0;
 		}
 };
 
@@ -1500,14 +1218,8 @@ struct Charcoal : Block {
 			name = "CHARCOAL";
 			isFuel = true;
 			fuel_time = 80;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (1);
+			textureX = 9;
+			textureY = 1;
 		}
 };
 
@@ -1515,14 +1227,8 @@ struct IronIngot : Block {
 	public:
 		IronIngot() {
 			name = "IRON_INGOT";
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (2);
+			textureX = 9;
+			textureY = 2;
 		}
 };
 
@@ -1530,14 +1236,8 @@ struct Diamond : Block {
 	public:
 		Diamond() {
 			name = "DIAMOND";
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (3);
+			textureX = 9;
+			textureY = 3;
 		}
 };
 
@@ -1545,14 +1245,8 @@ struct Bucket : Block {
 	public:
 		Bucket() {
 			name = "BUCKET";
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (4);
+			textureX = 9;
+			textureY = 4;
 		}
 };
 
@@ -1561,14 +1255,8 @@ struct WaterBucket : Block {
 		WaterBucket() {
 			name = "WATER_BUCKET";
 			stackable = false;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (5);
+			textureX = 9;
+			textureY = 5;
 		}
 };
 
@@ -1580,14 +1268,8 @@ struct WoodenHoe : Block {
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (6);
+			textureX = 9;
+			textureY = 6;
 		}
 };
 
@@ -1597,14 +1279,8 @@ struct StoneHoe : Block {
 			name = "STONE_HOE";
 			stackable = false;
 			durability = 131;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (7);
+			textureX = 9;
+			textureY = 7;
 		}
 };
 
@@ -1614,14 +1290,8 @@ struct IronHoe : Block {
 			name = "IRON_HOE";
 			stackable = false;
 			durability = 250;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (8);
+			textureX = 9;
+			textureY = 8;
 		}
 };
 
@@ -1631,14 +1301,8 @@ struct DiamondHoe : Block {
 			name = "DIAMOND_HOE";
 			stackable = false;
 			durability = 1561;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
+			textureX = 9;
+			textureY = 9;
 		}
 };
 
@@ -1646,14 +1310,8 @@ struct WheatSeeds : Block {
 	public:
 		WheatSeeds() {
 			name = "WHEAT_SEEDS";
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (10);
+			textureX = 9;
+			textureY = 10;
 		}
 };
 
@@ -1661,14 +1319,8 @@ struct Wheat : Block {
 	public:
 		Wheat() {
 			name = "WHEAT";
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (11);
+			textureX = 9;
+			textureY = 11;
 		}
 };
 
@@ -1679,14 +1331,8 @@ struct Bread : Block {
 			isFood = true;
 			hunger_restauration = 5;
 			saturation_restauration = 6;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (12);
+			textureX = 9;
+			textureY = 12;
 		}
 };
 
@@ -1697,14 +1343,8 @@ struct Apple : Block {
 			isFood = true;
 			hunger_restauration = 4;
 			saturation_restauration = 2.4f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (9);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)dir;(void)offset;
-			return (13);
+			textureX = 9;
+			textureY = 13;
 		}
 };
 
