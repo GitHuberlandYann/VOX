@@ -600,6 +600,8 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			_lights[offset] &= 0xFF00;
 			light_spread(pos.x, pos.y, pos.z, false); // spread block light
 			std::cout << "over" << std::endl;
+		} else if (type == blocks::OAK_LEAVES) {
+			_lights[offset] &= 0xFF;
 		}
 	} else if (type == blocks::WATER) { // use bucket on water source
 		// std::cout << "bucket on water" << std::endl;
@@ -719,9 +721,9 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 				_displayed_faces -= !visible_face(adj, type,  opposite_dir(index));
 			} else {
 				if (index != face_dir::PLUSZ) {
-					light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 0, true); // spread sky light, but not upwards duh
+					light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 1, true); // spread sky light, but not upwards duh
 				}
-				light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 0, false);
+				light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 1, false);
 			}
 			if (adj > blocks::AIR && adj < blocks::WATER && !face_count(adj, pos.x + delta[0], pos.y + delta[1], pos.z + delta[2])) {
 				// was exposed before, but isn't anymore
@@ -1030,9 +1032,9 @@ void Chunk::checkFillVertices( void )
 			for (int row = 0; row < CHUNK_SIZE; row++) {
 				for (int col = 0; col < CHUNK_SIZE; col++) {
 					for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
-						if (!(_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xFF00)) {
+						if (!(_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xF000)) {
 							int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-							if (!air_flower(value, true, true, false)) { // underground hole
+							if (!air_flower(value, false, true, false)) { // underground hole
 								// spread_light TODO watch out for leaves and water light damping..
 								light_spread(row, col, level, true);
 							}

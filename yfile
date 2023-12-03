@@ -32,8 +32,8 @@ TODOS:
 	- stairs
 	- chests
 	- doors
+	- bed + respawn point
 	- entity shadow
-	- update skylight on leave break
 	- rework clouds
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
@@ -92,6 +92,7 @@ DONE:
 	- no time pause on inventory/furnace
     - chunk border fix
 	- overall lighting (corner shade, sky light + decrease 1 per block = dark in caves + block light)
+	- update skylight on leave break
 	- torches
     - FOV changed on isRunning change
     - stop fov run if player idle

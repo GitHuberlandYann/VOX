@@ -153,8 +153,7 @@ class Chunk
 		GLint getStartX( void );
 		GLint getStartY( void );
 		bool getSortedOnce( void );
-		GLint getSkyLightLevel( glm::ivec3 location );
-		GLint getBlockLightLevel( glm::ivec3 location );
+		GLint getCamLightLevel( glm::ivec3 location );
 		int computePosLight( glm::vec3 pos );
 		short getLightLevel( int posX, int posY, int posZ );
 		void waitGenDone( void );

@@ -24,29 +24,8 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 			if (posZ + delta[2] < 0 || posZ + delta[2] > 255) {
-			} else if (posX + delta[0] < 0 || posX + delta[0] >= CHUNK_SIZE || posY + delta[1] < 0 || posY + delta[1] >= CHUNK_SIZE) {
-				// ask neighbour
-				short light = 0;
-				if (posX + delta[0] == -1) {
-					if (_neighbours[face_dir::MINUSX]) {
-						light = _neighbours[face_dir::MINUSX]->getLightLevel(CHUNK_SIZE - 1, posY + delta[1], posZ + delta[2]);
-					}
-				} else if (posY + delta[1] == -1) {
-					if (_neighbours[face_dir::MINUSY]) {
-						light = _neighbours[face_dir::MINUSY]->getLightLevel(posX + delta[0], CHUNK_SIZE - 1, posZ + delta[2]);
-					}
-				} else if (posX + delta[0] == CHUNK_SIZE) {
-					if (_neighbours[face_dir::PLUSX]) {
-						light = _neighbours[face_dir::PLUSX]->getLightLevel(0, posY + delta[1], posZ + delta[2]);
-					}
-				} else if (posY + delta[1] == CHUNK_SIZE) {
-					if (_neighbours[face_dir::PLUSY]) {
-						light = _neighbours[face_dir::PLUSY]->getLightLevel(posX + delta[0], 0, posZ + delta[2]);
-					}
-				}
-				maxLevel = maxs(maxLevel, (light >> shift) & 0xF);
 			} else {
-				short adj = _lights[((((posX + delta[0]) << CHUNK_SHIFT) + posY + delta[1]) << WORLD_SHIFT) + posZ + delta[2]] >> shift;
+				short adj = getLightLevel(posX + delta[0], posY + delta[1], posZ + delta[2]) >> shift;
 				maxLevel = maxs(maxLevel, adj & 0xF);
 				if (skySpread && index == face_dir::PLUSZ && (adj & 0xF0)) {
 					maxLevel = (adj & 0xFF) + 1; // if sky light above is source, own sky light becomes source too
@@ -63,10 +42,10 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 		} else {
 			return ; // stop spread when not source and level is unchanged
 		}
-	} else if (skySpread && posZ + 1 < 254) { // skySpread + source block
-		short above = _lights[offset + 1] >> shift;
+	} else if (skySpread && posZ + 1 < WORLD_HEIGHT) { // skySpread + source block
+		short above = _lights[offset + 1] >> 8;
 		if (!(above & 0xF0)) { // if block above is not a source anymore
-			_lights[offset] &= (0xFF << (8 - shift));
+			_lights[offset] &= 0xFF;
 			return (light_spread(posX, posY, posZ, skySpread));
 		}
 	}
@@ -75,7 +54,11 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 	// spread in all 6 directions
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-		light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], level, skySpread);
+		if (skySpread && index == face_dir::MINUSZ && level == 0xFF) {
+			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0xF0, skySpread);
+		} else {
+			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], level, skySpread);
+		}
 	}
 }
 
@@ -92,10 +75,13 @@ void Chunk::generate_lights( void )
 					int type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xFF;
 					if (air_flower(type, true, true, false) && type != blocks::OAK_SLAB && type != blocks::FARMLAND && type != blocks::DIRT_PATH) { // block hit
 						light_level = 0;
-					}
-					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
-					if (type == blocks::OAK_LEAVES || type >= blocks::WATER) {
+					} else if (type == blocks::OAK_LEAVES || type >= blocks::WATER) {
 						--light_level;
+					}
+					if (light_level == 15) {
+						_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
+					} else {
+						_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = light_level << 8;
 					}
 				} else {
 					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = 0;
@@ -408,22 +394,9 @@ void Chunk::fill_vertex_array( void )
 //                                Public                                      //
 // ************************************************************************** //
 
-GLint Chunk::getSkyLightLevel( glm::ivec3 location )
+GLint Chunk::getCamLightLevel( glm::ivec3 location )
 {
-	if (location.z > 255 || location.z < 0) {
-		return (0xF * (location.z > 255));
-	}
-	int posX = location.x - _startX, posY = location.y - _startY;
-	return ((_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + location.z] >> 8) & 0xF);
-}
-
-GLint Chunk::getBlockLightLevel( glm::ivec3 location )
-{
-	if (location.z > 255 || location.z < 0) {
-		return (0);
-	}
-	int posX = location.x - _startX, posY = location.y - _startY;
-	return (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + location.z] & 0xF);
+	return (getLightLevel(location.x - _startX, location.y - _startY, location.z));
 }
 
 int Chunk::computePosLight( glm::vec3 pos )
@@ -436,7 +409,7 @@ short Chunk::getLightLevel( int posX, int posY, int posZ )
 	if (!_lights || posZ < 0) {
 		return (0);
 	} else if (posZ >= WORLD_HEIGHT) {
-		return (0xF00);
+		return (0xFF00);
 	}
 	if (posX < 0) {
 		if (_neighbours[face_dir::MINUSX]) {
@@ -486,11 +459,11 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 		}
 	} else {
 		int type = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] & 0xFF;
-		if (air_flower(type, true, true, false) && type != blocks::OAK_SLAB && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
+		if (air_flower(type, false, true, false) && type != blocks::OAK_SLAB && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
 			return ;
 		}
 		short neighbour = (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] >> (8 * skySpread));
-		if ((!(neighbour & 0xF0) || (skySpread && !(level & 0xF0))) && ((neighbour & 0xF) != maxs(0, (level & 0xF) - 1))) { // only spread to non source blocks whose value is not expected value. Also spread to source block if from non source block and skySpread
+		if ((!(neighbour & 0xF0) || (skySpread && !(level & 0xF0))) && ((neighbour & 0xF) != maxs(0, ((level & 0xF) - 1) & 0xF))) { // only spread to non source blocks whose value is not expected value. Also spread to source block if from non source block and skySpread
 			light_spread(posX, posY, posZ, skySpread);
 		}
 	}
