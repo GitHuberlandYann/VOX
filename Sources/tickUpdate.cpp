@@ -81,8 +81,7 @@ void Chunk::updateFarmland( int value, int offset )
 			_removed.erase(offset);
 			return ;
 		} else if (type_above < blocks::WHEAT_CROP || type_above > blocks::WHEAT_CROP7) {
-			_blocks[offset] = blocks::DIRT;
-			_added[offset] = blocks::DIRT;
+			replace_block(false, {posX, posY, posZ}, blocks::DIRT, blocks::FARMLAND);
 			_vertex_update = true;
 			return ;
 		}

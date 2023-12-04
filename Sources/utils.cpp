@@ -459,33 +459,40 @@ bool crossFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm
 }
 
 // looks though vertices to check if elements starting at pos index represent a face of the cube v012345678
-bool blockFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v5, glm::vec3 v6, glm::vec3 v7, size_t index )
+bool blockFace( GLfloat *vertices, std::array<glm::vec3, 8> v, size_t index, bool special )
 {
 	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
-	return ((vertices[index + 3]) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
-		&& (vertices[index + 4 + 3]) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
-		&& (vertices[index + 8 + 3]) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y)
+	if (((vertices[index + 3]) == v[4].z && vertices[index + 1] == v[4].x && vertices[index + 2] == v[4].y
+		&& (vertices[index + 4 + 3]) == v[0].z && vertices[index + 4 + 1] == v[0].x && vertices[index + 4 + 2] == v[0].y
+		&& (vertices[index + 8 + 3]) == v[6].z && vertices[index + 8 + 1] == v[6].x && vertices[index + 8 + 2] == v[6].y)
 		
-		|| ((vertices[index + 3]) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
-		&& (vertices[index + 4 + 3]) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
-		&& (vertices[index + 8 + 3]) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y)
+		|| ((vertices[index + 3]) == v[1].z && vertices[index + 1] == v[1].x && vertices[index + 2] == v[1].y
+		&& (vertices[index + 4 + 3]) == v[5].z && vertices[index + 4 + 1] == v[5].x && vertices[index + 4 + 2] == v[5].y
+		&& (vertices[index + 8 + 3]) == v[3].z && vertices[index + 8 + 1] == v[3].x && vertices[index + 8 + 2] == v[3].y)
 		
-		|| ((vertices[index + 3]) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& (vertices[index + 4 + 3]) == v1.z && vertices[index + 4 + 1] == v1.x && vertices[index + 4 + 2] == v1.y
-		&& (vertices[index + 8 + 3]) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y)
+		|| ((vertices[index + 3]) == v[0].z && vertices[index + 1] == v[0].x && vertices[index + 2] == v[0].y
+		&& (vertices[index + 4 + 3]) == v[1].z && vertices[index + 4 + 1] == v[1].x && vertices[index + 4 + 2] == v[1].y
+		&& (vertices[index + 8 + 3]) == v[2].z && vertices[index + 8 + 1] == v[2].x && vertices[index + 8 + 2] == v[2].y)
 		
-		|| ((vertices[index + 3]) == v5.z && vertices[index + 1] == v5.x && vertices[index + 2] == v5.y
-		&& (vertices[index + 4 + 3]) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
-		&& (vertices[index + 8 + 3]) == v7.z && vertices[index + 8 + 1] == v7.x && vertices[index + 8 + 2] == v7.y)
+		|| ((vertices[index + 3]) == v[5].z && vertices[index + 1] == v[5].x && vertices[index + 2] == v[5].y
+		&& (vertices[index + 4 + 3]) == v[4].z && vertices[index + 4 + 1] == v[4].x && vertices[index + 4 + 2] == v[4].y
+		&& (vertices[index + 8 + 3]) == v[7].z && vertices[index + 8 + 1] == v[7].x && vertices[index + 8 + 2] == v[7].y)) {
+		return (true);
+	}
+	if (special) {
+		v[4].z -= 1.0f / 16.0f;
+		v[5].z -= 1.0f / 16.0f;
+		v[0].z -= 1.0f / 16.0f;
+		v[1].z -= 1.0f / 16.0f;
+	}
+	return ((vertices[index + 3]) == v[4].z && vertices[index + 1] == v[4].x && vertices[index + 2] == v[4].y
+		&& (vertices[index + 4 + 3]) == v[5].z && vertices[index + 4 + 1] == v[5].x && vertices[index + 4 + 2] == v[5].y
+		&& (vertices[index + 8 + 3]) == v[0].z && vertices[index + 8 + 1] == v[0].x && vertices[index + 8 + 2] == v[0].y)
 		
-		|| ((vertices[index + 3]) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
-		&& (vertices[index + 4 + 3]) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
-		&& (vertices[index + 8 + 3]) == v0.z && vertices[index + 8 + 1] == v0.x && vertices[index + 8 + 2] == v0.y)
-		
-		|| ((vertices[index + 3]) == v2.z && vertices[index + 1] == v2.x && vertices[index + 2] == v2.y
-		&& (vertices[index + 4 + 3]) == v3.z && vertices[index + 4 + 1] == v3.x && vertices[index + 4 + 2] == v3.y
-		&& (vertices[index + 8 + 3]) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y);
+		|| ((vertices[index + 3]) == v[2].z && vertices[index + 1] == v[2].x && vertices[index + 2] == v[2].y
+		&& (vertices[index + 4 + 3]) == v[3].z && vertices[index + 4 + 1] == v[3].x && vertices[index + 4 + 2] == v[3].y
+		&& (vertices[index + 8 + 3]) == v[6].z && vertices[index + 8 + 1] == v[6].x && vertices[index + 8 + 2] == v[6].y);
 }
 
 // # include <glm/glm.hpp>

@@ -33,5 +33,6 @@ int main( int ac, char **av )
 		delete s_blocks[index];
 	}
 	std::cout << std::endl << " ---- Goodbye ----" << std::endl;
+	// system("leaks vox");
 	return (0);
 }

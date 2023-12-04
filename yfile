@@ -187,6 +187,7 @@ Some info:
 
     - objdump -d --disassemble=_main -Mintel vox
     - nm vox | grep <function>
+    - export MallocStackLogging=1 into system("leaks vox");
 
 
 - _blocks

@@ -503,6 +503,7 @@ void Menu::setup_array_buffer_select( void )
 	}
 
 	setup_shader(vertices);
+	delete [] vertices;
 }
 
 void Menu::setup_array_buffer_load( int completion )
@@ -885,7 +886,7 @@ void Menu::setup_array_buffer_inventory( void )
 {
 	mtx_inventory.lock();
 	int duras = _inventory.countDura(true);
-	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countiCraft() + 2 * duras + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
+	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countiCraft() + 2 * duras + !!_inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
 	mtx_inventory.unlock();
 	int mult = 3;
     GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
@@ -937,11 +938,10 @@ void Menu::setup_array_buffer_crafting( void )
 {
 	mtx_inventory.lock();
 	int duras = _inventory.countDura(true);
-	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countCraft() + 2 * duras + _inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
+	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + _inventory.countCraft() + 2 * duras + !!_inventory.getCrafted().x + (_selected_block.x != blocks::AIR);
 	mtx_inventory.unlock();
 	int mult = 3;
     GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
-
 	vertices[0] = 2;
 	vertices[1] = WIN_WIDTH / 2 - 88 * mult;
 	vertices[2] = WIN_HEIGHT / 2 - 83 * mult;

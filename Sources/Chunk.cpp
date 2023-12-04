@@ -1351,7 +1351,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	}
 	for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 		_mtx.lock();
-		if (blockFace(vertFloat, p0, p1, p2, p3, p4, p5, p6, p7, index)) { // TODO handle dirt path
+		if (blockFace(vertFloat, {p0, p1, p2, p3, p4, p5, p6, p7}, index, (value & 0xFF) == blocks::DIRT_PATH)) {
 			vertInt[index] = (vertInt[index] & 0xFFFF0FFF) + (frame << 12);
 			vertInt[index + 4] = (vertInt[index + 4] & 0xFFFF0FFF) + (frame << 12);
 			vertInt[index + 8] = (vertInt[index + 8] & 0xFFFF0FFF) + ((frame + 1) << 12);
