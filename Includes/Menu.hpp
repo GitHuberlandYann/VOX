@@ -76,7 +76,7 @@ class Menu
 		void processMouseMovement( float posX, float posY );
 		void setWindow( GLFWwindow *window );
 		void setShaderProgram( GLuint shaderProgram );
-		void setChunks( std::list<Chunk *> chunks );
+		void setChunks( std::list<Chunk *> &chunks );
 		void setFurnaceInstance( FurnaceInstance *furnace );
 		void setState( int state );
 		int getState( void );

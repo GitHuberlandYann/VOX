@@ -459,7 +459,7 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 		}
 	} else {
 		int type = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] & 0xFF;
-		if (air_flower(type, false, true, false) && type != blocks::OAK_SLAB && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
+		if (air_flower(type, false, true, true) && type != blocks::OAK_SLAB && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
 			return ;
 		}
 		short neighbour = (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] >> (8 * skySpread));

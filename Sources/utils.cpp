@@ -221,7 +221,7 @@ bool isSandOrGravel( int type )
 	return (type == blocks::SAND || type == blocks::GRAVEL);
 }
 
-std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
+void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks )
 {
 	// Bench b;
 	int posX = chunk_pos(pos.x);
@@ -301,7 +301,6 @@ std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks )
 
 	#endif
 	// std::cout << "out sort chunks, chunks size " << chunks.size() << std::endl;
-	return (chunks);
 }
 
 /* takes offsets of face's corners and compute texture coordinates to represent direction of liquid's flow
@@ -345,7 +344,7 @@ std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 )
 	return {6 << 10, 8 << 10, 9 << 10, 4 << 10, 1 << 9}; // -x +y
 }
 
-void face_vertices( void *vertices, std::pair<int, glm::vec3> v0, std::pair<int, glm::vec3> v1, std::pair<int, glm::vec3> v2, std::pair<int, glm::vec3> v3, size_t & vindex )
+void face_vertices( void *vertices, std::pair<int, glm::vec3> &v0, std::pair<int, glm::vec3> &v1, std::pair<int, glm::vec3> &v2, std::pair<int, glm::vec3> &v3, size_t & vindex )
 {
 	GLfloat *vertFloat = static_cast<GLfloat*>(vertices);
 	GLint *vertInt = static_cast<GLint*>(vertices);
@@ -379,7 +378,7 @@ void face_vertices( void *vertices, std::pair<int, glm::vec3> v0, std::pair<int,
 	vindex += 12;
 }
 
-void face_water_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, size_t & vindex )
+void face_water_vertices( GLint *vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::ivec4 &v2, glm::ivec4 &v3, size_t & vindex )
 {
 	vertices[vindex] = v0.x;
 	vertices[vindex + 1] = v0.y;
@@ -411,7 +410,7 @@ void face_water_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::iv
 }
 
 // looks though vertices to check if elements starting at pos index represent a face of the torch v012345678
-bool torchFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v6, size_t index )
+bool torchFace( GLfloat *vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v6, size_t index )
 {
 	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
@@ -440,7 +439,7 @@ bool torchFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm
 }
 
 // looks though vertices to check if elements starting at pos index represent a face of the flower v012345678
-bool crossFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v5, size_t index )
+bool crossFace( GLfloat *vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v5, size_t index )
 {
 	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
@@ -509,7 +508,7 @@ bool blockFace( GLfloat *vertices, std::array<glm::vec3, 8> v, size_t index, boo
  *
  * J. Amanatides, A. Woo. A Fast Voxel Traversal Algorithm for Ray Tracing. Eurographics '87
  */
-std::vector<glm::ivec3> voxel_traversal( glm::vec3 ray_start, glm::vec3 ray_end ) {
+std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end ) {
 	std::vector<glm::ivec3> visited_voxels;
 
 	// This id of the first/current voxel hit by the ray.
@@ -582,7 +581,7 @@ std::vector<glm::ivec3> voxel_traversal( glm::vec3 ray_start, glm::vec3 ray_end 
  *
  * https://en.wikipedia.org/wiki/Line-plane_intersection
  */
-static glm::vec3 line_plane_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 p0, glm::vec3 cross ) {
+static glm::vec3 line_plane_intersection( glm::vec3 &camPos, glm::vec3 &camDir, glm::vec3 &p0, glm::vec3 cross ) {
 	float determinant = -glm::dot(camDir, cross);
 	if (!determinant) { // div zero -> line parallel to plane -> no intersection
 		return {FLT_MIN, FLT_MIN, FLT_MIN};
@@ -591,7 +590,7 @@ static glm::vec3 line_plane_intersection( glm::vec3 camPos, glm::vec3 camDir, gl
 	return {camPos.x + camDir.x * t, camPos.y + camDir.y * t, camPos.z + camDir.z * t};
 }
 
-static bool line_rectangle_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 p0, glm::vec3 size )
+static bool line_rectangle_intersection( glm::vec3 &camPos, glm::vec3 &camDir, glm::vec3 p0, glm::vec3 size )
 {
 	glm::vec3 res;
 	if (size.z) {

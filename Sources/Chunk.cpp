@@ -1034,7 +1034,7 @@ void Chunk::checkFillVertices( void )
 					for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
 						if (!(_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xF000)) {
 							int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-							if (!air_flower(value, false, true, false)) { // underground hole
+							if (!air_flower(value, false, true, true)) { // underground hole
 								// spread_light TODO watch out for leaves and water light damping..
 								light_spread(row, col, level, true);
 							}
@@ -1119,7 +1119,7 @@ void Chunk::addEntity( glm::vec3 dir, int value, int amount, int dura )
 	_entities.push_back(Entity(this, _inventory, camPos, dir, true, value, amount, dura));
 }
 
-void Chunk::sort_sky( glm::vec3 pos, bool vip )
+void Chunk::sort_sky( glm::vec3 &pos, bool vip )
 {
 	// std::cout << "in sort sky" << std::endl;
 	if (!_sky_count) {
@@ -1181,17 +1181,17 @@ void Chunk::sort_sky( glm::vec3 pos, bool vip )
 	for (auto& o: order) {
 		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], 0}, offset0, offset1, offset2;
 		if (!o.second[5]) {
-			offset0 = {o.second[3], 0, 0, 0};
-			offset1 = {0, o.second[4], 0, 0};
-			offset2 = {o.second[3], o.second[4], 0, 0};
+			offset0 = start + glm::ivec4(o.second[3], 0, 0, 0);
+			offset1 = start + glm::ivec4(0, o.second[4], 0, 0);
+			offset2 = start + glm::ivec4(o.second[3], o.second[4], 0, 0);
 		} else {
-			offset0 = {o.second[3], o.second[4], 0, 0};
-			offset1 = {0, 0, o.second[5], 0};
-			offset2 = {o.second[3], o.second[4], o.second[5], 0};
+			offset0 = start + glm::ivec4(o.second[3], o.second[4], 0, 0);
+			offset1 = start + glm::ivec4(0, 0, o.second[5], 0);
+			offset2 = start + glm::ivec4(o.second[3], o.second[4], o.second[5], 0);
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_sky.lock();
-		face_water_vertices(_sky_vert, start, start + offset0, start + offset1, start + offset2, vindex);
+		face_water_vertices(_sky_vert, start, offset0, offset1, offset2, vindex);
 		_mtx_sky.unlock();
 	}
 	order.clear();

@@ -308,7 +308,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 
 	size_t vindex = 0;
 	for (auto& o: order) {
-		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], o.second[6]}, offset0, offset1, offset2, offset3;
+		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], 0}, offset0, offset1, offset2, offset3;
 		if (!o.second[5]) { // top/down faces
 			std::array<int, 5> texcoord_offsets;
 			if (o.second[10] == 1) {
@@ -316,21 +316,21 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 			} else {
 				texcoord_offsets = {0, 1 << 10, 1 << 11, 3 << 10, 3 << 8};
 			}
-			offset0 = {0, 0, 0, texcoord_offsets[0]};
-			offset1 = {o.second[3], 0, 0, o.second[7] - start.w + texcoord_offsets[1]};// (1 << 10)};
-			offset2 = {0, o.second[4], 0, o.second[8] - start.w + texcoord_offsets[2]};// (1 << 11)};
-			offset3 = {o.second[3], o.second[4], 0, o.second[9] - start.w + texcoord_offsets[3]};//(1 << 10) + (1 << 11)};
 			start.w += texcoord_offsets[4];//(1 << 8); // waterStill || waterFlow || glass
+			offset0 = start + glm::ivec4(0, 0, 0, texcoord_offsets[0] + o.second[6]);
+			offset1 = start + glm::ivec4(o.second[3], 0, 0, o.second[7] + texcoord_offsets[1]);// (1 << 10)};
+			offset2 = start + glm::ivec4(0, o.second[4], 0, o.second[8] + texcoord_offsets[2]);// (1 << 11)};
+			offset3 = start + glm::ivec4(o.second[3], o.second[4], 0, o.second[9] + texcoord_offsets[3]);//(1 << 10) + (1 << 11)};
 		} else {
-			offset0 = {0, 0, 0, 0}; // TODO for now side faces' texture is "squished"
-			offset1 = {o.second[3], o.second[4], 0, o.second[7] - start.w + (1 << 10)};
-			offset2 = {0, 0, o.second[5], -start.w + (1 << 11)};
-			offset3 = {o.second[3], o.second[4], o.second[5], -start.w + (1 << 10) + (1 << 11)};
 			start.w += (1 << 9) + ((o.second[10] == 0) << 8); // waterFlow || glass
+			offset0 = start + glm::ivec4(0, 0, 0, o.second[6]); // TODO for now side faces' texture is "squished"
+			offset1 = start + glm::ivec4(o.second[3], o.second[4], 0, o.second[7] + (1 << 10));
+			offset2 = start + glm::ivec4(0, 0, o.second[5], (1 << 11));
+			offset3 = start + glm::ivec4(o.second[3], o.second[4], o.second[5], (1 << 10) + (1 << 11));
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_fluid.lock();
-		face_water_vertices(_water_vert, start + offset0, start + offset1, start + offset2, start + offset3, vindex);
+		face_water_vertices(_water_vert, offset0, offset1, offset2, offset3, vindex);
 		_mtx_fluid.unlock();
 	}
 	order.clear();

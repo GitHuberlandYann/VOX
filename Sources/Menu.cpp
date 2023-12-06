@@ -1241,7 +1241,7 @@ void Menu::setShaderProgram( GLuint shaderProgram )
 	_shaderProgram = shaderProgram;
 }
 
-void Menu::setChunks( std::list<Chunk *> chunks )
+void Menu::setChunks( std::list<Chunk *> &chunks )
 {
 	if (_state == LOAD_MENU) {
 		_chunks = chunks;

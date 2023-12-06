@@ -51,15 +51,15 @@ face_dir opposite_dir( int dir );
 bool visible_face( int value, int next, face_dir dir );
 bool isSandOrGravel( int type );
 
-std::vector<Chunk *> sort_chunks( glm::vec3 pos, std::vector<Chunk *> chunks );
+void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks );
 
 std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 );
-void face_vertices( void *vertices, std::pair<int, glm::vec3> v0, std::pair<int, glm::vec3> v1, std::pair<int, glm::vec3> v2, std::pair<int, glm::vec3> v3, size_t & vindex );
-void face_water_vertices( GLint *vertices, glm::ivec4 v0, glm::ivec4 v1, glm::ivec4 v2, glm::ivec4 v3, size_t & vindex );
-bool torchFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v6, size_t index );
-bool crossFace( GLfloat *vertices, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, glm::vec3 v5, size_t index );
+void face_vertices( void *vertices, std::pair<int, glm::vec3> &v0, std::pair<int, glm::vec3> &v1, std::pair<int, glm::vec3> &v2, std::pair<int, glm::vec3> &v3, size_t & vindex );
+void face_water_vertices( GLint *vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::ivec4 &v2, glm::ivec4 &v3, size_t & vindex );
+bool torchFace( GLfloat *vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v6, size_t index );
+bool crossFace( GLfloat *vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v5, size_t index );
 bool blockFace( GLfloat *vertices, std::array<glm::vec3, 8> v, size_t index, bool special );
-std::vector<glm::ivec3> voxel_traversal( glm::vec3 ray_start, glm::vec3 ray_end );
+std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end );
 bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeCenter, glm::vec3 cubeHalfSize );
 
 #endif

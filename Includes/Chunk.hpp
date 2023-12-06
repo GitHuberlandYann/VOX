@@ -171,7 +171,7 @@ class Chunk
 		void regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void generate_chunk( void );
 		void addEntity( glm::vec3 dir, int value, int amount, int dura );
-		void sort_sky( glm::vec3 pos, bool vip );
+		void sort_sky( glm::vec3 &pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
 	
 		bool inPerimeter( int posX, int posY, GLint render_dist );
