@@ -130,6 +130,7 @@ class Chunk
 		void light_spread( int posX, int posY, int level, bool skySpread );
 		void generate_lights( void );
 		int computeLight( int row, int col, int level );
+		int computeSmoothLight( int basefaceLight, int row, int col, int level, std::array<int, 9> offsets );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
 
 		void updateCrop( int value, int offset );

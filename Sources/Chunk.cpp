@@ -1292,7 +1292,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	if (value == blocks::AIR || value & blocks::NOTVISIBLE) {
 		return ;
 	}
-	float zSize = (((value & 0xFF) == blocks::OAK_SLAB) ? 0.5f : (((value & 0xFF) == blocks::FARMLAND) ? 15.0f / 16.0f: 1));
+	float zSize = (((value & 0xFF) == blocks::OAK_SLAB) ? 0.5f : (((value & 0xFF) == blocks::FARMLAND) ? FIFTEEN_SIXTEENTH: 1));
 	glm::vec3 p0 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + zSize};
 	glm::vec3 p1 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + zSize};
 	glm::vec3 p2 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 0};

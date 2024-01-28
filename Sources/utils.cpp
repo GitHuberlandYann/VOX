@@ -480,10 +480,10 @@ bool blockFace( GLfloat *vertices, std::array<glm::vec3, 8> v, size_t index, boo
 		return (true);
 	}
 	if (special) {
-		v[4].z -= 1.0f / 16.0f;
-		v[5].z -= 1.0f / 16.0f;
-		v[0].z -= 1.0f / 16.0f;
-		v[1].z -= 1.0f / 16.0f;
+		v[4].z -= ONE_SIXTEENTH;
+		v[5].z -= ONE_SIXTEENTH;
+		v[0].z -= ONE_SIXTEENTH;
+		v[1].z -= ONE_SIXTEENTH;
 	}
 	return ((vertices[index + 3]) == v[4].z && vertices[index + 1] == v[4].x && vertices[index + 2] == v[4].y
 		&& (vertices[index + 4 + 3]) == v[5].z && vertices[index + 4 + 1] == v[5].x && vertices[index + 4 + 2] == v[5].y

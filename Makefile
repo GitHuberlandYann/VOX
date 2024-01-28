@@ -47,7 +47,10 @@ re: fclean all
 run: all
 	@./$(NAME)
 
+log: all
+	@./$(NAME) > .log 2> err.log
+
 rer: re
 	@./$(NAME)
 
-.PHONY: all clean fclean re run rer
+.PHONY: all clean fclean re run log rer

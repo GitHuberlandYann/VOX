@@ -2,15 +2,15 @@ Project Requirements:
     DONE - create procedural terain in openGL
     DONE - RENDER MUST BE SMOOTH. Avoid the freeze frames at all cost
 	DONE - user should be able to visit at least 16384*256*16384 cubes
-	- Your program must be able to run for hours without eating the whole memory or slowing down
+	     - Your program must be able to run for hours without eating the whole memory or slowing down
     DONE - Your program will have to run in full screen mode
-	- generate terrains such as hills, mountains or caves when the user goes underground
+	     - generate terrains such as hills, mountains or caves when the user goes underground
     DONE - This generation has to be determinist
-    - Each visited piece of terrain must be saved in the memory up to some limit you will set yourself and after which you can start deleting cubes from the memory
+         - Each visited piece of terrain must be saved in the memory up to some limit you will set yourself and after which you can start deleting cubes from the memory
     DONE - In the open, minimal distance render will be 160 cube
     DONE - at least 2 different textures and 2 different types of cube
     DONE - FoV must be 80 degrees
-    - set up a skybox
+         - set up a skybox
 
     - camera
         DONE - mouse must be able to control it on 2 axis
@@ -23,7 +23,7 @@ Project Requirements:
         DONE - fps counter is displayed (UI)
         DONE - Render is smooth and doesn’t freeze, even at x20 speed
         DONE - Being able to delete blocks with the mouse (+put some down I want)
-        - different biomes
+             - different biomes
 
 TODOS:
 	- hitbox change + no fall on sneak
@@ -32,6 +32,7 @@ TODOS:
 	- stairs
 	- chests
 	- doors
+	- universal use of tps instead of deltatimes
 	- bed + respawn point
 	- entity shadow
 	- rework clouds
@@ -92,6 +93,7 @@ DONE:
 	- no time pause on inventory/furnace
     - chunk border fix
 	- overall lighting (corner shade, sky light + decrease 1 per block = dark in caves + block light)
+	- smooth lighting using corner max
 	- update skylight on leave break
 	- torches
     - FOV changed on isRunning change
@@ -113,6 +115,27 @@ DONE:
     - inventory menu
     - crafting menu
 	- furnace menu
+
+
+Controls (QWERTY):
+	- WASD: player movement
+	- left_control: run
+	- space: jump
+	- mouse / arrows: camera movement
+	- left_click: break block, pick block in inventroy, navigate through menus
+	- right_click: place block, pick half blocks in inventory, place 1 block in inventory + drag = place 1 accross several cells
+	- middle_click: pick block in gamemode creative
+	- mouse scroll / 0123456789: scrolls through hotbar
+	- esc: opens up menu. pauses game. closes any open menu
+	- [] change time speed
+	- G: toggle gamemode
+	- F: toggle wireframe display (warning fps drop)
+	- Q: drop selected item
+	- E: open inventory
+	- H: debug screen
+	- O: toggle block highlight
+	- J: display hotbar
+	- +-: change render distance
 
 
 Some info:

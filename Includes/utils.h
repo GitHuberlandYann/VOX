@@ -8,9 +8,13 @@
 # include "Blocks.hpp"
 
 # define CHUNK_SIZE 16
+# define ONE_SIXTEENTH 1.0f / 16.0f
+# define THREE_SIXTEENTH 3.0f / 16.0f
+# define THIRTEEN_SIXTEENTH 13.0f / 16.0f
+# define FIFTEEN_SIXTEENTH 15.0f / 16.0f
 
 # if __linux__
-#  if 1
+#  if 0
 #   define WIN_WIDTH 1680
 #   define WIN_HEIGHT 1050
 #  else

@@ -105,6 +105,23 @@ int Chunk::computeLight( int row, int col, int level )
 	return (blockLight + (skyLight << 4));
 }
 
+// same as computeLight, but we handle a corner this time
+// result is max of 4 light levels surrounding corner
+// used to have a smooth lighting from one block to another
+int Chunk::computeSmoothLight( int faceLight, int row, int col, int level, std::array<int, 9> offsets )
+{
+	#if 0
+	(void)row;(void)col;(void)level;(void)offsets;return(faceLight);
+	#endif
+	short light = getLightLevel(row + offsets[0], col + offsets[1], level + offsets[2]);
+	faceLight = maxs(faceLight & 0xF, light & 0xF) + (maxs((faceLight >> 4) & 0xF, (light >> 8) & 0xF) << 4);
+	light = getLightLevel(row + offsets[3], col + offsets[4], level + offsets[5]);
+	faceLight = maxs(faceLight & 0xF, light & 0xF) + (maxs((faceLight >> 4) & 0xF, (light >> 8) & 0xF) << 4);
+	light = getLightLevel(row + offsets[6], col + offsets[7], level + offsets[8]);
+	faceLight = maxs(faceLight & 0xF, light & 0xF) + (maxs((faceLight >> 4) & 0xF, (light >> 8) & 0xF) << 4);
+	return (faceLight);
+}
+
 // https://minecraft.fandom.com/wiki/Light#AO_texture_pattern fct returns (side1 + side2 + corner)
 int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets )
 {
@@ -123,40 +140,42 @@ void Chunk::fill_vertex_array( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint block_value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level], type = block_value & 0xFF;
+				if (block_value & blocks::NOTVISIBLE)
+					continue;
 				if (type >= blocks::WHEAT_CROP && type <= blocks::WHEAT_CROP7) {
-					glm::vec3 p0 = {_startX + row + 0, _startY + col + 0, level + 15.0f / 16.0f};
-					glm::vec3 p1 = {_startX + row + 1, _startY + col + 0, level + 15.0f / 16.0f};
-					glm::vec3 p2 = {_startX + row + 0, _startY + col + 0, level - 1.0f / 16.0f};
-					glm::vec3 p3 = {_startX + row + 1, _startY + col + 0, level - 1.0f / 16.0f};
+					glm::vec3 p0 = {_startX + row + 0, _startY + col + 0, level + FIFTEEN_SIXTEENTH};
+					glm::vec3 p1 = {_startX + row + 1, _startY + col + 0, level + FIFTEEN_SIXTEENTH};
+					glm::vec3 p2 = {_startX + row + 0, _startY + col + 0, level - ONE_SIXTEENTH};
+					glm::vec3 p3 = {_startX + row + 1, _startY + col + 0, level - ONE_SIXTEENTH};
 
-					glm::vec3 p4 = {_startX + row + 0, _startY + col + 1, level + 15.0f / 16.0f};
-					glm::vec3 p5 = {_startX + row + 1, _startY + col + 1, level + 15.0f / 16.0f};
-					glm::vec3 p6 = {_startX + row + 0, _startY + col + 1, level - 1.0f / 16.0f};
-					glm::vec3 p7 = {_startX + row + 1, _startY + col + 1, level - 1.0f / 16.0f};
+					glm::vec3 p4 = {_startX + row + 0, _startY + col + 1, level + FIFTEEN_SIXTEENTH};
+					glm::vec3 p5 = {_startX + row + 1, _startY + col + 1, level + FIFTEEN_SIXTEENTH};
+					glm::vec3 p6 = {_startX + row + 0, _startY + col + 1, level - ONE_SIXTEENTH};
+					glm::vec3 p7 = {_startX + row + 1, _startY + col + 1, level - ONE_SIXTEENTH};
 
 					int spec = s_blocks[blocks::WHEAT_CROP]->texX() + (s_blocks[blocks::WHEAT_CROP]->texY(face_dir::MINUSX, block_value - blocks::WHEAT_CROP) << 4) + (0 << 19) + (computeLight(row, col, level) << 24);
-					std::pair<int, glm::vec3> v0 = {spec, {p4.x + 3.0 / 16, p4.y, p4.z}};
-					std::pair<int, glm::vec3> v1 = {spec + 1 + (1 << 8), {p0.x + 3.0 / 16, p0.y, p0.z}};
-					std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), {p6.x + 3.0 / 16, p6.y, p6.z}};
-					std::pair<int, glm::vec3> v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p2.x + 3.0 / 16, p2.y, p2.z}};
+					std::pair<int, glm::vec3> v0 = {spec, {p4.x + THREE_SIXTEENTH, p4.y, p4.z}};
+					std::pair<int, glm::vec3> v1 = {spec + 1 + (1 << 8), {p0.x + THREE_SIXTEENTH, p0.y, p0.z}};
+					std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), {p6.x + THREE_SIXTEENTH, p6.y, p6.z}};
+					std::pair<int, glm::vec3> v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p2.x + THREE_SIXTEENTH, p2.y, p2.z}};
 					face_vertices(_vertices, v0, v1, v2, v3, index); // -x
-					v0 = {spec + 1, {p0.x + 13.0f / 16, p0.y, p0.z}};
-					v1 = {spec + (1 << 8), {p4.x + 13.0f / 16, p4.y, p4.z}};
-					v2 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 12), {p2.x + 13.0f / 16, p2.y, p2.z}};
-					v3 = {spec + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p6.x + 13.0f / 16, p6.y, p6.z}};
+					v0 = {spec + 1, {p0.x + THIRTEEN_SIXTEENTH, p0.y, p0.z}};
+					v1 = {spec + (1 << 8), {p4.x + THIRTEEN_SIXTEENTH, p4.y, p4.z}};
+					v2 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 12), {p2.x + THIRTEEN_SIXTEENTH, p2.y, p2.z}};
+					v3 = {spec + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p6.x + THIRTEEN_SIXTEENTH, p6.y, p6.z}};
 					face_vertices(_vertices, v0, v1, v2, v3, index); // +x
-					v0 = {spec, {p0.x, p0.y + 3.0 / 16, p0.z}};
-					v1 = {spec + 1 + (1 << 8), {p1.x, p1.y + 3.0 / 16, p1.z}};
-					v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), {p2.x, p2.y + 3.0 / 16, p2.z}};
-					v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p3.x, p3.y + 3.0 / 16, p3.z}};
+					v0 = {spec, {p0.x, p0.y + THREE_SIXTEENTH, p0.z}};
+					v1 = {spec + 1 + (1 << 8), {p1.x, p1.y + THREE_SIXTEENTH, p1.z}};
+					v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), {p2.x, p2.y + THREE_SIXTEENTH, p2.z}};
+					v3 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p3.x, p3.y + THREE_SIXTEENTH, p3.z}};
 					face_vertices(_vertices, v0, v1, v2, v3, index); // -y
-					v0 = {spec + 1, {p1.x, p1.y + 13.0f / 16, p1.z}};
-					v1 = {spec + (1 << 8), {p0.x, p0.y + 13.0f / 16, p0.z}};
-					v2 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 12), {p3.x, p3.y + 13.0f / 16, p3.z}};
-					v3 = {spec + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p2.x, p2.y + 13.0f / 16, p2.z}};
+					v0 = {spec + 1, {p1.x, p1.y + THIRTEEN_SIXTEENTH, p1.z}};
+					v1 = {spec + (1 << 8), {p0.x, p0.y + THIRTEEN_SIXTEENTH, p0.z}};
+					v2 = {spec + 1 + (1 << 4) + (1 << 10) + (1 << 12), {p3.x, p3.y + THIRTEEN_SIXTEENTH, p3.z}};
+					v3 = {spec + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), {p2.x, p2.y + THIRTEEN_SIXTEENTH, p2.z}};
 					face_vertices(_vertices, v0, v1, v2, v3, index); // +y
-				} else if (!(block_value & blocks::NOTVISIBLE) && type != blocks::AIR && type < blocks::WATER && type != blocks::GLASS) {
-					float zSize = ((type == blocks::OAK_SLAB) ? 0.5f : ((type == blocks::FARMLAND) ? 15.0f / 16.0f: 1));
+				} else if (type != blocks::AIR && type < blocks::WATER && type != blocks::GLASS) {
+					float zSize = ((type == blocks::OAK_SLAB) ? 0.5f : ((type == blocks::FARMLAND) ? FIFTEEN_SIXTEENTH: 1.0f));
 					glm::vec3 p0 = {_startX + row + 0, _startY + col + 0, level + zSize};
 					glm::vec3 p1 = {_startX + row + 1, _startY + col + 0, level + zSize};
 					glm::vec3 p2 = {_startX + row + 0, _startY + col + 0, level + 0};
@@ -249,93 +268,115 @@ void Chunk::fill_vertex_array( void )
 						if (visible_face(type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)) {
 							int spec = s_blocks[type]->texX(face_dir::MINUSX, offset) + (s_blocks[type]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19);
 							int faceLight = computeLight(row - 1, col, level);
+							int cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 							int shade = computeShade(row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
-							spec += (faceLight << 24);
-							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p4};
+							// spec += (faceLight << 24);
+							std::pair<int, glm::vec3> v0 = {spec + (cornerLight << 24) + (shade << 22), p4};
+							cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 							shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p0};
+							std::pair<int, glm::vec3> v1 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 8), p0};
+							cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
 							shade = computeShade(row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p6};
+							std::pair<int, glm::vec3> v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p6};
+							cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
 							shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
+							std::pair<int, glm::vec3> v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (visible_face(type, getBlockAt(row + 1, col, level, true), face_dir::PLUSX)) {
 							int spec = s_blocks[type]->texX(face_dir::PLUSX, offset) + (s_blocks[type]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19);
 							int faceLight = computeLight(row + 1, col, level);
+							int cornerLight = computeSmoothLight(faceLight, row + 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 							int shade = computeShade(row + 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-							spec += (faceLight << 24);
-							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p1};
+							// spec += (faceLight << 24);
+							std::pair<int, glm::vec3> v0 = {spec + (cornerLight << 24) + (shade << 22), p1};
+							cornerLight = computeSmoothLight(faceLight, row + 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 							shade = computeShade(row + 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
-							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p5};
+							std::pair<int, glm::vec3> v1 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 8), p5};
+							cornerLight = computeSmoothLight(faceLight, row + 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
 							shade = computeShade(row + 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p3};
+							std::pair<int, glm::vec3> v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p3};
+							cornerLight = computeSmoothLight(faceLight, row + 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
 							shade = computeShade(row + 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
+							std::pair<int, glm::vec3> v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (visible_face(type, getBlockAt(row, col - 1, level, true), face_dir::MINUSY)) {
 							int spec = s_blocks[type]->texX(face_dir::MINUSY, offset) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 4) + (1 << 19);
 							int faceLight = computeLight(row, col - 1, level);
+							int cornerLight = computeSmoothLight(faceLight, row, col - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
 							int shade = computeShade(row, col - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
-							spec += (faceLight << 24);
-							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p0};
+							// spec += (faceLight << 24);
+							std::pair<int, glm::vec3> v0 = {spec + (cornerLight << 24) + (shade << 22), p0};
+							cornerLight = computeSmoothLight(faceLight, row, col - 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
 							shade = computeShade(row, col - 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
-							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p1};
+							std::pair<int, glm::vec3> v1 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 8), p1};
+							cornerLight = computeSmoothLight(faceLight, row, col - 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
 							shade = computeShade(row, col - 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
-							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p2};
+							std::pair<int, glm::vec3> v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p2};
+							cornerLight = computeSmoothLight(faceLight, row, col - 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
 							shade = computeShade(row, col - 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
-							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+							std::pair<int, glm::vec3> v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (visible_face(type, getBlockAt(row, col + 1, level, true), face_dir::PLUSY)) {
 							int spec = s_blocks[type]->texX(face_dir::PLUSY, offset) + (s_blocks[type]->texY(face_dir::PLUSY, offset) << 4) + (2 << 19);
 							int faceLight = computeLight(row, col + 1, level);
+							int cornerLight = computeSmoothLight(faceLight, row, col + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
 							int shade = computeShade(row, col + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
-							spec += (faceLight << 24);
-							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p5};
+							// spec += (faceLight << 24);
+							std::pair<int, glm::vec3> v0 = {spec + (cornerLight << 24) + (shade << 22), p5};
+							cornerLight = computeSmoothLight(faceLight, row, col + 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
 							shade = computeShade(row, col + 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
-							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p4};
+							std::pair<int, glm::vec3> v1 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 8), p4};
+							cornerLight = computeSmoothLight(faceLight, row, col + 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
 							shade = computeShade(row, col + 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
-							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p7};
+							std::pair<int, glm::vec3> v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p7};
+							cornerLight = computeSmoothLight(faceLight, row, col + 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
 							shade = computeShade(row, col + 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
-							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
+							std::pair<int, glm::vec3> v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (visible_face(type, getBlockAt(row, col, level + 1, true), face_dir::PLUSZ)) {
 							int spec = s_blocks[type]->texX(face_dir::PLUSZ, offset) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 4);
 							int faceLight = computeLight(row, col, level + 1);
+							int cornerLight = computeSmoothLight(faceLight, row, col, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 							int shade = computeShade(row, col, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
-							spec += (faceLight << 24);
+							// spec += (faceLight << 24);
 							if (type == blocks::DIRT_PATH) {
-								p4.z -= 1.0f / 16.0f;
-								p5.z -= 1.0f / 16.0f;
-								p0.z -= 1.0f / 16.0f;
-								p1.z -= 1.0f / 16.0f;
+								p4.z -= ONE_SIXTEENTH;
+								p5.z -= ONE_SIXTEENTH;
+								p0.z -= ONE_SIXTEENTH;
+								p1.z -= ONE_SIXTEENTH;
 							}
-							// if (shade & 0xFF)std::cout << "shade is " << shade << std::endl;
-							// if (shade & 0xFFFFFF00)std::cout << "problem" << std::endl;
-							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p4};
+							std::pair<int, glm::vec3> v0 = {spec + (cornerLight << 24) + (shade << 22), p4};
+							cornerLight = computeSmoothLight(faceLight, row, col, level + 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
 							shade = computeShade(row, col, level + 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
-							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p5};
+							std::pair<int, glm::vec3> v1 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 8), p5};
+							cornerLight = computeSmoothLight(faceLight, row, col, level + 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
 							shade = computeShade(row, col, level + 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
-							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p0};
+							std::pair<int, glm::vec3> v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p0};
+							cornerLight = computeSmoothLight(faceLight, row, col, level + 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
 							shade = computeShade(row, col, level + 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
-							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p1};
+							std::pair<int, glm::vec3> v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p1};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 						if (visible_face(type, getBlockAt(row, col, level - 1, true), face_dir::MINUSZ)) {
 							int spec = s_blocks[type]->texX(face_dir::MINUSZ, offset) + (s_blocks[type]->texY(face_dir::MINUSZ, offset) << 4) + (5 << 19);
 							int faceLight = computeLight(row, col, level - 1);
+							int cornerLight = computeSmoothLight(faceLight, row, col, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
 							int shade = computeShade(row, col, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
-							spec += (faceLight << 24);
-							std::pair<int, glm::vec3> v0 = {spec + (shade << 22), p2};
+							// spec += (faceLight << 24);
+							std::pair<int, glm::vec3> v0 = {spec + (cornerLight << 24) + (shade << 22), p2};
+							cornerLight = computeSmoothLight(faceLight, row, col, level - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
 							shade = computeShade(row, col, level - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
-							std::pair<int, glm::vec3> v1 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 8), p3};
+							std::pair<int, glm::vec3> v1 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 8), p3};
+							cornerLight = computeSmoothLight(faceLight, row, col, level - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 							shade = computeShade(row, col, level - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
-							std::pair<int, glm::vec3> v2 = {spec + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p6};
+							std::pair<int, glm::vec3> v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), p6};
+							cornerLight = computeSmoothLight(faceLight, row, col, level - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
 							shade = computeShade(row, col, level - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
-							std::pair<int, glm::vec3> v3 = {spec + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
+							std::pair<int, glm::vec3> v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
 						}
 					} else if (type == blocks::TORCH) {
