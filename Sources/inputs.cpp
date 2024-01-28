@@ -315,6 +315,7 @@ void OpenGL_Manager::chunk_update( void )
 
 void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 {
+	// open menu
 	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		_paused = true;
 		_esc_released = false;
@@ -323,6 +324,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;
 	}
+	// open inventory
 	if (_e_released && glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
 		_paused = true;
 		_e_released = false;
@@ -332,12 +334,18 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
 		_e_released = true;
 	}
-
+	// quit program
 	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return ;
 	}
 
+	// take screenshot
+	if (glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_PRESS && ++_key_screenshot == 1) {
+		screenshot();
+	} else if (glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
+		_key_screenshot = 0;
+	}
 	// toggle debug mode on off
 	if ((glfwGetKey(_window, GLFW_KEY_H) == GLFW_PRESS) && ++_key_h == 1) {
 		_debug_mode = !_debug_mode;

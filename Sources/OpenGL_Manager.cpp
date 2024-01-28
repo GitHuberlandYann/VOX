@@ -10,7 +10,7 @@ typedef struct {
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE),
-		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0),
+		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0), _key_screenshot(0),
 		_key_h(0), _key_g(0), _key_j(0), _key_o(0), _key_time_mul(0), _key_jump(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _outline(true), _paused(true),
@@ -491,9 +491,7 @@ void OpenGL_Manager::main_loop( void )
 			animUpdate = false;
 		}
 
-		glEnable(GL_DEPTH_TEST);
 		glUseProgram(_shaderProgram);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// Bench b;
 		if (!_paused) {
 			if (++backFromMenu != 1) {
@@ -505,6 +503,8 @@ void OpenGL_Manager::main_loop( void )
 			DayCycle::Get()->update(deltaTime);
 		}
 		// b.stamp("user inputs");
+		glEnable(GL_DEPTH_TEST);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, faceCounter);

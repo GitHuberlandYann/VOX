@@ -33,6 +33,7 @@ TODOS:
 	- chests
 	- doors
 	- universal use of tps instead of deltatimes
+	- mailbox system to display anouncements on screen
 	- bed + respawn point
 	- entity shadow
 	- rework clouds
@@ -127,7 +128,9 @@ Controls (QWERTY):
 	- middle_click: pick block in gamemode creative
 	- mouse scroll / 0123456789: scrolls through hotbar
 	- esc: opens up menu. pauses game. closes any open menu
-	- [] change time speed
+	- backspace: exit program
+	- enter: save screenshot under .ppm file format
+	- []: change time speed
 	- G: toggle gamemode
 	- F: toggle wireframe display (warning fps drop)
 	- Q: drop selected item

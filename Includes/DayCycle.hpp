@@ -38,6 +38,7 @@ class DayCycle
 		void update( double deltaTime );
 		void updateTimeMultiplier( GLint mul );
 		std::string getInfos( void );
+		std::string getTime( void );
 		std::string saveString( void );
 		void loadWorld( std::ofstream & ofs, std::string line );
 };

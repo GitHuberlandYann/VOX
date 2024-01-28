@@ -209,3 +209,8 @@ std::string DayCycle::getInfos( void )
 	const std::string dayCycle_states[4] = {"DAYTIME", "SUNSET", "NIGHTTIME", "SUNRISE"};
 	return ("GameTimer\t> " + dayCycle_states[_state] + " speed " + std::to_string(_time_multiplier) + " on day " + std::to_string(_day) + " " + doubleDigits(_hour) + ":" + doubleDigits(_minute) + " (light " + doubleDigits(_internal_light) + ")");
 }
+
+std::string DayCycle::getTime( void )
+{
+	return (std::to_string(_day) + "D" + doubleDigits(_hour) + ":" + doubleDigits(_minute));
+}
