@@ -585,7 +585,7 @@ void OpenGL_Manager::main_loop( void )
 			mtx.lock();
 			_menu->setChunks(_chunks);
 			mtx.unlock();
-			switch (_menu->run(_render_distance)) {
+			switch (_menu->run(_render_distance, nbTicks == 1)) {
 				case (1): // back to game
 					if (!IS_LINUX) {
 						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

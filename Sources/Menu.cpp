@@ -7,8 +7,8 @@ extern std::mutex mtx_inventory;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _selection(0), _selected_world(0), _vaoSet(false),
-	_esc_released(false), _e_released(false), _left_released(false), _right_released(false),
-	_key_1(0), _key_2(0), _key_3(0), _key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
+	_esc_released(false), _e_released(false), _left_released(false), _right_released(false), _textBar(true),
+	_key_1(0), _key_2(0), _key_3(0), _key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0), _enter_released(0),
 	_inventory(inventory), _text(text), _furnace(NULL)
 {
 	_selected_block = glm::ivec2(blocks::AIR, 0);
@@ -446,6 +446,36 @@ int Menu::ingame_menu( void )
 	return (0);
 }
 
+int Menu::chat_menu( bool animUpdate )
+{
+	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		glfwSetCharCallback(_window, NULL);
+		resetMessage();
+		return (1);
+	}
+	if (++_enter_released == 1 && glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+		_text->chatMessage("You: " + getCurrentMessage());
+		resetMessage();
+	} else if (glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
+		_enter_released = 0;
+	}
+	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
+		rmLetter();
+	}
+
+	setup_array_buffer_chat();
+	glUseProgram(_shaderProgram);
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_POINTS, 0, _nb_points);
+
+	if (animUpdate) {
+		_textBar = !_textBar;
+	}
+	std::string msg = getCurrentMessage() + ((_textBar) ? "|" : "");
+	_text->addText(36, WIN_HEIGHT - 48 - 12, 12, true, msg);
+	return (0);
+}
+
 void Menu::fill_vertices( GLint *vertices, GLint values[9], int & vindex)
 {
 	for (int index = 0; index < 9; index++) {
@@ -606,6 +636,18 @@ void Menu::setup_array_buffer_pause( void )
         1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 15 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Open to LAN
 
         1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 40 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 8), 200, 20, // Save and Quit to Title
+    };
+
+	setup_shader(vertices);
+}
+
+void Menu::setup_array_buffer_chat( void )
+{
+	int nbr = _text->_messages.size();
+	_nb_points = 2;
+    GLint vertices[] = { // pos: x y width height textcoord: x y width height
+        1, 30, WIN_HEIGHT - 48 - 4 - 18 * (nbr + 2), 700, 18 * (nbr + 1), 3, 29, 1, 1, // occult chat box
+        1, 30, WIN_HEIGHT - 48 - 18, 700, 20, 3, 29, 1, 1, // twice for input box
     };
 
 	setup_shader(vertices);
@@ -1061,6 +1103,7 @@ void Menu::setup_array_buffer_furnace( void )
 	int duras = _inventory.countDura(true);
 	_nb_points = 1 + _inventory.countSlots() + _inventory.countBackpack() + 2 * duras + furnaceCount + (_selected_block.x != blocks::AIR);
 	int mult = 3;
+
     GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
 
 	vertices[0] = 2;
@@ -1264,6 +1307,10 @@ void Menu::setState( int state )
 	}
 	set_cursor_position_callback(NULL, this);
 	set_scroll_callback(NULL);
+
+	if (state == CHAT_MENU) {
+		glfwSetCharCallback(_window, character_callback);
+	}
 }
 
 int Menu::getState( void )
@@ -1276,9 +1323,9 @@ std::string Menu::getWorldFile( void )
 	return (_world_file);
 }
 
-int Menu::run( GLint render_dist )
+int Menu::run( GLint render_dist, bool animUpdate )
 {
-	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
+	if (_state != CHAT_MENU && glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return (-1);
 	}
@@ -1300,6 +1347,8 @@ int Menu::run( GLint render_dist )
 			return (ingame_menu());
 		case FURNACE_MENU:
 			return (ingame_menu());
+		case CHAT_MENU:
+			return (chat_menu(animUpdate));
 		default:
 			return (1);
 	}

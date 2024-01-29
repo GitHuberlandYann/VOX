@@ -5,6 +5,8 @@
 # include "Text.hpp"
 # include <list>
 
+# define ALPHABETA " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+
 enum {
 	MAIN_MENU,
 	WORLD_SELECT_MENU,
@@ -13,7 +15,8 @@ enum {
 	PAUSE_MENU,
 	INVENTORY_MENU,
 	CRAFTING_MENU,
-	FURNACE_MENU
+	FURNACE_MENU,
+	CHAT_MENU
 };
 
 class Menu
@@ -23,8 +26,8 @@ class Menu
 		GLuint _shaderProgram;
         GLint _nb_points, _state, _selection, _selected_world;
 		glm::ivec2 _selected_block;
-		bool _vaoSet, _esc_released, _e_released, _left_released, _right_released;
-		GLint _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9;
+		bool _vaoSet, _esc_released, _e_released, _left_released, _right_released, _textBar;
+		GLint _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9, _enter_released;
 		std::vector<std::string> _worlds;
 		std::vector<int> _selection_list;
 		std::string _world_file;
@@ -42,6 +45,7 @@ class Menu
 		int pause_menu( void );
 		int ingame_inputs( void );
 		int ingame_menu( void );
+		int chat_menu( bool animUpdate );
 
 		void fill_vertices( GLint *vertices, GLint values[9], int & vindex);
         void setup_array_buffer_main( void );
@@ -49,6 +53,7 @@ class Menu
 		void setup_array_buffer_load( int completion );
 		void setup_array_buffer_death( void );
         void setup_array_buffer_pause( void );
+        void setup_array_buffer_chat( void );
 
 		void display_slot_value( int index );
 		void display_backpack_value( int index );
@@ -81,7 +86,7 @@ class Menu
 		void setState( int state );
 		int getState( void );
 		std::string getWorldFile( void );
-		int run( GLint render_dist );
+		int run( GLint render_dist, bool animUpdate );
 
 		std::string getFurnaceString( void );
 };

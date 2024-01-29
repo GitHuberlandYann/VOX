@@ -334,6 +334,13 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
 		_e_released = true;
 	}
+	// toggle chat
+	if (glfwGetKey(_window, GLFW_KEY_T) == GLFW_PRESS) {
+		_paused = true;
+		_esc_released = false;
+		_menu->setState(CHAT_MENU);
+		return ;
+	}
 	// quit program
 	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);

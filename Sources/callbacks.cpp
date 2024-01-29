@@ -5,6 +5,7 @@
 Camera *camera = NULL;
 Menu *menu = NULL;
 Inventory *scroll_inventory = NULL;
+std::string message;
 
 double lastX = WIN_WIDTH / 2.0f, lastY = WIN_HEIGHT / 2.0f;
 
@@ -50,4 +51,30 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 	} else if (yoffset < 0) {
 		scroll_inventory->setSlot(scroll_inventory->getSlotNum() - 1);
 	}
+}
+
+void character_callback( GLFWwindow* window, unsigned int codepoint )
+{
+	(void)window;
+	if (codepoint < 32 || codepoint > 126) {
+		std::cout << __func__ << ": codepoint out of range: " << codepoint << std::endl;
+		return ;
+	}
+	// std::cout << "codepoint you just pressed: " << codepoint << " => " << ALPHABETA[codepoint - 32] << std::endl;
+	message += ALPHABETA[codepoint - 32];
+}
+
+void resetMessage( void )
+{
+	message.clear();
+}
+
+void rmLetter( void )
+{
+	message = message.substr(0, message.size() - 1);
+}
+
+std::string getCurrentMessage( void )
+{
+	return (message);
 }

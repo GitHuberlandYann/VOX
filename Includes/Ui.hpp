@@ -16,7 +16,6 @@ class UI
 		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
 		GLuint *_textures;
         GLint _nb_points;
-        std::vector<std::pair<std::string, float>> _messages;
 		Text *_text;
 		Inventory &_inventory;
         Camera &_camera;
@@ -34,7 +33,6 @@ class UI
         void add_bubbles( GLint *vertices, int mult, int index, int & vindex );
         void setup_array_buffer( void );
         void display_slot_value( int index );
-        void blitMessages( float deltaTime );
 
     public:
         bool _hideUI;
