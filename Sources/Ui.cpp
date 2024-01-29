@@ -9,7 +9,7 @@ typedef struct {
 	int height;
 }				t_tex;
 
-UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _inventory(inventory), _camera(camera), _vaoSet(false)
+UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
 {
 	_text = new Text();
 }
@@ -333,6 +333,22 @@ void UI::display_slot_value( int index )
 	}
 }
 
+void UI::blitMessages( float deltaTime )
+{
+	int size = _messages.size(), index = 0;
+
+	for (auto m = _messages.begin(); m != _messages.end();) {
+		_text->addText(36, WIN_HEIGHT - 48 - 18 * (size - index), 12, true, m->first);
+		m->second -= deltaTime;
+		if (m->second < 0) {
+			m = _messages.erase(m);
+		} else {
+			++m;
+		}
+		++index;
+	}
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -404,9 +420,12 @@ void UI::setup_shader( void )
 	load_texture("Resources/containersAtlas.png", "containerAtlas", 3);
 }
 
-void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
+void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 {
-	if (f5_mode) {
+	if (_messages.size()) {
+		blitMessages(deltaTime);
+	}
+	if (_hideUI) {
 		return (_text->addText(12, 24, 12, true, str));
 	}
 	mtx_inventory.lock();
@@ -427,6 +446,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 	mtx_inventory.unlock();
 	// b.stop("drawArrays");
 	// b.reset();
+	str += "\nMessages\t> " + std::to_string(_messages.size());
 	_text->addText(12, 24, 12, true, str);
 	// b.stop("display text");
 	// b.reset();
@@ -434,6 +454,11 @@ void UI::drawUserInterface( std::string str, bool game_mode, bool f5_mode )
 		display_slot_value(index);
 	}
 	// b.stop("display numbers");
+}
+
+void UI::chatMessage( std::string str )
+{
+	_messages.push_back({str, 10});
 }
 
 void UI::textToScreen( void )

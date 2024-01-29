@@ -16,6 +16,7 @@ class UI
 		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
 		GLuint *_textures;
         GLint _nb_points;
+        std::vector<std::pair<std::string, float>> _messages;
 		Text *_text;
 		Inventory &_inventory;
         Camera &_camera;
@@ -33,15 +34,19 @@ class UI
         void add_bubbles( GLint *vertices, int mult, int index, int & vindex );
         void setup_array_buffer( void );
         void display_slot_value( int index );
+        void blitMessages( float deltaTime );
 
     public:
+        bool _hideUI;
+
         UI( Inventory & inventory, Camera &camera );
         ~UI( void );
 
 		Text *getTextPtr( void );
 		GLuint getShaderProgram( void );
         void setup_shader( void );
-        void drawUserInterface( std::string str, bool game_mode, bool f5_mode );
+        void drawUserInterface( std::string str, bool game_mode, float deltaTime );
+        void chatMessage( std::string str );
 		void textToScreen( void );
 };
 

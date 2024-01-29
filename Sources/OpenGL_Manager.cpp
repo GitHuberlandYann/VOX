@@ -13,7 +13,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0), _key_screenshot(0),
 		_key_h(0), _key_g(0), _key_j(0), _key_o(0), _key_time_mul(0), _key_jump(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
-		_debug_mode(true), _game_mode(CREATIVE), _f5_mode(false), _outline(true), _paused(true),
+		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
 		_esc_released(true), _e_released(true),
 		_break_time(0), _eat_timer(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
 {
@@ -557,7 +557,7 @@ void OpenGL_Manager::main_loop( void )
 				+ '\n' + _camera->getCamString(_game_mode)
 				+ "\nBlock\t> " + s_blocks[_block_hit.w]->name
 				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
-				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "")
+				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
 				+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
 				+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size())
@@ -578,7 +578,7 @@ void OpenGL_Manager::main_loop( void )
 		mtx.unlock();
 		// b.stamp("stringing");
 		if (_menu->getState() >= PAUSE_MENU) {
-			_ui->drawUserInterface(str, _game_mode, _f5_mode);
+			_ui->drawUserInterface(str, _game_mode, deltaTime);
 		}
 		// b.stamp("UI");
 		if (_paused) {

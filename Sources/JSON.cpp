@@ -29,7 +29,7 @@ void OpenGL_Manager::saveWorld( void )
 	std::string json = "{\n\t\"seed\": " + std::to_string(perlin_seed)
 		+ ",\n\t\"game_mode\": " + std::to_string(_game_mode)
 		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
-		+ ",\n\t\"f5_mode\": " + ((_f5_mode) ? "true" : "false")
+		+ ",\n\t\"f5_mode\": " + ((_ui->_hideUI) ? "true" : "false")
 		+ ",\n\t\"outline\": " + ((_outline) ? "true" : "false")
 		+ ",\n\t\"render_distance\": " + std::to_string(_render_distance) + ",\n\t"
 		+ DayCycle::Get()->saveString()
@@ -203,8 +203,8 @@ void OpenGL_Manager::loadWorld( std::string file )
 				_debug_mode = line.substr(14, 4) == "true";
 				ofs << "debug mode set to " << _debug_mode << std::endl;
 			} else if (!line.compare(0, 11, "\"f5_mode\": ")) {
-				_f5_mode = line.substr(11, 4) == "true";
-				ofs << "f5 mode set to " << _f5_mode << std::endl;
+				_ui->_hideUI = line.substr(11, 4) == "true";
+				ofs << "f5 mode set to " << _ui->_hideUI << std::endl;
 			} else if (!line.compare(0, 11, "\"outline\": ")) {
 				_outline = line.substr(11, 4) == "true";
 				ofs << "outline set to " << _outline << std::endl;

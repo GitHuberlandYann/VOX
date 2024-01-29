@@ -355,6 +355,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	// toggle game mode
 	if ((glfwGetKey(_window, GLFW_KEY_G) == GLFW_PRESS) && ++_key_g == 1) {
 		_game_mode = !_game_mode;
+		_ui->chatMessage(std::string("Gamemode set to ") + ((_game_mode) ? "SURVIVAL" : "CREATIVE"));
 		_camera->_fall_immunity = true;
 		_camera->_z0 = _camera->getPos().z;
 	} else if (glfwGetKey(_window, GLFW_KEY_G) == GLFW_RELEASE) {
@@ -362,12 +363,14 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 	// toggle F5 mode
 	if ((glfwGetKey(_window, GLFW_KEY_J) == GLFW_PRESS) && ++_key_j == 1) {
-		_f5_mode = !_f5_mode;
+		_ui->_hideUI = !_ui->_hideUI;
+		_ui->chatMessage(std::string("UI ") + ((_ui->_hideUI) ? "HIDDEN" : "SHOWN"));
 	} else if (glfwGetKey(_window, GLFW_KEY_J) == GLFW_RELEASE) {
 		_key_j = 0;
 	}
 	// toggle outline
 	if ((glfwGetKey(_window, GLFW_KEY_O) == GLFW_PRESS) && ++_key_o == 1) {
+		_ui->chatMessage(std::string("outlines ") + ((_outline) ? "HIDDEN" : "SHOWN"));
 		_outline = !_outline;
 	} else if (glfwGetKey(_window, GLFW_KEY_O) == GLFW_RELEASE) {
 		_key_o = 0;
@@ -461,9 +464,11 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		switch (_fill) {
 			case FILL:
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				_ui->chatMessage("Triangles FILLED");
 				break;
 			case LINE:
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				_ui->chatMessage("Triangles EMPTY");
 				break;
 		}
 	} else if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_RELEASE)
@@ -473,6 +478,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	GLint key_render_dist = (glfwGetKey(_window, GLFW_KEY_EQUAL) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_MINUS) == GLFW_PRESS);
 	if (key_render_dist && ++_key_rdist == 1 && _render_distance + key_render_dist > 0) {
 		_render_distance += key_render_dist;
+		_ui->chatMessage("Render distance set to " + std::to_string(_render_distance));
 		glUniform1f(_uniFog, (1 + _render_distance) << CHUNK_SHIFT);
 		glUseProgram(_skyShaderProgram);
 		glUniform1f(_skyUniFog, (1 + _render_distance) << CHUNK_SHIFT);

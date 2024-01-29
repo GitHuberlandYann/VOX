@@ -33,7 +33,6 @@ TODOS:
 	- chests
 	- doors
 	- universal use of tps instead of deltatimes
-	- mailbox system to display anouncements on screen
 	- bed + respawn point
 	- entity shadow
 	- rework clouds
@@ -60,6 +59,7 @@ DONE:
 	- pthread chunk creation
     - only display chunks in fieldview + little offset
 	- write stuff on screen
+	- mailbox system to display anouncements on screen
 	- better border chunk handling (trees)
     - better spacing between characters displayed
     - full screen mode
