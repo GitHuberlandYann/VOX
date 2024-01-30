@@ -3,6 +3,7 @@
 
 # include <Chunk.hpp>
 # include "Text.hpp"
+# include "Chat.hpp"
 # include <list>
 
 # define ALPHABETA " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
@@ -27,13 +28,14 @@ class Menu
         GLint _nb_points, _state, _selection, _selected_world;
 		glm::ivec2 _selected_block;
 		bool _vaoSet, _esc_released, _e_released, _left_released, _right_released, _textBar;
-		GLint _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9, _enter_released;
+		GLint _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9, _chat_released;
 		std::vector<std::string> _worlds;
 		std::vector<int> _selection_list;
 		std::string _world_file;
 		GLFWwindow *_window;
 		Inventory &_inventory;
 		Text *_text;
+		Chat *_chat;
 		std::list<Chunk *> _chunks;
 		FurnaceInstance *_furnace;
 
@@ -75,7 +77,7 @@ class Menu
 		void setup_shader( GLint *vertices );
 
 	public:
-		Menu( Inventory & inventory, Text *text );
+		Menu( Inventory & inventory, Text *text, Chat *chat );
 		~Menu( void );
 
 		void processMouseMovement( float posX, float posY );

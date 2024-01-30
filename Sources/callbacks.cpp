@@ -5,7 +5,6 @@
 Camera *camera = NULL;
 Menu *menu = NULL;
 Inventory *scroll_inventory = NULL;
-std::string message;
 
 double lastX = WIN_WIDTH / 2.0f, lastY = WIN_HEIGHT / 2.0f;
 
@@ -53,28 +52,62 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 	}
 }
 
-void character_callback( GLFWwindow* window, unsigned int codepoint )
+namespace INPUT
 {
-	(void)window;
-	if (codepoint < 32 || codepoint > 126) {
-		std::cout << __func__ << ": codepoint out of range: " << codepoint << std::endl;
-		return ;
+	std::string message;
+	int cursor = 0;
+
+	void character_callback( GLFWwindow* window, unsigned int codepoint )
+	{
+		(void)window;
+		if (codepoint < 32 || codepoint > 126) {
+			std::cout << __func__ << ": codepoint out of range: " << codepoint << std::endl;
+			return ;
+		}
+		// std::cout << "codepoint you just pressed: " << codepoint << " => " << ALPHABETA[codepoint - 32] << std::endl;
+		if (cursor == static_cast<int>(message.size())) {
+			message += ALPHABETA[codepoint - 32];
+		} else {
+			message = message.substr(0, cursor) + ALPHABETA[codepoint - 32] + message.substr(cursor);
+		}
+		++cursor;
 	}
-	// std::cout << "codepoint you just pressed: " << codepoint << " => " << ALPHABETA[codepoint - 32] << std::endl;
-	message += ALPHABETA[codepoint - 32];
-}
 
-void resetMessage( void )
-{
-	message.clear();
-}
+	void moveCursor( bool right )
+	{
+		cursor += (right) ? 1 : -1;
+		if (cursor > static_cast<int>(message.size())) {
+			cursor = message.size();
+		} else if (cursor < 0) {
+			cursor = 0;
+		}
+	}
 
-void rmLetter( void )
-{
-	message = message.substr(0, message.size() - 1);
-}
+	void resetMessage( void )
+	{
+		message.clear();
+		cursor = 0;
+	}
 
-std::string getCurrentMessage( void )
-{
-	return (message);
+	void rmLetter( void )
+	{
+		message = message.substr(0, cursor - 1) + message.substr(cursor);
+		--cursor;
+	}
+
+	std::string getCurrentMessage( void )
+	{
+		return (message);
+	}
+
+	std::string getCurrentInputStr( char c )
+	{
+		return (message.substr(0, cursor) + c + message.substr(cursor));
+	}
+
+	void setCurrentMessage( std::string str )
+	{
+		message = str;
+		cursor = str.size();
+	}
 }

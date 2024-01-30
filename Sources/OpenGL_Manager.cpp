@@ -22,7 +22,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_camera = new Camera(glm::vec3(1.0f, -2.0f, 66.0f));
 	_inventory = new Inventory();
 	_ui = new UI(*_inventory, *_camera);
-	_menu = new Menu(*_inventory, _ui->getTextPtr());
+	_menu = new Menu(*_inventory, _ui->getTextPtr(), _ui->getChatPtr());
 }
 
 OpenGL_Manager::~OpenGL_Manager( void )
@@ -585,7 +585,7 @@ void OpenGL_Manager::main_loop( void )
 			mtx.lock();
 			_menu->setChunks(_chunks);
 			mtx.unlock();
-			switch (_menu->run(_render_distance, nbTicks == 1)) {
+			switch (_menu->run(_render_distance, nbTicks == 1 && tickUpdate)) {
 				case (1): // back to game
 					if (!IS_LINUX) {
 						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

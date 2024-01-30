@@ -2,6 +2,7 @@
 # define UI_HPP
 
 # include "Text.hpp"
+# include "Chat.hpp"
 
 enum {
     UI_ATLASATTRIB,
@@ -17,6 +18,7 @@ class UI
 		GLuint *_textures;
         GLint _nb_points;
 		Text *_text;
+		Chat *_chat;
 		Inventory &_inventory;
         Camera &_camera;
 		bool _vaoSet;
@@ -41,6 +43,7 @@ class UI
         ~UI( void );
 
 		Text *getTextPtr( void );
+		Chat *getChatPtr( void );
 		GLuint getShaderProgram( void );
         void setup_shader( void );
         void drawUserInterface( std::string str, bool game_mode, float deltaTime );

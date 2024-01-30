@@ -193,24 +193,3 @@ void Text::toScreen( void )
 
 	_texts.clear();
 }
-
-void Text::chatMessage( std::string str )
-{
-	_messages.push_back({str, 10});
-}
-
-void Text::blitMessages( float deltaTime )
-{
-	int size = _messages.size(), index = 0;
-
-	for (auto m = _messages.begin(); m != _messages.end();) {
-		addText(36, WIN_HEIGHT - 68 - 18 * (size - index), 12, true, m->first);
-		m->second -= deltaTime;
-		if (m->second < 0) {
-			m = _messages.erase(m);
-		} else {
-			++m;
-		}
-		++index;
-	}
-}

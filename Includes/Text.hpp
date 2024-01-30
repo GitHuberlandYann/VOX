@@ -16,19 +16,13 @@ class Text
 		GLuint *_textures;
 		std::vector<int> _texts;
 
-        void setup_array_buffer( void );
-
 	public:
-		std::vector<std::pair<std::string, float>> _messages;
-
 		Text( void );
 		~Text( void );
 
         void setup_shader( void );
 		void load_texture( void );
         void addText( int posX, int posY, int font_size, bool white, std::string str );
-        void blitMessages( float deltaTime );
-		void chatMessage( std::string str );
 		void toScreen( void );
 };
 

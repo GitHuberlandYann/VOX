@@ -54,12 +54,16 @@ IN PROGRES:
     - biomes
 	- slabs
 	- save entities
+	- commands /gamemode /say /save /setblock /tp(/teleport) /time /clear
 
 DONE:
 	- pthread chunk creation
     - only display chunks in fieldview + little offset
 	- write stuff on screen
 	- mailbox system to display anouncements on screen
+	- commands /help /seed
+	- historic of past messages and commands
+	- moveable cursor on text input
 	- better border chunk handling (trees)
     - better spacing between characters displayed
     - full screen mode
@@ -138,6 +142,7 @@ Controls (QWERTY):
 	- H: debug screen
 	- O: toggle block highlight
 	- J: display hotbar
+	- T: open chat
 	- +-: change render distance
 
 

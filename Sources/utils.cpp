@@ -49,6 +49,27 @@ std::string	trim_spaces( std::string str )
 	return (new_string);
 }
 
+std::vector<std::string> split( std::string &str, char sep )
+{
+	std::string tmp = "";
+	std::vector<std::string> res;
+	
+	for (int i = 0; i < static_cast<int>(str.size()); ++i) {
+		if (str[i] != sep) {
+			tmp += str[i];
+		} else {
+			if (tmp[0]) {
+				res.push_back(tmp);
+			}
+			tmp = "";
+		}
+	}
+	if (tmp[0]) {
+		res.push_back(tmp);
+	}
+	return (res);
+}
+
 void compile_shader( GLuint ptrShader, std::string name )
 {
 	glCompileShader(ptrShader);
@@ -116,6 +137,11 @@ float dist2( glm::vec3 pa, glm::vec3 pb )
 
 int maxi( int a, int b ) {
 	return ((a > b) ? a : b);
+}
+
+int mini( int a, int b )
+{
+	return ((a > b) ? b : a);
 }
 
 char maxc( char a, char b ) {

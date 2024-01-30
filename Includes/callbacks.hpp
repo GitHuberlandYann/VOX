@@ -6,8 +6,16 @@ void set_scroll_callback( void *ptr );
 void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
 void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
 void character_callback(GLFWwindow* window, unsigned int codepoint);
-void rmLetter( void );
-void resetMessage( void );
-std::string getCurrentMessage( void );
+
+namespace INPUT
+{
+	void character_callback( GLFWwindow* window, unsigned int codepoint );
+	void moveCursor( bool right );
+	void resetMessage( void );
+	void rmLetter( void );
+	std::string getCurrentMessage( void );
+	std::string getCurrentInputStr( char c );
+	void setCurrentMessage( std::string str );
+}
 
 #endif

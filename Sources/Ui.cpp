@@ -12,6 +12,7 @@ typedef struct {
 UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
 {
 	_text = new Text();
+	_chat = new Chat(_text);
 }
 
 UI::~UI( void )
@@ -27,6 +28,7 @@ UI::~UI( void )
 	glDeleteProgram(_shaderProgram);
 
 	delete _text;
+	delete _chat;
 }
 
 // ************************************************************************** //
@@ -342,6 +344,11 @@ Text *UI::getTextPtr( void )
 	return (_text);
 }
 
+Chat *UI::getChatPtr( void )
+{
+	return (_chat);
+}
+
 GLuint UI::getShaderProgram( void )
 {
 	return (_shaderProgram);
@@ -406,11 +413,10 @@ void UI::setup_shader( void )
 
 void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 {
-	if (_text->_messages.size()) {
-		_text->blitMessages(deltaTime);
-	}
+	_chat->blitMessages(deltaTime);
+	_text->addText(12, 24, 12, true, str);
 	if (_hideUI) {
-		return (_text->addText(12, 24, 12, true, str));
+		return ;
 	}
 	mtx_inventory.lock();
 	if (!_vaoSet || _inventory.getModif() || _camera.getModif()) {
@@ -430,10 +436,6 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 	mtx_inventory.unlock();
 	// b.stop("drawArrays");
 	// b.reset();
-	str += "\nMessages\t> " + std::to_string(_text->_messages.size());
-	_text->addText(12, 24, 12, true, str);
-	// b.stop("display text");
-	// b.reset();
 	for (int index = 0; index < 9; index++) {
 		display_slot_value(index);
 	}
@@ -442,7 +444,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 
 void UI::chatMessage( std::string str )
 {
-	_text->chatMessage(str);
+	_chat->chatMessage(str);
 }
 
 void UI::textToScreen( void )

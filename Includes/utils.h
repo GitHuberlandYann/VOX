@@ -14,7 +14,7 @@
 # define FIFTEEN_SIXTEENTH 15.0f / 16.0f
 
 # if __linux__
-#  if 0
+#  if 1
 #   define WIN_WIDTH 1680
 #   define WIN_HEIGHT 1050
 #  else
@@ -37,6 +37,7 @@ class Chunk;
 
 std::string get_file_content( std::string file_name );
 std::string	trim_spaces( std::string str );
+std::vector<std::string> split( std::string &str, char sep );
 
 void compile_shader( GLuint ptrShader, std::string name );
 void check_glstate( std::string str, bool displayDebug );
@@ -45,6 +46,7 @@ int chunk_pos( int pos );
 double gradient( double value, double start, double end, double value_start, double value_end );
 float dist2( glm::vec3 pa, glm::vec3 pb );
 int maxi( int a, int b );
+int mini( int a, int b );
 char maxc( char a, char b );
 short maxs( short a, short b );
 

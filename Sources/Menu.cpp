@@ -6,10 +6,10 @@ extern std::mutex mtx;
 extern std::mutex mtx_inventory;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
-Menu::Menu( Inventory & inventory, Text *text ) : _state(MAIN_MENU), _selection(0), _selected_world(0), _vaoSet(false),
+Menu::Menu( Inventory & inventory, Text *text, Chat *chat ) : _state(MAIN_MENU), _selection(0), _selected_world(0), _vaoSet(false),
 	_esc_released(false), _e_released(false), _left_released(false), _right_released(false), _textBar(true),
-	_key_1(0), _key_2(0), _key_3(0), _key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0), _enter_released(0),
-	_inventory(inventory), _text(text), _furnace(NULL)
+	_key_1(0), _key_2(0), _key_3(0), _key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0), _chat_released(0),
+	_inventory(inventory), _text(text), _chat(chat), _furnace(NULL)
 {
 	_selected_block = glm::ivec2(blocks::AIR, 0);
 	_world_file = "";
@@ -450,18 +450,35 @@ int Menu::chat_menu( bool animUpdate )
 {
 	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetCharCallback(_window, NULL);
-		resetMessage();
+		INPUT::resetMessage();
+		_chat->resetHistoCursor();
 		return (1);
 	}
-	if (++_enter_released == 1 && glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_PRESS) {
-		_text->chatMessage("You: " + getCurrentMessage());
-		resetMessage();
-	} else if (glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
-		_enter_released = 0;
+	if (++_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+		_chat->sendMessage(INPUT::getCurrentMessage());
+		INPUT::resetMessage();
 	}
-	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
-		rmLetter();
+	if (_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
+		INPUT::rmLetter();
 	}
+	if (_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) {
+		INPUT::setCurrentMessage(_chat->getHistoMsg(true));
+	}
+	if (_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		INPUT::setCurrentMessage(_chat->getHistoMsg(false));
+	}
+	if (_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		INPUT::moveCursor(true);
+	}
+	if (_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		INPUT::moveCursor(false);
+	}
+	if (glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_RELEASE && glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_RELEASE
+		&& glfwGetKey(_window, GLFW_KEY_UP) == GLFW_RELEASE && glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_RELEASE
+		&& glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_RELEASE && glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_RELEASE) {
+		_chat_released = 0;
+	}
+
 
 	setup_array_buffer_chat();
 	glUseProgram(_shaderProgram);
@@ -471,8 +488,8 @@ int Menu::chat_menu( bool animUpdate )
 	if (animUpdate) {
 		_textBar = !_textBar;
 	}
-	std::string msg = getCurrentMessage() + ((_textBar) ? "|" : "");
-	_text->addText(36, WIN_HEIGHT - 48 - 12, 12, true, msg);
+	_chat->blitPastMessages();
+	_text->addText(36, WIN_HEIGHT - 48 - 12, 12, true, INPUT::getCurrentInputStr((_textBar) ? '|' : '.'));
 	return (0);
 }
 
@@ -643,10 +660,10 @@ void Menu::setup_array_buffer_pause( void )
 
 void Menu::setup_array_buffer_chat( void )
 {
-	int nbr = _text->_messages.size();
+	int nbr = _chat->computeHeight();
 	_nb_points = 2;
     GLint vertices[] = { // pos: x y width height textcoord: x y width height
-        1, 30, WIN_HEIGHT - 48 - 4 - 18 * (nbr + 2), 700, 18 * (nbr + 1), 3, 29, 1, 1, // occult chat box
+        1, 30, WIN_HEIGHT - 48 - 8 - 18 * (nbr + 1), 700, 4 + 18 * nbr, 3, 29, 1, 1, // occult chat box
         1, 30, WIN_HEIGHT - 48 - 18, 700, 20, 3, 29, 1, 1, // twice for input box
     };
 
@@ -1309,7 +1326,7 @@ void Menu::setState( int state )
 	set_scroll_callback(NULL);
 
 	if (state == CHAT_MENU) {
-		glfwSetCharCallback(_window, character_callback);
+		glfwSetCharCallback(_window, INPUT::character_callback);
 	}
 }
 
@@ -1358,7 +1375,7 @@ int Menu::run( GLint render_dist, bool animUpdate )
 std::string Menu::getFurnaceString( void )
 {
 	if (!_furnace) {
-		return ("");
+		return (_chat->getInfoString());
 	}
-	return (_furnace->getInfoString());
+	return (_chat->getInfoString() + _furnace->getInfoString());
 }
