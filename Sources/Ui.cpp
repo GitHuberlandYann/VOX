@@ -17,6 +17,7 @@ UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _inventory(in
 
 UI::~UI( void )
 {
+	std::cout << "Destructor of UI called" << std::endl;
     glDeleteBuffers(1, &_vbo);
 	glDeleteVertexArrays(1, &_vao);
 	

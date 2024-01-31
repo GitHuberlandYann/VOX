@@ -91,6 +91,7 @@ namespace INPUT
 
 	void rmLetter( void )
 	{
+		if (!cursor) return ;
 		message = message.substr(0, cursor - 1) + message.substr(cursor);
 		--cursor;
 	}

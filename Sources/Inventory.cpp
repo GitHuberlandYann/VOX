@@ -19,6 +19,7 @@ Inventory::Inventory( void ) : _slot(0), _saved_durability(0), _modif(false)
 
 Inventory::~Inventory( void )
 {
+	std::cout << "Destructor of Inventory called" << std::endl;
 	_durabilities.clear();
 }
 

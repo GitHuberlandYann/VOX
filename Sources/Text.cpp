@@ -10,11 +10,11 @@ typedef struct {
 
 Text::Text( void ) : _textures(NULL)
 {
-
 }
 
 Text::~Text( void )
 {
+	std::cout << "Destructor of Text called" << std::endl;
 	glDeleteBuffers(1, &_vbo);
 	glDeleteVertexArrays(1, &_vao);
 

@@ -71,6 +71,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_backups.clear();
 	mtx_backup.unlock();
 
+	DayCycle::Reset();
 	check_glstate("OpengGL_Manager destructed", true);
 }
 
@@ -461,21 +462,16 @@ void OpenGL_Manager::main_loop( void )
 	{
 		double currentTime = glfwGetTime();
 		double deltaTime = currentTime - previousFrame;
-		// if (deltaTime > 0.03) {
-		// 	std::cerr << "on frame " << nbFrames << ": " << deltaTime * 1000 << " ms" << std::endl;
-		// }
-		nbFrames++;
-		if ( currentTime - lastTime >= 1.0 ){
-			// if (0 && !_debug_mode) {
-			// 	std::cout << 1000.0/double(nbFrames) << " ms/frame; " << nbFrames << " fps" << std::endl;
-			// 	// std::cout << "other math gives " << (deltaTime) * 1000 << "ms/frame" << std::endl;
-			// }
+
+		++nbFrames;
+		if (currentTime - lastTime >= 1.0) {
 			nbFramesLastSecond = nbFrames;
 			nbFrames = 0;
 			nbTicksLastSecond = nbTicks;
 			nbTicks = 0;
 			lastTime += 1.0;
 		}
+		glUseProgram(_shaderProgram); // must be before DayCycle tickUpdate
 		if (currentTime - lastGameTick >= 0.05) {
 			tickUpdate = true;
 			++nbTicks;
@@ -484,6 +480,7 @@ void OpenGL_Manager::main_loop( void )
 			animUpdate = (nbTicks & 0x1);
 			if (!_paused || _menu->getState() >= INVENTORY_MENU) {
 				_camera->tickUpdate();
+				DayCycle::Get()->tickUpdate();
 			}
 		} else {
 			tickUpdate = false;
@@ -491,16 +488,12 @@ void OpenGL_Manager::main_loop( void )
 			animUpdate = false;
 		}
 
-		glUseProgram(_shaderProgram);
 		// Bench b;
 		if (!_paused) {
 			if (++backFromMenu != 1) {
 				user_inputs(deltaTime, ++backFromMenu > 3);
 			}
 			chunk_update();
-			DayCycle::Get()->update(deltaTime);
-		} else if (_menu->getState() >= INVENTORY_MENU) {
-			DayCycle::Get()->update(deltaTime);
 		}
 		// b.stamp("user inputs");
 		glEnable(GL_DEPTH_TEST);

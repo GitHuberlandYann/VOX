@@ -5,7 +5,7 @@
 	"f5_mode": false,
 	"outline": true,
 	"render_distance": 10,
-	"dayCycle": {"day": 4, "hour": 22, "minute": 26, "light": 4, "state": 2},
+	"dayCycle": {"day": 4, "ticks": 15166},
 	"camera": {
 		"pos": {"x": -9.843543, "y": 73.351608, "z": 174.893936},
 		"yaw": 91.136581,

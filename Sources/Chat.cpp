@@ -11,7 +11,7 @@ Chat::Chat( Text *text ) : _histo_cursor(0), _text(text)
 
 Chat::~Chat( void )
 {
-
+	std::cout << "Destructor of Chat called" << std::endl;
 }
 
 // ************************************************************************** //
@@ -82,6 +82,69 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 	}
 }
 
+void Chat::handle_gamemode( int argc, std::vector<std::string> &argv )
+{
+	if (argc == 2) {
+		if (!argv[1].compare("creative")) {
+			return ;	
+		} else if (!argv[1].compare("survival")) {
+			return ;
+		}
+	}
+	chatMessage("Wrong usage of /gamemode <gamemode>");
+}
+
+void Chat::handle_time( int argc, std::vector<std::string> &argv )
+{
+	if (argc == 1) {
+		std::string time = DayCycle::Get()->getTime();
+		chatMessage("Current time is " + time.substr(time.find('D') + 1));
+	} else if (argc == 3 && !argv[1].compare("set")) {
+		for (int index = 0; index < NBR_ARG_TIME; ++index) {
+			if (!timeSetArgs[index].compare(argv[2])) {
+				switch (index) {
+					case args_time::DAY:
+						DayCycle::Get()->setTicks(1000);
+						chatMessage("time set to day");
+						break ;
+					case args_time::NIGHT:
+						DayCycle::Get()->setTicks(13000);
+						chatMessage("time set to night");
+						break ;
+					case args_time::NOON:
+						DayCycle::Get()->setTicks(6000);
+						chatMessage("time set to noon");
+						break ;
+					case args_time::MIDNIGHT:
+						DayCycle::Get()->setTicks(18000);
+						chatMessage("time set to midnight");
+						break ;
+					default:
+						chatMessage("Argument for /time set (day|night) not implemented yet.");
+				}
+				return ;
+			}
+		}
+		int ticks = 0;
+		for (int i = 0; argv[2][i]; ++i) {
+			if (isdigit(argv[2][i])) ticks = ticks * 10 + argv[2][i] - '0';
+			else return (chatMessage("Bad argument for /time set (day|night) or /time set <number>"));
+		}
+		DayCycle::Get()->setTicks(ticks);
+		chatMessage("Current time set to " + std::to_string(ticks));
+	} else if (argc == 3 && !argv[1].compare("add")) {
+		int ticks = 0;
+		for (int i = 0; argv[2][i]; ++i) {
+			if (isdigit(argv[2][i])) ticks = ticks * 10 + argv[2][i] - '0';
+			else return (chatMessage("Bad argument for /time add <number>"));
+		}
+		DayCycle::Get()->addTicks(ticks);
+		chatMessage("Added " + std::to_string(ticks) + " ticks to current time");
+	} else {
+		chatMessage("Wrong usage of command /time (or not implemented yet oupsi)");
+	}
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -119,7 +182,7 @@ void Chat::sendMessage( std::string str )
 	if (str[0] == '/') {
 		std::vector<std::string> parstr = split(str, ' ');
 		for (int index = 0; index < NBR_CMDS; ++index) {
-			if (!commands[index].compare(0, commands[index].size(), parstr[0])) {
+			if (!commands[index].compare(parstr[0])) {
 				switch (index) {
 					case cmds::HELP:
 						handle_help(parstr.size(), parstr);
@@ -129,10 +192,10 @@ void Chat::sendMessage( std::string str )
 						break ;
 					case cmds::GAMEMODE:
 						chatMessage("Command recogised as cmds::GAMEMODE");
-						// handle_gamemode(parstr.size(), parstr);
+						handle_gamemode(parstr.size(), parstr);
 						break ;
 					case cmds::TIME:
-						chatMessage("Current time is " + DayCycle::Get()->getTime().substr(2));
+						handle_time(parstr.size(), parstr);
 						break ;
 					case cmds::CLEAR:
 						chatMessage("Command recogised as cmds::CLEAR");

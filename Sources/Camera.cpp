@@ -19,6 +19,7 @@ Camera::Camera( glm::vec3 position )
 
 Camera::~Camera( void )
 {
+	std::cout << "Destructor of Camera called" << std::endl;
 }
 
 // ************************************************************************** //

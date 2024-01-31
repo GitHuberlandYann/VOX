@@ -51,9 +51,7 @@ void OpenGL_Manager::saveWorld( void )
 std::string DayCycle::saveString( void )
 {
 	std::string res = "\"dayCycle\": {\"day\": "
-		+ std::to_string(_day) + ", \"hour\": " + std::to_string(_hour) + ", \"minute\": " + std::to_string(_minute)
-		+ ", \"light\": " + std::to_string(_internal_light) + ", \"state\": " + std::to_string(_state)
-		+ "},\n\t";
+		+ std::to_string(_day) + ", \"ticks\": " + std::to_string(_ticks) + "},\n\t";
 	return (res);
 }
 
@@ -241,31 +239,10 @@ void DayCycle::loadWorld( std::ofstream & ofs, std::string line )
 	for (index = 12; line[index] && line[index] != ':'; index++);
 	_day = std::atoi(&line[index + 1]);
 	for (index += 2; line[index] && line[index] != ':'; index++);
-	_hour = std::atoi(&line[index + 1]);
-	for (index += 2; line[index] && line[index] != ':'; index++);
-	_minute = std::atoi(&line[index + 1]);
-	for (index += 2; line[index] && line[index] != ':'; index++);
-	_internal_light = std::atoi(&line[index + 1]);
-	glUniform1i(_uniInternalLight, _internal_light);
-	glClearColor(gradient(_internal_light, 4, 15, 0, 120 / 255.0), gradient(_internal_light, 4, 15, 0, 169 / 255.0), gradient(_internal_light, 4, 15, 0, 1), 1.0f);
-	for (index += 2; line[index] && line[index] != ':'; index++);
-	int value = std::atoi(&line[index + 1]);
-	switch (value) {
-		case 0:
-			_state = dayCycle_state::DAYTIME;
-			break ;
-		case 1:
-			_state = dayCycle_state::SUNSET;
-			break ;
-		case 2:
-			_state = dayCycle_state::NIGHTTIME;
-			break ;
-		case 3:
-			_state = dayCycle_state::SUNRISE;
-			break ;
-	}
-	const std::string dayCycle_states[4] = {"DAYTIME", "SUNSET", "NIGHTTIME", "SUNRISE"};
-	ofs << "dayCycle " << dayCycle_states[_state] << " set to day " << _day << " " << _hour << ":" << _minute << " (light " << _internal_light << ")" << std::endl;
+	_ticks = std::atoi(&line[index + 1]);
+	_forceReset = true;
+	setInternals();
+	ofs << "dayCycle " << _ticks << " set to day " << _day << " " << _hour << ":" << _minute << " (light " << _internal_light << ")" << std::endl;
 }
 
 void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )

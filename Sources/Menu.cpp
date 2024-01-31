@@ -17,7 +17,7 @@ Menu::Menu( Inventory & inventory, Text *text, Chat *chat ) : _state(MAIN_MENU),
 
 Menu::~Menu( void )
 {
-	// delete _text; // nope, this is done in ui as they share same ptr
+	std::cout << "Destructor of Menu called" << std::endl;
 	_worlds.clear();
 	_selection_list.clear();
 }

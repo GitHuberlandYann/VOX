@@ -16,6 +16,17 @@ namespace cmds {
 }
 const std::array<std::string, NBR_CMDS> commands = {"/help", "/seed", "/gamemode", "/time", "/clear"};
 
+# define NBR_ARG_TIME 4
+namespace args_time {
+	enum {
+		DAY,
+		NIGHT,
+		NOON,
+		MIDNIGHT
+	};
+}
+const std::array<std::string, NBR_ARG_TIME> timeSetArgs = {"day", "night", "noon", "midnight"};
+
 class Chat
 {
 	private:
@@ -25,6 +36,8 @@ class Chat
 		std::vector<std::string> _past, _historic;
 
 		void handle_help( int argc, std::vector<std::string> &argv );
+		void handle_gamemode( int argc, std::vector<std::string> &argv );
+		void handle_time( int argc, std::vector<std::string> &argv );
 
 	public:
 		Chat( Text *text );

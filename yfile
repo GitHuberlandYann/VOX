@@ -32,7 +32,6 @@ TODOS:
 	- stairs
 	- chests
 	- doors
-	- universal use of tps instead of deltatimes
 	- bed + respawn point
 	- entity shadow
 	- rework clouds
@@ -54,14 +53,15 @@ IN PROGRES:
     - biomes
 	- slabs
 	- save entities
-	- commands /gamemode /say /save /setblock /tp(/teleport) /time /clear
+	- universal use of tps instead of deltatimes
+	- commands /gamemode /say /save /setblock /tp(/teleport) /clear
 
 DONE:
 	- pthread chunk creation
     - only display chunks in fieldview + little offset
 	- write stuff on screen
 	- mailbox system to display anouncements on screen
-	- commands /help /seed
+	- commands /help /seed /time
 	- historic of past messages and commands
 	- moveable cursor on text input
 	- better border chunk handling (trees)

@@ -3,14 +3,14 @@
 
 # include <mutex>
 
-# define MINECRAFT_MINUTE 0.8333333333333334
+# define MINECRAFT_MINUTE 16.6
 
-enum dayCycle_state {
+/*enum dayCycle_state {
 	DAYTIME, // start 06h, mid 12h, end 18h
 	SUNSET, // end 19h
 	NIGHTTIME, // mid 00h, end 05h
 	SUNRISE // end 06h
-};
+};*/
 
 class DayCycle
 {
@@ -19,23 +19,26 @@ class DayCycle
 		static std::mutex _mtx;
 
 		double _gameTime;
-		int _day, _hour, _minute, _internal_light, _time_multiplier;
+		int _ticks, _day, _hour, _minute, _internal_light, _time_multiplier;
+		bool _forceReset;
 		GLint _uniInternalLight;
-		dayCycle_state _state;
 
 		DayCycle( void );
 		~DayCycle( void );
 
-		void updateInternalLight( void );
+		void setInternals( void );
 
 	public:
 		DayCycle( DayCycle &other ) = delete;
 		void operator=( const DayCycle &other ) = delete;
 
 		static DayCycle *Get( void );
+		static void Reset( void );
 		void setUniInternalLight( GLint internal_light_location );
 		void setCloudsColor( GLint uniform_location );
-		void update( double deltaTime );
+		void tickUpdate( void );
+		void setTicks( int ticks );
+		void addTicks( int ticks );
 		void updateTimeMultiplier( GLint mul );
 		std::string getInfos( void );
 		std::string getTime( void );
