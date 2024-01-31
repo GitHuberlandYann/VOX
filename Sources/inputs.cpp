@@ -13,7 +13,7 @@ void OpenGL_Manager::resetInputsPtrs( void )
 
 t_hit OpenGL_Manager::get_block_hit( void )
 {
-	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
+	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0};
 	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (_render_distance << CHUNK_SHIFT) >> 1 : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
@@ -54,6 +54,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 				res.water_pos = i;
 				res.water_value = true;
 			}
+			res.prev_pos = i;
 		} else if (value) {
 			// we know cube is hit, now check if hitbox is hit (only on non cube-filling values)
 			if (!s_blocks[value]->hasHitbox || line_cube_intersection(_camera->getPos() + glm::vec3(0, 0, 1 + EYE_LEVEL), _camera->getDir(), glm::vec3(i) + s_blocks[value]->hitboxCenter, s_blocks[value]->hitboxHalfSize)) {
@@ -64,7 +65,6 @@ t_hit OpenGL_Manager::get_block_hit( void )
 			}
 		} else {
 			res.prev_pos = i;
-			res.prev_value = true;
 		}
 	}
 	return (res);
@@ -114,7 +114,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		type = blocks::WATER;
 	} else if (type == blocks::BUCKET) { // special case, add but remove water instead
 		if (_block_hit.water_value) {
-			chunk->handleHit(collect, type, _block_hit.water_pos, Modif::REMOVE);
+			current_chunk_ptr->handleHit(collect, type, _block_hit.water_pos, Modif::REMOVE);
 		}
 		return ;
 	} else if (type >= blocks::WOODEN_HOE && type <= blocks::DIAMOND_HOE
@@ -133,8 +133,9 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
 	}
-	if (!find_water && _block_hit.value == blocks::AIR) {
-		return ;
+
+	if (_block_hit.value) { // rm if statement for nice cheat
+		current_chunk_ptr->handleHit(collect, type, _block_hit.prev_pos, Modif::ADD);
 	}
 	/*std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (_render_distance << CHUNK_SHIFT) >> 1 : REACH);
 

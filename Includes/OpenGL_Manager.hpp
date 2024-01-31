@@ -26,7 +26,7 @@ enum {
 typedef struct s_hit {
 	glm::ivec3 pos, prev_pos, water_pos;
 	int value;
-	bool prev_value, water_value;
+	bool water_value;
 }				t_hit;
 
 class OpenGL_Manager

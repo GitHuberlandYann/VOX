@@ -1261,31 +1261,33 @@ static void thread_modif_block( Chunk *current, bool useInventory, int type, glm
 
 void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif )
 {
-
 	glm::ivec3 chunk_pos = {pos.x - _startX, pos.y - _startY, pos.z};
-	// std::cout << "handle hit at pos " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
-	if (posX < 0 && _neighbours[face_dir::MINUSX]) {
-		pos.x += CHUNK_SIZE;
-		_neighbours[face_dir::MINUSX]->handleHit(useInventory, type, pos, modif);
-	} else if (posX >= CHUNK_SIZE && _neighbours[face_dir::PLUSX]) {
-		pos.x -= CHUNK_SIZE;
-		_neighbours[face_dir::MINUSX]->handleHit(useInventory, type, pos, modif);
-	} else if (posY < 0 && _neighbours[face_dir::MINUSY]) {
-		pos.y += CHUNK_SIZE;
-		_neighbours[face_dir::MINUSX]->handleHit(useInventory, type, pos, modif);
-	} else if (posY >= CHUNK_SIZE && _neighbours[face_dir::PLUSY]) {
-		pos.y -= CHUNK_SIZE;
-		_neighbours[face_dir::MINUSX]->handleHit(useInventory, type, pos, modif);
+	if (chunk_pos.x < 0) {
+		if (_neighbours[face_dir::MINUSX]) {
+			return (_neighbours[face_dir::MINUSX]->handleHit(useInventory, type, pos, modif));
+		}
+	} else if (chunk_pos.x >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSX]) {
+			return (_neighbours[face_dir::PLUSX]->handleHit(useInventory, type, pos, modif));
+		}
+	} else if (chunk_pos.y < 0) {
+		if (_neighbours[face_dir::MINUSY]) {
+			return (_neighbours[face_dir::MINUSY]->handleHit(useInventory, type, pos, modif));
+		}
+	} else if (chunk_pos.y >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSY]) {
+			return (_neighbours[face_dir::PLUSY]->handleHit(useInventory, type, pos, modif));
+		}
 	} else {
+		std::cout << _startX << " " << _startY << ": handle hit at pos " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 		if (_thread.joinable()) {
 			_thread.join();
 		}
 		_thread = std::thread(thread_modif_block, this, useInventory, type, chunk_pos, modif);
+		return ;
 	}
 	
-	// if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
-	// 	std::cout << _startX << ", " << _startY << " ERROR BLOCK OUT OF CHUNK " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
-	// }
+	std::cout << _startX << ", " << _startY << " ERROR BLOCK OUT OF CHUNK " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 }
 
 void Chunk::updateBreak( glm::ivec4 block_hit, int frame )

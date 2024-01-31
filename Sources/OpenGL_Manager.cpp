@@ -15,7 +15,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
 		_esc_released(true), _e_released(true),
-		_break_time(0), _eat_timer(0), _break_frame(0), _block_hit({0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0)
+		_break_time(0), _eat_timer(0), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0})
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_world_name = "default.json";
@@ -559,6 +559,8 @@ void OpenGL_Manager::main_loop( void )
 				+ '\n' + _camera->getCamString(_game_mode)
 				+ "\nBlock\t> " + s_blocks[_block_hit.value]->name
 				+ ((_block_hit.value != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
+				+ ((_block_hit.value) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
+				+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
 				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
 				+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")

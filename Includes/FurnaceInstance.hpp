@@ -3,11 +3,13 @@
 
 # include <glm/glm.hpp>
 
-enum furnace_state {
-	NOCHANGE, // same state as previous frame
-	ON,	// turned on this frame
-	OFF // turned off this frame
-};
+namespace furnace_state {
+	enum {
+		NOCHANGE, // same state as previous frame
+		ON,	// turned on this frame
+		OFF // turned off this frame
+	};
+}
 
 class FurnaceInstance
 {
