@@ -1,9 +1,9 @@
 #include "Chat.hpp"
-#include "DayCycle.hpp"
+#include "OpenGL_Manager.hpp"
 #include "PerlinNoise.hpp"
 extern siv::PerlinNoise::seed_type perlin_seed;
 
-Chat::Chat( Text *text ) : _histo_cursor(0), _text(text)
+Chat::Chat( Text *text ) : _histo_cursor(0), _oglMan(NULL), _text(text)
 {
 	_current.reserve(16);
 	_past.reserve(16);
@@ -85,9 +85,11 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 void Chat::handle_gamemode( int argc, std::vector<std::string> &argv )
 {
 	if (argc == 2) {
-		if (!argv[1].compare("creative")) {
+		if (!argv[1].compare("creative") || !argv[1].compare("0")) {
+			_oglMan->setGamemode(false);
 			return ;	
-		} else if (!argv[1].compare("survival")) {
+		} else if (!argv[1].compare("survival") || !argv[1].compare("1")) {
+			_oglMan->setGamemode(true);
 			return ;
 		}
 	}
@@ -149,6 +151,11 @@ void Chat::handle_time( int argc, std::vector<std::string> &argv )
 //                                Public                                      //
 // ************************************************************************** //
 
+void Chat::setOGLManPtr( OpenGL_Manager *oglMan )
+{
+	_oglMan = oglMan;
+}
+
 void Chat::resetHistoCursor( void )
 {
 	_histo_cursor = 0;
@@ -191,7 +198,6 @@ void Chat::sendMessage( std::string str )
 						chatMessage("World seed is " + std::to_string(perlin_seed));
 						break ;
 					case cmds::GAMEMODE:
-						chatMessage("Command recogised as cmds::GAMEMODE");
 						handle_gamemode(parstr.size(), parstr);
 						break ;
 					case cmds::TIME:

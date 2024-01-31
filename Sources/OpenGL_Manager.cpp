@@ -15,13 +15,14 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
 		_esc_released(true), _e_released(true),
-		_break_time(0), _eat_timer(0), _break_frame(0), _block_hit(glm::ivec4(0, 0, 0, blocks::AIR))
+		_break_time(0), _eat_timer(0), _break_frame(0), _block_hit({0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0)
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_world_name = "default.json";
 	_camera = new Camera(glm::vec3(1.0f, -2.0f, 66.0f));
 	_inventory = new Inventory();
 	_ui = new UI(*_inventory, *_camera);
+	_ui->getChatPtr()->setOGLManPtr(this);
 	_menu = new Menu(*_inventory, _ui->getTextPtr(), _ui->getChatPtr());
 }
 
@@ -72,7 +73,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	mtx_backup.unlock();
 
 	DayCycle::Reset();
-	check_glstate("OpengGL_Manager destructed", true);
+	check_glstate("openGL_Manager destructed", true);
 }
 
 // ************************************************************************** //
@@ -100,12 +101,12 @@ void OpenGL_Manager::drawEntities( int size )
 	GLfloat *vertFloat = static_cast<GLfloat *>(vertices);
 
 	size_t index = 0;
-	bool hitBox = _block_hit.w != blocks::AIR;
+	bool hitBox = _block_hit.value != blocks::AIR;
 	if (!hitBox) {
 		index = 24 * 4;
-	} else if (s_blocks[_block_hit.w]->hasHitbox) {
-		glm::vec3 hitCenter = s_blocks[_block_hit.w]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.w]->hitboxHalfSize;
-		glm::vec3 pos = {_block_hit.x + hitCenter.x - hitHalfSize.x, _block_hit.y + hitCenter.y - hitHalfSize.y, _block_hit.z + hitCenter.z - hitHalfSize.z};
+	} else if (s_blocks[_block_hit.value]->hasHitbox) {
+		glm::vec3 hitCenter = s_blocks[_block_hit.value]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.value]->hitboxHalfSize;
+		glm::vec3 pos = {_block_hit.pos.x + hitCenter.x - hitHalfSize.x, _block_hit.pos.y + hitCenter.y - hitHalfSize.y, _block_hit.pos.z + hitCenter.z - hitHalfSize.z};
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(2 * hitHalfSize.x, 0, 0), index);
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 2 * hitHalfSize.y, 0), index);
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, 2 * hitHalfSize.z), index);
@@ -123,7 +124,7 @@ void OpenGL_Manager::drawEntities( int size )
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z), index);
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0), index);
 	} else {
-		glm::vec3 pos = {_block_hit.x - 0.001f, _block_hit.y - 0.001f, _block_hit.z - 0.001f};
+		glm::vec3 pos = {_block_hit.pos.x - 0.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z - 0.001f};
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(1.0002f, 0, 0), index);
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 1.0002f, 0), index);
 		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, 1.0002f), index);
@@ -423,6 +424,14 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	check_glstate("Succesfully loaded Resources/waterFlow.png to shader", true);
 }
 
+void OpenGL_Manager::setGamemode( bool gamemode )
+{
+	_game_mode = gamemode;
+	_ui->chatMessage(std::string("Gamemode set to ") + ((gamemode) ? "SURVIVAL" : "CREATIVE"));
+	_camera->_fall_immunity = true;
+	_camera->_z0 = _camera->getPos().z;
+}
+
 void OpenGL_Manager::main_loop( void )
 {
 	// glEnable(GL_DEPTH_TEST); // culling messes up with flower visual and doesn't seem to gain fps
@@ -548,8 +557,8 @@ void OpenGL_Manager::main_loop( void )
 				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
 				+ "\nTPS: " + std::to_string(nbTicksLastSecond)
 				+ '\n' + _camera->getCamString(_game_mode)
-				+ "\nBlock\t> " + s_blocks[_block_hit.w]->name
-				+ ((_block_hit.w != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.x) + " y: " + std::to_string(_block_hit.y) + " z: " + std::to_string(_block_hit.z) : "\n")
+				+ "\nBlock\t> " + s_blocks[_block_hit.value]->name
+				+ ((_block_hit.value != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
 				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
 				+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 				// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")

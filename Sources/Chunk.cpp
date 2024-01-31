@@ -667,7 +667,8 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 			return ;
 		}
 		int type_below = _blocks[offset - 1] & 0xFF;
-		if (type != blocks::TORCH && type != blocks::WHEAT_CROP && type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
+		if (type == blocks::WHEAT_CROP) {
+		} else if (type != blocks::TORCH && type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
 			return ; // can't place flower on something else than grass/dirt block
 		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY) || s_blocks[type_below]->hasHitbox) {
 			return ;
@@ -1232,7 +1233,7 @@ bool Chunk::isInChunk( int posX, int posY )
 	return (posX == _startX && posY == _startY);
 }
 
-int Chunk::isHit( glm::ivec3 pos, bool waterIsBlock )
+int Chunk::isHit( glm::ivec3 pos )
 {
 	// std::cout << "current_chunk is " << _startX << ", " << _startY << std::endl;
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
@@ -1247,10 +1248,7 @@ int Chunk::isHit( glm::ivec3 pos, bool waterIsBlock )
 		_thread.join();
 	}
 	int type = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z] & 0xFF;
-	if (waterIsBlock) {
-		return (type == blocks::WATER);
-	}
-	if (type >= blocks::WATER) {
+	if (type > blocks::WATER) {
 		return (blocks::AIR);
 	}
 	return (type);
@@ -1266,13 +1264,28 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 
 	glm::ivec3 chunk_pos = {pos.x - _startX, pos.y - _startY, pos.z};
 	// std::cout << "handle hit at pos " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
-	if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
-		std::cout << _startX << ", " << _startY << " ERROR BLOCK OUT OF CHUNK " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
+	if (posX < 0 && _neighbours[face_dir::MINUSX]) {
+		pos.x += CHUNK_SIZE;
+		_neighbours[face_dir::MINUSX]->handleHit(useInventory, type, pos, modif);
+	} else if (posX >= CHUNK_SIZE && _neighbours[face_dir::PLUSX]) {
+		pos.x -= CHUNK_SIZE;
+		_neighbours[face_dir::MINUSX]->handleHit(useInventory, type, pos, modif);
+	} else if (posY < 0 && _neighbours[face_dir::MINUSY]) {
+		pos.y += CHUNK_SIZE;
+		_neighbours[face_dir::MINUSX]->handleHit(useInventory, type, pos, modif);
+	} else if (posY >= CHUNK_SIZE && _neighbours[face_dir::PLUSY]) {
+		pos.y -= CHUNK_SIZE;
+		_neighbours[face_dir::MINUSX]->handleHit(useInventory, type, pos, modif);
+	} else {
+		if (_thread.joinable()) {
+			_thread.join();
+		}
+		_thread = std::thread(thread_modif_block, this, useInventory, type, chunk_pos, modif);
 	}
-	if (_thread.joinable()) {
-		_thread.join();
-	}
-	_thread = std::thread(thread_modif_block, this, useInventory, type, chunk_pos, modif);
+	
+	// if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
+	// 	std::cout << _startX << ", " << _startY << " ERROR BLOCK OUT OF CHUNK " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
+	// }
 }
 
 void Chunk::updateBreak( glm::ivec4 block_hit, int frame )

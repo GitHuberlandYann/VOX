@@ -11,11 +11,12 @@ void OpenGL_Manager::resetInputsPtrs( void )
 	chunk_hit = NULL;
 }
 
-glm::ivec4 OpenGL_Manager::get_block_hit( void )
+t_hit OpenGL_Manager::get_block_hit( void )
 {
+	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
 	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (_render_distance << CHUNK_SHIFT) >> 1 : REACH);
 
-	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
+	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
 	Chunk *chunk = NULL;
 	bool first_loop = true;
 	for (auto& i : ids) {
@@ -38,7 +39,7 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 				} else {
 					std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
 				}
-				return (glm::ivec4(0, 0, 0, blocks::AIR));
+				return (res);
 			}
 		}
 		if (first_loop) {
@@ -47,36 +48,45 @@ glm::ivec4 OpenGL_Manager::get_block_hit( void )
 			first_loop = false;
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
-		int value = chunk->isHit(i, false);
-		if (value) {
+		int value = chunk->isHit(i);
+		if (value == blocks::WATER) {
+			if (!res.water_value) {
+				res.water_pos = i;
+				res.water_value = true;
+			}
+		} else if (value) {
 			// we know cube is hit, now check if hitbox is hit (only on non cube-filling values)
 			if (!s_blocks[value]->hasHitbox || line_cube_intersection(_camera->getPos() + glm::vec3(0, 0, 1 + EYE_LEVEL), _camera->getDir(), glm::vec3(i) + s_blocks[value]->hitboxCenter, s_blocks[value]->hitboxHalfSize)) {
 				chunk_hit = chunk;
-				return (glm::ivec4(i, (value > 0) ? value : value + blocks::NOTVISIBLE));
+				res.pos = i;
+				res.value = value;
+				return (res);
 			}
+		} else {
+			res.prev_pos = i;
+			res.prev_value = true;
 		}
-		previous_chunk = current_chunk;
 	}
-	return (glm::ivec4(0, 0, 0, blocks::AIR));
+	return (res);
 }
 
 void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 {
 	if (!adding) {
-		if (_block_hit.w == blocks::AIR) {
+		if (_block_hit.value == blocks::AIR) {
 			return ;
 		}
 		if (chunk_hit) {
-			chunk_hit->handleHit(collect, 0, _block_hit, Modif::REMOVE);
+			chunk_hit->handleHit(collect, 0, _block_hit.pos, Modif::REMOVE);
 			return ;
 		}
-		int posX = chunk_pos(_block_hit.x);
-		int posY = chunk_pos(_block_hit.y);
+		int posX = chunk_pos(_block_hit.pos.x);
+		int posY = chunk_pos(_block_hit.pos.y);
 		
 		// for (auto& c : _visible_chunks) {
 		// 	if (c->isInChunk(posX, posY)) {
-		// 		// std::cout << "handle hit at pos " << _block_hit.x << ", " << _block_hit.y << ", " << _block_hit.z << std::endl;
-		// 		c->handleHit(collect, 0, glm::ivec3(_block_hit.x, _block_hit.y, _block_hit.z), Modif::REMOVE);
+		// 		// std::cout << "handle hit at pos " << _block_hit.pos.x << ", " << _block_hit.pos.y << ", " << _block_hit.pos.z << std::endl;
+		// 		c->handleHit(collect, 0, glm::ivec3(_block_hit.pos.x, _block_hit.pos.y, _block_hit.pos.z), Modif::REMOVE);
 		// 		return ;
 		// 	}
 		// }
@@ -84,36 +94,38 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	// from now on adding = true
-	if (_block_hit.w == blocks::CRAFTING_TABLE) {
+	if (_block_hit.value == blocks::CRAFTING_TABLE) {
 		_paused = true;
 		_esc_released = false;
 		_e_released = false;
 		_menu->setState(CRAFTING_MENU);
 		return ;
-	} else if (_block_hit.w == blocks::FURNACE) {
+	} else if (_block_hit.value == blocks::FURNACE) {
 		_paused = true;
 		_esc_released = false;
 		_e_released = false;
 		_menu->setState(FURNACE_MENU);
-		_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit));
+		_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit.pos));
 		return ;
 	}
 	int type = _inventory->getCurrentSlot();
-	// std::cout << "aiming " << s_blocks[type]->name << " towards " << s_blocks[_block_hit.w]->name << std::endl;;
-	bool find_water = false;
+	// std::cout << "aiming " << s_blocks[type]->name << " towards " << s_blocks[_block_hit.value]->name << std::endl;;
 	if (type == blocks::WATER_BUCKET) { // use it like any other block
 		type = blocks::WATER;
 	} else if (type == blocks::BUCKET) { // special case, add but remove water instead
-		find_water = true;
+		if (_block_hit.water_value) {
+			chunk->handleHit(collect, type, _block_hit.water_pos, Modif::REMOVE);
+		}
+		return ;
 	} else if (type >= blocks::WOODEN_HOE && type <= blocks::DIAMOND_HOE
-		&& (_block_hit.w == blocks::DIRT || _block_hit.w == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
+		&& (_block_hit.value == blocks::DIRT || _block_hit.value == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
 		type = blocks::FARMLAND;
-		chunk_hit->handleHit(true, type, _block_hit, Modif::REPLACE);
+		chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
 		return ;
 	} else if (type >= blocks::WOODEN_SHOVEL && type <= blocks::DIAMOND_SHOVEL
-		&& (_block_hit.w == blocks::DIRT || _block_hit.w == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
+		&& (_block_hit.value == blocks::DIRT || _block_hit.value == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
 		type = blocks::DIRT_PATH;
-		chunk_hit->handleHit(true, type, _block_hit, Modif::REPLACE);
+		chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
 		return ;
 	} else if (type == blocks::WHEAT_SEEDS) {
 		type = blocks::WHEAT_CROP;
@@ -121,10 +133,10 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
 	}
-	if (!find_water && _block_hit.w == blocks::AIR) {
+	if (!find_water && _block_hit.value == blocks::AIR) {
 		return ;
 	}
-	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (_render_distance << CHUNK_SHIFT) >> 1 : REACH);
+	/*std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (_render_distance << CHUNK_SHIFT) >> 1 : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
 	glm::ivec3 player_pos, previous_block;
@@ -176,7 +188,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		}
 		previous_block = i;
 		previous_chunk = current_chunk;
-	}
+	}*/
 }
 
 void OpenGL_Manager::update_cam_view( void )
@@ -361,10 +373,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 	// toggle game mode
 	if ((glfwGetKey(_window, GLFW_KEY_G) == GLFW_PRESS) && ++_key_g == 1) {
-		_game_mode = !_game_mode;
-		_ui->chatMessage(std::string("Gamemode set to ") + ((_game_mode) ? "SURVIVAL" : "CREATIVE"));
-		_camera->_fall_immunity = true;
-		_camera->_z0 = _camera->getPos().z;
+		setGamemode(!_game_mode);
 	} else if (glfwGetKey(_window, GLFW_KEY_G) == GLFW_RELEASE) {
 		_key_g = 0;
 	}
@@ -395,10 +404,10 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		if (_game_mode == SURVIVAL) {
 			_break_time += deltaTime;
 			mtx_inventory.lock();
-			float break_time = s_blocks[_block_hit.w]->getBreakTime(_inventory->getCurrentSlot());
-			bool can_collect = s_blocks[_block_hit.w]->canCollect(_inventory->getCurrentSlot());
+			float break_time = s_blocks[_block_hit.value]->getBreakTime(_inventory->getCurrentSlot());
+			bool can_collect = s_blocks[_block_hit.value]->canCollect(_inventory->getCurrentSlot());
 			mtx_inventory.unlock();
-			if (_block_hit.w != blocks::AIR && _break_time >= break_time) {
+			if (_block_hit.value != blocks::AIR && _break_time >= break_time) {
 				_break_time = 0;
 				_break_frame = _outline;
 				handle_add_rm_block(false, can_collect);
@@ -408,7 +417,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
 				if (_break_frame != break_frame) {
 					if (chunk_hit) {
-						chunk_hit->updateBreak(_block_hit, break_frame);
+						chunk_hit->updateBreak({_block_hit.pos, _block_hit.value}, break_frame);
 					}
 					_break_frame = break_frame;
 				}
@@ -420,7 +429,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_key_rm_block = 0;
 		_break_time = 0;
 		if (_break_frame != _outline && chunk_hit) {
-			chunk_hit->updateBreak(_block_hit, _outline);
+			chunk_hit->updateBreak({_block_hit.pos, _block_hit.value}, _outline);
 		}
 		_break_frame = _outline;
 	}
@@ -455,9 +464,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			mtx.unlock();
 		}
 	}
-	if (_game_mode == CREATIVE && _block_hit.w != blocks::AIR && _key_rm_block != 1 && _key_add_block != 1
+	if (_game_mode == CREATIVE && _block_hit.value != blocks::AIR && _key_rm_block != 1 && _key_add_block != 1
 		&& glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_MIDDLE) && ++_key_pick_block == 1) { // pick up in creative mode
-		_inventory->replaceSlot(_block_hit.w);
+		_inventory->replaceSlot(_block_hit.value);
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_RELEASE) {
 		_key_pick_block = 0;
 	}
@@ -566,18 +575,18 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		mtx.unlock();
 
 		Chunk *save_chunk = chunk_hit;
-		glm::ivec4 block_hit = get_block_hit();
-		if (_block_hit != block_hit) {
+		t_hit block_hit = get_block_hit();
+		if (_block_hit.pos != block_hit.pos) {
 			if (_break_frame && save_chunk) {
-				save_chunk->updateBreak(_block_hit, 0);
+				save_chunk->updateBreak({_block_hit.pos, _block_hit.value}, 0);
 			}
-			_block_hit = block_hit;
 			if (_outline && chunk_hit) {
-				chunk_hit->updateBreak(_block_hit, 1);
+				chunk_hit->updateBreak({block_hit.pos, block_hit.value}, 1);
 			}
 			_break_time = 0;
 			_break_frame = _outline;
 		}
+		_block_hit = block_hit;
 
 		if (!_camera->_health_points) { // dead
 			_inventory->spillInventory(current_chunk_ptr);

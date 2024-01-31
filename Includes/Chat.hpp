@@ -3,6 +3,7 @@
 
 # include "utils.h"
 # include "Text.hpp"
+class OpenGL_Manager;
 
 # define NBR_CMDS 5
 namespace cmds {
@@ -31,6 +32,7 @@ class Chat
 {
 	private:
 		int _histo_cursor;
+		OpenGL_Manager *_oglMan;
 		Text *_text;
 		std::vector<std::pair<std::string, float>> _current;
 		std::vector<std::string> _past, _historic;
@@ -42,6 +44,8 @@ class Chat
 	public:
 		Chat( Text *text );
 		~Chat( void );
+
+		void setOGLManPtr( OpenGL_Manager *oglMan );
 
 		void resetHistoCursor( void );
 		std::string getHistoMsg( bool up );

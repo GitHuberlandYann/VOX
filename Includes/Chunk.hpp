@@ -181,7 +181,7 @@ class Chunk
 		void hide( void );
         bool isInChunk( int posX, int posY );
 
-		int isHit( glm::ivec3 pos, bool waterIsBlock );
+		int isHit( glm::ivec3 pos );
 		void handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void updateBreak( glm::ivec4 block_hit, int frame );
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread );

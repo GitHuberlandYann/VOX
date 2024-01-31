@@ -23,6 +23,12 @@ enum {
 	F_LAST
 };
 
+typedef struct s_hit {
+	glm::ivec3 pos, prev_pos, water_pos;
+	int value;
+	bool prev_value, water_value;
+}				t_hit;
+
 class OpenGL_Manager
 {
 	private:
@@ -39,7 +45,7 @@ class OpenGL_Manager
 		std::vector<Chunk *> _visible_chunks;
 		std::vector<std::pair<int, glm::vec3>> _entities;
 		std::thread _thread;
-		glm::ivec4 _block_hit;
+		t_hit _block_hit;
 		UI *_ui;
 		Menu *_menu;
 
@@ -48,7 +54,7 @@ class OpenGL_Manager
 		void update_visible_chunks( void );
 		void chunk_update( void );
 		void user_inputs( float deltaTime, bool rayCast );
-		glm::ivec4 get_block_hit( void );
+		t_hit get_block_hit( void );
 		void handle_add_rm_block( bool adding, bool collect );
 		void update_cam_view( void );
 		void update_cam_perspective( void );
@@ -76,6 +82,7 @@ class OpenGL_Manager
 		void create_shaders( void );
 		void setup_communication_shaders( void );
 		void load_texture( std::string texture_file );
+		void setGamemode( bool gamemode );
 		void main_loop( void );
 };
 
