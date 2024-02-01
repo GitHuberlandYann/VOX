@@ -36,6 +36,10 @@ DayCycle::~DayCycle( void )
 // sets _hour, _minute, _internal_light, and glClearColor form ticks
 void DayCycle::setInternals( void )
 {
+	while (_ticks < 0) {
+		if (_day) --_day;
+		_ticks += 24000;
+	}
 	while (_ticks > 24000) {
 		++_day;
 		_ticks -= 24000;

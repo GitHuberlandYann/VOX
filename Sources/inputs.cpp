@@ -137,59 +137,6 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	if (_block_hit.value) { // rm if statement for nice cheat
 		current_chunk_ptr->handleHit(collect, type, _block_hit.prev_pos, Modif::ADD);
 	}
-	/*std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (_render_distance << CHUNK_SHIFT) >> 1 : REACH);
-
-	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX), previous_chunk;
-	glm::ivec3 player_pos, previous_block;
-	Chunk *chunk = NULL, *prev_chunk = NULL;
-	bool start = true;
-	for (auto& i : ids) {
-		if (start) {
-			player_pos = i;
-			start = false;
-		}
-		// std::cout << "checking > " << i.x << ", " << i.y << ", " << i.z << std::endl;
-		int posX = chunk_pos(i.x);
-		int posY = chunk_pos(i.y);
-		
-		if (!chunk || posX != current_chunk.x || posY != current_chunk.y) {
-			current_chunk = glm::ivec2(posX, posY);
-			for (auto& c : _visible_chunks) {
-				if (c->isInChunk(posX, posY)) {
-					prev_chunk = chunk;
-					chunk = c;
-					break ;
-				}
-			}
-			if (!chunk) {
-				std::cout << "add: chunk out of bound at " << posX << ", " << posY << std::endl;
-				break ;
-			}
-		}
-		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
-		if (find_water) {
-			if (chunk->isHit(i, true)) {
-				chunk->handleHit(collect, type, i, Modif::REMOVE);
-				return ;
-			}
-		} else if (chunk->isHit(i, false)) { // TODO use line_cube_intersection to put block behind flower, but not if flower would be replaced
-			// std::cout << "we have a hit ! " << i.x << ", " << i.y << ", " << i.z << ", " << std::endl;
-			if (type != blocks::WATER
-				&& (i == player_pos || previous_block == player_pos || previous_block == glm::ivec3(player_pos.x, player_pos.y, player_pos.z - 1))) {
-				// std::cout << "abort because hit is player pos" << std::endl;
-				// TODO better collision check here because you can still put block "at your feet" due to +0.3 offset
-				return ;
-			}
-			if (previous_chunk != current_chunk) {
-				prev_chunk->handleHit(collect, type, previous_block, Modif::ADD);
-				return ;
-			}
-			chunk->handleHit(collect, type, previous_block, Modif::ADD);
-			return ;
-		}
-		previous_block = i;
-		previous_chunk = current_chunk;
-	}*/
 }
 
 void OpenGL_Manager::update_cam_view( void )
@@ -611,8 +558,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_camera->_fovUpdate = false;
 		update_cam_perspective();
 	}
-	if (_camera->_update)
-	{
+	if (_camera->_update) {
 		update_cam_view();
 		update_visible_chunks();
 	}

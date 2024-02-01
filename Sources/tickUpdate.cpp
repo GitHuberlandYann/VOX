@@ -164,8 +164,13 @@ void Chunk::decayLeaves( int offset )
 
 	int logConnected = findLog(posX, posY, posZ, 6);
 	if (!logConnected) {
+		size_t save = _displayed_faces;
 		remove_block(true, {posX, posY, posZ}); // TODO might want to update ligth
 		_vertex_update = true;
+		if (_displayed_faces > save) {
+			delete [] static_cast<GLint*>(_vertices);
+			_vertices = new GLint[_displayed_faces * 4 * 6];
+		}
 	}
 }
 

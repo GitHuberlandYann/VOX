@@ -60,6 +60,8 @@ std::string Camera::saveString( void )
 	_mtx.lock();
 	std::string res = "\"camera\": {\n\t\t\"pos\": {\"x\": "
 		+ std::to_string(_position.x) + ", \"y\": " + std::to_string(_position.y) + ", \"z\": " + std::to_string(_position.z)
+		+ "},\n\t\t\"spawnpoint\": {\"x\": "
+		+ std::to_string(_spawnpoint.x) + ", \"y\": " + std::to_string(_spawnpoint.y) + ", \"z\": " + std::to_string(_spawnpoint.z)
 		+ "},\n\t\t\"yaw\": " + std::to_string(_yaw)
 		+ ",\n\t\t\"pitch\": " + std::to_string(_pitch)
 		+ ",\n\t\t\"fov\": " + std::to_string(_fov)
@@ -264,6 +266,13 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			_z0 = _position.z;
 			ofs << "camera pos set to " << _position.x << ", " << _position.y << ", " << _position.z << std::endl;
 			_mtx.unlock();
+		} else if (!line.compare(0, 14, "\"spawnpoint\": ")) {
+			_spawnpoint.x = std::stof(&line[20]);
+			for (index = 20; line[index] && line[index] != ':'; index++);
+			_spawnpoint.y = std::stof(&line[index + 2]);
+			for (index = index + 2; line[index] && line[index] != ':'; index++);
+			_spawnpoint.z = std::stof(&line[index + 2]);
+			ofs << "camera spawnpoint set to " << _spawnpoint.x << ", " << _spawnpoint.y << ", " << _spawnpoint.z << std::endl;
 		} else if (!line.compare(0, 7, "\"yaw\": ")) {
 			_yaw = std::stof(&line[7]);
 			ofs << "camera yaw set to " << _yaw << std::endl;

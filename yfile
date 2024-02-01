@@ -54,14 +54,14 @@ IN PROGRES:
 	- slabs
 	- save entities
 	- universal use of tps instead of deltatimes
-	- commands /say /save /setblock /tp(/teleport) /clear
+	- commands /say /save /setblock /sc(/screenshot) /kill
 
 DONE:
 	- pthread chunk creation
     - only display chunks in fieldview + little offset
 	- write stuff on screen
 	- mailbox system to display anouncements on screen
-	- commands /help /seed /time /gamemode
+	- commands /help /seed /time /gamemode /clear /tp(/teleport) /sp(spawnpoint)
 	- historic of past messages and commands
 	- moveable cursor on text input
 	- better border chunk handling (trees)

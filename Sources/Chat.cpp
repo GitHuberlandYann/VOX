@@ -59,6 +59,8 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\tChanges or queries the world's game time.");
 						chatMessage("\t/time add <time>");
 						chatMessage("\t\tAdds <time> to the in-game daytime.");
+						chatMessage("\t/time sub <time>");
+						chatMessage("\t\tSubstracts <time> from the in-game daytime.");
 						chatMessage("\t/time query (daytime|gametime|day)");
 						chatMessage("\t\tQueries current time.");
 						chatMessage("\ttime set (day|night|noon|midnight)");
@@ -68,7 +70,23 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 					case cmds::CLEAR:
 						chatMessage("/help clear");
 						chatMessage("\t/clear");
-						chatMessage("\t\tClears items from player inventory.");
+						chatMessage("\t\tClears chat history.");
+						break ;
+					case cmds::TP:
+					case cmds::TELEPORT:
+						chatMessage("/help teleport");
+						chatMessage("\t/teleport <location>");
+						chatMessage("\t\tTeleports the executor to a certain position.");
+						chatMessage("\t/teleport spawn");
+						chatMessage("\t\tTeleports the executor to his spawn point.");
+						break ;
+					case cmds::SP:
+					case cmds::SPAWNPOINT:
+						chatMessage("/help spawnpoint");
+						chatMessage("\t/spawnpoint");
+						chatMessage("\t\tSets your spawn point to your current location.");
+						chatMessage("\t/spawnpoint <location>");
+						chatMessage("\t\tSets your spawn point to a certain location.");
 						break ;
 					default:
 						chatMessage("Command recognised but documentation not coded yet.");
@@ -84,7 +102,10 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 
 void Chat::handle_gamemode( int argc, std::vector<std::string> &argv )
 {
-	if (argc == 2) {
+	if (argc == 1) {
+		_oglMan->getGamemode();
+		return ;
+	} else if (argc == 2) {
 		if (!argv[1].compare("creative") || !argv[1].compare("0")) {
 			_oglMan->setGamemode(false);
 			return ;	
@@ -142,9 +163,99 @@ void Chat::handle_time( int argc, std::vector<std::string> &argv )
 		}
 		DayCycle::Get()->addTicks(ticks);
 		chatMessage("Added " + std::to_string(ticks) + " ticks to current time");
+	} else if (argc == 3 && !argv[1].compare("sub")) {
+		int ticks = 0;
+		for (int i = 0; argv[2][i]; ++i) {
+			if (isdigit(argv[2][i])) ticks = ticks * 10 + argv[2][i] - '0';
+			else return (chatMessage("Bad argument for /time sub <number>"));
+		}
+		DayCycle::Get()->addTicks(-ticks);
+		chatMessage("Substracted " + std::to_string(ticks) + " ticks from current time");
 	} else {
 		chatMessage("Wrong usage of command /time (or not implemented yet oupsi)");
 	}
+}
+
+void Chat::handle_teleport( int argc, std::vector<std::string> &argv )
+{
+	if (argc == 2 && !argv[1].compare("spawn")) {
+		glm::vec3 pos = _oglMan->_camera->getSpawnpoint();
+		_oglMan->_camera->setPos(pos);
+		_oglMan->resetInputsPtrs();
+		chatMessage("Player pos set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));
+		return ;
+	} else if (argc == 4) {
+		try {
+			glm::vec3 pos;
+			pos.x = parseLocation(argv[1], 0);
+			pos.y = parseLocation(argv[2], 1);
+			pos.z = parseLocation(argv[3], 2);
+			_oglMan->_camera->setPos(pos);
+			_oglMan->resetInputsPtrs();
+			chatMessage("Player pos set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));
+			return ;
+		} catch (std::exception & e) {
+			(void)e;
+			// std::cout << "handle_teleport thrown " << e.what() << std::endl;
+		}
+	}
+	chatMessage("Wrong usage of /teleport <location>");
+}
+
+void Chat::handle_spawnpoint( int argc, std::vector<std::string> &argv )
+{
+	if (argc == 1) {
+		glm::vec3 pos = _oglMan->_camera->getPos();
+		_oglMan->_camera->setSpawnpoint(pos);
+		chatMessage("Your spawnpoint was set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));
+		return ;
+	} else if (argc == 4) {
+		try {
+			glm::vec3 pos;
+			pos.x = parseLocation(argv[1], 0);
+			pos.y = parseLocation(argv[2], 1);
+			pos.z = parseLocation(argv[3], 2);
+			_oglMan->_camera->setSpawnpoint(pos);
+			chatMessage("Your spawnpoint was set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));
+			return ;
+		} catch (std::exception & e) {
+			(void)e;
+			// std::cout << "handle_spawnpoint thrown " << e.what() << std::endl;
+		}
+	}
+	chatMessage("Wrong usage of /spawnpoint [location]");
+}
+
+class InvalidLocationException : public std::exception
+{
+	public:
+		const char *what() const throw()
+		{
+			return ("[InvalidLocationException] Wrong format for location arg.");
+		}
+};
+
+float Chat::parseLocation( std::string &str, int coord )
+{
+	float res = 0;
+	int index = 0;
+	if (str[0] == '~') {
+		res = _oglMan->_camera->getPos()[coord];
+		++index;
+	}
+	int sign = 1;
+	if (str[index] == '-') {
+		sign = -1;
+		++index;
+	}
+	int cnt = 0, save;
+	while (isdigit(str[index])) {
+		save = cnt;
+		cnt = cnt * 10 + str[index++] - '0';
+		if (cnt < save) throw InvalidLocationException();
+	}
+	if (str[index]) throw InvalidLocationException();
+	return (res + sign * cnt);
 }
 
 // ************************************************************************** //
@@ -204,7 +315,17 @@ void Chat::sendMessage( std::string str )
 						handle_time(parstr.size(), parstr);
 						break ;
 					case cmds::CLEAR:
-						chatMessage("Command recogised as cmds::CLEAR");
+						_current.clear();
+						_past.clear();
+						_historic.clear();
+						break ;
+					case cmds::TP:
+					case cmds::TELEPORT:
+						handle_teleport(parstr.size(), parstr);
+						break ;
+					case cmds::SP:
+					case cmds::SPAWNPOINT:
+						handle_spawnpoint(parstr.size(), parstr);
 						break ;
 					default:
 						chatMessage("Command recognised but behavior not coded yet.");

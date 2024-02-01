@@ -432,6 +432,11 @@ void OpenGL_Manager::setGamemode( bool gamemode )
 	_camera->_z0 = _camera->getPos().z;
 }
 
+void OpenGL_Manager::getGamemode( void )
+{
+	_ui->chatMessage(std::string("Current gamemode is ") + ((_game_mode) ? "SURVIVAL" : "CREATIVE"));
+}
+
 void OpenGL_Manager::main_loop( void )
 {
 	// glEnable(GL_DEPTH_TEST); // culling messes up with flower visual and doesn't seem to gain fps
@@ -503,6 +508,15 @@ void OpenGL_Manager::main_loop( void )
 				user_inputs(deltaTime, ++backFromMenu > 3);
 			}
 			chunk_update();
+		} else if (_camera->_update && _menu->getState() >= INVENTORY_MENU) {
+			// _ui->chatMessage("debug time");
+			chunk_update();
+			update_cam_view();
+			update_visible_chunks();
+			if (!_visible_chunks.size()) {
+				_current_chunk.x += 32; // we want chunk_update to call thread on next loop
+				_camera->_update = true;
+			}
 		}
 		// b.stamp("user inputs");
 		glEnable(GL_DEPTH_TEST);

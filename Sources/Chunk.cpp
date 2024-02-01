@@ -1279,7 +1279,7 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 			return (_neighbours[face_dir::PLUSY]->handleHit(useInventory, type, pos, modif));
 		}
 	} else {
-		std::cout << _startX << " " << _startY << ": handle hit at pos " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
+		// std::cout << _startX << " " << _startY << ": handle hit at pos " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 		if (_thread.joinable()) {
 			_thread.join();
 		}
@@ -1574,6 +1574,7 @@ void Chunk::drawArray( GLint & counter, GLint &face_counter )
 	if (_light_update && _nb_neighbours == 4) {
 		std::cout << _startX << ", " << _startY << " light update" << std::endl;
 		fill_vertex_array();
+		// std::cout << "over." << std::endl;
 	} else if (_vertex_update && _nb_neighbours == 4) {
 		// std::cout << _startX << ", " << _startY << " crop update" << std::endl;
 		fill_vertex_array();

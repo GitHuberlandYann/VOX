@@ -46,7 +46,7 @@ enum Camera_Movement {
 class Camera
 {
 	private:
-		glm::vec3 _position, _front, _up, _right, _world_up;
+		glm::vec3 _position, _spawnpoint, _front, _up, _right, _world_up;
 		glm::vec2 _front2, _right2;
 		float _yaw, _pitch;
 		float _deltaTime, _fall_time, _breathTime;
@@ -105,6 +105,9 @@ class Camera
 		std::string getCamString( bool game_mode );
 		std::string saveString( void );
 		void loadWorld( std::ofstream & ofs, std::ifstream & indata );
+		void setPos( glm::vec3 pos );
+		void setSpawnpoint( glm::vec3 spawnpoint );
+		glm::vec3 getSpawnpoint( void );
 		void respawn( void );
 };
 

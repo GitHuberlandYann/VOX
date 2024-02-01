@@ -9,6 +9,7 @@ Camera::Camera( glm::vec3 position )
 	_inJump(false), _touchGround(false), _fall_immunity(true), _z0(position.z), _foodSaturationLevel(20)
 {
 	_position = position;
+	_spawnpoint = position;
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
 	_yaw = YAW;
 	_pitch = PITCH;
@@ -345,7 +346,7 @@ void Camera::tickUpdate( void )
 	if (_foodTickTimer == 80) {
 		if (_health_points < 20 && _foodLevel >= 18) {
 			++_health_points;
-			updateExhaustion(6);
+			updateExhaustion(EXHAUSTION_REGEN);
 			_healthUpdate = true;
 		} else if (_foodLevel == 0) {
 			if (--_health_points < 0) {
@@ -483,11 +484,34 @@ std::string Camera::getCamString( bool game_mode )
 	return (str);
 }
 
+// called upon /tp
+void Camera::setPos( glm::vec3 pos )
+{
+	_mtx.lock();
+	_position = pos;
+	_mtx.unlock();
+	_fall_immunity = true;
+	_z0 = pos.z;
+	_fall_time = 0;
+	_update = true;
+	_current_chunk_ptr = NULL;
+}
+
+void Camera::setSpawnpoint( glm::vec3 spawnpoint )
+{
+	_spawnpoint = spawnpoint;
+}
+
+glm::vec3 Camera::getSpawnpoint( void )
+{
+	return (_spawnpoint);
+}
+
 void Camera::respawn( void )
 {
 	_fall_time = 0;
 	_breathTime = 0;
-	_z0 = 66.0f;
+	_z0 = _spawnpoint.z;
 	_sprinting = false;
 	_healthUpdate = true;
 	_waterHead = false;
@@ -504,7 +528,9 @@ void Camera::respawn( void )
 	_fall_immunity = true;
 	_fall_distance = 0;
 
-	_position = {1.0f, -2.0f, 66.0f}; // TODO respawn in bed or at default position
+	_mtx.lock();
+	_position = _spawnpoint; // {1.0f, -2.0f, 66.0f};
+	_mtx.unlock();
 	_yaw = YAW;
 	_pitch = PITCH;
 	_update = false;

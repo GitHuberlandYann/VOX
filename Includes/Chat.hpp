@@ -5,17 +5,21 @@
 # include "Text.hpp"
 class OpenGL_Manager;
 
-# define NBR_CMDS 5
+# define NBR_CMDS 9
 namespace cmds {
 	enum {
 		HELP,
 		SEED,
 		GAMEMODE,
 		TIME,
-		CLEAR
+		CLEAR,
+		TP,
+		TELEPORT,
+		SP,
+		SPAWNPOINT
 	};
 }
-const std::array<std::string, NBR_CMDS> commands = {"/help", "/seed", "/gamemode", "/time", "/clear"};
+const std::array<std::string, NBR_CMDS> commands = {"/help", "/seed", "/gamemode", "/time", "/clear", "/tp", "/teleport", "/sp", "/spawnpoint"};
 
 # define NBR_ARG_TIME 4
 namespace args_time {
@@ -40,6 +44,10 @@ class Chat
 		void handle_help( int argc, std::vector<std::string> &argv );
 		void handle_gamemode( int argc, std::vector<std::string> &argv );
 		void handle_time( int argc, std::vector<std::string> &argv );
+		void handle_teleport( int argc, std::vector<std::string> &argv );
+		void handle_spawnpoint( int argc, std::vector<std::string> &argv );
+
+		float parseLocation( std::string &str, int coord );
 
 	public:
 		Chat( Text *text );

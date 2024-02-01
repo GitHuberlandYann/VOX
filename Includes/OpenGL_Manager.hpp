@@ -49,7 +49,6 @@ class OpenGL_Manager
 		UI *_ui;
 		Menu *_menu;
 
-		void resetInputsPtrs( void );
 
 		void update_visible_chunks( void );
 		void chunk_update( void );
@@ -82,7 +81,9 @@ class OpenGL_Manager
 		void create_shaders( void );
 		void setup_communication_shaders( void );
 		void load_texture( std::string texture_file );
+		void resetInputsPtrs( void );
 		void setGamemode( bool gamemode );
+		void getGamemode( void );
 		void main_loop( void );
 };
 
