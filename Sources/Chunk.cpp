@@ -176,7 +176,8 @@ int Chunk::get_block_type( siv::PerlinNoise perlin, int row, int col, int level,
 	int value = (level > surface_level) ? blocks::AIR : (level < surface_level - 2 || level < SEA_LEVEL) ? blocks::STONE : blocks::GRASS_BLOCK;
 	if (value) {
 		if (_continent == cont::CONT_MUSHROOM_FIELDS) {
-			return (blocks::DIAMOND_ORE);
+			return (blocks::GRASS_BLOCK);
+			// return (blocks::DIAMOND_ORE);
 		}
 		if (value == blocks::STONE) {
 			double undergound = perlin.noise3D_01((_startX + row) / 100.0f, (_startY + col) / 100.0f, level / 100.0f);
@@ -494,14 +495,14 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 		return ;
 	}
 	if (!pos.x && _neighbours[face_dir::MINUSX]) {
-		_neighbours[face_dir::MINUSX]->update_border(CHUNK_SIZE - 1, pos.y, pos.z, type, adding);
+		_neighbours[face_dir::MINUSX]->update_border(CHUNK_SIZE - 1, pos.y, pos.z, type, adding, face_dir::PLUSX);
 	} else if (pos.x == CHUNK_SIZE - 1 && _neighbours[face_dir::PLUSX]) {
-		_neighbours[face_dir::PLUSX]->update_border(0, pos.y, pos.z, type, adding);
+		_neighbours[face_dir::PLUSX]->update_border(0, pos.y, pos.z, type, adding, face_dir::MINUSX);
 	}
 	if (!pos.y && _neighbours[face_dir::MINUSY]) {
-		_neighbours[face_dir::MINUSY]->update_border(pos.x, CHUNK_SIZE - 1, pos.z, type, adding);
+		_neighbours[face_dir::MINUSY]->update_border(pos.x, CHUNK_SIZE - 1, pos.z, type, adding, face_dir::PLUSY);
 	} else if (pos.y == CHUNK_SIZE - 1 && _neighbours[face_dir::PLUSY]) {
-		_neighbours[face_dir::PLUSY]->update_border(pos.x, 0, pos.z, type, adding);
+		_neighbours[face_dir::PLUSY]->update_border(pos.x, 0, pos.z, type, adding, face_dir::MINUSY);
 	}
 }
 
@@ -614,7 +615,6 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		for (int index = 0; index < 6; index++) {
 			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 			if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
-
 			} else {
 				int adj_offset = ((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2];
 				int adj = _blocks[adj_offset];
@@ -623,8 +623,11 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 					_displayed_faces += !visible_face(adj, type, opposite_dir(index));
 				} else if (air_flower(adj, false, false, false)) {
 					_displayed_faces += !visible_face(adj, type, opposite_dir(index));
-				} else if (index != face_dir::MINUSZ && adj >= blocks::WATER) { // if water under, it is not updated
+				} else if (index != face_dir::MINUSZ && (adj & 0xFF) >= blocks::WATER) { // if water under, it is not updated
 					_fluids.insert(adj_offset);
+				} else if ((adj & 0xFF) == blocks::TORCH && ((adj >> 9) & 0x7) == opposite_dir(index)) {
+					std::cout << "rm adj torch" << std::endl;
+					remove_block(useInventory, {pos.x + delta[0], pos.y + delta[1], pos.z + delta[2]});
 				}
 			}
 		}
@@ -632,7 +635,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	handle_border_block(pos, air_flower(value, true, false, true), false); // if block at border of chunk gets deleted, we update neighbours. doing it after light spread
 	if (endZ != -1) { // sand fall
 		remove_block(false, {pos.x, pos.y, pos.z + 1});
-	} else if (pos.z < 255 && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS)) { // del flower if block underneath deleted
+	} else if (pos.z < 255 && type_above != blocks::TORCH && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS)) { // del flower if block underneath deleted
 		(type_above == blocks::GRASS)
 			? remove_block(false, {pos.x, pos.y, pos.z + 1}) // if grass above breaked block, don't collect it
 			: remove_block(useInventory, {pos.x, pos.y, pos.z + 1});
@@ -662,13 +665,39 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		if (previous < blocks::WATER) {
 			_hasWater = true;
 		}
+	} else if ((type & 0xFF) == blocks::TORCH) {
+		// check if orientation possible (wall available to hang from)
+		// if not, check if block underneath and change orientation
+		// else abort mission
+		int neighbour = 0;
+		switch ((type >> 9) & 0x7) {
+		case face_dir::PLUSX:
+			neighbour = getBlockAt(pos.x + 1, pos.y, pos.z, true);
+			break;
+		case face_dir::MINUSX:
+			neighbour = getBlockAt(pos.x - 1, pos.y, pos.z, true);
+			break;
+		case face_dir::PLUSY:
+			neighbour = getBlockAt(pos.x, pos.y + 1, pos.z, true);
+			break;
+		case face_dir::MINUSY:
+			neighbour = getBlockAt(pos.x, pos.y - 1, pos.z, true);
+			break;
+		}
+		if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || s_blocks[neighbour]->hasHitbox) {
+			type = blocks::TORCH + (face_dir::MINUSZ << 9);
+			neighbour = getBlockAt(pos.x, pos.y, pos.z - 1, false);
+			if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || s_blocks[neighbour]->hasHitbox) {
+				return ;
+			}
+		}
 	} else if (type >= blocks::POPPY && pos.z > 0) {
 		if (previous >= blocks::WATER) {
 			return ;
 		}
 		int type_below = _blocks[offset - 1] & 0xFF;
 		if (type == blocks::WHEAT_CROP) {
-		} else if (type != blocks::TORCH && type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
+		} else if (type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
 			return ; // can't place flower on something else than grass/dirt block
 		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY) || s_blocks[type_below]->hasHitbox) {
 			return ;
@@ -684,15 +713,17 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
 		type += (_camera->getOrientation() << 9);
 	}
+
 	_blocks[offset] = type;
 	_removed.erase(offset);
 	_added[offset] = type;
+	type &= 0xFF;
 	if (type == blocks::WATER) {
 		_fluids.insert(offset);
 		// std::cout << "adding water" << std::endl;
 		return ;
 	}
-	if ((type & 0xFF) == blocks::FURNACE) {
+	if (type == blocks::FURNACE) {
 		_furnaces[offset] = FurnaceInstance();
 	} else if (type == blocks::TORCH) {
 		std::cout << "add light" << std::endl;
@@ -1020,7 +1051,7 @@ void Chunk::checkFillVertices( void )
 	if (cnt > _nb_neighbours) {
 		if (cnt == 4) {
 			for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
-				if (a.second == blocks::TORCH) {
+				if ((a.second & 0xFF) == blocks::TORCH) {
 					int level = a.first & (WORLD_HEIGHT - 1);
 					int col = ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 					int row = ((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
@@ -1067,6 +1098,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 		if (previous_type == blocks::AIR || previous_type == blocks::BEDROCK) { // can't rm bedrock
 			return ;
 		}
+		// std::cout << "remove_block. displayed before " << _displayed_faces << std::endl;
 		remove_block(useInventory, pos);
 	} else if (modif == Modif::ADD) {
 		if (type == blocks::WHEAT_CROP && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z - 1] & 0xFF) != blocks::FARMLAND) { // can't place crop on something other than farmland
@@ -1388,7 +1420,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 
 // called by neighbour chunk if block change at border
 // posX and posY in [0; CHUNK_SIZE + 1] === _blocks compatible
-void Chunk::update_border( int posX, int posY, int level, int type, bool adding )
+void Chunk::update_border( int posX, int posY, int level, int type, bool adding, int origin )
 {
 	// std::cout << "got into update border of chunk " << _startX << ", " << _startY << ": " << _displayed_faces << std::endl;
 	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << ((adding) ? "add" : "rm") << " " << s_blocks[type]->name << " | real pos is " << _startX + posX << ", " << _startY + posY << std::endl;
@@ -1400,6 +1432,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 		_thread.join();
 	}
 	int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + level;
+	int value = _blocks[offset];
 	if (adding) {
 		// if (_blocks[offset] && _blocks[offset] < blocks::WATER) {
 		// 	std::cout << "\033[31mADDING IS REMOVING BLOCK\033[0m " << s_blocks[_blocks[offset]].name << std::endl;
@@ -1407,7 +1440,6 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 		if (type >= blocks::WATER) {
 			return ;
 		}
-		int value = _blocks[offset];
 		if (!air_flower(type, true, true, false) || !air_flower(value, false, false, false)) {
 			// std::cout << "took jump" << std::endl;
 			goto FILL; // this is only to update face shading TODO only update concerned faces
@@ -1417,21 +1449,25 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding 
 			_blocks[offset] += blocks::NOTVISIBLE;
 		}
 	} else {
-		if (_blocks[offset] & blocks::NOTVISIBLE) {
+		std::cout << "update border, value is " << s_blocks[value & 0xFF]->name << ", origin " << origin << ", orientation " << ((value >> 9) & 0x7) << std::endl;
+		if ((value & 0xFF) == blocks::TORCH && ((value >> 9) & 0x7) == origin) {
+			remove_block(true, {posX, posY, level}); // TODO handle useInventory instead of setting it to true by default
+		}
+		if (value & blocks::NOTVISIBLE) {
 			_blocks[offset] -= blocks::NOTVISIBLE;
 		}
-		if (_blocks[offset] >= blocks::WATER) {
+		if ((value & 0xFF) >= blocks::WATER) {
 			_hasWater = true;
 			_fluids.insert(offset);
 		}
 		if (type >= blocks::WATER) {
 			return ;
 		}
-		if (!air_flower(_blocks[offset], false, false, false)) {
+		if (!air_flower(value, false, false, false)) {
 			goto FILL;
 		}
 		// std::cout << s_blocks[_blocks[offset] & 0xFF]->name << " next " << s_blocks[type]->name << std::endl;
-		_displayed_faces += !visible_face(_blocks[offset], type, face_dir::MINUSX);
+		_displayed_faces += !visible_face(value, type, face_dir::MINUSX);
 	}
 	// std::cout << "got here" << std::endl;
 	// std::cout << "update border displayed " << _displayed_faces << std::endl;

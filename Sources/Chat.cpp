@@ -296,7 +296,9 @@ void Chat::sendMessage( std::string str )
 	_histo_cursor = 0;
 	str = trim_spaces(str);
 	if (!str[0]) return ;
-	_historic.push_back(str); // used to handle arrow action (ie command history)
+	if (!_historic.size() || str != _historic.back()) {
+		_historic.push_back(str); // used to handle arrow action (ie command history)
+	}
 	if (str[0] == '/') {
 		std::vector<std::string> parstr = split(str, ' ');
 		for (int index = 0; index < NBR_CMDS; ++index) {

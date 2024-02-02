@@ -225,7 +225,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 				if (type >= blocks::WATER) {
 					int pX = _startX + row;
 					int pY = _startY + col;
-					int above = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1];
+					int above = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1] & 0xFF;
 					std::array<int, 4> heights = water_heights(type, above, row, col, level);
 					if (above < blocks::WATER) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level + ((8.0f - heights[0]) / 8.0f))), {pX, pY + 1, level + 1, 1, -1, 0, heights[1], heights[3], heights[0], heights[2], 1}});

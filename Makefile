@@ -48,7 +48,8 @@ run: all
 	@./$(NAME)
 
 log: all
-	@./$(NAME) > .log 2> err.log
+	@mkdir -p Logs
+	@./$(NAME) > Logs/.log 2> Logs/err.log
 
 rer: re
 	@./$(NAME)

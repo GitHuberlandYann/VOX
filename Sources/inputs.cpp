@@ -57,6 +57,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 			res.prev_pos = i;
 		} else if (value) {
 			// we know cube is hit, now check if hitbox is hit (only on non cube-filling values)
+			// TODO move hitboxes of torches depending on the wall they hang on
 			if (!s_blocks[value]->hasHitbox || line_cube_intersection(_camera->getPos() + glm::vec3(0, 0, 1 + EYE_LEVEL), _camera->getDir(), glm::vec3(i) + s_blocks[value]->hitboxCenter, s_blocks[value]->hitboxHalfSize)) {
 				chunk_hit = chunk;
 				res.pos = i;
@@ -132,6 +133,14 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	} else if (type == blocks::AIR || type >= blocks::STICK) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
+	} else if (type == blocks::TORCH) {
+		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
+			type += (face_dir::MINUSZ << 9);
+		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
+			type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::PLUSX : face_dir::MINUSX) << 9);
+		} else {
+			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
+		}
 	}
 
 	if (_block_hit.value) { // rm if statement for nice cheat

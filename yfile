@@ -32,12 +32,14 @@ TODOS:
 	- stairs
 	- chests
 	- doors
-	- bed + respawn point
+	- bed
 	- entity shadow
 	- rework clouds
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
 	- upon world generation, place player on ground by using continentalness
+	- 3D items in inventory
+	- water ligth level
     - lava + nether
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
@@ -100,7 +102,7 @@ DONE:
 	- overall lighting (corner shade, sky light + decrease 1 per block = dark in caves + block light)
 	- smooth lighting using corner max
 	- update skylight on leave break
-	- torches
+	- torches can be placed on walls
     - FOV changed on isRunning change
     - stop fov run if player idle
 	- water if air && level > surface_level && level < 64
@@ -225,7 +227,9 @@ Some info:
 	- all
 		- 0xFF  type
 		- 0x100 NotVisible
-	- Furnace + table craft 0x7 << 9 == orientation, 0x1000 == furnace ON/OFF
+	- Furnace 0x7 << 9 == orientation, 0x1000 == furnace ON/OFF
+	- table craft 0x7 << 9 == orientation
+	- torch 0x7 << 9 == orientation
 	- Farmland 0x1 << 9 == WET_FARMLAND, 0x7 << 10 == wetness
 	- Leaves 0x1 << 9 == hand placed
 	- saplings 0x1 << 9 == growth stage
