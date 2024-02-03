@@ -9,6 +9,8 @@ void OpenGL_Manager::resetInputsPtrs( void )
 {
 	current_chunk_ptr = NULL;
 	chunk_hit = NULL;
+	_perimeter_chunks.clear();
+	_visible_chunks.clear();
 }
 
 t_hit OpenGL_Manager::get_block_hit( void )

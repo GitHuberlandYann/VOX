@@ -427,9 +427,8 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 void OpenGL_Manager::setGamemode( bool gamemode )
 {
 	_game_mode = gamemode;
+	_camera->resetFall();
 	_ui->chatMessage(std::string("Gamemode set to ") + ((gamemode) ? "SURVIVAL" : "CREATIVE"));
-	_camera->_fall_immunity = true;
-	_camera->_z0 = _camera->getPos().z;
 }
 
 void OpenGL_Manager::getGamemode( void )

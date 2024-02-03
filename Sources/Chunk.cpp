@@ -1517,24 +1517,24 @@ bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
 bool Chunk::collisionBoxWater( glm::vec3 pos, float width, float height )
 {
 	glm::ivec3 top0 = {glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height)};
-	if (getBlockAt(top0.x, top0.y, top0.z, true) >= blocks::WATER) {
+	if ((getBlockAt(top0.x, top0.y, top0.z, true) & 0xFF) >= blocks::WATER) {
 		return (true);
 	}
 	glm::ivec3 top1 = {glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height)};
 	if (top1 != top0) {
-		if (getBlockAt(top1.x, top1.y, top1.z, true) >= blocks::WATER) {
+		if ((getBlockAt(top1.x, top1.y, top1.z, true) & 0xFF) >= blocks::WATER) {
 			return (true);
 		}
 	}
 	glm::ivec3 top2 = {glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height)};
 	if (top2 != top0) {
-		if (getBlockAt(top2.x, top2.y, top2.z, true) >= blocks::WATER) {
+		if ((getBlockAt(top2.x, top2.y, top2.z, true) & 0xFF) >= blocks::WATER) {
 			return (true);
 		}
 	}
 	glm::ivec3 top3 = {glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height)};
 	if (top3 != top0) {
-		if (getBlockAt(top3.x, top3.y, top3.z, true) >= blocks::WATER) {
+		if ((getBlockAt(top3.x, top3.y, top3.z, true) & 0xFF) >= blocks::WATER) {
 			return (true);
 		}
 	}
@@ -1569,7 +1569,7 @@ void Chunk::applyGravity( void )
 			return ;
 		}
 	} else { // falling
-		for (float posZ = saved_posZ; posZ - 1 > pos.z; posZ--) {
+		for (float posZ = saved_posZ; posZ > pos.z; posZ--) {
 			if (collisionBox({pos.x, pos.y, posZ}, 0.3f, 0)) {
 				_camera->touchGround(glm::floor((posZ + 1)));
 				if (saved_posZ != _camera->getPos().z) {

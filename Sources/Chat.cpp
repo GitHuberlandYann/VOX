@@ -79,6 +79,8 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t\tTeleports the executor to a certain position.");
 						chatMessage("\t/teleport spawn");
 						chatMessage("\t\tTeleports the executor to his spawn point.");
+						chatMessage("\t/teleport -");
+						chatMessage("\t\tTeleports the executor to the last point he tped from.");
 						break ;
 					case cmds::SP:
 					case cmds::SPAWNPOINT:
@@ -180,6 +182,12 @@ void Chat::handle_teleport( int argc, std::vector<std::string> &argv )
 {
 	if (argc == 2 && !argv[1].compare("spawn")) {
 		glm::vec3 pos = _oglMan->_camera->getSpawnpoint();
+		_oglMan->_camera->setPos(pos);
+		_oglMan->resetInputsPtrs();
+		chatMessage("Player pos set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));
+		return ;
+	} else if (argc == 2 && !argv[1].compare("-")) {
+		glm::vec3 pos = _oglMan->_camera->getLastTp();
 		_oglMan->_camera->setPos(pos);
 		_oglMan->resetInputsPtrs();
 		chatMessage("Player pos set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));

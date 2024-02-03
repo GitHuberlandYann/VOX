@@ -4,12 +4,13 @@ extern std::mutex mtx;
 
 Camera::Camera( glm::vec3 position )
 	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0),
-	_foodTickTimer(0), _foodExhaustionLevel(0), _sprinting(false), _sneaking(false), _healthUpdate(false),
+	_foodTickTimer(0), _foodExhaustionLevel(0), _z0(position.z), _fall_immunity(true), _sprinting(false), _sneaking(false), _healthUpdate(false),
 	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
-	_inJump(false), _touchGround(false), _fall_immunity(true), _z0(position.z), _foodSaturationLevel(20)
+	_inJump(false), _touchGround(false), _foodSaturationLevel(20)
 {
 	_position = position;
 	_spawnpoint = position;
+	_lastTp = {0, 0, 0};
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
 	_yaw = YAW;
 	_pitch = PITCH;
@@ -278,6 +279,14 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z )
 	}
 }
 
+void Camera::resetFall( void )
+{
+	_fall_immunity = true;
+	_z0 = getPos().z;
+	_fall_time = 0;
+	_inJump = false;
+}
+
 // z = z0 + vt + at² / 2
 void Camera::applyGravity( void )
 {
@@ -488,6 +497,7 @@ std::string Camera::getCamString( bool game_mode )
 void Camera::setPos( glm::vec3 pos )
 {
 	_mtx.lock();
+	_lastTp = _position;
 	_position = pos;
 	_mtx.unlock();
 	_fall_immunity = true;
@@ -505,6 +515,11 @@ void Camera::setSpawnpoint( glm::vec3 spawnpoint )
 glm::vec3 Camera::getSpawnpoint( void )
 {
 	return (_spawnpoint);
+}
+
+glm::vec3 Camera::getLastTp( void )
+{
+	return (_lastTp);
 }
 
 void Camera::respawn( void )

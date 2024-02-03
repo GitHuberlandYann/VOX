@@ -46,7 +46,7 @@ enum Camera_Movement {
 class Camera
 {
 	private:
-		glm::vec3 _position, _spawnpoint, _front, _up, _right, _world_up;
+		glm::vec3 _position, _spawnpoint, _lastTp, _front, _up, _right, _world_up;
 		glm::vec2 _front2, _right2;
 		float _yaw, _pitch;
 		float _deltaTime, _fall_time, _breathTime;
@@ -54,6 +54,7 @@ class Camera
 		float _fall_distance;
 		int _foodTickTimer;
 		float _foodExhaustionLevel;
+		float _z0, _fall_immunity;
 		bool _sprinting, _sneaking, _healthUpdate, _waterHead, _waterFeet;
 		std::mutex _mtx;
 		Chunk *_current_chunk_ptr;
@@ -65,8 +66,8 @@ class Camera
 	public:
 		glm::ivec3 _current_block;
 		int _movement_speed, _health_points, _foodLevel;
-		bool _update, _fovUpdate, _inJump, _touchGround, _fall_immunity;
-		float _z0, _foodSaturationLevel;
+		bool _update, _fovUpdate, _inJump, _touchGround;
+		float _foodSaturationLevel;
 
 		Camera( glm::vec3 position );
 		~Camera( void );
@@ -88,6 +89,7 @@ class Camera
 		void update_movement_speed( GLint key_cam_speed );
 		void moveFly( GLint v, GLint h, GLint z );
 		void moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z );
+		void resetFall( void );
 		void applyGravity( void );
 		void touchGround( float value );
 		void touchCeiling( float value );
@@ -108,6 +110,7 @@ class Camera
 		void setPos( glm::vec3 pos );
 		void setSpawnpoint( glm::vec3 spawnpoint );
 		glm::vec3 getSpawnpoint( void );
+		glm::vec3 getLastTp( void );
 		void respawn( void );
 };
 

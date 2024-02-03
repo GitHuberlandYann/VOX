@@ -249,6 +249,7 @@ void DayCycle::loadWorld( std::ofstream & ofs, std::string line )
 
 void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 {
+	_lastTp = {0, 0, 0};
 	int index;
 	std::string line;
 	while (!indata.eof()) {

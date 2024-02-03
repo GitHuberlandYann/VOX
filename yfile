@@ -29,6 +29,8 @@ TODOS:
 	- hitbox change + no fall on sneak
     - skybox
 	- particles ?
+	- limit floodfill algo for lighting (but be smart about it)
+	- bow and arrow
 	- stairs
 	- chests
 	- doors
@@ -41,6 +43,7 @@ TODOS:
 	- 3D items in inventory
 	- water ligth level
     - lava + nether
+	- multiplayer ?
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
@@ -56,7 +59,7 @@ IN PROGRES:
 	- slabs
 	- save entities
 	- universal use of tps instead of deltatimes
-	- commands /say /save /setblock /sc(/screenshot) /kill
+	- commands /say /me /save /setblock /sc(/screenshot) /kill
 
 DONE:
 	- pthread chunk creation
