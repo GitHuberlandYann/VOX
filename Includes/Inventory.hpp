@@ -6,7 +6,7 @@
 class Chunk;
 
 # define IRECEIPT_SIZE 24
-# define RECEIPT_SIZE 85
+# define RECEIPT_SIZE 86
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
@@ -99,6 +99,7 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STONE_HOE, 1},
 	{blocks::IRON_INGOT, blocks::IRON_INGOT, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::IRON_HOE, 1},
 	{blocks::DIAMOND, blocks::DIAMOND, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::DIAMOND_HOE, 1},
+	{blocks::AIR, blocks::STICK, blocks::STICK, blocks::STICK, blocks::AIR, blocks::STICK, blocks::AIR, blocks::STICK, blocks::STICK, blocks::BOW, 1},
 	
 	{blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL, blocks::COAL_BLOCK, 1},
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::COAL_BLOCK, blocks::COAL, 9},

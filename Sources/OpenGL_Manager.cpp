@@ -15,7 +15,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
 		_esc_released(true), _e_released(true),
-		_break_time(0), _eat_timer(0), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0})
+		_break_time(0), _eat_timer(0), _bow_timer(0), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0})
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_world_name = "default.json";
@@ -485,10 +485,10 @@ void OpenGL_Manager::main_loop( void )
 			lastTime += 1.0;
 		}
 		glUseProgram(_shaderProgram); // must be before DayCycle tickUpdate
-		if (currentTime - lastGameTick >= 0.05) {
+		if (currentTime - lastGameTick >= TICK) {
 			tickUpdate = true;
 			++nbTicks;
-			lastGameTick += 0.05;
+			lastGameTick += TICK;
 			fluidUpdate = (nbTicks == 5 || nbTicks == 10 || nbTicks == 15 || nbTicks == 20);
 			animUpdate = (nbTicks & 0x1);
 			if (!_paused || _menu->getState() >= INVENTORY_MENU) {
@@ -529,7 +529,7 @@ void OpenGL_Manager::main_loop( void )
 					c->updateFluids();
 				}
 				if (tickUpdate) {
-					c->updateTick();
+					c->tickUpdate();
 				}
 				c->updateEntities(_entities, deltaTime);
 			}

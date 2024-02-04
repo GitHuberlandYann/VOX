@@ -111,7 +111,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit.pos));
 		return ;
 	}
-	int type = _inventory->getCurrentSlot();
+	int type = _hand_content;
 	// std::cout << "aiming " << s_blocks[type]->name << " towards " << s_blocks[_block_hit.value]->name << std::endl;;
 	if (type == blocks::WATER_BUCKET) { // use it like any other block
 		type = blocks::WATER;
@@ -359,12 +359,15 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 
 	// add and remove blocks
+	mtx_inventory.lock();
+	_hand_content = _inventory->getCurrentSlot();
+	mtx_inventory.unlock();
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		if (_game_mode == SURVIVAL) {
 			_break_time += deltaTime;
 			mtx_inventory.lock();
-			float break_time = s_blocks[_block_hit.value]->getBreakTime(_inventory->getCurrentSlot());
-			bool can_collect = s_blocks[_block_hit.value]->canCollect(_inventory->getCurrentSlot());
+			float break_time = s_blocks[_block_hit.value]->getBreakTime(_hand_content);
+			bool can_collect = s_blocks[_block_hit.value]->canCollect(_hand_content);
 			mtx_inventory.unlock();
 			if (_block_hit.value != blocks::AIR && _break_time >= break_time) {
 				_break_time = 0;
@@ -393,26 +396,34 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_break_frame = _outline;
 	}
 	if (!_key_rm_block && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT)) { // I don't want to try to del and add at the same time
-		mtx_inventory.lock();
-		int handContent = _inventory->getCurrentSlot();
-		mtx_inventory.unlock();
-		if (_game_mode == SURVIVAL && s_blocks[handContent]->isFood) {
+		if (_game_mode == SURVIVAL && s_blocks[_hand_content]->isFood) {
 			_eat_timer += deltaTime;
 			if (_eat_timer >= 1.61f) {
-				if (_camera->canEatFood(handContent)) {
+				if (_camera->canEatFood(_hand_content)) {
 					mtx_inventory.lock();
 					_inventory->removeBlock(false);
 					mtx_inventory.unlock();
 				}
 				_eat_timer = 0;
 			}
+		} else if (_hand_content == blocks::BOW) {
+			_bow_timer += deltaTime;
 		} else if (++_key_add_block == 1) {
 			handle_add_rm_block(true, _game_mode == SURVIVAL);
 		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+		if (_hand_content == blocks::BOW && _bow_timer && current_chunk_ptr) {
+			// TODO rm arrow from inventory (once implemented)
+			mtx_inventory.lock();
+			_inventory->decrementDurabitilty();
+			mtx_inventory.unlock();
+			current_chunk_ptr->shootArrow(_bow_timer);
+		}
 		_key_add_block = 0;
 		_eat_timer = 0;
+		_bow_timer = 0;
 	}
+	// drop item
 	if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
 		mtx_inventory.lock();
 		glm::ivec3 details = _inventory->removeBlock(true);

@@ -182,6 +182,7 @@ class Chunk
 
 		int isHit( glm::ivec3 pos );
 		void handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif );
+		void shootArrow( float timer );
 		void updateBreak( glm::ivec4 block_hit, int frame );
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread );
 		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
@@ -195,7 +196,7 @@ class Chunk
         void drawArray( GLint & counter, GLint &face_counter );
 		void updateFurnaces( double currentTime );
 		void updateFluids( void );
-		void updateTick( void );
+		void tickUpdate( void );
 		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
 		void drawSky( GLint & counter, GLint &face_counter );
 		void drawWater( GLint & counter, GLint &face_counter );

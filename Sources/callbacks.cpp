@@ -73,13 +73,15 @@ namespace INPUT
 		++cursor;
 	}
 
-	void moveCursor( bool right )
+	void moveCursor( bool right, bool control )
 	{
 		cursor += (right) ? 1 : -1;
 		if (cursor > static_cast<int>(message.size())) {
 			cursor = message.size();
 		} else if (cursor < 0) {
 			cursor = 0;
+		} else if (control && message[cursor] != ' ') {
+			moveCursor(right, control);
 		}
 	}
 

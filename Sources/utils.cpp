@@ -54,13 +54,11 @@ std::vector<std::string> split( std::string &str, char sep )
 	std::string tmp = "";
 	std::vector<std::string> res;
 	
-	for (int i = 0; i < static_cast<int>(str.size()); ++i) {
+	for (size_t i = 0; i < str.size(); ++i) {
 		if (str[i] != sep) {
 			tmp += str[i];
-		} else {
-			if (tmp[0]) {
-				res.push_back(tmp);
-			}
+		} else if (tmp[0]) {
+			res.push_back(tmp);
 			tmp = "";
 		}
 	}

@@ -37,6 +37,6 @@ void main()
 	if (((specifications >> 19) & 0x7) > 0) {
 		faceLight -= 8 + (((specifications >> 19) & 0x7) << 2);
 	}
-	FaceShadow = max(0.05, (max(10, faceLight - 7 * shadow) - 17 * cornerLight) / 100.0f);
+	FaceShadow = max(0.05, (max(10, faceLight - 7 * shadow) - 17 * cornerLight) * 0.01f);
 	zDist = gl_Position.z;
 }

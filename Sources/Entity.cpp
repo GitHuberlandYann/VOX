@@ -1,8 +1,8 @@
 #include "Chunk.hpp"
 
-Entity::Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec2 dir, bool thrown, int value, int amount, int dura )
-    : _value(value), _amount(amount), _dura(dura), _thrown(thrown), _lifeTime(0),
-		_pos(position), _dir(dir, 1.0f), _chunk(chunk), _inventory(inventory)
+Entity::Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool solid, bool thrown, int value, int amount, int dura )
+    : _value(value), _amount(amount), _dura(dura), _solid(solid), _thrown(thrown), _lifeTime(0),
+		_pos(position), _dir(dir), _chunk(chunk), _inventory(inventory)
 {
     // std::cout << "new Entity at " << position.x << ", " << position.y << ", " << position.z << ": " << s_blocks[value]->name << std::endl;
 	_chunk_pos = {chunk->getStartX(), chunk->getStartY()};
@@ -29,6 +29,63 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
     if (_lifeTime > 300 || _pos.z < 0) {
         return (true);
     }
+
+	if (_solid) { // fow now only arrows
+		if (_dir.x && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
+			_pos.x += _dir.x * deltaTime;
+			if (_dir.y && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
+				_pos.y += _dir.y * deltaTime;
+				if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime), true), false, false, false)) {
+					_pos.z += _dir.z * deltaTime;
+					_dir.z -= 0.1f;
+				} else {
+					_pos.y -= _dir.y * deltaTime;
+					_pos.x -= _dir.x * deltaTime;
+				}
+			} else {
+				_pos.x -= _dir.x * deltaTime;
+			}
+		}
+		
+		glm::vec3 dir = glm::normalize(_dir); // might want to do this once and save it
+		// first horizontal plane
+		glm::vec3 p1 = {_pos.x - 1.25f / 16 * dir.y, _pos.y + 6.75f / 16 * dir.x, _pos.z};
+		glm::vec3 p3 = {_pos.x + 6.75f / 16 * dir.y, _pos.y - 1.25f / 16 * dir.x, _pos.z};
+		glm::vec3 p0 = {_pos.x - 1.25f / 16 * dir.y - dir.x * 0.5f, _pos.y + 6.75f / 16 * dir.x - dir.y * 0.5f, _pos.z - dir.z * 0.5f};
+		glm::vec3 p2 = {_pos.x + 6.75f / 16 * dir.y - dir.x * 0.5f, _pos.y - 1.25f / 16 * dir.x - dir.y * 0.5f, _pos.z - dir.z * 0.5f};
+
+		int itemLight = _chunk->computePosLight(_pos);
+	    int spec = s_blocks[_value]->texX() - 4 + (s_blocks[_value]->texY() << 4) + (0 << 19) + (itemLight << 24);
+	    std::pair<int, glm::vec3> v0 = {spec, p0};
+	    std::pair<int, glm::vec3> v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
+	    std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
+	    std::pair<int, glm::vec3> v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+	    arr.push_back(v0);
+	    arr.push_back(v1);
+	    arr.push_back(v2);
+	    arr.push_back(v1);
+	    arr.push_back(v3);
+	    arr.push_back(v2);
+
+		// then vertical plane
+	    spec = s_blocks[_value]->texX() - 3 + (s_blocks[_value]->texY() << 4) + (0 << 19) + (itemLight << 24);
+		p1 = {_pos.x, _pos.y + 6.75f / 16 * dir.x, _pos.z - 1.25f / 16 * dir.y};
+		p3 = {_pos.x, _pos.y - 1.25f / 16 * dir.x, _pos.z + 6.75f / 16 * dir.y};
+		p0 = {_pos.x - dir.x * 0.5f, _pos.y + 6.75f / 16 * dir.x - dir.y * 0.5f, _pos.z - 1.25f / 16 * dir.y - dir.z * 0.5f};
+		p2 = {_pos.x - dir.x * 0.5f, _pos.y - 1.25f / 16 * dir.x - dir.y * 0.5f, _pos.z + 6.75f / 16 * dir.y - dir.z * 0.5f};
+
+		v0 = {spec, p0};
+	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
+	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
+	    v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+	    arr.push_back(v0);
+	    arr.push_back(v1);
+	    arr.push_back(v2);
+	    arr.push_back(v1);
+	    arr.push_back(v3);
+	    arr.push_back(v2);
+		return (false);
+	}
 
 	// if item in block, push it out of block.
 	// first try on the sides, then push it upwards

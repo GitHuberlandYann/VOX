@@ -10,7 +10,7 @@ void character_callback(GLFWwindow* window, unsigned int codepoint);
 namespace INPUT
 {
 	void character_callback( GLFWwindow* window, unsigned int codepoint );
-	void moveCursor( bool right );
+	void moveCursor( bool right, bool control );
 	void resetMessage( void );
 	void rmLetter( void );
 	std::string getCurrentMessage( void );

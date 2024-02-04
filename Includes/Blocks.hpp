@@ -89,6 +89,8 @@ namespace blocks {
 		STONE_PICKAXE,
 		IRON_PICKAXE,
 		DIAMOND_PICKAXE,
+		BOW,
+		ARROW,
 		COAL = 96,
 		CHARCOAL,
 		IRON_INGOT,
@@ -1198,6 +1200,26 @@ struct DiamondPickaxe : Block {
 			durability = 1561;
 			textureX = 8;
 			textureY = 12;
+		}
+};
+
+struct Bow : Block {
+	public:
+		Bow() {
+			name = "BOW";
+			stackable = false;
+			durability = 384;
+			textureX = 8;
+			textureY = 13;
+		}
+};
+
+struct Arrow : Block {
+	public:
+		Arrow() {
+			name = "ARROW";
+			textureX = 8;
+			textureY = 14;
 		}
 };
 

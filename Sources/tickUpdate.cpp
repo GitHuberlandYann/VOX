@@ -252,7 +252,7 @@ void Chunk::turnDirtToGrass( int posX, int posY, int posZ )
 }
 
 // randomly select 3 blocks for each subchunk of 4096 blocks and update them
-void Chunk::updateTick( void )
+void Chunk::tickUpdate( void )
 {
 	if (_thread.joinable()) {
 		_thread.join();
