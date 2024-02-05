@@ -68,7 +68,7 @@ std::vector<std::string> split( std::string &str, char sep )
 	return (res);
 }
 
-void compile_shader( GLuint ptrShader, std::string name )
+static void compile_shader( GLuint ptrShader, std::string name )
 {
 	glCompileShader(ptrShader);
 
@@ -83,6 +83,49 @@ void compile_shader( GLuint ptrShader, std::string name )
 		std::cerr << name << " shader did not compile, error log:" << std::endl << buffer << std::endl;
 		exit(1);
 	}
+}
+
+GLuint createShaderProgram( std::string vertex, std::string geometry, std::string fragment )
+{
+	std::string vertex_shader_data = get_file_content("Sources/Shaders/" + vertex + ".glsl");
+	char *vertexSource = &vertex_shader_data[0];
+
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexSource, NULL);
+	compile_shader(vertexShader, vertex);
+
+	GLuint geometryShader;
+	if (geometry[0]) {
+		std::string geometry_shader_data = get_file_content("Sources/Shaders/" + geometry + ".glsl");
+		char *geometrySource = &geometry_shader_data[0];
+
+		geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+		glShaderSource(geometryShader, 1, &geometrySource, NULL);
+		compile_shader(geometryShader, geometry);
+	}
+
+	std::string fragment_shader_data = get_file_content("Sources/Shaders/" + fragment + ".glsl");
+	char *fragmentSource = &fragment_shader_data[0];
+
+	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+	compile_shader(fragmentShader, fragment);
+
+	// Combining shaders into a program
+	GLuint shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	if (geometry[0]) {
+		glAttachShader(shaderProgram, geometryShader);
+	}
+	glAttachShader(shaderProgram, fragmentShader);
+
+	glDeleteShader(fragmentShader);
+	if (geometry[0]) {
+		glDeleteShader(geometryShader);
+	}
+    glDeleteShader(vertexShader);
+
+	return (shaderProgram);
 }
 
 void check_glstate( std::string str, bool displayDebug )

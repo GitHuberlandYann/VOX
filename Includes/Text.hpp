@@ -12,7 +12,7 @@ class Text
 {
 	private:
         GLuint _vao, _vbo;
-		GLuint _shaderProgram, _vertexShader, _geometryShader, _fragmentShader;
+		GLuint _shaderProgram;
 		GLuint *_textures;
 		std::vector<int> _texts;
 

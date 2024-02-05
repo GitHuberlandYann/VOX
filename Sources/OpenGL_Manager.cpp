@@ -23,7 +23,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_inventory = new Inventory();
 	_ui = new UI(*_inventory, *_camera);
 	_ui->getChatPtr()->setOGLManPtr(this);
-	_menu = new Menu(*_inventory, _ui->getTextPtr(), _ui->getChatPtr());
+	_menu = new Menu(*_inventory, _ui);
 }
 
 OpenGL_Manager::~OpenGL_Manager( void )
@@ -241,24 +241,7 @@ void OpenGL_Manager::create_shaders( void )
 	_menu->setShaderProgram(_ui->getShaderProgram());
 
 	// then setup the sky/water shader
-	std::string sky_vertex_shader_data = get_file_content("Sources/Shaders/sky_vertex.glsl");
-	char *sky_vertexSource = &sky_vertex_shader_data[0];
-
-	GLuint skyVertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(skyVertexShader, 1, &sky_vertexSource, NULL);
-	compile_shader(skyVertexShader, "sky_vertex");
-
-	std::string sky_fragment_shader_data = get_file_content("Sources/Shaders/sky_fragment.glsl");
-	char *sky_fragmentSource = &sky_fragment_shader_data[0];
-
-	GLuint skyFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(skyFragmentShader, 1, &sky_fragmentSource, NULL);
-	compile_shader(skyFragmentShader, "sky_fragment");
-
-	// Combining shaders into a program
-	_skyShaderProgram = glCreateProgram();
-	glAttachShader(_skyShaderProgram, skyVertexShader);
-	glAttachShader(_skyShaderProgram, skyFragmentShader);
+	_skyShaderProgram = createShaderProgram("sky_vertex", "", "sky_fragment");
 
 	glBindFragDataLocation(_skyShaderProgram, 0, "outColor");
 
@@ -267,30 +250,10 @@ void OpenGL_Manager::create_shaders( void )
 	glLinkProgram(_skyShaderProgram);
 	glUseProgram(_skyShaderProgram);
 
-	glDeleteShader(skyFragmentShader);
-    glDeleteShader(skyVertexShader);
-
 	check_glstate("skyShader program successfully created", true);
 	
 	// then setup the main shader
-	std::string vertex_shader_data = get_file_content("Sources/Shaders/vertex.glsl");
-	char *vertexSource = &vertex_shader_data[0];
-
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexSource, NULL);
-	compile_shader(vertexShader, "vertex");
-
-	std::string fragment_shader_data = get_file_content("Sources/Shaders/fragment.glsl");
-	char *fragmentSource = &fragment_shader_data[0];
-
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-	compile_shader(fragmentShader, "fragment");
-
-	// Combining shaders into a program
-	_shaderProgram = glCreateProgram();
-	glAttachShader(_shaderProgram, vertexShader);
-	glAttachShader(_shaderProgram, fragmentShader);
+	_shaderProgram = createShaderProgram("vertex", "", "fragment");
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
@@ -299,9 +262,6 @@ void OpenGL_Manager::create_shaders( void )
 
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
-
-	glDeleteShader(fragmentShader);
-    glDeleteShader(vertexShader);
 
 	check_glstate("Shader program successfully created", true);
 }

@@ -137,6 +137,7 @@ struct Block {
 		float break_time_stone = FLT_MAX;
 		float break_time_iron = FLT_MAX;
 		float break_time_diamond = FLT_MAX;
+		bool item3D = true;
 		int textureX = 1;
 		int textureY = 15;
 
@@ -708,6 +709,7 @@ struct Poppy : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 6;
 			textureY = 0;
 		}
@@ -724,6 +726,7 @@ struct Dandelion : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 6;
 			textureY = 1;
 		}
@@ -740,6 +743,7 @@ struct BlueOrchid : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 6;
 			textureY = 2;
 		}
@@ -756,6 +760,7 @@ struct Allium : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 6;
 			textureY = 3;
 		}
@@ -772,6 +777,7 @@ struct CornFlower : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 6;
 			textureY = 4;
 		}
@@ -788,6 +794,7 @@ struct PinkTulip : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 6;
 			textureY = 5;
 		}
@@ -801,6 +808,7 @@ struct Grass : Block {
 			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 6;
 			textureY = 6;
 		}
@@ -814,6 +822,7 @@ struct SugarCane : Block {
 			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.2f;
+			item3D = false;
 			textureX = 6;
 			textureY = 7;
 		}
@@ -832,6 +841,7 @@ struct DeadBush : Block {
 			fuel_time = 5;
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 6;
 			textureY = 8;
 		}
@@ -850,6 +860,7 @@ struct OakSapling : Block {
 			fuel_time = 5;
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 6;
 			textureY = 9;
 		}
@@ -867,6 +878,7 @@ struct Torch : Block {
 			light_level = 14;
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 6;
 			textureY = 10;
 		}
@@ -883,6 +895,7 @@ struct WheatCrop : Block {
 			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
 			byHand = true;
 			break_time_hand = 0.05f;
+			item3D = false;
 			textureX = 7;
 		}
 		virtual int texY(  face_dir dir, int offset ) const {
@@ -1060,6 +1073,7 @@ struct Stick : Block {
 			name = "STICK";
 			isFuel = true;
 			fuel_time = 5;
+			item3D = false;
 			textureX = 8;
 			textureY = 0;
 		}
@@ -1073,6 +1087,7 @@ struct WoodenShovel : Block {
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
+			item3D = false;
 			textureX = 8;
 			textureY = 1;
 		}
@@ -1084,6 +1099,7 @@ struct StoneShovel : Block {
 			name = "STONE_SHOVEL";
 			stackable = false;
 			durability = 131;
+			item3D = false;
 			textureX = 8;
 			textureY = 2;
 		}
@@ -1095,6 +1111,7 @@ struct IronShovel : Block {
 			name = "IRON_SHOVEL";
 			stackable = false;
 			durability = 250;
+			item3D = false;
 			textureX = 8;
 			textureY = 3;
 		}
@@ -1106,6 +1123,7 @@ struct DiamondShovel : Block {
 			name = "DIAMOND_SHOVEL";
 			stackable = false;
 			durability = 1561;
+			item3D = false;
 			textureX = 8;
 			textureY = 4;
 		}
@@ -1119,6 +1137,7 @@ struct WoodenAxe : Block {
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
+			item3D = false;
 			textureX = 8;
 			textureY = 5;
 		}
@@ -1130,6 +1149,7 @@ struct StoneAxe : Block {
 			name = "STONE_AXE";
 			stackable = false;
 			durability = 131;
+			item3D = false;
 			textureX = 8;
 			textureY = 6;
 		}
@@ -1141,6 +1161,7 @@ struct IronAxe : Block {
 			name = "IRON_AXE";
 			stackable = false;
 			durability = 250;
+			item3D = false;
 			textureX = 8;
 			textureY = 7;
 		}
@@ -1152,6 +1173,7 @@ struct DiamondAxe : Block {
 			name = "DIAMOND_AXE";
 			stackable = false;
 			durability = 1561;
+			item3D = false;
 			textureX = 8;
 			textureY = 8;
 		}
@@ -1165,6 +1187,7 @@ struct WoodenPickaxe : Block {
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
+			item3D = false;
 			textureX = 8;
 			textureY = 9;
 		}
@@ -1176,6 +1199,7 @@ struct StonePickaxe : Block {
 			name = "STONE_PICKAXE";
 			stackable = false;
 			durability = 131;
+			item3D = false;
 			textureX = 8;
 			textureY = 10;
 		}
@@ -1187,6 +1211,7 @@ struct IronPickaxe : Block {
 			name = "IRON_PICKAXE";
 			stackable = false;
 			durability = 250;
+			item3D = false;
 			textureX = 8;
 			textureY = 11;
 		}
@@ -1198,6 +1223,7 @@ struct DiamondPickaxe : Block {
 			name = "DIAMOND_PICKAXE";
 			stackable = false;
 			durability = 1561;
+			item3D = false;
 			textureX = 8;
 			textureY = 12;
 		}
@@ -1209,6 +1235,7 @@ struct Bow : Block {
 			name = "BOW";
 			stackable = false;
 			durability = 384;
+			item3D = false;
 			textureX = 8;
 			textureY = 13;
 		}
@@ -1218,6 +1245,7 @@ struct Arrow : Block {
 	public:
 		Arrow() {
 			name = "ARROW";
+			item3D = false;
 			textureX = 8;
 			textureY = 14;
 		}
@@ -1229,6 +1257,7 @@ struct Coal : Block {
 			name = "COAL";
 			isFuel = true;
 			fuel_time = 80;
+			item3D = false;
 			textureX = 9;
 			textureY = 0;
 		}
@@ -1240,6 +1269,7 @@ struct Charcoal : Block {
 			name = "CHARCOAL";
 			isFuel = true;
 			fuel_time = 80;
+			item3D = false;
 			textureX = 9;
 			textureY = 1;
 		}
@@ -1249,6 +1279,7 @@ struct IronIngot : Block {
 	public:
 		IronIngot() {
 			name = "IRON_INGOT";
+			item3D = false;
 			textureX = 9;
 			textureY = 2;
 		}
@@ -1258,6 +1289,7 @@ struct Diamond : Block {
 	public:
 		Diamond() {
 			name = "DIAMOND";
+			item3D = false;
 			textureX = 9;
 			textureY = 3;
 		}
@@ -1267,6 +1299,7 @@ struct Bucket : Block {
 	public:
 		Bucket() {
 			name = "BUCKET";
+			item3D = false;
 			textureX = 9;
 			textureY = 4;
 		}
@@ -1277,6 +1310,7 @@ struct WaterBucket : Block {
 		WaterBucket() {
 			name = "WATER_BUCKET";
 			stackable = false;
+			item3D = false;
 			textureX = 9;
 			textureY = 5;
 		}
@@ -1290,6 +1324,7 @@ struct WoodenHoe : Block {
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
+			item3D = false;
 			textureX = 9;
 			textureY = 6;
 		}
@@ -1301,6 +1336,7 @@ struct StoneHoe : Block {
 			name = "STONE_HOE";
 			stackable = false;
 			durability = 131;
+			item3D = false;
 			textureX = 9;
 			textureY = 7;
 		}
@@ -1312,6 +1348,7 @@ struct IronHoe : Block {
 			name = "IRON_HOE";
 			stackable = false;
 			durability = 250;
+			item3D = false;
 			textureX = 9;
 			textureY = 8;
 		}
@@ -1323,6 +1360,7 @@ struct DiamondHoe : Block {
 			name = "DIAMOND_HOE";
 			stackable = false;
 			durability = 1561;
+			item3D = false;
 			textureX = 9;
 			textureY = 9;
 		}
@@ -1332,6 +1370,7 @@ struct WheatSeeds : Block {
 	public:
 		WheatSeeds() {
 			name = "WHEAT_SEEDS";
+			item3D = false;
 			textureX = 9;
 			textureY = 10;
 		}
@@ -1341,6 +1380,7 @@ struct Wheat : Block {
 	public:
 		Wheat() {
 			name = "WHEAT";
+			item3D = false;
 			textureX = 9;
 			textureY = 11;
 		}
@@ -1353,6 +1393,7 @@ struct Bread : Block {
 			isFood = true;
 			hunger_restauration = 5;
 			saturation_restauration = 6;
+			item3D = false;
 			textureX = 9;
 			textureY = 12;
 		}
@@ -1365,6 +1406,7 @@ struct Apple : Block {
 			isFood = true;
 			hunger_restauration = 4;
 			saturation_restauration = 2.4f;
+			item3D = false;
 			textureX = 9;
 			textureY = 13;
 		}

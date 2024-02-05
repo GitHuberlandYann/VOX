@@ -9,7 +9,7 @@ typedef struct {
 	int height;
 }				t_tex;
 
-UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
+UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _nb_items(0), _movement(false), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
 {
 	_text = new Text();
 	_chat = new Chat(_text);
@@ -69,26 +69,68 @@ void UI::load_texture( std::string texstr, std::string shname, int index )
 	check_glstate("Succesfully loaded " + texstr + " to shader\n", true);
 }
 
-void UI::add_inventory_elem( GLint *vertices, int mult, int index, int & vindex )
+void UI::add_inventory_elem( int index )
 {
 	mtx_inventory.lock();
-	int value = _inventory.getSlotBlock(index).x;
+	int type = _inventory.getSlotBlock(index).x;
 	mtx_inventory.unlock();
-	if (value == blocks::AIR) {
+	if (type == blocks::AIR) {
 		return ;
-	} else if (value == blocks::OAK_SLAB) { // TODO CHANGE THIS ?
-		value = blocks::OAK_PLANKS;
+	} else if (type == blocks::OAK_SLAB) { // TODO CHANGE THIS ?
+		type = blocks::OAK_PLANKS;
 	}
-	vertices[vindex + 0] = 0;
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * index * mult) + mult * 3;
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 + mult * 3;
-	vertices[vindex + 3] = 16 * mult;
-	vertices[vindex + 4] = 16 * mult;
-	vertices[vindex + 5] = s_blocks[value]->texX() << 4;
-	vertices[vindex + 6] = s_blocks[value]->texY() << 4;
-	vertices[vindex + 7] = 16;
-	vertices[vindex + 8] = 16;
-	vindex += 9;
+	int mult = 4;
+	int x = (WIN_WIDTH - (182 * mult)) / 2 + (20 * index * mult) + mult * 3;
+	int y = WIN_HEIGHT - (22 * mult) * 2 + mult * 3;
+	if (!s_blocks[type]->item3D) {
+		int spec = s_blocks[type]->texX(face_dir::MINUSX, 0) + (s_blocks[type]->texY(face_dir::MINUSX, 0) << 4) + (3 << 19);
+		// int faceLight = computeLight(row - 1, col, level);
+		int cornerLight = 15;//computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
+		int shade = 0;//computeShade(row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
+		// spec += (faceLight << 24);
+		glm::ivec3 v0 = {spec + (cornerLight << 24) + (shade << 22), x, y};
+		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
+		// shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
+		glm::ivec3 v1 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 8), x + 16 * mult, y};
+		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
+		// shade = computeShade(row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
+		glm::ivec3 v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), x, y + 16 * mult};
+		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
+		// shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
+		glm::ivec3 v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 16 * mult, y + 16 * mult};
+		addFace(v0, v1, v2, v3, false);
+		return ;
+	}
+	x += 2 * mult;
+	y += mult;
+	int offset = face_dir::PLUSX;
+	// top face
+	int spec = (15 << 24) + s_blocks[type]->texX(face_dir::PLUSZ, offset) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 4);
+	// if (type == blocks::DIRT_PATH) {
+	// 	p4.z -= ONE_SIXTEENTH;
+	// 	p5.z -= ONE_SIXTEENTH;
+	// 	p0.z -= ONE_SIXTEENTH;
+	// 	p1.z -= ONE_SIXTEENTH;
+	// }
+	glm::ivec3 v0 = {spec, x, y + 15 * mult * 81.25f / 362.5f};
+	glm::ivec3 v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 6.5f * mult, y};
+	glm::ivec3 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x + 6.5f * mult, y + 15 * mult * 162.5f / 362.5f};
+	glm::ivec3 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 13 * mult, y + 15 * mult * 81.25f / 362.5f};
+	addFace(v0, v1, v2, v3, false);
+	// left face
+	spec = (10 << 24) + s_blocks[type]->texX(face_dir::MINUSY, offset) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 4);
+	v0 = {spec, x, y + 15 * mult * 81.25f / 362.5f};
+	v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 6.5f * mult, y + 15 * mult * 162.5f / 362.5f};
+	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x, y + 15 * mult * 281.25f / 362.5f};
+	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 6.5f * mult, y + 15 * mult};
+	addFace(v0, v1, v2, v3, false);
+	// right face
+	spec = (7 << 24) + s_blocks[type]->texX(face_dir::PLUSX, offset) + (s_blocks[type]->texY(face_dir::PLUSX, offset) << 4);
+	v0 = {spec, x + 6.5f * mult, y + 15 * mult * 162.5f / 362.5f};
+	v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 13 * mult, y + 15 * mult * 81.25f / 362.5f};
+	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x + 6.5f * mult, y + 15 * mult};
+	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 13 * mult, y + 15 * mult * 281.25f / 362.5f};
+	addFace(v0, v1, v2, v3, false);
 }
 
 void UI::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
@@ -224,10 +266,9 @@ void UI::add_bubbles( GLint *vertices, int mult, int index, int & vindex )
 void UI::setup_array_buffer( void )
 {
 	mtx_inventory.lock();
-	int countSlot = _inventory.countSlots();
 	int duras = _inventory.countDura(false);
 	mtx_inventory.unlock();
-    _nb_points = 3 + countSlot + 2 * duras + 10 + (_camera._health_points >> 1) + (_camera._health_points & 1) + (_camera.getWaterStatus() >> 1) + (_camera.getWaterStatus() & 1) + 10 + 4 + 10 + (_camera._foodLevel >> 1) + (_camera._foodLevel & 1);
+    _nb_points = 3 + 2 * duras + 10 + (_camera._health_points >> 1) + (_camera._health_points & 1) + (_camera.getWaterStatus() >> 1) + (_camera.getWaterStatus() & 1) + 10 + 4 + 10 + (_camera._foodLevel >> 1) + (_camera._foodLevel & 1);
 	int mult = 4;
 	GLint *vertices = new GLint[_nb_points * 9];
 
@@ -265,9 +306,6 @@ void UI::setup_array_buffer( void )
 	vertices[vindex + 8] = 24;
 	vindex += 9;
 
-	for (int index = 0; index < 9; index++) {
-		add_inventory_elem(vertices, mult, index, vindex);
-	}
 	for (int index = 0; index < duras; index++) {
 		add_dura_value(vertices, mult, index, vindex);
 	}
@@ -320,6 +358,15 @@ void UI::setup_array_buffer( void )
 	check_glstate("UI::setup_array_buffer", false);
 }
 
+void UI::setup_item_array_buffer( void )
+{
+	_items.clear();
+
+	for (int index = 0; index < 9; index++) {
+		add_inventory_elem(index);
+	}
+}
+
 void UI::display_slot_value( int index )
 {
 	if (index < 0 || index >= 9) {
@@ -360,32 +407,26 @@ void UI::setup_shader( void )
 	_text->setup_shader();
 	_text->load_texture();
 
-	std::string vertex_shader_data = get_file_content("Sources/Shaders/ui_vertex.glsl");
-	char *vertexSource = &vertex_shader_data[0];
+	// setup item shader program
+	_itemShaderProgram =createShaderProgram("item_vertex", "", "item_fragment");
 
-	_vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(_vertexShader, 1, &vertexSource, NULL);
-	compile_shader(_vertexShader, "ui_vertex");
+	glBindFragDataLocation(_itemShaderProgram, 0, "outColor");
 
-	std::string geometry_shader_data = get_file_content("Sources/Shaders/ui_geometry.glsl");
-	char *geometrySource = &geometry_shader_data[0];
+	glBindAttribLocation(_itemShaderProgram, ITEM_SPECATTRIB, "specifications");
+	glBindAttribLocation(_itemShaderProgram, ITEM_POSATTRIB, "position");
 
-	_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
-	glShaderSource(_geometryShader, 1, &geometrySource, NULL);
-	compile_shader(_geometryShader, "ui_geometry");
+	glLinkProgram(_itemShaderProgram);
+	glUseProgram(_itemShaderProgram);
 
-	std::string fragment_shader_data = get_file_content("Sources/Shaders/ui_fragment.glsl");
-	char *fragmentSource = &fragment_shader_data[0];
+	glUniform1i(glGetUniformLocation(_itemShaderProgram, "window_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_itemShaderProgram, "window_height"), WIN_HEIGHT);
 
-	_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(_fragmentShader, 1, &fragmentSource, NULL);
-	compile_shader(_fragmentShader, "ui_fragment");
+	glUniform1i(glGetUniformLocation(_itemShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
 
-	// Combining shaders into a program
-	_shaderProgram = glCreateProgram();
-	glAttachShader(_shaderProgram, _vertexShader);
-	glAttachShader(_shaderProgram, _geometryShader);
-	glAttachShader(_shaderProgram, _fragmentShader);
+	check_glstate("Item_Shader program successfully created\n", true);
+
+	// then setup ui shader program
+	_shaderProgram = createShaderProgram("ui_vertex", "ui_geometry", "ui_fragment");
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
@@ -396,20 +437,48 @@ void UI::setup_shader( void )
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
 
-	glDeleteShader(_fragmentShader);
-	glDeleteShader(_geometryShader);
-    glDeleteShader(_vertexShader);
-
-	check_glstate("UI_Shader program successfully created\n", true);
-
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_height"), WIN_HEIGHT);
 
-	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
+	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // TODO get rid of this because we use itemShaderProgram for it now
+
+	check_glstate("UI_Shader program successfully created\n", true);
+
 	_textures = new GLuint[2];
 	glGenTextures(2, _textures);
 	load_texture("Resources/uiAtlas.png", "uiAtlas", 2);
 	load_texture("Resources/containersAtlas.png", "containerAtlas", 3);
+}
+
+void UI::addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement )
+{
+	if (alien) {
+		_vaoSet = false;
+	}
+	if (movement) {
+		_movement = true;
+		if (!alien) return ;
+	}
+
+	_items.push_back(v0[0]);
+	_items.push_back(v0[1]);
+	_items.push_back(v0[2]);
+	_items.push_back(v1[0]);
+	_items.push_back(v1[1]);
+	_items.push_back(v1[2]);
+	_items.push_back(v2[0]);
+	_items.push_back(v2[1]);
+	_items.push_back(v2[2]);
+
+	_items.push_back(v1[0]);
+	_items.push_back(v1[1]);
+	_items.push_back(v1[2]);
+	_items.push_back(v3[0]);
+	_items.push_back(v3[1]);
+	_items.push_back(v3[2]);
+	_items.push_back(v2[0]);
+	_items.push_back(v2[1]);
+	_items.push_back(v2[2]);
 }
 
 void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
@@ -423,10 +492,12 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 	if (!_vaoSet || _inventory.getModif() || _camera.getModif()) {
 		mtx_inventory.unlock();
 		setup_array_buffer();
+		setup_item_array_buffer();
 		_inventory.setModif(false);
 		mtx_inventory.lock();
 	}
 	mtx_inventory.unlock();
+
 	// Bench b;
 	glUseProgram(_shaderProgram);
     glBindVertexArray(_vao);
@@ -437,6 +508,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 	mtx_inventory.unlock();
 	// b.stop("drawArrays");
 	// b.reset();
+
 	for (int index = 0; index < 9; index++) {
 		display_slot_value(index);
 	}
@@ -450,6 +522,34 @@ void UI::chatMessage( std::string str )
 
 void UI::textToScreen( void )
 {
+	int nb_items = _items.size();
+	if (nb_items) {
+		if (_nb_items != nb_items || _movement) {
+			_nb_items = nb_items;
+			_movement = false;
+			// std::cout << "debug: iSize is " << nb_items << std::endl;
+
+			glGenVertexArrays(1, &_item_vao);
+			glBindVertexArray(_item_vao);
+
+			glGenBuffers(1, &_item_vbo);
+			glBindBuffer(GL_ARRAY_BUFFER, _item_vbo);
+			glBufferData(GL_ARRAY_BUFFER, nb_items * sizeof(GLint), &_items[0], GL_STATIC_DRAW);
+
+			glEnableVertexAttribArray(ITEM_SPECATTRIB);
+			glVertexAttribIPointer(ITEM_SPECATTRIB, 1, GL_INT, 3 * sizeof(GLint), 0);
+
+			glEnableVertexAttribArray(ITEM_POSATTRIB);
+			glVertexAttribIPointer(ITEM_POSATTRIB, 2, GL_INT, 3 * sizeof(GLint), (void *)(sizeof(GLint)));
+			
+			check_glstate("UI::setup_item_array_buffer", false);
+		}
+
+		glUseProgram(_itemShaderProgram);
+		glBindVertexArray(_item_vao);
+		glDrawArrays(GL_TRIANGLES, 0, nb_items / 3);
+	}
+
 	// Bench b;
 	_text->toScreen();
 	// b.stop("text to screen");

@@ -40,7 +40,7 @@ std::string get_file_content( std::string file_name );
 std::string	trim_spaces( std::string str );
 std::vector<std::string> split( std::string &str, char sep );
 
-void compile_shader( GLuint ptrShader, std::string name );
+GLuint createShaderProgram( std::string vertex, std::string geometry, std::string fragment );
 void check_glstate( std::string str, bool displayDebug );
 int chunk_pos( int pos );
 

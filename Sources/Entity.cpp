@@ -48,14 +48,16 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 		}
 		
 		glm::vec3 dir = glm::normalize(_dir); // might want to do this once and save it
+
 		// first horizontal plane
-		glm::vec3 p1 = {_pos.x - 1.25f / 16 * dir.y, _pos.y + 6.75f / 16 * dir.x, _pos.z};
-		glm::vec3 p3 = {_pos.x + 6.75f / 16 * dir.y, _pos.y - 1.25f / 16 * dir.x, _pos.z};
-		glm::vec3 p0 = {_pos.x - 1.25f / 16 * dir.y - dir.x * 0.5f, _pos.y + 6.75f / 16 * dir.x - dir.y * 0.5f, _pos.z - dir.z * 0.5f};
-		glm::vec3 p2 = {_pos.x + 6.75f / 16 * dir.y - dir.x * 0.5f, _pos.y - 1.25f / 16 * dir.x - dir.y * 0.5f, _pos.z - dir.z * 0.5f};
+		glm::vec3 normal = glm::normalize(glm::cross(_dir, glm::vec3(0.0, 0.0, 1.0f)));
+		glm::vec3 p1 = _pos - normal * (1.25f / 16);
+		glm::vec3 p3 = _pos + normal * (6.75f / 16);
+		glm::vec3 p0 = _pos - dir * 0.5f - normal * (1.25f / 16);
+		glm::vec3 p2 =  _pos - dir * 0.5f + normal * (6.75f / 16);
 
 		int itemLight = _chunk->computePosLight(_pos);
-	    int spec = s_blocks[_value]->texX() - 4 + (s_blocks[_value]->texY() << 4) + (0 << 19) + (itemLight << 24);
+	    int spec = s_blocks[_value]->texX() - 1 + (s_blocks[_value]->texY() << 4) + (0 << 19) + (itemLight << 24);
 	    std::pair<int, glm::vec3> v0 = {spec, p0};
 	    std::pair<int, glm::vec3> v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
 	    std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
@@ -68,11 +70,11 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v2);
 
 		// then vertical plane
-	    spec = s_blocks[_value]->texX() - 3 + (s_blocks[_value]->texY() << 4) + (0 << 19) + (itemLight << 24);
-		p1 = {_pos.x, _pos.y + 6.75f / 16 * dir.x, _pos.z - 1.25f / 16 * dir.y};
-		p3 = {_pos.x, _pos.y - 1.25f / 16 * dir.x, _pos.z + 6.75f / 16 * dir.y};
-		p0 = {_pos.x - dir.x * 0.5f, _pos.y + 6.75f / 16 * dir.x - dir.y * 0.5f, _pos.z - 1.25f / 16 * dir.y - dir.z * 0.5f};
-		p2 = {_pos.x - dir.x * 0.5f, _pos.y - 1.25f / 16 * dir.x - dir.y * 0.5f, _pos.z + 6.75f / 16 * dir.y - dir.z * 0.5f};
+		normal = glm::normalize(glm::cross(dir, p1 - _pos));
+		p1 = _pos + normal * (1.25f / 16);
+		p3 = _pos - normal * (6.75f / 16);
+		p0 = _pos - dir * 0.5f + normal * (1.25f / 16);
+		p2 = _pos - dir * 0.5f - normal * (6.75f / 16);
 
 		v0 = {spec, p0};
 	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
@@ -84,6 +86,42 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v1);
 	    arr.push_back(v3);
 	    arr.push_back(v2);
+
+
+		/* debug real arrrow pos
+		spec = 0 + (1 << 4) + (0 << 19) + (itemLight << 24);
+
+		p0 = {_pos.x - 0.03f, _pos.y - 0.03f, _pos.z - 0.03f};
+		p1 = {_pos.x - 0.03f, _pos.y + 0.03f, _pos.z - 0.03f};
+		p2 = {_pos.x + 0.03f, _pos.y - 0.03f, _pos.z - 0.03f};
+		p3 = {_pos.x + 0.03f, _pos.y + 0.03f, _pos.z - 0.03f};
+
+		v0 = {spec, p0};
+	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
+	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
+	    v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+	    arr.push_back(v0);
+	    arr.push_back(v1);
+	    arr.push_back(v2);
+	    arr.push_back(v1);
+	    arr.push_back(v3);
+	    arr.push_back(v2);
+
+		p0 = {_pos.x - 0.03f, _pos.y - 0.03f, _pos.z + 0.03f};
+		p1 = {_pos.x - 0.03f, _pos.y + 0.03f, _pos.z + 0.03f};
+		p2 = {_pos.x + 0.03f, _pos.y - 0.03f, _pos.z + 0.03f};
+		p3 = {_pos.x + 0.03f, _pos.y + 0.03f, _pos.z + 0.03f};
+
+		v0 = {spec, p0};
+	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
+	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
+	    v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+	    arr.push_back(v0);
+	    arr.push_back(v1);
+	    arr.push_back(v2);
+	    arr.push_back(v1);
+	    arr.push_back(v3);
+	    arr.push_back(v2);*/
 		return (false);
 	}
 

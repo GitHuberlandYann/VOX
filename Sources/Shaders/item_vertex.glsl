@@ -21,7 +21,7 @@ out float FaceShadow;
 
 void main()
 {
-	gl_Position = vec4((2.0 * pos.x) / window_width - 1.0, -((2.0 * pos.y) / window_height - 1.0), 0.0, 1.0);
+	gl_Position = vec4((2.0 * position.x) / window_width - 1.0, -((2.0 * position.y) / window_height - 1.0), 0.0, 1.0);
 	Texcoord = vec2((specifications & 0xF) / 16.0f, ((specifications >> 4) & 0xF) / 16.0f);
 	int blockLight = ((specifications >> 24) & 0xF);
 	int skyLight = internal_light - (15 - ((specifications >> 28) & 0xF));

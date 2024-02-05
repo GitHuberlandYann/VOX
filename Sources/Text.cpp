@@ -37,32 +37,7 @@ Text::~Text( void )
 
 void Text::setup_shader( void )
 {
-	std::string vertex_shader_data = get_file_content("Sources/Shaders/text_vertex.glsl");
-	char *vertexSource = &vertex_shader_data[0];
-
-	_vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(_vertexShader, 1, &vertexSource, NULL);
-	compile_shader(_vertexShader, "text_vertex");
-
-	std::string geometry_shader_data = get_file_content("Sources/Shaders/text_geometry.glsl");
-	char *geometrySource = &geometry_shader_data[0];
-
-	_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
-	glShaderSource(_geometryShader, 1, &geometrySource, NULL);
-	compile_shader(_geometryShader, "text_geometry");
-
-	std::string fragment_shader_data = get_file_content("Sources/Shaders/text_fragment.glsl");
-	char *fragmentSource = &fragment_shader_data[0];
-
-	_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(_fragmentShader, 1, &fragmentSource, NULL);
-	compile_shader(_fragmentShader, "text_fragment");
-
-	// Combining shaders into a program
-	_shaderProgram = glCreateProgram();
-	glAttachShader(_shaderProgram, _vertexShader);
-	glAttachShader(_shaderProgram, _geometryShader);
-	glAttachShader(_shaderProgram, _fragmentShader);
+	_shaderProgram = createShaderProgram("text_vertex", "text_geometry", "text_fragment");
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
@@ -73,10 +48,6 @@ void Text::setup_shader( void )
 
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
-
-	glDeleteShader(_fragmentShader);
-	glDeleteShader(_geometryShader);
-    glDeleteShader(_vertexShader);
 
 	check_glstate("text_Shader program successfully created", true);
 

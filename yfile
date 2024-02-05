@@ -29,8 +29,8 @@ TODOS:
 	- hitbox change + no fall on sneak
     - skybox
 	- particles ?
+	- TNT, explosions, flint and steel
 	- limit floodfill algo for lighting (but be smart about it)
-	- bow and arrow
 	- stairs
 	- chests
 	- doors
@@ -40,23 +40,16 @@ TODOS:
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
 	- upon world generation, place player on ground by using continentalness
-	- 3D items in inventory
 	- water ligth level
     - lava + nether
 	- multiplayer ?
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-    - main menu
-        - play
-            - random seed / custom seed
-        - load -> save world in json
-        - settings
-            - render dist
-            - speed
-        - quit
+    - settings menu
     - biomes
 	- slabs
+	- bow and arrow
 	- save entities
 	- universal use of tps instead of deltatimes
 	- commands /say /me /save /setblock /sc(/screenshot) /kill
@@ -74,6 +67,7 @@ DONE:
     - full screen mode
     - mouse movements
     - inventory
+	- 3D items in inventory
 	- furnace
     - better caves
     - obstacle detection for physics + game mode
@@ -121,6 +115,7 @@ DONE:
     - Water buckets
 	- water flow
 	- clouds
+	- main menu
     - load menu
     - inventory menu
     - crafting menu

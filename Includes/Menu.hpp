@@ -1,7 +1,8 @@
 #ifndef MENU_HPP
 # define MENU_HPP
 
-# include <Chunk.hpp>
+# include "Chunk.hpp"
+# include "Ui.hpp"
 # include "Text.hpp"
 # include "Chat.hpp"
 # include <list>
@@ -34,6 +35,7 @@ class Menu
 		std::string _world_file;
 		GLFWwindow *_window;
 		Inventory &_inventory;
+		UI *_ui;
 		Text *_text;
 		Chat *_chat;
 		std::list<Chunk *> _chunks;
@@ -63,12 +65,13 @@ class Menu
 		void display_furnace_value( void );
 		void display_craft_value( int index );
 
-		void add_slot_value( GLint *vertices, int mult, int index, int & vindex );
-		void add_backpack_value( GLint *vertices, int mult, int index, int & vindex );
-		void add_icraft_value( GLint *vertices, int mult, int index, int & vindex );
-		void add_craft_value( GLint *vertices, int mult, int index, int & vindex );
+		void add_item_value( int type, int x, int y, int mult, bool movement = false );
+		void add_slot_value( int mult, int index );
+		void add_backpack_value( int mult, int index );
+		void add_icraft_value( int mult, int index );
+		void add_craft_value( int mult, int index );
 		void add_dura_value( GLint *vertices, int mult, int index, int & vindex );
-		void add_crafted_value( GLint *vertices, int mult, int & vindex );
+		void add_crafted_value( int mult );
 
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );
@@ -77,7 +80,7 @@ class Menu
 		void setup_shader( GLint *vertices );
 
 	public:
-		Menu( Inventory & inventory, Text *text, Chat *chat );
+		Menu( Inventory & inventory, UI *ui );
 		~Menu( void );
 
 		void processMouseMovement( float posX, float posY );

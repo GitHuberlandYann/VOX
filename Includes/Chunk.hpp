@@ -32,9 +32,6 @@ enum cont {
 
 enum {
 	SPECATTRIB,
-	// BLOCKATTRIB,
-	// BREAKATTRIB,
-	// ADJATTRIB,
 	POSATTRIB
 };
 
