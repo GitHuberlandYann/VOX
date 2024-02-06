@@ -6,6 +6,7 @@ Entity::Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec
 {
     // std::cout << "new Entity at " << position.x << ", " << position.y << ", " << position.z << ": " << s_blocks[value]->name << std::endl;
 	_chunk_pos = {chunk->getStartX(), chunk->getStartY()};
+	_falling_block = (solid && (value == blocks::SAND || value == blocks::GRAVEL));
 }
 
 Entity::~Entity( void )
@@ -17,12 +18,149 @@ Entity::~Entity( void )
 //                                Private                                     //
 // ************************************************************************** //
 
+bool Entity::updateFallingBlock( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime )
+{
+	// std::cout << "FALLING BLOCK UPDATE" << std::endl;
+	_dir.z -= 0.1f;
+	_pos.z += _dir.z * deltaTime;
+	int type = (_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true) & 0xFF);
+	if (type != blocks::AIR && type < blocks::WATER) {
+		// std::cout << "youston, we touched ground" << std::endl;
+		if (type >= blocks::POPPY) {
+			// _chunk->addEntity(, ); // TODO add entity to chunk
+		} else {
+			_chunk->handleHit(false, _value, {glm::floor(_pos.x), glm::floor(_pos.y), glm::floor(_pos.z + 1)}, Modif::ADD);
+		}
+		return (true);
+	}
+	glm::vec3 p0 = {_pos.x + 0, _pos.y + 0, _pos.z + 1};
+	glm::vec3 p1 = {_pos.x + 1, _pos.y + 0, _pos.z + 1};
+	glm::vec3 p2 = {_pos.x + 0, _pos.y + 0, _pos.z + 0};
+	glm::vec3 p3 = {_pos.x + 1, _pos.y + 0, _pos.z + 0};
+
+	glm::vec3 p4 = {_pos.x + 0, _pos.y + 1, _pos.z + 1};
+	glm::vec3 p5 = {_pos.x + 1, _pos.y + 1, _pos.z + 1};
+	glm::vec3 p6 = {_pos.x + 0, _pos.y + 1, _pos.z + 0};
+	glm::vec3 p7 = {_pos.x + 1, _pos.y + 1, _pos.z + 0};
+
+	int texture = s_blocks[_value]->texX(face_dir::MINUSX, 0) + (s_blocks[_value]->texY(face_dir::MINUSX, 0) << 4);
+	int faceLight = _chunk->computeLight(_pos.x - _chunk_pos.x, _pos.y - _chunk_pos.y, _pos.z);
+	int spec = texture + (3 << 19);
+	spec += (faceLight << 24);
+	std::pair<int, glm::vec3> v0 = {spec, p4};
+	std::pair<int, glm::vec3> v1 = {spec + 1 + (1 << 9) + (1 << 8), p0};
+	std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p6};
+	std::pair<int, glm::vec3> v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p2};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = texture + (4 << 19);
+	spec += (faceLight << 24);
+	v0 = {spec, p1};
+	v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
+	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p3};
+	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = texture + (1 << 19);
+	spec += (faceLight << 24);
+	v0 = {spec, p0};
+	v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
+	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
+	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = texture + (2 << 19);
+	spec += (faceLight << 24);
+	v0 = {spec, p5};
+	v1 = {spec + 1 + (1 << 9) + (1 << 8), p4};
+	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p7};
+	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p6};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = texture;
+	spec += (faceLight << 24);
+	v0 = {spec, p4};
+	v1 = {spec + 1 + (1 << 9) + (1 << 8), p5};
+	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p0};
+	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p1};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = texture + (5 << 19);
+	spec += (faceLight << 24);
+	v0 = {spec, p2};
+	v1 = {spec + 1 + (1 << 9) + (1 << 8), p3};
+	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p6};
+	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p7};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	return (false);
+}
+
+bool Entity::updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime )
+{
+	if (_dir.x && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
+		_pos.x += _dir.x * deltaTime;
+		if (_dir.y && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
+			_pos.y += _dir.y * deltaTime;
+			if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime), true), false, false, false)) {
+				_pos.z += _dir.z * deltaTime;
+				_dir.z -= 0.1f;
+			} else {
+				_pos.y -= _dir.y * deltaTime;
+				_pos.x -= _dir.x * deltaTime;
+			}
+		} else {
+			_pos.x -= _dir.x * deltaTime;
+		}
+	}
+		
+	glm::vec3 dir = glm::normalize(_dir); // might want to do this once and save it
+
+	// first horizontal plane
+	glm::vec3 normal = glm::normalize(glm::cross(_dir, glm::vec3(0.0, 0.0, 1.0f)));
+	glm::vec3 p1 = _pos - normal * (1.25f / 16);
+	glm::vec3 p3 = _pos + normal * (6.75f / 16);
+	glm::vec3 p0 = _pos - dir * 0.5f - normal * (1.25f / 16);
+	glm::vec3 p2 =  _pos - dir * 0.5f + normal * (6.75f / 16);
+
+	int itemLight = _chunk->computePosLight(_pos);
+    int spec = s_blocks[_value]->texX() - 1 + (s_blocks[_value]->texY() << 4) + (0 << 19) + (itemLight << 24);
+    std::pair<int, glm::vec3> v0 = {spec, p0};
+    std::pair<int, glm::vec3> v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
+    std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
+    std::pair<int, glm::vec3> v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+    arr.push_back(v0);
+    arr.push_back(v1);
+    arr.push_back(v2);
+    arr.push_back(v1);
+    arr.push_back(v3);
+    arr.push_back(v2);
+
+	// then vertical plane
+	normal = glm::normalize(glm::cross(dir, p1 - _pos));
+	p1 = _pos + normal * (1.25f / 16);
+	p3 = _pos - normal * (6.75f / 16);
+	p0 = _pos - dir * 0.5f + normal * (1.25f / 16);
+	p2 = _pos - dir * 0.5f - normal * (6.75f / 16);
+
+	v0 = {spec, p0};
+    v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
+    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
+    v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
+    arr.push_back(v0);
+    arr.push_back(v1);
+    arr.push_back(v2);
+    arr.push_back(v1);
+    arr.push_back(v3);
+    arr.push_back(v2);
+	return (false);
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
 
 // update entity's position and push_back arr with new pos
-// returns true if entity dispawns this frame
+// returns true if entity despawns this frame
 bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camPos, double deltaTime )
 {
 	_lifeTime += deltaTime;
@@ -30,99 +168,12 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
         return (true);
     }
 
+	if (_falling_block) {
+		return (updateFallingBlock(arr, deltaTime));
+	}
+
 	if (_solid) { // fow now only arrows
-		if (_dir.x && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
-			_pos.x += _dir.x * deltaTime;
-			if (_dir.y && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
-				_pos.y += _dir.y * deltaTime;
-				if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime), true), false, false, false)) {
-					_pos.z += _dir.z * deltaTime;
-					_dir.z -= 0.1f;
-				} else {
-					_pos.y -= _dir.y * deltaTime;
-					_pos.x -= _dir.x * deltaTime;
-				}
-			} else {
-				_pos.x -= _dir.x * deltaTime;
-			}
-		}
-		
-		glm::vec3 dir = glm::normalize(_dir); // might want to do this once and save it
-
-		// first horizontal plane
-		glm::vec3 normal = glm::normalize(glm::cross(_dir, glm::vec3(0.0, 0.0, 1.0f)));
-		glm::vec3 p1 = _pos - normal * (1.25f / 16);
-		glm::vec3 p3 = _pos + normal * (6.75f / 16);
-		glm::vec3 p0 = _pos - dir * 0.5f - normal * (1.25f / 16);
-		glm::vec3 p2 =  _pos - dir * 0.5f + normal * (6.75f / 16);
-
-		int itemLight = _chunk->computePosLight(_pos);
-	    int spec = s_blocks[_value]->texX() - 1 + (s_blocks[_value]->texY() << 4) + (0 << 19) + (itemLight << 24);
-	    std::pair<int, glm::vec3> v0 = {spec, p0};
-	    std::pair<int, glm::vec3> v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
-	    std::pair<int, glm::vec3> v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-	    std::pair<int, glm::vec3> v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
-	    arr.push_back(v0);
-	    arr.push_back(v1);
-	    arr.push_back(v2);
-	    arr.push_back(v1);
-	    arr.push_back(v3);
-	    arr.push_back(v2);
-
-		// then vertical plane
-		normal = glm::normalize(glm::cross(dir, p1 - _pos));
-		p1 = _pos + normal * (1.25f / 16);
-		p3 = _pos - normal * (6.75f / 16);
-		p0 = _pos - dir * 0.5f + normal * (1.25f / 16);
-		p2 = _pos - dir * 0.5f - normal * (6.75f / 16);
-
-		v0 = {spec, p0};
-	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
-	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-	    v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
-	    arr.push_back(v0);
-	    arr.push_back(v1);
-	    arr.push_back(v2);
-	    arr.push_back(v1);
-	    arr.push_back(v3);
-	    arr.push_back(v2);
-
-
-		/* debug real arrrow pos
-		spec = 0 + (1 << 4) + (0 << 19) + (itemLight << 24);
-
-		p0 = {_pos.x - 0.03f, _pos.y - 0.03f, _pos.z - 0.03f};
-		p1 = {_pos.x - 0.03f, _pos.y + 0.03f, _pos.z - 0.03f};
-		p2 = {_pos.x + 0.03f, _pos.y - 0.03f, _pos.z - 0.03f};
-		p3 = {_pos.x + 0.03f, _pos.y + 0.03f, _pos.z - 0.03f};
-
-		v0 = {spec, p0};
-	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
-	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-	    v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
-	    arr.push_back(v0);
-	    arr.push_back(v1);
-	    arr.push_back(v2);
-	    arr.push_back(v1);
-	    arr.push_back(v3);
-	    arr.push_back(v2);
-
-		p0 = {_pos.x - 0.03f, _pos.y - 0.03f, _pos.z + 0.03f};
-		p1 = {_pos.x - 0.03f, _pos.y + 0.03f, _pos.z + 0.03f};
-		p2 = {_pos.x + 0.03f, _pos.y - 0.03f, _pos.z + 0.03f};
-		p3 = {_pos.x + 0.03f, _pos.y + 0.03f, _pos.z + 0.03f};
-
-		v0 = {spec, p0};
-	    v1 = {spec + 1 + (1 << 9) + (1 << 8), p1};
-	    v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), p2};
-	    v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), p3};
-	    arr.push_back(v0);
-	    arr.push_back(v1);
-	    arr.push_back(v2);
-	    arr.push_back(v1);
-	    arr.push_back(v3);
-	    arr.push_back(v2);*/
-		return (false);
+		return (updateArrow(arr, deltaTime));
 	}
 
 	// if item in block, push it out of block.

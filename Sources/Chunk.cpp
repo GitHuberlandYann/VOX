@@ -12,7 +12,7 @@ Chunk::Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::lis
 	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
 	_blocks(NULL), _water_vert(NULL), _sky_vert(NULL), _vertices(NULL), _lights(NULL),
-	_sky(NULL), _hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
+	_sky(NULL), _hasWater(true), _displayed_faces(0), _displayed_alloc(0), _water_count(0), _sky_count(0),
 	_neighbours({NULL, NULL, NULL, NULL}), _camera(camera), _inventory(inventory)
 {
 	int cnt = 0;
@@ -478,17 +478,6 @@ void Chunk::generate_sky( void )
 	}
 }
 
-int Chunk::sand_fall_endz( glm::ivec3 pos )
-{
-	for (int level = pos.z - 1; level > 0; level--) {
-		int type = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + level] & 0xFF;
-		if (type != blocks::AIR && type < blocks::WATER && type != blocks::TORCH) {
-			return (level + 1);
-		}
-	}
-	return (1);
-}
-
 void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 {
 	if (type == blocks::AIR) {
@@ -578,18 +567,13 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	} else if (useInventory) {
 		entity_block(pos.x, pos.y, pos.z, type);
 	}
-	int endZ = -1;
-	int type_above = _blocks[offset + 1] & 0xFF;
-	if (pos.z < 255 && isSandOrGravel(type_above)) { // sand falls if block underneath deleted
-		_blocks[offset] = blocks::AIR;
-		endZ = sand_fall_endz(pos);
-		if (endZ == pos.z) {
-			_blocks[offset] = type_above;
-			return (remove_block(false, {pos.x, pos.y, pos.z + 1}));
+	int type_above = blocks::AIR;
+	if (pos.z < 255) {
+		type_above = _blocks[offset + 1] & 0xFF;
+		if (type_above == blocks::SAND || type_above == blocks::GRAVEL) { // sand falls if block underneath deleted
+			// std::cout << "new scheduled_to_fall" << std::endl;
+			_scheduled_to_fall.insert(offset + 1);
 		}
-		_blocks[offset] = value; // putting it back temporarily to avoid segfault in neighbour on addblock
-		add_block(false, {pos.x, pos.y, endZ}, type_above, blocks::AIR);
-		_blocks[offset] = blocks::AIR;
 	}
 	_blocks[offset] = blocks::AIR;
 	if (type == blocks::GLASS) { // TODO check neighbours and spread water
@@ -633,9 +617,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		}
 	}
 	handle_border_block(pos, air_flower(value, true, false, true), false); // if block at border of chunk gets deleted, we update neighbours. doing it after light spread
-	if (endZ != -1) { // sand fall
-		remove_block(false, {pos.x, pos.y, pos.z + 1});
-	} else if (pos.z < 255 && type_above != blocks::TORCH && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS)) { // del flower if block underneath deleted
+	if (pos.z < 255 && type_above != blocks::TORCH && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS)) { // del flower if block underneath deleted
 		(type_above == blocks::GRASS)
 			? remove_block(false, {pos.x, pos.y, pos.z + 1}) // if grass above breaked block, don't collect it
 			: remove_block(useInventory, {pos.x, pos.y, pos.z + 1});
@@ -647,20 +629,14 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":add block " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
+	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
-		pos.z = sand_fall_endz(pos);
-		previous = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z];
-		if (previous == blocks::TORCH) {
-			if (useInventory) {
-				mtx_inventory.lock();
-				_inventory->removeBlock(false);
-				mtx_inventory.unlock();
-			}
-			_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(pos.x - 8, pos.y - 8)), 1.0f}, false, false, s_blocks[type]->mined));
+		int type_under = (_blocks[offset - 1] & 0xFF);
+		if (type_under == blocks::AIR) {
+			_entities.push_back(Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0, 0, 0}, true, false, type));
 			return ;
 		}
 	}
-	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	if (type == blocks::WATER) { // we place water
 		if (previous < blocks::WATER) {
 			_hasWater = true;
@@ -1077,10 +1053,6 @@ void Chunk::checkFillVertices( void )
 		}
 		resetDisplayedFaces();
 		// std::cout << "chunk " << _startX << ", " << _startY << ": " << _displayed_faces << std::endl;
-		_mtx.lock();
-		delete [] static_cast<GLint*>(_vertices);
-		_vertices = new GLint[_displayed_faces * 4 * 6];
-		_mtx.unlock();
 		fill_vertex_array();
 		_vaoVIP = false;
 		_nb_neighbours = cnt; // do this at end to make sure resetDisplayedFaces is called before any light_update shinanigans
@@ -1124,9 +1096,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 		sort_water(_camera->getPos(), true);
 		return ;
 	}
-	// std::cout << "_displayed_faces after modif " << _displayed_faces << std::endl;
-	delete [] static_cast<GLint*>(_vertices);
-	_vertices = new GLint[_displayed_faces * 4 * 6];
+	// std::cout << "_displayed_faces after modif " << _displayed_faces << " at " << _startX << ", " << _startY << std::endl;
 	if (!_light_update) {
 		fill_vertex_array();
 	}
@@ -1333,7 +1303,7 @@ void Chunk::shootArrow( float timer )
 
 void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 {
-	if (block_hit.w == blocks::AIR) {
+	if (block_hit.w == blocks::AIR || _displayed_faces > _displayed_alloc) {
 		return ;
 	}
 	glm::ivec3 chunk_pos = {block_hit.x - _startX, block_hit.y - _startY, block_hit.z};
@@ -1458,7 +1428,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 			_blocks[offset] += blocks::NOTVISIBLE;
 		}
 	} else {
-		std::cout << "update border, value is " << s_blocks[value & 0xFF]->name << ", origin " << origin << ", orientation " << ((value >> 9) & 0x7) << std::endl;
+		// std::cout << "update border, value is " << s_blocks[value & 0xFF]->name << ", origin " << origin << ", orientation " << ((value >> 9) & 0x7) << std::endl;
 		if ((value & 0xFF) == blocks::TORCH && ((value >> 9) & 0x7) == origin) {
 			remove_block(true, {posX, posY, level}); // TODO handle useInventory instead of setting it to true by default
 		}
@@ -1479,9 +1449,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 		_displayed_faces += !visible_face(value, type, face_dir::MINUSX);
 	}
 	// std::cout << "got here" << std::endl;
-	// std::cout << "update border displayed " << _displayed_faces << std::endl;
-	delete [] static_cast<GLint*>(_vertices);
-	_vertices = new GLint[_displayed_faces * 24];
+	// std::cout << "update border displayed " << _displayed_faces << " at " << _startX << ", " << _startY << std::endl;
 	FILL:
 	fill_vertex_array();
 }
@@ -1621,7 +1589,7 @@ void Chunk::drawArray( GLint & counter, GLint &face_counter )
 		fill_vertex_array();
 		// std::cout << "over." << std::endl;
 	} else if (_vertex_update && _nb_neighbours == 4) {
-		// std::cout << _startX << ", " << _startY << " crop update" << std::endl;
+		// std::cout << _startX << ", " << _startY << " vertex update (prob crop)" << std::endl;
 		fill_vertex_array();
 	}
 	if (!_vaoReset) { // TODO change vaoReset logic (swap true and false)

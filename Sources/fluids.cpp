@@ -173,14 +173,12 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 		if (!air_flower(type, false, false, true) && type != blocks::AIR) { // replace flower with water
 			// std::cout << _startX << ", " << _startY << " type before: " << s_blocks[type]->name << ". displayed: " << _displayed_faces << std::endl;
 			entity_block(posX, posY, posZ, type); // drop item(s)
-			_displayed_faces -= (2 << (type == blocks::TORCH));
+			_displayed_faces -= (2 << (type >= blocks::TORCH));
 			if (type == blocks::TORCH) {
 				_lights[offset] &= 0xFF00;
 				light_spread(posX, posY, posZ, false);
 			}
 			// std::cout << "type after: " << s_blocks[level]->name << ". displayed: " << _displayed_faces << std::endl;
-			delete [] static_cast<GLint*>(_vertices);
-			_vertices = new GLint[_displayed_faces * 24];
 			_vertex_update = true;
 		}
 		if (!air_flower(type, false, false, true)) {
@@ -480,12 +478,12 @@ void Chunk::updateFluids( void )
 {
 	std::set<int> newFluids;
 	bool fluid_modif = false;
-	for (auto f = _fluids.begin(); f != _fluids.end();) {
+	for (auto f : _fluids) {
 		fluid_modif = true;
-		int posZ = *f & (WORLD_HEIGHT - 1);
-		int posY = ((*f >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-		int posX = ((*f >> WORLD_SHIFT) >> CHUNK_SHIFT);
-		int level = _blocks[*f];
+		int posZ = f & (WORLD_HEIGHT - 1);
+		int posY = ((f >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
+		int posX = ((f >> WORLD_SHIFT) >> CHUNK_SHIFT);
+		int level = _blocks[f];
 		if (endFlow(&newFluids, level, posX, posY, posZ)) {
 			// std::cout << "ENDFLOW" << std::endl;
 		} else if (try_addFlow(&newFluids, posX, posY, posZ - 1, blocks::WATER1) && level != blocks::WATER) { // source water spread to the side even if air below
@@ -498,7 +496,7 @@ void Chunk::updateFluids( void )
 			try_addFlow(&newFluids, posX, posY + 1, posZ, level + 1);
 		}
 		// std::cout << _startX << " " << _startY << " fluid at " << posX << " (" << _startX + posX << "), " << posY << " (" << _startY + posY << "), " << posZ << ": before " << s_blocks[level]->name << " after " << s_blocks[_blocks[*f]].name << std::endl;
-		f = _fluids.erase(f);
+		// f = _fluids.erase(f);
 	}
 	_fluids = newFluids;
 	newFluids.clear();

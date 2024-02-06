@@ -83,6 +83,7 @@ DONE:
     - better fall damage
     - placing sand = gravity
     - sand falls if nothing under, even in caves
+	- sand now turns to falling block entity during fall
     - make gravel behave like sand
     - flower on grass only
     - flowers destroyed if block underneath destroyed

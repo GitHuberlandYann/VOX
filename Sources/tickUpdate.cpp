@@ -81,6 +81,7 @@ void Chunk::updateFarmland( int value, int offset )
 			_removed.erase(offset);
 			return ;
 		} else if (type_above < blocks::WHEAT_CROP || type_above > blocks::WHEAT_CROP7) {
+			// std::cout << "updateFarmland replace_block " << _startX << ", " << _startY << std::endl;
 			replace_block(false, {posX, posY, posZ}, blocks::DIRT, blocks::FARMLAND);
 			_vertex_update = true;
 			return ;
@@ -164,13 +165,9 @@ void Chunk::decayLeaves( int offset )
 
 	int logConnected = findLog(posX, posY, posZ, 6);
 	if (!logConnected) {
-		size_t save = _displayed_faces;
+		// std::cout << "decay leave " << _startX << ", " << _startY << std::endl;
 		remove_block(true, {posX, posY, posZ}); // TODO might want to update ligth
 		_vertex_update = true;
-		if (_displayed_faces > save) {
-			delete [] static_cast<GLint*>(_vertices);
-			_vertices = new GLint[_displayed_faces * 4 * 6];
-		}
 	}
 }
 
@@ -214,8 +211,6 @@ void Chunk::growTree( int value, int offset )
 	// grow oak tree starting from offset
 	_blocks[offset] = blocks::AIR;
 	add_block( false, {posX, posY, posZ}, blocks::OAK_LOG, blocks::AIR );
-	delete [] static_cast<GLint*>(_vertices);
-	_vertices = new GLint[_displayed_faces * 4 * 6];
 	_vertex_update = true;
 }
 
@@ -275,5 +270,22 @@ void Chunk::tickUpdate( void )
 				growTree(value, selected);
 			}
 		}
+	}
+}
+
+void Chunk::updateScheduledBlocks( void )
+{
+	for (auto f = _scheduled_to_fall.begin(); f != _scheduled_to_fall.end();) {
+		int type = _blocks[*f] & 0xFF;
+		if (type != blocks::SAND && type != blocks::GRAVEL) {
+			std::cerr << _startX << ", " << _startY << " scheduled_to_fall block is " << s_blocks[type]->name << std::endl;
+			continue ;
+		}
+		int posZ = *f & (WORLD_HEIGHT - 1);
+		int posY = ((*f >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
+		int posX = ((*f >> WORLD_SHIFT) >> CHUNK_SHIFT);
+		handleHit(false, type, {posX + _startX, posY + _startY, posZ}, Modif::REMOVE);
+		_entities.push_back(Entity(this, _inventory, {posX + _startX, posY + _startY, posZ}, {0, 0, 0}, true, false, type));
+		f = _scheduled_to_fall.erase(f);
 	}
 }

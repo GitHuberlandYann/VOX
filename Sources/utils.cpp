@@ -282,12 +282,6 @@ bool visible_face( int value, int next, face_dir dir )
 	return (false);
 }
 
-bool isSandOrGravel( int type )
-{
-	type += blocks::NOTVISIBLE * (type < blocks::AIR);
-	return (type == blocks::SAND || type == blocks::GRAVEL);
-}
-
 void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks )
 {
 	// Bench b;

@@ -86,12 +86,12 @@ class Chunk
 		void *_vertices; // int, vec3
 		short *_lights; // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
 		GLboolean *_sky, _hasWater;
-		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
+		std::atomic_size_t _displayed_faces, _displayed_alloc, _water_count, _sky_count;
 		std::array<Chunk *, 4> _neighbours;
 		Camera *_camera;
 		Inventory *_inventory;
 		std::map<int,int> _added;
-		std::set<int> _removed, _fluids;
+		std::set<int> _removed, _fluids, _scheduled_to_fall;
 		std::map<int, FurnaceInstance> _furnaces;
 		std::vector<Entity> _entities;
 		std::thread _thread;
@@ -117,7 +117,6 @@ class Chunk
 		void resetDisplayedFaces( void );
 		void generate_sky( void );
 	
-		int sand_fall_endz( glm::ivec3 pos );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
@@ -126,7 +125,6 @@ class Chunk
 
 		void light_spread( int posX, int posY, int level, bool skySpread );
 		void generate_lights( void );
-		int computeLight( int row, int col, int level );
 		int computeSmoothLight( int basefaceLight, int row, int col, int level, std::array<int, 9> offsets );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
 
@@ -154,6 +152,7 @@ class Chunk
 		GLint getCamLightLevel( glm::ivec3 location );
 		int computePosLight( glm::vec3 pos );
 		short getLightLevel( int posX, int posY, int posZ );
+		int computeLight( int row, int col, int level );
 		void waitGenDone( void );
 
 		void setNeighbour( Chunk *neighbour, face_dir index );
@@ -194,6 +193,7 @@ class Chunk
 		void updateFurnaces( double currentTime );
 		void updateFluids( void );
 		void tickUpdate( void );
+		void updateScheduledBlocks( void );
 		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
 		void drawSky( GLint & counter, GLint &face_counter );
 		void drawWater( GLint & counter, GLint &face_counter );

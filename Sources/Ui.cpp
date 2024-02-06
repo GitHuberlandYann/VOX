@@ -494,6 +494,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 		setup_array_buffer();
 		setup_item_array_buffer();
 		_inventory.setModif(false);
+		_movement = true;
 		mtx_inventory.lock();
 	}
 	mtx_inventory.unlock();
@@ -504,7 +505,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 	mtx_inventory.lock();
 	(game_mode == SURVIVAL)
 		? glDrawArrays(GL_POINTS, 0, _nb_points)
-		: glDrawArrays(GL_POINTS, 0, 3 + _inventory.countSlots() + 2 * _inventory.countDura(false));
+		: glDrawArrays(GL_POINTS, 0, 3 + 2 * _inventory.countDura(false));
 	mtx_inventory.unlock();
 	// b.stop("drawArrays");
 	// b.reset();
@@ -522,6 +523,10 @@ void UI::chatMessage( std::string str )
 
 void UI::textToScreen( void )
 {
+	if (_hideUI) {
+		return (_text->toScreen());
+	}
+
 	int nb_items = _items.size();
 	if (nb_items) {
 		if (_nb_items != nb_items || _movement) {

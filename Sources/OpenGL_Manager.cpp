@@ -487,6 +487,7 @@ void OpenGL_Manager::main_loop( void )
 				c->updateFurnaces(currentTime);
 				if (fluidUpdate) {
 					c->updateFluids();
+					c->updateScheduledBlocks();
 				}
 				if (tickUpdate) {
 					c->tickUpdate();
