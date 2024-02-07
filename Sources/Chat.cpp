@@ -296,7 +296,33 @@ std::string Chat::getHistoMsg( bool up )
 
 void Chat::chatMessage( std::string str )
 {
-	_current.push_back({str, 10});
+	size_t pxl_width = 0, offset, font_size = 12, limit = CHAT_BOX_WIDTH - CHAT_BOX_X - 2 * CHAT_BOX_OFFSET;
+	int start = 0, end = 0;
+	for (char c : str) {
+		if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') {
+			offset = font_size * 0.5;
+		} else if (c == 'I' || c == '[' || c == ']' || c == '"' || c == '*') {
+			offset = font_size * 0.6;	
+		} else if (c == 'l' || c == 't' || c == '(' || c == ')' || c == '<' || c == '>' || c == '{' || c == '}') {
+			offset = font_size * 0.7;
+		} else if (c == '\n') {
+			pxl_width = 0;
+			offset = 0;	
+		} else {
+			offset = font_size;
+		}
+		if (pxl_width + offset > limit) {
+			_current.push_back({str.substr(start, end), 10});
+			pxl_width = offset;
+			start = end;
+		} else {
+			pxl_width += offset;
+			++end;
+		}
+	}
+	if (pxl_width) {
+		_current.push_back({str.substr(start), 10});
+	}
 }
 
 void Chat::sendMessage( std::string str )
@@ -356,7 +382,6 @@ void Chat::blitMessages( float deltaTime )
 	int size = _current.size(), index = 0;
 
 	for (auto m = _current.begin(); m != _current.end();) {
-		// TODO limit nbr char per line and display message over several lines
 		_text->addText(36, WIN_HEIGHT - 68 - 18 * (size - index), 12, true, m->first);
 		m->second -= deltaTime;
 		if (m->second < 0) {

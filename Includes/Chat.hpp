@@ -5,6 +5,10 @@
 # include "Text.hpp"
 class OpenGL_Manager;
 
+# define CHAT_BOX_X 30
+# define CHAT_BOX_WIDTH 700
+# define CHAT_BOX_OFFSET 6
+
 # define NBR_CMDS 9
 namespace cmds {
 	enum {

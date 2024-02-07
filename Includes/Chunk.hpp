@@ -38,7 +38,8 @@ enum {
 enum Modif {
 	REMOVE,
 	ADD,
-	REPLACE
+	REPLACE,
+	LITNT
 };
 
 const GLint adj_blocks[6][3] = {
@@ -178,6 +179,7 @@ class Chunk
 
 		int isHit( glm::ivec3 pos );
 		void handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif );
+		void explosion( glm::vec3 pos, int power );
 		void shootArrow( float timer );
 		void updateBreak( glm::ivec4 block_hit, int frame );
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread );

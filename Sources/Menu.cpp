@@ -665,9 +665,9 @@ void Menu::setup_array_buffer_chat( void )
 {
 	int nbr = _chat->computeHeight();
 	_nb_points = 2;
-    GLint vertices[] = { // pos: x y width height textcoord: x y width height
-        1, 30, WIN_HEIGHT - 48 - 8 - 18 * (nbr + 1), 700, 4 + 18 * nbr, 3, 29, 1, 1, // occult chat box
-        1, 30, WIN_HEIGHT - 48 - 18, 700, 20, 3, 29, 1, 1, // twice for input box
+    GLint vertices[] = { // altlas index, pos: {x y width height},  textcoord: {x y width height}
+        1, CHAT_BOX_X, WIN_HEIGHT - 48 - 8 - 18 * (nbr + 1), CHAT_BOX_WIDTH, 4 + 18 * nbr, 3, 29, 1, 1, // occult chat box
+        1, CHAT_BOX_X, WIN_HEIGHT - 48 - 18, CHAT_BOX_WIDTH, 20, 3, 29, 1, 1, // twice for input box
     };
 
 	setup_shader(vertices);

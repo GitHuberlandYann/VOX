@@ -28,6 +28,7 @@ namespace blocks {
 		CACTUS,
 		FARMLAND,
 		DIRT_PATH,
+		TNT,
 		CRAFTING_TABLE = 8,
 		FURNACE,
 		BEDROCK = 16,
@@ -121,6 +122,7 @@ struct Block {
 		float fuel_time = 0;
 		bool isComposant = false;
 		int getProduction = blocks::AIR;
+		float blast_resistance = FLT_MAX;
 		bool hasHitbox = false;
 		bool collisionHitbox = true;
 		glm::vec3 hitboxCenter = {0, 0, 0};
@@ -174,6 +176,7 @@ struct Air : Block {
 	public:
 		Air() {
 			name = "AIR";
+			blast_resistance = 0.0f;
 			collisionHitbox = false;
 		}
 };
@@ -190,6 +193,7 @@ struct GrassBlock : Block {
 		GrassBlock() {
 			name = "GRASS_BLOCK";
 			mined = blocks::DIRT;
+			blast_resistance = 0.6f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
 			break_time_hand = 0.9f;
@@ -219,6 +223,7 @@ struct OakLog : Block {
 			fuel_time = 15;
 			isComposant = true;
 			getProduction = blocks::CHARCOAL;
+			blast_resistance = 2.0f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			break_time_hand = 3.0f;
@@ -242,6 +247,7 @@ struct Cactus : Block {
 		Cactus() {
 			name = "CACTUS";
 			mined = blocks::CACTUS;
+			blast_resistance = 0.4f;
 			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.6f;
@@ -263,6 +269,7 @@ struct Farmland : Block {
 		Farmland() {
 			name = "FARMLAND";
 			mined = blocks::DIRT;
+			blast_resistance = 0.6f;
 			hasHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
 			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
@@ -288,6 +295,7 @@ struct DirtPath : Block {
 		DirtPath() {
 			name = "DIRT PATH";
 			mined = blocks::DIRT;
+			blast_resistance = 0.65f;
 			hasHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
 			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
@@ -317,6 +325,27 @@ struct DirtPath : Block {
 		}
 };
 
+struct TNT : Block {
+	public:
+		TNT() {
+			name = "TNT";
+			mined = blocks::TNT;
+			blast_resistance = 0.0f;
+			byHand = true;
+			break_time_hand = 0.05f;
+			textureY = 6;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			(void)offset;
+			if (dir == face_dir::PLUSZ) {
+				return (1);
+			} else if (dir == face_dir::MINUSZ) {
+				return (2);
+			}
+			return (0);
+		}
+};
+
 struct CraftingTable : Block {
 	public:
 		CraftingTable() {
@@ -324,6 +353,7 @@ struct CraftingTable : Block {
 			mined = blocks::CRAFTING_TABLE;
 			isFuel = true;
 			fuel_time = 15;
+			blast_resistance = 2.5f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			break_time_hand = 3.75f;
@@ -348,6 +378,7 @@ struct Furnace : Block {
 		Furnace() {
 			name = "FURNACE";
 			mined = blocks::FURNACE;
+			blast_resistance = 3.5f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 17.5f;
@@ -382,6 +413,7 @@ struct Dirt : Block {
 		Dirt() {
 			name = "DIRT";
 			mined = blocks::DIRT;
+			blast_resistance = 0.5f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
 			break_time_hand = 0.75f;
@@ -399,6 +431,7 @@ struct SmoothStone : Block {
 		SmoothStone() {
 			name = "SMOOTH_STONE";
 			mined = blocks::SMOOTH_STONE;
+			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 10.0f;
@@ -418,6 +451,7 @@ struct Stone : Block {
 			mined = blocks::COBBLESTONE;
 			isComposant = true;
 			getProduction = blocks::SMOOTH_STONE;
+			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 7.5f;
@@ -437,6 +471,7 @@ struct Cobblestone : Block {
 			mined = blocks::COBBLESTONE;
 			isComposant = true;
 			getProduction = blocks::STONE;
+			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 10.0f;
@@ -456,6 +491,7 @@ struct StoneBrick : Block {
 			mined = blocks::STONE_BRICKS;
 			isComposant = true;
 			getProduction = blocks::CRACKED_STONE_BRICKS;
+			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 7.5f;
@@ -473,6 +509,7 @@ struct CrackedStoneBrick : Block {
 		CrackedStoneBrick() {
 			name = "CRACKED_STONE_BRICK";
 			mined = blocks::CRACKED_STONE_BRICKS;
+			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 7.5f;
@@ -492,6 +529,7 @@ struct Sand : Block {
 			mined = blocks::SAND;
 			isComposant = true;
 			getProduction = blocks::GLASS;
+			blast_resistance = 0.5f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
 			break_time_hand = 0.75f;
@@ -509,6 +547,7 @@ struct Gravel : Block {
 		Gravel() {
 			name = "GRAVEL";
 			mined = blocks::GRAVEL;
+			blast_resistance = 0.6f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
 			break_time_hand = 0.9f;
@@ -525,6 +564,7 @@ struct OakLeaves : Block {
 	public:
 		OakLeaves() {
 			name = "OAK_LEAVES";
+			blast_resistance = 0.2f;
 			byHand = true;
 			break_time_hand = 0.3f;
 			textureX = 4;
@@ -539,6 +579,7 @@ struct OakPlanks : Block {
 			mined = blocks::OAK_PLANKS;
 			isFuel = true;
 			fuel_time = 15;
+			blast_resistance = 3.0f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			break_time_hand = 3.0f;
@@ -555,6 +596,7 @@ struct Glass : Block {
 	public:
 		Glass() {
 			name = "GLASS";
+			blast_resistance = 0.3f;
 			break_time_hand = 0.45f;
 			textureX = 4;
 			textureY = 11;
@@ -568,6 +610,7 @@ struct CoalOre : Block {
 			mined = blocks::COAL;
 			isComposant = true;
 			getProduction = blocks::COAL;
+			blast_resistance = 3.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 15.0f;
@@ -587,6 +630,7 @@ struct IronOre : Block {
 			mined = blocks::IRON_ORE;
 			isComposant = true;
 			getProduction = blocks::IRON_INGOT;
+			blast_resistance = 3.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 1; // min stone to collect
@@ -607,6 +651,7 @@ struct DiamondOre : Block {
 			mined = blocks::DIAMOND;
 			isComposant = true;
 			getProduction = blocks::DIAMOND;
+			blast_resistance = 3.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 2; // min iron to collect
@@ -627,6 +672,7 @@ struct CoalBlock : Block {
 			mined = blocks::COAL_BLOCK;
 			isFuel = true;
 			fuel_time = 800;
+			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			break_time_hand = 25.0f;
@@ -644,6 +690,7 @@ struct IronBlock : Block {
 		IronBlock() {
 			name = "IRON_BLOCK";
 			mined = blocks::IRON_BLOCK;
+			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 1; // min stone to collect
@@ -662,6 +709,7 @@ struct DiamondBlock : Block {
 		DiamondBlock() {
 			name = "DIAMOND_BLOCK";
 			mined = blocks::DIAMOND_BLOCK;
+			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 2; // min iron to collect
@@ -680,6 +728,7 @@ struct OakSlab : Block {
 		OakSlab() {
 			name = "OAK_SLAB";
 			mined = blocks::OAK_SLAB;
+			blast_resistance = 3.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
@@ -703,6 +752,7 @@ struct Poppy : Block {
 		Poppy() {
 			name = "POPPY";
 			mined = blocks::POPPY;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
@@ -720,6 +770,7 @@ struct Dandelion : Block {
 		Dandelion() {
 			name = "DANDELION";
 			mined = blocks::DANDELION;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
@@ -737,6 +788,7 @@ struct BlueOrchid : Block {
 		BlueOrchid() {
 			name = "BLUE_ORCHID";
 			mined = blocks::BLUE_ORCHID;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
@@ -754,6 +806,7 @@ struct Allium : Block {
 		Allium() {
 			name = "ALLIUM";
 			mined = blocks::ALLIUM;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
@@ -771,6 +824,7 @@ struct CornFlower : Block {
 		CornFlower() {
 			name = "CORNFLOWER";
 			mined = blocks::CORNFLOWER;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
@@ -788,6 +842,7 @@ struct PinkTulip : Block {
 		PinkTulip() {
 			name = "PINK_TULIP";
 			mined = blocks::PINK_TULIP;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
@@ -805,6 +860,7 @@ struct Grass : Block {
 		Grass() {
 			name = "GRASS";
 			mined = blocks::WHEAT_SEEDS;
+			blast_resistance = 0.0f;
 			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.05f;
@@ -819,6 +875,7 @@ struct SugarCane : Block {
 		SugarCane() {
 			name = "SUGAR_CANE";
 			mined = blocks::SUGAR_CANE;
+			blast_resistance = 0.0f;
 			collisionHitbox = false;
 			byHand = true;
 			break_time_hand = 0.2f;
@@ -833,6 +890,7 @@ struct DeadBush : Block {
 		DeadBush() {
 			name = "DEAD_BUSH";
 			mined = blocks::STICK;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
@@ -852,6 +910,7 @@ struct OakSapling : Block {
 		OakSapling() {
 			name = "OAK_SAPLING";
 			mined = blocks::OAK_SAPLING;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
@@ -871,6 +930,7 @@ struct Torch : Block {
 		Torch() {
 			name = "TORCH";
 			mined = blocks::TORCH;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 5 / 16.0f};
@@ -889,6 +949,7 @@ struct WheatCrop : Block {
 		WheatCrop() {
 			name = "WHEAT_CROP";
 			mined = blocks::WHEAT_CROP;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 1 / 32.0f};
@@ -909,6 +970,7 @@ struct WheatCrop1 : Block {
 		WheatCrop1() {
 			name = "WHEAT_CROP 1";
 			mined = blocks::WHEAT_SEEDS;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 3 / 32.0f};
@@ -923,6 +985,7 @@ struct WheatCrop2 : Block {
 		WheatCrop2() {
 			name = "WHEAT_CROP 2";
 			mined = blocks::WHEAT_SEEDS;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 5 / 32.0f};
@@ -937,6 +1000,7 @@ struct WheatCrop3 : Block {
 		WheatCrop3() {
 			name = "WHEAT_CROP 3";
 			mined = blocks::WHEAT_SEEDS;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 7 / 32.0f};
@@ -951,6 +1015,7 @@ struct WheatCrop4 : Block {
 		WheatCrop4() {
 			name = "WHEAT_CROP 4";
 			mined = blocks::WHEAT_SEEDS;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 9 / 32.0f};
@@ -965,6 +1030,7 @@ struct WheatCrop5 : Block {
 		WheatCrop5() {
 			name = "WHEAT_CROP 5";
 			mined = blocks::WHEAT_SEEDS;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 11 / 32.0f};
@@ -979,6 +1045,7 @@ struct WheatCrop6 : Block {
 		WheatCrop6() {
 			name = "WHEAT_CROP 6";
 			mined = blocks::WHEAT_SEEDS;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 13 / 32.0f};
@@ -993,6 +1060,7 @@ struct WheatCrop7 : Block {
 		WheatCrop7() {
 			name = "WHEAT_CROP 7";
 			mined = blocks::WHEAT;
+			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;
 			hitboxCenter = {0.5f, 0.5f, 15 / 32.0f};
@@ -1007,6 +1075,7 @@ struct Water : Block {
 		Water() {
 			name = "WATER";
 			mined = blocks::WATER_BUCKET;
+			blast_resistance = 100.0f;
 			collisionHitbox = false;
 		}
 };
@@ -1015,6 +1084,7 @@ struct Water1 : Block {
 	public:
 		Water1() {
 			name = "WATER 1";
+			blast_resistance = 100.0f;
 			collisionHitbox = false;
 		}
 };
@@ -1023,6 +1093,7 @@ struct Water2 : Block {
 	public:
 		Water2() {
 			name = "WATER 2";
+			blast_resistance = 100.0f;
 			collisionHitbox = false;
 		}
 };
@@ -1031,6 +1102,7 @@ struct Water3 : Block {
 	public:
 		Water3() {
 			name = "WATER 3";
+			blast_resistance = 100.0f;
 			collisionHitbox = false;
 		}
 };
@@ -1039,6 +1111,7 @@ struct Water4 : Block {
 	public:
 		Water4() {
 			name = "WATER 4";
+			blast_resistance = 100.0f;
 			collisionHitbox = false;
 		}
 };
@@ -1047,6 +1120,7 @@ struct Water5 : Block {
 	public:
 		Water5() {
 			name = "WATER 5";
+			blast_resistance = 100.0f;
 			collisionHitbox = false;
 		}
 };
@@ -1055,6 +1129,7 @@ struct Water6 : Block {
 	public:
 		Water6() {
 			name = "WATER 6";
+			blast_resistance = 100.0f;
 			collisionHitbox = false;
 		}
 };
@@ -1063,6 +1138,7 @@ struct Water7 : Block {
 	public:
 		Water7() {
 			name = "WATER 7";
+			blast_resistance = 100.0f;
 			collisionHitbox = false;
 		}
 };

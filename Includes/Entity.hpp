@@ -9,15 +9,16 @@ class Entity
 {
 	private:
 		int _value, _amount, _dura;
-		bool _solid, _thrown, _falling_block;
+		bool _solid, _thrown, _falling_block, _stuck;
 		double _lifeTime;
 		glm::vec3 _pos, _dir;
 		glm::ivec2 _chunk_pos;
 		Chunk *_chunk;
 		Inventory *_inventory;
 
+		bool updateTNT( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
 		bool updateFallingBlock( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
-		bool updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
+		bool updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float deltaTime );
 
 	public:
 		Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool solid, bool thrown, int value, int amount = 1, int dura = 0 );

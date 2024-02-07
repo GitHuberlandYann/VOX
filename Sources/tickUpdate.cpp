@@ -279,6 +279,7 @@ void Chunk::updateScheduledBlocks( void )
 		int type = _blocks[*f] & 0xFF;
 		if (type != blocks::SAND && type != blocks::GRAVEL) {
 			std::cerr << _startX << ", " << _startY << " scheduled_to_fall block is " << s_blocks[type]->name << std::endl;
+			f = _scheduled_to_fall.erase(f);
 			continue ;
 		}
 		int posZ = *f & (WORLD_HEIGHT - 1);

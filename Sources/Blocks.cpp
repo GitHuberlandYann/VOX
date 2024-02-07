@@ -1,7 +1,7 @@
 #include "Blocks.hpp"
 
 const Block *s_blocks[S_BLOCKS_SIZE] = {
-	new Air(), new GrassBlock(), new OakLog(), new Cactus(), new Farmland(), new DirtPath(), new TBD(), new TBD(),
+	new Air(), new GrassBlock(), new OakLog(), new Cactus(), new Farmland(), new DirtPath(), new TNT(), new TBD(),
 	new CraftingTable(), new Furnace(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(),
 	new Bedrock(), new Dirt(), new SmoothStone(), new Stone(), new Cobblestone(), new StoneBrick(), new CrackedStoneBrick(), new Sand(),
 	new Gravel(), new OakLeaves(), new OakPlanks(), new Glass(), new TBD(), new TBD(), new TBD(), new TBD(),

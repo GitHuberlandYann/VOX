@@ -1087,6 +1087,9 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			return ;
 		}
 		replace_block(useInventory, pos, type, previous_type);
+	} else if (modif == Modif::LITNT) {
+		remove_block(false, pos);
+		_entities.push_back(Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0.2f, 0.2f, 0.4f}, true, false, type));
 	}
 	if (type == blocks::WATER || type == blocks::BUCKET) {
 		// std::cout << "modif to water with " << ((type == blocks::WATER) ? "water" : "bucket") << std::endl;
@@ -1256,10 +1259,10 @@ int Chunk::isHit( glm::ivec3 pos )
 	return (type);
 }
 
-static void thread_modif_block( Chunk *current, bool useInventory, int type, glm::ivec3 pos, Modif modif )
-{
-	current->regeneration(useInventory, type, pos, modif);
-}
+// static void thread_modif_block( Chunk *current, bool useInventory, int type, glm::ivec3 pos, Modif modif )
+// {
+// 	current->regeneration(useInventory, type, pos, modif);
+// }
 
 void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif )
 {
@@ -1282,14 +1285,45 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 		}
 	} else {
 		// std::cout << _startX << " " << _startY << ": handle hit at pos " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
-		if (_thread.joinable()) {
-			_thread.join();
-		}
-		_thread = std::thread(thread_modif_block, this, useInventory, type, chunk_pos, modif);
+		// if (_thread.joinable()) {
+		// 	_thread.join();
+		// }
+		// _thread = std::thread(thread_modif_block, this, useInventory, type, chunk_pos, modif);
+		regeneration(useInventory, type, chunk_pos, modif);
 		return ;
 	}
 	
 	std::cout << _startX << ", " << _startY << " ERROR BLOCK OUT OF CHUNK " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
+}
+
+// explosions from TNT cause a 100% drop rate, otherwise 1/power drop rate
+void Chunk::explosion( glm::vec3 pos, int power )
+{
+	// std::cout << "EXPLOSION POWER " << power << std::endl;
+	// we launch a ray in each OUTER intersection of a 16x16x16 grid == 1352 rays
+	for (int row = 0; row < 16; ++row) {
+		for (int col = 0; col < 16; ++col) {
+			for (int level = 0; level < 16; ++level) {
+				if (!row || !col || !level || row == 15 || col == 15 || level == 15) {
+					float intensity = (0.7f + 0.6f * Random::randomFloat(_seed)) * power; // [0.7:1.3] * power
+					glm::vec3 end = pos + glm::normalize(glm::vec3(-7.5f + row, -7.5f + col, -7.5f + level)) * intensity;
+					std::vector<glm::ivec3> vt = voxel_traversal(pos, end);
+					intensity += 0.75f;
+					for (auto &p : vt) {
+						int type = getBlockAt(p.x - _startX, p.y - _startY, p.z, true) & 0xFF;
+						intensity -= 0.75f + s_blocks[type]->blast_resistance;
+						if (intensity < 0) {
+							break ;
+						} else if (type != blocks::AIR) {
+							// std::cout << "block " << s_blocks[type]->name << " removed" << std::endl;
+							handleHit(true, type, p, Modif::REMOVE);
+						}
+					}
+				}
+			}
+		}
+	}
+	// std::cout << "EXPLOSION OVER" << std::endl;
 }
 
 void Chunk::shootArrow( float timer )
@@ -1451,7 +1485,8 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 	// std::cout << "got here" << std::endl;
 	// std::cout << "update border displayed " << _displayed_faces << " at " << _startX << ", " << _startY << std::endl;
 	FILL:
-	fill_vertex_array();
+	// fill_vertex_array();
+	_vertex_update = true;
 }
 
 /* collisionBox takes feet position of object, dimension of its hitbox and returns wether object is inside block or not
@@ -1640,11 +1675,26 @@ void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double 
 	// 			on merge, item timer set to longest of 2
 	// 			double for loop, use bool given as parameter to do this once per second at most
 
-	for (auto e = _entities.begin(); e != _entities.end();) {
-		if (e->update(arr, _camera->getPos(), deltaTime)) {
-			e = _entities.erase(e);
-		} else {
-			++e;
+	// following code not working with tnt explosion, because reallocation on _entities.push_back and iterators are invalidated -> erase(e) causes segfault
+	// for (auto e = _entities.begin(); e != _entities.end();) {
+	// 	std::cout << "debug 0, enti size " << _entities.size() << std::endl;
+	// 	if (e->update(arr, _camera->getPos(), deltaTime)) {
+	// 	std::cout << "debug 1, enti size " << _entities.size() << std::endl;
+	// 		e = _entities.erase(e);
+	// 	} else {
+	// 		++e;
+	// 	}
+	// }
+
+	size_t size = _entities.size();
+	if (!size) {
+		return ;
+	}
+
+	glm::vec3 camPos = _camera->getPos();
+	for (int index = size - 1; index >= 0; --index) {
+		if (_entities[index].update(arr, camPos, deltaTime)) {
+			_entities.erase(_entities.begin() + index);
 		}
 	}
 }

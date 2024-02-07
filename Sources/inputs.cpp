@@ -110,6 +110,11 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_menu->setState(FURNACE_MENU);
 		_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit.pos));
 		return ;
+	} else if (_block_hit.value == blocks::TNT && _hand_content == blocks::WHEAT_SEEDS) { // TODO replace seeds with flint and steel
+		if (current_chunk_ptr) {
+			current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
+		}
+		return ;
 	}
 	int type = _hand_content;
 	// std::cout << "aiming " << s_blocks[type]->name << " towards " << s_blocks[_block_hit.value]->name << std::endl;;
