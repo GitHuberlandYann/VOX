@@ -583,10 +583,6 @@ void OpenGL_Manager::main_loop( void )
 					loadWorld("Worlds/" + _world_name);
 					initWorld();
 					break ;
-				case (3): // save and quit to menu
-					resetInputsPtrs();
-					saveWorld();
-					break ;
 				case (4): // skip world selection and play with default seed of 123456
 					initWorld();
 					break ;
@@ -596,8 +592,10 @@ void OpenGL_Manager::main_loop( void )
 					break ;
 				case (6): // Respawn player, then save and quit to menu
 					_camera->respawn();
+				case (3): // save and quit to menu
 					resetInputsPtrs();
 					saveWorld();
+					_ui->_hideUI = true;
 					break ;
 			}
 		}

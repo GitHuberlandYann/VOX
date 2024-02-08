@@ -530,7 +530,7 @@ void Chunk::entity_block( int posX, int posY, int posZ, int type )
 			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, blocks::WHEAT_SEEDS, 4));
 		}
 	} else {
-		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, s_blocks[type]->mined));
+		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, s_blocks[type]->mined));
 	}
 }
 
@@ -572,7 +572,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		type_above = _blocks[offset + 1] & 0xFF;
 		if (type_above == blocks::SAND || type_above == blocks::GRAVEL) { // sand falls if block underneath deleted
 			// std::cout << "new scheduled_to_fall" << std::endl;
-			_scheduled_to_fall.insert(offset + 1);
+			_scheduled_to_fall.push_back(offset + 1);
 		}
 	}
 	_blocks[offset] = blocks::AIR;

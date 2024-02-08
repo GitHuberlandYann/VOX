@@ -92,7 +92,8 @@ class Chunk
 		Camera *_camera;
 		Inventory *_inventory;
 		std::map<int,int> _added;
-		std::set<int> _removed, _fluids, _scheduled_to_fall;
+		std::set<int> _removed, _fluids;
+		std::vector<int> _scheduled_to_fall;
 		std::map<int, FurnaceInstance> _furnaces;
 		std::vector<Entity> _entities;
 		std::thread _thread;

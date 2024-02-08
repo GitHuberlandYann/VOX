@@ -275,18 +275,24 @@ void Chunk::tickUpdate( void )
 
 void Chunk::updateScheduledBlocks( void )
 {
-	for (auto f = _scheduled_to_fall.begin(); f != _scheduled_to_fall.end();) {
-		int type = _blocks[*f] & 0xFF;
+	size_t size = _scheduled_to_fall.size();
+	if (!size) {
+		return ;
+	}
+
+	for (size_t index = 0; index < size; ++index) {
+		int offset = _scheduled_to_fall[0];
+		int type = _blocks[offset] & 0xFF;
 		if (type != blocks::SAND && type != blocks::GRAVEL) {
 			std::cerr << _startX << ", " << _startY << " scheduled_to_fall block is " << s_blocks[type]->name << std::endl;
-			f = _scheduled_to_fall.erase(f);
+			_scheduled_to_fall.erase(_scheduled_to_fall.begin());
 			continue ;
 		}
-		int posZ = *f & (WORLD_HEIGHT - 1);
-		int posY = ((*f >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-		int posX = ((*f >> WORLD_SHIFT) >> CHUNK_SHIFT);
+		int posZ = offset & (WORLD_HEIGHT - 1);
+		int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
+		int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
 		handleHit(false, type, {posX + _startX, posY + _startY, posZ}, Modif::REMOVE);
 		_entities.push_back(Entity(this, _inventory, {posX + _startX, posY + _startY, posZ}, {0, 0, 0}, true, false, type));
-		f = _scheduled_to_fall.erase(f);
+		_scheduled_to_fall.erase(_scheduled_to_fall.begin());
 	}
 }

@@ -28,8 +28,8 @@ Project Requirements:
 TODOS:
 	- hitbox change + no fall on sneak
     - skybox
-	- particles ?
-	- TNT, explosions, flint and steel
+	- particles !
+	- flint and steel
 	- limit floodfill algo for lighting (but be smart about it)
 	- stairs
 	- chests
@@ -42,7 +42,7 @@ TODOS:
 	- upon world generation, place player on ground by using continentalness
 	- water ligth level
     - lava + nether
-	- multiplayer ?
+	- multiplayer ? Server-Client logic on singleplayer ?
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
@@ -84,6 +84,7 @@ DONE:
     - placing sand = gravity
     - sand falls if nothing under, even in caves
 	- sand now turns to falling block entity during fall
+	- TNT, explosions
     - make gravel behave like sand
     - flower on grass only
     - flowers destroyed if block underneath destroyed
