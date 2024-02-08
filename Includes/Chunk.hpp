@@ -8,6 +8,7 @@
 # include <mutex>
 # include "utils.h"
 # include "PerlinNoise.hpp"
+# include "ChestInstance.hpp"
 # include "FurnaceInstance.hpp"
 class Camera;
 # include "Inventory.hpp"
@@ -74,6 +75,7 @@ const GLint oak_normal[61][3] = {
 struct s_backup { // TODO add fluids to backups
 	std::map<int, int> added;
 	std::set<int> removed;
+	std::map<int, ChestInstance> chests;
 	std::map<int, FurnaceInstance> furnaces;
 };
 
@@ -97,6 +99,7 @@ class Chunk
 		std::map<int,int> _added;
 		std::set<int> _removed, _fluids;
 		std::vector<int> _scheduled_to_fall;
+		std::map<int, ChestInstance> _chests;
 		std::map<int, FurnaceInstance> _furnaces;
 		std::vector<Entity> _entities;
 		std::thread _thread;
@@ -130,6 +133,7 @@ class Chunk
 
 		void light_spread( int posX, int posY, int level, bool skySpread );
 		void generate_lights( void );
+		int computeLight( int row, int col, int level );
 		int computeSmoothLight( int basefaceLight, int row, int col, int level, std::array<int, 9> offsets );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
 
@@ -157,12 +161,12 @@ class Chunk
 		GLint getCamLightLevel( glm::ivec3 location );
 		int computePosLight( glm::vec3 pos );
 		short getLightLevel( int posX, int posY, int posZ );
-		int computeLight( int row, int col, int level );
 		void waitGenDone( void );
 
 		void setNeighbour( Chunk *neighbour, face_dir index );
 		void setBackup( std::map<std::pair<int, int>, s_backup> &backups );
-		void restoreBackup( s_backup backup);
+		void restoreBackup( s_backup &backup);
+		void openChest( glm::ivec3 pos );
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
 		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours );
 		void turnDirtToGrass( int posX, int posY, int posZ );

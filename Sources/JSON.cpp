@@ -115,37 +115,56 @@ std::string OpenGL_Manager::saveBackupString( void )
 			res += ',';
 		}
 		start = false;
-		res += "\n\t\t{\"pos\": [" + std::to_string(bup.first.first) + ", " + std::to_string(bup.first.second) + "],"
-			+ "\n\t\t\"added\": [";
-		bool astart = true;
-		for (auto& add: bup.second.added) {
-			if (!astart) {
-				res += ", ";
+		res += "\n\t\t{\"pos\": [" + std::to_string(bup.first.first) + ", " + std::to_string(bup.first.second);
+		if (bup.second.furnaces.size()) {
+			res += "], \n\t\t\"added\": [";
+			bool astart = true;
+			for (auto& add: bup.second.added) {
+				if (!astart) {
+					res += ", ";
+				}
+				astart = false;
+				res += "[" + std::to_string(add.first) + ", " + std::to_string(add.second) + ']';
 			}
-			astart = false;
-			res += "[" + std::to_string(add.first) + ", " + std::to_string(add.second) + ']';
 		}
-		res += "],\n\t\t\"removed\": [";
-		bool rmstart = true;
-		for (auto& rm: bup.second.removed) {
-			if (!rmstart) {
-				res += ", ";
+		if (bup.second.removed.size()) {
+			res += "],\n\t\t\"removed\": [";
+			bool rmstart = true;
+			for (auto& rm: bup.second.removed) {
+				if (!rmstart) {
+					res += ", ";
+				}
+				rmstart = false;
+				res += "[" + std::to_string(rm) + ']';
 			}
-			rmstart = false;
-			res += "[" + std::to_string(rm) + ']';
 		}
-		res += "],\n\t\t\"furnaces\": [";
-		bool fstart = true;
-		for (auto& fur: bup.second.furnaces) {
-			if (!fstart) {
-				res += ", ";
+		if (bup.second.chests.size()) {
+			res += "],\n\t\t\"chests\": [";
+			bool chstart = true;
+			for (auto& ch: bup.second.chests) {
+				if (!chstart) {
+					res += ", ";
+				}
+				chstart = false;
+				res += "{\"pos\": " + std::to_string(ch.first)
+					+ ", \"orientation\": " + std::to_string(ch.second.getOrientation())
+					+ "}"; // TODO add chest's content
 			}
-			fstart = false;
-			res += "{\"pos\": " + std::to_string(fur.first)
-				+ ", \"composant\": [" + std::to_string(fur.second.getComposant().x) + ", " + std::to_string(fur.second.getComposant().y)
-				+ "], \"fuel\": [" + std::to_string(fur.second.getFuel().x) + ", " + std::to_string(fur.second.getFuel().y)
-				+ "], \"production\": [" + std::to_string(fur.second.getProduction().x) + ", " + std::to_string(fur.second.getProduction().y)
-				+ "]}"; // TODO add current times for better backup
+		}
+		if (bup.second.furnaces.size()) {
+			res += "],\n\t\t\"furnaces\": [";
+			bool fstart = true;
+			for (auto& fur: bup.second.furnaces) {
+				if (!fstart) {
+					res += ", ";
+				}
+				fstart = false;
+				res += "{\"pos\": " + std::to_string(fur.first)
+					+ ", \"composant\": [" + std::to_string(fur.second.getComposant().x) + ", " + std::to_string(fur.second.getComposant().y)
+					+ "], \"fuel\": [" + std::to_string(fur.second.getFuel().x) + ", " + std::to_string(fur.second.getFuel().y)
+					+ "], \"production\": [" + std::to_string(fur.second.getProduction().x) + ", " + std::to_string(fur.second.getProduction().y)
+					+ "]}"; // TODO add current times for better backup
+			}
 		}
 		res += "]}";
 	}
@@ -404,6 +423,17 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						ofs << "backups new removed " << rmvalue << std::endl;
 						for (index++; line[index + 1] && line[index + 1] != '['; index++);
 					}
+				} else if (!line.compare(0, 10, "\"chests\": ")) {
+					index = 10;
+					while (line[index + 1] == '{') {
+						int chkey = std::atoi(&line[index + 9]);
+						for (index = index + 9; line[index] && line[index] != ':'; index++);
+						int orientation = std::atoi(&line[index + 2]);
+						backups_value.chests.emplace(chkey, ChestInstance(NULL, {0, 0, 0}, orientation));
+						ofs << "one more chest at " << chkey << " with orientation " << orientation <<  std::endl;
+						for (; line[index] && line[index] != '{'; index++);
+						--index;
+					}
 				} else if (!line.compare(0, 12, "\"furnaces\": ")) {
 					index = 12;
 					while (line[index + 1] == '{') {
@@ -428,6 +458,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						backups_value.furnaces[fkey] = fur;
 						ofs << "one more furnace at " << fkey << std::endl;
 						for (; line[index] && line[index] != '{'; index++);
+						--index;
 					}
 					break ;
 				} else {

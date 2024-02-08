@@ -250,7 +250,7 @@ bool visible_face( int value, int next, face_dir dir )
 {
 	value &= 0xFF;
 	next &= 0xFF;
-	if (value == blocks::AIR) {
+	if (value == blocks::AIR || value == blocks::CHEST) {
 		return (false);
 	}
 	if (next == blocks::AIR || next >= blocks::POPPY || next == blocks::CACTUS

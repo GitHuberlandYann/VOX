@@ -91,6 +91,20 @@ void Chunk::generate_lights( void )
 	}
 }
 
+// uses sky light and block light to output a shade value 
+// -> obsolete, now compute on shader
+// now returns 0xFF00 skylight + 0xFF blocklight
+// row and col are in [-1:CHUNK_SIZE]
+int Chunk::computeLight( int row, int col, int level )
+{
+	// (void)row;(void)col;(void)level;return (0);
+	short light = getLightLevel(row, col, level);
+	// int blockLightAmplitude = 5; // amount by which light decreases on each block
+	int blockLight = light & 0xF;
+	int skyLight = (light >> 8) & 0xF;
+	return (blockLight + (skyLight << 4));
+}
+
 // same as computeLight, but we handle a corner this time
 // result is max of 4 light levels surrounding corner
 // used to have a smooth lighting from one block to another
@@ -136,7 +150,7 @@ void Chunk::fill_vertex_array( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint block_value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level], type = block_value & 0xFF;
-				if (block_value & blocks::NOTVISIBLE)
+				if (block_value & blocks::NOTVISIBLE || type == blocks::CHEST) // chests are drawn as entities
 					continue;
 				if (type >= blocks::WHEAT_CROP && type <= blocks::WHEAT_CROP7) {
 					p0 = {_startX + row + 0, _startY + col + 0, level + FIFTEEN_SIXTEENTH};
@@ -560,20 +574,6 @@ short Chunk::getLightLevel( int posX, int posY, int posZ )
 		return (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ]);
 	}
 	return (0xF00);
-}
-
-// uses sky light and block light to output a shade value 
-// -> obsolete, now compute on shader
-// now returns 0xFF00 skylight + 0xFF blocklight
-// row and col are in [-1:CHUNK_SIZE]
-int Chunk::computeLight( int row, int col, int level )
-{
-	// (void)row;(void)col;(void)level;return (0);
-	short light = getLightLevel(row, col, level);
-	// int blockLightAmplitude = 5; // amount by which light decreases on each block
-	int blockLight = light & 0xF;
-	int skyLight = (light >> 8) & 0xF;
-	return (blockLight + (skyLight << 4));
 }
 
 void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool skySpread )

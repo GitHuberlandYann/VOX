@@ -127,7 +127,7 @@ bool Entity::updateFallingBlock( std::vector<std::pair<int, glm::vec3>> &arr, do
 	glm::vec3 p7 = {_pos.x + 1, _pos.y + 1, _pos.z + 0};
 
 	int texture = s_blocks[_value]->texX(face_dir::MINUSX) + (s_blocks[_value]->texY(face_dir::MINUSX) << 4);
-	int faceLight = _chunk->computeLight(_pos.x - _chunk_pos.x, _pos.y - _chunk_pos.y, _pos.z);
+	int faceLight = _chunk->computePosLight(_pos);
 	int spec = texture + (3 << 19);
 	spec += (faceLight << 24);
 	std::pair<int, glm::vec3> v0 = {spec, p4};
@@ -322,7 +322,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	glm::vec3 p7 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
 
 	if (_value < blocks::POPPY) {
-		int offset = ((_value >= blocks::CRAFTING_TABLE && _value < blocks::BEDROCK) ? face_dir::MINUSX + YTEX: 0);
+		int offset = ((_value >= blocks::CRAFTING_TABLE && _value < blocks::BEDROCK) ? face_dir::MINUSX: 0);
 	    int itemLight = _chunk->computePosLight(_pos);
 
 	    int spec = s_blocks[_value]->texX(face_dir::MINUSX, offset) + (s_blocks[_value]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19) + (itemLight << 24);

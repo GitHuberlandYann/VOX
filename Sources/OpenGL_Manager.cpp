@@ -101,7 +101,7 @@ void OpenGL_Manager::drawEntities( int size )
 	GLfloat *vertFloat = static_cast<GLfloat *>(vertices);
 
 	size_t index = 0;
-	bool hitBox = _block_hit.value != blocks::AIR;
+	bool hitBox = (_block_hit.value != blocks::AIR) && (_block_hit.value != blocks::CHEST);
 	if (!hitBox) {
 		index = 24 * 4;
 	} else if (s_blocks[_block_hit.value]->hasHitbox) {

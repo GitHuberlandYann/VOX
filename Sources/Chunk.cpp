@@ -113,7 +113,7 @@ GLint Chunk::face_count( int type, int row, int col, int level )
 	if (type >= blocks::POPPY) {
 		return (2 << (type >= blocks::TORCH));
 	}
-	if (type == blocks::GLASS) {
+	if (type == blocks::GLASS || type == blocks::CHEST) {
 		return (0);
 	}
 	GLint res = visible_face(type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)
@@ -542,7 +542,13 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	int value = _blocks[offset], type = value & 0xFF; // TODO better handling of invis block gets deleted
 	_added.erase(offset);
 	_removed.insert(offset);
-	if (type == blocks::FURNACE) {
+	if (type == blocks::CHEST) {
+		// auto search = _chests.find(offset);
+		// if (search != _chests.end()) {
+
+		// }
+		_chests.erase(offset);
+	} else if (type == blocks::FURNACE) {
 		auto search = _furnaces.find(offset); // drop furnace's items
 		if (search != _furnaces.end()) {
 			glm::ivec2 items = search->second.getComposant();
@@ -617,7 +623,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		}
 	}
 	handle_border_block(pos, air_flower(value, true, false, true), false); // if block at border of chunk gets deleted, we update neighbours. doing it after light spread
-	if (pos.z < 255 && type_above != blocks::TORCH && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS)) { // del flower if block underneath deleted
+	if (type_above != blocks::TORCH && type_above != blocks::CHEST && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS)) { // del flower if block underneath deleted
 		(type_above == blocks::GRASS)
 			? remove_block(false, {pos.x, pos.y, pos.z + 1}) // if grass above breaked block, don't collect it
 			: remove_block(useInventory, {pos.x, pos.y, pos.z + 1});
@@ -637,7 +643,8 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 			return ;
 		}
 	}
-	if (type == blocks::WATER) { // we place water
+	if (type == blocks::CHEST) { // chests treated like flowers, but can be placed anywhere
+	} else if (type == blocks::WATER) { // we place water
 		if (previous < blocks::WATER) {
 			_hasWater = true;
 		}
@@ -699,8 +706,10 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		// std::cout << "adding water" << std::endl;
 		return ;
 	}
-	if (type == blocks::FURNACE) {
-		_furnaces[offset] = FurnaceInstance();
+	if (type == blocks::CHEST) {
+		_chests.emplace(offset, ChestInstance(this, {pos.x + _startX, pos.y + _startY, pos.z}, _camera->getOrientation()));
+	} else if (type == blocks::FURNACE) {
+		_furnaces.emplace(offset, FurnaceInstance());
 	} else if (type == blocks::TORCH) {
 		std::cout << "add light" << std::endl;
 		_lights[offset] &= 0xFF00;
@@ -924,16 +933,33 @@ void Chunk::setBackup( std::map<std::pair<int, int>, s_backup> &backups )
 {
 	if (_added.size() || _removed.size()) {
 		mtx_backup.lock();
-		backups[std::pair<int, int>(_startX, _startY)] = {_added, _removed, _furnaces};
+		backups[std::pair<int, int>(_startX, _startY)] = {_added, _removed, _chests, _furnaces};
 		mtx_backup.unlock();
 	}
 }
 
-void Chunk::restoreBackup( s_backup backup )
+void Chunk::restoreBackup( s_backup &backup )
 {
 	_added = backup.added;
 	_removed = backup.removed;
+	_chests = backup.chests;
+	for (auto &ch : _chests) {
+		std::cout << "chest in backup of " << _startX << " " << _startY << " at " << ch.first << std::endl;
+		int posZ = ch.first & (WORLD_HEIGHT - 1);
+		int posY = ((ch.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
+		int posX = ((ch.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
+		ch.second.setChunk(this, {posX + _startX, posY + _startY, posZ});
+	}
 	_furnaces = backup.furnaces;
+}
+
+void Chunk::openChest( glm::ivec3 pos )
+{
+	int key = ((((pos.x - _startX) << CHUNK_SHIFT) + pos.y - _startY) << WORLD_SHIFT) + pos.z;
+	auto search = _chests.find(key);
+	if (search != _chests.end()) {
+		search->second.setState(chest_state::OPENING);
+	}
 }
 
 FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
@@ -1686,16 +1712,22 @@ void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double 
 	// 	}
 	// }
 
+	glm::vec3 camPos;
 	size_t size = _entities.size();
 	if (!size) {
-		return ;
+		goto CHESTS;
 	}
 
-	glm::vec3 camPos = _camera->getPos();
+	camPos = _camera->getPos();
 	for (int index = size - 1; index >= 0; --index) {
 		if (_entities[index].update(arr, camPos, deltaTime)) {
 			_entities.erase(_entities.begin() + index);
 		}
+	}
+
+	CHESTS:
+	for (auto &c : _chests) {
+		c.second.update(arr, deltaTime);
 	}
 }
 

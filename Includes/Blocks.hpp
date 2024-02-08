@@ -61,6 +61,7 @@ namespace blocks {
 		DEAD_BUSH,
 		OAK_SAPLING,
 		TORCH,
+		CHEST = 63,
 		WHEAT_CROP = 64,
 		WHEAT_CROP1,
 		WHEAT_CROP2,
@@ -941,6 +942,27 @@ struct Torch : Block {
 			item3D = false;
 			textureX = 6;
 			textureY = 10;
+		}
+};
+
+struct Chest : Block {
+	public:
+		Chest() {
+			name = "CHEST";
+			mined = blocks::CHEST;
+			blast_resistance = 2.5f;
+			hasHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 7.5 / 16.0f};
+			hitboxHalfSize = {7 / 16.0f, 7 / 16.0f, 7.5 / 16.0f};
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			break_time_hand = 3.75f;
+			break_time_wooden = 1.9f;
+			break_time_stone = 0.95f;
+			break_time_iron = 0.65f;
+			break_time_diamond = 0.5f;
+			textureX = 0;
+			textureY = 15;
 		}
 };
 

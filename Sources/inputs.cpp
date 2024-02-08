@@ -103,6 +103,9 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_e_released = false;
 		_menu->setState(CRAFTING_MENU);
 		return ;
+	} else if (_block_hit.value == blocks::CHEST) {
+		chunk_hit->openChest(_block_hit.pos);
+		return ;
 	} else if (_block_hit.value == blocks::FURNACE) {
 		_paused = true;
 		_esc_released = false;
