@@ -948,7 +948,7 @@ struct WheatCrop : Block {
 	public:
 		WheatCrop() {
 			name = "WHEAT_CROP";
-			mined = blocks::WHEAT_CROP;
+			mined = blocks::WHEAT_SEEDS;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox = false;

@@ -18,7 +18,10 @@ class Camera;
 # define CHUNK_SHIFT 4
 # define WORLD_HEIGHT 256
 # define WORLD_SHIFT 8
-# define ALLOC_SIZE 1 << 16 // represents CHUNK_SIZE * CHUNK_SIZE * WORLD_HEIGHT 
+# define ALLOC_SIZE 1 << 16 // represents CHUNK_SIZE * CHUNK_SIZE * WORLD_HEIGHT
+
+# define XTEX 1 + (1 << 17) + (1 << 16)
+# define YTEX (1 << 4) + (1 << 18) + (1 << 12)
 
 enum cont {
 	CONT_MUSHROOM_FIELDS,
