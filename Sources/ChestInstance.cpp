@@ -117,38 +117,62 @@ void ChestInstance::display_open( std::vector<std::pair<int, glm::vec3>> &arr )
 
 	offset = (_orientation == face_dir::MINUSX) * 2 + (_orientation == face_dir::PLUSX) * 4;
 	spec = offset + (15 << 4) + (4 << 19) + (itemLight << 24);
-    v0 = {spec, p3 + glm::vec3(0, 0, -ONE_SIXTEENTH)};
-    v1 = {spec + XTEX, p1 + glm::vec3(0, 0, ONE_SIXTEENTH)};
-    v2 = {spec + (1 << 18) + (5 << 8), p7 + glm::vec3(0, 0, -ONE_SIXTEENTH)};
-    v3 = {spec + XTEX + (1 << 18) + (5 << 8), p5 + glm::vec3(0, 0, ONE_SIXTEENTH)};
+    v0 = {spec, p3 + glm::vec3(-ONE_SIXTEENTH * !offset, ONE_SIXTEENTH * !!offset, -ONE_SIXTEENTH)};
+    v1 = {spec + XTEX, p1 + glm::vec3(-ONE_SIXTEENTH * !offset, ONE_SIXTEENTH * !!offset, ONE_SIXTEENTH)};
+    v2 = {spec + (1 << 18) + ((5 + 9 * !!offset) << 8), p7 + glm::vec3(-ONE_SIXTEENTH * !offset, -ONE_SIXTEENTH * !!offset, -ONE_SIXTEENTH)};
+    v3 = {spec + XTEX + (1 << 18) + ((5 + 9 * !!offset) << 8), p5 + glm::vec3(-ONE_SIXTEENTH * !offset, -ONE_SIXTEENTH * !!offset, ONE_SIXTEENTH)};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = (_orientation == face_dir::MINUSY) + (15 << 4) + (1 << 19) + (itemLight << 24);
-    v0 = {spec, p0 + glm::vec3(0, ONE_SIXTEENTH, 0)};
-    v1 = {spec + XTEX, p1 + glm::vec3(0, ONE_SIXTEENTH, 0)};
-    v2 = {spec + (1 << 18) + (5 << 8), p2 + glm::vec3(0, ONE_SIXTEENTH, 0)};
-    v3 = {spec + XTEX + (1 << 18) + (5 << 8), p3 + glm::vec3(0, ONE_SIXTEENTH, 0)};
+	offset = (_orientation == face_dir::MINUSY) * 4 + (_orientation == face_dir::PLUSY) * 2;
+	spec = offset + (15 << 4) + (3 << 19) + (itemLight << 24);
+    v0 = {spec, p2 + glm::vec3(ONE_SIXTEENTH * !!offset, ONE_SIXTEENTH * !offset, -ONE_SIXTEENTH)};
+    v1 = {spec + XTEX, p0 + glm::vec3(ONE_SIXTEENTH * !!offset, ONE_SIXTEENTH * !offset, ONE_SIXTEENTH)};
+    v2 = {spec + (1 << 18) + ((5 + 9 * !!offset) << 8), p3 + glm::vec3(-ONE_SIXTEENTH * !!offset, ONE_SIXTEENTH * !offset, -ONE_SIXTEENTH)};
+    v3 = {spec + XTEX + (1 << 18) + ((5 + 9 * !!offset) << 8), p1 + glm::vec3(-ONE_SIXTEENTH * !!offset, ONE_SIXTEENTH * !offset, ONE_SIXTEENTH)};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = (_orientation == face_dir::PLUSY) + (15 << 4) + (2 << 19) + (itemLight << 24);
-    v0 = {spec, p5 - glm::vec3(0, ONE_SIXTEENTH, 0)};
-    v1 = {spec + XTEX, p4 - glm::vec3(0, ONE_SIXTEENTH, 0)};
-    v2 = {spec + (1 << 18) + (5 << 8), p7 - glm::vec3(0, ONE_SIXTEENTH, 0)};
-    v3 = {spec + XTEX + (1 << 18) + (5 << 8), p6 - glm::vec3(0, ONE_SIXTEENTH, 0)};
+	offset = (_orientation == face_dir::MINUSY) * 2 + (_orientation == face_dir::PLUSY) * 4;
+	spec = offset + (15 << 4) + (4 << 19) + (itemLight << 24);
+    v0 = {spec, p7 + glm::vec3(-ONE_SIXTEENTH * !!offset, -ONE_SIXTEENTH * !offset, -ONE_SIXTEENTH)};
+    v1 = {spec + XTEX, p5 + glm::vec3(-ONE_SIXTEENTH * !!offset, -ONE_SIXTEENTH * !offset, ONE_SIXTEENTH)};
+    v2 = {spec + (1 << 18) + ((5 + 9 * !!offset) << 8), p6 + glm::vec3(ONE_SIXTEENTH * !!offset, -ONE_SIXTEENTH * !offset, -ONE_SIXTEENTH)};
+    v3 = {spec + XTEX + (1 << 18) + ((5 + 9 * !!offset) << 8), p4 + glm::vec3(ONE_SIXTEENTH * !!offset, -ONE_SIXTEENTH * !offset, ONE_SIXTEENTH)};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
 	spec = 1 + (15 << 4) + (0 << 19) + (itemLight << 24);
-    v0 = {spec, p4 - glm::vec3(0, ONE_SIXTEENTH, 0)};
-    v1 = {spec + XTEX, p5 - glm::vec3(0, ONE_SIXTEENTH, 0)};
-    v2 = {spec + (1 << 18) + (5 << 8), p0 + glm::vec3(0, ONE_SIXTEENTH, 0)};
-    v3 = {spec + XTEX + (1 << 18) + (5 << 8), p1 + glm::vec3(0, ONE_SIXTEENTH, 0)};
+	switch (_orientation) {
+		case face_dir::MINUSY:
+			v0 = {spec, p4};
+			v1 = {spec + XTEX, p5};
+			v2 = {spec + (1 << 18) + (5 << 8), p0};
+			v3 = {spec + XTEX + (1 << 18) + (5 << 8), p1};
+			break ;
+		case face_dir::PLUSY:
+			v0 = {spec, p1};
+			v1 = {spec + XTEX, p0};
+			v2 = {spec + (1 << 18) + (5 << 8), p5};
+			v3 = {spec + XTEX + (1 << 18) + (5 << 8), p4};
+			break ;
+		case face_dir::PLUSX:
+			v0 = {spec, p0};
+			v1 = {spec + XTEX, p4};
+			v2 = {spec + (1 << 18) + (5 << 8), p1};
+			v3 = {spec + XTEX + (1 << 18) + (5 << 8), p5};
+			break ;
+		case face_dir::MINUSX:
+			v0 = {spec, p5};
+			v1 = {spec + XTEX, p1};
+			v2 = {spec + (1 << 18) + (5 << 8), p4};
+			v3 = {spec + XTEX + (1 << 18) + (5 << 8), p0};
+			break ;
+	}
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
 	spec = 0 + (15 << 4) + (5 << 19) + (itemLight << 24);
-	v0 = {spec, p2 + glm::vec3(0, ONE_SIXTEENTH, 0)};
-	v1 = {spec + XTEX, p3 + glm::vec3(0, ONE_SIXTEENTH, 0)};
-	v2 = {spec + (1 << 18) + (5 << 8), p6 - glm::vec3(0, ONE_SIXTEENTH, 0)};
-	v3 = {spec + XTEX + (1 << 18) + (5 << 8), p7 - glm::vec3(0, ONE_SIXTEENTH, 0)};
+	v0.first = spec; v0.second.z -= 14 / 16.0f;
+	v1.first = spec + XTEX; v1.second.z -= 14 / 16.0f;
+	v2.first = spec + (1 << 18) + (5 << 8); v2.second.z -= 14 / 16.0f;
+	v3.first = spec + XTEX + (1 << 18) + (5 << 8); v3.second.z -= 14 / 16.0f;
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 }
 
@@ -217,7 +241,7 @@ void ChestInstance::display_closed( std::vector<std::pair<int, glm::vec3>> &arr 
 
 void ChestInstance::setChunk( Chunk *chunk, glm::ivec3 pos )
 {
-	std::cout << "CHUNK RESET IN CHESTINSANCE" << std::endl;
+	// std::cout << "CHUNK RESET IN CHESTINSANCE" << std::endl;
 	_chunk = chunk;
 	_chunk_pos = {chunk->getStartX(), chunk->getStartY()};
 	_pos = pos;
@@ -253,7 +277,7 @@ void ChestInstance::update( std::vector<std::pair<int, glm::vec3>> &arr, float d
 	switch (_state) {
 		case chest_state::OPENING:
 			_timer += deltaTime;
-			if (_timer > 1) {
+			if (_timer > 0.01f) {
 				_state = chest_state::OPEN;
 				return (display_open(arr));
 			}

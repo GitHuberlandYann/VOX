@@ -28,11 +28,11 @@ Project Requirements:
 TODOS:
 	- hitbox change + no fall on sneak
     - skybox
+	- gui size
 	- particles !
 	- flint and steel
 	- limit floodfill algo for lighting (but be smart about it)
 	- stairs
-	- chests
 	- doors
 	- bed
 	- entity shadow
@@ -46,6 +46,7 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+	- chest menu
     - settings menu
     - biomes
 	- slabs
@@ -68,6 +69,7 @@ DONE:
     - mouse movements
     - inventory
 	- 3D items in inventory
+	- chests
 	- furnace
     - better caves
     - obstacle detection for physics + game mode

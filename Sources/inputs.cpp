@@ -105,6 +105,11 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	} else if (_block_hit.value == blocks::CHEST) {
 		chunk_hit->openChest(_block_hit.pos);
+		_paused = true;
+		_esc_released = false;
+		_e_released = false;
+		_menu->setState(CHEST_MENU);
+		_menu->setChestInstance(chunk_hit->getChestInstance(_block_hit.pos));
 		return ;
 	} else if (_block_hit.value == blocks::FURNACE) {
 		_paused = true;

@@ -167,6 +167,7 @@ class Chunk
 		void setBackup( std::map<std::pair<int, int>, s_backup> &backups );
 		void restoreBackup( s_backup &backup);
 		void openChest( glm::ivec3 pos );
+		ChestInstance *getChestInstance( glm::ivec3 pos );
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
 		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours );
 		void turnDirtToGrass( int posX, int posY, int posZ );

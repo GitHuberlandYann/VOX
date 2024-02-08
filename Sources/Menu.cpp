@@ -9,7 +9,7 @@ extern siv::PerlinNoise::seed_type perlin_seed;
 Menu::Menu( Inventory & inventory, UI *ui ) : _state(MAIN_MENU), _selection(0), _selected_world(0), _vaoSet(false),
 	_esc_released(false), _e_released(false), _left_released(false), _right_released(false), _textBar(true),
 	_key_1(0), _key_2(0), _key_3(0), _key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0), _chat_released(0),
-	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _furnace(NULL)
+	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _chest(NULL), _furnace(NULL)
 {
 	_selected_block = glm::ivec2(blocks::AIR, 0);
 	_world_file = "";
@@ -38,6 +38,10 @@ void Menu::reset_values( void )
 	_inventory.restoreCraft();
 	_inventory.setModif(true);
 	_selected_block = glm::ivec2(blocks::AIR, 0);
+	if (_chest) {
+		_chest->setState(chest_state::CLOSING);
+		_chest = NULL;
+	}
 	_furnace = NULL;
 	_selected_world = 0;
 	_worlds.clear();
@@ -380,6 +384,9 @@ int Menu::ingame_menu( void )
 			break ;
 		case CRAFTING_MENU:
 			setup_array_buffer_crafting();
+			break ;
+		case CHEST_MENU:
+			setup_array_buffer_chest();
 			break ;
 		case FURNACE_MENU:
 			setup_array_buffer_furnace();
@@ -1044,6 +1051,46 @@ void Menu::setup_array_buffer_crafting( void )
 	delete [] vertices;
 }
 
+void Menu::setup_array_buffer_chest( void )
+{
+	int duras = _inventory.countDura(true) + ((_chest) ? 0 : 0); // TODO _chests->countDura
+	_nb_points = 1 + 2 * duras;
+	int mult = 3;
+
+    GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
+
+	vertices[0] = 2;
+	vertices[1] = WIN_WIDTH / 2 - 88 * mult;
+	vertices[2] = WIN_HEIGHT / 2 - 83 * mult;
+	vertices[3] = 176 * mult;
+	vertices[4] = 166 * mult;
+	vertices[5] = 128;
+	vertices[6] = 128;
+	vertices[7] = 128; // textcoord are in 256*256
+	vertices[8] = 128;
+
+	int vindex = 9;
+	for (int index = 0; index < 9; index++) {
+		add_slot_value(mult, index);
+	}
+	for (int index = 0; index < 27; index++) {
+		add_backpack_value(mult, index);
+	}
+	for (int index = 0; index < duras; index++) {
+		add_dura_value(vertices, mult, index, vindex);
+	}
+	// add_chest_value(vertices, mult, vindex);
+
+	if (_selected_block.x != blocks::AIR) {
+		double mouseX, mouseY;
+		glfwGetCursorPos(_window, &mouseX, &mouseY);
+		add_item_value(_selected_block.x, mouseX - 8 * mult, mouseY - 8 * mult, mult, true);
+	}
+
+	setup_shader(vertices);
+	delete [] vertices;
+}
+
 void Menu::add_furnace_value( GLint *vertices, int mult, int & vindex )
 {
 	int value = _furnace->getComposant().x;
@@ -1277,6 +1324,11 @@ void Menu::setChunks( std::list<Chunk *> &chunks )
 	}
 }
 
+void Menu::setChestInstance( ChestInstance *chest )
+{
+	_chest = chest;
+}
+
 void Menu::setFurnaceInstance( FurnaceInstance *furnace )
 {
 	_furnace = furnace;
@@ -1330,6 +1382,8 @@ int Menu::run( GLint render_dist, bool animUpdate )
 		case INVENTORY_MENU:
 			return (ingame_menu());
 		case CRAFTING_MENU:
+			return (ingame_menu());
+		case CHEST_MENU:
 			return (ingame_menu());
 		case FURNACE_MENU:
 			return (ingame_menu());

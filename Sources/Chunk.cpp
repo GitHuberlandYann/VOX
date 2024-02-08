@@ -110,11 +110,11 @@ GLint Chunk::face_count( int type, int row, int col, int level )
 		std::cerr << "face_count ERROR counting " << s_blocks[type]->name << std::endl;
 		return (0);
 	}
-	if (type >= blocks::POPPY) {
-		return (2 << (type >= blocks::TORCH));
-	}
 	if (type == blocks::GLASS || type == blocks::CHEST) {
 		return (0);
+	}
+	if (type >= blocks::POPPY) {
+		return (2 << (type >= blocks::TORCH));
 	}
 	GLint res = visible_face(type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)
 				+ visible_face(type, getBlockAt(row + 1, col, level, true), face_dir::PLUSX)
@@ -432,7 +432,8 @@ void Chunk::resetDisplayedFaces( void )
 					value -= blocks::NOTVISIBLE;
 					restore = true;
 				}
-				if (type > blocks::AIR && type < blocks::WATER) {
+				if (type == blocks::CHEST) {}
+				else if (type > blocks::AIR && type < blocks::WATER) {
 					GLint below = ((level) ? _blocks[offset - 1] : 0) & 0xFF;
 					if (!air_flower(type, false, false, true) && type < blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
 						_blocks[offset] = blocks::AIR;
@@ -944,7 +945,7 @@ void Chunk::restoreBackup( s_backup &backup )
 	_removed = backup.removed;
 	_chests = backup.chests;
 	for (auto &ch : _chests) {
-		std::cout << "chest in backup of " << _startX << " " << _startY << " at " << ch.first << std::endl;
+		// std::cout << "chest in backup of " << _startX << " " << _startY << " at " << ch.first << std::endl;
 		int posZ = ch.first & (WORLD_HEIGHT - 1);
 		int posY = ((ch.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 		int posX = ((ch.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
@@ -960,6 +961,21 @@ void Chunk::openChest( glm::ivec3 pos )
 	if (search != _chests.end()) {
 		search->second.setState(chest_state::OPENING);
 	}
+}
+
+ChestInstance *Chunk::getChestInstance( glm::ivec3 pos )
+{
+	int key = ((((pos.x - _startX) << CHUNK_SHIFT) + pos.y - _startY) << WORLD_SHIFT) + pos.z;
+	std::map<int, ChestInstance>::iterator search = _chests.find(key);
+	if (search != _chests.end()) {
+		return (&search->second);
+	}
+	std::cout << _startX << ", " << _startY << " failed to find chest at " << key << " from " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+	std::cout << "chests values are " << std::endl;
+	for (auto& ch: _chests) {
+		std::cout << ch.first << std::endl;
+	}
+	return (NULL);
 }
 
 FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )

@@ -17,6 +17,7 @@ enum {
 	PAUSE_MENU,
 	INVENTORY_MENU,
 	CRAFTING_MENU,
+	CHEST_MENU,
 	FURNACE_MENU,
 	CHAT_MENU
 };
@@ -39,6 +40,7 @@ class Menu
 		Text *_text;
 		Chat *_chat;
 		std::list<Chunk *> _chunks;
+		ChestInstance *_chest;
 		FurnaceInstance *_furnace;
 
 		void reset_values( void );
@@ -75,6 +77,7 @@ class Menu
 
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );
+        void setup_array_buffer_chest( void );
 		void add_furnace_value( GLint *vertices, int mult, int & vindex );
         void setup_array_buffer_furnace( void );
 		void setup_shader( GLint *vertices );
@@ -87,6 +90,7 @@ class Menu
 		void setWindow( GLFWwindow *window );
 		void setShaderProgram( GLuint shaderProgram );
 		void setChunks( std::list<Chunk *> &chunks );
+		void setChestInstance( ChestInstance *chest );
 		void setFurnaceInstance( FurnaceInstance *furnace );
 		void setState( int state );
 		int getState( void );
