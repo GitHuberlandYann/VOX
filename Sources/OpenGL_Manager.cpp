@@ -396,6 +396,15 @@ void OpenGL_Manager::getGamemode( void )
 	_ui->chatMessage(std::string("Current gamemode is ") + ((_game_mode) ? "SURVIVAL" : "CREATIVE"));
 }
 
+size_t OpenGL_Manager::clearEntities( void )
+{
+	size_t res = 0;
+	for (auto c : _perimeter_chunks) {
+		res += c->clearEntities();
+	}
+	return (res);
+}
+
 void OpenGL_Manager::main_loop( void )
 {
 	// glEnable(GL_DEPTH_TEST); // culling messes up with flower visual and doesn't seem to gain fps
@@ -547,7 +556,7 @@ void OpenGL_Manager::main_loop( void )
 				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
 				+ "\nBackups\t> " + std::to_string(_backups.size())
 				+ _inventory->getSlotString()
-				+ _menu->getFurnaceString()
+				+ _menu->getInfoString()
 				// + _inventory->getDuraString()
 				// + _inventory->getInventoryString()
 			: "\n\nFPS: " + std::to_string(nbFramesLastSecond) + "\nTPS: " + std::to_string(nbTicksLastSecond);
@@ -571,7 +580,7 @@ void OpenGL_Manager::main_loop( void )
 							glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 						}
 					}
-					set_cursor_position_callback( _camera, NULL );
+					set_cursor_position_callback(_camera, NULL);
 					set_scroll_callback(_inventory);
 					_paused = false;
 					backFromMenu = 0;

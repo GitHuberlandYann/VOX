@@ -34,9 +34,11 @@ class ChestInstance
 		void setChunk( Chunk *chunk, glm::ivec3 pos );
 		void setState( int state );
 		int getOrientation( void );
+		glm::ivec2 *getItem( int index );
 		void update( std::vector<std::pair<int, glm::vec3>> &arr, float deltaTime );
 
 		// std::string getInfoString( void );
+		void loadContent( std::ofstream & ofs, std::string &line, int &index );
 };
 
 #endif

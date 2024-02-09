@@ -74,6 +74,7 @@ class Menu
 		void add_craft_value( int mult, int index );
 		void add_dura_value( GLint *vertices, int mult, int index, int & vindex );
 		void add_crafted_value( int mult );
+		void add_chest_value( int mult, int index );
 
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );
@@ -97,7 +98,7 @@ class Menu
 		std::string getWorldFile( void );
 		int run( GLint render_dist, bool animUpdate );
 
-		std::string getFurnaceString( void );
+		std::string getInfoString( void );
 };
 
 #endif

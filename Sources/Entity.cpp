@@ -195,8 +195,8 @@ bool Entity::updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float del
 	} else {
 		_stuck = true;
 		// arrow explosion for fun
-		// _chunk->explosion(_pos, 10);
-		// return (true);
+		_chunk->explosion(_pos, 10);
+		return (true);
 	}
 		
 	glm::vec3 dir = glm::normalize(_dir); // might want to do this once and save it

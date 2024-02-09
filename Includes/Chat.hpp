@@ -48,6 +48,7 @@ class Chat
 		void handle_help( int argc, std::vector<std::string> &argv );
 		void handle_gamemode( int argc, std::vector<std::string> &argv );
 		void handle_time( int argc, std::vector<std::string> &argv );
+		void handle_clear( int argc, std::vector<std::string> &argv );
 		void handle_teleport( int argc, std::vector<std::string> &argv );
 		void handle_spawnpoint( int argc, std::vector<std::string> &argv );
 

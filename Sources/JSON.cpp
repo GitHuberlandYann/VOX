@@ -116,7 +116,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 		}
 		start = false;
 		res += "\n\t\t{\"pos\": [" + std::to_string(bup.first.first) + ", " + std::to_string(bup.first.second);
-		if (bup.second.furnaces.size()) {
+		if (bup.second.added.size()) {
 			res += "], \n\t\t\"added\": [";
 			bool astart = true;
 			for (auto& add: bup.second.added) {
@@ -148,7 +148,14 @@ std::string OpenGL_Manager::saveBackupString( void )
 				chstart = false;
 				res += "{\"pos\": " + std::to_string(ch.first)
 					+ ", \"orientation\": " + std::to_string(ch.second.getOrientation())
-					+ "}"; // TODO add chest's content
+					+ ", \"content\": [";
+				for (int index = 0; index < 27; index++) {
+					res += '[' + std::to_string(ch.second.getItem(index)->x) + ", " + std::to_string(ch.second.getItem(index)->y) + ']';
+					if (index < 26) {
+						res += ", ";
+					}
+				}
+				res += "]}";
 			}
 		}
 		if (bup.second.furnaces.size()) {
@@ -386,6 +393,22 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 	throw UnclosedBracketException();
 }
 
+void ChestInstance::loadContent( std::ofstream & ofs, std::string &line, int &index )
+{
+	for (; line[index] && line[index] != '['; ++index);
+	index += !!line[index];
+	for (int cindex = 0; cindex < 27 && line[index]; cindex++) {
+		_content[cindex].x = std::atoi(&line[index + 1]);
+		for (; line[index] && line[index] != ','; index++);
+		_content[cindex].y = std::atoi(&line[index + 2]);
+		if (cindex < 26) {
+			for (index = index + 2; line[index] && line[index] != '['; index++);
+		}
+		ofs << "chest content slot " << cindex << " set to " << _content[cindex].x << ", " << _content[cindex].y << std::endl;
+	}
+	// ofs << "at end of loadContent, index is " << index << ", char is " << line[index] << " into " << line.substr(index, 5) << std::endl;
+}
+
 void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 {
 	int index;
@@ -431,6 +454,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						int orientation = std::atoi(&line[index + 2]);
 						backups_value.chests.emplace(chkey, ChestInstance(NULL, {0, 0, 0}, orientation));
 						ofs << "one more chest at " << chkey << " with orientation " << orientation <<  std::endl;
+						backups_value.chests.at(chkey).loadContent(ofs, line, index);
 						for (; line[index] && line[index] != '{'; index++);
 						--index;
 					}
@@ -460,9 +484,12 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						for (; line[index] && line[index] != '{'; index++);
 						--index;
 					}
-					break ;
 				} else {
 					std::cerr << "foreigh line in backup: " << line << std::endl;
+				}
+				if (line.size() > 1 && (!line.compare(line.size() - 2, 2, "},") || line[line.size() - 1] == '}')) {
+					// std::cerr << "breaking on line " << line << std::endl;
+					break ;
 				}
 			}
 			mtx_backup.lock();

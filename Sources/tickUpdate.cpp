@@ -284,7 +284,7 @@ void Chunk::updateScheduledBlocks( void )
 		int offset = _scheduled_to_fall[0];
 		int type = _blocks[offset] & 0xFF;
 		if (type != blocks::SAND && type != blocks::GRAVEL) {
-			std::cerr << _startX << ", " << _startY << " scheduled_to_fall block is " << s_blocks[type]->name << std::endl;
+			// std::cerr << _startX << ", " << _startY << " scheduled_to_fall block is " << s_blocks[type]->name << std::endl;
 			_scheduled_to_fall.erase(_scheduled_to_fall.begin());
 			continue ;
 		}

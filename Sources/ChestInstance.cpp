@@ -268,6 +268,15 @@ int ChestInstance::getOrientation( void )
 	return (_orientation);
 }
 
+glm::ivec2 *ChestInstance::getItem( int index )
+{
+	// std::cout << "in chest, index " << index << std::endl;
+	if (index < 0 || index > 26) {
+		return  (NULL);
+	}
+	return (&_content[index]);
+}
+
 void ChestInstance::update( std::vector<std::pair<int, glm::vec3>> &arr, float deltaTime )
 {
 	if (!_chunk) {

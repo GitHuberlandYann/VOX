@@ -84,6 +84,7 @@ class OpenGL_Manager
 		void resetInputsPtrs( void );
 		void setGamemode( bool gamemode );
 		void getGamemode( void );
+		size_t clearEntities( void );
 		void main_loop( void );
 };
 

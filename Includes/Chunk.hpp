@@ -206,6 +206,7 @@ class Chunk
 		void tickUpdate( void );
 		void updateScheduledBlocks( void );
 		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
+		size_t clearEntities( void );
 		void drawSky( GLint & counter, GLint &face_counter );
 		void drawWater( GLint & counter, GLint &face_counter );
 		std::string getAddsRmsString( void );

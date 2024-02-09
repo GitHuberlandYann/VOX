@@ -149,7 +149,7 @@ class Inventory
 		bool _modif;
 
 		int getrmDura( int value );
-		glm::ivec2 *getBlockPtr( int value, int & craft_place, FurnaceInstance *furnace );
+		glm::ivec2 *getBlockPtr( int value, int & craft_place, FurnaceInstance *furnace, ChestInstance *chest );
 		void changeCrafted( int craft );
 		void produceCraft( int craft );
 		glm::ivec2 pickCrafted( int craft, glm::ivec2 block );
@@ -174,10 +174,10 @@ class Inventory
 		int countiCraft( void );
 		int countCraft( void );
 		int countDura( bool all );
-		glm::ivec2 pickBlockAt( int craft, int value, FurnaceInstance *furnace );
-		glm::ivec2 pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace );
-		glm::ivec2 putBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace );
-		glm::ivec2 putOneBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace );
+		glm::ivec2 pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
+		glm::ivec2 pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
+		glm::ivec2 putBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace, ChestInstance *chest );
+		glm::ivec2 putOneBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace, ChestInstance *chest );
 		void restoreBlock( glm::ivec2 block, bool swap = false );
 		bool absorbItem( glm::ivec2 block, int dura );
 		void restoreiCraft( void );
@@ -185,7 +185,7 @@ class Inventory
 		bool getModif( void );
 		void setModif( bool value );
         void addBlock( int type );
-		void removeBlockAt( int value, FurnaceInstance *furnace );
+		// void removeBlockAt( int value, FurnaceInstance *furnace, ChestInstance *chest );
         glm::ivec3 removeBlock( bool thrown );
 		void replaceSlot( int type );
 		void swapCells( int slot, int location );

@@ -46,7 +46,6 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-	- chest menu
     - settings menu
     - biomes
 	- slabs
@@ -123,6 +122,7 @@ DONE:
     - load menu
     - inventory menu
     - crafting menu
+	- chest menu
 	- furnace menu
 
 

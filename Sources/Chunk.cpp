@@ -544,10 +544,16 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	_added.erase(offset);
 	_removed.insert(offset);
 	if (type == blocks::CHEST) {
-		// auto search = _chests.find(offset);
-		// if (search != _chests.end()) {
-
-		// }
+		auto search = _chests.find(offset);
+		if (search != _chests.end()) {
+			glm::ivec2 *item;
+			for (int index = 0; index < 27; ++index) {
+				item = search->second.getItem(index);
+				if (item->y) {
+					_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, item->x, item->y));
+				}
+			}
+		}
 		_chests.erase(offset);
 	} else if (type == blocks::FURNACE) {
 		auto search = _furnaces.find(offset); // drop furnace's items
@@ -1745,6 +1751,13 @@ void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double 
 	for (auto &c : _chests) {
 		c.second.update(arr, deltaTime);
 	}
+}
+
+size_t Chunk::clearEntities( void )
+{
+	size_t res = _entities.size();
+	_entities.clear();
+	return (res);
 }
 
 void Chunk::drawSky( GLint & counter, GLint &face_counter )

@@ -40,9 +40,9 @@ int Inventory::getrmDura( int value )
 	return (0);
 }
 
-glm::ivec2 *Inventory::getBlockPtr( int value, int &craft_place, FurnaceInstance *furnace )
+glm::ivec2 *Inventory::getBlockPtr( int value, int &craft_place, FurnaceInstance *furnace, ChestInstance *chest )
 {
-	if (value < 0 || value > 51) {
+	if (value < 0 || value > 78) {
 		return (NULL);
 	}
 	glm::ivec2 *res = NULL;
@@ -62,6 +62,11 @@ glm::ivec2 *Inventory::getBlockPtr( int value, int &craft_place, FurnaceInstance
 			return (NULL);
 		}
 		res = furnace->pickCompoFuel(value == 51);
+	} else if (value < 79) {
+		if (!chest) {
+			return (NULL);
+		}
+		res = chest->getItem(value - 52);
 	}
 	return (res);
 }
@@ -334,7 +339,7 @@ int Inventory::countDura( bool all )
 	return (cnt);
 }
 
-glm::ivec2 Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace )
+glm::ivec2 Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	// std::cout << "pickBlockAt " << value << std::endl;
 	if (value == 40) {
@@ -344,11 +349,8 @@ glm::ivec2 Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnac
 		return (pickCrafted(craft, glm::ivec2 (blocks::AIR, 0)));
 	}
 	int craft_place = 0;
-	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace);
+	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace, chest);
 	if (!bat) {
-		return (glm::ivec2(blocks::AIR, 0));
-	}
-	if (value < 0 || value > 51) {
 		return (glm::ivec2(blocks::AIR, 0));
 	}
 	if (bat->x != blocks::AIR) {
@@ -364,7 +366,7 @@ glm::ivec2 Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnac
 	return (glm::ivec2(blocks::AIR, 0));
 }
 
-glm::ivec2 Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace )
+glm::ivec2 Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	if (value == 40) {
 		if (!furnace) { // for now does nothing if in furnace
@@ -373,7 +375,7 @@ glm::ivec2 Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *fu
 		return (glm::ivec2(blocks::AIR, 0));
 	}
 	int craft_place = 0;
-	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace);
+	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace, chest);
 	if (!bat) {
 		return (glm::ivec2(blocks::AIR, 0));
 	}
@@ -394,7 +396,7 @@ glm::ivec2 Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *fu
 	return (glm::ivec2(blocks::AIR, 0));
 }
 
-glm::ivec2 Inventory::putBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace )
+glm::ivec2 Inventory::putBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	if (value == 40) {
 		if (furnace) {
@@ -403,7 +405,7 @@ glm::ivec2 Inventory::putBlockAt( int craft, int value, glm::ivec2 block, Furnac
 		return (pickCrafted(craft, block));
 	}
 	int craft_place = 0;
-	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace);
+	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace, chest);
 	if (!bat) {
 		return (block);
 	}
@@ -439,7 +441,7 @@ glm::ivec2 Inventory::putBlockAt( int craft, int value, glm::ivec2 block, Furnac
 	return (res);
 }
 
-glm::ivec2 Inventory::putOneBlockAt( int craft,  int value, glm::ivec2 block, FurnaceInstance *furnace )
+glm::ivec2 Inventory::putOneBlockAt( int craft,  int value, glm::ivec2 block, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	if (value == 40) {
 		if (!furnace) {
@@ -448,7 +450,7 @@ glm::ivec2 Inventory::putOneBlockAt( int craft,  int value, glm::ivec2 block, Fu
 		return (block);
 	}
 	int craft_place = 0;
-	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace);
+	glm::ivec2 *bat = getBlockPtr(value, craft_place, furnace, chest);
 	if (!bat) {
 		return (block);
 	}
@@ -570,8 +572,8 @@ void Inventory::addBlock( int type )
 	glm::ivec2 block = glm::ivec2(s_blocks[type]->mined, 1);
 	restoreBlock(block, true);
 }
-
-void Inventory::removeBlockAt( int value, FurnaceInstance *furnace )
+/*
+void Inventory::removeBlockAt( int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	if (value < 9) {
 		if (s_blocks[_content[value].x]->durability) {
@@ -593,7 +595,8 @@ void Inventory::removeBlockAt( int value, FurnaceInstance *furnace )
 	} else if (value == 51 && furnace) {
 		furnace->removeFuel();
 	}
-}
+	(void)chest;
+}*/
 
 glm::ivec3 Inventory::removeBlock( bool thrown )
 {

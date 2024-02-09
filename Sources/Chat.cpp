@@ -71,6 +71,9 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("/help clear");
 						chatMessage("\t/clear");
 						chatMessage("\t\tClears chat history.");
+						chatMessage("\t/clear entities");
+						chatMessage("\t/clear e");
+						chatMessage("\t\tClears all entities.");
 						break ;
 					case cmds::TP:
 					case cmds::TELEPORT:
@@ -176,6 +179,22 @@ void Chat::handle_time( int argc, std::vector<std::string> &argv )
 	} else {
 		chatMessage("Wrong usage of command /time (or not implemented yet oupsi)");
 	}
+}
+
+void Chat::handle_clear( int argc, std::vector<std::string> &argv )
+{
+	if (argc == 1) {
+		_current.clear();
+		_past.clear();
+		_historic.clear();
+		return ;
+	} else if (argc == 2) {
+		if (!argv[1].compare("e") || !argv[1].compare("entities")) {
+			chatMessage("Cleared " + std::to_string(_oglMan->clearEntities()) + " entities");
+			return ;
+		}
+	}
+	chatMessage("Wrong usage of command /clear");
 }
 
 void Chat::handle_teleport( int argc, std::vector<std::string> &argv )
@@ -351,9 +370,7 @@ void Chat::sendMessage( std::string str )
 						handle_time(parstr.size(), parstr);
 						break ;
 					case cmds::CLEAR:
-						_current.clear();
-						_past.clear();
-						_historic.clear();
+						handle_clear(parstr.size(), parstr);
 						break ;
 					case cmds::TP:
 					case cmds::TELEPORT:
