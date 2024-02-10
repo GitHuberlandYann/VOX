@@ -12,7 +12,6 @@
 extern std::mutex mtx;
 extern std::mutex mtx_perimeter;
 extern std::mutex mtx_deleted_chunks;
-extern std::mutex mtx_inventory;
 extern std::mutex mtx_backup;
 
 # define RENDER_DISTANCE 10//20
@@ -64,7 +63,8 @@ class OpenGL_Manager
 		void loadWorld( std::string file );
 		void loadBackups( std::ofstream & ofs, std::ifstream & indata );
 
-		void drawEntities( int size );
+		void addLine( glm::vec3 a, glm::vec3 b );
+		void drawEntities( void );
 
 	public:
 		std::list<Chunk *> _chunks;

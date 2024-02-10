@@ -3,7 +3,6 @@
 #include "callbacks.hpp"
 #include <dirent.h>
 extern std::mutex mtx;
-extern std::mutex mtx_inventory;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Menu::Menu( Inventory & inventory, UI *ui ) : _gui_size(3), _state(MAIN_MENU), _selection(0), _selected_world(0), _vaoSet(false),
@@ -297,7 +296,9 @@ int Menu::ingame_inputs( void )
 			if (_selected_block.x == blocks::AIR) {
 				if (_right_released) {
 					_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1, _furnace, _chest);
-					_selection_list.push_back(_selection);
+					if (_selected_block.x) {
+						_selection_list.push_back(_selection);
+					}
 				}
 			} else {
 				bool inList = false;
@@ -684,9 +685,7 @@ void Menu::add_item_value( glm::ivec2 item, int x, int y, bool movement )
 
 void Menu::add_slot_value( int index )
 {
-	mtx_inventory.lock();
 	glm::ivec2 item = _inventory.getSlotBlock(index);
-	mtx_inventory.unlock();
 	if (item.x == blocks::AIR) {
 		return ;
 	}
@@ -697,9 +696,7 @@ void Menu::add_slot_value( int index )
 
 void Menu::add_backpack_value( int index )
 {
-	mtx_inventory.lock();
 	glm::ivec2 item = _inventory.getBackpackBlock(index);
-	mtx_inventory.unlock();
 	if (item.x == blocks::AIR) {
 		return ;
 	}
@@ -710,9 +707,7 @@ void Menu::add_backpack_value( int index )
 
 void Menu::add_icraft_value( int index )
 {
-	mtx_inventory.lock();
 	glm::ivec2 item = _inventory.getiCraftBlock(index);
-	mtx_inventory.unlock();
 	if (item.x == blocks::AIR) {
 		return ;
 	}
@@ -723,9 +718,7 @@ void Menu::add_icraft_value( int index )
 
 void Menu::add_craft_value( int index )
 {
-	mtx_inventory.lock();
 	glm::ivec2 item = _inventory.getCraftBlock(index);
-	mtx_inventory.unlock();
 	if (item.x == blocks::AIR) {
 		return ;
 	}
@@ -766,9 +759,7 @@ static int screenPosYFromlocation( int gui_size, int location )
 
 void Menu::add_dura_value( std::vector<int> &vertices, int index )
 {
-	mtx_inventory.lock();
 	glm::ivec3 value = _inventory.getDuraFromIndex(index, true);
-	mtx_inventory.unlock();
 	if (value.y == 0) {
 		return ;
 	}
@@ -781,9 +772,7 @@ void Menu::add_dura_value( std::vector<int> &vertices, int index )
 
 void Menu::add_crafted_value( void )
 {
-	mtx_inventory.lock();
 	glm::ivec2 item = _inventory.getCrafted();
-	mtx_inventory.unlock();
 	if (item.x == blocks::AIR) {
 		return ;
 	}
@@ -859,9 +848,7 @@ void Menu::setup_array_buffer_inventory( void )
 	for (int index = 0; index < 4; index++) {
 		add_icraft_value(index);
 	}
-	mtx_inventory.lock();
 	int duras = _inventory.countDura(true);
-	mtx_inventory.unlock();
 	for (int index = 0; index < duras; index++) {
 		add_dura_value(vertices, index);
 	}
@@ -892,9 +879,7 @@ void Menu::setup_array_buffer_crafting( void )
 	for (int index = 0; index < 9; index++) {
 		add_craft_value(index);
 	}
-	mtx_inventory.lock();
 	int duras = _inventory.countDura(true);
-	mtx_inventory.unlock();
 	for (int index = 0; index < duras; index++) {
 		add_dura_value(vertices, index);
 	}
@@ -922,9 +907,7 @@ void Menu::setup_array_buffer_chest( void )
 	for (int index = 0; index < 27; index++) {
 		add_backpack_value(index);
 	}
-	mtx_inventory.lock();
 	int duras = _inventory.countDura(true) + ((_chest) ? 0 : 0); // TODO _chests->countDura
-	mtx_inventory.unlock();
 	for (int index = 0; index < duras; index++) {
 		add_dura_value(vertices, index);
 	}
@@ -954,9 +937,7 @@ void Menu::setup_array_buffer_furnace( void )
 	for (int index = 0; index < 27; index++) {
 		add_backpack_value(index);
 	}
-	mtx_inventory.lock();
 	int duras = _inventory.countDura(true);
-	mtx_inventory.unlock();
 	for (int index = 0; index < duras; index++) {
 		add_dura_value(vertices, index);
 	}

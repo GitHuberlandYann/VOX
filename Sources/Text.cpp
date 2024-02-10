@@ -1,13 +1,6 @@
 #include "utils.h"
 #include "Text.hpp"
 
-#include "SOIL/SOIL.h"
-typedef struct {
-	unsigned char *content;
-	int width;
-	int height;
-}				t_tex;
-
 Text::Text( void ) : _textures(NULL)
 {
 }
@@ -62,35 +55,8 @@ void Text::load_texture( void )
 	_textures = new GLuint[1];
 	glGenTextures(1, _textures);
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, _textures[0]);
-
-	// load image
-	t_tex *texture = new t_tex;
-	texture->content = SOIL_load_image("Resources/asciiAtlas.png", &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
-	if (!texture->content) {
-		std::cerr << "failed to load image " << "Resources/asciiAtlas.png" << " because:" << std::endl << SOIL_last_result() << std::endl;
-		exit(1);
-	}
-
-	// load image as texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
-
+	loadTextureShader(1, _textures[0], "Resources/asciiAtlas.png");
 	glUniform1i(glGetUniformLocation(_shaderProgram, "asciiAtlas"), 1); // sampler2D #index in fragment shader
-			
-	// set settings for texture wraping and size modif
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	if (texture) {
-		SOIL_free_image_data(texture->content);
-	}
-	delete texture;
-
-	check_glstate("Succesfully loaded Resources/asciiAtlas.png to shader\n", true);
 }
 
 void Text::addText( int posX, int posY, int font_size, bool white, std::string str )

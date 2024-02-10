@@ -1,13 +1,6 @@
 #include "Camera.hpp"
 #include "Ui.hpp"
 
-extern std::mutex mtx_inventory;
-#include "SOIL/SOIL.h"
-typedef struct {
-	unsigned char *content;
-	int width;
-	int height;
-}				t_tex;
 
 UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _gui_size(4), _nb_items(0), _movement(false), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
 {
@@ -38,42 +31,13 @@ UI::~UI( void )
 
 void UI::load_texture( std::string texstr, std::string shname, int index )
 {
-	glActiveTexture(GL_TEXTURE0 + index);
-	glBindTexture(GL_TEXTURE_2D, _textures[index - 2]);
-
-	// load image
-	t_tex *texture = new t_tex;
-	texture->content = SOIL_load_image(texstr.c_str(), &texture->width, &texture->height, 0, SOIL_LOAD_RGBA);
-	if (!texture->content) {
-		std::cerr << "failed to load image " << texstr << " because:" << std::endl << SOIL_last_result() << std::endl;
-		exit(1);
-	}
-
-	// load image as texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, texture->content);
-
+	loadTextureShader(index, _textures[index - 2], texstr);
 	glUniform1i(glGetUniformLocation(_shaderProgram, shname.c_str()), index); // sampler2D #index in fragment shader
-			
-	// set settings for texture wraping and size modif
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	if (texture) {
-		SOIL_free_image_data(texture->content);
-	}
-	delete texture;
-
-	check_glstate("Succesfully loaded " + texstr + " to shader\n", true);
 }
 
 void UI::add_inventory_elem( int index )
 {
-	mtx_inventory.lock();
 	int type = _inventory.getSlotBlock(index).x;
-	mtx_inventory.unlock();
 	if (type == blocks::AIR) {
 		return ;
 	} else if (type == blocks::OAK_SLAB) { // TODO CHANGE THIS ?
@@ -134,9 +98,7 @@ void UI::add_inventory_elem( int index )
 
 void UI::add_dura_value( std::vector<int> &vertices, int index )
 {
-	mtx_inventory.lock();
 	glm::ivec3 value = _inventory.getDuraFromIndex(index, false);
-	mtx_inventory.unlock();
 	if (value.y == 0) {
 		return ;
 	}
@@ -195,14 +157,10 @@ void UI::setup_array_buffer( void )
 
 	fill_vertices(vertices, {1, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16}); // crosshair
 	fill_vertices(vertices, {1, (WIN_WIDTH - (182 * _gui_size)) / 2, WIN_HEIGHT - (22 * _gui_size) * 2, 182 * _gui_size, 22 * _gui_size, 0, 25, 182, 22}); // hot bar
-	mtx_inventory.lock();
 	int slotNum = _inventory.getSlotNum();
-	mtx_inventory.unlock();
 	fill_vertices(vertices, {1, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * slotNum * _gui_size) - _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 - _gui_size, 24 * _gui_size, 24 * _gui_size, 0, 47, 24, 24}); // slot select
 
-	mtx_inventory.lock();
 	int duras = _inventory.countDura(false);
-	mtx_inventory.unlock();
 	for (int index = 0; index < duras; index++) {
 		add_dura_value(vertices, index);
 	}
@@ -392,25 +350,19 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 	if (_hideUI) {
 		return ;
 	}
-	mtx_inventory.lock();
 	if (!_vaoSet || _inventory.getModif() || _camera.getModif()) {
-		mtx_inventory.unlock();
 		setup_array_buffer();
 		setup_item_array_buffer();
 		_inventory.setModif(false);
 		_movement = true;
-		mtx_inventory.lock();
 	}
-	mtx_inventory.unlock();
 
 	// Bench b;
 	glUseProgram(_shaderProgram);
     glBindVertexArray(_vao);
-	mtx_inventory.lock();
 	(game_mode == SURVIVAL)
 		? glDrawArrays(GL_POINTS, 0, _nb_points)
 		: glDrawArrays(GL_POINTS, 0, 3 + 2 * _inventory.countDura(false));
-	mtx_inventory.unlock();
 	// b.stop("drawArrays");
 	// b.reset();
 

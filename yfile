@@ -27,15 +27,19 @@ Project Requirements:
 
 TODOS:
 	- hitbox change + no fall on sneak
+    - biomes
     - skybox
 	- particles !
-	- flint and steel
+	- flint and steel and fire
 	- limit floodfill algo for lighting (but be smart about it)
+	- slabs
 	- stairs
 	- doors
 	- bed
+	- save entities
 	- entity shadow
 	- rework clouds
+    - settings menu
     - Sound https://www.ambiera.com/irrklang/tutorials.html
     - player arm in survival mode
 	- upon world generation, place player on ground by using continentalness
@@ -45,11 +49,7 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-    - settings menu
-    - biomes
-	- slabs
 	- bow and arrow
-	- save entities
 	- universal use of tps instead of deltatimes
 	- commands /say /me /save /setblock /sc(/screenshot) /kill
 

@@ -1,6 +1,13 @@
 #include <fstream>
 #include "Chunk.hpp"
 
+#include "SOIL/SOIL.h"
+typedef struct {
+	unsigned char *content;
+	int width;
+	int height;
+}				t_tex;
+
 std::string get_file_content( std::string file_name )
 {
 	std::ifstream indata (file_name.c_str());
@@ -138,6 +145,34 @@ void check_glstate( std::string str, bool displayDebug )
 	if (displayDebug) {
 		std::cout << str << std::endl;
 	}
+}
+
+void loadTextureShader( int index, GLuint texture, std::string texture_file )
+{
+	glActiveTexture(GL_TEXTURE0 + index);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// load image
+	t_tex img;
+	img.content = SOIL_load_image(texture_file.c_str(), &img.width, &img.height, 0, SOIL_LOAD_RGBA);
+	if (!img.content) {
+		std::cerr << "failed to load image " << texture_file << " because:" << std::endl << SOIL_last_result() << std::endl;
+		exit(1);
+	}
+
+	// load image as texture
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.width, img.height,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, img.content);
+			
+	// set settings for texture wraping and size modif
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	SOIL_free_image_data(img.content);
+
+	check_glstate("Succesfully loaded " + texture_file + " to shader", true);
 }
 
 int chunk_pos( int pos )

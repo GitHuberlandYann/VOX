@@ -2,7 +2,7 @@
 #include <iostream>
 #include "OpenGL_Manager.hpp"
 
-std::mutex mtx, mtx_perimeter, mtx_deleted_chunks, mtx_inventory, mtx_backup; // TODO declare those elsewhere
+std::mutex mtx, mtx_perimeter, mtx_deleted_chunks, mtx_backup; // TODO declare those elsewhere
 siv::PerlinNoise::seed_type perlin_seed = 123456u;
 
 int main( int ac, char **av )

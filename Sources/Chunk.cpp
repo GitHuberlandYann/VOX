@@ -1,7 +1,6 @@
 #include "Camera.hpp"
 #include "random.hpp"
 
-extern std::mutex mtx_inventory;
 extern std::mutex mtx_backup;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
@@ -574,9 +573,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		_furnaces.erase(offset);
 	}
 	if (useInventory && type == blocks::WATER) {
-		mtx_inventory.lock();
 		_inventory->addBlock(type); // water bucket
-		mtx_inventory.unlock();
 	} else if (useInventory) {
 		entity_block(pos.x, pos.y, pos.z, type);
 	}
@@ -696,9 +693,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		_fluids.insert(offset);
 	}
 	if (useInventory) {
-		mtx_inventory.lock();
 		_inventory->removeBlock(false);
-		mtx_inventory.unlock();
 	}
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
 		type += (_camera->getOrientation() << 9);
@@ -763,9 +758,7 @@ void Chunk::replace_block( bool useInventory, glm::ivec3 pos, int type, int prev
 {
 	// std::cout << "replace_block " << useInventory << std::endl;
 	if (useInventory) {
-		mtx_inventory.lock();
 		_inventory->decrementDurabitilty();
-		mtx_inventory.unlock();
 	}
 	// std::cout << "\t_displayed_faces " << _displayed_faces << std::endl;
 	_displayed_faces -= face_count(previous, pos.x, pos.y, pos.z);
@@ -1307,11 +1300,6 @@ int Chunk::isHit( glm::ivec3 pos )
 	return (type);
 }
 
-// static void thread_modif_block( Chunk *current, bool useInventory, int type, glm::ivec3 pos, Modif modif )
-// {
-// 	current->regeneration(useInventory, type, pos, modif);
-// }
-
 void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif )
 {
 	glm::ivec3 chunk_pos = {pos.x - _startX, pos.y - _startY, pos.z};
@@ -1333,10 +1321,6 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 		}
 	} else {
 		// std::cout << _startX << " " << _startY << ": handle hit at pos " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
-		// if (_thread.joinable()) {
-		// 	_thread.join();
-		// }
-		// _thread = std::thread(thread_modif_block, this, useInventory, type, chunk_pos, modif);
 		regeneration(useInventory, type, chunk_pos, modif);
 		return ;
 	}

@@ -1,12 +1,5 @@
 #include "OpenGL_Manager.hpp"
 
-#include "SOIL/SOIL.h"
-typedef struct {
-	unsigned char *content;
-	int width;
-	int height;
-}				t_tex;
-
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE), _key_guisize(0),
@@ -80,82 +73,63 @@ OpenGL_Manager::~OpenGL_Manager( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-static void addLine( GLint *vertInt, GLfloat *vertFloat, glm::vec3 a, glm::vec3 b, size_t &index )
+void OpenGL_Manager::addLine( glm::vec3 a, glm::vec3 b )
 {
-	vertInt[index] = 11;
-	vertFloat[index + 1] = a.x;
-	vertFloat[index + 2] = a.y;
-	vertFloat[index + 3] = a.z;
-	index += 4;
-	vertInt[index] = 12 + (1 << 9);
-	vertFloat[index + 1] = b.x;
-	vertFloat[index + 2] = b.y;
-	vertFloat[index + 3] = b.z;
-	index += 4;
+	_entities.push_back({11, a});
+	_entities.push_back({12 + (1 << 9), b});
 }
 
-void OpenGL_Manager::drawEntities( int size )
+void OpenGL_Manager::drawEntities( void )
 {
-	void *vertices = new GLint[(24 + size) * 4];
-	GLint *vertInt = static_cast<GLint *>(vertices);
-	GLfloat *vertFloat = static_cast<GLfloat *>(vertices);
+	// TODO update hand entity
+	// _hand->update(deltaTime);
+	size_t esize = _entities.size();
 
-	size_t index = 0;
 	bool hitBox = (_block_hit.value != blocks::AIR) && (_block_hit.value != blocks::CHEST);
 	if (!hitBox) {
-		index = 24 * 4;
 	} else if (s_blocks[_block_hit.value]->hasHitbox) {
 		glm::vec3 hitCenter = s_blocks[_block_hit.value]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.value]->hitboxHalfSize;
 		glm::vec3 pos = {_block_hit.pos.x + hitCenter.x - hitHalfSize.x, _block_hit.pos.y + hitCenter.y - hitHalfSize.y, _block_hit.pos.z + hitCenter.z - hitHalfSize.z};
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(2 * hitHalfSize.x, 0, 0), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 2 * hitHalfSize.y, 0), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, 2 * hitHalfSize.z), index);
+		addLine(pos, pos + glm::vec3(2 * hitHalfSize.x, 0, 0));
+		addLine(pos, pos + glm::vec3(0, 2 * hitHalfSize.y, 0));
+		addLine(pos, pos + glm::vec3(0, 0, 2 * hitHalfSize.z));
 		pos += glm::vec3(2 * hitHalfSize.x, 2 * hitHalfSize.y, 2 * hitHalfSize.z);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z), index);
+		addLine(pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0));
+		addLine(pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0));
+		addLine(pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z));
 		pos.x -= 2 * hitHalfSize.x;
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0), index);
+		addLine(pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z));
+		addLine(pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0));
 		pos += glm::vec3(2 * hitHalfSize.x, 0, -2 * hitHalfSize.z);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0), index);
+		addLine(pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0));
+		addLine(pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0));
 		pos += glm::vec3(0, -2 * hitHalfSize.y, 2 * hitHalfSize.z);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0), index);
+		addLine(pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z));
+		addLine(pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0));
 	} else {
 		glm::vec3 pos = {_block_hit.pos.x - 0.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z - 0.001f};
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(1.0002f, 0, 0), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 1.0002f, 0), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, 1.0002f), index);
+		addLine(pos, pos + glm::vec3(1.0002f, 0, 0));
+		addLine(pos, pos + glm::vec3(0, 1.0002f, 0));
+		addLine(pos, pos + glm::vec3(0, 0, 1.0002f));
 		pos += glm::vec3(1.0002f, 1.0002f, 1.0002f);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-1.0002f, 0, 0), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -1.0002f, 0), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -1.0002f), index);
+		addLine(pos, pos + glm::vec3(-1.0002f, 0, 0));
+		addLine(pos, pos + glm::vec3(0, -1.0002f, 0));
+		addLine(pos, pos + glm::vec3(0, 0, -1.0002f));
 		pos.x -= 1.0002f;
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -1.0002f), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -1.0002f, 0), index);
+		addLine(pos, pos + glm::vec3(0, 0, -1.0002f));
+		addLine(pos, pos + glm::vec3(0, -1.0002f, 0));
 		pos += glm::vec3(1.0002f, 0, -1.0002f);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, -1.0002f, 0), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-1.0002f, 0, 0), index);
+		addLine(pos, pos + glm::vec3(0, -1.0002f, 0));
+		addLine(pos, pos + glm::vec3(-1.0002f, 0, 0));
 		pos += glm::vec3(0, -1.0002f, 1.0002f);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(0, 0, -1.0002f), index);
-		addLine(vertInt, vertFloat, pos, pos + glm::vec3(-1.0002f, 0, 0), index);
-	}
-
-	for (auto e: _entities) {
-		vertInt[index] = e.first;
-		vertFloat[index + 1] = e.second.x;
-		vertFloat[index + 2] = e.second.y;
-		vertFloat[index + 3] = e.second.z;
-		index += 4;
+		addLine(pos, pos + glm::vec3(0, 0, -1.0002f));
+		addLine(pos, pos + glm::vec3(-1.0002f, 0, 0));
 	}
 
 	glBindVertexArray(_vaoEntities);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vboEntities);
-	glBufferData(GL_ARRAY_BUFFER, (24 + size) * 4 * sizeof(GLint), vertices, GL_STATIC_DRAW);
-	delete [] static_cast<GLint*>(vertices);
+	glBufferData(GL_ARRAY_BUFFER, ((hitBox) ? esize + 24 : esize) * 4 * sizeof(GLint), &(_entities[0].first), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(SPECATTRIB);
 	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
@@ -165,10 +139,13 @@ void OpenGL_Manager::drawEntities( int size )
 
 	check_glstate("OpenGL_Manager::drawEntities", false);
 
+	glDrawArrays(GL_TRIANGLES, 0, esize);
 	if (hitBox) {
-		glDrawArrays(GL_LINES, 0, 24);
+		glDrawArrays(GL_LINES, esize, 24);
 	}
-	glDrawArrays(GL_TRIANGLES, 24, size);
+
+	_entities.clear();
+	_entities.reserve(esize);
 }
 
 // ************************************************************************** //
@@ -300,88 +277,17 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	_textures = new GLuint[3];
 	glGenTextures(3, _textures);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, _textures[0]);
-
-	// load image
-	t_tex texture;
-	texture.content = SOIL_load_image(texture_file.c_str(), &texture.width, &texture.height, 0, SOIL_LOAD_RGBA);
-	if (!texture.content) {
-		std::cerr << "failed to load image " << texture_file << " because:" << std::endl << SOIL_last_result() << std::endl;
-		exit(1);
-	}
-
-	// load image as texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, texture.content);
-
+	loadTextureShader(0, _textures[0], texture_file);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // sampler2D #index in fragment shader
-			
-	// set settings for texture wraping and size modif
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	SOIL_free_image_data(texture.content);
-
-	check_glstate("Succesfully loaded " + texture_file + " to shader", true);
-
-
 
 	glUseProgram(_skyShaderProgram);
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
-	glActiveTexture(GL_TEXTURE0 + 4);
-	glBindTexture(GL_TEXTURE_2D, _textures[1]);
 
-	// load image
-	texture.content = SOIL_load_image("Resources/waterStill.png", &texture.width, &texture.height, 0, SOIL_LOAD_RGBA);
-	if (!texture.content) {
-		std::cerr << "failed to load image Resources/waterStill.png because:" << std::endl << SOIL_last_result() << std::endl;
-		exit(1);
-	}
+	loadTextureShader(4, _textures[1], "Resources/waterStill.png");
+	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterStill"), 4);
 
-	// load image as texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, texture.content);
-
-	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterStill"), 4); // sampler2D #index in fragment shader
-			
-	// set settings for texture wraping and size modif
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	SOIL_free_image_data(texture.content);
-
-	check_glstate("Succesfully loaded Resources/waterStill.png to shader", true);
-
-	glActiveTexture(GL_TEXTURE0 + 5);
-	glBindTexture(GL_TEXTURE_2D, _textures[2]);
-
-	// load image
-	texture.content = SOIL_load_image("Resources/waterFlow.png", &texture.width, &texture.height, 0, SOIL_LOAD_RGBA);
-	if (!texture.content) {
-		std::cerr << "failed to load image Resources/waterFlow.png because:" << std::endl << SOIL_last_result() << std::endl;
-		exit(1);
-	}
-
-	// load image as texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, texture.content);
-
-	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterFlow"), 5); // sampler2D #index in fragment shader
-			
-	// set settings for texture wraping and size modif
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEAREST because pixel art, otherwise GL_LINEAR
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	SOIL_free_image_data(texture.content);
-
-	check_glstate("Succesfully loaded Resources/waterFlow.png to shader", true);
+	loadTextureShader(5, _textures[2], "Resources/waterFlow.png");
+	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterFlow"), 5);
 }
 
 void OpenGL_Manager::setGamemode( bool gamemode )
@@ -444,6 +350,7 @@ void OpenGL_Manager::main_loop( void )
 	{
 		double currentTime = glfwGetTime();
 		double deltaTime = currentTime - previousFrame;
+		bool gamePaused = _paused && _menu->getState() < INVENTORY_MENU && _menu->getState() != DEATH_MENU;
 
 		++nbFrames;
 		if (currentTime - lastTime >= 1.0) {
@@ -460,7 +367,7 @@ void OpenGL_Manager::main_loop( void )
 			lastGameTick += TICK;
 			fluidUpdate = (nbTicks == 5 || nbTicks == 10 || nbTicks == 15 || nbTicks == 20);
 			animUpdate = (nbTicks & 0x1);
-			if (!_paused || _menu->getState() >= INVENTORY_MENU) {
+			if (!gamePaused) {
 				_camera->tickUpdate();
 				DayCycle::Get()->tickUpdate();
 			}
@@ -492,7 +399,7 @@ void OpenGL_Manager::main_loop( void )
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, faceCounter);
-			if (!_paused || _menu->getState() >= INVENTORY_MENU || _menu->getState() == DEATH_MENU) {
+			if (!gamePaused) {
 				c->updateFurnaces(currentTime);
 				if (fluidUpdate) {
 					c->updateFluids();
@@ -509,10 +416,9 @@ void OpenGL_Manager::main_loop( void )
 		// }
 		// b.stamp("solids");
 
-		int size = _entities.size();
-		drawEntities(size);
-		_entities.clear();
-		_entities.reserve(size);
+		if (!gamePaused) {
+			drawEntities();
+		}
 
 		#if 1
 		glUseProgram(_skyShaderProgram);
