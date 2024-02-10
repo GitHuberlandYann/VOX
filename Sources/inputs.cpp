@@ -491,6 +491,14 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	} else if (!key_render_dist) {
 		_key_rdist = 0;
 	}
+	// change gui size
+	GLint key_gui_size = (glfwGetKey(_window, GLFW_KEY_KP_MULTIPLY) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_DIVIDE) == GLFW_PRESS);
+	if (key_gui_size && ++_key_guisize == 1) {
+		_menu->changeGuiSize(key_gui_size);
+		_ui->changeGuiSize(key_gui_size);
+	} else if (!key_gui_size) {
+		_key_guisize = 0;
+	}
 
 	// camera work 
 	_camera->setDelta(deltaTime);

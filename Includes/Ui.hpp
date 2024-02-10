@@ -21,7 +21,7 @@ class UI
         GLuint _vao, _vbo, _item_vao, _item_vbo;
 		GLuint _shaderProgram, _itemShaderProgram;
 		GLuint *_textures;
-        GLint _nb_points, _nb_items;
+        GLint _gui_size, _nb_points, _nb_items;
 		bool _movement;
 		std::vector<int> _items;
 		Text *_text;
@@ -32,16 +32,18 @@ class UI
 
 		void load_texture( std::string texstr, std::string shname, int index );
         void add_inventory_elem( int index );
-        void add_dura_value( GLint *vertices, int mult, int index, int & vindex );
-        void add_hearts_holder( GLint *vertices, int mult, int index, int & vindex );
-        void add_hearts( GLint *vertices, int mult, int index, int & vindex );
-        void add_armor_holder( GLint *vertices, int mult, int index, int & vindex );
-        void add_armor( GLint *vertices, int mult, int index, int & vindex );
-        void add_food_holder( GLint *vertices, int mult, int index, int & vindex, int saturation );
-        void add_food( GLint *vertices, int mult, int index, int & vindex );
-        void add_bubbles( GLint *vertices, int mult, int index, int & vindex );
+        void add_dura_value( std::vector<int> &vertices, int index );
+        void add_hearts_holder( std::vector<int> &vertices, int index );
+        void add_hearts( std::vector<int> &vertices, int index );
+        void add_armor_holder( std::vector<int> &vertices, int index );
+        void add_armor( std::vector<int> &vertices, int index );
+        void add_food_holder( std::vector<int> &vertices, int index, int saturation );
+        void add_food( std::vector<int> &vertices, int index );
+        void add_bubbles( std::vector<int> &vertices, int index );
+		void fill_vertices( std::vector<int> &vertices, std::array<int, 9> values );
         void setup_array_buffer( void );
         void setup_item_array_buffer( void );
+		void display_item_value( int x, int y, int amount );
         void display_slot_value( int index );
 
     public:
@@ -52,6 +54,7 @@ class UI
 
 		Text *getTextPtr( void );
 		Chat *getChatPtr( void );
+		void changeGuiSize( int offset );
 		GLuint getShaderProgram( void );
         void setup_shader( void );
 		void addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement = false );

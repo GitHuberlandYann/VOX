@@ -9,7 +9,7 @@ typedef struct {
 	int height;
 }				t_tex;
 
-UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _nb_items(0), _movement(false), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
+UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _gui_size(4), _nb_items(0), _movement(false), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
 {
 	_text = new Text();
 	_chat = new Chat(_text);
@@ -79,9 +79,8 @@ void UI::add_inventory_elem( int index )
 	} else if (type == blocks::OAK_SLAB) { // TODO CHANGE THIS ?
 		type = blocks::OAK_PLANKS;
 	}
-	int mult = 4;
-	int x = (WIN_WIDTH - (182 * mult)) / 2 + (20 * index * mult) + mult * 3;
-	int y = WIN_HEIGHT - (22 * mult) * 2 + mult * 3;
+	int x = (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3;
+	int y = WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3;
 	if (!s_blocks[type]->item3D) {
 		int spec = s_blocks[type]->texX(face_dir::MINUSX, 0) + (s_blocks[type]->texY(face_dir::MINUSX, 0) << 4) + (3 << 19);
 		// int faceLight = computeLight(row - 1, col, level);
@@ -91,18 +90,18 @@ void UI::add_inventory_elem( int index )
 		glm::ivec3 v0 = {spec + (cornerLight << 24) + (shade << 22), x, y};
 		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 		// shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-		glm::ivec3 v1 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 8), x + 16 * mult, y};
+		glm::ivec3 v1 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 8), x + 16 * _gui_size, y};
 		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
 		// shade = computeShade(row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-		glm::ivec3 v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), x, y + 16 * mult};
+		glm::ivec3 v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), x, y + 16 * _gui_size};
 		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
 		// shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-		glm::ivec3 v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 16 * mult, y + 16 * mult};
+		glm::ivec3 v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 16 * _gui_size, y + 16 * _gui_size};
 		addFace(v0, v1, v2, v3, false);
 		return ;
 	}
-	x += 2 * mult;
-	y += mult;
+	x += 2 * _gui_size;
+	y += _gui_size;
 	int offset = face_dir::PLUSX;
 	// top face
 	int spec = (15 << 24) + s_blocks[type]->texX(face_dir::PLUSZ, offset) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 4);
@@ -112,28 +111,28 @@ void UI::add_inventory_elem( int index )
 	// 	p0.z -= ONE_SIXTEENTH;
 	// 	p1.z -= ONE_SIXTEENTH;
 	// }
-	glm::ivec3 v0 = {spec, x, y + 15 * mult * 81.25f / 362.5f};
-	glm::ivec3 v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 6.5f * mult, y};
-	glm::ivec3 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x + 6.5f * mult, y + 15 * mult * 162.5f / 362.5f};
-	glm::ivec3 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 13 * mult, y + 15 * mult * 81.25f / 362.5f};
+	glm::ivec3 v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
+	glm::ivec3 v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 6.5f * _gui_size, y};
+	glm::ivec3 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
+	glm::ivec3 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 13 * _gui_size, y + 15 * _gui_size * 81.25f / 362.5f};
 	addFace(v0, v1, v2, v3, false);
 	// left face
 	spec = (10 << 24) + s_blocks[type]->texX(face_dir::MINUSY, offset) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 4);
-	v0 = {spec, x, y + 15 * mult * 81.25f / 362.5f};
-	v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 6.5f * mult, y + 15 * mult * 162.5f / 362.5f};
-	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x, y + 15 * mult * 281.25f / 362.5f};
-	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 6.5f * mult, y + 15 * mult};
+	v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
+	v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
+	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x, y + 15 * _gui_size * 281.25f / 362.5f};
+	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size};
 	addFace(v0, v1, v2, v3, false);
 	// right face
 	spec = (7 << 24) + s_blocks[type]->texX(face_dir::PLUSX, offset) + (s_blocks[type]->texY(face_dir::PLUSX, offset) << 4);
-	v0 = {spec, x + 6.5f * mult, y + 15 * mult * 162.5f / 362.5f};
-	v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 13 * mult, y + 15 * mult * 81.25f / 362.5f};
-	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x + 6.5f * mult, y + 15 * mult};
-	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 13 * mult, y + 15 * mult * 281.25f / 362.5f};
+	v0 = {spec, x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
+	v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 13 * _gui_size, y + 15 * _gui_size * 81.25f / 362.5f};
+	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size};
+	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 13 * _gui_size, y + 15 * _gui_size * 281.25f / 362.5f};
 	addFace(v0, v1, v2, v3, false);
 }
 
-void UI::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
+void UI::add_dura_value( std::vector<int> &vertices, int index )
 {
 	mtx_inventory.lock();
 	glm::ivec3 value = _inventory.getDuraFromIndex(index, false);
@@ -142,198 +141,97 @@ void UI::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
 		return ;
 	}
 	// adding grey bar first
-	vertices[vindex + 0] = 0;
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * value.x * mult) + mult * 3 + mult;
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 + mult * 3 + 14 * mult;
-	vertices[vindex + 3] = 14 * mult;
-	vertices[vindex + 4] = mult;
-	vertices[vindex + 5] = 64;
-	vertices[vindex + 6] = 0;
-	vertices[vindex + 7] = 1;
-	vertices[vindex + 8] = 1;
-	vindex += 9;
-	vertices[vindex + 0] = 0; // adding progress bar second
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * value.x * mult) + mult * 3 + mult;
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 + mult * 3 + 14 * mult;
+	fill_vertices(vertices, {0, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * value.x * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1});
+	// adding progress bar second
 	float percent = 1.0f * value.y / value.z;
-	vertices[vindex + 3] = 14 * mult * percent;
-	vertices[vindex + 4] = mult;
-	vertices[vindex + 5] = 103 * (percent < 0.6f) - (percent < 0.3);
-	vertices[vindex + 6] = 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f);
-	vertices[vindex + 7] = 1;
-	vertices[vindex + 8] = 1;
-	vindex += 9;
+	fill_vertices(vertices, {0, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * value.x * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1});
 }
 
-void UI::add_hearts_holder( GLint *vertices, int mult, int index, int & vindex )
+void UI::add_hearts_holder( std::vector<int> &vertices, int index )
 {
-	vertices[vindex + 0] = 1;
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + mult + (index * 8 * mult);
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
-	vertices[vindex + 3] = 8 * mult;
-	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = 0;
-	vertices[vindex + 6] = 16;
-	vertices[vindex + 7] = 9;
-	vertices[vindex + 8] = 9;
-	vindex += 9;
+	fill_vertices(vertices, {1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 0, 16, 9, 9});
 }
 
-void UI::add_hearts( GLint *vertices, int mult, int index, int & vindex )
+void UI::add_hearts( std::vector<int> &vertices, int index )
 {
-	vertices[vindex + 0] = 1;
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + mult + (index * 8 * mult);
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
-	vertices[vindex + 3] = 8 * mult;
-	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = 18 * (_camera._health_points == (1 + 2 * index)) + 9 * (_camera._health_points > (1 + 2 * index));
-	vertices[vindex + 6] = 16;
-	vertices[vindex + 7] = 9;
-	vertices[vindex + 8] = 9;
-	vindex += 9;
+	fill_vertices(vertices, {1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 18 * (_camera._health_points == (1 + 2 * index)) + 9 * (_camera._health_points > (1 + 2 * index)), 16, 9, 9});
 }
 
-void UI::add_armor_holder( GLint *vertices, int mult, int index, int & vindex )
+void UI::add_armor_holder( std::vector<int> &vertices, int index )
 {
-	vertices[vindex + 0] = 1;
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + mult + (index * 8 * mult);
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3);
-	vertices[vindex + 3] = 8 * mult;
-	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = 27;
-	vertices[vindex + 6] = 16;
-	vertices[vindex + 7] = 9;
-	vertices[vindex + 8] = 9;
-	vindex += 9;
+	fill_vertices(vertices, {1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 27, 16, 9, 9});
 }
 
-void UI::add_armor( GLint *vertices, int mult, int index, int & vindex )
+void UI::add_armor( std::vector<int> &vertices, int index )
 {
-	vertices[vindex + 0] = 1;
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + mult + (index * 8 * mult);
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3);
-	vertices[vindex + 3] = 8 * mult;
-	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = 36 + 9 * (index == 3);
-	vertices[vindex + 6] = 16;
-	vertices[vindex + 7] = 9;
-	vertices[vindex + 8] = 9;
-	vindex += 9;
+	fill_vertices(vertices, {1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 36 + 9 * (index == 3), 16, 9, 9});
 }
 
-void UI::add_food_holder( GLint *vertices, int mult, int index, int & vindex, int saturation )
+void UI::add_food_holder( std::vector<int> &vertices, int index, int saturation )
 {
-	vertices[vindex + 0] = 1;
-	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - 10 * mult - (index * 8 * mult);
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
-	vertices[vindex + 3] = 8 * mult;
-	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = ((saturation > 2 * index) ? ((saturation == 2 * index + 1) ? 54 + 18 : 54 + 9): 54);
-	vertices[vindex + 6] = 16;
-	vertices[vindex + 7] = 9;
-	vertices[vindex + 8] = 9;
-	vindex += 9;
+	fill_vertices(vertices, {1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 10 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, ((saturation > 2 * index) ? ((saturation == 2 * index + 1) ? 54 + 18 : 54 + 9): 54), 16, 9, 9});
 }
 
-void UI::add_food( GLint *vertices, int mult, int index, int & vindex )
+void UI::add_food( std::vector<int> &vertices, int index )
 {
-	vertices[vindex + 0] = 1;
-	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - 9 * mult - (index * 8 * mult);
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (8 * mult) - (2 * mult);
-	vertices[vindex + 3] = 8 * mult;
-	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = 82 + 9 * (_camera._foodLevel == (1 + 2 * index));
-	vertices[vindex + 6] = 16;
-	vertices[vindex + 7] = 9;
-	vertices[vindex + 8] = 9;
-	vindex += 9;
+	fill_vertices(vertices, {1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 82 + 9 * (_camera._foodLevel == (1 + 2 * index)), 16, 9, 9});
 }
 
-void UI::add_bubbles( GLint *vertices, int mult, int index, int & vindex )
+void UI::add_bubbles( std::vector<int> &vertices, int index )
 {
-	vertices[vindex + 0] = 1;
-	vertices[vindex + 1] = (WIN_WIDTH + (182 * mult)) / 2 - 9 * mult - (index * 8 * mult);
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - (2 * 8 * mult) - (mult * 3);
-	vertices[vindex + 3] = 8 * mult;
-	vertices[vindex + 4] = 8 * mult;
-	vertices[vindex + 5] = 99 + 9 * (_camera.getWaterStatus() == (1 + 2 * index));
-	vertices[vindex + 6] = 16;
-	vertices[vindex + 7] = 9;
-	vertices[vindex + 8] = 9;
-	vindex += 9;
+	fill_vertices(vertices, {1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 99 + 9 * (_camera.getWaterStatus() == (1 + 2 * index)), 16, 9, 9});
+}
+
+void UI::fill_vertices( std::vector<int> &vertices, std::array<int, 9> values )
+{
+	for (int index = 0; index < 9; index++) {
+		vertices.push_back(values[index]);
+	}
 }
 
 void UI::setup_array_buffer( void )
 {
+	std::vector<int> vertices;
+
+	fill_vertices(vertices, {1, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16}); // crosshair
+	fill_vertices(vertices, {1, (WIN_WIDTH - (182 * _gui_size)) / 2, WIN_HEIGHT - (22 * _gui_size) * 2, 182 * _gui_size, 22 * _gui_size, 0, 25, 182, 22}); // hot bar
+	mtx_inventory.lock();
+	int slotNum = _inventory.getSlotNum();
+	mtx_inventory.unlock();
+	fill_vertices(vertices, {1, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * slotNum * _gui_size) - _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 - _gui_size, 24 * _gui_size, 24 * _gui_size, 0, 47, 24, 24}); // slot select
+
 	mtx_inventory.lock();
 	int duras = _inventory.countDura(false);
 	mtx_inventory.unlock();
-    _nb_points = 3 + 2 * duras + 10 + (_camera._health_points >> 1) + (_camera._health_points & 1) + (_camera.getWaterStatus() >> 1) + (_camera.getWaterStatus() & 1) + 10 + 4 + 10 + (_camera._foodLevel >> 1) + (_camera._foodLevel & 1);
-	int mult = 4;
-	GLint *vertices = new GLint[_nb_points * 9];
-
-	vertices[0] = 1; // crosshair
-	vertices[1] = WIN_WIDTH / 2 - 16;
-	vertices[2] = WIN_HEIGHT / 2 - 16;
-	vertices[3] = 32;
-	vertices[4] = 32;
-	vertices[5] = 0;
-	vertices[6] = 0;
-	vertices[7] = 16;
-	vertices[8] = 16;
-
-	int vindex = 9;
-	vertices[vindex + 0] = 1; // hot bar
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2;
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2;
-	vertices[vindex + 3] = 182 * mult;
-	vertices[vindex + 4] = 22 * mult;
-	vertices[vindex + 5] = 0;
-	vertices[vindex + 6] = 25;
-	vertices[vindex + 7] = 182;
-	vertices[vindex + 8] = 22;
-	vindex += 9;
-	vertices[vindex + 0] = 1; // slot select
-	mtx_inventory.lock();
-	vertices[vindex + 1] = (WIN_WIDTH - (182 * mult)) / 2 + (20 * _inventory.getSlotNum() * mult) - mult;
-	mtx_inventory.unlock();
-	vertices[vindex + 2] = WIN_HEIGHT - (22 * mult) * 2 - mult;
-	vertices[vindex + 3] = 24 * mult;
-	vertices[vindex + 4] = 24 * mult;
-	vertices[vindex + 5] = 0;
-	vertices[vindex + 6] = 47;
-	vertices[vindex + 7] = 24;
-	vertices[vindex + 8] = 24;
-	vindex += 9;
-
 	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, mult, index, vindex);
+		add_dura_value(vertices, index);
 	}
 	for (int index = 0; index < 10; index++) {
-		add_hearts_holder(vertices, mult, index, vindex);
+		add_hearts_holder(vertices, index);
 	}
 	for (int index = 0; index < (_camera._health_points >> 1) + (_camera._health_points & 1); index++) {
-		add_hearts(vertices, mult, index, vindex);
+		add_hearts(vertices, index);
 	}
 	for (int index = 0; index < 10; index++) {
-		add_armor_holder(vertices, mult, index, vindex);
+		add_armor_holder(vertices, index);
 	}
 	for (int index = 0; index < 4; index++) {
-		add_armor(vertices, mult, index, vindex);
+		add_armor(vertices, index);
 	}
 	int saturation = glm::floor(_camera._foodSaturationLevel);
 	for (int index = 0; index < 10; index++) {
-		add_food_holder(vertices, mult, index, vindex, saturation);
+		add_food_holder(vertices, index, saturation);
 	}
 	for (int index = 0; index < (_camera._foodLevel >> 1) + (_camera._foodLevel & 1); index++) {
-		add_food(vertices, mult, index, vindex);
+		add_food(vertices, index);
 	}
 	for (int index = 0; index < (_camera.getWaterStatus() >> 1) + (_camera.getWaterStatus() & 1); index++) {
-		add_bubbles(vertices, mult, index, vindex);
+		add_bubbles(vertices, index);
 	}
-	if (vindex / 9 != _nb_points) {
-		std::cout << "ERROR ui nb points is " << _nb_points << std::endl;
-		std::cout << "current vindex is " << vindex / 9 << std::endl << std::endl << std::endl;
+
+	_nb_points = vertices.size() / 9;
+	if (!_nb_points) {
+		return ;
 	}
 
 	glGenVertexArrays(1, &_vao);
@@ -342,9 +240,7 @@ void UI::setup_array_buffer( void )
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _nb_points * 9 * sizeof(GLint), vertices, GL_STATIC_DRAW);
-
-	delete [] vertices;
+	glBufferData(GL_ARRAY_BUFFER, _nb_points * 9 * sizeof(GLint), &vertices[0], GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(UI_ATLASATTRIB);
 	glVertexAttribIPointer(UI_ATLASATTRIB, 1, GL_INT, 9 * sizeof(GLint), 0);
@@ -372,14 +268,14 @@ void UI::display_slot_value( int index )
 	if (index < 0 || index >= 9) {
 		return ;
 	}
-	int mult = 4, value = _inventory.getSlotBlock(index).y;
+	int value = _inventory.getSlotBlock(index).y;
 	if (value > 1) {
 		if (value > 9) {
-			_text->addText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 4 - 6 * mult + mult, WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 6 - 6 + mult, 30, false, std::to_string(value / 10));
-			_text->addText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 4 - 6 * mult, WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 6 - 6, 30, true, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, false, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12, 8 * _gui_size, true, std::to_string(value / 10));
 		}
-		_text->addText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 4 + mult, WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 6 - 6 + mult, 30, false, std::to_string(value % 10));
-		_text->addText((WIN_WIDTH - (182 * mult)) / 2 + ((10 + 20 * index) * mult) + mult * 4, WIN_HEIGHT - ((22 - 4) * mult) * 2 + mult * 6 - 6, 30, true, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, false, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12, 8 * _gui_size, true, std::to_string(value % 10));
 	}
 }
 
@@ -395,6 +291,14 @@ Text *UI::getTextPtr( void )
 Chat *UI::getChatPtr( void )
 {
 	return (_chat);
+}
+
+void UI::changeGuiSize( int offset )
+{
+	_gui_size += offset;
+	if (_gui_size < 2) _gui_size = 2;
+	else if (_gui_size > 7) _gui_size = 7;
+	else _vaoSet = false;
 }
 
 GLuint UI::getShaderProgram( void )
@@ -484,7 +388,7 @@ void UI::addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bo
 void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 {
 	_chat->blitMessages(deltaTime);
-	_text->addText(12, 24, 12, true, str);
+	_text->addText(12, 24, _gui_size * 3, true, str);
 	if (_hideUI) {
 		return ;
 	}

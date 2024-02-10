@@ -28,7 +28,6 @@ Project Requirements:
 TODOS:
 	- hitbox change + no fall on sneak
     - skybox
-	- gui size
 	- particles !
 	- flint and steel
 	- limit floodfill algo for lighting (but be smart about it)
@@ -118,6 +117,7 @@ DONE:
     - Water buckets
 	- water flow
 	- clouds
+	- gui size
 	- main menu
     - load menu
     - inventory menu

@@ -9,7 +9,7 @@ typedef struct {
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL),
-		_key_rdist(0), _render_distance(RENDER_DISTANCE),
+		_key_rdist(0), _render_distance(RENDER_DISTANCE), _key_guisize(0),
 		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0), _key_screenshot(0),
 		_key_h(0), _key_g(0), _key_j(0), _key_o(0), _key_time_mul(0), _key_jump(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),

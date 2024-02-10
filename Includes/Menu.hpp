@@ -27,7 +27,7 @@ class Menu // TODO _mult as attribute, later modified by guiSize changes
 	private:
 	    GLuint _vao, _vbo;
 		GLuint _shaderProgram;
-        GLint _nb_points, _state, _selection, _selected_world;
+        GLint _gui_size, _nb_points, _state, _selection, _selected_world;
 		glm::ivec2 _selected_block;
 		bool _vaoSet, _esc_released, _e_released, _left_released, _right_released, _textBar;
 		GLint _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9, _chat_released;
@@ -61,22 +61,18 @@ class Menu // TODO _mult as attribute, later modified by guiSize changes
         void setup_array_buffer_pause( void );
         void setup_array_buffer_chat( void );
 
-		void display_slot_value( int index );
-		void display_backpack_value( int index );
-		void display_icraft_value( int index );
-		void display_furnace_value( void );
-		void display_craft_value( int index );
-
-		void occult_selection( std::vector<int> &vertices, int mult );
-		void add_item_value( int type, int x, int y, int mult, bool movement = false );
-		void add_slot_value( int mult, int index );
-		void add_backpack_value( int mult, int index );
-		void add_icraft_value( int mult, int index );
-		void add_craft_value( int mult, int index );
-		void add_dura_value( std::vector<int> &vertices, int mult, int index );
-		void add_crafted_value( int mult );
-		void add_chest_value( int mult, int index );
-		void add_furnace_value( std::vector<int> &vertices, int mult );
+		void occult_selection( std::vector<int> &vertices );
+		void display_item_value( int x, int y, int amount );
+		void add_item_value( glm::ivec2 item, int x, int y, bool movement = false );
+	
+		void add_slot_value( int index );
+		void add_backpack_value( int index );
+		void add_icraft_value( int index );
+		void add_craft_value( int index );
+		void add_dura_value( std::vector<int> &vertices, int index );
+		void add_crafted_value( void );
+		void add_chest_value( int index );
+		void add_furnace_value( std::vector<int> &vertices );
 
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );
@@ -96,6 +92,7 @@ class Menu // TODO _mult as attribute, later modified by guiSize changes
 		void setFurnaceInstance( FurnaceInstance *furnace );
 		void setState( int state );
 		int getState( void );
+		void changeGuiSize( int offset );
 		std::string getWorldFile( void );
 		int run( GLint render_dist, bool animUpdate );
 
