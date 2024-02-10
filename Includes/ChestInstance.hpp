@@ -5,6 +5,8 @@
 # include <array>
 # include <vector>
 
+# define CHEST_ANIM_TIME 0.3f
+
 namespace chest_state {
 	enum {
 		OPEN,
@@ -25,6 +27,7 @@ class ChestInstance
 		Chunk *_chunk;
 
 		void display_open( std::vector<std::pair<int, glm::vec3>> &arr );
+		void display_moving( std::vector<std::pair<int, glm::vec3>> &arr );
 		void display_closed( std::vector<std::pair<int, glm::vec3>> &arr );
 
 	public:
