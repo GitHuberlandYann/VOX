@@ -18,11 +18,6 @@ FurnaceInstance::~FurnaceInstance( void )
 //                                Public                                      //
 // ************************************************************************** //
 
-int FurnaceInstance::count( void )
-{
-	return ((_fuel_time > 0) + (_composant_time > 0));
-}
-
 float FurnaceInstance::getComposantTime( void )
 {
 	if (!_composant_time) {

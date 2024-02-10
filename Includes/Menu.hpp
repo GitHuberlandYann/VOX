@@ -22,7 +22,7 @@ enum {
 	CHAT_MENU
 };
 
-class Menu
+class Menu // TODO _mult as attribute, later modified by guiSize changes
 {
 	private:
 	    GLuint _vao, _vbo;
@@ -53,7 +53,7 @@ class Menu
 		int ingame_menu( void );
 		int chat_menu( bool animUpdate );
 
-		void fill_vertices( GLint *vertices, GLint values[9], int & vindex);
+		void fill_vertices( std::vector<int> &vertices, std::array<int, 9> values );
         void setup_array_buffer_main( void );
         void setup_array_buffer_select( void );
 		void setup_array_buffer_load( int completion );
@@ -67,21 +67,22 @@ class Menu
 		void display_furnace_value( void );
 		void display_craft_value( int index );
 
+		void occult_selection( std::vector<int> &vertices, int mult );
 		void add_item_value( int type, int x, int y, int mult, bool movement = false );
 		void add_slot_value( int mult, int index );
 		void add_backpack_value( int mult, int index );
 		void add_icraft_value( int mult, int index );
 		void add_craft_value( int mult, int index );
-		void add_dura_value( GLint *vertices, int mult, int index, int & vindex );
+		void add_dura_value( std::vector<int> &vertices, int mult, int index );
 		void add_crafted_value( int mult );
 		void add_chest_value( int mult, int index );
+		void add_furnace_value( std::vector<int> &vertices, int mult );
 
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );
         void setup_array_buffer_chest( void );
-		void add_furnace_value( GLint *vertices, int mult, int & vindex );
         void setup_array_buffer_furnace( void );
-		void setup_shader( GLint *vertices );
+		void setup_shader( std::vector<int> &vertices );
 
 	public:
 		Menu( Inventory & inventory, UI *ui );

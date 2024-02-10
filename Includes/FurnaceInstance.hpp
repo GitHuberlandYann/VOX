@@ -23,7 +23,6 @@ class FurnaceInstance
 		FurnaceInstance( void );
 		~FurnaceInstance( void );
 
-		int count( void );
 		float getComposantTime( void );
 		float getFuelTime( void );
 		glm::ivec2 getComposant( void );

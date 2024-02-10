@@ -312,8 +312,11 @@ int Menu::ingame_inputs( void )
 					}
 				}
 				if (!inList) {
+					int count = _selected_block.y;
 					_selected_block = _inventory.putOneBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
-					_selection_list.push_back(_selection);
+					if (_selected_block.y < count) {
+						_selection_list.push_back(_selection);
+					}
 					_ui->addFace({0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, false, true);
 				}
 			}
@@ -503,108 +506,63 @@ int Menu::chat_menu( bool animUpdate )
 	return (0);
 }
 
-void Menu::fill_vertices( GLint *vertices, GLint values[9], int & vindex)
+void Menu::fill_vertices( std::vector<int> &vertices, std::array<int, 9> values )
 {
 	for (int index = 0; index < 9; index++) {
-		vertices[vindex + index] = values[index];
+		vertices.push_back(values[index]);
 	}
-	vindex += 9;
 }
 
 void Menu::setup_array_buffer_main( void )
 {
-	_nb_points = 8;
 	int mult = 3;
-    GLint vertices[] = { // pos: x y width height textcoord: x y width height
-        1, WIN_WIDTH / 2 - 129 * mult, WIN_HEIGHT / 2 - 104 * mult, 256 * mult, 64 * mult, 0, 131, 256, 64, // MINECRAFT
+    std::vector<int> vertices; // pos: x y width height textcoord: x y width height
+	fill_vertices(vertices, {1, WIN_WIDTH / 2 - 129 * mult, WIN_HEIGHT / 2 - 104 * mult, 256 * mult, 64 * mult, 0, 131, 256, 64}); // MINECRAFT
 
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 10 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 1), 200, 20, // Singleplayer
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 15 * mult, 200 * mult, 20 * mult, 0, 71, 200, 20, // Multiplayer
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 40 * mult, 200 * mult, 20 * mult, 0, 71, 200, 20, // Minecraft Realms
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 10 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 1), 200, 20}); // Singleplayer
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 15 * mult, 200 * mult, 20 * mult, 0, 71, 200, 20}); // Multiplayer
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 40 * mult, 200 * mult, 20 * mult, 0, 71, 200, 20}); // Minecraft Realms
 
-        1, WIN_WIDTH / 2 - 125 * mult, WIN_HEIGHT / 2 + 80 * mult, 15 * mult, 20 * mult, 0, 71, 200, 20, // Lang settings
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 80 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Options...
-        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 80 * mult, 95 * mult, 20 * mult, 0, 91 + 20 * (_selection == 6), 200, 20, // Quit Game
-        1, WIN_WIDTH / 2 + 110 * mult, WIN_HEIGHT / 2 + 80 * mult, 15 * mult, 20 * mult, 0, 71, 200, 20, // accessibility settings
-    };
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 125 * mult, WIN_HEIGHT / 2 + 80 * mult, 15 * mult, 20 * mult, 0, 71, 200, 20}); // Lang settings
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 80 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20}); // Options...
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 80 * mult, 95 * mult, 20 * mult, 0, 91 + 20 * (_selection == 6), 200, 20}); // Quit Game
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 + 110 * mult, WIN_HEIGHT / 2 + 80 * mult, 15 * mult, 20 * mult, 0, 71, 200, 20}); // accessibility settings
 
 	setup_shader(vertices);
 }
 
 void Menu::setup_array_buffer_select( void )
 {
-	_nb_points = 6 + _worlds.size();
-	if (_nb_points > 14) {
-		_nb_points = 14;
-	}
 	int mult = 3;
-    GLint *vertices = new GLint[9 * _nb_points]; // pos: x y width height textcoord: x y width height
+    std::vector<int> vertices; // pos: x y width height textcoord: x y width height
 
-	int vindex = 0;
-	GLint  playSelectedWorld[9] = {1, WIN_WIDTH / 2 - 155 * mult, WIN_HEIGHT / 2 + 90 * mult, 150 * mult, 20 * mult, 0, (91 + 20 * (_selection == 1)) * (_selected_world != 0) + 71 * (_selected_world == 0), 200, 20};
-	fill_vertices(vertices, playSelectedWorld, vindex);
-	GLint edit[9] = {1, WIN_WIDTH / 2 - 155 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 71, 200, 20};
-	fill_vertices(vertices, edit, vindex);
-	GLint del[9] = {1, WIN_WIDTH / 2 - 78 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 71, 200, 20};
-	fill_vertices(vertices, del, vindex);
-	GLint createNewWorld[9] = {1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 90 * mult, 150 * mult, 20 * mult, 0, 91 + 20 * (_selection == 4), 200, 20};
-	fill_vertices(vertices, createNewWorld, vindex);
-	GLint reCreate[9] = {1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 71, 200, 20};
-	fill_vertices(vertices, reCreate, vindex);
-	GLint cancel[9] = {1, WIN_WIDTH / 2 + 82 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 91 + 20 * (_selection == 6), 200, 20};
-	fill_vertices(vertices, cancel, vindex);
+	fill_vertices(vertices, {1, WIN_WIDTH / 2 - 155 * mult, WIN_HEIGHT / 2 + 90 * mult, 150 * mult, 20 * mult, 0, (91 + 20 * (_selection == 1)) * (_selected_world != 0) + 71 * (_selected_world == 0), 200, 20}); // playSelectedWorld
+	fill_vertices(vertices, {1, WIN_WIDTH / 2 - 155 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 71, 200, 20}); // edit
+	fill_vertices(vertices, {1, WIN_WIDTH / 2 - 78 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 71, 200, 20}); // delete
+	fill_vertices(vertices, {1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 90 * mult, 150 * mult, 20 * mult, 0, 91 + 20 * (_selection == 4), 200, 20}); // createNewWorld
+	fill_vertices(vertices, {1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 71, 200, 20}); // reCreate
+	fill_vertices(vertices, {1, WIN_WIDTH / 2 + 82 * mult, WIN_HEIGHT / 2 + 115 * mult, 73 * mult, 20 * mult, 0, 91 + 20 * (_selection == 6), 200, 20}); // cancel
 
 	for (int index = 0; index < static_cast<int>(static_cast<int>(_worlds.size())) && index < 8; index++) {
-		GLint world[9] = {1, WIN_WIDTH / 2 - 100 * mult, (30 + 20 * index) * mult, 200 * mult, 20 * mult, 0, 71 + 20 * (_selected_world - 1 == index), 200, 20};
-		fill_vertices(vertices, world, vindex);
+		fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, (30 + 20 * index) * mult, 200 * mult, 20 * mult, 0, 71 + 20 * (_selected_world - 1 == index), 200, 20}); // world #index
 	}
 
 	setup_shader(vertices);
-	delete [] vertices;
 }
 
 void Menu::setup_array_buffer_load( int completion )
 {
 	// std::cout << "current completion : " << completion << std::endl;
-	_nb_points = 1 + 100 + 1; // background + 10 * 10 cubes + breaking frame
-	GLint *vertices = new GLint[9 * _nb_points]; // pos: x y width height textcoord: x y width height
+	std::vector<int> vertices; // pos: x y width height textcoord: x y width height
 
-	vertices[0] = 1;
-	vertices[1] = WIN_WIDTH / 2 - 110;
-	vertices[2] = WIN_HEIGHT / 2 - 120;
-	vertices[3] = 220;
-	vertices[4] = 240;
-	vertices[5] = 0;
-	vertices[6] = 71;
-	vertices[7] = 200;
-	vertices[8] = 20;
+	fill_vertices(vertices, {1, WIN_WIDTH / 2 - 110, WIN_HEIGHT / 2 - 120, 220, 240, 0, 71, 200, 20});
 
 	int step = 1, turnCounter = 0, numSteps = 1, stepSize = 20, state = 0, x = WIN_WIDTH / 2 - 20, y = WIN_HEIGHT / 2;
 	for (; step < 1 + 100; step++) {
-		vertices[step * 9] = 0;
-		vertices[step * 9 + 1] = x;
-		vertices[step * 9 + 2] = y;
-		vertices[step * 9 + 3] = stepSize;
-		vertices[step * 9 + 4] = stepSize;
-		if (step < 1 + completion / 10) {
-			vertices[step * 9 + 5] = 64; // cobblestone
-			vertices[step * 9 + 6] = 48;
-		} else {
-			vertices[step * 9 + 5] = 64; // stone
-			vertices[step * 9 + 6] = 32;
-		}
-		vertices[step * 9 + 7] = 16;
-		vertices[step * 9 + 8] = 16;
+		int offset = (step < 1 + completion / 10) ? 48 : 32; // cobblestone or stone
+		fill_vertices(vertices, {0, x, y, stepSize, stepSize, 64, offset, 16, 16});
 		if (step == 1 + completion / 10) {
-			vertices[101 * 9] = 0;
-			vertices[101 * 9 + 1] = x;
-			vertices[101 * 9 + 2] = y;
-			vertices[101 * 9 + 3] = stepSize;
-			vertices[101 * 9 + 4] = stepSize;
-			vertices[101 * 9 + 5] = 240; // break frame
-			vertices[101 * 9 + 6] = 32 * ((completion % 10) != 0) + 16 * (completion % 10);
-			vertices[101 * 9 + 7] = 16;
-			vertices[101 * 9 + 8] = 16;
+			fill_vertices(vertices, {0, x, y, stepSize, stepSize, 240, 32 * ((completion % 10) != 0) + 16 * (completion % 10), 16, 16}); // break frame
 		}
 		switch (state) {
 			case 0:
@@ -630,40 +588,35 @@ void Menu::setup_array_buffer_load( int completion )
 	}
 
 	setup_shader(vertices);
-	delete [] vertices;
 }
 
 void Menu::setup_array_buffer_death( void )
 {
-	_nb_points = 3;
 	int mult = 3;
-	GLint vertices[] = { // pos: x y width height textcoord: x y width height
-		1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 16, 15, 1, 1, // occult window in redish
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 5 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 1), 200, 20, // Respawn
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 30 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 2), 200, 20, // Title Screen
-    };
+	std::vector<int> vertices; // pos: x y width height textcoord: x y width height
+	fill_vertices(vertices, {1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 16, 15, 1, 1}); // occult window in redish
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 5 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 1), 200, 20}); // Respawn
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 30 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 2), 200, 20}); // Title Screen
 
 	setup_shader(vertices);
 }
 
 void Menu::setup_array_buffer_pause( void )
 {
-	_nb_points = 9;
 	int mult = 3;
-    GLint vertices[] = { // pos: x y width height textcoord: x y width height
-		1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1, // occult window
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 60 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 1), 200, 20, // Back to Game
+    std::vector<int> vertices; // pos: x y width height textcoord: x y width height
+	fill_vertices(vertices, {1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1}); // occult window
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 60 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 1), 200, 20}); // Back to Game
 
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 35 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Advancements
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 10 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Give Feedback
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 15 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Options...
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 35 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20}); // Advancements
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 - 10 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20}); // Give Feedback
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 15 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20}); // Options...
 
-        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 - 35 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Statistics
-        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 - 10 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Report Bugs
-        1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 15 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20, // Open to LAN
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 - 35 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20}); // Statistics
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 - 10 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20}); // Report Bugs
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 + 5 * mult, WIN_HEIGHT / 2 + 15 * mult, 95 * mult, 20 * mult, 0, 71, 200, 20}); // Open to LAN
 
-        1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 40 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 8), 200, 20, // Save and Quit to Title
-    };
+    fill_vertices(vertices, {1, WIN_WIDTH / 2 - 100 * mult, WIN_HEIGHT / 2 + 40 * mult, 200 * mult, 20 * mult, 0, 91 + 20 * (_selection == 8), 200, 20}); // Save and Quit to Title
 
 	setup_shader(vertices);
 }
@@ -671,11 +624,9 @@ void Menu::setup_array_buffer_pause( void )
 void Menu::setup_array_buffer_chat( void )
 {
 	int nbr = _chat->computeHeight();
-	_nb_points = 2;
-    GLint vertices[] = { // altlas index, pos: {x y width height},  textcoord: {x y width height}
-        1, CHAT_BOX_X, WIN_HEIGHT - 48 - 8 - 18 * (nbr + 1), CHAT_BOX_WIDTH, 4 + 18 * nbr, 3, 29, 1, 1, // occult chat box
-        1, CHAT_BOX_X, WIN_HEIGHT - 48 - 18, CHAT_BOX_WIDTH, 20, 3, 29, 1, 1, // twice for input box
-    };
+    std::vector<int> vertices; // altlas index, pos: {x y width height},  textcoord: {x y width height}
+    fill_vertices(vertices, {1, CHAT_BOX_X, WIN_HEIGHT - 48 - 8 - 18 * (nbr + 1), CHAT_BOX_WIDTH, 4 + 18 * nbr, 3, 29, 1, 1}); // occult chat box
+    fill_vertices(vertices, {1, CHAT_BOX_X, WIN_HEIGHT - 48 - 18, CHAT_BOX_WIDTH, 20, 3, 29, 1, 1}); // occult input box
 
 	setup_shader(vertices);
 }
@@ -776,6 +727,54 @@ void Menu::display_craft_value( int index )
 		}
 		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 18 + mult, WIN_HEIGHT / 2 - 57 * mult + 18 * mult * (index / 3) + 1 + mult, 22, false, std::to_string(value % 10));
 		_text->addText((WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 18, WIN_HEIGHT / 2 - 57 * mult + 18 * mult * (index / 3) + 2, 22, true, std::to_string(value % 10));
+	}
+}
+
+void Menu::occult_selection( std::vector<int> &vertices, int mult )
+{
+	bool found = false;
+	for (int s : _selection_list) {
+		if (s == _selection) {
+			found = true;
+			break ;
+		}
+	}
+	if (!found) {
+		_selection_list.push_back(_selection);
+	}
+	for (int cell : _selection_list) {
+		if (!cell) {
+		} else if (cell < 10) { // hot bar slot
+			int index = cell - 1;
+			fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + (18 * index * mult) + mult * 3, WIN_HEIGHT / 2 + 59 * mult, 16 * mult, 16 * mult, 16, 14, 1, 1});
+		} else if (cell < 37) { // backpack
+			int index = cell - 10;
+			fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 3, WIN_HEIGHT / 2 + mult + 18 * mult * (index / 9), 16 * mult, 16 * mult, 16, 14, 1, 1});
+		} else if (cell < 41) { // icraft
+			int index = cell - 37;
+			fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + (18 * (5 + index % 2) * mult) + mult * 3, WIN_HEIGHT / 2 - 65 * mult + 18 * mult * (index / 2), 16 * mult, 16 * mult, 16, 14, 1, 1});
+		} else if (cell == 41) { // crafted
+			if (_state == INVENTORY_MENU) {
+				fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + 149 * mult, WIN_HEIGHT / 2 - 55 * mult, 16 * mult, 16 * mult, 16, 14, 1, 1});
+			} else if (_state == CRAFTING_MENU) {
+				fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + 119 * mult, WIN_HEIGHT / 2 - 48 * mult, 16 * mult, 16 * mult, 16, 14, 1, 1});
+			} else if (_state == FURNACE_MENU) {
+				fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + 111 * mult, WIN_HEIGHT / 2 - 48 * mult, 16 * mult, 16 * mult, 16, 14, 1, 1});
+			}
+		} else if (cell < 51) { // craft
+			int index = cell - 42;
+			fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + (18 * (1 + index % 3) * mult) + mult * 7, WIN_HEIGHT / 2 - 66 * mult + 18 * mult * (index / 3), 16 * mult, 16 * mult, 16, 14, 1, 1});
+		} else if (cell == 51) { // composant
+			fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + 51 * mult, WIN_HEIGHT / 2 - 66 * mult, 16 * mult, 16 * mult, 16, 14, 1, 1});
+		} else if (cell == 52) { // fuel
+			fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + 51 * mult, WIN_HEIGHT / 2 - 30 * mult, 16 * mult, 16 * mult, 16, 14, 1, 1});
+		} else if (cell < 80) { // chest
+			int index = cell - 53;
+			fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + (18 * (index % 9) * mult) + mult * 3, WIN_HEIGHT / 2 - 65 * mult + 18 * mult * (index / 9), 16 * mult, 16 * mult, 16, 14, 1, 1});
+		}
+	}
+	if (!found) {
+		_selection_list.pop_back();
 	}
 }
 
@@ -913,7 +912,7 @@ static int screenPosYFromlocation( int mult, int location )
 	return (0);
 }
 
-void Menu::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
+void Menu::add_dura_value( std::vector<int> &vertices, int mult, int index )
 {
 	mtx_inventory.lock();
 	glm::ivec3 value = _inventory.getDuraFromIndex(index, true);
@@ -922,27 +921,10 @@ void Menu::add_dura_value( GLint *vertices, int mult, int index, int & vindex )
 		return ;
 	}
 	// adding grey bar first
-	vertices[vindex + 0] = 0;
-	vertices[vindex + 1] = screenPosXFromlocation(mult, value.x) + mult;
-	vertices[vindex + 2] = screenPosYFromlocation(mult, value.x) + 14 * mult;
-	vertices[vindex + 3] = 14 * mult;
-	vertices[vindex + 4] = mult;
-	vertices[vindex + 5] = 64;
-	vertices[vindex + 6] = 0;
-	vertices[vindex + 7] = 1;
-	vertices[vindex + 8] = 1;
-	vindex += 9;
-	vertices[vindex + 0] = 0; // adding progress bar second
-	vertices[vindex + 1] = screenPosXFromlocation(mult, value.x) + mult;
-	vertices[vindex + 2] = screenPosYFromlocation(mult, value.x) + 14 * mult;
+	fill_vertices(vertices, {0, screenPosXFromlocation(mult, value.x) + mult, screenPosYFromlocation(mult, value.x) + 14 * mult, 14 * mult, mult, 64, 0, 1, 1});
+	// adding progress bar second
 	float percent = 1.0f * value.y / value.z;
-	vertices[vindex + 3] = 14 * mult * percent;
-	vertices[vindex + 4] = mult;
-	vertices[vindex + 5] = 103 * (percent < 0.6f) - (percent < 0.3);
-	vertices[vindex + 6] = 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f);
-	vertices[vindex + 7] = 1;
-	vertices[vindex + 8] = 1;
-	vindex += 9;
+	fill_vertices(vertices, {0, screenPosXFromlocation(mult, value.x) + mult, screenPosYFromlocation(mult, value.x) + 14 * mult, static_cast<int>(14 * mult * percent), mult, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1});
 }
 
 void Menu::add_crafted_value( int mult )
@@ -990,136 +972,7 @@ void Menu::add_chest_value( int mult, int index )
 	}
 }
 
-void Menu::setup_array_buffer_inventory( void )
-{
-	mtx_inventory.lock();
-	int duras = _inventory.countDura(true);
-	mtx_inventory.unlock();
-	_nb_points = 1 + 2 * duras;
-	int mult = 3;
-    GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
-
-	vertices[0] = 2;
-	vertices[1] = WIN_WIDTH / 2 - 88 * mult;
-	vertices[2] = WIN_HEIGHT / 2 - 83 * mult;
-	vertices[3] = 176 * mult;
-	vertices[4] = 166 * mult;
-	vertices[5] = 0;
-	vertices[6] = 0;
-	vertices[7] = 128; // textcoord are in 256*256
-	vertices[8] = 128;
-
-	int vindex = 9;
-	for (int index = 0; index < 9; index++) {
-		add_slot_value(mult, index);
-	}
-	for (int index = 0; index < 27; index++) {
-		add_backpack_value(mult, index);
-	}
-	for (int index = 0; index < 4; index++) {
-		add_icraft_value(mult, index);
-	}
-	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, mult, index, vindex);
-	}
-	add_crafted_value(mult);
-
-	if (_selected_block.x != blocks::AIR) {
-		double mouseX, mouseY;
-		glfwGetCursorPos(_window, &mouseX, &mouseY);
-		add_item_value(_selected_block.x, mouseX - 8 * mult, mouseY - 8 * mult, mult, true);
-	}
-
-	setup_shader(vertices);
-	delete [] vertices;
-}
-
-void Menu::setup_array_buffer_crafting( void )
-{
-	mtx_inventory.lock();
-	int duras = _inventory.countDura(true);
-	mtx_inventory.unlock();
-	_nb_points = 1 + 2 * duras;
-	int mult = 3;
-    GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
-	vertices[0] = 2;
-	vertices[1] = WIN_WIDTH / 2 - 88 * mult;
-	vertices[2] = WIN_HEIGHT / 2 - 83 * mult;
-	vertices[3] = 176 * mult;
-	vertices[4] = 166 * mult;
-	vertices[5] = 128;
-	vertices[6] = 0;
-	vertices[7] = 128; // textcoord are in 256*256
-	vertices[8] = 128;
-
-	int vindex = 9;
-	for (int index = 0; index < 9; index++) {
-		add_slot_value(mult, index);
-	}
-	for (int index = 0; index < 27; index++) {
-		add_backpack_value(mult, index);
-	}
-	for (int index = 0; index < 9; index++) {
-		add_craft_value(mult, index);
-	}
-	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, mult, index, vindex);
-	}
-	add_crafted_value(mult);
-
-	if (_selected_block.x != blocks::AIR) {
-		double mouseX, mouseY;
-		glfwGetCursorPos(_window, &mouseX, &mouseY);
-		add_item_value(_selected_block.x, mouseX - 8 * mult, mouseY - 8 * mult, mult, true);
-	}
-
-	setup_shader(vertices);
-	delete [] vertices;
-}
-
-void Menu::setup_array_buffer_chest( void )
-{
-	int duras = _inventory.countDura(true) + ((_chest) ? 0 : 0); // TODO _chests->countDura
-	_nb_points = 1 + 2 * duras;
-	int mult = 3;
-
-    GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
-
-	vertices[0] = 2;
-	vertices[1] = WIN_WIDTH / 2 - 88 * mult;
-	vertices[2] = WIN_HEIGHT / 2 - 83 * mult;
-	vertices[3] = 176 * mult;
-	vertices[4] = 166 * mult;
-	vertices[5] = 128;
-	vertices[6] = 128;
-	vertices[7] = 128; // textcoord are in 256*256
-	vertices[8] = 128;
-
-	int vindex = 9;
-	for (int index = 0; index < 9; index++) {
-		add_slot_value(mult, index);
-	}
-	for (int index = 0; index < 27; index++) {
-		add_backpack_value(mult, index);
-	}
-	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, mult, index, vindex);
-	}
-	for (int index = 0; index < 27; index++) {
-		add_chest_value(mult, index);
-	}
-
-	if (_selected_block.x != blocks::AIR) {
-		double mouseX, mouseY;
-		glfwGetCursorPos(_window, &mouseX, &mouseY);
-		add_item_value(_selected_block.x, mouseX - 8 * mult, mouseY - 8 * mult, mult, true);
-	}
-
-	setup_shader(vertices);
-	delete [] vertices;
-}
-
-void Menu::add_furnace_value( GLint *vertices, int mult, int & vindex )
+void Menu::add_furnace_value( std::vector<int> &vertices, int mult )
 {
 	int value = _furnace->getComposant().x;
 	if (value != blocks::AIR) {
@@ -1129,29 +982,11 @@ void Menu::add_furnace_value( GLint *vertices, int mult, int & vindex )
 	}
 	int progress = 1 + glm::floor(_furnace->getFuelTime() * 13);
 	if (_furnace->getFuelTime()) {
-		vertices[vindex + 0] = 1;
-		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 50 * mult + mult;
-		vertices[vindex + 2] = WIN_HEIGHT / 2 - 48 * mult + progress * mult + mult;
-		vertices[vindex + 3] = 14 * mult;
-		vertices[vindex + 4] = (14 - progress) * mult;
-		vertices[vindex + 5] = 24;
-		vertices[vindex + 6] = 47 + progress;
-		vertices[vindex + 7] = 14;
-		vertices[vindex + 8] = 14 - progress;
-		vindex += 9;
+		fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + 50 * mult + mult, WIN_HEIGHT / 2 - 48 * mult + progress * mult + mult, 14 * mult, (14 - progress) * mult, 24, 47 + progress, 14, 14 - progress});
 	}
 	progress = 1 + glm::floor(_furnace->getComposantTime() * 23);
 	if (_furnace->getComposantTime()) {
-		vertices[vindex + 0] = 1;
-		vertices[vindex + 1] = (WIN_WIDTH - (166 * mult)) / 2 + 74 * mult;
-		vertices[vindex + 2] = WIN_HEIGHT / 2 - 49 * mult;
-		vertices[vindex + 3] = progress * mult;
-		vertices[vindex + 4] = 17 * mult;
-		vertices[vindex + 5] = 38;
-		vertices[vindex + 6] = 47;
-		vertices[vindex + 7] = progress;
-		vertices[vindex + 8] = 17;
-		vindex += 9;
+		fill_vertices(vertices, {1, (WIN_WIDTH - (166 * mult)) / 2 + 74 * mult, WIN_HEIGHT / 2 - 49 * mult, progress * mult, 17 * mult, 38, 47, progress, 17});
 	}
 	value = _furnace->getFuel().x;
 	if (value != blocks::AIR) {
@@ -1167,37 +1002,30 @@ void Menu::add_furnace_value( GLint *vertices, int mult, int & vindex )
 	}
 }
 
-void Menu::setup_array_buffer_furnace( void )
+void Menu::setup_array_buffer_inventory( void )
 {
-	int furnaceCount = (_furnace) ? _furnace->count() : 0;
-	// std::cout << "FURNACE count is " << furnaceCount << std::endl;
-	int duras = _inventory.countDura(true);
-	_nb_points = 1 + 2 * duras + furnaceCount;
 	int mult = 3;
+    std::vector<int> vertices; // pos: x y width height textcoord: x y width height
 
-    GLint *vertices = new GLint[_nb_points * 9]; // pos: x y width height textcoord: x y width height
+	fill_vertices(vertices, {2, WIN_WIDTH / 2 - 88 * mult, WIN_HEIGHT / 2 - 83 * mult, 176 * mult, 166 * mult, 0, 0, 128, 128});
 
-	vertices[0] = 2;
-	vertices[1] = WIN_WIDTH / 2 - 88 * mult;
-	vertices[2] = WIN_HEIGHT / 2 - 83 * mult;
-	vertices[3] = 176 * mult;
-	vertices[4] = 166 * mult;
-	vertices[5] = 0;
-	vertices[6] = 128;
-	vertices[7] = 128; // textcoord are in 256*256
-	vertices[8] = 128;
-
-	int vindex = 9;
+	occult_selection(vertices, mult);
 	for (int index = 0; index < 9; index++) {
 		add_slot_value(mult, index);
 	}
 	for (int index = 0; index < 27; index++) {
 		add_backpack_value(mult, index);
 	}
-	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, mult, index, vindex);
+	for (int index = 0; index < 4; index++) {
+		add_icraft_value(mult, index);
 	}
-	add_furnace_value(vertices, mult, vindex);
+	mtx_inventory.lock();
+	int duras = _inventory.countDura(true);
+	mtx_inventory.unlock();
+	for (int index = 0; index < duras; index++) {
+		add_dura_value(vertices, mult, index);
+	}
+	add_crafted_value(mult);
 
 	if (_selected_block.x != blocks::AIR) {
 		double mouseX, mouseY;
@@ -1206,18 +1034,121 @@ void Menu::setup_array_buffer_furnace( void )
 	}
 
 	setup_shader(vertices);
-	delete [] vertices;
 }
 
-void Menu::setup_shader( GLint *vertices )
+void Menu::setup_array_buffer_crafting( void )
 {
+	int mult = 3;
+    std::vector<int> vertices; // pos: x y width height textcoord: x y width height
+
+	fill_vertices(vertices, {2, WIN_WIDTH / 2 - 88 * mult, WIN_HEIGHT / 2 - 83 * mult, 176 * mult, 166 * mult, 128, 0, 128, 128});
+
+	occult_selection(vertices, mult);
+	for (int index = 0; index < 9; index++) {
+		add_slot_value(mult, index);
+	}
+	for (int index = 0; index < 27; index++) {
+		add_backpack_value(mult, index);
+	}
+	for (int index = 0; index < 9; index++) {
+		add_craft_value(mult, index);
+	}
+	mtx_inventory.lock();
+	int duras = _inventory.countDura(true);
+	mtx_inventory.unlock();
+	for (int index = 0; index < duras; index++) {
+		add_dura_value(vertices, mult, index);
+	}
+	add_crafted_value(mult);
+
+	if (_selected_block.x != blocks::AIR) {
+		double mouseX, mouseY;
+		glfwGetCursorPos(_window, &mouseX, &mouseY);
+		add_item_value(_selected_block.x, mouseX - 8 * mult, mouseY - 8 * mult, mult, true);
+	}
+
+	setup_shader(vertices);
+}
+
+void Menu::setup_array_buffer_chest( void )
+{
+	int mult = 3;
+    std::vector<int> vertices; // pos: x y width height textcoord: x y width height
+
+	fill_vertices(vertices, {2, WIN_WIDTH / 2 - 88 * mult, WIN_HEIGHT / 2 - 83 * mult, 176 * mult, 166 * mult, 128, 128, 128, 128});
+
+	occult_selection(vertices, mult);
+	for (int index = 0; index < 9; index++) {
+		add_slot_value(mult, index);
+	}
+	for (int index = 0; index < 27; index++) {
+		add_backpack_value(mult, index);
+	}
+	mtx_inventory.lock();
+	int duras = _inventory.countDura(true) + ((_chest) ? 0 : 0); // TODO _chests->countDura
+	mtx_inventory.unlock();
+	for (int index = 0; index < duras; index++) {
+		add_dura_value(vertices, mult, index);
+	}
+	for (int index = 0; index < 27; index++) {
+		add_chest_value(mult, index);
+	}
+
+	if (_selected_block.x != blocks::AIR) {
+		double mouseX, mouseY;
+		glfwGetCursorPos(_window, &mouseX, &mouseY);
+		add_item_value(_selected_block.x, mouseX - 8 * mult, mouseY - 8 * mult, mult, true);
+	}
+
+	setup_shader(vertices);
+}
+
+void Menu::setup_array_buffer_furnace( void )
+{
+	int mult = 3;
+
+    std::vector<int> vertices; // pos: x y width height textcoord: x y width height
+
+	fill_vertices(vertices, {2, WIN_WIDTH / 2 - 88 * mult, WIN_HEIGHT / 2 - 83 * mult, 176 * mult, 166 * mult, 0, 128, 128, 128});
+
+	occult_selection(vertices, mult);
+	for (int index = 0; index < 9; index++) {
+		add_slot_value(mult, index);
+	}
+	for (int index = 0; index < 27; index++) {
+		add_backpack_value(mult, index);
+	}
+	mtx_inventory.lock();
+	int duras = _inventory.countDura(true);
+	mtx_inventory.unlock();
+	for (int index = 0; index < duras; index++) {
+		add_dura_value(vertices, mult, index);
+	}
+	add_furnace_value(vertices, mult);
+
+	if (_selected_block.x != blocks::AIR) {
+		double mouseX, mouseY;
+		glfwGetCursorPos(_window, &mouseX, &mouseY);
+		add_item_value(_selected_block.x, mouseX - 8 * mult, mouseY - 8 * mult, mult, true);
+	}
+
+	setup_shader(vertices);
+}
+
+void Menu::setup_shader( std::vector<int> &vertices )
+{
+	_nb_points = vertices.size() / 9;
+	if (!_nb_points) {
+		return ;
+	}
+
 	glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
 	_vaoSet = true;
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _nb_points * 9 * sizeof(GLint), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _nb_points * 9 * sizeof(GLint), &vertices[0], GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(UI_ATLASATTRIB);
 	glVertexAttribIPointer(UI_ATLASATTRIB, 1, GL_INT, 9 * sizeof(GLint), 0);
