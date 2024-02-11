@@ -34,6 +34,7 @@ class Menu
 		GLint _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9, _chat_released;
 		std::vector<std::string> _worlds;
 		std::vector<int> _selection_list;
+		std::vector<std::array<int, 9>> _vertices;
 		std::string _world_file;
 		GLFWwindow *_window;
 		Inventory &_inventory;
@@ -54,7 +55,6 @@ class Menu
 		int ingame_menu( void );
 		int chat_menu( bool animUpdate );
 
-		void fill_vertices( std::vector<int> &vertices, std::array<int, 9> values );
         void setup_array_buffer_main( void );
         void setup_array_buffer_select( void );
 		void setup_array_buffer_load( int completion );
@@ -62,24 +62,24 @@ class Menu
         void setup_array_buffer_pause( void );
         void setup_array_buffer_chat( void );
 
-		void occult_selection( std::vector<int> &vertices );
+		void occult_selection( void );
 		void display_item_value( int x, int y, int amount );
+		void add_dura_value( glm::ivec2 dura, int x, int y );
 		void add_item_value( t_item item, int x, int y, bool movement = false );
 	
 		void add_slot_value( int index );
 		void add_backpack_value( int index );
 		void add_icraft_value( int index );
 		void add_craft_value( int index );
-		// void add_dura_value( std::vector<int> &vertices, int index );
 		void add_crafted_value( void );
 		void add_chest_value( int index );
-		void add_furnace_value( std::vector<int> &vertices );
+		void add_furnace_value( void );
 
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );
         void setup_array_buffer_chest( void );
         void setup_array_buffer_furnace( void );
-		void setup_shader( std::vector<int> &vertices );
+		void setup_shader( void );
 
 	public:
 		Menu( Inventory & inventory, UI *ui );

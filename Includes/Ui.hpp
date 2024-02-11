@@ -21,7 +21,7 @@ class UI
         GLuint _vao, _vbo, _item_vao, _item_vbo;
 		GLuint _shaderProgram, _itemShaderProgram;
 		GLuint *_textures;
-        GLint _gui_size, _nb_points, _nb_items;
+        GLint _gui_size, _nb_points, _nb_points_crea, _nb_items;
 		bool _movement;
 		std::vector<int> _items;
 		Text *_text;
@@ -32,15 +32,15 @@ class UI
 
 		void load_texture( std::string texstr, std::string shname, int index );
         void add_inventory_elem( int index );
-        void add_dura_value( std::vector<int> &vertices, int index );
-        void add_hearts_holder( std::vector<int> &vertices, int index );
-        void add_hearts( std::vector<int> &vertices, int index );
-        void add_armor_holder( std::vector<int> &vertices, int index );
-        void add_armor( std::vector<int> &vertices, int index );
-        void add_food_holder( std::vector<int> &vertices, int index, int saturation );
-        void add_food( std::vector<int> &vertices, int index );
-        void add_bubbles( std::vector<int> &vertices, int index );
-		void fill_vertices( std::vector<int> &vertices, std::array<int, 9> values );
+        void add_dura_value( std::vector<std::array<int, 9>> &vertices, int index );
+        void add_hearts_holder( std::vector<std::array<int, 9>> &vertices, int index );
+        void add_hearts( std::vector<std::array<int, 9>> &vertices, int index );
+        void add_armor_holder( std::vector<std::array<int, 9>> &vertices, int index );
+        void add_armor( std::vector<std::array<int, 9>> &vertices, int index );
+        void add_food_holder( std::vector<std::array<int, 9>> &vertices, int index, int saturation );
+        void add_food( std::vector<std::array<int, 9>> &vertices, int index );
+        void add_bubbles( std::vector<std::array<int, 9>> &vertices, int index );
+		void fill_vertices( std::vector<std::array<int, 9>> &vertices, std::array<int, 9> values );
         void setup_array_buffer( void );
         void setup_item_array_buffer( void );
 		void display_item_value( int x, int y, int amount );

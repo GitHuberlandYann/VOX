@@ -141,7 +141,7 @@ const int receipt[RECEIPT_SIZE][11] = {
 
 typedef struct s_item {
 	int type = blocks::AIR;
-	int amount = 1;
+	int amount = 0;
 	glm::ivec2 dura = {0, 0};
 	// enchantements will come here
 }			t_item;

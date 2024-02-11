@@ -531,7 +531,7 @@ void Inventory::decrementDurabitilty( void )
 
 void Inventory::spillInventory( Chunk *chunk )
 {
-	t_item details; // block_type, amount, dura
+	t_item details;
 
 	for (int index = 0; index < 9; index++) {
 		if (_content[index].type != blocks::AIR) {
