@@ -1,4 +1,5 @@
 #include "Chunk.hpp"
+#include "random.hpp"
 
 Entity::Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool solid, bool thrown, t_item item )
     : _item(item), _solid(solid), _thrown(thrown), _stuck(false), _lifeTime(0),
@@ -246,6 +247,24 @@ bool Entity::updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float del
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
+
+void Entity::setLifetime( double lifetime )
+{
+	_lifeTime = lifetime;
+}
+
+void Entity::getBlasted( glm::vec3 pos, float blast_radius )
+{
+	float dist = glm::distance(pos, _pos);
+	if (dist >= blast_radius) {
+		return ;
+	}
+	if (_falling_block || _solid) {
+		_dir += (_pos - pos) * blast_radius;
+	} else {
+		_lifeTime = 10000; // soft kill
+	}
+}
 
 // update entity's position and push_back arr with new pos
 // returns true if entity despawns this frame

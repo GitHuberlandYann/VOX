@@ -24,6 +24,8 @@ class Entity
 		Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool solid, bool thrown, t_item item );
 		~Entity( void );
 
+		void setLifetime( double lifetime );
+		void getBlasted( glm::vec3 pos, float blast_radius );
 		bool update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camPos, double deltaTime );
 };
 

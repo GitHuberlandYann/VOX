@@ -188,6 +188,7 @@ class Chunk
 
 		int isHit( glm::ivec3 pos );
 		void handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif );
+		void handleBlast( glm::vec3 pos, int blast_radius );
 		void explosion( glm::vec3 pos, int power );
 		void shootArrow( float timer );
 		void updateBreak( glm::ivec4 block_hit, int frame );

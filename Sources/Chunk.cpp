@@ -1328,9 +1328,36 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 	std::cout << _startX << ", " << _startY << " ERROR BLOCK OUT OF CHUNK " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 }
 
+void Chunk::handleBlast( glm::vec3 pos, int blast_radius )
+{
+	// update current entities
+	// items get destroyed if in range
+	// falling blocks and tnts get propelled if in ranges
+	for (auto &e : _entities) {
+		e.getBlasted(pos, blast_radius);
+	}
+
+	glm::vec3 relative = {pos.x - _startX, pos.y - _startY, pos.z};
+	if (relative.x > 0 && relative.x - blast_radius < 0 && _neighbours[face_dir::MINUSX]) {
+		_neighbours[face_dir::MINUSX]->handleBlast(pos, blast_radius);
+	}
+	if (relative.x <= CHUNK_SIZE && relative.x + blast_radius >= CHUNK_SIZE && _neighbours[face_dir::PLUSX]) {
+		_neighbours[face_dir::PLUSX]->handleBlast(pos, blast_radius);
+	}
+
+	if (relative.y > 0 && relative.y - blast_radius < 0 && _neighbours[face_dir::MINUSY]) {
+		_neighbours[face_dir::MINUSY]->handleBlast(pos, blast_radius);
+	}
+	if (relative.y <= CHUNK_SIZE && relative.y + blast_radius >= CHUNK_SIZE && _neighbours[face_dir::PLUSY]) {
+		_neighbours[face_dir::PLUSY]->handleBlast(pos, blast_radius);
+	}
+}
+
 // explosions from TNT cause a 100% drop rate, otherwise 1/power drop rate
 void Chunk::explosion( glm::vec3 pos, int power )
 {
+	handleBlast(pos, 2 * power);
+
 	// std::cout << "EXPLOSION POWER " << power << std::endl;
 	// we launch a ray in each OUTER intersection of a 16x16x16 grid == 1352 rays
 	for (int row = 0; row < 16; ++row) {
@@ -1346,6 +1373,9 @@ void Chunk::explosion( glm::vec3 pos, int power )
 						intensity -= 0.75f + s_blocks[type]->blast_resistance;
 						if (intensity < 0) {
 							break ;
+						} else if (type == blocks::TNT) {
+							handleHit(false, type, p, Modif::LITNT);
+							_entities.back().setLifetime(3.5 - Random::randomFloat(_seed)); // tnt lit by explosion has lifetime in [0.5;1.5] sec
 						} else if (type != blocks::AIR) {
 							// std::cout << "block " << s_blocks[type]->name << " removed" << std::endl;
 							handleHit(true, type, p, Modif::REMOVE);
