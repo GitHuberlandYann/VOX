@@ -49,17 +49,20 @@ void DayCycle::setInternals( void )
 	if (_ticks > 12000 && _ticks < 13671) {
 		glClearColor(gradient(_ticks, 12010, 13670, 120 / 255.0, 0), gradient(_ticks, 12010, 13670, 169 / 255.0, 0), gradient(_ticks, 12010, 13670, 1, 0), 1.0f);
 		_internal_light = static_cast<int>(gradient(_ticks, 12010, 13670, 15, 4));
-		glUniform1i(_uniInternalLight, _internal_light);
 	} else if (_ticks > 22299) {
 		glClearColor(gradient(_ticks, 22300, 24000, 0, 120 / 255.0), gradient(_ticks, 22300, 24000, 0, 169 / 255.0), gradient(_ticks, 22300, 24000, 0, 1), 1.0f);
 		_internal_light = static_cast<int>(gradient(_ticks, 22300, 24000, 4, 15));
-		glUniform1i(_uniInternalLight, _internal_light);
 	} else if (_forceReset) {
 		(_ticks < 12500) ? glClearColor(120 / 255.0, 169 / 255.0, 1, 1.0f) : glClearColor(0, 0, 0, 1.0f);
 		_internal_light = (_ticks < 12500) ? 15 : 4;
-		glUniform1i(_uniInternalLight, _internal_light);
 		_forceReset = false;
+	} else {
+		return ;
 	}
+	glUniform1i(_uniInternalLight, _internal_light);
+	glUseProgram(_particleShaderProgram);
+	glUniform1i(_uniPartInternalLight, _internal_light);
+	glUseProgram(_shaderProgram);
 }
 
 // ************************************************************************** //
@@ -85,11 +88,18 @@ void DayCycle::Reset( void )
 	_dayCycleInstance = NULL;
 }
 
-
-void DayCycle::setUniInternalLight( GLint internal_light_location )
+void DayCycle::setUniInternalLight( GLuint shaderProgram, GLuint particleShaderProgram,
+	GLint internal_light, GLint partice_internal_light )
 {
-	_uniInternalLight = internal_light_location;
+	_shaderProgram = shaderProgram;
+	_uniInternalLight = internal_light;
 	glUniform1i(_uniInternalLight, _internal_light);
+	_particleShaderProgram = particleShaderProgram;
+	_uniPartInternalLight = partice_internal_light;
+	glUseProgram(particleShaderProgram);
+	glUniform1i(_uniPartInternalLight, _internal_light);
+	glUseProgram(shaderProgram);
+
 }
 
 void DayCycle::setCloudsColor( GLint uniform_location )

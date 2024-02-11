@@ -32,8 +32,8 @@ class OpenGL_Manager
 {
 	private:
 		GLFWwindow* _window;
-		GLuint _vaoEntities, _vboEntities, _shaderProgram, _skyShaderProgram;
-		GLint _uniFog, _uniView, _uniProj, _skyUniFog, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim;
+		GLuint _vaoEntities, _vboEntities, _vaoParticles, _vboParticles, _shaderProgram, _skyShaderProgram, _particleShaderProgram;
+		GLint _uniFog, _uniView, _uniProj, _skyUniFog, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim, _partUniView, _partUniProj;
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
 		GLint _key_rdist, _render_distance, _key_guisize, _key_fill, _fill, _key_add_block, _key_rm_block, _key_pick_block, _key_screenshot, _key_h, _key_g, _key_j, _key_o, _key_time_mul, _key_jump, _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9;
@@ -43,6 +43,7 @@ class OpenGL_Manager
 		std::string _world_name;
 		std::vector<Chunk *> _visible_chunks;
 		std::vector<std::pair<int, glm::vec3>> _entities;
+		std::vector<std::pair<int, glm::vec3>> _particles;
 		std::thread _thread;
 		t_hit _block_hit;
 		UI *_ui;

@@ -21,7 +21,8 @@ class DayCycle
 		double _gameTime;
 		int _ticks, _day, _hour, _minute, _internal_light, _time_multiplier;
 		bool _forceReset;
-		GLint _uniInternalLight;
+		GLuint _shaderProgram, _particleShaderProgram;
+		GLint _uniInternalLight, _uniPartInternalLight;
 
 		DayCycle( void );
 		~DayCycle( void );
@@ -34,7 +35,8 @@ class DayCycle
 
 		static DayCycle *Get( void );
 		static void Reset( void );
-		void setUniInternalLight( GLint internal_light_location );
+		void setUniInternalLight( GLuint shaderProgram, GLuint particleShaderProgram,
+			GLint uniform_location, GLint particle_uniform_location );
 		void setCloudsColor( GLint uniform_location );
 		void tickUpdate( void );
 		void setTicks( int ticks );

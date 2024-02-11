@@ -28,14 +28,18 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	}
 
 	if (_textures) {
-		glDeleteTextures(3, _textures);
+		glDeleteTextures(4, _textures);
 		delete [] _textures;
 	}
 	glDeleteProgram(_shaderProgram);
 	glDeleteProgram(_skyShaderProgram);
+	glDeleteProgram(_particleShaderProgram);
 
 	glDeleteBuffers(1, &_vboEntities);
 	glDeleteVertexArrays(1, &_vaoEntities);
+
+	glDeleteBuffers(1, &_vboParticles);
+	glDeleteVertexArrays(1, &_vaoParticles);
 
 	set_cursor_position_callback(NULL, NULL);
 	set_scroll_callback(NULL);
@@ -237,6 +241,19 @@ void OpenGL_Manager::create_shaders( void )
 	glUseProgram(_skyShaderProgram);
 
 	check_glstate("skyShader program successfully created", true);
+
+	// then setup particles shader
+	_particleShaderProgram = createShaderProgram("particle_vertex", "", "particle_fragment");
+
+	glBindFragDataLocation(_particleShaderProgram, 0, "outColor");
+
+	glBindAttribLocation(_particleShaderProgram, SPECATTRIB, "specifications");
+	glBindAttribLocation(_particleShaderProgram, SPECATTRIB, "position");
+
+	glLinkProgram(_particleShaderProgram);
+	glUseProgram(_particleShaderProgram);
+
+	check_glstate("particleShader program successfully created", true);
 	
 	// then setup the main shader
 	_shaderProgram = createShaderProgram("vertex", "", "fragment");
@@ -263,13 +280,16 @@ void OpenGL_Manager::setup_communication_shaders( void )
 
 	_uniView = glGetUniformLocation(_shaderProgram, "view");
 	_skyUniView = glGetUniformLocation(_skyShaderProgram, "view");
+	_partUniView = glGetUniformLocation(_particleShaderProgram, "view");
 	update_cam_view();
 
 	_uniProj = glGetUniformLocation(_shaderProgram, "proj");
 	_skyUniProj = glGetUniformLocation(_skyShaderProgram, "proj");
+	_partUniProj = glGetUniformLocation(_particleShaderProgram, "proj");
 	update_cam_perspective();
 
-	DayCycle::Get()->setUniInternalLight(glGetUniformLocation(_shaderProgram, "internal_light"));
+	DayCycle::Get()->setUniInternalLight(_shaderProgram, _particleShaderProgram,
+		glGetUniformLocation(_shaderProgram, "internal_light"), glGetUniformLocation(_particleShaderProgram, "internal_light"));
 
 	_skyUniColor = glGetUniformLocation(_skyShaderProgram, "color");
 	_skyUniAnim = glGetUniformLocation(_skyShaderProgram, "animFrame");
@@ -279,12 +299,15 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	glGenVertexArrays(1, &_vaoEntities);
 	glGenBuffers(1, &_vboEntities);
 	check_glstate("VAO and VBO for entities", false);
+	glGenVertexArrays(1, &_vaoParticles);
+	glGenBuffers(1, &_vboParticles);
+	check_glstate("VAO and VBO for particles", false);
 }
 
 void OpenGL_Manager::load_texture( std::string texture_file )
 {
-	_textures = new GLuint[3];
-	glGenTextures(3, _textures);
+	_textures = new GLuint[4];
+	glGenTextures(4, _textures);
 
 	loadTextureShader(0, _textures[0], texture_file);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // sampler2D #index in fragment shader
@@ -297,6 +320,11 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 
 	loadTextureShader(5, _textures[2], "Resources/waterFlow.png");
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterFlow"), 5);
+
+	glUseProgram(_particleShaderProgram);
+	loadTextureShader(6, _textures[3], "Resources/particleAtlas.png");
+	glUniform1i(glGetUniformLocation(_particleShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
+	glUniform1i(glGetUniformLocation(_particleShaderProgram, "particleAtlas"), 6);
 }
 
 void OpenGL_Manager::setGamemode( bool gamemode )

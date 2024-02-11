@@ -169,6 +169,8 @@ void OpenGL_Manager::update_cam_view( void )
 	glUniformMatrix4fv(_uniView, 1, GL_FALSE, glm::value_ptr(view));
 	glUseProgram(_skyShaderProgram);
 	glUniformMatrix4fv(_skyUniView, 1, GL_FALSE, glm::value_ptr(view));
+	glUseProgram(_particleShaderProgram);
+	glUniformMatrix4fv(_partUniView, 1, GL_FALSE, glm::value_ptr(view));
 	glUseProgram(_shaderProgram);
 
 	// glUniform3fv(_uniCamPos, 1, glm::value_ptr(_camera->getPos()));
@@ -180,6 +182,8 @@ void OpenGL_Manager::update_cam_perspective( void )
 	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 	glUseProgram(_skyShaderProgram);
 	glUniformMatrix4fv(_skyUniProj, 1, GL_FALSE, glm::value_ptr(proj));
+	glUseProgram(_particleShaderProgram);
+	glUniformMatrix4fv(_partUniProj, 1, GL_FALSE, glm::value_ptr(proj));
 	glUseProgram(_shaderProgram);
 }
 

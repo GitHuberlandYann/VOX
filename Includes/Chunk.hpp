@@ -13,6 +13,7 @@
 class Camera;
 # include "Inventory.hpp"
 # include "Entity.hpp"
+# include "Particle.hpp"
 
 # define SEA_LEVEL 64
 // # define CHUNK_SIZE 16 in utils
@@ -102,6 +103,7 @@ class Chunk
 		std::map<int, ChestInstance*> _chests;
 		std::map<int, FurnaceInstance*> _furnaces;
 		std::vector<Entity*> _entities;
+		std::vector<Particle*> _particles;
 		std::thread _thread;
 		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 
