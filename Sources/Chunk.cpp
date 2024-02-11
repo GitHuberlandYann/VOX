@@ -76,6 +76,12 @@ Chunk::~Chunk( void )
 	delete [] _sky;
 	delete [] _sky_vert;
 
+	// chests and furnaces are deleted in OpenGl_Manager when deleting backups
+	for (auto e : _entities) {
+		delete e;
+	}
+	_entities.clear();
+
 	// std::cout << "chunk deleted " << _startX << ", " << _startY << std::endl;
 }
 
@@ -502,35 +508,35 @@ void Chunk::entity_block( int posX, int posY, int posZ, int type )
 	if (type == blocks::GRASS) {
 		float random = Random::randomFloat(_seed);
 		if (random <= 0.125f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
 		}
 	} else if (type == blocks::OAK_LEAVES) {
 		float random = Random::randomFloat(_seed);
 		if (random <= 0.05f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::OAK_SAPLING, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::OAK_SAPLING, 1, {0, 0}}));
 		}
 		random = Random::randomFloat(_seed);
 		if (random <= 0.02f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 4, posY - 8)), 1.0f}, false, false, {blocks::STICK, 2, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 4, posY - 8)), 1.0f}, false, false, {blocks::STICK, 2, {0, 0}}));
 		}
 		random = Random::randomFloat(_seed);
 		if (random <= 0.005f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 4)), 1.0f}, false, false, {blocks::APPLE, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 4)), 1.0f}, false, false, {blocks::APPLE, 1, {0, 0}}));
 		}
 	} else if (type == blocks::WHEAT_CROP7) {
-		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 4, posY - 8)), 1.0f}, false, false, {blocks::WHEAT, 1, {0, 0}}));
+		_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 4, posY - 8)), 1.0f}, false, false, {blocks::WHEAT, 1, {0, 0}}));
 		float random = Random::randomFloat(_seed);
 		if (random <= 0.0787f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
 		} else if (random <= 0.0787f + 0.3149f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 2, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 2, {0, 0}}));
 		} else if (random <= 0.0787f + 0.3149f + 0.4198f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 3, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 3, {0, 0}}));
 		} else {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 4, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 4, {0, 0}}));
 		}
 	} else {
-		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {s_blocks[type]->mined, 1, {0, 0}}));
+		_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {s_blocks[type]->mined, 1, {0, 0}}));
 	}
 }
 
@@ -547,29 +553,31 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		if (search != _chests.end()) {
 			t_item *item;
 			for (int index = 0; index < 27; ++index) {
-				item = search->second.getItem(index);
+				item = search->second->getItem(index);
 				if (item->amount) {
-					_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, *item));
+					_entities.push_back(new Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, *item));
 				}
 			}
 		}
+		delete _chests[offset]; // TODO what happens if chest explodes while we use it ? prob heap use after free in Menu.cpp
 		_chests.erase(offset);
 	} else if (type == blocks::FURNACE) {
 		auto search = _furnaces.find(offset); // drop furnace's items
 		if (search != _furnaces.end()) {
-			t_item items = search->second.getComposant();
+			t_item items = search->second->getComposant();
 			if (items.amount) {
-				_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-1, -1)), 1.0f}, false, false, items));
+				_entities.push_back(new Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-1, -1)), 1.0f}, false, false, items));
 			}
-			items = search->second.getFuel();
+			items = search->second->getFuel();
 			if (items.amount) {
-				_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(1, 9)), 1.0f}, false, false, items));
+				_entities.push_back(new Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(1, 9)), 1.0f}, false, false, items));
 			}
-			items = search->second.getProduction();
+			items = search->second->getProduction();
 			if (items.amount) {
-				_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-4, 5)), 1.0f}, false, false, items));
+				_entities.push_back(new Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-4, 5)), 1.0f}, false, false, items));
 			}
 		}
+		delete _furnaces[offset];
 		_furnaces.erase(offset);
 	}
 	if (useInventory && type == blocks::WATER) {
@@ -643,7 +651,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		int type_under = (_blocks[offset - 1] & 0xFF);
 		if (type_under == blocks::AIR) {
-			_entities.push_back(Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0, 0, 0}, true, false, {type, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0, 0, 0}, true, false, {type, 1, {0, 0}}));
 			return ;
 		}
 	}
@@ -709,9 +717,9 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		return ;
 	}
 	if (type == blocks::CHEST) {
-		_chests.emplace(offset, ChestInstance(this, {pos.x + _startX, pos.y + _startY, pos.z}, _camera->getOrientation()));
+		_chests.emplace(offset, new ChestInstance(this, {pos.x + _startX, pos.y + _startY, pos.z}, _camera->getOrientation()));
 	} else if (type == blocks::FURNACE) {
-		_furnaces.emplace(offset, FurnaceInstance());
+		_furnaces.emplace(offset, new FurnaceInstance());
 	} else if (type == blocks::TORCH) {
 		std::cout << "add light" << std::endl;
 		_lights[offset] &= 0xFF00;
@@ -948,7 +956,7 @@ void Chunk::restoreBackup( s_backup &backup )
 		int posZ = ch.first & (WORLD_HEIGHT - 1);
 		int posY = ((ch.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 		int posX = ((ch.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
-		ch.second.setChunk(this, {posX + _startX, posY + _startY, posZ});
+		ch.second->setChunk(this, {posX + _startX, posY + _startY, posZ});
 	}
 	_furnaces = backup.furnaces;
 }
@@ -958,16 +966,16 @@ void Chunk::openChest( glm::ivec3 pos )
 	int key = ((((pos.x - _startX) << CHUNK_SHIFT) + pos.y - _startY) << WORLD_SHIFT) + pos.z;
 	auto search = _chests.find(key);
 	if (search != _chests.end()) {
-		search->second.setState(chest_state::OPENING);
+		search->second->setState(chest_state::OPENING);
 	}
 }
 
 ChestInstance *Chunk::getChestInstance( glm::ivec3 pos )
 {
 	int key = ((((pos.x - _startX) << CHUNK_SHIFT) + pos.y - _startY) << WORLD_SHIFT) + pos.z;
-	std::map<int, ChestInstance>::iterator search = _chests.find(key);
+	std::map<int, ChestInstance*>::iterator search = _chests.find(key);
 	if (search != _chests.end()) {
-		return (&search->second);
+		return (search->second);
 	}
 	std::cout << _startX << ", " << _startY << " failed to find chest at " << key << " from " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	std::cout << "chests values are " << std::endl;
@@ -980,9 +988,9 @@ ChestInstance *Chunk::getChestInstance( glm::ivec3 pos )
 FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
 {
 	int key = ((((pos.x - _startX) << CHUNK_SHIFT) + pos.y - _startY) << WORLD_SHIFT) + pos.z;
-	std::map<int, FurnaceInstance>::iterator search = _furnaces.find(key);
+	std::map<int, FurnaceInstance*>::iterator search = _furnaces.find(key);
 	if (search != _furnaces.end()) {
-		return (&search->second);
+		return (search->second);
 	}
 	std::cout << _startX << ", " << _startY << " failed to find furnace at " << key << " from " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	std::cout << "furnaces values are " << std::endl;
@@ -1130,7 +1138,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 		replace_block(useInventory, pos, type, previous_type);
 	} else if (modif == Modif::LITNT) {
 		remove_block(false, pos);
-		_entities.push_back(Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0.2f, 0.2f, 0.4f}, true, false, {type, 1, {0, 0}}));
+		_entities.push_back(new Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0.2f, 0.2f, 0.4f}, true, false, {type, 1, {0, 0}}));
 	}
 	if (type == blocks::WATER || type == blocks::BUCKET) {
 		// std::cout << "modif to water with " << ((type == blocks::WATER) ? "water" : "bucket") << std::endl;
@@ -1163,7 +1171,7 @@ void Chunk::addEntity( glm::vec3 dir, t_item item )
 	glm::vec3 camPos = _camera->getPos();
 	camPos.z += 1;
 	camPos += dir;
-	_entities.push_back(Entity(this, _inventory, camPos, dir, false, true, item));
+	_entities.push_back(new Entity(this, _inventory, camPos, dir, false, true, item));
 }
 
 void Chunk::sort_sky( glm::vec3 &pos, bool vip )
@@ -1333,8 +1341,8 @@ void Chunk::handleBlast( glm::vec3 pos, int blast_radius )
 	// update current entities
 	// items get destroyed if in range
 	// falling blocks and tnts get propelled if in ranges
-	for (auto &e : _entities) {
-		e.getBlasted(pos, blast_radius);
+	for (auto e : _entities) {
+		e->getBlasted(pos, blast_radius);
 	}
 
 	glm::vec3 relative = {pos.x - _startX, pos.y - _startY, pos.z};
@@ -1375,7 +1383,7 @@ void Chunk::explosion( glm::vec3 pos, int power )
 							break ;
 						} else if (type == blocks::TNT) {
 							handleHit(false, type, p, Modif::LITNT);
-							_entities.back().setLifetime(3.5 - Random::randomFloat(_seed)); // tnt lit by explosion has lifetime in [0.5;1.5] sec
+							_entities.back()->setLifetime(3.5 - Random::randomFloat(_seed)); // tnt lit by explosion has lifetime in [0.5;1.5] sec
 						} else if (type != blocks::AIR) {
 							// std::cout << "block " << s_blocks[type]->name << " removed" << std::endl;
 							handleHit(true, type, p, Modif::REMOVE);
@@ -1394,7 +1402,7 @@ void Chunk::shootArrow( float timer )
 	glm::vec3 camPos = _camera->getPos(), camDir = _camera->getDir();
 	camPos.z += 1 + EYE_LEVEL;
 	camPos += camDir;
-	_entities.push_back(Entity(this, _inventory, camPos, camDir * timer, true, false, {blocks::ARROW, 1, {0, 0}}));
+	_entities.push_back(new Entity(this, _inventory, camPos, camDir * timer, true, false, {blocks::ARROW, 1, {0, 0}}));
 }
 
 void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
@@ -1706,7 +1714,7 @@ void Chunk::drawArray( GLint & counter, GLint &face_counter )
 void Chunk::updateFurnaces( double currentTime )
 {
 	for (auto& fur: _furnaces) {
-		int state = fur.second.updateTimes(currentTime);
+		int state = fur.second->updateTimes(currentTime);
 		if (state != furnace_state::NOCHANGE) {
 			// std::cout << "FURNACE STATE CHANGE TO " << state << std::endl;
 			int value = _blocks[fur.first];
@@ -1756,20 +1764,24 @@ void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double 
 
 	camPos = _camera->getPos();
 	for (int index = size - 1; index >= 0; --index) {
-		if (_entities[index].update(arr, camPos, deltaTime)) {
+		if (_entities[index]->update(arr, camPos, deltaTime)) {
+			delete _entities[index];
 			_entities.erase(_entities.begin() + index);
 		}
 	}
 
 	CHESTS:
 	for (auto &c : _chests) {
-		c.second.update(arr, deltaTime);
+		c.second->update(arr, deltaTime);
 	}
 }
 
 size_t Chunk::clearEntities( void )
 {
 	size_t res = _entities.size();
+	for (auto e : _entities) {
+		delete e;
+	}
 	_entities.clear();
 	return (res);
 }

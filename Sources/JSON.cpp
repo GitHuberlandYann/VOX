@@ -138,10 +138,10 @@ std::string OpenGL_Manager::saveBackupString( void )
 				}
 				chstart = false;
 				res += "{\"pos\": " + std::to_string(ch.first)
-					+ ", \"orientation\": " + std::to_string(ch.second.getOrientation())
+					+ ", \"orientation\": " + std::to_string(ch.second->getOrientation())
 					+ ", \"content\": [";
 				for (int index = 0; index < 27; index++) {
-					res += '[' + std::to_string(ch.second.getItem(index)->type) + ", " + std::to_string(ch.second.getItem(index)->amount) + ", " + std::to_string(ch.second.getItem(index)->dura.x) + ']';
+					res += '[' + std::to_string(ch.second->getItem(index)->type) + ", " + std::to_string(ch.second->getItem(index)->amount) + ", " + std::to_string(ch.second->getItem(index)->dura.x) + ']';
 					if (index < 26) {
 						res += ", ";
 					}
@@ -158,9 +158,9 @@ std::string OpenGL_Manager::saveBackupString( void )
 				}
 				fstart = false;
 				res += "{\"pos\": " + std::to_string(fur.first)
-					+ ", \"composant\": [" + std::to_string(fur.second.getComposant().type) + ", " + std::to_string(fur.second.getComposant().amount) + ", " + std::to_string(fur.second.getComposant().dura.x)
-					+ "], \"fuel\": [" + std::to_string(fur.second.getFuel().type) + ", " + std::to_string(fur.second.getFuel().amount) + ", " + std::to_string(fur.second.getFuel().dura.x)
-					+ "], \"production\": [" + std::to_string(fur.second.getProduction().type) + ", " + std::to_string(fur.second.getProduction().amount) + ", " + std::to_string(fur.second.getProduction().dura.x)
+					+ ", \"composant\": [" + std::to_string(fur.second->getComposant().type) + ", " + std::to_string(fur.second->getComposant().amount) + ", " + std::to_string(fur.second->getComposant().dura.x)
+					+ "], \"fuel\": [" + std::to_string(fur.second->getFuel().type) + ", " + std::to_string(fur.second->getFuel().amount) + ", " + std::to_string(fur.second->getFuel().dura.x)
+					+ "], \"production\": [" + std::to_string(fur.second->getProduction().type) + ", " + std::to_string(fur.second->getProduction().amount) + ", " + std::to_string(fur.second->getProduction().dura.x)
 					+ "]}"; // TODO add current times for better backup
 			}
 		}
@@ -434,9 +434,9 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						int chkey = std::atoi(&line[index + 9]);
 						for (index = index + 9; line[index] && line[index] != ':'; index++);
 						int orientation = std::atoi(&line[index + 2]);
-						backups_value.chests.emplace(chkey, ChestInstance(NULL, {0, 0, 0}, orientation));
+						backups_value.chests.emplace(chkey, new ChestInstance(NULL, {0, 0, 0}, orientation));
 						ofs << "one more chest at " << chkey << " with orientation " << orientation <<  std::endl;
-						backups_value.chests.at(chkey).loadContent(ofs, line, index);
+						backups_value.chests.at(chkey)->loadContent(ofs, line, index);
 						for (; line[index] && line[index] != '{'; index++);
 						--index;
 					}
@@ -444,7 +444,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 					index = 12;
 					while (line[index + 1] == '{') {
 						int fkey = std::atoi(&line[index + 9]);
-						FurnaceInstance fur;
+						FurnaceInstance *fur = new FurnaceInstance();
 						t_item item;
 						for (index = index + 9; line[index] && line[index] != ':'; index++);
 						item.type = std::atoi(&line[index + 3]);
@@ -453,7 +453,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						for (; line[index] && line[index] != ','; index++);
 						item.dura.x = std::atoi(&line[index + 2]);
 						item.dura.y = s_blocks[item.type]->durability;
-						fur.setComposant(item);
+						fur->setComposant(item);
 						for (; line[index] && line[index] != ':'; index++);
 						item.type = std::atoi(&line[index + 3]);
 						for (; line[index] && line[index] != ','; index++);
@@ -461,7 +461,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						for (; line[index] && line[index] != ','; index++);
 						item.dura.x = std::atoi(&line[index + 2]);
 						item.dura.y = s_blocks[item.type]->durability;
-						fur.setFuel(item);
+						fur->setFuel(item);
 						for (; line[index] && line[index] != ':'; index++);
 						item.type = std::atoi(&line[index + 3]);
 						for (; line[index] && line[index] != ','; index++);
@@ -469,7 +469,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						for (; line[index] && line[index] != ','; index++);
 						item.dura.x = std::atoi(&line[index + 2]);
 						item.dura.y = s_blocks[item.type]->durability;
-						fur.setProduction(item);
+						fur->setProduction(item);
 						backups_value.furnaces[fkey] = fur;
 						ofs << "one more furnace at " << fkey << std::endl;
 						for (; line[index] && line[index] != '{'; index++);

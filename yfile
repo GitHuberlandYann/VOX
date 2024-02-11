@@ -29,15 +29,15 @@ TODOS:
 	- hitbox change + no fall on sneak
     - biomes
     - skybox
-	- particles !
 	- flint and steel and fire
 	- limit floodfill algo for lighting (but be smart about it)
+	- redstone
 	- slabs
 	- stairs
 	- doors
 	- bed
-	- enchanting table
 	- use block s hardness to compute time to break instead of hardcoding it
+	- enchanting table
 	- save entities
 	- entity shadow
 	- rework clouds
@@ -51,6 +51,8 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+	- particles !
+	- double chests
 	- bow and arrow
 	- universal use of tps instead of deltatimes
 	- commands /say /me /save /setblock /sc(/screenshot) /kill

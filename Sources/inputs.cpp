@@ -378,6 +378,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			_break_time += deltaTime;
 			float break_time = s_blocks[_block_hit.value]->getBreakTime(_hand_content);
 			bool can_collect = s_blocks[_block_hit.value]->canCollect(_hand_content);
+			// getBreakTime(break_time); // TODO add fct to blocks.cpp to compute time using fandom pseudo code and cmp results
 			if (_block_hit.value != blocks::AIR && _break_time >= break_time) {
 				_break_time = 0;
 				_break_frame = _outline;

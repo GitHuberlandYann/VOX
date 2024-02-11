@@ -72,11 +72,11 @@ const GLint oak_normal[61][3] = {
 	{0, 1, 1}
 };
 
-struct s_backup { // TODO add fluids to backups
+struct s_backup { // TODO add fluids and entities to backups
 	std::map<int, int> added;
 	std::set<int> removed;
-	std::map<int, ChestInstance> chests;
-	std::map<int, FurnaceInstance> furnaces;
+	std::map<int, ChestInstance*> chests;
+	std::map<int, FurnaceInstance*> furnaces;
 };
 
 class Chunk
@@ -99,9 +99,9 @@ class Chunk
 		std::map<int,int> _added;
 		std::set<int> _removed, _fluids;
 		std::vector<int> _scheduled_to_fall;
-		std::map<int, ChestInstance> _chests;
-		std::map<int, FurnaceInstance> _furnaces;
-		std::vector<Entity> _entities;
+		std::map<int, ChestInstance*> _chests;
+		std::map<int, FurnaceInstance*> _furnaces;
+		std::vector<Entity*> _entities;
 		std::thread _thread;
 		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 

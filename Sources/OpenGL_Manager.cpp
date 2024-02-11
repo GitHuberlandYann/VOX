@@ -56,12 +56,21 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	mtx_deleted_chunks.unlock();
 	mtx.lock();
 	for (auto& c: _chunks) {
+		c->setBackup(_backups);
 		delete c;
 	}
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
 	_chunks.clear();
 	mtx.unlock();
 	mtx_backup.lock();
+	for (auto &b : _backups) {
+		for (auto ch : b.second.chests) {
+			delete ch.second;
+		}
+		for (auto fur : b.second.furnaces) {
+			delete fur.second;
+		}
+	}
 	_backups.clear();
 	mtx_backup.unlock();
 
