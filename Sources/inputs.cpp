@@ -430,10 +430,10 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 	// drop item
 	if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
-		glm::ivec3 details = _inventory->removeBlock(true);
-		if (details.x != blocks::AIR) {
+		t_item details = _inventory->removeBlock(true);
+		if (details.type != blocks::AIR) {
 			mtx.lock();
-			current_chunk_ptr->addEntity(_camera->getDir(), details.x, details.y, details.z);
+			current_chunk_ptr->addEntity(_camera->getDir(), details);
 			mtx.unlock();
 		}
 	}

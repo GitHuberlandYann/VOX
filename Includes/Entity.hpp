@@ -8,7 +8,7 @@ class Inventory;
 class Entity
 {
 	private:
-		int _value, _amount, _dura;
+		t_item _item;
 		bool _solid, _thrown, _falling_block, _stuck;
 		double _lifeTime;
 		glm::vec3 _pos, _dir;
@@ -21,7 +21,7 @@ class Entity
 		bool updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float deltaTime );
 
 	public:
-		Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool solid, bool thrown, int value, int amount = 1, int dura = 0 );
+		Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool solid, bool thrown, t_item item );
 		~Entity( void );
 
 		bool update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camPos, double deltaTime );

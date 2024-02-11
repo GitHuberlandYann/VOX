@@ -80,29 +80,19 @@ std::string Inventory::saveString( void )
 	std::string res = "\"inventory\": {\n\t\t\"slot\": " + std::to_string(_slot)
 		+ ",\n\t\t\"content\": [";
 	for (int index = 0; index < 9; index++) {
-		res += '[' + std::to_string(_content[index].x) + ", " + std::to_string(_content[index].y) + ']';
+		res += '[' + std::to_string(_content[index].type) + ", " + std::to_string(_content[index].amount) + ", " + std::to_string(_content[index].dura.x) + ']';
 		if (index < 8) {
 			res += ", ";
 		}
 	}
 	res += "],\n\t\t\"backpack\": [";
 	for (int index = 0; index < 27; index++) {
-		res += '[' + std::to_string(_backpack[index].x) + ", " + std::to_string(_backpack[index].y) + ']';
+		res += '[' + std::to_string(_backpack[index].type) + ", " + std::to_string(_backpack[index].amount) + ", " + std::to_string(_backpack[index].dura.x) + ']';
 		if (index < 26) {
 			res += ", ";
 		}
 	}
-	res += "],\n\t\t\"durabilities\": [";
-	bool start = true;
-	for (auto& dura: _durabilities) {
-		if (!start) {
-			res += ',';
-		}
-		start = false;
-		res += "\n\t\t\t{\"location\": " + std::to_string(dura.x) + ", \"dura\": " + std::to_string(dura.y) + ", \"max_dura\": " + std::to_string(dura.z) + "}";
-	}
-	_durabilities.clear();
-	res += "\n\t\t]\n\t},\n\t";
+	res += "]\n\t},\n\t";
 	return (res);
 }
 
@@ -151,7 +141,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 					+ ", \"orientation\": " + std::to_string(ch.second.getOrientation())
 					+ ", \"content\": [";
 				for (int index = 0; index < 27; index++) {
-					res += '[' + std::to_string(ch.second.getItem(index)->x) + ", " + std::to_string(ch.second.getItem(index)->y) + ']';
+					res += '[' + std::to_string(ch.second.getItem(index)->type) + ", " + std::to_string(ch.second.getItem(index)->amount) + ", " + std::to_string(ch.second.getItem(index)->dura.x) + ']';
 					if (index < 26) {
 						res += ", ";
 					}
@@ -168,9 +158,9 @@ std::string OpenGL_Manager::saveBackupString( void )
 				}
 				fstart = false;
 				res += "{\"pos\": " + std::to_string(fur.first)
-					+ ", \"composant\": [" + std::to_string(fur.second.getComposant().x) + ", " + std::to_string(fur.second.getComposant().y)
-					+ "], \"fuel\": [" + std::to_string(fur.second.getFuel().x) + ", " + std::to_string(fur.second.getFuel().y)
-					+ "], \"production\": [" + std::to_string(fur.second.getProduction().x) + ", " + std::to_string(fur.second.getProduction().y)
+					+ ", \"composant\": [" + std::to_string(fur.second.getComposant().type) + ", " + std::to_string(fur.second.getComposant().amount) + ", " + std::to_string(fur.second.getComposant().dura.x)
+					+ "], \"fuel\": [" + std::to_string(fur.second.getFuel().type) + ", " + std::to_string(fur.second.getFuel().amount) + ", " + std::to_string(fur.second.getFuel().dura.x)
+					+ "], \"production\": [" + std::to_string(fur.second.getProduction().type) + ", " + std::to_string(fur.second.getProduction().amount) + ", " + std::to_string(fur.second.getProduction().dura.x)
 					+ "]}"; // TODO add current times for better backup
 			}
 		}
@@ -349,41 +339,28 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 		} else if (!line.compare(0, 11, "\"content\": ")) {
 			index = 12;
 			for (int cindex = 0; cindex < 9 && line[index]; cindex++) {
-				_content[cindex].x = std::atoi(&line[index + 1]);
+				_content[cindex].type = std::atoi(&line[index + 1]);
 				for (; line[index] && line[index] != ','; index++);
-				_content[cindex].y = std::atoi(&line[index + 2]);
+				_content[cindex].amount = std::atoi(&line[index + 2]);
+				++index;
+				for (; line[index] && line[index] != ','; index++);
+				_content[cindex].dura.x = std::atoi(&line[index + 2]);
+				_content[cindex].dura.y = s_blocks[_content[cindex].type]->durability;
 				for (index = index + 2; line[index] && line[index] != '['; index++);
-				ofs << "inventory slot " << cindex << " set to " << _content[cindex].x << ", " << _content[cindex].y << std::endl;
+				ofs << "inventory slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount << ", " << _content[cindex].dura.x << ", " << _content[cindex].dura.y << std::endl;
 			}
 		} else if (!line.compare(0, 12, "\"backpack\": ")) {
 			index = 13;
 			for (int bindex = 0; bindex < 27 && line[index]; bindex++) {
-				_backpack[bindex].x = std::atoi(&line[index + 1]);
+				_backpack[bindex].type = std::atoi(&line[index + 1]);
 				for (; line[index] && line[index] != ','; index++);
-				_backpack[bindex].y = std::atoi(&line[index + 2]);
+				_backpack[bindex].amount = std::atoi(&line[index + 2]);
+				++index;
+				for (; line[index] && line[index] != ','; index++);
+				_backpack[bindex].dura.x = std::atoi(&line[index + 2]);
+				_backpack[bindex].dura.y = s_blocks[_backpack[bindex].type]->durability;
 				for (index = index + 2; line[index] && line[index] != '['; index++);
-				ofs << "inventory backpack slot " << bindex << " set to " << _backpack[bindex].x << ", " << _backpack[bindex].y << std::endl;
-			}
-		} else if (!line.compare(0, 16, "\"durabilities\": ")) {
-			while (!indata.eof()) {
-				std::getline(indata, line);
-				line = trim_spaces(line);
-				if (line.empty() || line[0] == '#') {
-					continue ;
-				} else if (!line.compare(0, 13, "{\"location\": ")) {
-					glm::ivec3 newDura;
-					newDura.x = std::atoi(&line[13]);
-					for (index = 13; line[index] && line[index] != ':'; index++);
-					newDura.y = std::atoi(&line[index + 2]);
-					for (index = index + 2; line[index] && line[index] != ':'; index++);
-					newDura.z = std::atoi(&line[index + 2]);
-					_durabilities.push_back(newDura);
-					ofs << "inventory new dura set to " << newDura.x << ", " << newDura.y << ", " << newDura.z << std::endl;
-				} else if (line == "]") {
-					break ;
-				} else {
-					std::cerr << "foreigh line in durabilities: " << line << std::endl;
-				}
+				ofs << "inventory backpack slot " << bindex << " set to " << _backpack[bindex].type << ", " << _backpack[bindex].amount << ", " << _backpack[bindex].dura.x << ", " << _backpack[bindex].dura.y << std::endl;
 			}
 		} else if (line == "},") {
 			return ;
@@ -399,13 +376,17 @@ void ChestInstance::loadContent( std::ofstream & ofs, std::string &line, int &in
 	for (; line[index] && line[index] != '['; ++index);
 	index += !!line[index];
 	for (int cindex = 0; cindex < 27 && line[index]; cindex++) {
-		_content[cindex].x = std::atoi(&line[index + 1]);
+		_content[cindex].type = std::atoi(&line[index + 1]);
 		for (; line[index] && line[index] != ','; index++);
-		_content[cindex].y = std::atoi(&line[index + 2]);
+		_content[cindex].amount = std::atoi(&line[index + 2]);
+		++index;
+		for (; line[index] && line[index] != ','; index++);
+		_content[cindex].dura.x = std::atoi(&line[index + 2]);
+		_content[cindex].dura.y = s_blocks[_content[cindex].type]->durability;
 		if (cindex < 26) {
 			for (index = index + 2; line[index] && line[index] != '['; index++);
 		}
-		ofs << "chest content slot " << cindex << " set to " << _content[cindex].x << ", " << _content[cindex].y << std::endl;
+		ofs << "chest content slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount << ", " << _content[cindex].dura.x << ", " << _content[cindex].dura.y << std::endl;
 	}
 	// ofs << "at end of loadContent, index is " << index << ", char is " << line[index] << " into " << line.substr(index, 5) << std::endl;
 }
@@ -464,22 +445,31 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 					while (line[index + 1] == '{') {
 						int fkey = std::atoi(&line[index + 9]);
 						FurnaceInstance fur;
-						glm::ivec2 value;
+						t_item item;
 						for (index = index + 9; line[index] && line[index] != ':'; index++);
-						value.x = std::atoi(&line[index + 3]);
+						item.type = std::atoi(&line[index + 3]);
 						for (; line[index] && line[index] != ','; index++);
-						value.y = std::atoi(&line[index + 2]);
-						fur.setComposant(value);
+						item.amount = std::atoi(&line[index + 2]);
+						for (; line[index] && line[index] != ','; index++);
+						item.dura.x = std::atoi(&line[index + 2]);
+						item.dura.y = s_blocks[item.type]->durability;
+						fur.setComposant(item);
 						for (; line[index] && line[index] != ':'; index++);
-						value.x = std::atoi(&line[index + 3]);
+						item.type = std::atoi(&line[index + 3]);
 						for (; line[index] && line[index] != ','; index++);
-						value.y = std::atoi(&line[index + 2]);
-						fur.setFuel(value);
+						item.amount = std::atoi(&line[index + 2]);
+						for (; line[index] && line[index] != ','; index++);
+						item.dura.x = std::atoi(&line[index + 2]);
+						item.dura.y = s_blocks[item.type]->durability;
+						fur.setFuel(item);
 						for (; line[index] && line[index] != ':'; index++);
-						value.x = std::atoi(&line[index + 3]);
+						item.type = std::atoi(&line[index + 3]);
 						for (; line[index] && line[index] != ','; index++);
-						value.y = std::atoi(&line[index + 2]);
-						fur.setProduction(value);
+						item.amount = std::atoi(&line[index + 2]);
+						for (; line[index] && line[index] != ','; index++);
+						item.dura.x = std::atoi(&line[index + 2]);
+						item.dura.y = s_blocks[item.type]->durability;
+						fur.setProduction(item);
 						backups_value.furnaces[fkey] = fur;
 						ofs << "one more furnace at " << fkey << std::endl;
 						for (; line[index] && line[index] != '{'; index++);

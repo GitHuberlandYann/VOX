@@ -36,6 +36,8 @@ TODOS:
 	- stairs
 	- doors
 	- bed
+	- enchanting table
+	- use block s hardness to compute time to break instead of hardcoding it
 	- save entities
 	- entity shadow
 	- rework clouds

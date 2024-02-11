@@ -5,6 +5,7 @@
 # include "Ui.hpp"
 # include "Text.hpp"
 # include "Chat.hpp"
+class ChestInstance;
 # include <list>
 
 # define ALPHABETA " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
@@ -22,13 +23,13 @@ enum {
 	CHAT_MENU
 };
 
-class Menu // TODO _mult as attribute, later modified by guiSize changes
+class Menu
 {
 	private:
 	    GLuint _vao, _vbo;
 		GLuint _shaderProgram;
         GLint _gui_size, _nb_points, _state, _selection, _selected_world;
-		glm::ivec2 _selected_block;
+		t_item _selected_block;
 		bool _vaoSet, _esc_released, _e_released, _left_released, _right_released, _textBar;
 		GLint _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9, _chat_released;
 		std::vector<std::string> _worlds;
@@ -63,13 +64,13 @@ class Menu // TODO _mult as attribute, later modified by guiSize changes
 
 		void occult_selection( std::vector<int> &vertices );
 		void display_item_value( int x, int y, int amount );
-		void add_item_value( glm::ivec2 item, int x, int y, bool movement = false );
+		void add_item_value( t_item item, int x, int y, bool movement = false );
 	
 		void add_slot_value( int index );
 		void add_backpack_value( int index );
 		void add_icraft_value( int index );
 		void add_craft_value( int index );
-		void add_dura_value( std::vector<int> &vertices, int index );
+		// void add_dura_value( std::vector<int> &vertices, int index );
 		void add_crafted_value( void );
 		void add_chest_value( int index );
 		void add_furnace_value( std::vector<int> &vertices );

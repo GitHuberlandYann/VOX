@@ -37,7 +37,7 @@ void UI::load_texture( std::string texstr, std::string shname, int index )
 
 void UI::add_inventory_elem( int index )
 {
-	int type = _inventory.getSlotBlock(index).x;
+	int type = _inventory.getSlotBlock(index).type;
 	if (type == blocks::AIR) {
 		return ;
 	} else if (type == blocks::OAK_SLAB) { // TODO CHANGE THIS ?
@@ -96,18 +96,18 @@ void UI::add_inventory_elem( int index )
 	addFace(v0, v1, v2, v3, false);
 }
 
-void UI::add_dura_value( std::vector<int> &vertices, int index )
-{
-	glm::ivec3 value = _inventory.getDuraFromIndex(index, false);
-	if (value.y == 0) {
-		return ;
-	}
-	// adding grey bar first
-	fill_vertices(vertices, {0, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * value.x * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1});
-	// adding progress bar second
-	float percent = 1.0f * value.y / value.z;
-	fill_vertices(vertices, {0, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * value.x * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1});
-}
+// void UI::add_dura_value( std::vector<int> &vertices, int index )
+// {
+// 	glm::ivec3 value = _inventory.getDuraFromIndex(index, false);
+// 	if (value.y == 0) {
+// 		return ;
+// 	}
+// 	// adding grey bar first
+// 	fill_vertices(vertices, {0, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * value.x * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1});
+// 	// adding progress bar second
+// 	float percent = 1.0f * value.y / value.z;
+// 	fill_vertices(vertices, {0, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * value.x * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1});
+// }
 
 void UI::add_hearts_holder( std::vector<int> &vertices, int index )
 {
@@ -160,10 +160,9 @@ void UI::setup_array_buffer( void )
 	int slotNum = _inventory.getSlotNum();
 	fill_vertices(vertices, {1, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * slotNum * _gui_size) - _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 - _gui_size, 24 * _gui_size, 24 * _gui_size, 0, 47, 24, 24}); // slot select
 
-	int duras = _inventory.countDura(false);
-	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, index);
-	}
+	// for (int index = 0; index < duras; index++) {
+	// 	add_dura_value(vertices, index);
+	// }
 	for (int index = 0; index < 10; index++) {
 		add_hearts_holder(vertices, index);
 	}
@@ -226,7 +225,7 @@ void UI::display_slot_value( int index )
 	if (index < 0 || index >= 9) {
 		return ;
 	}
-	int value = _inventory.getSlotBlock(index).y;
+	int value = _inventory.getSlotBlock(index).amount;
 	if (value > 1) {
 		if (value > 9) {
 			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, false, std::to_string(value / 10));
@@ -362,7 +361,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
     glBindVertexArray(_vao);
 	(game_mode == SURVIVAL)
 		? glDrawArrays(GL_POINTS, 0, _nb_points)
-		: glDrawArrays(GL_POINTS, 0, 3 + 2 * _inventory.countDura(false));
+		: glDrawArrays(GL_POINTS, 0, 3); // + 2 * _inventory.countDura(false));
 	// b.stop("drawArrays");
 	// b.reset();
 

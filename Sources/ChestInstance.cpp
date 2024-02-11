@@ -426,7 +426,7 @@ int ChestInstance::getOrientation( void )
 	return (_orientation);
 }
 
-glm::ivec2 *ChestInstance::getItem( int index )
+t_item *ChestInstance::getItem( int index )
 {
 	// std::cout << "in chest, index " << index << std::endl;
 	if (index < 0 || index > 26) {

@@ -1,12 +1,12 @@
 #include "Chunk.hpp"
 
-Entity::Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool solid, bool thrown, int value, int amount, int dura )
-    : _value(value), _amount(amount), _dura(dura), _solid(solid), _thrown(thrown), _stuck(false), _lifeTime(0),
+Entity::Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool solid, bool thrown, t_item item )
+    : _item(item), _solid(solid), _thrown(thrown), _stuck(false), _lifeTime(0),
 		_pos(position), _dir(dir), _chunk(chunk), _inventory(inventory)
 {
     // std::cout << "new Entity at " << position.x << ", " << position.y << ", " << position.z << ": " << s_blocks[value]->name << std::endl;
 	_chunk_pos = {chunk->getStartX(), chunk->getStartY()};
-	_falling_block = (solid && (value != blocks::ARROW));
+	_falling_block = (solid && (item.type != blocks::ARROW));
 }
 
 Entity::~Entity( void )
@@ -56,42 +56,42 @@ bool Entity::updateTNT( std::vector<std::pair<int, glm::vec3>> &arr, double delt
 	int itemLight = _chunk->computePosLight(_pos);
 	int saturation = (static_cast<int>(_lifeTime * 10) / 3) & 0x2;
 
-	int spec = s_blocks[_value]->texX(face_dir::MINUSX) + ((s_blocks[_value]->texY(face_dir::MINUSX) - saturation) << 4) + (3 << 19) + (itemLight << 24);
+	int spec = s_blocks[_item.type]->texX(face_dir::MINUSX) + ((s_blocks[_item.type]->texY(face_dir::MINUSX) - saturation) << 4) + (3 << 19) + (itemLight << 24);
 	std::pair<int, glm::vec3> v0 = {spec, p4};
 	std::pair<int, glm::vec3> v1 = {spec + XTEX, p0};
 	std::pair<int, glm::vec3> v2 = {spec + YTEX, p6};
 	std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p2};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = s_blocks[_value]->texX(face_dir::PLUSX) + ((s_blocks[_value]->texY(face_dir::PLUSX) - saturation) << 4) + (4 << 19) + (itemLight << 24);
+	spec = s_blocks[_item.type]->texX(face_dir::PLUSX) + ((s_blocks[_item.type]->texY(face_dir::PLUSX) - saturation) << 4) + (4 << 19) + (itemLight << 24);
     v0 = {spec, p1};
     v1 = {spec + XTEX, p5};
     v2 = {spec + YTEX, p3};
     v3 = {spec + XTEX + YTEX, p7};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = s_blocks[_value]->texX(face_dir::MINUSY) + ((s_blocks[_value]->texY(face_dir::MINUSY) - saturation) << 4) + (1 << 19) + (itemLight << 24);
+	spec = s_blocks[_item.type]->texX(face_dir::MINUSY) + ((s_blocks[_item.type]->texY(face_dir::MINUSY) - saturation) << 4) + (1 << 19) + (itemLight << 24);
     v0 = {spec, p0};
     v1 = {spec + XTEX, p1};
     v2 = {spec + YTEX, p2};
     v3 = {spec + XTEX + YTEX, p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = s_blocks[_value]->texX(face_dir::PLUSY) + ((s_blocks[_value]->texY(face_dir::PLUSY) - saturation) << 4) + (2 << 19) + (itemLight << 24);
+	spec = s_blocks[_item.type]->texX(face_dir::PLUSY) + ((s_blocks[_item.type]->texY(face_dir::PLUSY) - saturation) << 4) + (2 << 19) + (itemLight << 24);
     v0 = {spec, p5};
     v1 = {spec + XTEX, p4};
     v2 = {spec + YTEX, p7};
     v3 = {spec + XTEX + YTEX, p6};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = s_blocks[_value]->texX(face_dir::PLUSZ) + ((s_blocks[_value]->texY(face_dir::PLUSZ) - saturation) << 4) + (0 << 19) + (itemLight << 24);
+	spec = s_blocks[_item.type]->texX(face_dir::PLUSZ) + ((s_blocks[_item.type]->texY(face_dir::PLUSZ) - saturation) << 4) + (0 << 19) + (itemLight << 24);
     v0 = {spec, p4};
     v1 = {spec + XTEX, p5};
     v2 = {spec + YTEX, p0};
     v3 = {spec + XTEX + YTEX, p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = s_blocks[_value]->texX(face_dir::MINUSZ) + ((s_blocks[_value]->texY(face_dir::MINUSZ) - saturation) << 4) + (5 << 19) + (itemLight << 24);
+	spec = s_blocks[_item.type]->texX(face_dir::MINUSZ) + ((s_blocks[_item.type]->texY(face_dir::MINUSZ) - saturation) << 4) + (5 << 19) + (itemLight << 24);
     v0 = {spec, p2};
     v1 = {spec + XTEX, p3};
     v2 = {spec + YTEX, p6};
@@ -112,7 +112,7 @@ bool Entity::updateFallingBlock( std::vector<std::pair<int, glm::vec3>> &arr, do
 		if (type >= blocks::POPPY) {
 			// _chunk->addEntity(, ); // TODO add entity to chunk
 		} else {
-			_chunk->handleHit(false, _value, {glm::floor(_pos.x), glm::floor(_pos.y), glm::floor(_pos.z + 1)}, Modif::ADD);
+			_chunk->handleHit(false, _item.type, {glm::floor(_pos.x), glm::floor(_pos.y), glm::floor(_pos.z + 1)}, Modif::ADD);
 		}
 		return (true);
 	}
@@ -126,7 +126,7 @@ bool Entity::updateFallingBlock( std::vector<std::pair<int, glm::vec3>> &arr, do
 	glm::vec3 p6 = {_pos.x + 0, _pos.y + 1, _pos.z + 0};
 	glm::vec3 p7 = {_pos.x + 1, _pos.y + 1, _pos.z + 0};
 
-	int texture = s_blocks[_value]->texX(face_dir::MINUSX) + (s_blocks[_value]->texY(face_dir::MINUSX) << 4);
+	int texture = s_blocks[_item.type]->texX(face_dir::MINUSX) + (s_blocks[_item.type]->texY(face_dir::MINUSX) << 4);
 	int faceLight = _chunk->computePosLight(_pos);
 	int spec = texture + (3 << 19);
 	spec += (faceLight << 24);
@@ -209,7 +209,7 @@ bool Entity::updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float del
 	glm::vec3 p2 =  _pos - dir * 0.5f + hnormal * (1.25f / 16);
 
 	int itemLight = _chunk->computePosLight(_pos);
-    int spec = s_blocks[_value]->texX() + ((s_blocks[_value]->texY() + 1) << 4) + (0 << 19) + (itemLight << 24);
+    int spec = s_blocks[_item.type]->texX() + ((s_blocks[_item.type]->texY() + 1) << 4) + (0 << 19) + (itemLight << 24);
     std::pair<int, glm::vec3> v0 = {spec, p0};
     std::pair<int, glm::vec3> v1 = {spec + XTEX, p1};
     std::pair<int, glm::vec3> v2 = {spec + (1 << 18) + (5 << 8), p2};
@@ -257,7 +257,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
     }
 
 	if (_falling_block) { // sand and gravel
-		if (_value == blocks::TNT) {
+		if (_item.type == blocks::TNT) {
 			return (updateTNT(arr, deltaTime));
 		}
 		return (updateFallingBlock(arr, deltaTime));
@@ -297,7 +297,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	// hitbox to pick: + 1 on sides and + 0.5 verticaly from player's hitbox (0.3, 1.8)
 	if (_lifeTime > 0.5 + 1.5 * _thrown) {
 		if (_pos.x >= camPos.x - 1.3f && _pos.x <= camPos.x + 1.3f && _pos.y >= camPos.y - 1.3f && _pos.y <= camPos.y + 1.3f
-			&& _pos.z >= camPos.z - 0.5f && _pos.z <= camPos.z + 2.3 && _inventory->absorbItem({_value, _amount}, _dura)) {
+			&& _pos.z >= camPos.z - 0.5f && _pos.z <= camPos.z + 2.3 && _inventory->absorbItem(_item)) {
 			return (true);
 		}
 	}
@@ -321,46 +321,46 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	glm::vec3 p6 = {_pos.x - 0.176777f * sinRot, _pos.y + 0.176777f * cosRot, _pos.z + (cosRot + 1) / 4};
 	glm::vec3 p7 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
 
-	if (_value < blocks::POPPY) {
-		int offset = ((_value >= blocks::CRAFTING_TABLE && _value < blocks::BEDROCK) ? face_dir::MINUSX: 0);
+	if (_item.type < blocks::POPPY) {
+		int offset = ((_item.type >= blocks::CRAFTING_TABLE && _item.type < blocks::BEDROCK) ? face_dir::MINUSX: 0);
 	    int itemLight = _chunk->computePosLight(_pos);
 
-	    int spec = s_blocks[_value]->texX(face_dir::MINUSX, offset) + (s_blocks[_value]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19) + (itemLight << 24);
+	    int spec = s_blocks[_item.type]->texX(face_dir::MINUSX, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19) + (itemLight << 24);
 	    std::pair<int, glm::vec3> v0 = {spec, p4};
 	    std::pair<int, glm::vec3> v1 = {spec + XTEX, p0};
 	    std::pair<int, glm::vec3> v2 = {spec + YTEX, p6};
 	    std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p2};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_value]->texX(face_dir::PLUSX, offset) + (s_blocks[_value]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19) + (itemLight << 24);
+		spec = s_blocks[_item.type]->texX(face_dir::PLUSX, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19) + (itemLight << 24);
 	    v0 = {spec, p1};
 	    v1 = {spec + XTEX, p5};
 	    v2 = {spec + YTEX, p3};
 	    v3 = {spec + XTEX + YTEX, p7};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_value]->texX(face_dir::MINUSY, offset) + (s_blocks[_value]->texY(face_dir::MINUSY, offset) << 4) + (1 << 19) + (itemLight << 24);
+		spec = s_blocks[_item.type]->texX(face_dir::MINUSY, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSY, offset) << 4) + (1 << 19) + (itemLight << 24);
 	    v0 = {spec, p0};
 	    v1 = {spec + XTEX, p1};
 	    v2 = {spec + YTEX, p2};
 	    v3 = {spec + XTEX + YTEX, p3};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_value]->texX(face_dir::PLUSY, offset) + (s_blocks[_value]->texY(face_dir::PLUSY, offset) << 4) + (2 << 19) + (itemLight << 24);
+		spec = s_blocks[_item.type]->texX(face_dir::PLUSY, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSY, offset) << 4) + (2 << 19) + (itemLight << 24);
 	    v0 = {spec, p5};
 	    v1 = {spec + XTEX, p4};
 	    v2 = {spec + YTEX, p7};
 	    v3 = {spec + XTEX + YTEX, p6};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_value]->texX(face_dir::PLUSZ, offset) + (s_blocks[_value]->texY(face_dir::PLUSZ, offset) << 4) + (0 << 19) + (itemLight << 24);
+		spec = s_blocks[_item.type]->texX(face_dir::PLUSZ, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSZ, offset) << 4) + (0 << 19) + (itemLight << 24);
 	    v0 = {spec, p4};
 	    v1 = {spec + XTEX, p5};
 	    v2 = {spec + YTEX, p0};
 	    v3 = {spec + XTEX + YTEX, p1};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_value]->texX(face_dir::MINUSZ, offset) + (s_blocks[_value]->texY(face_dir::MINUSZ, offset) << 4) + (5 << 19) + (itemLight << 24);
+		spec = s_blocks[_item.type]->texX(face_dir::MINUSZ, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSZ, offset) << 4) + (5 << 19) + (itemLight << 24);
 	    v0 = {spec, p2};
 	    v1 = {spec + XTEX, p3};
 	    v2 = {spec + YTEX, p6};
@@ -368,7 +368,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	} else { // flowers
 	    int itemLight = _chunk->computePosLight(_pos);
-	    int spec = s_blocks[_value]->texX() + (s_blocks[_value]->texY() << 4) + (0 << 19) + (itemLight << 24);
+	    int spec = s_blocks[_item.type]->texX() + (s_blocks[_item.type]->texY() << 4) + (0 << 19) + (itemLight << 24);
 	    std::pair<int, glm::vec3> v0 = {spec, p0};
 	    std::pair<int, glm::vec3> v1 = {spec + XTEX, p5};
 	    std::pair<int, glm::vec3> v2 = {spec + YTEX, p2};

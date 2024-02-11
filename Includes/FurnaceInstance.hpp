@@ -2,6 +2,7 @@
 # define FURNACEINSTANCE_HPP
 
 # include <glm/glm.hpp>
+# include "Inventory.hpp"
 
 namespace furnace_state {
 	enum {
@@ -14,9 +15,9 @@ namespace furnace_state {
 class FurnaceInstance
 {
 	private:
-		glm::ivec2 _composant;
-		glm::ivec2 _fuel;
-		glm::ivec2 _production;
+		t_item _composant;
+		t_item _fuel;
+		t_item _production;
 		float _fuel_time, _composant_time, _current_fuel_time, _current_time;
 
 	public:
@@ -25,16 +26,16 @@ class FurnaceInstance
 
 		float getComposantTime( void );
 		float getFuelTime( void );
-		glm::ivec2 getComposant( void );
-		glm::ivec2 getFuel( void );
-		glm::ivec2 getProduction( void );
-		void setComposant( glm::ivec2 value );
-		void setFuel( glm::ivec2 value );
-		void setProduction( glm::ivec2 value );
+		t_item getComposant( void );
+		t_item getFuel( void );
+		t_item getProduction( void );
+		void setComposant( t_item value );
+		void setFuel( t_item value );
+		void setProduction( t_item value );
 		void removeComposant( void );
 		void removeFuel( void );
-		glm::ivec2 pickProduction( void );
-		glm::ivec2 *pickCompoFuel( bool fuel );
+		t_item pickProduction( void );
+		t_item *pickCompoFuel( bool fuel );
 		int updateTimes( float currentTime );
 
 		std::string getInfoString( void );

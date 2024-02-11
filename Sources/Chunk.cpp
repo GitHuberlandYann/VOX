@@ -502,35 +502,35 @@ void Chunk::entity_block( int posX, int posY, int posZ, int type )
 	if (type == blocks::GRASS) {
 		float random = Random::randomFloat(_seed);
 		if (random <= 0.125f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, blocks::WHEAT_SEEDS));
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
 		}
 	} else if (type == blocks::OAK_LEAVES) {
 		float random = Random::randomFloat(_seed);
 		if (random <= 0.05f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, blocks::OAK_SAPLING));
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::OAK_SAPLING, 1, {0, 0}}));
 		}
 		random = Random::randomFloat(_seed);
 		if (random <= 0.02f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 4, posY - 8)), 1.0f}, false, false, blocks::STICK, 2));
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 4, posY - 8)), 1.0f}, false, false, {blocks::STICK, 2, {0, 0}}));
 		}
 		random = Random::randomFloat(_seed);
 		if (random <= 0.005f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 4)), 1.0f}, false, false, blocks::APPLE, 1));
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 4)), 1.0f}, false, false, {blocks::APPLE, 1, {0, 0}}));
 		}
 	} else if (type == blocks::WHEAT_CROP7) {
-		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 4, posY - 8)), 1.0f}, false, false, blocks::WHEAT));
+		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 4, posY - 8)), 1.0f}, false, false, {blocks::WHEAT, 1, {0, 0}}));
 		float random = Random::randomFloat(_seed);
 		if (random <= 0.0787f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, blocks::WHEAT_SEEDS));
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
 		} else if (random <= 0.0787f + 0.3149f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, blocks::WHEAT_SEEDS, 2));
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 2, {0, 0}}));
 		} else if (random <= 0.0787f + 0.3149f + 0.4198f) {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, blocks::WHEAT_SEEDS, 3));
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 3, {0, 0}}));
 		} else {
-			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, blocks::WHEAT_SEEDS, 4));
+			_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 4, {0, 0}}));
 		}
 	} else {
-		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, s_blocks[type]->mined));
+		_entities.push_back(Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {s_blocks[type]->mined, 1, {0, 0}}));
 	}
 }
 
@@ -545,11 +545,11 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	if (type == blocks::CHEST) {
 		auto search = _chests.find(offset);
 		if (search != _chests.end()) {
-			glm::ivec2 *item;
+			t_item *item;
 			for (int index = 0; index < 27; ++index) {
 				item = search->second.getItem(index);
-				if (item->y) {
-					_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, item->x, item->y));
+				if (item->amount) {
+					_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, *item));
 				}
 			}
 		}
@@ -557,17 +557,17 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	} else if (type == blocks::FURNACE) {
 		auto search = _furnaces.find(offset); // drop furnace's items
 		if (search != _furnaces.end()) {
-			glm::ivec2 items = search->second.getComposant();
-			if (items.y) {
-				_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-1, -1)), 1.0f}, false, false, items.x, items.y));
+			t_item items = search->second.getComposant();
+			if (items.amount) {
+				_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-1, -1)), 1.0f}, false, false, items));
 			}
 			items = search->second.getFuel();
-			if (items.y) {
-				_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(1, 9)), 1.0f}, false, false, items.x, items.y));
+			if (items.amount) {
+				_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(1, 9)), 1.0f}, false, false, items));
 			}
 			items = search->second.getProduction();
-			if (items.y) {
-				_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-4, 5)), 1.0f}, false, false, items.x, items.y));
+			if (items.amount) {
+				_entities.push_back(Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-4, 5)), 1.0f}, false, false, items));
 			}
 		}
 		_furnaces.erase(offset);
@@ -643,7 +643,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		int type_under = (_blocks[offset - 1] & 0xFF);
 		if (type_under == blocks::AIR) {
-			_entities.push_back(Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0, 0, 0}, true, false, type));
+			_entities.push_back(Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0, 0, 0}, true, false, {type, 1, {0, 0}}));
 			return ;
 		}
 	}
@@ -1130,7 +1130,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 		replace_block(useInventory, pos, type, previous_type);
 	} else if (modif == Modif::LITNT) {
 		remove_block(false, pos);
-		_entities.push_back(Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0.2f, 0.2f, 0.4f}, true, false, type));
+		_entities.push_back(Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0.2f, 0.2f, 0.4f}, true, false, {type, 1, {0, 0}}));
 	}
 	if (type == blocks::WATER || type == blocks::BUCKET) {
 		// std::cout << "modif to water with " << ((type == blocks::WATER) ? "water" : "bucket") << std::endl;
@@ -1158,12 +1158,12 @@ void Chunk::generate_chunk( void )
 	#endif
 }
 
-void Chunk::addEntity( glm::vec3 dir, int value, int amount, int dura )
+void Chunk::addEntity( glm::vec3 dir, t_item item )
 {
 	glm::vec3 camPos = _camera->getPos();
 	camPos.z += 1;
 	camPos += dir;
-	_entities.push_back(Entity(this, _inventory, camPos, dir, false, true, value, amount, dura));
+	_entities.push_back(Entity(this, _inventory, camPos, dir, false, true, item));
 }
 
 void Chunk::sort_sky( glm::vec3 &pos, bool vip )
@@ -1364,7 +1364,7 @@ void Chunk::shootArrow( float timer )
 	glm::vec3 camPos = _camera->getPos(), camDir = _camera->getDir();
 	camPos.z += 1 + EYE_LEVEL;
 	camPos += camDir;
-	_entities.push_back(Entity(this, _inventory, camPos, camDir * timer, true, false, blocks::ARROW));
+	_entities.push_back(Entity(this, _inventory, camPos, camDir * timer, true, false, {blocks::ARROW, 1, {0, 0}}));
 }
 
 void Chunk::updateBreak( glm::ivec4 block_hit, int frame )

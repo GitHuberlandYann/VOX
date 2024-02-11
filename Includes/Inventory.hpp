@@ -3,7 +3,10 @@
 
 # include "Blocks.hpp"
 # include <list>
+# include <array>
 class Chunk;
+class FurnaceInstance;
+class ChestInstance;
 
 # define IRECEIPT_SIZE 24
 # define RECEIPT_SIZE 89
@@ -136,24 +139,29 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
 };
 
+typedef struct s_item {
+	int type = blocks::AIR;
+	int amount = 1;
+	glm::ivec2 dura = {0, 0};
+	// enchantements will come here
+}			t_item;
+
 class Inventory
 {
     private:
-        glm::ivec2 _content[9]; // (block_type, nb_blocks)
-		glm::ivec2 _backpack[27];
-		glm::ivec2 _icraft[4];
-		glm::ivec2 _craft[9];
-		glm::ivec2 _crafted;
-		std::list<glm::ivec3> _durabilities; // location, durability, tool dura
-        int _slot, _saved_durability;
+        std::array<t_item, 9> _content;
+		std::array<t_item, 27> _backpack;
+		std::array<t_item, 4> _icraft;
+		std::array<t_item, 9> _craft;
+		t_item _crafted;
+        int _slot;
 		bool _modif;
 
-		int getrmDura( int value );
-		glm::ivec2 *getBlockPtr( int value, int & craft_place, FurnaceInstance *furnace, ChestInstance *chest );
+		t_item *getBlockPtr( int value, int & craft_place, FurnaceInstance *furnace, ChestInstance *chest );
 		void changeCrafted( int craft );
 		void produceCraft( int craft );
-		glm::ivec2 pickCrafted( int craft, glm::ivec2 block );
-		int findEmptyCell( glm::ivec2 block, bool swap = false );
+		t_item pickCrafted( int craft, t_item block );
+		int findEmptyCell( t_item block, bool swap = false );
 		void pickAllCrafted( int craft );
 
     public:
@@ -161,32 +169,26 @@ class Inventory
         ~Inventory( void );
 
         int getCurrentSlot( void );
-		glm::ivec2 getSlotBlock( int slot );
-		glm::ivec2 getBackpackBlock( int slot );
-		glm::ivec2 getiCraftBlock( int slot );
-		glm::ivec2 getCraftBlock( int slot );
-		glm::ivec3 getDuraFromIndex( int index, bool all );
-		glm::ivec2 getCrafted( void );
+		t_item getSlotBlock( int slot );
+		t_item getBackpackBlock( int slot );
+		t_item getiCraftBlock( int slot );
+		t_item getCraftBlock( int slot );
+		t_item getCrafted( void );
 		int getSlotNum( void );
         void setSlot( int value );
-		int countSlots( void );
-		int countBackpack( void );
-		int countiCraft( void );
-		int countCraft( void );
-		int countDura( bool all );
-		glm::ivec2 pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
-		glm::ivec2 pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
-		glm::ivec2 putBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace, ChestInstance *chest );
-		glm::ivec2 putOneBlockAt( int craft, int value, glm::ivec2 block, FurnaceInstance *furnace, ChestInstance *chest );
-		void restoreBlock( glm::ivec2 block, bool swap = false );
-		bool absorbItem( glm::ivec2 block, int dura );
+		t_item pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
+		t_item pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
+		t_item putBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest );
+		t_item putOneBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest );
+		void restoreBlock( t_item block, bool swap = false );
+		bool absorbItem( t_item block );
 		void restoreiCraft( void );
 		void restoreCraft( void );
 		bool getModif( void );
 		void setModif( bool value );
         void addBlock( int type );
 		// void removeBlockAt( int value, FurnaceInstance *furnace, ChestInstance *chest );
-        glm::ivec3 removeBlock( bool thrown );
+        t_item removeBlock( bool thrown );
 		void replaceSlot( int type );
 		void swapCells( int slot, int location );
 		void decrementDurabitilty( void );
@@ -194,7 +196,6 @@ class Inventory
 		void spillInventory( Chunk *chunk );
 
         std::string getInventoryString( void );
-		std::string getDuraString( void );
 		std::string getSlotString( void );
 		std::string saveString( void );
 		void loadWorld( std::ofstream & ofs, std::ifstream & indata );

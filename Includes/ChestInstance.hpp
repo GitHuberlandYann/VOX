@@ -4,6 +4,7 @@
 # include <glm/glm.hpp>
 # include <array>
 # include <vector>
+# include "Inventory.hpp"
 
 # define CHEST_ANIM_TIME 0.3f
 
@@ -23,7 +24,7 @@ class ChestInstance
 		float _timer;
 		glm::ivec3 _pos;
 		glm::ivec2 _chunk_pos;
-		std::array<glm::ivec2, 27> _content;
+		std::array<t_item, 27> _content;
 		Chunk *_chunk;
 
 		void display_open( std::vector<std::pair<int, glm::vec3>> &arr );
@@ -37,7 +38,7 @@ class ChestInstance
 		void setChunk( Chunk *chunk, glm::ivec3 pos );
 		void setState( int state );
 		int getOrientation( void );
-		glm::ivec2 *getItem( int index );
+		t_item *getItem( int index );
 		void update( std::vector<std::pair<int, glm::vec3>> &arr, float deltaTime );
 
 		// std::string getInfoString( void );

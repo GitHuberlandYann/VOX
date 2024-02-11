@@ -10,7 +10,6 @@ Menu::Menu( Inventory & inventory, UI *ui ) : _gui_size(3), _state(MAIN_MENU), _
 	_key_1(0), _key_2(0), _key_3(0), _key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0), _chat_released(0),
 	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _chest(NULL), _furnace(NULL)
 {
-	_selected_block = glm::ivec2(blocks::AIR, 0);
 	_world_file = "";
 }
 
@@ -30,13 +29,13 @@ void Menu::reset_values( void )
 	_selection = 0;
 	_esc_released = false;
 	_e_released = false;
-	if (_selected_block.x != blocks::AIR) { // important to do this first as they use same variable
+	if (_selected_block.type != blocks::AIR) {
 		_inventory.restoreBlock(_selected_block);
 	}
 	_inventory.restoreiCraft();
 	_inventory.restoreCraft();
 	_inventory.setModif(true);
-	_selected_block = glm::ivec2(blocks::AIR, 0);
+	_selected_block = {0};
 	if (_chest) {
 		_chest->setState(chest_state::CLOSING);
 		_chest = NULL;
@@ -281,7 +280,7 @@ int Menu::ingame_inputs( void )
 	if (_left_released && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		_left_released = false;
 		if (_selection) {
-			if (_selected_block.x == blocks::AIR) {
+			if (_selected_block.type == blocks::AIR) {
 				_selected_block = _inventory.pickBlockAt(craft, _selection - 1, _furnace, _chest);
 			} else {
 				_selected_block = _inventory.putBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
@@ -293,10 +292,10 @@ int Menu::ingame_inputs( void )
 	}
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
 		if (_selection) {
-			if (_selected_block.x == blocks::AIR) {
+			if (_selected_block.type == blocks::AIR) {
 				if (_right_released) {
 					_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1, _furnace, _chest);
-					if (_selected_block.x) {
+					if (_selected_block.type != blocks::AIR) {
 						_selection_list.push_back(_selection);
 					}
 				}
@@ -309,9 +308,9 @@ int Menu::ingame_inputs( void )
 					}
 				}
 				if (!inList) {
-					int count = _selected_block.y;
+					int count = _selected_block.amount;
 					_selected_block = _inventory.putOneBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
-					if (_selected_block.y < count) {
+					if (_selected_block.amount < count) {
 						_selection_list.push_back(_selection);
 					}
 					_ui->addFace({0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, false, true);
@@ -628,11 +627,11 @@ void Menu::display_item_value( int x, int y, int amount )
 	_text->addText(x + 11 * _gui_size, y + 9 * _gui_size, 8 * _gui_size, true, std::to_string(amount % 10));
 }
 
-void Menu::add_item_value( glm::ivec2 item, int x, int y, bool movement )
+void Menu::add_item_value( t_item item, int x, int y, bool movement )
 {
 	// TODO change item to ivec3(type, amount, dura) + handle durabilities over here
-	display_item_value( x, y, item.y );
-	int type = item.x;
+	display_item_value(x, y, item.amount);
+	int type = item.type;
 	if (!s_blocks[type]->item3D) {
 		int spec = s_blocks[type]->texX(face_dir::MINUSX, 0) + (s_blocks[type]->texY(face_dir::MINUSX, 0) << 4) + (3 << 19);
 		// int faceLight = computeLight(row - 1, col, level);
@@ -685,8 +684,8 @@ void Menu::add_item_value( glm::ivec2 item, int x, int y, bool movement )
 
 void Menu::add_slot_value( int index )
 {
-	glm::ivec2 item = _inventory.getSlotBlock(index);
-	if (item.x == blocks::AIR) {
+	t_item item = _inventory.getSlotBlock(index);
+	if (item.type == blocks::AIR) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * index * _gui_size) + _gui_size * 3;
@@ -696,8 +695,8 @@ void Menu::add_slot_value( int index )
 
 void Menu::add_backpack_value( int index )
 {
-	glm::ivec2 item = _inventory.getBackpackBlock(index);
-	if (item.x == blocks::AIR) {
+	t_item item = _inventory.getBackpackBlock(index);
+	if (item.type == blocks::AIR) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3;
@@ -707,8 +706,8 @@ void Menu::add_backpack_value( int index )
 
 void Menu::add_icraft_value( int index )
 {
-	glm::ivec2 item = _inventory.getiCraftBlock(index);
-	if (item.x == blocks::AIR) {
+	t_item item = _inventory.getiCraftBlock(index);
+	if (item.type == blocks::AIR) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (5 + index % 2) * _gui_size) + _gui_size * 3;
@@ -718,8 +717,8 @@ void Menu::add_icraft_value( int index )
 
 void Menu::add_craft_value( int index )
 {
-	glm::ivec2 item = _inventory.getCraftBlock(index);
-	if (item.x == blocks::AIR) {
+	t_item item = _inventory.getCraftBlock(index);
+	if (item.type == blocks::AIR) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (1 + index % 3) * _gui_size) + _gui_size * 7;
@@ -727,53 +726,53 @@ void Menu::add_craft_value( int index )
 	add_item_value(item, x, y, _gui_size);
 }
 
-static int screenPosXFromlocation( int gui_size, int location )
-{
-	if (location < 9) { // action
-		return ((WIN_WIDTH - (166 * gui_size)) / 2 + (18 * location * gui_size) + gui_size * 3);
-	} else if (location < 36) { // backpack
-		return ((WIN_WIDTH - (166 * gui_size)) / 2 + (18 * (location % 9) * gui_size) + gui_size * 3);
-	} else if (location < 40) { // icraft
-		return ((WIN_WIDTH - (166 * gui_size)) / 2 + (18 * (5 + location % 2) * gui_size) + gui_size * 3);
-	} else if (location == 40) { // crafted, ignore
-	} else { // craft
-		return ((WIN_WIDTH - (166 * gui_size)) / 2 + (18 * (1 + (location - 41) % 3) * gui_size) + gui_size * 7);
-	}
-	return (0);
-}
+// static int screenPosXFromlocation( int gui_size, int location )
+// {
+// 	if (location < 9) { // action
+// 		return ((WIN_WIDTH - (166 * gui_size)) / 2 + (18 * location * gui_size) + gui_size * 3);
+// 	} else if (location < 36) { // backpack
+// 		return ((WIN_WIDTH - (166 * gui_size)) / 2 + (18 * (location % 9) * gui_size) + gui_size * 3);
+// 	} else if (location < 40) { // icraft
+// 		return ((WIN_WIDTH - (166 * gui_size)) / 2 + (18 * (5 + location % 2) * gui_size) + gui_size * 3);
+// 	} else if (location == 40) { // crafted, ignore
+// 	} else { // craft
+// 		return ((WIN_WIDTH - (166 * gui_size)) / 2 + (18 * (1 + (location - 41) % 3) * gui_size) + gui_size * 7);
+// 	}
+// 	return (0);
+// }
 
-static int screenPosYFromlocation( int gui_size, int location )
-{
-	if (location < 9) {
-		return (WIN_HEIGHT / 2 + 59 * gui_size);
-	} else if (location < 36) {
-		return (WIN_HEIGHT / 2 + gui_size + 18 * gui_size * ((location - 9) / 9));
-	} else if (location < 40) {
-		return (WIN_HEIGHT / 2 - 65 * gui_size + 18 * gui_size * ((location - 36) / 2));
-	} else if (location == 40) {
-	} else {
-		return (WIN_HEIGHT / 2 - 66 * gui_size + 18 * gui_size * ((location - 41) / 3));
-	}
-	return (0);
-}
+// static int screenPosYFromlocation( int gui_size, int location )
+// {
+// 	if (location < 9) {
+// 		return (WIN_HEIGHT / 2 + 59 * gui_size);
+// 	} else if (location < 36) {
+// 		return (WIN_HEIGHT / 2 + gui_size + 18 * gui_size * ((location - 9) / 9));
+// 	} else if (location < 40) {
+// 		return (WIN_HEIGHT / 2 - 65 * gui_size + 18 * gui_size * ((location - 36) / 2));
+// 	} else if (location == 40) {
+// 	} else {
+// 		return (WIN_HEIGHT / 2 - 66 * gui_size + 18 * gui_size * ((location - 41) / 3));
+// 	}
+// 	return (0);
+// }
 
-void Menu::add_dura_value( std::vector<int> &vertices, int index )
-{
-	glm::ivec3 value = _inventory.getDuraFromIndex(index, true);
-	if (value.y == 0) {
-		return ;
-	}
-	// adding grey bar first
-	fill_vertices(vertices, {0, screenPosXFromlocation(_gui_size, value.x) + _gui_size, screenPosYFromlocation(_gui_size, value.x) + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1});
-	// adding progress bar second
-	float percent = 1.0f * value.y / value.z;
-	fill_vertices(vertices, {0, screenPosXFromlocation(_gui_size, value.x) + _gui_size, screenPosYFromlocation(_gui_size, value.x) + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1});
-}
+// void Menu::add_dura_value( std::vector<int> &vertices, int index ) // TODO call this from add_item_value
+// {
+// 	glm::ivec3 value = _inventory.getDuraFromIndex(index, true);
+// 	if (value.y == 0) {
+// 		return ;
+// 	}
+// 	// adding grey bar first
+// 	fill_vertices(vertices, {0, screenPosXFromlocation(_gui_size, value.x) + _gui_size, screenPosYFromlocation(_gui_size, value.x) + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1});
+// 	// adding progress bar second
+// 	float percent = 1.0f * value.y / value.z;
+// 	fill_vertices(vertices, {0, screenPosXFromlocation(_gui_size, value.x) + _gui_size, screenPosYFromlocation(_gui_size, value.x) + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1});
+// }
 
 void Menu::add_crafted_value( void )
 {
-	glm::ivec2 item = _inventory.getCrafted();
-	if (item.x == blocks::AIR) {
+	t_item item = _inventory.getCrafted();
+	if (item.type == blocks::AIR) {
 		return ;
 	}
 	if (_state == INVENTORY_MENU) {
@@ -789,12 +788,12 @@ void Menu::add_crafted_value( void )
 
 void Menu::add_chest_value( int index )
 {
-	glm::ivec2 *item = _chest->getItem(index);
+	t_item *item = _chest->getItem(index);
 	if (!item) {
 		// std::cout << "add_chest_value NULL item at " << index << std::endl;
 		return ;
 	}
-	if (item->x == blocks::AIR) {
+	if (item->type == blocks::AIR) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3;
@@ -804,8 +803,8 @@ void Menu::add_chest_value( int index )
 
 void Menu::add_furnace_value( std::vector<int> &vertices )
 {
-	glm::ivec2 item = _furnace->getComposant();
-	if (item.x != blocks::AIR) {
+	t_item item = _furnace->getComposant();
+	if (item.type != blocks::AIR) {
 		int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size;
 		int y = WIN_HEIGHT / 2 - 66 * _gui_size;
 		add_item_value(item, x, y, _gui_size);
@@ -819,13 +818,13 @@ void Menu::add_furnace_value( std::vector<int> &vertices )
 		fill_vertices(vertices, {1, (WIN_WIDTH - (166 * _gui_size)) / 2 + 74 * _gui_size, WIN_HEIGHT / 2 - 49 * _gui_size, progress * _gui_size, 17 * _gui_size, 38, 47, progress, 17});
 	}
 	item = _furnace->getFuel();
-	if (item.x != blocks::AIR) {
+	if (item.type != blocks::AIR) {
 		int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size;
 		int y = WIN_HEIGHT / 2 - 30 * _gui_size;
 		add_item_value(item, x, y, _gui_size);
 	}
 	item = _furnace->getProduction();
-	if (item.x != blocks::AIR) {
+	if (item.type != blocks::AIR) {
 		int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 111 * _gui_size;
 		int y = WIN_HEIGHT / 2 - 48 * _gui_size;
 		add_item_value(item, x, y, _gui_size);
@@ -848,13 +847,12 @@ void Menu::setup_array_buffer_inventory( void )
 	for (int index = 0; index < 4; index++) {
 		add_icraft_value(index);
 	}
-	int duras = _inventory.countDura(true);
-	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, index);
-	}
+	// for (int index = 0; index < duras; index++) {
+	// 	add_dura_value(vertices, index);
+	// }
 	add_crafted_value();
 
-	if (_selected_block.x != blocks::AIR) {
+	if (_selected_block.type != blocks::AIR) {
 		double mouseX, mouseY;
 		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		add_item_value(_selected_block, mouseX - 8 * _gui_size, mouseY - 8 * _gui_size, true);
@@ -879,13 +877,12 @@ void Menu::setup_array_buffer_crafting( void )
 	for (int index = 0; index < 9; index++) {
 		add_craft_value(index);
 	}
-	int duras = _inventory.countDura(true);
-	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, index);
-	}
+	// for (int index = 0; index < duras; index++) {
+	// 	add_dura_value(vertices, index);
+	// }
 	add_crafted_value();
 
-	if (_selected_block.x != blocks::AIR) {
+	if (_selected_block.type != blocks::AIR) {
 		double mouseX, mouseY;
 		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		add_item_value(_selected_block, mouseX - 8 * _gui_size, mouseY - 8 * _gui_size, true);
@@ -907,15 +904,14 @@ void Menu::setup_array_buffer_chest( void )
 	for (int index = 0; index < 27; index++) {
 		add_backpack_value(index);
 	}
-	int duras = _inventory.countDura(true) + ((_chest) ? 0 : 0); // TODO _chests->countDura
-	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, index);
-	}
+	// for (int index = 0; index < duras; index++) {
+	// 	add_dura_value(vertices, index);
+	// }
 	for (int index = 0; index < 27; index++) {
 		add_chest_value(index);
 	}
 
-	if (_selected_block.x != blocks::AIR) {
+	if (_selected_block.type != blocks::AIR) {
 		double mouseX, mouseY;
 		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		add_item_value(_selected_block, mouseX - 8 * _gui_size, mouseY - 8 * _gui_size, true);
@@ -937,13 +933,12 @@ void Menu::setup_array_buffer_furnace( void )
 	for (int index = 0; index < 27; index++) {
 		add_backpack_value(index);
 	}
-	int duras = _inventory.countDura(true);
-	for (int index = 0; index < duras; index++) {
-		add_dura_value(vertices, index);
-	}
+	// for (int index = 0; index < duras; index++) {
+	// 	add_dura_value(vertices, index);
+	// }
 	add_furnace_value(vertices);
 
-	if (_selected_block.x != blocks::AIR) {
+	if (_selected_block.type != blocks::AIR) {
 		double mouseX, mouseY;
 		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		add_item_value(_selected_block, mouseX - 8 * _gui_size, mouseY - 8 * _gui_size, true);
