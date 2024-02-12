@@ -7,8 +7,11 @@
 
 // if skySpread, _lights[offset] is bitshifted by 4 to work on sky light and not block light
 // posX, posY are in [0; CHUNK_SIZE[
-void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
+void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recurse )
 {
+	if (!recurse) {
+		return ;
+	}
 	// if (skySpread && _startX == 256 && _startY == 320) {
 	// 	static int cnt;
 	// 	std::cout << _startX << ", " << _startY << " at " << posX << ", " << posY << ", " << posZ << " light_spread " << ((skySpread) ? "SKY" : "BLOCK") << " recurse level " << ++cnt << std::endl;
@@ -46,7 +49,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 		short above = _lights[offset + 1] >> 8;
 		if (!(above & 0xF0)) { // if block above is not a source anymore
 			_lights[offset] &= 0xFF;
-			return (light_spread(posX, posY, posZ, skySpread));
+			return (light_spread(posX, posY, posZ, skySpread, recurse - 1));
 		}
 	}
 	// std::cout << "level is " << (int)level << std::endl;
@@ -55,9 +58,9 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread )
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 		if (skySpread && index == face_dir::MINUSZ && level == 0xFF) {
-			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0xF0, skySpread);
+			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0xF0, skySpread, recurse - 1);
 		} else {
-			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], level, skySpread);
+			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], level, skySpread, recurse - 1);
 		}
 	}
 }
@@ -576,7 +579,7 @@ short Chunk::getLightLevel( int posX, int posY, int posZ )
 	return (0xF00);
 }
 
-void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool skySpread )
+void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool skySpread, int recurse )
 {
 	if (posZ < 0 || posZ > 255) {
 		return ;
@@ -585,19 +588,19 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 		// spread neighbour
 		if (posX == -1) {
 			if (_neighbours[face_dir::MINUSX]) {
-				_neighbours[face_dir::MINUSX]->light_try_spread(CHUNK_SIZE - 1, posY, posZ, level, skySpread);
+				_neighbours[face_dir::MINUSX]->light_try_spread(CHUNK_SIZE - 1, posY, posZ, level, skySpread, recurse);
 			}
 		} else if (posY == -1) {
 			if (_neighbours[face_dir::MINUSY]) {
-				_neighbours[face_dir::MINUSY]->light_try_spread(posX, CHUNK_SIZE - 1, posZ, level, skySpread);
+				_neighbours[face_dir::MINUSY]->light_try_spread(posX, CHUNK_SIZE - 1, posZ, level, skySpread, recurse);
 			}
 		} else if (posX == CHUNK_SIZE) {
 			if (_neighbours[face_dir::PLUSX]) {
-				_neighbours[face_dir::PLUSX]->light_try_spread(0, posY, posZ, level, skySpread);
+				_neighbours[face_dir::PLUSX]->light_try_spread(0, posY, posZ, level, skySpread, recurse);
 			}
 		} else if (posY == CHUNK_SIZE) {
 			if (_neighbours[face_dir::PLUSY]) {
-				_neighbours[face_dir::PLUSY]->light_try_spread(posX, 0, posZ, level, skySpread);
+				_neighbours[face_dir::PLUSY]->light_try_spread(posX, 0, posZ, level, skySpread, recurse);
 			}
 		}
 	} else {
@@ -607,7 +610,7 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 		}
 		short neighbour = (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] >> (8 * skySpread));
 		if ((!(neighbour & 0xF0) || (skySpread && !(level & 0xF0))) && ((neighbour & 0xF) != maxs(0, ((level & 0xF) - 1) & 0xF))) { // only spread to non source blocks whose value is not expected value. Also spread to source block if from non source block and skySpread
-			light_spread(posX, posY, posZ, skySpread);
+			light_spread(posX, posY, posZ, skySpread, recurse);
 		}
 	}
 }

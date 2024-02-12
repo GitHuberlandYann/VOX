@@ -17,6 +17,7 @@ class Camera;
 
 # define SEA_LEVEL 64
 // # define CHUNK_SIZE 16 in utils
+# define LIGHT_RECURSE 32
 # define CHUNK_SHIFT 4
 # define WORLD_HEIGHT 256
 # define WORLD_SHIFT 8
@@ -134,7 +135,7 @@ class Chunk
 		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 		void replace_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 
-		void light_spread( int posX, int posY, int level, bool skySpread );
+		void light_spread( int posX, int posY, int level, bool skySpread, int recurse = LIGHT_RECURSE );
 		void generate_lights( void );
 		int computeLight( int row, int col, int level );
 		int computeSmoothLight( int basefaceLight, int row, int col, int level, std::array<int, 9> offsets );
@@ -197,7 +198,7 @@ class Chunk
 		void explosion( glm::vec3 pos, int power );
 		void shootArrow( float timer );
 		void updateBreak( glm::ivec4 block_hit, int frame );
-		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread );
+		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread, int recurse );
 		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
 		void insertFluidAt( std::set<int> *newFluids, int posX, int posY, int posZ );
 		void update_border( int posX, int posY, int level, int type, bool adding, int origin );

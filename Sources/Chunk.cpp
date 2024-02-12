@@ -761,9 +761,9 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 				_displayed_faces -= !visible_face(adj, type,  opposite_dir(index));
 			} else {
 				if (index != face_dir::PLUSZ) {
-					light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 1, true); // spread sky light, but not upwards duh
+					light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 1, true, LIGHT_RECURSE); // spread sky light, but not upwards duh
 				}
-				light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 1, false);
+				light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 1, false, LIGHT_RECURSE);
 			}
 			if (adj > blocks::AIR && adj < blocks::WATER && !face_count(adj, pos.x + delta[0], pos.y + delta[1], pos.z + delta[2])) {
 				// was exposed before, but isn't anymore
@@ -1764,7 +1764,7 @@ void Chunk::updateFurnaces( double currentTime )
 				_lights[fur.first] = 0;
 				for (int index = 0; index < 6; index++) {
 					const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-					light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0, false);
+					light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0, false, LIGHT_RECURSE);
 				}
 			}
 			_light_update = true;

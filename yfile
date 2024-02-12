@@ -30,7 +30,6 @@ TODOS:
     - biomes
     - skybox
 	- flint and steel and fire
-	- limit floodfill algo for lighting (but be smart about it)
 	- redstone
 	- slabs
 	- stairs
@@ -51,7 +50,6 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-	- particles !
 	- double chests
 	- bow and arrow
 	- universal use of tps instead of deltatimes
@@ -88,6 +86,8 @@ DONE:
     - placing sand = gravity
     - sand falls if nothing under, even in caves
 	- sand now turns to falling block entity during fall
+	- entities !
+	- particles !
 	- TNT, explosions
     - make gravel behave like sand
     - flower on grass only
@@ -103,6 +103,7 @@ DONE:
 	- no time pause on inventory/furnace
     - chunk border fix
 	- overall lighting (corner shade, sky light + decrease 1 per block = dark in caves + block light)
+	- limit floodfill algo for lighting
 	- smooth lighting using corner max
 	- update skylight on leave break
 	- torches can be placed on walls
