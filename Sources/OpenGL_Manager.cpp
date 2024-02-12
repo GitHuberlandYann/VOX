@@ -161,6 +161,34 @@ void OpenGL_Manager::drawEntities( void )
 	_entities.reserve(esize);
 }
 
+void OpenGL_Manager::drawParticles( void )
+{
+	size_t psize = _particles.size();
+
+	if (!psize) {
+		return ;
+	}
+
+	glUseProgram(_particleShaderProgram);
+	glBindVertexArray(_vaoParticles);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _vboParticles);
+	glBufferData(GL_ARRAY_BUFFER, psize * 4 * sizeof(GLint), &(_particles[0].first), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(SPECATTRIB);
+	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
+
+	glEnableVertexAttribArray(POSATTRIB);
+	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(1 * sizeof(GLint)));
+
+	check_glstate("OpenGL_Manager::drawParticles", false);
+
+	glDrawArrays(GL_TRIANGLES, 0, psize);
+
+	_particles.clear();
+	_particles.reserve(psize);
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -248,7 +276,7 @@ void OpenGL_Manager::create_shaders( void )
 	glBindFragDataLocation(_particleShaderProgram, 0, "outColor");
 
 	glBindAttribLocation(_particleShaderProgram, SPECATTRIB, "specifications");
-	glBindAttribLocation(_particleShaderProgram, SPECATTRIB, "position");
+	glBindAttribLocation(_particleShaderProgram, POSATTRIB, "position");
 
 	glLinkProgram(_particleShaderProgram);
 	glUseProgram(_particleShaderProgram);
@@ -344,6 +372,15 @@ size_t OpenGL_Manager::clearEntities( void )
 	size_t res = 0;
 	for (auto c : _perimeter_chunks) {
 		res += c->clearEntities();
+	}
+	return (res);
+}
+
+size_t OpenGL_Manager::clearParticles( void )
+{
+	size_t res = 0;
+	for (auto c : _perimeter_chunks) {
+		res += c->clearParticles();
 	}
 	return (res);
 }
@@ -446,6 +483,7 @@ void OpenGL_Manager::main_loop( void )
 					c->tickUpdate();
 				}
 				c->updateEntities(_entities, deltaTime);
+				c->updateParticles(_particles, deltaTime);
 			}
 		}
 		// if (newVaoCounter) {
@@ -455,6 +493,7 @@ void OpenGL_Manager::main_loop( void )
 
 		if (!gamePaused) {
 			drawEntities();
+			drawParticles();
 		}
 
 		#if 1

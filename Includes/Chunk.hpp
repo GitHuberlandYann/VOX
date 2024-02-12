@@ -104,6 +104,7 @@ class Chunk
 		std::map<int, FurnaceInstance*> _furnaces;
 		std::vector<Entity*> _entities;
 		std::vector<Particle*> _particles;
+		std::map<int, Particle*> _flames;
 		std::thread _thread;
 		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 
@@ -210,6 +211,8 @@ class Chunk
 		void updateScheduledBlocks( void );
 		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
 		size_t clearEntities( void );
+		void updateParticles( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
+		size_t clearParticles( void );
 		void drawSky( GLint & counter, GLint &face_counter );
 		void drawWater( GLint & counter, GLint &face_counter );
 		std::string getAddsRmsString( void );

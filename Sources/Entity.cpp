@@ -321,9 +321,9 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 		}
 	}
 
-	// items not displayed if 16 blocks away from player (Entity Distance in settings)
-	if (_pos.x < camPos.x - 16 || _pos.x > camPos.x + 16 || _pos.y < camPos.y - 16 || _pos.y > camPos.y + 16
-		|| _pos.z < camPos.z - 16 || _pos.z > camPos.z + 16) {
+	// items not displayed if 16 blocks away from player (TODO Entity Distance in settings)
+	if (_pos.x < camPos.x - CHUNK_SIZE || _pos.x > camPos.x + CHUNK_SIZE || _pos.y < camPos.y - CHUNK_SIZE || _pos.y > camPos.y + CHUNK_SIZE
+		|| _pos.z < camPos.z - CHUNK_SIZE || _pos.z > camPos.z + CHUNK_SIZE) {
 		return (false);
 	}
 

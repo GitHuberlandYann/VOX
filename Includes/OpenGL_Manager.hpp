@@ -66,6 +66,7 @@ class OpenGL_Manager
 
 		void addLine( glm::vec3 a, glm::vec3 b );
 		void drawEntities( void );
+		void drawParticles( void );
 
 	public:
 		std::list<Chunk *> _chunks;
@@ -86,6 +87,7 @@ class OpenGL_Manager
 		void setGamemode( bool gamemode );
 		void getGamemode( void );
 		size_t clearEntities( void );
+		size_t clearParticles( void );
 		void main_loop( void );
 };
 

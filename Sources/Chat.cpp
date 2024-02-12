@@ -74,6 +74,9 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t/clear entities");
 						chatMessage("\t/clear e");
 						chatMessage("\t\tClears all entities.");
+						chatMessage("\t/clear particles");
+						chatMessage("\t/clear p");
+						chatMessage("\t\tClears all particles.");
 						break ;
 					case cmds::TP:
 					case cmds::TELEPORT:
@@ -191,6 +194,9 @@ void Chat::handle_clear( int argc, std::vector<std::string> &argv )
 	} else if (argc == 2) {
 		if (!argv[1].compare("e") || !argv[1].compare("entities")) {
 			chatMessage("Cleared " + std::to_string(_oglMan->clearEntities()) + " entities");
+			return ;
+		} else if (!argv[1].compare("p") || !argv[1].compare("particles")) {
+			chatMessage("Cleared " + std::to_string(_oglMan->clearParticles()) + " particles");
 			return ;
 		}
 	}

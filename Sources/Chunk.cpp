@@ -80,7 +80,12 @@ Chunk::~Chunk( void )
 	for (auto e : _entities) {
 		delete e;
 	}
-	_entities.clear();
+	for (auto p : _particles) {
+		delete p;
+	}
+	for (auto &f : _flames) {
+		delete f.second;
+	}
 
 	// std::cout << "chunk deleted " << _startX << ", " << _startY << std::endl;
 }
@@ -418,6 +423,9 @@ void Chunk::generate_blocks( void )
 	}
 	for (auto a: _added) {
 		_blocks[a.first] = a.second;
+		if ((a.second & 0xFF) == blocks::TORCH) {
+			_flames.emplace(a.first, new Particle(this, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT) + _startX + 0.5f, ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) + _startY + 0.5f, (a.first & (WORLD_HEIGHT - 1)) + 10.0f / 16.0f + 0.1f}, PARTICLES::FLAME));
+		}
 	}
 	// b.stamp("rest");
 	// b.stop("blocks");
@@ -600,6 +608,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		_displayed_faces -= face_count(type, pos.x, pos.y, pos.z);
 		if (type == blocks::TORCH) {
 			std::cout << "rm light" << std::endl;
+			_flames.erase(offset);
 			_lights[offset] &= 0xFF00;
 			light_spread(pos.x, pos.y, pos.z, false); // spread block light
 			std::cout << "over" << std::endl;
@@ -722,6 +731,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		_furnaces.emplace(offset, new FurnaceInstance());
 	} else if (type == blocks::TORCH) {
 		std::cout << "add light" << std::endl;
+		_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 11.0f / 16.0f}, PARTICLES::FLAME));
 		_lights[offset] &= 0xFF00;
 		_lights[offset] += s_blocks[type]->light_level + (s_blocks[type]->light_level << 4);
 		light_spread(pos.x, pos.y, pos.z, false);
@@ -1384,9 +1394,12 @@ void Chunk::explosion( glm::vec3 pos, int power )
 						} else if (type == blocks::TNT) {
 							handleHit(false, type, p, Modif::LITNT);
 							_entities.back()->setLifetime(3.5 - Random::randomFloat(_seed)); // tnt lit by explosion has lifetime in [0.5;1.5] sec
+							// TODO better particles spawning
+							_particles.push_back(new Particle(this, {p.x + 0.5f, p.y + 0.5f, p.z + 0.5f}, PARTICLES::EXPLOSION));
 						} else if (type != blocks::AIR) {
 							// std::cout << "block " << s_blocks[type]->name << " removed" << std::endl;
 							handleHit(true, type, p, Modif::REMOVE);
+							_particles.push_back(new Particle(this, {p.x + 0.5f, p.y + 0.5f, p.z + 0.5f}, PARTICLES::EXPLOSION));
 						}
 					}
 				}
@@ -1783,6 +1796,37 @@ size_t Chunk::clearEntities( void )
 		delete e;
 	}
 	_entities.clear();
+	return (res);
+}
+
+void Chunk::updateParticles( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime )
+{
+	glm::vec3 camPos = _camera->getPos(), camDir = _camera->getDir();
+	size_t size = _particles.size();
+	if (!size) {
+		goto FLAMES;
+	}
+
+	for (int index = size - 1; index >= 0; --index) {
+		if (_particles[index]->update(arr, camPos, camDir, deltaTime)) {
+			delete _particles[index];
+			_particles.erase(_particles.begin() + index);
+		}
+	}
+
+	FLAMES:
+	for (auto &f : _flames) {
+		f.second->update(arr, camPos, camDir, deltaTime);
+	}
+}
+
+size_t Chunk::clearParticles( void )
+{
+	size_t res = _particles.size();
+	for (auto p : _particles) {
+		delete p;
+	}
+	_particles.clear();
 	return (res);
 }
 
