@@ -26,6 +26,13 @@ bool Entity::updateTNT( std::vector<std::pair<int, glm::vec3>> &arr, double delt
 		_chunk->explosion(_pos + glm::vec3(0.5f, 0.5f, 0.5f), 4);
 		return (true);
 	}
+	int frame = _lifeTime * 16;
+	if ((frame & 0xF) == 0xF) {
+		int prev = (_lifeTime - deltaTime) * 16;
+		if (prev < frame) {
+			_chunk->addParticle(new Particle(_chunk, {_pos.x + 0.5f, _pos.y + 0.5f, _pos.z + 1}, PARTICLES::SMOKE, 0.2f, 0));
+		}
+	}
 
 	if (_dir.x && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
 		_pos.x += _dir.x * deltaTime;
@@ -110,11 +117,15 @@ bool Entity::updateFallingBlock( std::vector<std::pair<int, glm::vec3>> &arr, do
 	int type = (_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true) & 0xFF);
 	if (type != blocks::AIR && type < blocks::WATER) {
 		// std::cout << "youston, we touched ground" << std::endl;
-		if (type >= blocks::POPPY) {
-			// _chunk->addEntity(, ); // TODO add entity to chunk
-		} else {
-			_chunk->handleHit(false, _item.type, {glm::floor(_pos.x), glm::floor(_pos.y), glm::floor(_pos.z + 1)}, Modif::ADD);
+		if (type >= blocks::POPPY) { // 'drops' as entity, but is already entity, so update state is enough
+			unsigned seed = type * type + type;
+			_lifeTime = 0;
+			_falling_block = false;
+			_solid = false;
+			_dir = {Random::randomFloat(seed), Random::randomFloat(seed), 2};
+			return (false);
 		}
+		_chunk->handleHit(false, _item.type, {glm::floor(_pos.x), glm::floor(_pos.y), glm::floor(_pos.z + 1)}, Modif::ADD);
 		return (true);
 	}
 	glm::vec3 p0 = {_pos.x + 0, _pos.y + 0, _pos.z + 1};

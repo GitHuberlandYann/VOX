@@ -438,7 +438,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		t_item details = _inventory->removeBlock(true);
 		if (details.type != blocks::AIR) {
 			mtx.lock();
-			current_chunk_ptr->addEntity(_camera->getDir(), details);
+			current_chunk_ptr->dropEntity(_camera->getDir(), details);
 			mtx.unlock();
 		}
 	}

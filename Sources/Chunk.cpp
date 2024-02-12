@@ -620,6 +620,9 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		_fluids.insert(offset);
 		return ;
 	}
+	for (int i = 0; i < 15; ++i) {
+		_particles.push_back(new Particle(this, {pos.x + _startX + Random::randomFloat(_seed), pos.y + _startY + Random::randomFloat(_seed), pos.z + Random::randomFloat(_seed)}, PARTICLES::BREAKING, 0, type));
+	}
 	if (air_flower(type, false, false, true)) {
 		light_spread(pos.x, pos.y, pos.z, true); // spread sky light
 		light_spread(pos.x, pos.y, pos.z, false); // spread block light
@@ -926,6 +929,11 @@ GLint Chunk::getStartY( void )
 	return (_startY);
 }
 
+unsigned Chunk::getSeed( void )
+{
+	return (_seed);
+}
+
 bool Chunk::getSortedOnce( void )
 {
 	return (_sortedOnce);
@@ -1176,12 +1184,17 @@ void Chunk::generate_chunk( void )
 	#endif
 }
 
-void Chunk::addEntity( glm::vec3 dir, t_item item )
+void Chunk::dropEntity( glm::vec3 dir, t_item item )
 {
 	glm::vec3 camPos = _camera->getPos();
 	camPos.z += 1;
 	camPos += dir;
 	_entities.push_back(new Entity(this, _inventory, camPos, dir, false, true, item));
+}
+
+void Chunk::addParticle( Particle *particle )
+{
+	_particles.push_back(particle);
 }
 
 void Chunk::sort_sky( glm::vec3 &pos, bool vip )
@@ -1395,11 +1408,12 @@ void Chunk::explosion( glm::vec3 pos, int power )
 							handleHit(false, type, p, Modif::LITNT);
 							_entities.back()->setLifetime(3.5 - Random::randomFloat(_seed)); // tnt lit by explosion has lifetime in [0.5;1.5] sec
 							// TODO better particles spawning
-							_particles.push_back(new Particle(this, {p.x + 0.5f, p.y + 0.5f, p.z + 0.5f}, PARTICLES::EXPLOSION));
+							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, PARTICLES::EXPLOSION, Random::randomFloat(_seed)));
 						} else if (type != blocks::AIR) {
 							// std::cout << "block " << s_blocks[type]->name << " removed" << std::endl;
 							handleHit(true, type, p, Modif::REMOVE);
-							_particles.push_back(new Particle(this, {p.x + 0.5f, p.y + 0.5f, p.z + 0.5f}, PARTICLES::EXPLOSION));
+							// handleHit(false, type, p, Modif::REMOVE);
+							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, PARTICLES::EXPLOSION, Random::randomFloat(_seed)));
 						}
 					}
 				}
@@ -1435,7 +1449,13 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	if (value == blocks::AIR || value & blocks::NOTVISIBLE) {
 		return ;
 	}
-	float zSize = (((value & 0xFF) == blocks::OAK_SLAB) ? 0.5f : (((value & 0xFF) == blocks::FARMLAND) ? FIFTEEN_SIXTEENTH: 1));
+	int type = value & 0xFF;
+	if (frame > 1) {
+		for (int i = 0; i < 6; ++i) {
+			_particles.push_back(new Particle(this, {block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][0] + 0.55f * adj_blocks[i][0], block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][1] + 0.55f * adj_blocks[i][1], block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][2] + 0.55f * adj_blocks[i][2]}, PARTICLES::BREAKING, 0, type));
+		}
+	}
+	float zSize = ((type == blocks::OAK_SLAB) ? 0.5f : ((type == blocks::FARMLAND) ? FIFTEEN_SIXTEENTH: 1));
 	glm::vec3 p0 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + zSize};
 	glm::vec3 p1 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + zSize};
 	glm::vec3 p2 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 0};
@@ -1445,11 +1465,11 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	glm::vec3 p5 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + zSize};
 	glm::vec3 p6 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
 	glm::vec3 p7 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
-	int count = face_count(value, chunk_pos.x, chunk_pos.y, chunk_pos.z);
+	int count = face_count(type, chunk_pos.x, chunk_pos.y, chunk_pos.z);
 	int cnt = 0;
 	GLfloat *vertFloat = static_cast<GLfloat*>(_vertices);
 	GLint *vertInt = static_cast<GLint*>(_vertices);
-	if (value == blocks::TORCH) {
+	if (type == blocks::TORCH) {
 		for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 			_mtx.lock();
 			if (torchFace(vertFloat, p0, p1, p2, p3, p4, p6, index)) { // TODO add top(/bottom ?) face too
@@ -1470,7 +1490,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 			_mtx.unlock();
 		}
 		return ;
-	} else if (!air_flower(value, false, false, true)) { // cross image
+	} else if (!air_flower(type, false, false, true)) { // cross image
 		for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 			_mtx.lock();
 			if (crossFace(vertFloat, p0, p1, p2, p3, p4, p5, index)) {
@@ -1494,7 +1514,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 	}
 	for (size_t index = 0; index < _displayed_faces * 4 * 6; index += 24) {
 		_mtx.lock();
-		if (blockFace(vertFloat, {p0, p1, p2, p3, p4, p5, p6, p7}, index, (value & 0xFF) == blocks::DIRT_PATH)) {
+		if (blockFace(vertFloat, {p0, p1, p2, p3, p4, p5, p6, p7}, index, type == blocks::DIRT_PATH)) {
 			vertInt[index] = (vertInt[index] & 0xFFFF0FFF) + (frame << 12);
 			vertInt[index + 4] = (vertInt[index + 4] & 0xFFFF0FFF) + (frame << 12);
 			vertInt[index + 8] = (vertInt[index + 8] & 0xFFFF0FFF) + ((frame + 1) << 12);

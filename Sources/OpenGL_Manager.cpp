@@ -492,8 +492,9 @@ void OpenGL_Manager::main_loop( void )
 		// b.stamp("solids");
 
 		if (!gamePaused) {
-			drawEntities();
 			drawParticles();
+			glUseProgram(_shaderProgram);
+			drawEntities();
 		}
 
 		#if 1

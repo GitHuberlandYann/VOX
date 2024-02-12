@@ -160,6 +160,7 @@ class Chunk
 
 		GLint getStartX( void );
 		GLint getStartY( void );
+		unsigned getSeed( void );
 		bool getSortedOnce( void );
 		GLint getCamLightLevel( glm::ivec3 location );
 		int computePosLight( glm::vec3 pos );
@@ -179,7 +180,8 @@ class Chunk
 		void checkFillVertices( void );
 		void regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void generate_chunk( void );
-		void addEntity( glm::vec3 dir, t_item item );
+		void dropEntity( glm::vec3 dir, t_item item );
+		void addParticle( Particle *particle );
 		void sort_sky( glm::vec3 &pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
 	

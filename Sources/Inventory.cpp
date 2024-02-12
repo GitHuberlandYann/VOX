@@ -537,14 +537,14 @@ void Inventory::spillInventory( Chunk *chunk )
 		if (_content[index].type != blocks::AIR) {
 			details = _content[index];
 			_content[index] = {0};
-			chunk->addEntity({glm::cos(index), glm::sin(index), 0}, details);
+			chunk->dropEntity({glm::cos(index), glm::sin(index), 0}, details);
 		}
 	}
 	for (int index = 0; index < 27; index++) {
 		if (_backpack[index].type != blocks::AIR) {
 			details = _backpack[index];
 			_backpack[index] = {0};
-			chunk->addEntity({glm::cos(index + 9), glm::sin(index + 9), 0}, details);
+			chunk->dropEntity({glm::cos(index + 9), glm::sin(index + 9), 0}, details);
 		}
 	}
 	_modif = true;
