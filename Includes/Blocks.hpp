@@ -135,27 +135,11 @@ struct Block {
 		int needed_tool = blocks::NOTVISIBLE;
 		int needed_material_level = 0;
 		int durability = 0;
-		float break_time_hand = FLT_MAX;
-		float break_time_wooden = FLT_MAX;
-		float break_time_stone = FLT_MAX;
-		float break_time_iron = FLT_MAX;
-		float break_time_diamond = FLT_MAX;
+		float hardness = -1;
 		bool item3D = true;
 		int textureX = 1;
 		int textureY = 15;
 
-		float getBreakTime( int tool ) const {
-			if (tool == needed_tool) {
-				return (break_time_wooden);
-			} else if (tool == needed_tool + 1) {
-				return (break_time_stone);
-			} else if (tool == needed_tool + 2) {
-				return (break_time_iron);
-			} else if (tool == needed_tool + 3) {
-				return (break_time_diamond);
-			}
-			return (break_time_hand);
-		}
 		bool canCollect( int tool ) const {
 			if (byHand) {
 				return (true);
@@ -197,11 +181,7 @@ struct GrassBlock : Block {
 			blast_resistance = 0.6f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
-			break_time_hand = 0.9f;
-			break_time_wooden = 0.45f;
-			break_time_stone = 0.25f;
-			break_time_iron = 0.15f;
-			break_time_diamond = 0.15f;
+			hardness = 0.6f;
 			textureY = 1;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -227,11 +207,7 @@ struct OakLog : Block {
 			blast_resistance = 2.0f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
-			break_time_hand = 3.0f;
-			break_time_wooden = 1.5f;
-			break_time_stone = 0.75f;
-			break_time_iron = 0.5f;
-			break_time_diamond = 0.4f;
+			hardness = 2.0f;
 			textureY = 2;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -251,7 +227,7 @@ struct Cactus : Block {
 			blast_resistance = 0.4f;
 			collisionHitbox = false;
 			byHand = true;
-			break_time_hand = 0.6f;
+			hardness = 0.4f;
 			textureY = 3;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -276,11 +252,7 @@ struct Farmland : Block {
 			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
-			break_time_hand = 0.9f;
-			break_time_wooden = 0.45f;
-			break_time_stone = 0.25f;
-			break_time_iron = 0.15f;
-			break_time_diamond = 0.15f;
+			hardness = 0.6f;
 			textureY = 1;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -302,11 +274,7 @@ struct DirtPath : Block {
 			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
-			break_time_hand = 1.0f;
-			break_time_wooden = 0.5f;
-			break_time_stone = 0.25f;
-			break_time_iron = 0.2f;
-			break_time_diamond = 0.15f;
+			hardness = 0.65f;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
 			(void)offset;
@@ -333,7 +301,7 @@ struct TNT : Block {
 			mined = blocks::TNT;
 			blast_resistance = 0.0f;
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			textureY = 6;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -357,11 +325,7 @@ struct CraftingTable : Block {
 			blast_resistance = 2.5f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
-			break_time_hand = 3.75f;
-			break_time_wooden = 1.9f;
-			break_time_stone = 0.95f;
-			break_time_iron = 0.65f;
-			break_time_diamond = 0.5f;
+			hardness = 2.5f;
 			textureY = 8;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -382,11 +346,7 @@ struct Furnace : Block {
 			blast_resistance = 3.5f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
-			break_time_hand = 17.5f;
-			break_time_wooden = 2.65f;
-			break_time_stone = 1.35f;
-			break_time_iron = 0.9f;
-			break_time_diamond = 0.7f;
+			hardness = 3.5f;
 			textureY = 9;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -417,11 +377,7 @@ struct Dirt : Block {
 			blast_resistance = 0.5f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
-			break_time_hand = 0.75f;
-			break_time_wooden = 0.4f;
-			break_time_stone = 0.2f;
-			break_time_iron = 0.15f;
-			break_time_diamond = 0.1f;
+			hardness = 0.5f;
 			textureX = 4;
 			textureY = 1;
 		}
@@ -435,11 +391,7 @@ struct SmoothStone : Block {
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
-			break_time_hand = 10.0f;
-			break_time_wooden = 1.5f;
-			break_time_stone = 0.75f;
-			break_time_iron = 0.5f;
-			break_time_diamond = 0.4f;
+			hardness = 2.0f;
 			textureX = 4;
 			textureY = 2;
 		}
@@ -455,11 +407,7 @@ struct Stone : Block {
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
-			break_time_hand = 7.5f;
-			break_time_wooden = 1.15f;
-			break_time_stone = 0.6f;
-			break_time_iron = 0.4f;
-			break_time_diamond = 0.3f;
+			hardness = 1.5f;
 			textureX = 4;
 			textureY = 3;
 		}
@@ -475,11 +423,7 @@ struct Cobblestone : Block {
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
-			break_time_hand = 10.0f;
-			break_time_wooden = 1.5f;
-			break_time_stone = 0.74f;
-			break_time_iron = 0.5f;
-			break_time_diamond = 0.4f;
+			hardness = 2.0f;
 			textureX = 4;
 			textureY = 4;
 		}
@@ -495,11 +439,7 @@ struct StoneBrick : Block {
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
-			break_time_hand = 7.5f;
-			break_time_wooden = 1.15f;
-			break_time_stone = 0.6f;
-			break_time_iron = 0.4f;
-			break_time_diamond = 0.3f;
+			hardness = 1.5f;
 			textureX = 4;
 			textureY = 5;
 		}
@@ -513,11 +453,7 @@ struct CrackedStoneBrick : Block {
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
-			break_time_hand = 7.5f;
-			break_time_wooden = 1.15f;
-			break_time_stone = 0.6f;
-			break_time_iron = 0.4f;
-			break_time_diamond = 0.3f;
+			hardness = 1.5f;
 			textureX = 4;
 			textureY = 6;
 		}
@@ -533,11 +469,7 @@ struct Sand : Block {
 			blast_resistance = 0.5f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
-			break_time_hand = 0.75f;
-			break_time_wooden = 0.4f;
-			break_time_stone = 0.2f;
-			break_time_iron = 0.15f;
-			break_time_diamond = 0.1f;
+			hardness = 0.5f;
 			textureX = 4;
 			textureY = 7;
 		}
@@ -551,11 +483,7 @@ struct Gravel : Block {
 			blast_resistance = 0.6f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
-			break_time_hand = 0.9f;
-			break_time_wooden = 0.45f;
-			break_time_stone = 0.25f;
-			break_time_iron = 0.15f;
-			break_time_diamond = 0.15f;
+			hardness = 0.6f;
 			textureX = 4;
 			textureY = 8;
 		}
@@ -567,7 +495,7 @@ struct OakLeaves : Block {
 			name = "OAK_LEAVES";
 			blast_resistance = 0.2f;
 			byHand = true;
-			break_time_hand = 0.3f;
+			hardness = 0.2f;
 			textureX = 4;
 			textureY = 9;
 		}
@@ -583,11 +511,7 @@ struct OakPlanks : Block {
 			blast_resistance = 3.0f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
-			break_time_hand = 3.0f;
-			break_time_wooden = 1.5f;
-			break_time_stone = 0.75f;
-			break_time_iron = 0.5f;
-			break_time_diamond = 0.4f;
+			hardness = 2.0f;
 			textureX = 4;
 			textureY = 10;
 		}
@@ -598,7 +522,7 @@ struct Glass : Block {
 		Glass() {
 			name = "GLASS";
 			blast_resistance = 0.3f;
-			break_time_hand = 0.45f;
+			hardness = 0.3f;
 			textureX = 4;
 			textureY = 11;
 		}
@@ -614,11 +538,7 @@ struct CoalOre : Block {
 			blast_resistance = 3.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
-			break_time_hand = 15.0f;
-			break_time_wooden = 2.25f;
-			break_time_stone = 1.15f;
-			break_time_iron = 0.75f;
-			break_time_diamond = 0.6f;
+			hardness = 3.0f;
 			textureX = 5;
 			textureY = 0;
 		}
@@ -635,11 +555,7 @@ struct IronOre : Block {
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 1; // min stone to collect
-			break_time_hand = 15.0f;
-			break_time_wooden = 7.5f;
-			break_time_stone = 1.15f;
-			break_time_iron = 0.75f;
-			break_time_diamond = 0.6f;
+			hardness = 3.0f;
 			textureX = 5;
 			textureY = 1;
 		}
@@ -656,11 +572,7 @@ struct DiamondOre : Block {
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 2; // min iron to collect
-			break_time_hand = 15.0f;
-			break_time_wooden = 7.5f;
-			break_time_stone = 3.75f;
-			break_time_iron = 0.75f;
-			break_time_diamond = 0.6f;
+			hardness = 3.0f;
 			textureX = 5;
 			textureY = 2;
 		}
@@ -676,11 +588,7 @@ struct CoalBlock : Block {
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
-			break_time_hand = 25.0f;
-			break_time_wooden = 3.75f;
-			break_time_stone = 1.9f;
-			break_time_iron = 1.25f;
-			break_time_diamond = 0.95f;
+			hardness = 5.0f;
 			textureX = 5;
 			textureY = 3;
 		}
@@ -695,11 +603,7 @@ struct IronBlock : Block {
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 1; // min stone to collect
-			break_time_hand = 25.0f;
-			break_time_wooden = 12.5f;
-			break_time_stone = 1.9f;
-			break_time_iron = 1.25f;
-			break_time_diamond = 0.95f;
+			hardness = 5.0f;
 			textureX = 5;
 			textureY = 4;
 		}
@@ -714,11 +618,7 @@ struct DiamondBlock : Block {
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			needed_material_level = 2; // min iron to collect
-			break_time_hand = 25.0f;
-			break_time_wooden = 12.5f;
-			break_time_stone = 6.25f;
-			break_time_iron = 1.25f;
-			break_time_diamond = 0.95f;
+			hardness = 5.0f;
 			textureX = 5;
 			textureY = 5;
 		}
@@ -738,11 +638,7 @@ struct OakSlab : Block {
 			fuel_time = 15;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
-			break_time_hand = 3.0f;
-			break_time_wooden = 1.5f;
-			break_time_stone = 0.75f;
-			break_time_iron = 0.5f;
-			break_time_diamond = 0.4f;
+			hardness = 2.0f;
 			textureX = 4;
 			textureY = 10;
 		}
@@ -759,7 +655,7 @@ struct Poppy : Block {
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 0;
@@ -777,7 +673,7 @@ struct Dandelion : Block {
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 1;
@@ -795,7 +691,7 @@ struct BlueOrchid : Block {
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 2;
@@ -813,7 +709,7 @@ struct Allium : Block {
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 3;
@@ -831,7 +727,7 @@ struct CornFlower : Block {
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 4;
@@ -849,7 +745,7 @@ struct PinkTulip : Block {
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 5;
@@ -864,7 +760,7 @@ struct Grass : Block {
 			blast_resistance = 0.0f;
 			collisionHitbox = false;
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 6;
@@ -879,7 +775,7 @@ struct SugarCane : Block {
 			blast_resistance = 0.0f;
 			collisionHitbox = false;
 			byHand = true;
-			break_time_hand = 0.2f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 7;
@@ -899,7 +795,7 @@ struct DeadBush : Block {
 			isFuel = true;
 			fuel_time = 5;
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 8;
@@ -919,7 +815,7 @@ struct OakSapling : Block {
 			isFuel = true;
 			fuel_time = 5;
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 9;
@@ -938,7 +834,7 @@ struct Torch : Block {
 			hitboxHalfSize = {1 / 16.0f, 1 / 16.0f, 5 / 16.0f};
 			light_level = 14;
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 6;
 			textureY = 10;
@@ -956,11 +852,7 @@ struct Chest : Block {
 			hitboxHalfSize = {7 / 16.0f, 7 / 16.0f, 7.5 / 16.0f};
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
-			break_time_hand = 3.75f;
-			break_time_wooden = 1.9f;
-			break_time_stone = 0.95f;
-			break_time_iron = 0.65f;
-			break_time_diamond = 0.5f;
+			hardness = 2.5f;
 			textureX = 0;
 			textureY = 15;
 		}
@@ -977,7 +869,7 @@ struct WheatCrop : Block {
 			hitboxCenter = {0.5f, 0.5f, 1 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 			item3D = false;
 			textureX = 7;
 		}
@@ -998,7 +890,7 @@ struct WheatCrop1 : Block {
 			hitboxCenter = {0.5f, 0.5f, 3 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 3 / 32.0f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 		}
 };
 
@@ -1013,7 +905,7 @@ struct WheatCrop2 : Block {
 			hitboxCenter = {0.5f, 0.5f, 5 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 5 / 32.0f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 		}
 };
 
@@ -1028,7 +920,7 @@ struct WheatCrop3 : Block {
 			hitboxCenter = {0.5f, 0.5f, 7 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 7 / 32.0f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 		}
 };
 
@@ -1043,7 +935,7 @@ struct WheatCrop4 : Block {
 			hitboxCenter = {0.5f, 0.5f, 9 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 9 / 32.0f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 		}
 };
 
@@ -1058,7 +950,7 @@ struct WheatCrop5 : Block {
 			hitboxCenter = {0.5f, 0.5f, 11 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 11 / 32.0f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 		}
 };
 
@@ -1073,7 +965,7 @@ struct WheatCrop6 : Block {
 			hitboxCenter = {0.5f, 0.5f, 13 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 13 / 32.0f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 		}
 };
 
@@ -1088,7 +980,7 @@ struct WheatCrop7 : Block {
 			hitboxCenter = {0.5f, 0.5f, 15 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 15 / 32.0f};
 			byHand = true;
-			break_time_hand = 0.05f;
+			hardness = 0.0f;
 		}
 };
 

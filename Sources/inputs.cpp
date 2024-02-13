@@ -301,6 +301,53 @@ void OpenGL_Manager::chunk_update( void )
 	_thread = std::thread(thread_chunk_update, this, _render_distance, posX, posY);
 }
 
+float OpenGL_Manager::getBreakTime( bool canHarvest )
+{
+	float speedMultiplier = 1;
+	int needed_tool = s_blocks[_block_hit.value]->needed_tool;
+	bool isBestTool = _hand_content >= needed_tool && _hand_content < needed_tool + 4;
+
+	if (isBestTool) {
+		speedMultiplier = (1 + _hand_content - needed_tool) << 1; // wood 2 stone 4 iron 6 diamond 8
+		// if (toolEfficiency) { // will be used once enchantments are implemented
+		// 	speedMultiplier += efficiencyLevel ^ 2 + 1
+		// }
+	}
+
+	// if (hasteEffect) // will be used if beacons implemented
+	// 	speedMultiplier *= 0.2 * hasteLevel + 1
+	// if (miningFatigue) // will be used if implemented
+	// 	speedMultiplier *= 0.3 ^ min(miningFatigueLevel, 4)
+	if (_camera->isUnderwater()) { // && !hasAquaAffinity // will be used once implemented
+		speedMultiplier /= 5;
+	}
+	if (!_camera->_touchGround) {
+		speedMultiplier /= 5;
+	}
+
+	float damage = speedMultiplier / s_blocks[_block_hit.value]->hardness;
+	if (damage < 0) { // bedrock and such
+		return (FLT_MAX);
+	}
+	if (canHarvest) {
+		damage /= 30;
+	} else {
+		damage /= 100;
+	}
+
+	// _ui->chatMessage(s_blocks[_block_hit.value]->name + " using " + s_blocks[_hand_content]->name);
+	// Instant breaking
+	if (damage > 1) {
+		// _ui->chatMessage("\tINSTANT BREAK");
+		return (0);
+	}
+
+	int ticks = glm::ceil(1 / damage);
+	float seconds = ticks / 20.0f;
+	// _ui->chatMessage(std::to_string(seconds) + " vs " + std::to_string(s_blocks[_block_hit.value]->getBreakTime(_hand_content)));
+	return (seconds);
+}
+
 void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 {
 	// open menu
@@ -380,11 +427,10 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		if (_game_mode == SURVIVAL) {
 			_break_time += deltaTime;
-			float break_time = s_blocks[_block_hit.value]->getBreakTime(_hand_content);
 			bool can_collect = s_blocks[_block_hit.value]->canCollect(_hand_content);
-			// getBreakTime(break_time); // TODO add fct to blocks.cpp to compute time using fandom pseudo code and cmp results
+			float break_time = getBreakTime(can_collect);
 			if (_block_hit.value != blocks::AIR && _break_time >= break_time) {
-				_break_time = 0;
+				_break_time = (break_time > 0) ? -0.3f : 0;
 				_break_frame = _outline;
 				handle_add_rm_block(false, can_collect);
 				_camera->updateExhaustion(EXHAUSTION_BREAKING_BLOCK);

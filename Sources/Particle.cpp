@@ -97,8 +97,8 @@ bool Particle::updateSmoke( std::vector<std::pair<int, glm::vec3>> &arr, glm::ve
 
 bool Particle::updateExplosion( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camDir )
 {
-	while (_lifeTime > TICK * 5) {
-		_lifeTime -= TICK * 5;
+	while (_lifeTime > TICK) {
+		_lifeTime -= TICK;
 		++_frame;
 	}
 	if (_frame > 15) {

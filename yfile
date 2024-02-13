@@ -35,7 +35,6 @@ TODOS:
 	- stairs
 	- doors
 	- bed
-	- use block s hardness to compute time to break instead of hardcoding it
 	- enchanting table
 	- save entities
 	- entity shadow
@@ -86,6 +85,7 @@ DONE:
     - placing sand = gravity
     - sand falls if nothing under, even in caves
 	- sand now turns to falling block entity during fall
+	- use block s hardness to compute time to break instead of hardcoding it
 	- entities !
 	- particles !
 	- TNT, explosions

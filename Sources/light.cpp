@@ -73,7 +73,7 @@ void Chunk::generate_lights( void )
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			char light_level = 15;
-			for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
+			for (int level = WORLD_HEIGHT - 1; level >= 0; level--) {
 				if (light_level) {
 					int type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xFF;
 					if (air_flower(type, true, true, false) && type != blocks::OAK_SLAB && type != blocks::FARMLAND && type != blocks::DIRT_PATH) { // block hit

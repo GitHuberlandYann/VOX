@@ -82,6 +82,7 @@ class Camera
 		void setPosZ( float value );
 		void setWaterStatus( bool head, bool underwater );
 		int getWaterStatus( void );
+		bool isUnderwater( void );
 
 		void setCurrentChunkPtr( Chunk *ptr );
 		void setRun( bool value );

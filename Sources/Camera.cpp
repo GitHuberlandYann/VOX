@@ -189,6 +189,11 @@ int Camera::getWaterStatus( void )
 	return (res);
 }
 
+bool Camera::isUnderwater( void )
+{
+	return (_waterHead);
+}
+
 void Camera::setCurrentChunkPtr( Chunk *ptr )
 {
 	_current_chunk_ptr = ptr;

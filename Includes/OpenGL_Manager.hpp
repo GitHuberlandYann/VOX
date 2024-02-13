@@ -52,6 +52,7 @@ class OpenGL_Manager
 
 		void update_visible_chunks( void );
 		void chunk_update( void );
+		float getBreakTime( bool canHarvest );
 		void user_inputs( float deltaTime, bool rayCast );
 		t_hit get_block_hit( void );
 		void handle_add_rm_block( bool adding, bool collect );

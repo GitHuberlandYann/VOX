@@ -199,7 +199,7 @@ bool Entity::updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float del
 	if (air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
 		_stuck = true;
 		// arrow explosion for fun
-		_chunk->explosion(_pos, 10);
+		_chunk->explosion(_pos - _dir * 0.25f, 10);
 		return (true);
 	} else if (_stuck) {
 		_stuck = false;
