@@ -103,16 +103,16 @@ int FurnaceInstance::updateTimes( float currentTime )
 			deltaTime = currentTime - _composant_time;
 			if (deltaTime >= 10) { // A furnace smelts items at a speed of one item every 200 game ticks (10 seconds)
 				if (_production.type == blocks::AIR) {
-					_production = {s_blocks[_composant.type]->getProduction, 1, {0, 0}};
+					_production = {s_blocks[_composant.type]->getProduction, 0, {0, 0}};
 				}
 				if (++_production.amount == 64) {
 					_composant_time = 0;
 				} else {
 					_composant_time += 10;
-					if (--_composant.amount == 0) {
-						_composant = {0};
-						_composant_time = 0;
-					}
+				}
+				if (--_composant.amount == 0) {
+					_composant = {0};
+					_composant_time = 0;
 				}
 			}
 		} else {

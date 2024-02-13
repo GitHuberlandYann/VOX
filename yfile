@@ -29,7 +29,7 @@ TODOS:
 	- hitbox change + no fall on sneak
     - biomes
     - skybox
-	- flint and steel and fire
+	- fire
 	- redstone
 	- slabs
 	- stairs
@@ -88,6 +88,7 @@ DONE:
 	- use block s hardness to compute time to break instead of hardcoding it
 	- entities !
 	- particles !
+	- flint and steel
 	- TNT, explosions
     - make gravel behave like sand
     - flower on grass only

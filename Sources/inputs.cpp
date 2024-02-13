@@ -85,14 +85,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		}
 		int posX = chunk_pos(_block_hit.pos.x);
 		int posY = chunk_pos(_block_hit.pos.y);
-		
-		// for (auto& c : _visible_chunks) {
-		// 	if (c->isInChunk(posX, posY)) {
-		// 		// std::cout << "handle hit at pos " << _block_hit.pos.x << ", " << _block_hit.pos.y << ", " << _block_hit.pos.z << std::endl;
-		// 		c->handleHit(collect, 0, glm::ivec3(_block_hit.pos.x, _block_hit.pos.y, _block_hit.pos.z), Modif::REMOVE);
-		// 		return ;
-		// 	}
-		// }
+
 		std::cout << "rm: chunk out of bound at " << posX << ", " << posY << std::endl;
 		return ;
 	}
@@ -104,6 +97,9 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_menu->setState(CRAFTING_MENU);
 		return ;
 	} else if (_block_hit.value == blocks::CHEST) {
+		if (air_flower(chunk_hit->getBlockAt(_block_hit.pos.x - chunk_hit->getStartX(), _block_hit.pos.y - chunk_hit->getStartY(), _block_hit.pos.z + 1, true), true, false, false)) {
+			return ;
+		}
 		chunk_hit->openChest(_block_hit.pos);
 		_paused = true;
 		_esc_released = false;
@@ -118,7 +114,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_menu->setState(FURNACE_MENU);
 		_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit.pos));
 		return ;
-	} else if (_block_hit.value == blocks::TNT && _hand_content == blocks::WHEAT_SEEDS) { // TODO replace seeds with flint and steel
+	} else if (_block_hit.value == blocks::TNT && _hand_content == blocks::FLINT_AND_STEEL) {
 		if (current_chunk_ptr) {
 			current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
 		}

@@ -424,7 +424,8 @@ void Chunk::generate_blocks( void )
 	for (auto a: _added) {
 		_blocks[a.first] = a.second;
 		if ((a.second & 0xFF) == blocks::TORCH) {
-			_flames.emplace(a.first, new Particle(this, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT) + _startX + 0.5f, ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) + _startY + 0.5f, (a.first & (WORLD_HEIGHT - 1)) + 10.0f / 16.0f + 0.1f}, PARTICLES::FLAME));
+			addFlame(a.first, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (a.first & (WORLD_HEIGHT - 1))}, blocks::TORCH, (a.second >> 9) & 0x7);
+			// _flames.emplace(a.first, new Particle(this, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT) + _startX + 0.5f, ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) + _startY + 0.5f, (a.first & (WORLD_HEIGHT - 1)) + 10.0f / 16.0f + 0.1f}, PARTICLES::FLAME));
 		}
 	}
 	// b.stamp("rest");
@@ -513,37 +514,48 @@ void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
 void Chunk::entity_block( int posX, int posY, int posZ, int type )
 {
 	// std::cout << "breaking " << s_blocks[type]->name << std::endl;
-	if (type == blocks::GRASS) {
-		float random = Random::randomFloat(_seed);
+	float random;
+	switch (type) {
+	case blocks::GRASS:
+		random = Random::randomFloat(_seed);
 		if (random <= 0.125f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
 		}
-	} else if (type == blocks::OAK_LEAVES) {
-		float random = Random::randomFloat(_seed);
+		break ;
+	case blocks::OAK_LEAVES:
+		random = Random::randomFloat(_seed);
 		if (random <= 0.05f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::OAK_SAPLING, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {blocks::OAK_SAPLING, 1, {0, 0}}));
 		}
 		random = Random::randomFloat(_seed);
 		if (random <= 0.02f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 4, posY - 8)), 1.0f}, false, false, {blocks::STICK, 2, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {blocks::STICK, 2, {0, 0}}));
 		}
 		random = Random::randomFloat(_seed);
 		if (random <= 0.005f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 4)), 1.0f}, false, false, {blocks::APPLE, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {blocks::APPLE, 1, {0, 0}}));
 		}
-	} else if (type == blocks::WHEAT_CROP7) {
-		_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 4, posY - 8)), 1.0f}, false, false, {blocks::WHEAT, 1, {0, 0}}));
-		float random = Random::randomFloat(_seed);
+		break ;
+	case blocks::WHEAT_CROP7:
+		_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {blocks::WHEAT, 1, {0, 0}}));
+		random = Random::randomFloat(_seed);
 		if (random <= 0.0787f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
 		} else if (random <= 0.0787f + 0.3149f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 2, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 2, {0, 0}}));
 		} else if (random <= 0.0787f + 0.3149f + 0.4198f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 3, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 3, {0, 0}}));
 		} else {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(posX - 8, posY - 8)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 4, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {blocks::WHEAT_SEEDS, 4, {0, 0}}));
 		}
-	} else {
+		break ;
+	case blocks::GRAVEL:
+		random = Random::randomFloat(_seed);
+		if (random < 0.1f) {
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {blocks::FLINT, 1, {0, 0}}));
+			return ;
+		} // no break on gravel so it drops a gravel block
+	default:
 		_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, false, {s_blocks[type]->mined, 1, {0, 0}}));
 	}
 }
@@ -655,6 +667,29 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
+void Chunk::addFlame( int offset, glm::vec3 pos, int source, int orientation )
+{
+	if (source == blocks::TORCH) {
+		switch (orientation) {
+		case face_dir::MINUSX:
+			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.25f, pos.y + _startY + 0.5f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
+			break ;
+		case face_dir::PLUSX:
+			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.75f, pos.y + _startY + 0.5f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
+			break ;
+		case face_dir::MINUSY:
+			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.25f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
+			break ;
+		case face_dir::PLUSY:
+			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.75f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
+			break ;
+		case face_dir::MINUSZ:
+			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 11.0f / 16.0f + 0.05f}, PARTICLES::FLAME));
+			break ;
+		}
+	}
+}
+
 void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":add block " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
@@ -679,25 +714,26 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		int neighbour = 0;
 		switch ((type >> 9) & 0x7) {
 		case face_dir::PLUSX:
-			neighbour = getBlockAt(pos.x + 1, pos.y, pos.z, true);
+			neighbour = getBlockAt(pos.x + 1, pos.y, pos.z, true) & 0xFF;
 			break;
 		case face_dir::MINUSX:
-			neighbour = getBlockAt(pos.x - 1, pos.y, pos.z, true);
+			neighbour = getBlockAt(pos.x - 1, pos.y, pos.z, true) & 0xFF;
 			break;
 		case face_dir::PLUSY:
-			neighbour = getBlockAt(pos.x, pos.y + 1, pos.z, true);
+			neighbour = getBlockAt(pos.x, pos.y + 1, pos.z, true) & 0xFF;
 			break;
 		case face_dir::MINUSY:
-			neighbour = getBlockAt(pos.x, pos.y - 1, pos.z, true);
+			neighbour = getBlockAt(pos.x, pos.y - 1, pos.z, true) & 0xFF;
 			break;
 		}
 		if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || s_blocks[neighbour]->hasHitbox) {
 			type = blocks::TORCH + (face_dir::MINUSZ << 9);
-			neighbour = getBlockAt(pos.x, pos.y, pos.z - 1, false);
+			neighbour = getBlockAt(pos.x, pos.y, pos.z - 1, false) & 0xFF;
 			if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || s_blocks[neighbour]->hasHitbox) {
 				return ;
 			}
 		}
+		addFlame(offset, pos, blocks::TORCH, (type >> 9) & 0x7);
 	} else if (type >= blocks::POPPY && pos.z > 0) {
 		if (previous >= blocks::WATER) {
 			return ;
@@ -734,7 +770,6 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		_furnaces.emplace(offset, new FurnaceInstance());
 	} else if (type == blocks::TORCH) {
 		std::cout << "add light" << std::endl;
-		_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 11.0f / 16.0f}, PARTICLES::FLAME));
 		_lights[offset] &= 0xFF00;
 		_lights[offset] += s_blocks[type]->light_level + (s_blocks[type]->light_level << 4);
 		light_spread(pos.x, pos.y, pos.z, false);

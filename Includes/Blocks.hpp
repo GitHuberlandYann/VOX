@@ -107,6 +107,8 @@ namespace blocks {
 		WHEAT,
 		BREAD,
 		APPLE,
+		FLINT,
+		FLINT_AND_STEEL,
 		NOTVISIBLE = 1 << 8,
 		WET_FARMLAND = 1 << 9,
 		NATURAL = 1 << 9
@@ -1399,6 +1401,26 @@ struct Apple : Block {
 			item3D = false;
 			textureX = 9;
 			textureY = 13;
+		}
+};
+
+struct Flint : Block {
+	public:
+		Flint() {
+			name = "FLINT";
+			item3D = false;
+			textureX = 10;
+			textureY = 0;
+		}
+};
+
+struct FlintAndSteel : Block {
+	public:
+		FlintAndSteel() {
+			name = "FLINT AND STEEL";
+			item3D = false;
+			textureX = 10;
+			textureY = 1;
 		}
 };
 

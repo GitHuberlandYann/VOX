@@ -576,6 +576,7 @@ void OpenGL_Manager::main_loop( void )
 					initWorld();
 					break ;
 				case (4): // skip world selection and play with default seed of 123456
+					DayCycle::Get()->addTicks(0); // used to forceReset sky color
 					initWorld();
 					break ;
 				case (5): // Respawn player, init world again

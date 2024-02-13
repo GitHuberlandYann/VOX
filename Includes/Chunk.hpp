@@ -132,6 +132,7 @@ class Chunk
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
+		void addFlame( int offset, glm::vec3 pos, int source, int orientation );
 		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 		void replace_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 

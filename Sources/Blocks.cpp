@@ -14,5 +14,5 @@ const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new Stick(), new WoodenShovel(), new StoneShovel(), new IronShovel(), new DiamondShovel(), new WoodenAxe(), new StoneAxe(), new IronAxe(),
 	new DiamondAxe(), new WoodenPickaxe(), new StonePickaxe(), new IronPickaxe(), new DiamondPickaxe(), new Bow(), new Arrow(), new TBD(),
 	new Coal(), new Charcoal(), new IronIngot(), new Diamond(), new Bucket(), new WaterBucket(), new WoodenHoe(), new StoneHoe(),
-	new IronHoe(), new DiamondHoe(), new WheatSeeds(), new Wheat(), new Bread(), new Apple(), new TBD(), new TBD()
+	new IronHoe(), new DiamondHoe(), new WheatSeeds(), new Wheat(), new Bread(), new Apple(), new Flint(), new FlintAndSteel()
 };
