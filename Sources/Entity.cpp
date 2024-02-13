@@ -196,19 +196,17 @@ bool Entity::updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float del
 		return (true);
 	}
 
-	if (_stuck) {
-		if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime), true), false, false, false)) {
-			_stuck = false;
-			_dir = {glm::sign(_dir.x) * 0.01f, glm::sign(_dir.y) * 0.01f, -0.1f};
-		}
-	} else if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime), true), false, false, false)) {
-		_pos += _dir * deltaTime;
-		_dir.z -= 0.1f;
-	} else {
+	if (air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
 		_stuck = true;
 		// arrow explosion for fun
 		_chunk->explosion(_pos, 10);
 		return (true);
+	} else if (_stuck) {
+		_stuck = false;
+		_dir = {glm::sign(_dir.x) * 0.01f, glm::sign(_dir.y) * 0.01f, -0.1f};
+	} else {
+		_pos += _dir * deltaTime;
+		_dir.z -= 0.1f;
 	}
 		
 	glm::vec3 dir = glm::normalize(_dir); // might want to do this once and save it
@@ -220,7 +218,7 @@ bool Entity::updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float del
 	glm::vec3 p0 = _pos - dir * 0.5f - hnormal * (1.25f / 16);
 	glm::vec3 p2 =  _pos - dir * 0.5f + hnormal * (1.25f / 16);
 
-	int itemLight = _chunk->computePosLight(_pos);
+	int itemLight = _chunk->computePosLight(_pos - _dir * 0.25f);
     int spec = s_blocks[_item.type]->texX() + ((s_blocks[_item.type]->texY() + 1) << 4) + (0 << 19) + (itemLight << 24);
     std::pair<int, glm::vec3> v0 = {spec, p0};
     std::pair<int, glm::vec3> v1 = {spec + XTEX, p1};

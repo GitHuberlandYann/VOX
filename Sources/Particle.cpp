@@ -6,10 +6,14 @@
 Particle::Particle( Chunk *chunk, glm::vec3 pos, int type, float shade, int block )
 	: _pos(pos), _lifeTime(0), _shade(shade), _type(type), _frame(0), _block(block), _chunk(chunk)
 {
-	if (type == PARTICLES::SMOKE || type == PARTICLES::BREAKING) {
-		unsigned seed = _chunk->getSeed();
-		_dir = {Random::randomFloat(seed), Random::randomFloat(seed), 2};
-		_dir = glm::normalize(_dir);
+	switch (type) {
+		case PARTICLES::BREAKING:
+			_texOffset = {(pos.x - glm::floor(pos.x)) * 14, (pos.y - glm::floor(pos.y)) * 14};
+		case PARTICLES::SMOKE:
+			unsigned seed = _chunk->getSeed();
+			_dir = {Random::randomFloat(seed), Random::randomFloat(seed), 2};
+			_dir = glm::normalize(_dir);
+		break ;
 	}
 }
 
@@ -53,7 +57,7 @@ bool Particle::updateFlame( std::vector<std::pair<int, glm::vec3>> &arr, glm::ve
 	glm::vec3 p3 = {_pos.x + hdir.x * size - up.x * size, _pos.y + hdir.y * size - up.y * size, _pos.z - size * up.z};
 
 	int itemLight = 15;
-	int spec = (1 << 16) + (96 << 8) + (itemLight << 24);
+	int spec = (1 << 16) + (160 << 8) + (itemLight << 24);
 	std::pair<int, glm::vec3> v0 = {spec, p0};
 	std::pair<int, glm::vec3> v1 = {spec + 8 + (1 << 17), p1};
 	std::pair<int, glm::vec3> v2 = {spec + (8 << 8) + (1 << 18), p2};
@@ -82,7 +86,7 @@ bool Particle::updateSmoke( std::vector<std::pair<int, glm::vec3>> &arr, glm::ve
 	glm::vec3 p3 = {_pos.x + hdir.x * _shade - up.x * _shade, _pos.y + hdir.y * _shade - up.y * _shade, _pos.z - _shade * up.z};
 
 	int itemLight = 0;
-	int spec = (1 << 16) + _frame * 8 + (104 << 8) + (itemLight << 24);
+	int spec = (1 << 16) + _frame * 8 + (168 << 8) + (itemLight << 24);
 	std::pair<int, glm::vec3> v0 = {spec, p0};
 	std::pair<int, glm::vec3> v1 = {spec + 8 + (1 << 17), p1};
 	std::pair<int, glm::vec3> v2 = {spec + (8 << 8) + (1 << 18), p2};
@@ -93,8 +97,8 @@ bool Particle::updateSmoke( std::vector<std::pair<int, glm::vec3>> &arr, glm::ve
 
 bool Particle::updateExplosion( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camDir )
 {
-	while (_lifeTime > TICK) {
-		_lifeTime -= TICK;
+	while (_lifeTime > TICK * 5) {
+		_lifeTime -= TICK * 5;
 		++_frame;
 	}
 	if (_frame > 15) {
@@ -111,11 +115,11 @@ bool Particle::updateExplosion( std::vector<std::pair<int, glm::vec3>> &arr, glm
 
 	int itemLight = _chunk->computePosLight(_pos);
 	itemLight = (static_cast<int>((itemLight >> 4) * _shade) << 4) + (static_cast<int>((itemLight & 0xF) * _shade));
-	int spec = (1 << 16) + ((_frame & 0x7) * 32) + (((_frame > 7) ? 32 : 0) << 8) + (itemLight << 24);
+	int spec = (1 << 16) + ((_frame & 0x3) * 32) + (((_frame >> 2) * 32) << 8) + (itemLight << 24);
 	std::pair<int, glm::vec3> v0 = {spec, p0};
-	std::pair<int, glm::vec3> v1 = {spec + 31 + (1 << 17), p1}; // TODO change texture file and put 32 here
+	std::pair<int, glm::vec3> v1 = {spec + 32 + (1 << 17), p1};
 	std::pair<int, glm::vec3> v2 = {spec + (32 << 8) + (1 << 18), p2};
-	std::pair<int, glm::vec3> v3 = {spec + 31 + (1 << 17) + (32 << 8) + (1 << 18), p3};
+	std::pair<int, glm::vec3> v3 = {spec + 32 + (1 << 17) + (32 << 8) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	return (false);
 }
@@ -142,11 +146,11 @@ bool Particle::updateBreaking( std::vector<std::pair<int, glm::vec3>> &arr, glm:
 	glm::vec3 p3 = {_pos.x + hdir.x * size - up.x * size, _pos.y + hdir.y * size - up.y * size, _pos.z - size * up.z};
 
 	int itemLight = _chunk->computePosLight(_pos);
-	int spec = (0 << 16) +  s_blocks[_block]->texX(face_dir::MINUSZ) * 16 + ((s_blocks[_block]->texY(face_dir::MINUSZ) * 16) << 8) + (itemLight << 24);
+	int spec = (0 << 16) +  s_blocks[_block]->texX() * 16 + _texOffset.x + ((s_blocks[_block]->texY() * 16 + _texOffset.y) << 8) + (itemLight << 24);
 	std::pair<int, glm::vec3> v0 = {spec, p0};
-	std::pair<int, glm::vec3> v1 = {spec + 16 + (1 << 17), p1};
-	std::pair<int, glm::vec3> v2 = {spec + (16 << 8) + (1 << 18), p2};
-	std::pair<int, glm::vec3> v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
+	std::pair<int, glm::vec3> v1 = {spec + 2 + (1 << 17), p1};
+	std::pair<int, glm::vec3> v2 = {spec + (2 << 8) + (1 << 18), p2};
+	std::pair<int, glm::vec3> v3 = {spec + 2 + (1 << 17) + (2 << 8) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	return (false);
 }

@@ -16,6 +16,7 @@ class Particle
 {
 	private:
 		glm::vec3 _pos, _dir;
+		glm::ivec2 _texOffset;
 		float _lifeTime, _shade;
 		int _type, _frame, _block;
 		Chunk *_chunk;
