@@ -1,7 +1,7 @@
 #include "Camera.hpp"
 #include "utils.h"
 
-void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
+void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item )
 {
 	if (_camPlacement == CAMPLACEMENT::DEFAULT || !_current_chunk_ptr) {
 		return ;
@@ -9,6 +9,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 
 	// 1 model texture pxl is 0.057857142857142864 meters
 	const float scale = 0.057857142857142864;
+	const int speco = 0; // 64 for second skin
 
 // draw head
 	// draw face
@@ -19,7 +20,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	glm::vec3 p3 = p1 - _up * 8.0f * scale;
 
 	int itemLight = _current_chunk_ptr->computePosLight(pos);
-	int spec = (2 << 19) + 8 + (8 << 8) + (itemLight << 24);
+	int spec = speco + (2 << 19) + 8 + (8 << 8) + (itemLight << 24);
 	std::pair<int, glm::vec3> v0 = {spec, p0};
 	std::pair<int, glm::vec3> v1 = {spec + 8 + (1 << 17), p1};
 	std::pair<int, glm::vec3> v2 = {spec + (8 << 8) + (1 << 18), p2};
@@ -32,7 +33,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	glm::vec3 p6 = p3 - _front * 8.0f * scale;
 	glm::vec3 p7 = p2 - _front * 8.0f * scale;
 
-	spec = (2 << 19) + 24 + (8 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 24 + (8 << 8) + (itemLight << 24);
 	v0 = {spec, p4};
 	v1 = {spec + 8 + (1 << 17), p5};
 	v2 = {spec + (8 << 8) + (1 << 18), p6};
@@ -53,7 +54,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	p1 = p0 - bodyRight * 8.0f * scale;
 	p2 = p0 + bodyFront * 4.0f * scale;
 	p3 = p1 + bodyFront * 4.0f * scale;
-	spec = (2 << 19) + 20 + (16 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 20 + (16 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 8 + (1 << 17), p1};
 	v2 = {spec + (4 << 8) + (1 << 18), p2};
@@ -71,7 +72,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 8 + (1 << 17) + (4 << 8) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// front 2345
-	spec = (2 << 19) + 20 + (20 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 20 + (20 << 8) + (itemLight << 24);
 	v0 = {spec, p2};
 	v1 = {spec + 8 + (1 << 17), p3};
 	v2 = {spec + (12 << 8) + (1 << 18), p4};
@@ -85,7 +86,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 8 + (1 << 17) + (12 << 8) + (1 << 18), p6};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// right 0264
-	spec = (2 << 19) + 16 + (20 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 16 + (20 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p2};
 	v2 = {spec + (12 << 8) + (1 << 18), p6};
@@ -118,7 +119,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	p1 = p0 - armRight * 4.0f * scale;
 	p2 = p0 + armFront * 4.0f * scale;
 	p3 = p1 + armFront * 4.0f * scale;
-	spec = (2 << 19) + 44 + (16 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 44 + (16 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p1};
 	v2 = {spec + (4 << 8) + (1 << 18), p2};
@@ -136,7 +137,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// front 2345
-	spec = (2 << 19) + 44 + (20 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 44 + (20 << 8) + (itemLight << 24);
 	v0 = {spec, p2};
 	v1 = {spec + 4 + (1 << 17), p3};
 	v2 = {spec + (12 << 8) + (1 << 18), p4};
@@ -150,7 +151,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p6};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// right 0264
-	spec = (2 << 19) + 40 + (20 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 40 + (20 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p2};
 	v2 = {spec + (12 << 8) + (1 << 18), p6};
@@ -163,8 +164,80 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v2 = {spec + (12 << 8) + (1 << 18), p5};
 	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-	pos -= armRight * 6.0f * scale;
 
+// draw held item
+	if (item != blocks::AIR) {
+		glm::vec3 itemPos = pos - armUp * 12.0f * scale;
+		p0 = itemPos + armUp * 0.25f;
+		p1 = itemPos + armFront * 0.25f + armUp * 0.25f;
+		p2 = itemPos;
+		p3 = itemPos + armFront * 0.25f;
+
+		p4 = itemPos - armRight * 0.25f + armUp * 0.25f;
+		p5 = itemPos + armFront * 0.25f - armRight * 0.25f + armUp * 0.25f;
+		p6 = itemPos - armRight * 0.25f;
+		p7 = itemPos + armFront * 0.25f - armRight * 0.25f;
+		if (item < blocks::POPPY) {
+			int offset = ((item >= blocks::CRAFTING_TABLE && item < blocks::BEDROCK) ? face_dir::MINUSX: 0);
+
+			spec = 16 * s_blocks[item]->texX(face_dir::MINUSX, offset) + (16 * s_blocks[item]->texY(face_dir::MINUSX, offset) << 8) + (itemLight << 24);
+			v0 = {spec, p4};
+			v1 = {spec + 16 + (1 << 17), p0};
+			v2 = {spec + (16 << 8) + (1 << 18), p6};
+			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p2};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			spec = 16 * s_blocks[item]->texX(face_dir::PLUSX, offset) + (16 * s_blocks[item]->texY(face_dir::PLUSX, offset) << 8) + (itemLight << 24);
+			v0 = {spec, p1};
+			v1 = {spec + 16 + (1 << 17), p5};
+			v2 = {spec + (16 << 8) + (1 << 18), p3};
+			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p7};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			spec = 16 * s_blocks[item]->texX(face_dir::MINUSY, offset) + (16 * s_blocks[item]->texY(face_dir::MINUSY, offset) << 8) + (itemLight << 24);
+			v0 = {spec, p0};
+			v1 = {spec + 16 + (1 << 17), p1};
+			v2 = {spec + (16 << 8) + (1 << 18), p2};
+			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			spec = 16 * s_blocks[item]->texX(face_dir::PLUSY, offset) + (16 * s_blocks[item]->texY(face_dir::PLUSY, offset) << 8) + (itemLight << 24);
+			v0 = {spec, p5};
+			v1 = {spec + 16 + (1 << 17), p4};
+			v2 = {spec + (16 << 8) + (1 << 18), p7};
+			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p6};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			spec = 16 * s_blocks[item]->texX(face_dir::PLUSZ, offset) + (16 * s_blocks[item]->texY(face_dir::PLUSZ, offset) << 8) + (itemLight << 24);
+			v0 = {spec, p4};
+			v1 = {spec + 16 + (1 << 17), p5};
+			v2 = {spec + (16 << 8) + (1 << 18), p0};
+			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p1};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			spec = 16 * s_blocks[item]->texX(face_dir::MINUSZ, offset) + (16 * s_blocks[item]->texY(face_dir::MINUSZ, offset) << 8) + (itemLight << 24);
+			v0 = {spec, p2};
+			v1 = {spec + 16 + (1 << 17), p3};
+			v2 = {spec + (16 << 8) + (1 << 18), p6};
+			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p7};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+		} else { // flowers
+			spec = 16 * s_blocks[item]->texX() + (16 * s_blocks[item]->texY() << 8) + (itemLight << 24);
+			v0 = {spec, p0};
+			v1 = {spec + 16 + (1 << 17), p5};
+			v2 = {spec + (16 << 8) + (1 << 18), p2};
+			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p7};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			v0 = {spec, p1};
+			v1 = {spec + 16 + (1 << 17), p4};
+			v2 = {spec + (16 << 8) + (1 << 18), p3};
+			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p6};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+		}
+	}
+
+pos -= armRight * 6.0f * scale;
 // draw left leg // which movement is in synch with right arm
 	glm::vec3 legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + _world_up * sina);
 	glm::vec3 legUp = glm::normalize(glm::cross(bodyRight, legFront));
@@ -175,7 +248,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	p1 = p0 - bodyRight * 4.0f * scale;
 	p2 = p0 + legFront * 4.0f * scale;
 	p3 = p1 + legFront * 4.0f * scale;
-	spec = (2 << 19) + 20 + (48 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 20 + (48 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p1};
 	v2 = {spec + (4 << 8) + (1 << 18), p2};
@@ -193,7 +266,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// front 2345
-	spec = (2 << 19) + 20 + (52 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 20 + (52 << 8) + (itemLight << 24);
 	v0 = {spec, p2};
 	v1 = {spec + 4 + (1 << 17), p3};
 	v2 = {spec + (12 << 8) + (1 << 18), p4};
@@ -207,7 +280,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p6};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// right 0264
-	spec = (2 << 19) + 16 + (52 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 16 + (52 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p2};
 	v2 = {spec + (12 << 8) + (1 << 18), p6};
@@ -232,7 +305,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	p1 = p0 - bodyRight * 4.0f * scale;
 	p2 = p0 + armFront * 4.0f * scale;
 	p3 = p1 + armFront * 4.0f * scale;
-	spec = (2 << 19) + 36 + (48 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 36 + (48 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p1};
 	v2 = {spec + (4 << 8) + (1 << 18), p2};
@@ -250,7 +323,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// front 2345
-	spec = (2 << 19) + 36 + (52 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 36 + (52 << 8) + (itemLight << 24);
 	v0 = {spec, p2};
 	v1 = {spec + 4 + (1 << 17), p3};
 	v2 = {spec + (12 << 8) + (1 << 18), p4};
@@ -264,7 +337,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p6};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// right 0264
-	spec = (2 << 19) + 32 + (52 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 32 + (52 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p2};
 	v2 = {spec + (12 << 8) + (1 << 18), p6};
@@ -288,7 +361,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	p1 = p0 - bodyRight * 4.0f * scale;
 	p2 = p0 + legFront * 4.0f * scale;
 	p3 = p1 + legFront * 4.0f * scale;
-	spec = (2 << 19) + 4 + (16 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 4 + (16 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p1};
 	v2 = {spec + (4 << 8) + (1 << 18), p2};
@@ -306,7 +379,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// front 2345
-	spec = (2 << 19) + 4 + (20 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 4 + (20 << 8) + (itemLight << 24);
 	v0 = {spec, p2};
 	v1 = {spec + 4 + (1 << 17), p3};
 	v2 = {spec + (12 << 8) + (1 << 18), p4};
@@ -320,7 +393,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p6};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// right 0264
-	spec = (2 << 19) + 0 + (20 << 8) + (itemLight << 24);
+	spec = speco + (2 << 19) + 0 + (20 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p2};
 	v2 = {spec + (12 << 8) + (1 << 18), p6};

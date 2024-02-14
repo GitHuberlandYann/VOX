@@ -83,7 +83,7 @@ class Camera
 		Camera( glm::vec3 position );
 		~Camera( void );
 
-		void drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr );
+		void drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item );
 
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
