@@ -8,6 +8,7 @@ out vec4 outColor;
 
 uniform sampler2D blockAtlas;
 uniform sampler2D particleAtlas;
+uniform sampler2D modelAtlas;
 
 void main()
 {
@@ -15,6 +16,8 @@ void main()
 		outColor = texture(blockAtlas, Texcoord);
 	} else if (Atlas == 1) {
 		outColor = texture(particleAtlas, Texcoord);
+	} else if (Atlas == 2) {
+		outColor = texture(modelAtlas, Texcoord);
 	} else {
 		discard ;
 	}

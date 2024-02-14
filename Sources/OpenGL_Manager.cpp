@@ -4,7 +4,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL),
 		_key_rdist(0), _render_distance(RENDER_DISTANCE), _key_guisize(0),
 		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0), _key_screenshot(0),
-		_key_h(0), _key_g(0), _key_j(0), _key_o(0), _key_time_mul(0), _key_jump(0), _key_1(0), _key_2(0), _key_3(0),
+		_key_h(0), _key_g(0), _key_f5(0), _key_j(0), _key_o(0), _key_time_mul(0), _key_jump(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
 		_esc_released(true), _e_released(true),
@@ -28,7 +28,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	}
 
 	if (_textures) {
-		glDeleteTextures(4, _textures);
+		glDeleteTextures(5, _textures);
 		delete [] _textures;
 	}
 	glDeleteProgram(_shaderProgram);
@@ -163,6 +163,7 @@ void OpenGL_Manager::drawEntities( void )
 
 void OpenGL_Manager::drawParticles( void )
 {
+	_camera->drawPlayer(_particles);
 	size_t psize = _particles.size();
 
 	if (!psize) {
@@ -334,8 +335,8 @@ void OpenGL_Manager::setup_communication_shaders( void )
 
 void OpenGL_Manager::load_texture( std::string texture_file )
 {
-	_textures = new GLuint[4];
-	glGenTextures(4, _textures);
+	_textures = new GLuint[5];
+	glGenTextures(5, _textures);
 
 	loadTextureShader(0, _textures[0], texture_file);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // sampler2D #index in fragment shader
@@ -353,6 +354,8 @@ void OpenGL_Manager::load_texture( std::string texture_file )
 	loadTextureShader(6, _textures[3], "Resources/particleAtlas.png");
 	glUniform1i(glGetUniformLocation(_particleShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
 	glUniform1i(glGetUniformLocation(_particleShaderProgram, "particleAtlas"), 6);
+	loadTextureShader(7, _textures[4], "Resources/modelAtlas.png");
+	glUniform1i(glGetUniformLocation(_particleShaderProgram, "modelAtlas"), 7);
 }
 
 void OpenGL_Manager::setGamemode( bool gamemode )

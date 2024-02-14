@@ -384,10 +384,10 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	} else if (glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
 		_key_screenshot = 0;
 	}
-	// toggle debug mode on off
-	if ((glfwGetKey(_window, GLFW_KEY_H) == GLFW_PRESS) && ++_key_h == 1) {
+	// toggle debug mode on off F3
+	if ((glfwGetKey(_window, GLFW_KEY_F3) == GLFW_PRESS) && ++_key_h == 1) {
 		_debug_mode = !_debug_mode;
-	} else if (glfwGetKey(_window, GLFW_KEY_H) == GLFW_RELEASE) {
+	} else if (glfwGetKey(_window, GLFW_KEY_F3) == GLFW_RELEASE) {
 		_key_h = 0;
 	}
 	// toggle game mode
@@ -397,10 +397,16 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_key_g = 0;
 	}
 	// toggle F5 mode
-	if ((glfwGetKey(_window, GLFW_KEY_J) == GLFW_PRESS) && ++_key_j == 1) {
+	if ((glfwGetKey(_window, GLFW_KEY_F5) == GLFW_PRESS) && ++_key_f5 == 1) {
+		_camera->changeCamPlacement();
+	} else if (glfwGetKey(_window, GLFW_KEY_F5) == GLFW_RELEASE) {
+		_key_f5 = 0;
+	}
+	// toggle hotbar F1
+	if ((glfwGetKey(_window, GLFW_KEY_F1) == GLFW_PRESS) && ++_key_j == 1) {
 		_ui->_hideUI = !_ui->_hideUI;
 		_ui->chatMessage(std::string("UI ") + ((_ui->_hideUI) ? "HIDDEN" : "SHOWN"));
-	} else if (glfwGetKey(_window, GLFW_KEY_J) == GLFW_RELEASE) {
+	} else if (glfwGetKey(_window, GLFW_KEY_F1) == GLFW_RELEASE) {
 		_key_j = 0;
 	}
 	// toggle outline

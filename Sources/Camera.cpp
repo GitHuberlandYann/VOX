@@ -3,8 +3,9 @@
 extern std::mutex mtx;
 
 Camera::Camera( glm::vec3 position )
-	: _fall_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0),
-	_foodTickTimer(0), _foodExhaustionLevel(0), _z0(position.z), _fall_immunity(true), _sprinting(false), _sneaking(false), _healthUpdate(false),
+	: _fall_time(0), _walk_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0),
+	_foodTickTimer(0), _camPlacement(CAMPLACEMENT::DEFAULT), _foodExhaustionLevel(0), _z0(position.z), _fall_immunity(true),
+	_walking(false), _sprinting(false), _sneaking(false), _healthUpdate(false),
 	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
 	_inJump(false), _touchGround(false), _foodSaturationLevel(20)
 {
@@ -17,6 +18,7 @@ Camera::Camera( glm::vec3 position )
 	_update = false;
 	_fovUpdate = false;
 	updateCameraVectors();
+	_bodyFront = _front;
 }
 
 Camera::~Camera( void )
@@ -102,6 +104,14 @@ void Camera::applyGravityUnderwater( void )
 	_update = false;
 	glm::vec3 pos = _position;
 	pos.z += 1.0f + EYE_LEVEL;
+	switch (_camPlacement) {
+	case CAMPLACEMENT::DEFAULT:
+		return (glm::lookAt(pos, pos + _front, _up));
+	case CAMPLACEMENT::BEHIND:
+		return (glm::lookAt(pos - _front * 5.0f, pos, _up));
+	case CAMPLACEMENT::FRONT:
+		return (glm::lookAt(pos + _front * 5.0f, pos, _up));
+	}
 	return (glm::lookAt(pos, pos + _front, _up));
 }
 
@@ -115,6 +125,10 @@ bool Camera::chunkInFront( glm::ivec2 current_chunk, int posX, int posY )
 	if (posX >= current_chunk.x - CHUNK_SIZE && posX <= current_chunk.x + CHUNK_SIZE
 		&& posY >= current_chunk.y - CHUNK_SIZE && posY <= current_chunk.y + CHUNK_SIZE) {
 		return (true);
+	}
+	if (_camPlacement == CAMPLACEMENT::FRONT) {
+		return !(glm::dot(glm::vec2(posX + CHUNK_SIZE * (-_front2.x + _right2.x) - _position.x, posY + CHUNK_SIZE * (-_front2.y + _right2.y) - _position.y), glm::vec2((-_front2.x + _right2.x), (-_front2.y + _right2.y))) < 0
+			|| glm::dot(glm::vec2(posX + CHUNK_SIZE * (-_front2.x - _right2.x) - _position.x, posY + CHUNK_SIZE * (-_front2.y - _right2.y) - _position.y), glm::vec2((-_front2.x - _right2.x), (-_front2.y - _right2.y))) < 0);
 	}
 	return !(glm::dot(glm::vec2(posX + CHUNK_SIZE * (_front2.x + _right2.x) - _position.x, posY + CHUNK_SIZE * (_front2.y + _right2.y) - _position.y), glm::vec2((_front2.x + _right2.x), (_front2.y + _right2.y))) < 0
 		|| glm::dot(glm::vec2(posX + CHUNK_SIZE * (_front2.x - _right2.x) - _position.x, posY + CHUNK_SIZE * (_front2.y - _right2.y) - _position.y), glm::vec2((_front2.x - _right2.x), (_front2.y - _right2.y))) < 0);
@@ -199,6 +213,13 @@ void Camera::setCurrentChunkPtr( Chunk *ptr )
 	_current_chunk_ptr = ptr;
 }
 
+void Camera::changeCamPlacement( void )
+{
+	const int next[3] = {CAMPLACEMENT::BEHIND, CAMPLACEMENT::FRONT, CAMPLACEMENT::DEFAULT};
+	_camPlacement = next[_camPlacement];
+	_update = true;
+}
+
 void Camera::setRun( bool value )
 {
 	_sprinting = value;
@@ -226,6 +247,11 @@ void Camera::setDelta( float deltaTime )
 {
 	// _speed_frame = _movement_speed * deltaTime;
 	_deltaTime = deltaTime;
+	if (_walking) {
+		_walk_time += deltaTime;
+	} else {
+		_walk_time = 0;
+	}
 }
 
 void Camera::update_movement_speed( GLint key_cam_speed )
@@ -262,10 +288,15 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z )
 		_inJump = true;
 		updateExhaustion((_sprinting) ? EXHAUSTION_SPRINT_JUMP : EXHAUSTION_JUMP);
 		return ;
-	} else if (direction == UP || direction == DOWN || (!v && !h)) {
+	} else if (direction == UP || direction == DOWN) {
+		return ;
+	} else if (!v && !h) {
+		_walking = false;
 		return ;
 	}
 	_update = true;
+	_walking = true;
+	_bodyFront = _front;
 
 	float speed_frame = _deltaTime * ((_sprinting) ?  ((_touchGround) ? SPRINT_SPEED : SPRINT_JUMP_SPEED ) : WALK_SPEED);
 	float movement = 0;
@@ -448,7 +479,7 @@ void Camera::processMouseMovement( float x_offset, float y_offset )
 	} else if (_yaw < -180.0f) {
 		_yaw += 360.0f;
 	}
-	if (_pitch > 89.0f || _pitch < -89.0f) {
+	if (_pitch > 89.9f || _pitch < -89.9f) {
 		_pitch -= y_offset;
 	}
 

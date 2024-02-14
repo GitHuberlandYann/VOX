@@ -57,7 +57,7 @@ bool Particle::updateFlame( std::vector<std::pair<int, glm::vec3>> &arr, glm::ve
 	glm::vec3 p3 = {_pos.x + hdir.x * size - up.x * size, _pos.y + hdir.y * size - up.y * size, _pos.z - size * up.z};
 
 	int itemLight = 15;
-	int spec = (1 << 16) + (160 << 8) + (itemLight << 24);
+	int spec = (1 << 19) + (160 << 8) + (itemLight << 24);
 	std::pair<int, glm::vec3> v0 = {spec, p0};
 	std::pair<int, glm::vec3> v1 = {spec + 8 + (1 << 17), p1};
 	std::pair<int, glm::vec3> v2 = {spec + (8 << 8) + (1 << 18), p2};
@@ -86,7 +86,7 @@ bool Particle::updateSmoke( std::vector<std::pair<int, glm::vec3>> &arr, glm::ve
 	glm::vec3 p3 = {_pos.x + hdir.x * _shade - up.x * _shade, _pos.y + hdir.y * _shade - up.y * _shade, _pos.z - _shade * up.z};
 
 	int itemLight = 0;
-	int spec = (1 << 16) + _frame * 8 + (168 << 8) + (itemLight << 24);
+	int spec = (1 << 19) + (7 - _frame) * 8 + (168 << 8) + (itemLight << 24);
 	std::pair<int, glm::vec3> v0 = {spec, p0};
 	std::pair<int, glm::vec3> v1 = {spec + 8 + (1 << 17), p1};
 	std::pair<int, glm::vec3> v2 = {spec + (8 << 8) + (1 << 18), p2};
@@ -115,7 +115,7 @@ bool Particle::updateExplosion( std::vector<std::pair<int, glm::vec3>> &arr, glm
 
 	int itemLight = _chunk->computePosLight(_pos);
 	itemLight = (static_cast<int>((itemLight >> 4) * _shade) << 4) + (static_cast<int>((itemLight & 0xF) * _shade));
-	int spec = (1 << 16) + ((_frame & 0x3) * 32) + (((_frame >> 2) * 32) << 8) + (itemLight << 24);
+	int spec = (1 << 19) + ((_frame & 0x3) * 32) + (((_frame >> 2) * 32) << 8) + (itemLight << 24);
 	std::pair<int, glm::vec3> v0 = {spec, p0};
 	std::pair<int, glm::vec3> v1 = {spec + 32 + (1 << 17), p1};
 	std::pair<int, glm::vec3> v2 = {spec + (32 << 8) + (1 << 18), p2};

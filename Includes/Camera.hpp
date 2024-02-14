@@ -43,19 +43,27 @@ enum Camera_Movement {
 # define EXHAUSTION_SPRINT_JUMP 	0.2f
 # define EXHAUSTION_REGEN 			6.0f
 
+namespace CAMPLACEMENT {
+	enum {
+		DEFAULT,
+		BEHIND,
+		FRONT
+	};
+}
+
 class Camera
 {
 	private:
-		glm::vec3 _position, _spawnpoint, _lastTp, _front, _up, _right, _world_up;
+		glm::vec3 _position, _spawnpoint, _lastTp, _front, _bodyFront, _up, _right, _world_up;
 		glm::vec2 _front2, _right2;
 		float _yaw, _pitch;
-		float _deltaTime, _fall_time, _breathTime;
+		float _deltaTime, _fall_time, _walk_time, _breathTime;
 		float _fov, _fov_offset;
 		float _fall_distance;
-		int _foodTickTimer;
+		int _foodTickTimer, _camPlacement;
 		float _foodExhaustionLevel;
 		float _z0, _fall_immunity;
-		bool _sprinting, _sneaking, _healthUpdate, _waterHead, _waterFeet;
+		bool _walking, _sprinting, _sneaking, _healthUpdate, _waterHead, _waterFeet;
 		std::mutex _mtx;
 		Chunk *_current_chunk_ptr;
 
@@ -72,6 +80,8 @@ class Camera
 		Camera( glm::vec3 position );
 		~Camera( void );
 
+		void drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr );
+
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
 		bool chunkInFront( glm::ivec2 current_chunk, int posX, int posY );
@@ -85,6 +95,7 @@ class Camera
 		bool isUnderwater( void );
 
 		void setCurrentChunkPtr( Chunk *ptr );
+		void changeCamPlacement( void );
 		void setRun( bool value );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );

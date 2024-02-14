@@ -3,10 +3,10 @@
 /* specifications is packed
  * 0xFF = x coord in texture atlas
  * 0xFF00 = y coord in texture atlas
- * 0x1 << 16 atlas index
+ * 0x1 << 16
  * 0x1 << 17 x texture half-pixel correction
  * 0x1 << 18 y texture half-pixel correction
- * 0x7 << 19
+ * 0x7 << 19 Atlas index
  * 0x3 << 22
  * 0xF000000 block light
  * 0xF0000000 sky light
@@ -33,5 +33,5 @@ void main()
 	int shadow = 15 - max(blockLight, skyLight);
 	int faceLight = 100;
 	FaceShadow = max(0, (faceLight - 7 * shadow) * 0.01f);
-	Atlas = ((specifications >> 16) & 0x1);
+	Atlas = ((specifications >> 19) & 0x7);
 }

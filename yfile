@@ -30,6 +30,7 @@ TODOS:
     - biomes
     - skybox
 	- fire
+	- mobs
 	- redstone
 	- slabs
 	- stairs
@@ -87,6 +88,7 @@ DONE:
 	- sand now turns to falling block entity during fall
 	- use block s hardness to compute time to break instead of hardcoding it
 	- entities !
+	- player 3D model (F5 mode)
 	- particles !
 	- flint and steel
 	- TNT, explosions
@@ -134,7 +136,7 @@ DONE:
 
 Controls (QWERTY):
 	- WASD: player movement
-	- left_control: run
+	- left_shift: run
 	- space: jump
 	- mouse / arrows: camera movement
 	- left_click: break block, pick block in inventroy, navigate through menus
@@ -149,11 +151,22 @@ Controls (QWERTY):
 	- F: toggle wireframe display (warning fps drop)
 	- Q: drop selected item
 	- E: open inventory
-	- H: debug screen
+	- F3: togle debug screen
+	- F5: change camera placement
 	- O: toggle block highlight
-	- J: display hotbar
+	- F1: display hotbar
 	- T: open chat
 	- +-: change render distance
+	- kp_* kp_/: change gui size
+
+Shaders:
+	default - used for all blocks and flowers, mixes break frame with textures, x[0:15] y[0:255] Vhalf
+	sky - used for clouds and water and glass, animation frames                                  Xhalf
+	ui - draws rectangles from given screen coord and sizes                                      Xhalf
+	text - draws character from given screen coord and sizes                                     Xhalf
+	item - used to draw 3d items in inventory, x[0:15] y[0:15]                                   Xhalf
+	particle - used to draw particles and models, x[0:255] y[0:255]                              Vhalf
+
 
 
 Some info:
