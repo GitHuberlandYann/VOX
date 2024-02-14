@@ -20,10 +20,13 @@ enum Camera_Movement {
 
 # define REACH		  		4.5f
 # define EYE_LEVEL    		0.62f
+# define SNEAK_EYE_LEVEL	0.32f
 # define FOV          		70.0f // if fov = -fov, world is upside down
 
 # define FLY_SPEED    		20
 # define WALK_SPEED   		4.317f
+# define SNEAK_SPEED		1.295f
+# define SNEAK_SPRINT_SPEED	1.684f
 # define SPRINT_SPEED    	5.612f
 # define SPRINT_JUMP_SPEED 	7.127f
 # define SWIM_SPEED			1.97f
@@ -57,13 +60,13 @@ class Camera
 		glm::vec3 _position, _spawnpoint, _lastTp, _front, _bodyFront, _up, _right, _world_up;
 		glm::vec2 _front2, _right2;
 		float _yaw, _pitch;
-		float _deltaTime, _fall_time, _walk_time, _breathTime;
+		float _deltaTime, _fall_time, _walk_time, _breathTime, _armAnimTime;
 		float _fov, _fov_offset;
 		float _fall_distance;
 		int _foodTickTimer, _camPlacement;
 		float _foodExhaustionLevel;
 		float _z0, _fall_immunity;
-		bool _walking, _sprinting, _sneaking, _healthUpdate, _waterHead, _waterFeet;
+		bool _walking, _sprinting, _sneaking, _healthUpdate, _waterHead, _waterFeet, _armAnimation;
 		std::mutex _mtx;
 		Chunk *_current_chunk_ptr;
 
@@ -88,7 +91,9 @@ class Camera
 
 		int getOrientation( void );
 		glm::vec3 getPos( void );
+		glm::vec3 getEyePos( void );
 		glm::vec3 getDir( void );
+		float getHitBox( void );
 		void setPosZ( float value );
 		void setWaterStatus( bool head, bool underwater );
 		int getWaterStatus( void );
@@ -97,6 +102,8 @@ class Camera
 		void setCurrentChunkPtr( Chunk *ptr );
 		void changeCamPlacement( void );
 		void setRun( bool value );
+		void setSneak( bool value );
+		void setArmAnimation( bool state );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );
 		void moveFly( GLint v, GLint h, GLint z );

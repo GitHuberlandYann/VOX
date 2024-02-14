@@ -3,10 +3,10 @@
 extern std::mutex mtx;
 
 Camera::Camera( glm::vec3 position )
-	: _fall_time(0), _walk_time(0), _breathTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0),
+	: _fall_time(0), _walk_time(0), _breathTime(0), _armAnimTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0),
 	_foodTickTimer(0), _camPlacement(CAMPLACEMENT::DEFAULT), _foodExhaustionLevel(0), _z0(position.z), _fall_immunity(true),
 	_walking(false), _sprinting(false), _sneaking(false), _healthUpdate(false),
-	_waterHead(false), _waterFeet(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
+	_waterHead(false), _waterFeet(false), _armAnimation(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
 	_inJump(false), _touchGround(false), _foodSaturationLevel(20)
 {
 	_position = position;
@@ -71,7 +71,7 @@ void Camera::moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, G
 		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).z * speed_frame;
 		_position.z += movement;
 		mtx.lock();
-		if (_current_chunk_ptr->collisionBox(_position, 0.3f, 1.8f)) {
+		if (_current_chunk_ptr->collisionBox(_position, 0.3f, getHitBox())) {
 			_position.z -= movement;
 		}
 		mtx.unlock();
@@ -102,8 +102,7 @@ void Camera::applyGravityUnderwater( void )
  glm::mat4 Camera::getViewMatrix( void )
 {
 	_update = false;
-	glm::vec3 pos = _position;
-	pos.z += 1.0f + EYE_LEVEL;
+	glm::vec3 pos = getEyePos();
 	switch (_camPlacement) {
 	case CAMPLACEMENT::DEFAULT:
 		return (glm::lookAt(pos, pos + _front, _up));
@@ -151,9 +150,23 @@ glm::vec3 Camera::getPos( void )
 	return (res);
 }
 
+glm::vec3 Camera::getEyePos( void )
+{
+	_mtx.lock();
+	glm::vec3 res = _position;
+	_mtx.unlock();
+	res.z += 1 + ((_sneaking) ? SNEAK_EYE_LEVEL : EYE_LEVEL);
+	return (res);
+}
+
 glm::vec3 Camera::getDir( void )
 {
 	return (_front);
+}
+
+float Camera::getHitBox( void )
+{
+	return ((_sneaking) ? 1.5f : 1.8f);
 }
 
 void Camera::setPosZ( float value )
@@ -243,6 +256,30 @@ void Camera::setRun( bool value )
 	}
 }
 
+void Camera::setSneak( bool value )
+{
+	if (value != _sneaking) {
+		_sneaking = value;
+		_update = true;
+	}
+}
+
+void Camera::setArmAnimation( bool state )
+{
+	if (state) {
+		_armAnimation = true;
+		_armAnimTime += _deltaTime;
+		if (_armAnimTime > 0.35) {
+			_armAnimTime -= 0.35;
+		}
+	} else if (_armAnimTime > 0.35) {
+		_armAnimation = 0;
+		_armAnimTime = 0;
+	} else if (_armAnimTime > 0) {
+		_armAnimTime += _deltaTime;
+	}
+}
+
 void Camera::setDelta( float deltaTime )
 {
 	// _speed_frame = _movement_speed * deltaTime;
@@ -298,7 +335,7 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z )
 	_walking = true;
 	_bodyFront = _front;
 
-	float speed_frame = _deltaTime * ((_sprinting) ?  ((_touchGround) ? SPRINT_SPEED : SPRINT_JUMP_SPEED ) : WALK_SPEED);
+	float speed_frame = _deltaTime * ((_sneaking) ? ((_sprinting) ? SNEAK_SPRINT_SPEED : SNEAK_SPEED) : ((_sprinting) ?  ((_touchGround) ? SPRINT_SPEED : SPRINT_JUMP_SPEED ) : WALK_SPEED));
 	float movement = 0;
 	_mtx.lock();
 	if (direction == X_AXIS) {
@@ -460,10 +497,7 @@ void Camera::processYaw( GLint offset )
 
 std::vector<glm::ivec3> Camera::get_ray_casting( GLfloat radius )
 {
-	_mtx.lock();
-	glm::vec3 pos = _position;
-	_mtx.unlock();
-	pos.z += 1.0f + EYE_LEVEL;
+	glm::vec3 pos = getEyePos();
 	return (voxel_traversal(pos, pos + _front * radius));
 }
 
@@ -493,18 +527,18 @@ std::string Camera::getCamString( bool game_mode )
 	_mtx.lock();
 	int light = (_current_chunk_ptr) ? _current_chunk_ptr->getCamLightLevel(_current_block) : 0;
 	std::string str =  ((game_mode == CREATIVE)
-		? ("\nPos\t\t> x: " + std::to_string(_position.x)
+		? "\nPos\t\t> x: " + std::to_string(_position.x)
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 				+ "\niPos\t> x:" + std::to_string(_current_block.x) // TODO might sometimes want to use current_block instea of _position when dealing with chunks
 					+ " y: " + std::to_string(_current_block.y) + " z: " + std::to_string(_current_block.z)
 				+ "\nDir\t\t> x: " + std::to_string(_front.x)
 					+ " y: " + std::to_string(_front.y) + " z: " + std::to_string(_front.z)
-				+ "\nSpeed\t> " + ((_sprinting) ? std::to_string(_movement_speed * 2) : std::to_string(_movement_speed)))
+				+ "\nSpeed\t> " + ((_sprinting) ? std::to_string(_movement_speed * 2) : std::to_string(_movement_speed))
 				+ ((_current_chunk_ptr) 
 					? "\nSky Light\t> " + std::to_string(light >> 8)
 						+ "\nBlock Light\t> " + std::to_string(light & 0xFF) : "\n\n")
-				+ "\n\n\n\n\n\n\n\n\n\n"
-		: ("\nPos\t\t> x: " + std::to_string(_position.x)
+				+ "\n\n\n\n\n\n\n\n\n\n\n"
+		: "\nPos\t\t> x: " + std::to_string(_position.x)
 			+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 			+ "\niPos\t> x:" + std::to_string(_current_block.x)
 				+ " y: " + std::to_string(_current_block.y) + " z: " + std::to_string(_current_block.z)
@@ -524,7 +558,8 @@ std::string Camera::getCamString( bool game_mode )
 			+ "\n\t\tSaturation\t> " + std::to_string(_foodSaturationLevel)
 			+ "\n\t\tExhaustion\t> " + std::to_string(_foodExhaustionLevel)
 			+ "\nGounded\t> " + ((_touchGround) ? strtrue : strfalse)
-			+ "\nJumping\t> " + ((_inJump) ? strtrue : strfalse)));
+			+ "\nJumping\t> " + ((_inJump) ? strtrue : strfalse)
+			+ "\nSneaking\t> " + ((_sneaking) ? strtrue : strfalse));
 	_mtx.unlock();
 	return (str);
 }

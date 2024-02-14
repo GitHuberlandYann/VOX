@@ -136,7 +136,8 @@ DONE:
 
 Controls (QWERTY):
 	- WASD: player movement
-	- left_shift: run
+	- left_control: run
+	- left_shift: sneak
 	- space: jump
 	- mouse / arrows: camera movement
 	- left_click: break block, pick block in inventroy, navigate through menus

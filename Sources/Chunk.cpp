@@ -1461,8 +1461,7 @@ void Chunk::explosion( glm::vec3 pos, int power )
 void Chunk::shootArrow( float timer )
 {
 	timer = (timer > 1.0f) ? 20.0f : timer * 20.0f;
-	glm::vec3 camPos = _camera->getPos(), camDir = _camera->getDir();
-	camPos.z += 1 + EYE_LEVEL;
+	glm::vec3 camPos = _camera->getEyePos(), camDir = _camera->getDir();
 	camPos += camDir;
 	_entities.push_back(new Entity(this, _inventory, camPos, camDir * timer, true, false, {blocks::ARROW, 1, {0, 0}}));
 }
@@ -1704,16 +1703,17 @@ void Chunk::applyGravity( void )
 	float distZ = saved_posZ - pos.z;
 	if (distZ < 0) { // jumping
 		_camera->_touchGround = false;
+		float hitBoxHeight = _camera->getHitBox();
 		// std::cout << "DEBUG: " << std::to_string(_camera->_position.z) << std::endl;
 		for (float posZ = saved_posZ; posZ < pos.z; posZ++) {
 			// std::cout << "testing with posZ " << posZ << std::endl;
-			if (collisionBox({pos.x, pos.y, posZ + 1.8f}, 0.3f, 0)) {
+			if (collisionBox({pos.x, pos.y, posZ + hitBoxHeight}, 0.3f, 0)) {
 				_camera->touchCeiling(glm::floor(posZ) + 0.19f);
 				// std::cout << "hit roof from loop" << std::endl;
 				return ;
 			}
 		}
-		if (collisionBox({pos.x, pos.y, pos.z + 1.8f}, 0.3f, 0)) {
+		if (collisionBox({pos.x, pos.y, pos.z + hitBoxHeight}, 0.3f, 0)) {
 			_camera->touchCeiling(glm::floor(pos.z) + 0.19f);
 			// std::cout << "hit roof out of loop, " << pos.z << " -> " << _camera->getPos().z << std::endl;
 			return ;

@@ -60,7 +60,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 		} else if (value) {
 			// we know cube is hit, now check if hitbox is hit (only on non cube-filling values)
 			// TODO move hitboxes of torches depending on the wall they hang on
-			if (!s_blocks[value]->hasHitbox || line_cube_intersection(_camera->getPos() + glm::vec3(0, 0, 1 + EYE_LEVEL), _camera->getDir(), glm::vec3(i) + s_blocks[value]->hitboxCenter, s_blocks[value]->hitboxHalfSize)) {
+			if (!s_blocks[value]->hasHitbox || line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + s_blocks[value]->hitboxCenter, s_blocks[value]->hitboxHalfSize)) {
 				chunk_hit = chunk;
 				res.pos = i;
 				res.value = value;
@@ -425,9 +425,11 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 
 	// add and remove blocks
+	_camera->setDelta(deltaTime);
 	_hand_content = _inventory->getCurrentSlot();
 	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 		if (_game_mode == SURVIVAL) {
+			_camera->setArmAnimation(true);
 			_break_time += deltaTime;
 			bool can_collect = s_blocks[_block_hit.value]->canCollect(_hand_content);
 			float break_time = getBreakTime(can_collect);
@@ -450,6 +452,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			handle_add_rm_block(false, false);
 		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+		_camera->setArmAnimation(false);
 		_key_rm_block = 0;
 		_break_time = 0;
 		if (_break_frame != _outline && chunk_hit) {
@@ -470,6 +473,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			_bow_timer += deltaTime;
 		} else if (++_key_add_block == 1) {
 			handle_add_rm_block(true, _game_mode == SURVIVAL);
+			_camera->setArmAnimation(true);
 		}
 	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
 		if (_hand_content == blocks::BOW && _bow_timer && current_chunk_ptr) {
@@ -544,7 +548,6 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 
 	// camera work 
-	_camera->setDelta(deltaTime);
 	GLint key_cam_v = (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS);
 	GLint key_cam_h = (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS);
 	GLint key_cam_z = (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS);
@@ -558,6 +561,8 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	if (key_cam_pitch) {
 		_camera->processPitch(key_cam_pitch * 5);
 	}
+
+	_camera->setSneak(key_cam_z == -1);
 
 	if (!key_cam_v && !key_cam_h) {
 		_camera->setRun(false);
@@ -580,8 +585,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				_key_jump = 0;
 			}
 			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h, 0); // move on X_AXIS
+			float hitBoxHeight = _camera->getHitBox();
 			mtx.lock();
-			if (current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, 1.8f)) {
+			if (current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight)) {
 				mtx.unlock();
 				_camera->moveHuman(X_AXIS, -key_cam_v, -key_cam_h, 0); // if collision after movement, undo movement
 				_camera->setRun(false);
@@ -590,7 +596,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			mtx.unlock();
 			_camera->moveHuman(Y_AXIS, key_cam_v, key_cam_h, 0); // move on Y_AXIS
 			mtx.lock();
-			if (current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, 1.8f)) {
+			if (current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight)) {
 				mtx.unlock();
 				_camera->moveHuman(Y_AXIS, -key_cam_v, -key_cam_h, 0); // if collision after movement, undo movement
 				_camera->setRun(false);
@@ -603,7 +609,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			glm::vec3 camPos = _camera->getPos();
 			mtx.lock();
 			_camera->setWaterStatus(false, current_chunk_ptr->collisionBoxWater(camPos, 0.3f, 0));
-			camPos.z += 1 + EYE_LEVEL;
+			camPos = _camera->getEyePos();
 			_camera->setWaterStatus(true, current_chunk_ptr->collisionBoxWater(camPos, 0.05f, 0));
 		}
 		mtx.unlock();
@@ -629,12 +635,11 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			return ;
 		}
 	}
-	glm::vec3 camPos = _camera->getPos();
+	glm::vec3 camPos = _camera->getEyePos();
 	glm::ivec3 current_block = {glm::floor(camPos.x), glm::floor(camPos.y), glm::floor(camPos.z)};
 	if (current_block != _camera->_current_block) {
 		_camera->_current_block = current_block;
 		if (current_chunk_ptr) {
-			camPos.z += 1 + EYE_LEVEL;
 			current_chunk_ptr->sort_sky(camPos, true);
 			current_chunk_ptr->sort_water(camPos, true);
 		}

@@ -12,8 +12,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 
 // draw head
 	// draw face
-	glm::vec3 pos = _position;
-	pos.z += 1 + EYE_LEVEL;
+	glm::vec3 pos = getEyePos();
 	glm::vec3 p0 = pos + _right * 4.0f * scale + _front * 4.0f * scale + _up * 4.0f * scale;
 	glm::vec3 p1 = p0 - _right * 8.0f * scale;
 	glm::vec3 p2 = p0 - _up * 8.0f * scale;
@@ -44,8 +43,10 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	// will get a chance to look at them from inventory once implemented
 
 // draw torso
-	const glm::vec3 bodyFront = {glm::normalize(glm::vec2(_bodyFront)), 0}; // TODO use different _front than head to have offset between the two
+	glm::vec3 bodyFront = {glm::normalize(glm::vec2(_bodyFront)), 0};
 	const glm::vec3 bodyRight = glm::normalize(glm::cross(_bodyFront, _world_up));
+	const glm::vec3 bodyUp = (_sneaking) ? glm::normalize(bodyFront * 0.2558539123988453f + _world_up * 0.3f) : _world_up;
+	bodyFront = glm::normalize(glm::cross(bodyUp, bodyRight));
 	pos.z -= 4.0f * scale;
 	// up
 	p0 = pos + bodyRight * 4.0f * scale - bodyFront * 2.0f * scale;
@@ -59,10 +60,10 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 8 + (1 << 17) + (4 << 8) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// down
-	p4 = p2; p4.z -= 12.0f * scale;
-	p5 = p3; p5.z -= 12.0f * scale;
-	p6 = p0; p6.z -= 12.0f * scale;
-	p7 = p1; p7.z -= 12.0f * scale;
+	p4 = p2 - bodyUp * 12.0f * scale;
+	p5 = p3 - bodyUp * 12.0f * scale;
+	p6 = p0 - bodyUp * 12.0f * scale;
+	p7 = p1 - bodyUp * 12.0f * scale;
 	spec += 8;
 	v0 = {spec, p4};
 	v1 = {spec + 8 + (1 << 17), p5};
@@ -102,12 +103,19 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	float sina = glm::sin(_walk_time * 5) * ((_sprinting) ? 1.5f : 0.5f);
 	glm::vec3 armFront = glm::normalize(bodyFront + _world_up * sina);
 	glm::vec3 armUp = glm::normalize(glm::cross(bodyRight, armFront));
+	glm::vec3 armRight = bodyRight;
+	if (_armAnimation) {
+		float sinaright = glm::sin(_armAnimTime * 2.857142857142857 * 3.14159265358979323);
+		armFront = glm::normalize(_front - bodyRight * 6.0f * scale + _world_up * sinaright * 3.0f);
+		armRight = glm::normalize(glm::cross(armFront, _world_up));
+		armUp = glm::normalize(glm::cross(armRight, armFront));
+	}
 
 // draw right arm
-	pos += bodyRight * 6.0f * scale;
+	pos += armRight * 6.0f * scale;
 	// up
-	p0 = pos + bodyRight * 2.0f * scale - armFront * 2.0f * scale;
-	p1 = p0 - bodyRight * 4.0f * scale;
+	p0 = pos + armRight * 2.0f * scale - armFront * 2.0f * scale;
+	p1 = p0 - armRight * 4.0f * scale;
 	p2 = p0 + armFront * 4.0f * scale;
 	p3 = p1 + armFront * 4.0f * scale;
 	spec = (2 << 19) + 44 + (16 << 8) + (itemLight << 24);
@@ -155,15 +163,18 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v2 = {spec + (12 << 8) + (1 << 18), p5};
 	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	pos -= armRight * 6.0f * scale;
 
 // draw left leg // which movement is in synch with right arm
-	pos -= bodyRight * 8.0f * scale;
-	pos.z -= 12.0f * scale;
+	glm::vec3 legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + _world_up * sina);
+	glm::vec3 legUp = glm::normalize(glm::cross(bodyRight, legFront));
+	pos -= bodyRight * 2.0f * scale;
+	pos -= bodyUp * 12.0f * scale;
 	// up
-	p0 = pos + bodyRight * 2.0f * scale - armFront * 2.0f * scale;
+	p0 = pos + bodyRight * 2.0f * scale - legFront * 2.0f * scale;
 	p1 = p0 - bodyRight * 4.0f * scale;
-	p2 = p0 + armFront * 4.0f * scale;
-	p3 = p1 + armFront * 4.0f * scale;
+	p2 = p0 + legFront * 4.0f * scale;
+	p3 = p1 + legFront * 4.0f * scale;
 	spec = (2 << 19) + 20 + (48 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p1};
@@ -171,10 +182,10 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// down
-	p4 = p2 - armUp * 12.0f * scale;
-	p5 = p3 - armUp * 12.0f * scale;
-	p6 = p0 - armUp * 12.0f * scale;
-	p7 = p1 - armUp * 12.0f * scale;
+	p4 = p2 - legUp * 12.0f * scale;
+	p5 = p3 - legUp * 12.0f * scale;
+	p6 = p0 - legUp * 12.0f * scale;
+	p7 = p1 - legUp * 12.0f * scale;
 	spec += 4;
 	v0 = {spec, p4};
 	v1 = {spec + 4 + (1 << 17), p5};
@@ -215,7 +226,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	armFront = glm::normalize(bodyFront + _world_up * sina);
 	armUp = glm::normalize(glm::cross(bodyRight, armFront));
 	pos -= bodyRight * 4.0f * scale;
-	pos.z += 12.0f * scale;
+	pos += bodyUp * 12.0f * scale;
 	// up
 	p0 = pos + bodyRight * 2.0f * scale - armFront * 2.0f * scale;
 	p1 = p0 - bodyRight * 4.0f * scale;
@@ -268,13 +279,15 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 // draw right leg
+	legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + _world_up * sina);
+	legUp = glm::normalize(glm::cross(bodyRight, legFront));
 	pos += bodyRight * 8.0f * scale;
-	pos.z -= 12.0f * scale;
+	pos -= bodyUp * 12.0f * scale;
 	// up
-	p0 = pos + bodyRight * 2.0f * scale - armFront * 2.0f * scale;
+	p0 = pos + bodyRight * 2.0f * scale - legFront * 2.0f * scale;
 	p1 = p0 - bodyRight * 4.0f * scale;
-	p2 = p0 + armFront * 4.0f * scale;
-	p3 = p1 + armFront * 4.0f * scale;
+	p2 = p0 + legFront * 4.0f * scale;
+	p3 = p1 + legFront * 4.0f * scale;
 	spec = (2 << 19) + 4 + (16 << 8) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p1};
@@ -282,10 +295,10 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr )
 	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// down
-	p4 = p2 - armUp * 12.0f * scale;
-	p5 = p3 - armUp * 12.0f * scale;
-	p6 = p0 - armUp * 12.0f * scale;
-	p7 = p1 - armUp * 12.0f * scale;
+	p4 = p2 - legUp * 12.0f * scale;
+	p5 = p3 - legUp * 12.0f * scale;
+	p6 = p0 - legUp * 12.0f * scale;
+	p7 = p1 - legUp * 12.0f * scale;
 	spec += 4;
 	v0 = {spec, p4};
 	v1 = {spec + 4 + (1 << 17), p5};
