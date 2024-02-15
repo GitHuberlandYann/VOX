@@ -54,9 +54,7 @@ log: all
 rer: re
 	@./$(NAME)
 
-extrusion: extrude
-
-extrude:
+extrusion:
 	$(CC) $(CPPFLAGS) $(SAN) -I Includes Sources/Extrusion/main.cpp -o extrude $(LINKS)
 
 .PHONY: all clean fclean re run log rer extrusion

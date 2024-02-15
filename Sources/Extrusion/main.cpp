@@ -54,24 +54,26 @@ int main( int ac, char **av )
 	}
 	std::cout << " ---" << std::endl;
 	// up faces
+	std::cout << "{";
 	for (int row = 0; row < TEXSIZE; row++) {
 		for (int col = 0; col < TEXSIZE; col++) {
 			if (!row) {
 				if (arr[row * TEXSIZE + col]) {
 					int size = 0;
 					for (; col + size < TEXSIZE && arr[row * TEXSIZE + col + size]; ++size);
-					std::cout << "up " << col << ", " << row << " size " << size << std::endl;
+					std::cout << "{" << col << ", " << row << ", " << size << "}, ";
 					col += size - 1;
 				}
 			} else if (arr[row * TEXSIZE + col] && !arr[(row - 1) * TEXSIZE + col]) {
 				int size = 0;
 				for (; col + size < TEXSIZE && arr[row * TEXSIZE + col + size] && !arr[(row - 1) * TEXSIZE + col + size]; ++size);
-				std::cout << "up " << col << ", " << row << " size " << size << std::endl;
+				std::cout << "{" << col << ", " << row << ", " << size << "}, ";
 				col += size - 1;
 			}
 		}
 	}
-	std::cout << " ---" << std::endl;
+	std::cout << "}," << std::endl << "\t\t{";
+	// std::cout << " ---" << std::endl;
 	// down faces
 	for (int row = 0; row < TEXSIZE; row++) {
 		for (int col = 0; col < TEXSIZE; col++) {
@@ -79,18 +81,19 @@ int main( int ac, char **av )
 				if (arr[row * TEXSIZE + col]) {
 					int size = 0;
 					for (; col + size < TEXSIZE && arr[row * TEXSIZE + col + size]; ++size);
-					std::cout << "down " << col << ", " << row << " size " << size << std::endl;
+					std::cout << "{" << col << ", " << row << ", " << size << "}, ";
 					col += size - 1;
 				}
 			} else if (arr[row * TEXSIZE + col] && !arr[(row + 1) * TEXSIZE + col]) {
 				int size = 0;
 				for (; col + size < TEXSIZE && arr[row * TEXSIZE + col + size] && !arr[(row + 1) * TEXSIZE + col + size]; ++size);
-				std::cout << "down " << col << ", " << row << " size " << size << std::endl;
+				std::cout << "{" << col << ", " << row << ", " << size << "}, ";
 				col += size - 1;
 			}
 		}
 	}
-	std::cout << " ---" << std::endl;
+	std::cout << "}," << std::endl << "\t\t{";
+	// std::cout << " ---" << std::endl;
 	// left faces
 	for (int col = 0; col < TEXSIZE; col++) {
 		for (int row = 0; row < TEXSIZE; row++) {
@@ -98,18 +101,19 @@ int main( int ac, char **av )
 				if (arr[row * TEXSIZE + col]) {
 					int size = 0;
 					for (; row + size < TEXSIZE && arr[(row + size) * TEXSIZE + col]; ++size);
-					std::cout << "left " << col << ", " << row << " size " << size << std::endl;
+					std::cout << "{" << col << ", " << row << ", " << size << "}, ";
 					row += size - 1;
 				}
 			} else if (arr[row * TEXSIZE + col] && !arr[row * TEXSIZE + col - 1]) {
 				int size = 0;
 				for (; row + size < TEXSIZE && arr[(row + size) * TEXSIZE + col] && !arr[(row + size) * TEXSIZE + col - 1]; ++size);
-				std::cout << "left " << col << ", " << row << " size " << size << std::endl;
+				std::cout << "{" << col << ", " << row << ", " << size << "}, ";
 				row += size - 1;
 			}
 		}
 	}
-	std::cout << " ---" << std::endl;
+	std::cout << "}," << std::endl << "\t\t{";
+	// std::cout << " ---" << std::endl;
 	// right faces
 	for (int col = 0; col < TEXSIZE; col++) {
 		for (int row = 0; row < TEXSIZE; row++) {
@@ -117,17 +121,18 @@ int main( int ac, char **av )
 				if (arr[row * TEXSIZE + col]) {
 					int size = 0;
 					for (; row + size < TEXSIZE && arr[(row + size) * TEXSIZE + col]; ++size);
-					std::cout << "right " << col << ", " << row << " size " << size << std::endl;
+					std::cout << "{" << col << ", " << row << ", " << size << "}, ";
 					row += size - 1;
 				}
 			} else if (arr[row * TEXSIZE + col] && !arr[row * TEXSIZE + col + 1]) {
 				int size = 0;
 				for (; row + size < TEXSIZE && arr[(row + size) * TEXSIZE + col] && !arr[(row + size) * TEXSIZE + col + 1]; ++size);
-				std::cout << "right " << col << ", " << row << " size " << size << std::endl;
+				std::cout << "{" << col << ", " << row << ", " << size << "}, ";
 				row += size - 1;
 			}
 		}
 	}
+	std::cout << "}" << std::endl;
 
 	SOIL_free_image_data(img.content);
 	return (0);

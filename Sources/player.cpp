@@ -222,18 +222,22 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item )
 			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p7};
 			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 		} else { // flowers
-			spec = 16 * s_blocks[item]->texX() + (16 * s_blocks[item]->texY() << 8) + (itemLight << 24);
-			v0 = {spec, p0};
-			v1 = {spec + 16 + (1 << 17), p5};
-			v2 = {spec + (16 << 8) + (1 << 18), p2};
-			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p7};
-			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+			if (1 && EXTRUSION::drawItem3D(arr, item, itemLight, p1 + armFront * 0.25f, -armRight, -armUp, armFront, 0.5f)) { // TODO replace 1 by var toggle fancy_item
 
-			v0 = {spec, p1};
-			v1 = {spec + 16 + (1 << 17), p4};
-			v2 = {spec + (16 << 8) + (1 << 18), p3};
-			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p6};
-			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+			} else {
+				spec = 16 * s_blocks[item]->texX() + (16 * s_blocks[item]->texY() << 8) + (itemLight << 24);
+				v0 = {spec, p0};
+				v1 = {spec + 16 + (1 << 17), p5};
+				v2 = {spec + (16 << 8) + (1 << 18), p2};
+				v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p7};
+				arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+				v0 = {spec, p1};
+				v1 = {spec + 16 + (1 << 17), p4};
+				v2 = {spec + (16 << 8) + (1 << 18), p3};
+				v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p6};
+				arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+			}
 		}
 	}
 
