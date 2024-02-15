@@ -2,7 +2,7 @@ NAME		= vox
 OBJS_DIR	= Objs
 SRCS_DIR	= Sources
 
-FILES		= main callbacks fluids inputs light player random screenshot tickUpdate utils \
+FILES		= main callbacks fluids inputs item3D light player random screenshot tickUpdate utils \
 				Blocks Camera Chat ChestInstance Chunk DayCycle Entity FurnaceInstance Inventory JSON Menu OpenGL_Manager Particle Text Ui
 
 SRCS		= $(addprefix $(SRCS_DIR)/, $(addsuffix .cpp, $(FILES)))
@@ -40,7 +40,7 @@ clean:
 	rm -rf $(OBJS_DIR)
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(NAME) extrude
 
 re: fclean all
 
@@ -54,4 +54,9 @@ log: all
 rer: re
 	@./$(NAME)
 
-.PHONY: all clean fclean re run log rer
+extrusion: extrude
+
+extrude:
+	$(CC) $(CPPFLAGS) $(SAN) -I Includes Sources/Extrusion/main.cpp -o extrude $(LINKS)
+
+.PHONY: all clean fclean re run log rer extrusion

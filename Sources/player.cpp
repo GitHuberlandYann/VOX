@@ -237,7 +237,7 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item )
 		}
 	}
 
-pos -= armRight * 6.0f * scale;
+	pos -= armRight * 6.0f * scale;
 // draw left leg // which movement is in synch with right arm
 	glm::vec3 legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + _world_up * sina);
 	glm::vec3 legUp = glm::normalize(glm::cross(bodyRight, legFront));

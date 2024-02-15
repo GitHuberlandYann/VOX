@@ -1807,7 +1807,7 @@ void Chunk::updateFurnaces( double currentTime )
 	}
 }
 
-void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime )
+void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<std::pair<int, glm::vec3>> &partArr, double deltaTime )
 {
 	// TODO merge identical close(3/4 of a block) stackable items together
 	// 			on merge, item timer set to longest of 2
@@ -1832,7 +1832,7 @@ void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double 
 
 	camPos = _camera->getPos();
 	for (int index = size - 1; index >= 0; --index) {
-		if (_entities[index]->update(arr, camPos, deltaTime)) {
+		if (_entities[index]->update(arr, partArr, camPos, deltaTime)) {
 			delete _entities[index];
 			_entities.erase(_entities.begin() + index);
 		}

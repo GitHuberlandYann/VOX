@@ -213,7 +213,7 @@ class Chunk
 		void updateFluids( void );
 		void tickUpdate( void );
 		void updateScheduledBlocks( void );
-		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
+		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, std::vector<std::pair<int, glm::vec3>> &partArr, double deltaTime );
 		size_t clearEntities( void );
 		void updateParticles( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
 		size_t clearParticles( void );

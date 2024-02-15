@@ -26,7 +26,7 @@ class Entity
 
 		void setLifetime( double lifetime );
 		void getBlasted( glm::vec3 pos, float blast_radius );
-		bool update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camPos, double deltaTime );
+		bool update( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<std::pair<int, glm::vec3>> &partArr, glm::vec3 camPos, double deltaTime );
 };
 
 #endif

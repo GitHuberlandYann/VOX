@@ -11,6 +11,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_break_time(0), _eat_timer(0), _bow_timer(0), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0})
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
+	EXTRUSION::init();
 	_world_name = "default.json";
 	_camera = new Camera(glm::vec3(1.0f, -2.0f, 66.0f));
 	_inventory = new Inventory();
@@ -485,7 +486,7 @@ void OpenGL_Manager::main_loop( void )
 				if (tickUpdate) {
 					c->tickUpdate();
 				}
-				c->updateEntities(_entities, deltaTime);
+				c->updateEntities(_entities, _particles, deltaTime);
 				c->updateParticles(_particles, deltaTime);
 			}
 		}

@@ -277,7 +277,7 @@ void Entity::getBlasted( glm::vec3 pos, float blast_radius )
 
 // update entity's position and push_back arr with new pos
 // returns true if entity despawns this frame
-bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camPos, double deltaTime )
+bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<std::pair<int, glm::vec3>> &partArr, glm::vec3 camPos, double deltaTime )
 {
 	_lifeTime += deltaTime;
     if (_lifeTime > 300 || _pos.z < 0) {
@@ -396,18 +396,22 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camP
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	} else { // flowers
 	    int itemLight = _chunk->computePosLight(_pos);
-	    int spec = s_blocks[_item.type]->texX() + (s_blocks[_item.type]->texY() << 4) + (0 << 19) + (itemLight << 24);
-	    std::pair<int, glm::vec3> v0 = {spec, p0};
-	    std::pair<int, glm::vec3> v1 = {spec + XTEX, p5};
-	    std::pair<int, glm::vec3> v2 = {spec + YTEX, p2};
-	    std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p7};
-	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+		if (1 && EXTRUSION::drawItem3D(partArr, _item.type, itemLight, _pos + glm::vec3(0, 0, 1), {1, 0, 0}, {0, 1, 0}, {0, 0, 1}, 0.5f)) { // TODO replace 1 by var toggle fancy_item
 
-		v0 = {spec, p1};
-	    v1 = {spec + XTEX, p4};
-	    v2 = {spec + YTEX, p3};
-	    v3 = {spec + XTEX + YTEX, p6};
-		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+		} else {
+			int spec = s_blocks[_item.type]->texX() + (s_blocks[_item.type]->texY() << 4) + (0 << 19) + (itemLight << 24);
+			std::pair<int, glm::vec3> v0 = {spec, p0};
+			std::pair<int, glm::vec3> v1 = {spec + XTEX, p5};
+			std::pair<int, glm::vec3> v2 = {spec + YTEX, p2};
+			std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p7};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			v0 = {spec, p1};
+			v1 = {spec + XTEX, p4};
+			v2 = {spec + YTEX, p3};
+			v3 = {spec + XTEX + YTEX, p6};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+		}
 	}
     return (false);
 }
