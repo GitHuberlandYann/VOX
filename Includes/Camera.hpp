@@ -66,7 +66,7 @@ class Camera
 		int _foodTickTimer, _camPlacement;
 		float _foodExhaustionLevel;
 		float _z0, _fall_immunity;
-		bool _walking, _sprinting, _sneaking, _healthUpdate, _waterHead, _waterFeet, _armAnimation;
+		bool _walking, _sprinting, _sneaking, _healthUpdate, _waterHead, _waterFeet, _armAnimation, _hideUI;
 		std::mutex _mtx;
 		Chunk *_current_chunk_ptr;
 
@@ -83,7 +83,8 @@ class Camera
 		Camera( glm::vec3 position );
 		~Camera( void );
 
-		void drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item );
+		void drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item, bool game_mode );
+		void drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item, bool game_mode );
 
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
@@ -95,6 +96,7 @@ class Camera
 		glm::vec3 getDir( void );
 		float getHitBox( void );
 		void setPosZ( float value );
+		void setHideUI( bool value );
 		void setWaterStatus( bool head, bool underwater );
 		int getWaterStatus( void );
 		bool isUnderwater( void );

@@ -6,7 +6,7 @@ Camera::Camera( glm::vec3 position )
 	: _fall_time(0), _walk_time(0), _breathTime(0), _armAnimTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0),
 	_foodTickTimer(0), _camPlacement(CAMPLACEMENT::DEFAULT), _foodExhaustionLevel(0), _z0(position.z), _fall_immunity(true),
 	_walking(false), _sprinting(false), _sneaking(false), _healthUpdate(false),
-	_waterHead(false), _waterFeet(false), _armAnimation(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
+	_waterHead(false), _waterFeet(false), _armAnimation(false), _hideUI(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
 	_inJump(false), _touchGround(false), _foodSaturationLevel(20)
 {
 	_position = position;
@@ -174,6 +174,11 @@ void Camera::setPosZ( float value )
 	_mtx.lock();
 	_position.z = value;
 	_mtx.unlock();
+}
+
+void Camera::setHideUI( bool value )
+{
+	_hideUI = value;
 }
 
 void Camera::setWaterStatus( bool head, bool underwater )

@@ -163,7 +163,7 @@ void OpenGL_Manager::drawEntities( void )
 
 void OpenGL_Manager::drawParticles( void )
 {
-	_camera->drawPlayer(_particles, _hand_content);
+	_camera->drawPlayer(_particles, _hand_content, _game_mode);
 	size_t psize = _particles.size();
 
 	if (!psize) {

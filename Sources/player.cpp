@@ -1,10 +1,120 @@
 #include "Camera.hpp"
 #include "utils.h"
 
-void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item )
+void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item, bool game_mode )
 {
-	if (_camPlacement == CAMPLACEMENT::DEFAULT || !_current_chunk_ptr) {
+	if (_hideUI || game_mode == CREATIVE) {
 		return ;
+	}
+	int itemLight = _current_chunk_ptr->computePosLight(getEyePos()) << 24;
+	const float scale = 0.057857142857142864 * 0.5f;
+
+	glm::vec3 pos = getEyePos() + _right * 8.0f * scale - _world_up * 9.0f * scale + _world_up * glm::sin(_walk_time * 7) * 0.03f + _right * glm::cos(_walk_time * 4) * 0.03f;
+	if (item == blocks::AIR) { // draw arm, only the two visible faces
+		const int speco = 0; // 64 for second skin
+		glm::vec3 armFront = glm::normalize(_front + _world_up * 0.3f);
+		glm::vec3 armRight = glm::normalize(glm::cross(armFront, _world_up) - _world_up * 0.3f);
+		if (_armAnimation) {
+			float sinaright = glm::sin(_armAnimTime * 2.857142857142857 * 3.14159265358979323);
+			armFront -= armRight * sinaright * 0.5f - _world_up * sinaright * 0.3f;
+			armFront = glm::normalize(armFront);
+			armRight = glm::normalize(glm::cross(armFront, _world_up) - _world_up * 0.3f);
+			pos += armFront * sinaright * 0.05f;
+		}
+		glm::vec3 armUp = glm::normalize(glm::cross(armRight, armFront));
+		// up
+		glm::vec3 p0 = pos + armFront * 12.0f * scale - armRight * 2.0f * scale;
+		glm::vec3 p1 = p0 + armRight * 4.0f * scale;
+		glm::vec3 p2 = p0 - armFront * 12.0f * scale;
+		glm::vec3 p3 = p1 - armFront * 12.0f * scale;
+
+		int spec = speco + (2 << 19) + 48 + (32 << 8) + itemLight;
+		std::pair<int, glm::vec3> v0 = {spec + (1 << 17) + (1 << 18), p0};
+		std::pair<int, glm::vec3> v1 = {spec - 4 + (1 << 18), p1};
+		std::pair<int, glm::vec3> v2 = {spec + (1 << 17) - (12 << 8), p2};
+		std::pair<int, glm::vec3> v3 = {spec - 4 - (12 << 8), p3};
+		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+		// left
+		p1 = p0;
+		p0 -= armUp * 3.0f * scale;
+		p3 = p2;
+		p2 -= armUp * 3.0f * scale;
+		spec = speco + (2 << 19) + 52 + (32 << 8) + itemLight;
+		v0 = {spec + (1 << 17) + (1 << 18), p0};
+		v1 = {spec - 4 + (1 << 18), p1};
+		v2 = {spec + (1 << 17) - (12 << 8), p2};
+		v3 = {spec - 4 - (12 << 8), p3};
+		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	} else if (item < blocks::POPPY) { // draw block
+		glm::vec3 itemFront = glm::normalize(glm::vec3(glm::vec2(_front + _right * 0.5f), 0));
+		glm::vec3 itemRight = glm::normalize(glm::cross(itemFront, _world_up));
+		if (_armAnimation) {
+			float sinaright = glm::sin(_armAnimTime * 2.857142857142857 * 3.14159265358979323);
+			itemFront -= itemRight * sinaright * 0.5f - _world_up * sinaright * 0.3f;
+			itemFront = glm::normalize(itemFront);
+			itemRight = glm::normalize(glm::cross(itemFront, _world_up) - _world_up * 0.3f);
+			pos += itemFront * sinaright * 0.05f;
+		}
+		glm::vec3 itemUp = glm::normalize(glm::cross(itemRight, itemFront));
+		// up
+		// up
+		glm::vec3 p0 = pos + _world_up * (0.1f + 0.5f * _front.z) + itemFront * 12.0f * scale - itemRight * 0.25f;
+		glm::vec3 p1 = p0 + itemRight * 0.25f;
+		glm::vec3 p2 = p0 - itemFront * 0.25f;
+		glm::vec3 p3 = p1 - itemFront * 0.25f;
+
+		int spec = s_blocks[item]->texX(face_dir::PLUSZ) * 16 + ((s_blocks[item]->texY(face_dir::PLUSZ) * 16) << 8) + itemLight;
+		std::pair<int, glm::vec3> v0 = {spec, p0};
+		std::pair<int, glm::vec3> v1 = {spec + 16 + (1 << 17), p1};
+		std::pair<int, glm::vec3> v2 = {spec + (16 << 8) + (1 << 18), p2};
+		std::pair<int, glm::vec3> v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
+		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+		
+		// left
+		p1 = p2;
+		p2 = p0 - itemUp * 0.25f;
+		p3 = p1 - itemUp * 0.25f;
+		spec = s_blocks[item]->texX(face_dir::MINUSX) * 16 + ((s_blocks[item]->texY(face_dir::MINUSX) * 16) << 8) + itemLight;
+		v0 = {spec, p0};
+		v1 = {spec + 16 + (1 << 17), p1};
+		v2 = {spec + (16 << 8) + (1 << 18), p2};
+		v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
+		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+		// back
+		p0 = p1;
+		p1 = p0 + itemRight * 0.25f;
+		p2 = p3;
+		p3 = p2 + itemRight * 0.25f;
+		v0 = {spec, p0};
+		v1 = {spec + 16 + (1 << 17), p1};
+		v2 = {spec + (16 << 8) + (1 << 18), p2};
+		v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
+		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	} else {
+		pos += _front * 0.7f + _world_up * 0.2f;
+		glm::vec3 right = glm::normalize(-_front + _right * 0.3f + _world_up * 0.2f);
+		glm::vec3 front = glm::normalize(glm::cross(_world_up, right));
+		if (_armAnimation) {
+			float sinaright = glm::sin(_armAnimTime * 2.857142857142857 * 3.14159265358979323);
+			pos -= right * sinaright * 0.5f + front * sinaright * 0.2f;
+			right += _world_up * sinaright * 2.0f;
+			right = glm::normalize(right);
+			front = glm::normalize(glm::cross(_world_up, right));
+		}
+		glm::vec3 up = glm::normalize(glm::cross(right, front));
+		EXTRUSION::drawItem3D(arr, item, itemLight >> 24, pos, front, right, up, 0.5f);
+	}
+}
+
+void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item, bool game_mode )
+{
+	if (!_current_chunk_ptr) {
+		return ;
+	}
+	if (_camPlacement == CAMPLACEMENT::DEFAULT) {
+		return (drawHeldItem(arr, item, game_mode));
 	}
 
 	// 1 model texture pxl is 0.057857142857142864 meters

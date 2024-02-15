@@ -42,7 +42,6 @@ TODOS:
 	- rework clouds
     - settings menu
     - Sound https://www.ambiera.com/irrklang/tutorials.html
-    - player arm in survival mode
 	- upon world generation, place player on ground by using continentalness
 	- water ligth level
     - lava + nether
@@ -90,6 +89,8 @@ DONE:
 	- entities !
 	- player 3D model (F5 mode)
 	- particles !
+	- 3D items on ground
+    - player arm in survival mode
 	- flint and steel
 	- TNT, explosions
     - make gravel behave like sand

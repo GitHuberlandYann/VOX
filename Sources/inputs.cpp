@@ -405,6 +405,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	// toggle hotbar F1
 	if ((glfwGetKey(_window, GLFW_KEY_F1) == GLFW_PRESS) && ++_key_j == 1) {
 		_ui->_hideUI = !_ui->_hideUI;
+		_camera->setHideUI(_ui->_hideUI);
 		_ui->chatMessage(std::string("UI ") + ((_ui->_hideUI) ? "HIDDEN" : "SHOWN"));
 	} else if (glfwGetKey(_window, GLFW_KEY_F1) == GLFW_RELEASE) {
 		_key_j = 0;
