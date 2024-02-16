@@ -33,13 +33,10 @@ void thread_chunk_update( OpenGL_Manager *render )
 		newperi_chunks.reserve(render->_perimeter_chunks.capacity());
 		std::vector<Chunk *> newdel_chunks;
 		newdel_chunks.reserve(render->_deleted_chunks.capacity());
-		mtx.lock();
 		std::list<Chunk *>::iterator ite = render->_chunks.end();
 		std::list<Chunk *>::iterator it = render->_chunks.begin();
-		mtx.unlock();
 		// std::cout << "IN THREAD UPDATE, nb chunks: " << render->_chunks.size() << std::endl;
 		for (; it != ite;) {
-			mtx.lock();
 			if ((*it)->inPerimeter(pos.x, pos.y, render_dist << CHUNK_SHIFT)) {
 				// std::cout << "IN PERIMETER" << std::endl;
 				(*it)->checkFillVertices();
@@ -48,14 +45,13 @@ void thread_chunk_update( OpenGL_Manager *render )
 			} else if (!(*it)->inPerimeter(pos.x, pos.y, (render_dist << CHUNK_SHIFT) * 2)) {
 				std::list<Chunk *>::iterator tmp = it;
 				--it;
-				mtx.unlock();
 				(*tmp)->setBackup(render->_backups);
 				newdel_chunks.push_back(*tmp);
 				mtx.lock();
 				render->_chunks.erase(tmp);
+				mtx.unlock();
 			}
 			++it;
-			mtx.unlock();
 		}
 		// b.stamp("delperi");
 		sort_chunks(render->_camera->getPos(), newperi_chunks);

@@ -286,28 +286,34 @@ int Menu::options_menu( void )
 	glUseProgram(_shaderProgram);
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
-/*
+
 	// first draw text shadow
-	// _text->addText(WIN_WIDTH / 2 - 100 + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size - 40 + _gui_size, 24, false, "Game Menu");
-	_text->addText(WIN_WIDTH / 2 - 38 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Back to Game");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 42 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Advancements");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 44 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Give Feedback");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 28 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Options...");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 24 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Statistics");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 35 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Report Bugs");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 35 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Open to LAN");
-	_text->addText(WIN_WIDTH / 2 - 70 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Save and Quit to Title");
+	// _text->addText(WIN_WIDTH / 2 - 100 + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size - 40 + _gui_size, 24, false, "Options");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 6 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "FOV");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Realms Notifications");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Skin Customization");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Video Settings...");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 30 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Language...");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Resource Packs...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 44 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Music & Sounds...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 35 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Controls...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 40 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Chat Settings");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 60 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Accessibility Settings");
+	_text->addText(WIN_WIDTH / 2 - 8 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Done");
 
 	// then draw text in white
-	_text->addText(WIN_WIDTH / 2 - 25 * (_gui_size + 1), WIN_HEIGHT / 2 - 60 * _gui_size - 40, (_gui_size + 1) * 7, true, "Game Menu");
-	_text->addText(WIN_WIDTH / 2 - 38 * _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Back to Game");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 42 * _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Advancements");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 44 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Give Feedback");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 28 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Options...");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 24 * _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Statistics");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 35 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Report Bugs");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 35 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Open to LAN");
-	_text->addText(WIN_WIDTH / 2 - 70 * _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Save and Quit to Title");*/
+	_text->addText(WIN_WIDTH / 2 - 23 * (_gui_size + 1), WIN_HEIGHT / 2 - 105 * _gui_size, (_gui_size + 1) * 7, true, "Options");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 6 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "FOV");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Realms Notifications");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Skin Customization");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Video Settings...");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 30 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Language...");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Resource Packs...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 44 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Music & Sounds...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 35 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Controls...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 40 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Chat Settings");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 60 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Accessibility Settings");
+	_text->addText(WIN_WIDTH / 2 - 8 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Done");
 	return (0);
 }
 
@@ -597,20 +603,20 @@ void Menu::setup_array_buffer_pause( void )
 void Menu::setup_array_buffer_options( void )
 {
 	_vertices.push_back({1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1}); // occult window
-    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // FOV
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Realms Notifications
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // FOV
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Realms Notifications
 
-    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Skin Customization...
-    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Video Settings...
-    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Language...
-    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Resource Packs...
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Skin Customization...
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Video Settings...
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Language...
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Resource Packs...
 
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Music & Sounds...
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Controls...
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Chat Settings...
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Accessibility Settings...
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Music & Sounds...
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Controls...
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Chat Settings...
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Accessibility Settings...
 
-    _vertices.push_back({1, WIN_WIDTH / 2 - 60 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 120 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Done
+    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Done
 
 	setup_shader();
 }

@@ -537,9 +537,9 @@ void OpenGL_Manager::main_loop( void )
 			mtx_perimeter.lock();
 			str += '/' + std::to_string(_perimeter_chunks.size());
 			mtx_perimeter.unlock();
-			// mtx.lock();
+			mtx.lock();
 			str += '/' + std::to_string(_chunks.size());
-			// mtx.unlock();
+			mtx.unlock();
 			str += "\nDisplayed faces\t> " + std::to_string(faceCounter)
 					+ "\nSky faces\t> " + std::to_string(skyFaces)
 					+ "\nWater faces\t> " + std::to_string(waterFaces)

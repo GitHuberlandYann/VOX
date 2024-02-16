@@ -420,11 +420,13 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 	// drop item
 	if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
-		t_item details = _inventory->removeBlock(true);
-		if (details.type != blocks::AIR) {
-			mtx.lock();
-			current_chunk_ptr->dropEntity(_camera->getDir(), details);
-			mtx.unlock();
+		if (current_chunk_ptr) {
+			t_item details = _inventory->removeBlock(true);
+			if (details.type != blocks::AIR) {
+				mtx.lock();
+				current_chunk_ptr->dropEntity(_camera->getDir(), details);
+				mtx.unlock();
+			}
 		}
 	}
 	if (_game_mode == CREATIVE && _block_hit.value != blocks::AIR && _key_rm_block != 1 && _key_add_block != 1
@@ -556,7 +558,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		}
 		_block_hit = block_hit;
 
-		if (!_camera->_health_points) { // dead
+		if (!_camera->_health_points && current_chunk_ptr) { // dead
 			_inventory->spillInventory(current_chunk_ptr);
 			_paused = true;
 			_menu->setState(MENU::DEATH);

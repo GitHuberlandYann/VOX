@@ -698,6 +698,9 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		int type_under = (_blocks[offset - 1] & 0xFF);
 		if (type_under == blocks::AIR) {
+			if (useInventory) {
+				_inventory->removeBlock(false);
+			}
 			_entities.push_back(new Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0, 0, 0}, true, false, {type, 1, {0, 0}}));
 			return ;
 		}
@@ -780,6 +783,18 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		_hasWater = true; // glass considered as invis block
 	}
 	_displayed_faces += face_count(type, pos.x, pos.y, pos.z);
+	if (type == blocks::OAK_LEAVES) { // leaves considered transparent, but not entirely when next to each other ..
+		for (int index = 0; index < 6; index++) {
+			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+			if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+			} else {
+				GLint adj = _blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] & 0xFF;
+				if (adj == blocks::OAK_LEAVES) {
+					_displayed_faces -= !visible_face(adj, type,  opposite_dir(index));
+				}
+			}
+		}
+	}
 	if (!air_flower(type, true, true, false)) {
 		return ;
 	}
