@@ -9,9 +9,7 @@ extern siv::PerlinNoise::seed_type perlin_seed;
 void OpenGL_Manager::saveWorld( void )
 {
 	// first delete chunks, this updates _backups
-	if (_thread.joinable()) {
-		_thread.join();
-	}
+	stopThread();
 	_visible_chunks.clear();
 	mtx_perimeter.lock();
 	_perimeter_chunks.clear();
@@ -47,6 +45,7 @@ void OpenGL_Manager::saveWorld( void )
 		std::cerr << e.what() << std::endl << "world save on Worlds/" << _world_name << " failure .. hope you did some snapshot" << std::endl;
 	}
 	glClearColor(0, 0, 0, 1);
+	startThread();
 }
 
 std::string DayCycle::saveString( void )

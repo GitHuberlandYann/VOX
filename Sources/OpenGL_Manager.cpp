@@ -1,5 +1,6 @@
 #include "OpenGL_Manager.hpp"
 // #include "Benchmark.hpp"
+void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL),
@@ -8,7 +9,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 		_key_h(0), _key_g(0), _key_f5(0), _key_j(0), _key_o(0), _key_time_mul(0), _key_jump(0), _key_1(0), _key_2(0), _key_3(0),
 		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
 		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
-		_esc_released(true), _e_released(true),
+		_esc_released(true), _e_released(true), _threadUpdate(false), _threadStop(false),
 		_break_time(0), _eat_timer(0), _bow_timer(0), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0})
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
@@ -18,15 +19,15 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_ui = new UI(*_inventory, *_camera);
 	_ui->getChatPtr()->setOGLManPtr(this);
 	_menu = new Menu(*_inventory, _ui);
+
+	startThread();
 }
 
 OpenGL_Manager::~OpenGL_Manager( void )
 {
 	std::cout << "Destructor of OpenGL_Manager called" << std::endl;
 
-	if (_thread.joinable()) {
-		_thread.join();
-	}
+	stopThread();
 
 	if (_textures) {
 		glDeleteTextures(5, _textures);
@@ -248,10 +249,8 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::initWorld( void )
 {
-	_current_chunk = glm::ivec2(-10000, -10000);
 	chunk_update();
-	_current_chunk = glm::ivec2(-10000, -10000);
-	// chunk_update();
+	setThreadUpdate(true);
 }
 
 void OpenGL_Manager::create_shaders( void )
@@ -578,6 +577,7 @@ void OpenGL_Manager::main_loop( void )
 					_paused = false;
 					backFromMenu = 0;
 					_camera->_update = true;
+					setThreadUpdate(true);
 					break ;
 				case (2): // world selected, go into loading mode
 					_world_name = _menu->getWorldFile();

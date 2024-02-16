@@ -1771,7 +1771,7 @@ void Chunk::drawArray( GLint & counter, GLint &face_counter )
 		// std::cout << "skip one" << std::endl;
 			return ;
 		}
-		std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
+		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		setup_array_buffer();
 	}
     glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down

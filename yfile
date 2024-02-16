@@ -40,7 +40,6 @@ TODOS:
 	- save entities
 	- entity shadow
 	- rework clouds
-    - settings menu
     - Sound https://www.ambiera.com/irrklang/tutorials.html
 	- upon world generation, place player on ground by using continentalness
 	- water ligth level
@@ -49,6 +48,7 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+    - settings menu
 	- double chests
 	- bow and arrow
 	- universal use of tps instead of deltatimes

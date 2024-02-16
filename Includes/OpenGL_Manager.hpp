@@ -37,7 +37,7 @@ class OpenGL_Manager
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
 		GLint _key_rdist, _render_distance, _key_guisize, _key_fill, _fill, _key_add_block, _key_rm_block, _key_pick_block, _key_screenshot, _key_h, _key_g, _key_f5, _key_j, _key_o, _key_time_mul, _key_jump, _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9;
-		bool _debug_mode, _game_mode, _outline, _paused, _esc_released, _e_released;
+		bool _debug_mode, _game_mode, _outline, _paused, _esc_released, _e_released, _threadUpdate, _threadStop;
 		float _break_time, _eat_timer, _bow_timer;
 		int _break_frame, _hand_content;
 		std::string _world_name;
@@ -45,6 +45,7 @@ class OpenGL_Manager
 		std::vector<std::pair<int, glm::vec3>> _entities;
 		std::vector<std::pair<int, glm::vec3>> _particles;
 		std::thread _thread;
+		std::mutex _mtx;
 		t_hit _block_hit;
 		UI *_ui;
 		Menu *_menu;
@@ -69,6 +70,9 @@ class OpenGL_Manager
 		void drawEntities( void );
 		void drawParticles( void );
 
+		void startThread( void );
+		void stopThread( void );
+
 	public:
 		std::list<Chunk *> _chunks;
 		std::vector<Chunk *> _perimeter_chunks, _deleted_chunks;
@@ -90,6 +94,12 @@ class OpenGL_Manager
 		size_t clearEntities( void );
 		size_t clearParticles( void );
 		void main_loop( void );
+
+		glm::ivec2 getCurrentChunk( void );
+		int getRenderDist( void );
+		void setThreadUpdate( bool state );
+		bool getThreadUpdate( void );
+		bool getThreadStop( void );
 };
 
 #endif
