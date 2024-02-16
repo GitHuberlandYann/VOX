@@ -45,9 +45,11 @@ TODOS:
 	- water ligth level
     - lava + nether
 	- multiplayer ? Server-Client logic on singleplayer ?
+	- divide chunk in 16 subsections ?
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+	- mini stutter in chunk change in survival mode but not in creative, check input s current_chunk_ptr
     - settings menu
 	- double chests
 	- bow and arrow

@@ -10,18 +10,22 @@ class ChestInstance;
 
 # define ALPHABETA " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 
-enum {
-	MAIN_MENU,
-	WORLD_SELECT_MENU,
-	LOAD_MENU,
-	DEATH_MENU,
-	PAUSE_MENU,
-	INVENTORY_MENU,
-	CRAFTING_MENU,
-	CHEST_MENU,
-	FURNACE_MENU,
-	CHAT_MENU
-};
+namespace MENU
+{
+	enum {
+		MAIN,
+		WORLD_SELECT,
+		LOAD,
+		DEATH,
+		PAUSE,
+		OPTIONS,
+		INVENTORY,
+		CRAFTING,
+		CHEST,
+		FURNACE,
+		CHAT
+	};
+}
 
 class Menu
 {
@@ -51,6 +55,7 @@ class Menu
 		int loading_screen( GLint render_dist );
 		int death_menu( void );
 		int pause_menu( void );
+		int options_menu( void );
 		int ingame_inputs( void );
 		int ingame_menu( void );
 		int chat_menu( bool animUpdate );
@@ -60,6 +65,7 @@ class Menu
 		void setup_array_buffer_load( int completion );
 		void setup_array_buffer_death( void );
         void setup_array_buffer_pause( void );
+        void setup_array_buffer_options( void );
         void setup_array_buffer_chat( void );
 
 		void occult_selection( void );

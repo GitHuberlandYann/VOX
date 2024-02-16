@@ -428,7 +428,7 @@ void OpenGL_Manager::main_loop( void )
 		double currentTime = glfwGetTime();
 		double deltaTime = currentTime - previousFrame;
 		// if (deltaTime > 0.1f) std::cout << "\t\tPREVIOUS FRAME AT " << deltaTime << std::endl;
-		bool gamePaused = _paused && _menu->getState() < INVENTORY_MENU && _menu->getState() != DEATH_MENU;
+		bool gamePaused = _paused && _menu->getState() < MENU::INVENTORY && _menu->getState() != MENU::DEATH;
 
 		++nbFrames;
 		if (currentTime - lastTime >= 1.0) {
@@ -461,7 +461,7 @@ void OpenGL_Manager::main_loop( void )
 				user_inputs(deltaTime, ++backFromMenu > 3);
 			}
 			chunk_update();
-		} else if (_camera->_update && _menu->getState() >= INVENTORY_MENU) {
+		} else if (_camera->_update && _menu->getState() >= MENU::INVENTORY) {
 			// _ui->chatMessage("debug time");
 			chunk_update();
 			update_cam_view();
@@ -556,7 +556,7 @@ void OpenGL_Manager::main_loop( void )
 			str = "\n\nFPS: " + std::to_string(nbFramesLastSecond) + "\nTPS: " + std::to_string(nbTicksLastSecond);
 		}
 		// b.stamp("stringing");
-		if (_menu->getState() >= PAUSE_MENU) {
+		if (_menu->getState() >= MENU::PAUSE) {
 			_ui->drawUserInterface(str, _game_mode, deltaTime);
 		}
 		// b.stamp("UI");

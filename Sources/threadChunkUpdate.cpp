@@ -122,7 +122,6 @@ void OpenGL_Manager::stopThread( void )
 	}
 }
 
-
 glm::ivec2 OpenGL_Manager::getCurrentChunk( void )
 {
 	_mtx.lock();

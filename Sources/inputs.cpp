@@ -94,7 +94,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_paused = true;
 		_esc_released = false;
 		_e_released = false;
-		_menu->setState(CRAFTING_MENU);
+		_menu->setState(MENU::CRAFTING);
 		return ;
 	} else if (_block_hit.value == blocks::CHEST) {
 		if (air_flower(chunk_hit->getBlockAt(_block_hit.pos.x - chunk_hit->getStartX(), _block_hit.pos.y - chunk_hit->getStartY(), _block_hit.pos.z + 1, true), true, false, false)) {
@@ -104,14 +104,14 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_paused = true;
 		_esc_released = false;
 		_e_released = false;
-		_menu->setState(CHEST_MENU);
+		_menu->setState(MENU::CHEST);
 		_menu->setChestInstance(chunk_hit->getChestInstance(_block_hit.pos));
 		return ;
 	} else if (_block_hit.value == blocks::FURNACE) {
 		_paused = true;
 		_esc_released = false;
 		_e_released = false;
-		_menu->setState(FURNACE_MENU);
+		_menu->setState(MENU::FURNACE);
 		_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit.pos));
 		return ;
 	} else if (_block_hit.value == blocks::TNT && _hand_content == blocks::FLINT_AND_STEEL) {
@@ -282,7 +282,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		_paused = true;
 		_esc_released = false;
-		_menu->setState(PAUSE_MENU);
+		_menu->setState(MENU::PAUSE);
 		return ;
 	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
 		_esc_released = true;
@@ -292,7 +292,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_paused = true;
 		_e_released = false;
 		_esc_released = false;
-		_menu->setState(INVENTORY_MENU);
+		_menu->setState(MENU::INVENTORY);
 		return ;
 	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
 		_e_released = true;
@@ -301,7 +301,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	if (glfwGetKey(_window, GLFW_KEY_T) == GLFW_PRESS) {
 		_paused = true;
 		_esc_released = false;
-		_menu->setState(CHAT_MENU);
+		_menu->setState(MENU::CHAT);
 		return ;
 	}
 	// quit program
@@ -559,7 +559,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		if (!_camera->_health_points) { // dead
 			_inventory->spillInventory(current_chunk_ptr);
 			_paused = true;
-			_menu->setState(DEATH_MENU);
+			_menu->setState(MENU::DEATH);
 			return ;
 		}
 	}
