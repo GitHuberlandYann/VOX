@@ -860,9 +860,9 @@ void Chunk::replace_block( bool useInventory, glm::ivec3 pos, int type, int prev
 // we output 1 int and 3 floats to shader
 void Chunk::setup_array_buffer( void )
 {
-	if (_thread.joinable()) {
-		_thread.join();
-	}
+	// if (_thread.joinable()) {
+	// 	_thread.join();
+	// }
 
 	if (!_vaoSet) {
 		glGenVertexArrays(1, &_vao);
@@ -890,9 +890,9 @@ void Chunk::setup_array_buffer( void )
 
 void Chunk::setup_sky_array_buffer( void )
 {
-	if (_thread.joinable()) {
-		_thread.join();
-	}
+	// if (_thread.joinable()) {
+	// 	_thread.join();
+	// }
 
 	// check_glstate("BEFORE Chunk::setup_sky_array_buffer", false);
 	if (!_skyVaoSet) {
@@ -925,9 +925,9 @@ void Chunk::setup_sky_array_buffer( void )
 
 void Chunk::setup_water_array_buffer( void )
 {
-	if (_thread.joinable()) {
-		_thread.join();
-	}
+	// if (_thread.joinable()) {
+	// 	_thread.join();
+	// }
 
 	if (!_waterVaoSet) {
 		glGenVertexArrays(1, &_waterVao);
@@ -1356,9 +1356,9 @@ int Chunk::isHit( glm::ivec3 pos )
 		std::cout << "ERROR block out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 		return (blocks::AIR);
 	}
-	if (_thread.joinable()) {
-		_thread.join();
-	}
+	// if (_thread.joinable()) {
+	// 	_thread.join();
+	// }
 	int type = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z] & 0xFF;
 	if (type > blocks::WATER) {
 		return (blocks::AIR);
@@ -1476,9 +1476,9 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 		std::cout << "ERROR block hit out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 		return ;
 	}
-	if (_thread.joinable()) {
-		_thread.join();
-	}
+	// if (_thread.joinable()) {
+	// 	_thread.join();
+	// }
 	int value = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z];
 	if (value == blocks::AIR || value & blocks::NOTVISIBLE) {
 		return ;
@@ -1578,9 +1578,9 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 		std::cout << "ERROR update_border not border block " << posX << ", " << posY << std::endl;
 		return ;
 	}
-	if (_thread.joinable()) {
-		_thread.join();
-	}
+	// if (_thread.joinable()) {
+	// 	_thread.join();
+	// }
 	int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + level;
 	int value = _blocks[offset];
 	if (adding) {
@@ -1766,12 +1766,12 @@ void Chunk::drawArray( GLint & counter, GLint &face_counter )
 		fill_vertex_array();
 	}
 	if (!_vaoReset) { // TODO change vaoReset logic (swap true and false)
-		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		++counter;
 		if (!_vaoVIP && (counter & 63) > 6) { // we don't load more than 5 new chunks per 50 new chunks per frame
 		// std::cout << "skip one" << std::endl;
 			return ;
 		}
+		std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		setup_array_buffer();
 	}
     glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down

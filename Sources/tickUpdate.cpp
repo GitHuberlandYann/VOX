@@ -249,9 +249,6 @@ void Chunk::turnDirtToGrass( int posX, int posY, int posZ )
 // randomly select 3 blocks for each subchunk of 4096 blocks and update them
 void Chunk::tickUpdate( void )
 {
-	if (_thread.joinable()) {
-		_thread.join();
-	}
 	for (int i = 0; i < 16; i++) {
 		for (int j = 0; j < 3; j++) {
 			int selected = Random::rangedNumber(_seed, i * (1 << 12), (i + 1) * (1 << 12));

@@ -578,9 +578,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	// we update the current chunk before we update cam view, because we check in current chunk for collision
 	// update block hit
 	if (rayCast) {
-		mtx.lock();
 		if (_game_mode == SURVIVAL && current_chunk_ptr) { // on first frame -> no current_chunk_ptr
-			mtx.unlock();
 			_camera->moveHuman((key_cam_z == 1 && ++_key_jump == 1) ? UP : DOWN, key_cam_v, key_cam_h, key_cam_z); // sets inJump variable, no actual movement
 			if (key_cam_z < 1) {
 				_key_jump = 0;
@@ -608,12 +606,10 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			current_chunk_ptr->applyGravity(); // move on Z_AXIS
 			mtx.unlock();
 			glm::vec3 camPos = _camera->getPos();
-			mtx.lock();
 			_camera->setWaterStatus(false, current_chunk_ptr->collisionBoxWater(camPos, 0.3f, 0));
 			camPos = _camera->getEyePos();
 			_camera->setWaterStatus(true, current_chunk_ptr->collisionBoxWater(camPos, 0.05f, 0));
 		}
-		mtx.unlock();
 
 		Chunk *save_chunk = chunk_hit;
 		t_hit block_hit = get_block_hit();

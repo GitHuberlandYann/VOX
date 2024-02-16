@@ -1,4 +1,5 @@
 #include "OpenGL_Manager.hpp"
+// #include "Benchmark.hpp"
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL),
@@ -427,6 +428,7 @@ void OpenGL_Manager::main_loop( void )
 	{
 		double currentTime = glfwGetTime();
 		double deltaTime = currentTime - previousFrame;
+		// if (deltaTime > 0.1f) std::cout << "\t\tPREVIOUS FRAME AT " << deltaTime << std::endl;
 		bool gamePaused = _paused && _menu->getState() < INVENTORY_MENU && _menu->getState() != DEATH_MENU;
 
 		++nbFrames;
@@ -517,38 +519,43 @@ void OpenGL_Manager::main_loop( void )
 		#endif
 		glDisable(GL_DEPTH_TEST);
 		// Chunk *chunk_ptr = get_current_chunk_ptr();
-		mtx.lock();
-		mtx_perimeter.lock();
-		mtx_backup.lock();
-		std::string str = (_debug_mode)
-			? "Timer: " + std::to_string(currentTime)
-				+ '\n' + DayCycle::Get()->getInfos()
-				+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
-				+ "\nTPS: " + std::to_string(nbTicksLastSecond)
-				+ '\n' + _camera->getCamString(_game_mode)
-				+ "\nBlock\t> " + s_blocks[_block_hit.value]->name
-				+ ((_block_hit.value != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
-				+ ((_block_hit.value) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
-				+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
-				+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
-				+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
-				// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
-				+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size())
-				+ '/' + std::to_string(_perimeter_chunks.size()) + '/' + std::to_string(_chunks.size())
-				+ "\nDisplayed faces\t> " + std::to_string(faceCounter)
-				+ "\nSky faces\t> " + std::to_string(skyFaces)
-				+ "\nWater faces\t> " + std::to_string(waterFaces)
-				+ "\n\nRender Distance\t> " + std::to_string(_render_distance)
-				+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE")
-				+ "\nBackups\t> " + std::to_string(_backups.size())
-				+ _inventory->getSlotString()
-				+ _menu->getInfoString()
-				// + _inventory->getDuraString()
-				// + _inventory->getInventoryString()
-			: "\n\nFPS: " + std::to_string(nbFramesLastSecond) + "\nTPS: " + std::to_string(nbTicksLastSecond);
-		mtx_backup.unlock();
-		mtx_perimeter.unlock();
-		mtx.unlock();
+		std::string str;
+		if (_debug_mode) {
+			str = "Timer: " + std::to_string(currentTime)
+					+ '\n' + DayCycle::Get()->getInfos()
+					+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
+					+ "\nTPS: " + std::to_string(nbTicksLastSecond)
+					+ '\n' + _camera->getCamString(_game_mode)
+					+ "\nBlock\t> " + s_blocks[_block_hit.value]->name
+					+ ((_block_hit.value != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
+					+ ((_block_hit.value) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
+					+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
+					+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
+					+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
+					// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
+					+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size());
+			
+			mtx_perimeter.lock();
+			str += '/' + std::to_string(_perimeter_chunks.size());
+			mtx_perimeter.unlock();
+			// mtx.lock();
+			str += '/' + std::to_string(_chunks.size());
+			// mtx.unlock();
+			str += "\nDisplayed faces\t> " + std::to_string(faceCounter)
+					+ "\nSky faces\t> " + std::to_string(skyFaces)
+					+ "\nWater faces\t> " + std::to_string(waterFaces)
+					+ "\n\nRender Distance\t> " + std::to_string(_render_distance)
+					+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE");
+			mtx_backup.lock();
+			str += "\nBackups\t> " + std::to_string(_backups.size());
+			mtx_backup.unlock();
+			str += _inventory->getSlotString()
+					+ _menu->getInfoString();
+					// + _inventory->getDuraString()
+					// + _inventory->getInventoryString();
+		} else {
+			str = "\n\nFPS: " + std::to_string(nbFramesLastSecond) + "\nTPS: " + std::to_string(nbTicksLastSecond);
+		}
 		// b.stamp("stringing");
 		if (_menu->getState() >= PAUSE_MENU) {
 			_ui->drawUserInterface(str, _game_mode, deltaTime);

@@ -35,7 +35,7 @@ class Bench
 			auto duration = end - start;
 			double ms = duration * 0.001;
 
-			std::cerr << "Bench [\033[31m" << msg << "\033[0m] result: " << duration << "us | " << ms << "ms" << std::endl;
+			std::cout << "Bench [\033[31m" << msg << "\033[0m] result: " << duration << "us | " << ms << "ms" << std::endl;
 		}
 
 		void stamp( std::string msg )
@@ -49,7 +49,7 @@ class Bench
 				auto duration = end - start;
 				double ms = duration * 0.001;
 
-				std::cerr << "\tstamp [" << msg << "] " << duration << "us | " << ms << "ms" << std::endl;
+				std::cout << "\tstamp [" << msg << "] " << duration << "us | " << ms << "ms" << std::endl;
 			}
 			_stampTimePoint = currentTimePoint;
 		}
