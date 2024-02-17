@@ -223,10 +223,6 @@ void OpenGL_Manager::chunk_update( void )
 	_mtx.unlock();
 
 	setThreadUpdate(true);
-	// if (_thread.joinable()) {
-	// 	_thread.join();
-	// }
-	// _thread = std::thread(thread_chunk_update, this, _render_distance, posX, posY);
 }
 
 float OpenGL_Manager::getBreakTime( bool canHarvest )
@@ -353,6 +349,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	GLint mul = (glfwGetKey(_window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS);
 	if (mul && ++_key_time_mul == 1) {
 		DayCycle::Get()->updateTimeMultiplier(mul);
+		loadTextureShader(0, _textures[0], "Resources/cleanAtlas.png");
 	} else if (!mul) {
 		_key_time_mul = 0;
 	}
