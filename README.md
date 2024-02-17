@@ -96,7 +96,7 @@ kp_* kp_/          - change gui_size
 * [GLEW](https://github.com/nigels-com/glew.git) provides efficient run-time mechanisms for determining which OpenGL extensions are supported on the target platform.
 * [GLM](https://github.com/g-truc/glm.git) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications.
 * [SOIL](https://github.com/littlstar/soil.git) is a tiny C library used primarily for uploading textures into OpenGL.
-* [siv PerlinNoise](git@github.com:Reputeless/PerlinNoise.git) is a header-only Perlin noise library for modern C++ (C++17/20). The implementation is based on Ken Perlin's Improved Noise.
+* [siv::PerlinNoise](https://github.com/Reputeless/PerlinNoise.git) is a header-only Perlin noise library for modern C++ (C++17/20). The implementation is based on Ken Perlin's Improved Noise.
 
 ## References
 * The assets used in this project come from https://mcasset.cloud.
@@ -105,4 +105,4 @@ kp_* kp_/          - change gui_size
 * [Benchmarking in C++](https://www.youtube.com/watch?v=YG4jexlSAjc) by [The Cherno](https://www.youtube.com/@TheCherno) which I have used a lot to optimize this project.
 * The [PCG hash](https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/) used to generate random values from a given seed, omnipresent in this project.
 * This [terrain generation video](https://www.youtube.com/watch?v=CSa5O6knuwI) from former Minecraft game designer at Mojang Henrik Kniberg.
-* This [tutorial](https://open.gl/introduction) I used to learn OpenGL in the first place in order to complete this other [OpenGL project](git@github.com:GitHuberlandYann/SCOP_GL.git).
+* This [tutorial](https://open.gl/introduction) I used to learn OpenGL in the first place in order to complete this other [OpenGL project](https://github.com/GitHuberlandYann/SCOP_GL.git).
