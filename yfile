@@ -29,6 +29,7 @@ TODOS:
 	- hitbox change + no fall on sneak
     - biomes
     - skybox
+	- fix light spread problems caused by recurse limitation (when torches are next to each other)
 	- fire
 	- mobs
 	- redstone
@@ -59,7 +60,7 @@ IN PROGRES:
 SHORTTERM memory:
 	- work on cleanAtlas
 	\ - work on readme
-	\/ - work on Makefile
+	\/ - rework Makefile
 	- replace glm with own small lib
 	- rework general code structure (who owns who)
 	- turn menu, chat, text, ui, camera, settings into singletons, then use ::Get() once to get their ptrs
