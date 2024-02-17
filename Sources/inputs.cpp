@@ -311,9 +311,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 
 	// take screenshot
-	if (glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_PRESS && ++_key_screenshot == 1) {
+	if (glfwGetKey(_window, GLFW_KEY_F2) == GLFW_PRESS && ++_key_screenshot == 1) {
 		screenshot();
-	} else if (glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
+	} else if (glfwGetKey(_window, GLFW_KEY_F2) == GLFW_RELEASE) {
 		_key_screenshot = 0;
 	}
 	// toggle debug mode on off F3

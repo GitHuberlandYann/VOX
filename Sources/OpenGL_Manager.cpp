@@ -406,8 +406,7 @@ void OpenGL_Manager::main_loop( void )
 	glfwSwapInterval(1);
 	glClearColor(0, 0, 0, 1.0f); // start of black, will be changed in game by DayCycle
 
-	set_cursor_position_callback( NULL, _menu );
-	set_scroll_callback(NULL);
+	_menu->setState(MENU::MAIN);
 	glfwSetCursorPosCallback(_window, cursor_position_callback);
 	glfwSetScrollCallback(_window, scroll_callback);
 

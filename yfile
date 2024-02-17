@@ -50,10 +50,20 @@ TODOS:
 
 IN PROGRES:
     - settings menu
+	- centralize settings and save/load them in file
 	- double chests
 	- bow and arrow
 	- universal use of tps instead of deltatimes
 	- commands /say /me /save /setblock /sc(/screenshot) /kill
+
+SHORTTERM memory:
+	- work on cleanAtlas
+	- work on readme
+	- work on Makefile
+	- rework general code structure (who owns who)
+	- turn menu, chat, text, ui, camera, settings into singletons, then use ::Get() once to get their ptrs
+	- check how to update atlas texture ingame
+	- make menus texts responsive
 
 DONE:
 	- pthread chunk creation
@@ -148,16 +158,16 @@ Controls (QWERTY):
 	- mouse scroll / 0123456789: scrolls through hotbar
 	- esc: opens up menu. pauses game. closes any open menu
 	- backspace: exit program
-	- enter: save screenshot under .ppm file format
 	- []: change time speed
 	- G: toggle gamemode
 	- F: toggle wireframe display (warning fps drop)
 	- Q: drop selected item
 	- E: open inventory
+	- F1: display hotbar
+	- F2: save screenshot under .ppm file format
 	- F3: togle debug screen
 	- F5: change camera placement
 	- O: toggle block highlight
-	- F1: display hotbar
 	- T: open chat
 	- +-: change render distance
 	- kp_* kp_/: change gui size

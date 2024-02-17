@@ -63,7 +63,7 @@ std::vector<std::string> split( std::string &str, char sep )
 	
 	for (size_t i = 0; i < str.size(); ++i) {
 		if (str[i] != sep) {
-			tmp += str[i];
+			tmp += std::tolower(str[i]);
 		} else if (tmp[0]) {
 			res.push_back(tmp);
 			tmp = "";

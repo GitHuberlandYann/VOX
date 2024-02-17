@@ -67,6 +67,10 @@ int Menu::main_menu( void )
 			}
 			closedir(dir);
 			return (0);
+		} else if (_selection == 5) { // options
+			_state = MENU::MAIN_OPTIONS;
+			reset_values();
+			return (0);
 		} else if (_selection == 6) { //quit game
 			glfwSetWindowShouldClose(_window, GL_TRUE);
 			return (-1);
@@ -269,13 +273,13 @@ int Menu::options_menu( void )
 		if (_selection == 1) { // FOV
 
 		} else if (_selection == 11) { // Done
-			_state = MENU::PAUSE;
+			_state = (_state == MENU::OPTIONS) ? MENU::PAUSE : MENU::MAIN;
 			reset_values();
 			return (0);
 		}
 	}
 	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		_state = MENU::PAUSE;
+		_state = (_state == MENU::OPTIONS) ? MENU::PAUSE : MENU::MAIN;
 		reset_values();
 		return (0);
 	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
@@ -289,31 +293,31 @@ int Menu::options_menu( void )
 
 	// first draw text shadow
 	// _text->addText(WIN_WIDTH / 2 - 100 + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size - 40 + _gui_size, 24, false, "Options");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 6 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "FOV");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Realms Notifications");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Skin Customization");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Video Settings...");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 30 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Language...");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Resource Packs...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 44 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Music & Sounds...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 35 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Controls...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 40 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Chat Settings");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 60 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Accessibility Settings");
-	_text->addText(WIN_WIDTH / 2 - 8 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Done");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 10 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "FOV");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 58 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Realms Notifications");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 53 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Skin Customization");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Video Settings...");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 33 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Language...");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 51 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Resource Packs...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Music & Sounds...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 29 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Controls...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 38 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Chat Settings");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 61 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Accessibility Settings");
+	_text->addText(WIN_WIDTH / 2 - 10 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Done");
 
 	// then draw text in white
-	_text->addText(WIN_WIDTH / 2 - 23 * (_gui_size + 1), WIN_HEIGHT / 2 - 105 * _gui_size, (_gui_size + 1) * 7, true, "Options");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 6 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "FOV");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Realms Notifications");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Skin Customization");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Video Settings...");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 30 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Language...");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 44 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Resource Packs...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 44 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Music & Sounds...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 35 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Controls...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 40 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Chat Settings");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 60 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Accessibility Settings");
-	_text->addText(WIN_WIDTH / 2 - 8 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Done");
+	_text->addText(WIN_WIDTH / 2 - 22 * (_gui_size + 1), WIN_HEIGHT / 2 - 105 * _gui_size, (_gui_size + 1) * 7, true, "Options");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 10 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "FOV");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 58 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Realms Notifications");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 53 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Skin Customization");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 47 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Video Settings...");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 33 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Language...");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 51 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Resource Packs...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Music & Sounds...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 29 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Controls...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 38 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Chat Settings");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 61 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Accessibility Settings");
+	_text->addText(WIN_WIDTH / 2 - 10 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Done");
 	return (0);
 }
 
@@ -512,7 +516,7 @@ void Menu::setup_array_buffer_main( void )
     _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Minecraft Realms
 
     _vertices.push_back({1, WIN_WIDTH / 2 - 125 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 15 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Lang settings
-    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Options...
+    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 5) ? 111 : 91, 200, 20}); // Options...
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20}); // Quit Game
     _vertices.push_back({1, WIN_WIDTH / 2 + 110 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 15 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // accessibility settings
 
@@ -616,7 +620,7 @@ void Menu::setup_array_buffer_options( void )
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Chat Settings...
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Accessibility Settings...
 
-    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Done
+    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 11) ? 111 : 91, 200, 20}); // Done
 
 	setup_shader();
 }
@@ -1005,6 +1009,8 @@ void Menu::processMouseMovement( float posX, float posY )
 	if (_state == MENU::MAIN) {
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size)) {
+			_selection = 5;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size)) {
 			_selection = 6;
 		} else {
@@ -1040,6 +1046,12 @@ void Menu::processMouseMovement( float posX, float posY )
 			_selection = 6;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 8;
+		} else {
+			_selection = 0;
+		}
+	} else if (_state == MENU::OPTIONS || _state == MENU::MAIN_OPTIONS) {
+		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 11;
 		} else {
 			_selection = 0;
 		}
@@ -1187,6 +1199,7 @@ int Menu::run( GLint render_dist, bool animUpdate )
 			return (death_menu());
 		case MENU::PAUSE:
 			return (pause_menu());
+		case MENU::MAIN_OPTIONS:
 		case MENU::OPTIONS:
 			return (options_menu());
 		case MENU::INVENTORY:

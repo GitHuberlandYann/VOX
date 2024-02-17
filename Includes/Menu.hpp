@@ -14,6 +14,7 @@ namespace MENU
 {
 	enum {
 		MAIN,
+		MAIN_OPTIONS,
 		WORLD_SELECT,
 		LOAD,
 		DEATH,
