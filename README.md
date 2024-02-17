@@ -12,6 +12,7 @@ $ make log
 ## Goal
 Recreate [Minecraft](https://www.minecraft.net). That's it.
 I've tackled this project during my formation at [19](https://campus19.be/).
+>Minecraft is a 3D sandbox game developed by Mojang Studios where players interact with a fully modifiable three-dimensional environment made of blocks and entities. Its diverse gameplay lets players choose the way they play, allowing for countless possibilities.
 
 ## Features
 ```
@@ -95,7 +96,7 @@ kp_* kp_/          - change gui_size
 * [GLEW](https://github.com/nigels-com/glew.git) provides efficient run-time mechanisms for determining which OpenGL extensions are supported on the target platform.
 * [GLM](https://github.com/g-truc/glm.git) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications.
 * [SOIL](https://github.com/littlstar/soil.git) is a tiny C library used primarily for uploading textures into OpenGL.
-* [siv::PerlinNoise](git@github.com:Reputeless/PerlinNoise.git) is a header-only Perlin noise library for modern C++ (C++17/20). The implementation is based on Ken Perlin's Improved Noise.
+* [siv PerlinNoise](git@github.com:Reputeless/PerlinNoise.git) is a header-only Perlin noise library for modern C++ (C++17/20). The implementation is based on Ken Perlin's Improved Noise.
 
 ## References
 * The assets used in this project come from https://mcasset.cloud.
