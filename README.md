@@ -11,6 +11,7 @@ $ make log
 ```
 
 ## Features
+```
 Infinite, procedurally generated world
 Saving and loading worlds
 Collision system
@@ -30,6 +31,7 @@ Distance fog
 Gravity-affected blocks (sand, gravel, lit tnts)
 UI with inventory
 Crafting system, storage system
+```
 
 ## Libraries
 * [GLFW](https://github.com/glfw/glfw.git) is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan application development. It provides a simple, platform-independent API for creating windows, contexts and surfaces, reading input, handling events, etc.
