@@ -35,7 +35,7 @@ setup:
 	cd Libs/glm && cmake . && make
 	cd Libs/glfw && cmake . && make
 	cd Libs/SOIL && ./configure && make
-	cd Libs/glew/build && cmake . && make
+	cd Libs/glew/build && cmake ./cmake && make
 
 cleanLibs:
 	cd Libs/glm && make clean
