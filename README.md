@@ -10,7 +10,7 @@ $ make log
 ```
 
 ## Goal
-Recreate [Minecraft](https://www.minecraft.net). That's is.
+Recreate [Minecraft](https://www.minecraft.net). That's it.
 I've tackled this project during my formation at [19](https://campus19.be/).
 
 ## Features
@@ -103,5 +103,5 @@ kp_* kp_/          - change gui_size
 * [Voxel Traversal Algorithm](https://minecraft.fandom.com/wiki/Minecraft_Wiki) to know which block is targeted by the player.
 * [Benchmarking in C++](https://www.youtube.com/watch?v=YG4jexlSAjc) by [The Cherno](https://www.youtube.com/@TheCherno) which I have used a lot to optimize this project.
 * The [PCG hash](https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/) used to generate random values from a given seed, omnipresent in this project.
-* [This](https://www.youtube.com/watch?v=CSa5O6knuwI) terrain generation video from former Minecraft game designer at Mojang Henrik Kniberg.
-* This [tutorial](https://open.gl/introduction) I used to learn OpenGL in the first place in order to complete this [.obj rendering project](git@github.com:GitHuberlandYann/SCOP_GL.git).
+* This [terrain generation video](https://www.youtube.com/watch?v=CSa5O6knuwI) from former Minecraft game designer at Mojang Henrik Kniberg.
+* This [tutorial](https://open.gl/introduction) I used to learn OpenGL in the first place in order to complete this other [OpenGL project](git@github.com:GitHuberlandYann/SCOP_GL.git).
