@@ -10,18 +10,19 @@ OBJS 		= $(addprefix $(OBJS_DIR)/, $(addsuffix .o, $(FILES)))
 
 # ===---===---===---===---===---===---===---===---===---===---===---===---
 
-ifeq ($(shell uname), Linux)
-LINKS		= -L Libs `pkg-config --static --libs glfw3 glew` -lGL -lX11 -lpthread -lXrandr -lXi -ldl Libs/libSOIL.a
-else
-LINKS		=  -framework OpenGl -framework AppKit -framework IOkit Libs/mac/libglfw3.a Libs/mac/libGLEW.a Libs/mac/libSOIL.a
-endif
+CC 			= clang++
+CPPFLAGS 	= -Wall -Wextra -Werror -O3 -std=c++17
+SAN 		= -fsanitize=address -g3
+INCLUDES	= -I Includes -I Libs/glm -I Libs/glfw/include -I Libs/SOIL/build/include/SOIL
+LDFLAGS		= Libs/glm/glm/libglm.a Libs/glfw/src/libglfw3.a Libs/SOIL/build/lib/libSOIL.a
 
 # ===---===---===---===---===---===---===---===---===---===---===---===---
 
-CC = clang++
-CPPFLAGS = -Wall -Wextra -Werror -O3
-SAN = -fsanitize=address -g3
-INCLUDES	= -I Includes -I glm
+ifeq ($(shell uname), Linux)
+LDFLAGS		+= -L Libs `pkg-config --static --libs glew` -lGL -lX11 -lpthread -lXrandr -lXi -ldl 
+else
+LDFLAGS		+= -framework OpenGl -framework AppKit -framework IOkit Libs/mac/libGLEW.a # todo check if glew compiles on mac
+endif
 
 # ===---===---===---===---===---===---===---===---===---===---===---===---
 
@@ -30,11 +31,23 @@ all: $(OBJS_DIR) $(NAME)
 $(OBJS_DIR):
 	@mkdir -p $(OBJS_DIR)
 
+setup:
+	cd Libs/glm && cmake . && make
+	cd Libs/glfw && cmake . && make
+	cd Libs/SOIL && ./configure && make
+	cd Libs/glew/build && cmake . && make
+
+cleanLibs:
+	cd Libs/glm && make clean
+	cd Libs/glew && make clean
+	cd Libs/glfw && make clean
+	cd Libs/SOIL && make clean
+
 $(NAME): $(OBJS)
-	$(CC) $(CPPFLAGS) $(SAN) $(INCLUDES) -std=c++17 $(OBJS) -o $(NAME) $(LINKS)
+	$(CC) $(CPPFLAGS) $(SAN) $(INCLUDES) $(OBJS) -o $(NAME) $(LDFLAGS)
 
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.cpp
-	$(CC) $(CPPFLAGS) $(SAN) $(INCLUDES) -std=c++17 -c $< -o $@
+	$(CC) $(CPPFLAGS) $(SAN) $(INCLUDES) -c $< -o $@
 
 clean:
 	rm -rf $(OBJS_DIR)
@@ -57,4 +70,4 @@ rer: re
 extrusion:
 	$(CC) $(CPPFLAGS) $(SAN) -I Includes Sources/Extrusion/main.cpp -o extrude $(LINKS)
 
-.PHONY: all clean fclean re run log rer extrusion
+.PHONY: all setup cleanLibs clean fclean re run log rer extrusion

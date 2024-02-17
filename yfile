@@ -58,8 +58,9 @@ IN PROGRES:
 
 SHORTTERM memory:
 	- work on cleanAtlas
-	- work on readme
-	- work on Makefile
+	\ - work on readme
+	\/ - work on Makefile
+	- replace glm with own small lib
 	- rework general code structure (who owns who)
 	- turn menu, chat, text, ui, camera, settings into singletons, then use ::Get() once to get their ptrs
 	- check how to update atlas texture ingame

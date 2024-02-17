@@ -1,3 +1,12 @@
-[submodule "glm"]
-	path = glm
+[submodule "Libs/glm"]
+	path = Libs/glm
 	url = git@github.com:g-truc/glm.git
+[submodule "Libs/SOIL"]
+	path = Libs/SOIL
+	url = git@github.com:littlstar/soil.git
+[submodule "Libs/glfw"]
+	path = Libs/glfw
+	url = git@github.com:glfw/glfw.git
+[submodule "Libs/glew"]
+	path = Libs/glew
+	url = git@github.com:nigels-com/glew.git
