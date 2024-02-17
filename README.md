@@ -11,25 +11,25 @@ $ make log
 ```
 
 ## Features
-### Infinite, procedurally generated world
-### Saving and loading worlds
-### Collision system
-### Multithreading generation for smooth rendering
-### Day/Night cycle
-### Hunger system
-### Different gamemodes
-### Chat interface with own commands
-### Transparent blocks
-### 3D clouds
-### Entities such as dropped items, flying arrows, falling blocks
-### Particles system
-### Animated fluids flow
-### breaking animation
-### Ambiant occlusion
-### Distance fog
-### Gravity-affected blocks (sand, gravel, lit tnts)
-### UI with inventory
-### Crafting system, storage system
+Infinite, procedurally generated world
+Saving and loading worlds
+Collision system
+Multithreading generation for smooth rendering
+Day/Night cycle
+Hunger system
+Different gamemodes
+Chat interface with own commands
+Transparent blocks
+3D clouds
+Entities such as dropped items, flying arrows, falling blocks
+Particles system
+Animated fluids flow
+breaking animation
+Ambiant occlusion
+Distance fog
+Gravity-affected blocks (sand, gravel, lit tnts)
+UI with inventory
+Crafting system, storage system
 
 ## Libraries
 * [GLFW](https://github.com/glfw/glfw.git) is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan application development. It provides a simple, platform-independent API for creating windows, contexts and surfaces, reading input, handling events, etc.
