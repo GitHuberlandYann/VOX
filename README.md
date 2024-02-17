@@ -40,7 +40,6 @@ Distance fog
 Gravity-affected blocks (sand, gravel, lit tnts)
 UI with inventory
 Crafting system, storage system
-```
 
 And a lot more! All done in C++
 ```
