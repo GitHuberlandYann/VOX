@@ -60,7 +60,7 @@ Fluid flowing down a hill.
 Night time. Torches on the walls. Items dropped as 3D entities on the ground.
 ![items](Resources/Screenshots/thumbnail5.png)
 
-Falling sand. While using an custom data pack.
+Falling sand. While using a custom data pack.
 ![sand](Resources/Screenshots/thumbnail6.png)
 
 And of course, Minecraft wouldn't be Minecraft without.. DIAMONDS!
