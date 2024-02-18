@@ -1,5 +1,15 @@
 #version 150 core
 
+/*
+ * position.w is packed
+ * 0xF level = float z offset from top, used to display water at several heights
+ * 0xF0 unused
+ * 0x300 Atlas index [No atlas used=clouds, Water still, Water flow, blockAtlas=glass]
+ * 1 << 10 texture x shift by 1
+ * 1 << 11 texture y shift by 1
+ * 1 << 12 texture x shift by 0.5
+ * 1 << 13 texture y shift by 0.5
+ */
 in ivec4 position;
 
 uniform mat4 view;

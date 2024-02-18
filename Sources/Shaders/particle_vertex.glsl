@@ -31,7 +31,6 @@ void main()
 	int blockLight = ((specifications >> 24) & 0xF);
 	int skyLight = internal_light - (15 - ((specifications >> 28) & 0xF));
 	int shadow = 15 - max(blockLight, skyLight);
-	int faceLight = 100;
-	FaceShadow = max(0, (faceLight - 7 * shadow) * 0.01f);
+	FaceShadow = max(0, (100 - 7 * shadow) * 0.01f);
 	Atlas = ((specifications >> 19) & 0x7);
 }

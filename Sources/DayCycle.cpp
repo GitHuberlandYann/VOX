@@ -74,16 +74,16 @@ std::mutex DayCycle::_mtx;
 
 DayCycle *DayCycle::Get( void )
 {
-	std::lock_guard<std::mutex> lock(_mtx); // multithread safety to not create several instances of Time
+	std::lock_guard<std::mutex> lock(_mtx); // multithread safety to not create several instances of DayCycle
 	if (_dayCycleInstance == NULL) {
 		_dayCycleInstance = new DayCycle();
 	}
 	return (_dayCycleInstance);
 }
 
-void DayCycle::Reset( void )
+void DayCycle::Destroy( void )
 {
-	std::lock_guard<std::mutex> lock(_mtx); // multithread safety to not create several instances of Time
+	std::lock_guard<std::mutex> lock(_mtx); // multithread safety to not create several instances of DayCycle
 	delete _dayCycleInstance;
 	_dayCycleInstance = NULL;
 }

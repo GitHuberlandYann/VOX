@@ -80,7 +80,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_backups.clear();
 	mtx_backup.unlock();
 
-	DayCycle::Reset();
+	DayCycle::Destroy();
 	check_glstate("openGL_Manager destructed", true);
 }
 
@@ -390,10 +390,8 @@ size_t OpenGL_Manager::clearParticles( void )
 
 void OpenGL_Manager::main_loop( void )
 {
-	// glEnable(GL_DEPTH_TEST); // culling messes up with flower visual and doesn't seem to gain fps
 	// glEnable(GL_CULL_FACE);
 	// glCullFace(GL_FRONT);
-	// 	// glFrontFace(GL_CW);
 	// (glIsEnabled(GL_CULL_FACE))
 	// 	? std::cout << "culling enabled" << std::endl
 	// 	: std::cout << "culling disabled" << std::endl;

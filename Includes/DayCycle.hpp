@@ -34,9 +34,9 @@ class DayCycle
 		void operator=( const DayCycle &other ) = delete;
 
 		static DayCycle *Get( void );
-		static void Reset( void );
+		static void Destroy( void );
 		void setUniInternalLight( GLuint shaderProgram, GLuint particleShaderProgram,
-			GLint uniform_location, GLint particle_uniform_location );
+			GLint internal_light, GLint partice_internal_light );
 		void setCloudsColor( GLint uniform_location );
 		void tickUpdate( void );
 		void setTicks( int ticks );

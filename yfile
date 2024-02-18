@@ -64,7 +64,7 @@ SHORTTERM memory:
 	- replace glm with own small lib
 	- rework general code structure (who owns who)
 	- turn menu, chat, text, ui, camera, settings into singletons, then use ::Get() once to get their ptrs
-	- check how to update atlas texture ingame
+	\/ - check how to update atlas texture ingame
 	- make menus texts responsive
 
 DONE:
