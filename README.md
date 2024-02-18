@@ -1,5 +1,6 @@
 # VOX
 My first procedural world. Using OpenGL and C++
+![Hello world!](Resources/Screenshots/thumbnail3.png)
 
 ## Building
 ```
@@ -18,7 +19,7 @@ I've tackled this project during my formation at [19](https://campus19.be/).
 ## Features
 ```
 Infinite, procedurally generated world
-Saving and loading worlds
+Saving and loading worlds in .json files
 Collision and physics systems
 Multithreading generation for smooth rendering
 Day/Night cycle
@@ -45,6 +46,25 @@ Crafting system, storage system
 
 And a lot more! All done in C++
 ```
+
+## Images
+Old version of the project, with inventory's items still being 2D sprite, falling water coming from a source in the wall, some lighting in a dirt cave.
+![old](Resources/Screenshots/thumbnail.png)
+
+More recent screenshot from the game, taken after having some fun with explosives. 
+![hole](Resources/Screenshots/thumbnail2.png)
+
+Fluid flowing down a hill.
+![fluid](Resources/Screenshots/thumbnail4.png)
+
+Night time. Torches on the walls. Items dropped as 3D entities on the ground.
+![items](Resources/Screenshots/thumbnail5.png)
+
+Falling sand. While using an custom data pack.
+![sand](Resources/Screenshots/thumbnail6.png)
+
+And of course, Minecraft wouldn't be Minecraft without.. DIAMONDS!
+![diamonds](Resources/Screenshots/thumbnail7.png)
 
 ## Shaders
 OpenGL uses shaders, which are programs coded in glsl and running on the GPU.
