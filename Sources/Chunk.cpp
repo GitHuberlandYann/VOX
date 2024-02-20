@@ -620,6 +620,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		_displayed_faces -= face_count(type, pos.x, pos.y, pos.z);
 		if (type == blocks::TORCH) {
 			std::cout << "rm light" << std::endl;
+			delete _flames[offset];
 			_flames.erase(offset);
 			_lights[offset] &= 0xFF00;
 			light_spread(pos.x, pos.y, pos.z, false); // spread block light
@@ -1529,9 +1530,11 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 				vertInt[index + 16] = (vertInt[index + 16] & 0xFFFF0FFF) + ((frame + 1) << 12);
 				vertInt[index + 20] = (vertInt[index + 20] & 0xFFFF0FFF) + ((frame + 1) << 12);
 				_mtx.unlock();
-				_vaoVIP = true;
-				_vaoReset = false;
+				glBindVertexArray(_vao);
+				glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+				glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(int), 24 * sizeof(int), &vertInt[index]);
 				if (++cnt >= count) {
+					check_glstate("Chunk::updateBreak torch", false);
 					return ;
 				}
 				_mtx.lock();
@@ -1550,9 +1553,11 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 				vertInt[index + 16] = (vertInt[index + 16] & 0xFFFF0FFF) + ((frame + 1) << 12);
 				vertInt[index + 20] = (vertInt[index + 20] & 0xFFFF0FFF) + ((frame + 1) << 12);
 				_mtx.unlock();
-				_vaoVIP = true;
-				_vaoReset = false;
+				glBindVertexArray(_vao);
+				glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+				glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(int), 24 * sizeof(int), &vertInt[index]);
 				if (++cnt >= count) {
+					check_glstate("Chunk::updateBreak cross", false);
 					return ;
 				}
 				_mtx.lock();
@@ -1571,9 +1576,11 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 			vertInt[index + 16] = (vertInt[index + 16] & 0xFFFF0FFF) + ((frame + 1) << 12);
 			vertInt[index + 20] = (vertInt[index + 20] & 0xFFFF0FFF) + ((frame + 1) << 12);
 			_mtx.unlock();
-			_vaoVIP = true;
-			_vaoReset = false;
+			glBindVertexArray(_vao);
+			glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+			glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(int), 24 * sizeof(int), &vertInt[index]);
 			if (++cnt >= count) {
+				check_glstate("Chunk::updateBreak", false);
 				return ;
 			}
 			_mtx.lock();

@@ -40,6 +40,7 @@ TODOS:
 	- enchanting table
 	- save entities
 	- entity shadow
+	- entity shader ?
 	- rework clouds
     - Sound https://www.ambiera.com/irrklang/tutorials.html
 	- upon world generation, place player on ground by using continentalness
