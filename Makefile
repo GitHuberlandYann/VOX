@@ -19,7 +19,7 @@ LDFLAGS		= Libs/glm/glm/libglm.a Libs/glfw/src/libglfw3.a Libs/glew-2.2.0/build/
 # ===---===---===---===---===---===---===---===---===---===---===---===---
 
 ifeq ($(shell uname), Linux)
-LDFLAGS		+= -lGL -lX11 -lpthread -lXrandr -lXi -ldl #-L Libs `pkg-config --static --libs glew` 
+LDFLAGS		+= -lGL -lX11 -lpthread -lXrandr -lXi -ldl
 else
 LDFLAGS		+= -framework OpenGl -framework AppKit -framework IOkit
 endif
@@ -33,13 +33,13 @@ $(OBJS_DIR):
 
 setup:
 	cd Libs/glm && cmake . && make
+	cd Libs/glew-2.2.0/build && cmake ./cmake && make
 	cd Libs/glfw && cmake . && make
 	cd Libs/SOIL && ./configure && make
-	cd Libs/glew/build && cmake ./cmake && make
 
 cleanLibs:
 	cd Libs/glm && make clean
-	cd Libs/glew && make clean
+	cd Libs/glew-2.2.0 && make clean
 	cd Libs/glfw && make clean
 	cd Libs/SOIL && make clean
 
