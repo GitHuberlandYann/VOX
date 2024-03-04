@@ -13,7 +13,7 @@ OBJS 		= $(addprefix $(OBJS_DIR)/, $(addsuffix .o, $(FILES)))
 CC 			= clang++
 CPPFLAGS 	= -Wall -Wextra -Werror -O3 -std=c++17
 SAN 		= -fsanitize=address -g3
-INCLUDES	= -I Includes -I Libs/glm -I Libs/glfw/include -I Libs/glew-2.2.0/include -I Libs/SOIL/build/include/SOIL
+INCLUDES	= -I Includes -I Libs/glm -I Libs/glfw/include -I Libs/glew-2.2.0/include -I Libs/SOIL/build/include
 LDFLAGS		= Libs/glm/glm/libglm.a Libs/glfw/src/libglfw3.a Libs/glew-2.2.0/build/lib/libGLEW.a Libs/SOIL/build/lib/libSOIL.a
 
 # ===---===---===---===---===---===---===---===---===---===---===---===---
