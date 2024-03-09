@@ -1,4 +1,5 @@
 #include "OpenGL_Manager.hpp"
+#include "callbacks.hpp"
 #include "utils.h"
 #include <iostream>
 
@@ -92,8 +93,6 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	// from now on adding = true
 	if (_block_hit.value == blocks::CRAFTING_TABLE) {
 		_paused = true;
-		_esc_released = false;
-		_e_released = false;
 		_menu->setState(MENU::CRAFTING);
 		return ;
 	} else if (_block_hit.value == blocks::CHEST) {
@@ -102,15 +101,11 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		}
 		chunk_hit->openChest(_block_hit.pos);
 		_paused = true;
-		_esc_released = false;
-		_e_released = false;
 		_menu->setState(MENU::CHEST);
 		_menu->setChestInstance(chunk_hit->getChestInstance(_block_hit.pos));
 		return ;
 	} else if (_block_hit.value == blocks::FURNACE) {
 		_paused = true;
-		_esc_released = false;
-		_e_released = false;
 		_menu->setState(MENU::FURNACE);
 		_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit.pos));
 		return ;
@@ -275,89 +270,73 @@ float OpenGL_Manager::getBreakTime( bool canHarvest )
 void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 {
 	// open menu
-	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
 		_paused = true;
-		_esc_released = false;
 		_menu->setState(MENU::PAUSE);
 		return ;
-	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
-		_esc_released = true;
 	}
 	// open inventory
-	if (_e_released && glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::INVENTORY) && INPUT::key_update(INPUT::INVENTORY)) {
 		_paused = true;
-		_e_released = false;
-		_esc_released = false;
 		_menu->setState(MENU::INVENTORY);
 		return ;
-	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
-		_e_released = true;
 	}
 	// toggle chat
-	if (glfwGetKey(_window, GLFW_KEY_T) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::CHAT) && INPUT::key_update(INPUT::CHAT)) {
 		_paused = true;
-		_esc_released = false;
 		_menu->setState(MENU::CHAT);
 		return ;
 	}
 	// quit program
-	if (glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::QUIT_PROGRAM)) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return ;
 	}
 
 	// take screenshot
-	if (glfwGetKey(_window, GLFW_KEY_F2) == GLFW_PRESS && ++_key_screenshot == 1) {
+	if (INPUT::key_down(INPUT::SCREENSHOT) && INPUT::key_update(INPUT::SCREENSHOT)) {
 		screenshot();
-	} else if (glfwGetKey(_window, GLFW_KEY_F2) == GLFW_RELEASE) {
-		_key_screenshot = 0;
 	}
 	// toggle debug mode on off F3
-	if ((glfwGetKey(_window, GLFW_KEY_F3) == GLFW_PRESS) && ++_key_h == 1) {
+	if (INPUT::key_down(INPUT::DEBUG) && INPUT::key_update(INPUT::DEBUG)) {
 		_debug_mode = !_debug_mode;
-	} else if (glfwGetKey(_window, GLFW_KEY_F3) == GLFW_RELEASE) {
-		_key_h = 0;
 	}
 	// toggle game mode
-	if ((glfwGetKey(_window, GLFW_KEY_G) == GLFW_PRESS) && ++_key_g == 1) {
+	if (INPUT::key_down(INPUT::GAMEMODE) && INPUT::key_update(INPUT::GAMEMODE)) {
 		setGamemode(!_game_mode);
-	} else if (glfwGetKey(_window, GLFW_KEY_G) == GLFW_RELEASE) {
-		_key_g = 0;
 	}
 	// toggle F5 mode
-	if ((glfwGetKey(_window, GLFW_KEY_F5) == GLFW_PRESS) && ++_key_f5 == 1) {
+	if (INPUT::key_down(INPUT::CAMERA) && INPUT::key_update(INPUT::CAMERA)) {
 		_camera->changeCamPlacement();
-	} else if (glfwGetKey(_window, GLFW_KEY_F5) == GLFW_RELEASE) {
-		_key_f5 = 0;
 	}
 	// toggle hotbar F1
-	if ((glfwGetKey(_window, GLFW_KEY_F1) == GLFW_PRESS) && ++_key_j == 1) {
+	if (INPUT::key_down(INPUT::HOTBAR) && INPUT::key_update(INPUT::HOTBAR)) {
 		_ui->_hideUI = !_ui->_hideUI;
 		_camera->setHideUI(_ui->_hideUI);
 		_ui->chatMessage(std::string("UI ") + ((_ui->_hideUI) ? "HIDDEN" : "SHOWN"));
-	} else if (glfwGetKey(_window, GLFW_KEY_F1) == GLFW_RELEASE) {
-		_key_j = 0;
 	}
 	// toggle outline
-	if ((glfwGetKey(_window, GLFW_KEY_O) == GLFW_PRESS) && ++_key_o == 1) {
+	if (INPUT::key_down(INPUT::BLOCK_HIGHLIGHT) && INPUT::key_update(INPUT::BLOCK_HIGHLIGHT)) {
 		_ui->chatMessage(std::string("outlines ") + ((_outline) ? "HIDDEN" : "SHOWN"));
 		_outline = !_outline;
-	} else if (glfwGetKey(_window, GLFW_KEY_O) == GLFW_RELEASE) {
-		_key_o = 0;
+		if (_break_frame != _outline && chunk_hit) {
+			chunk_hit->updateBreak({_block_hit.pos, _block_hit.value}, _outline);
+		}
+		_break_frame = _outline;
 	}
 	// change time multiplier
-	GLint mul = (glfwGetKey(_window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS);
-	if (mul && ++_key_time_mul == 1) {
-		DayCycle::Get()->updateTimeMultiplier(mul);
-		loadTextureShader(0, _textures[0], (mul == 1) ? "Resources/cleanAtlas.png" : "Resources/blockAtlas.png");
-	} else if (!mul) {
-		_key_time_mul = 0;
+	if (INPUT::key_down(INPUT::DAYCYCLE_UP) && INPUT::key_update(INPUT::DAYCYCLE_UP)) {
+		DayCycle::Get()->updateTimeMultiplier(1);
+		loadTextureShader(0, _textures[0], "Resources/cleanAtlas.png");
+	} else if (INPUT::key_down(INPUT::DAYCYCLE_DOWN) && INPUT::key_update(INPUT::DAYCYCLE_DOWN)) {
+		DayCycle::Get()->updateTimeMultiplier(-1);
+		loadTextureShader(0, _textures[0], "Resources/blockAtlas.png");
 	}
 
 	// add and remove blocks
 	_camera->setDelta(deltaTime);
 	_hand_content = _inventory->getCurrentSlot();
-	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_game_mode == SURVIVAL) {
 			_camera->setArmAnimation(true);
 			_break_time += deltaTime;
@@ -378,19 +357,20 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 					_break_frame = break_frame;
 				}
 			}
-		} else if (++_key_rm_block == 1) {
+		} else if (INPUT::key_update(INPUT::BREAK)) {
 			handle_add_rm_block(false, false);
 		}
-	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+	} else if (INPUT::key_update(INPUT::BREAK)) {
 		_camera->setArmAnimation(false);
-		_key_rm_block = 0;
 		_break_time = 0;
 		if (_break_frame != _outline && chunk_hit) {
 			chunk_hit->updateBreak({_block_hit.pos, _block_hit.value}, _outline);
 		}
 		_break_frame = _outline;
+	} else {
+		_camera->setArmAnimation(false);
 	}
-	if (!_key_rm_block && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT)) { // I don't want to try to del and add at the same time
+	if (INPUT::key_down(INPUT::USE)) {
 		if (_game_mode == SURVIVAL && s_blocks[_hand_content]->isFood) {
 			_eat_timer += deltaTime;
 			if (_eat_timer >= 1.61f) {
@@ -401,22 +381,21 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			}
 		} else if (_hand_content == blocks::BOW) {
 			_bow_timer += deltaTime;
-		} else if (++_key_add_block == 1) {
+		} else if (INPUT::key_update(INPUT::USE)) {
 			handle_add_rm_block(true, _game_mode == SURVIVAL);
 			_camera->setArmAnimation(true);
 		}
-	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+	} else if (INPUT::key_update(INPUT::USE)) {
 		if (_hand_content == blocks::BOW && _bow_timer && current_chunk_ptr) {
 			// TODO rm arrow from inventory (once implemented)
 			_inventory->decrementDurabitilty();
 			current_chunk_ptr->shootArrow(_bow_timer);
 		}
-		_key_add_block = 0;
 		_eat_timer = 0;
 		_bow_timer = 0;
 	}
 	// drop item
-	if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::DROP)) {
 		if (current_chunk_ptr) {
 			t_item details = _inventory->removeBlock(true);
 			if (details.type != blocks::AIR) {
@@ -426,15 +405,13 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			}
 		}
 	}
-	if (_game_mode == CREATIVE && _block_hit.value != blocks::AIR && _key_rm_block != 1 && _key_add_block != 1
-		&& glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_MIDDLE) && ++_key_pick_block == 1) { // pick up in creative mode
+	if (_game_mode == CREATIVE && _block_hit.value != blocks::AIR
+		&& INPUT::key_down(INPUT::SAMPLE) && INPUT::key_update(INPUT::SAMPLE)) { // pick up in creative mode
 		_inventory->replaceSlot(_block_hit.value);
-	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_RELEASE) {
-		_key_pick_block = 0;
 	}
 
 	// toggle polygon mode fill / lines
-	if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS && ++_key_fill == 1) {
+	if (INPUT::key_down(INPUT::WIREFRAME) && INPUT::key_update(INPUT::WIREFRAME)) {
 		++_fill;
 		if (_fill == F_LAST)
 			_fill = FILL;
@@ -449,12 +426,11 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				_ui->chatMessage("Triangles EMPTY");
 				break;
 		}
-	} else if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_RELEASE)
-		_key_fill = 0;
-
+	}
 	// change render dist
-	GLint key_render_dist = (glfwGetKey(_window, GLFW_KEY_EQUAL) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_MINUS) == GLFW_PRESS);
-	if (key_render_dist && ++_key_rdist == 1 && _render_distance + key_render_dist > 0) {
+	GLint key_render_dist = (INPUT::key_down(INPUT::RENDER_DIST_UP) && INPUT::key_update(INPUT::RENDER_DIST_UP))
+		- (INPUT::key_down(INPUT::RENDER_DIST_DOWN) && INPUT::key_update(INPUT::RENDER_DIST_DOWN));
+	if (key_render_dist && _render_distance + key_render_dist > 0) {
 		_mtx.lock();
 		_render_distance += key_render_dist;
 		_mtx.unlock();
@@ -466,29 +442,26 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		setThreadUpdate(true);
 		// update_visible_chunks();
 		// std::cout << "render distance set to " << _render_distance << std::endl;
-	} else if (!key_render_dist) {
-		_key_rdist = 0;
 	}
 	// change gui size
-	GLint key_gui_size = (glfwGetKey(_window, GLFW_KEY_KP_MULTIPLY) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_DIVIDE) == GLFW_PRESS);
-	if (key_gui_size && ++_key_guisize == 1) {
+	GLint key_gui_size = (INPUT::key_down(INPUT::GUI_UP) && INPUT::key_update(INPUT::GUI_UP))
+		- (INPUT::key_down(INPUT::GUI_DOWN) && INPUT::key_update(INPUT::GUI_DOWN));
+	if (key_gui_size) {
 		_menu->changeGuiSize(key_gui_size);
 		_ui->changeGuiSize(key_gui_size);
-	} else if (!key_gui_size) {
-		_key_guisize = 0;
 	}
 
-	// camera work 
-	GLint key_cam_v = (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS);
-	GLint key_cam_h = (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS);
-	GLint key_cam_z = (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS);
+	// camera work
+	GLint key_cam_v = INPUT::key_down(INPUT::MOVE_FORWARD) - INPUT::key_down(INPUT::MOVE_BACKWARD);
+	GLint key_cam_h = INPUT::key_down(INPUT::MOVE_RIGHT) - INPUT::key_down(INPUT::MOVE_LEFT);
+	GLint key_cam_z = INPUT::key_down(INPUT::JUMP) - INPUT::key_down(INPUT::SNEAK);
 
 	// this will be commented at some point
-	GLint key_cam_yaw = (glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS);
+	GLint key_cam_yaw = INPUT::key_down(INPUT::LOOK_LEFT) - INPUT::key_down(INPUT::LOOK_RIGHT);
 	if (key_cam_yaw) {
 		_camera->processYaw(key_cam_yaw * 5);
 	}
-	GLint key_cam_pitch = (glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS);
+	GLint key_cam_pitch = INPUT::key_down(INPUT::LOOK_UP) - INPUT::key_down(INPUT::LOOK_DOWN);
 	if (key_cam_pitch) {
 		_camera->processPitch(key_cam_pitch * 5);
 	}
@@ -498,7 +471,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	if (!key_cam_v && !key_cam_h) {
 		_camera->setRun(false);
 	} else {
-		_camera->setRun(glfwGetKey(_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS);
+		_camera->setRun(INPUT::key_down(INPUT::RUN));
 	}
 
 	if (_game_mode == CREATIVE) { // no collision check, free to move however you want
@@ -509,10 +482,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	// update block hit
 	if (rayCast) {
 		if (_game_mode == SURVIVAL && current_chunk_ptr) { // on first frame -> no current_chunk_ptr
-			_camera->moveHuman((key_cam_z == 1 && ++_key_jump == 1) ? UP : DOWN, key_cam_v, key_cam_h, key_cam_z); // sets inJump variable, no actual movement
-			if (key_cam_z < 1) {
-				_key_jump = 0;
-			}
+			_camera->moveHuman((key_cam_z == 1 && INPUT::key_update(INPUT::JUMP)) ? UP : DOWN, key_cam_v, key_cam_h, key_cam_z); // sets inJump variable, no actual movement
 			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h, 0); // move on X_AXIS
 			float hitBoxHeight = _camera->getHitBox();
 			mtx.lock();
@@ -581,55 +551,37 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		update_visible_chunks();
 	}
 
-	GLint key_cam_speed = (glfwGetKey(_window, GLFW_KEY_KP_ADD) == GLFW_PRESS) - (glfwGetKey(_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);
+	GLint key_cam_speed = INPUT::key_down(INPUT::FLY_SPEED_UP) - INPUT::key_down(INPUT::FLY_SPEED_DOWN);
 	if (key_cam_speed) {
 		_camera->update_movement_speed(key_cam_speed);
 	}
 
 	// inventory slot selection
-	if ((glfwGetKey(_window, GLFW_KEY_1) == GLFW_PRESS) && ++_key_1 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_0) && INPUT::key_update(INPUT::SLOT_0)) {
 		_inventory->setSlot(0);
-	} else if (glfwGetKey(_window, GLFW_KEY_1) == GLFW_RELEASE) {
-		_key_1 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_2) == GLFW_PRESS) && ++_key_2 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_1) && INPUT::key_update(INPUT::SLOT_1)) {
 		_inventory->setSlot(1);
-	} else if (glfwGetKey(_window, GLFW_KEY_2) == GLFW_RELEASE) {
-		_key_2 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_3) == GLFW_PRESS) && ++_key_3 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_2) && INPUT::key_update(INPUT::SLOT_2)) {
 		_inventory->setSlot(2);
-	} else if (glfwGetKey(_window, GLFW_KEY_3) == GLFW_RELEASE) {
-		_key_3 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_4) == GLFW_PRESS) && ++_key_4 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_3) && INPUT::key_update(INPUT::SLOT_3)) {
 		_inventory->setSlot(3);
-	} else if (glfwGetKey(_window, GLFW_KEY_4) == GLFW_RELEASE) {
-		_key_4 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_5) == GLFW_PRESS) && ++_key_5 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_4) && INPUT::key_update(INPUT::SLOT_4)) {
 		_inventory->setSlot(4);
-	} else if (glfwGetKey(_window, GLFW_KEY_5) == GLFW_RELEASE) {
-		_key_5 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_6) == GLFW_PRESS) && ++_key_6 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_5) && INPUT::key_update(INPUT::SLOT_5)) {
 		_inventory->setSlot(5);
-	} else if (glfwGetKey(_window, GLFW_KEY_6) == GLFW_RELEASE) {
-		_key_6 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_7) == GLFW_PRESS) && ++_key_7 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_6) && INPUT::key_update(INPUT::SLOT_6)) {
 		_inventory->setSlot(6);
-	} else if (glfwGetKey(_window, GLFW_KEY_7) == GLFW_RELEASE) {
-		_key_7 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_8) == GLFW_PRESS) && ++_key_8 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_7) && INPUT::key_update(INPUT::SLOT_7)) {
 		_inventory->setSlot(7);
-	} else if (glfwGetKey(_window, GLFW_KEY_8) == GLFW_RELEASE) {
-		_key_8 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_9) == GLFW_PRESS) && ++_key_9 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_8) && INPUT::key_update(INPUT::SLOT_8)) {
 		_inventory->setSlot(8);
-	} else if (glfwGetKey(_window, GLFW_KEY_9) == GLFW_RELEASE) {
-		_key_9 = 0;
 	}
 }

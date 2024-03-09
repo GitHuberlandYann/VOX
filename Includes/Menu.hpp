@@ -35,8 +35,7 @@ class Menu
 		GLuint _shaderProgram;
         GLint _gui_size, _nb_points, _state, _selection, _selected_world;
 		t_item _selected_block;
-		bool _vaoSet, _esc_released, _e_released, _left_released, _right_released, _textBar;
-		GLint _key_1, _key_2, _key_3, _key_4, _key_5, _key_6, _key_7, _key_8, _key_9, _chat_released;
+		bool _vaoSet, _textBar;
 		std::vector<std::string> _worlds;
 		std::vector<int> _selection_list;
 		std::vector<std::array<int, 9>> _vertices;

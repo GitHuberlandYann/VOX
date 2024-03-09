@@ -15,6 +15,9 @@ enum {
     UI_TEXATTRIB
 };
 
+class Inventory;
+class Camera;
+
 class UI
 {
     private:

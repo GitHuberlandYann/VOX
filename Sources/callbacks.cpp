@@ -1,6 +1,7 @@
 #include "Camera.hpp"
 #include "Menu.hpp"
 #include "Inventory.hpp"
+#include "callbacks.hpp"
 
 Camera *camera = NULL;
 Menu *menu = NULL;
@@ -112,5 +113,107 @@ namespace INPUT
 	{
 		message = str;
 		cursor = str.size();
+	}
+
+	// ************************************************************************** //
+	//                               Key inputs                                   //
+	// ************************************************************************** //
+
+	std::array<bool, KEY_SIZE> down = {false};
+	std::array<bool, KEY_SIZE> updated = {false};
+	std::map<int, int> key_map = {
+		{GLFW_KEY_BACKSPACE, QUIT_PROGRAM},
+		{GLFW_KEY_ENTER, ENTER},
+		{GLFW_KEY_ESCAPE, CLOSE},
+		{GLFW_KEY_E, INVENTORY},
+		{GLFW_KEY_T, CHAT},
+		{GLFW_KEY_F2, SCREENSHOT},
+		{GLFW_KEY_F3, DEBUG},
+		{GLFW_KEY_G, GAMEMODE},
+		{GLFW_KEY_F5, CAMERA},
+		{GLFW_KEY_F1, HOTBAR},
+		{GLFW_KEY_O, BLOCK_HIGHLIGHT},
+		{GLFW_KEY_RIGHT_BRACKET, DAYCYCLE_UP},
+		{GLFW_KEY_LEFT_BRACKET, DAYCYCLE_DOWN},
+		{GLFW_MOUSE_BUTTON_LEFT, BREAK},
+		{GLFW_MOUSE_BUTTON_MIDDLE, SAMPLE},
+		{GLFW_MOUSE_BUTTON_RIGHT, USE},
+		{GLFW_KEY_Q, DROP},
+		{GLFW_KEY_F, WIREFRAME},
+		{GLFW_KEY_EQUAL, RENDER_DIST_UP},
+		{GLFW_KEY_MINUS, RENDER_DIST_DOWN},
+		{GLFW_KEY_KP_MULTIPLY, GUI_UP},
+		{GLFW_KEY_KP_DIVIDE, GUI_DOWN},
+		{GLFW_KEY_W, MOVE_FORWARD},
+		{GLFW_KEY_S, MOVE_BACKWARD},
+		{GLFW_KEY_D, MOVE_RIGHT},
+		{GLFW_KEY_A, MOVE_LEFT},
+		{GLFW_KEY_SPACE, JUMP},
+		{GLFW_KEY_LEFT_SHIFT, SNEAK},
+		{GLFW_KEY_UP, LOOK_UP},
+		{GLFW_KEY_DOWN, LOOK_DOWN},
+		{GLFW_KEY_RIGHT, LOOK_RIGHT},
+		{GLFW_KEY_LEFT, LOOK_LEFT},
+		{GLFW_KEY_LEFT_CONTROL, RUN},
+		{GLFW_KEY_SPACE, JUMP},
+		{GLFW_KEY_KP_ADD, FLY_SPEED_UP},
+		{GLFW_KEY_KP_SUBTRACT, FLY_SPEED_DOWN},
+		{GLFW_KEY_1, SLOT_0},
+		{GLFW_KEY_2, SLOT_1},
+		{GLFW_KEY_3, SLOT_2},
+		{GLFW_KEY_4, SLOT_3},
+		{GLFW_KEY_5, SLOT_4},
+		{GLFW_KEY_6, SLOT_5},
+		{GLFW_KEY_7, SLOT_6},
+		{GLFW_KEY_8, SLOT_7},
+		{GLFW_KEY_9, SLOT_8},
+	};
+
+	void key_callback( GLFWwindow* window, int key, int scancode, int action, int mods )
+	{
+		(void)window;(void)scancode;(void)mods;
+		if (action == GLFW_REPEAT) return ;
+
+		auto search = key_map.find(key);
+		if (search == key_map.end()) return ;
+
+		down[search->second] = action == GLFW_PRESS;
+		updated[search->second] = true;
+	}
+
+	void mouse_button_callback( GLFWwindow *window, int button, int action, int mods )
+	{
+		(void)window;(void)mods;
+
+		auto search = key_map.find(button);
+		if (search == key_map.end()) return ;
+
+		down[search->second] = action == GLFW_PRESS;
+		updated[search->second] = true;
+	}
+
+	/**
+	 * @brief get state of key with given index
+	 * @param index index of key you want to query the state of
+	 * @return true if key is currently down
+	*/
+	bool key_down( int index )
+	{
+		if (index < 0 || index >= KEY_SIZE) return (false);
+		return (down[index]);
+	}
+
+	/**
+	 * @brief tells if key has been updated since last time you called this function
+	 * if (key_down(KEY_E) && key_updated(KEY_E)) tells you if it's the first frame the key has been pressed
+	 * @param index index of key you want to query the upate fo
+	 * @return true if key has been updated since last time you called this function
+	*/
+	bool key_update( int index )
+	{
+		if (index < 0 || index >= KEY_SIZE) return (false);
+		bool res = updated[index];
+		if (res) updated[index] = false;
+		return (res);
 	}
 }

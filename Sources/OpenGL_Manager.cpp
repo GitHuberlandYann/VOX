@@ -1,15 +1,13 @@
 #include "OpenGL_Manager.hpp"
+#include "callbacks.hpp"
 // #include "Benchmark.hpp"
 void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL),
-		_key_rdist(0), _render_distance(RENDER_DISTANCE), _key_guisize(0),
-		_key_fill(0), _fill(FILL), _key_add_block(0), _key_rm_block(0), _key_pick_block(0), _key_screenshot(0),
-		_key_h(0), _key_g(0), _key_f5(0), _key_j(0), _key_o(0), _key_time_mul(0), _key_jump(0), _key_1(0), _key_2(0), _key_3(0),
-		_key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0),
+		_render_distance(RENDER_DISTANCE), _fill(FILL),
 		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
-		_esc_released(true), _e_released(true), _threadUpdate(false), _threadStop(false),
+		_threadUpdate(false), _threadStop(false),
 		_break_time(0), _eat_timer(0), _bow_timer(0), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0})
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
@@ -408,6 +406,9 @@ void OpenGL_Manager::main_loop( void )
 	glfwSetCursorPosCallback(_window, cursor_position_callback);
 	glfwSetScrollCallback(_window, scroll_callback);
 
+	glfwSetKeyCallback(_window, INPUT::key_callback);
+	glfwSetMouseButtonCallback(_window, INPUT::mouse_button_callback);
+
 	check_glstate("setup done, entering main loop\n", true);
 
 	// std::cout << "60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame." << std::endl; 
@@ -515,52 +516,54 @@ void OpenGL_Manager::main_loop( void )
 		#endif
 		glDisable(GL_DEPTH_TEST);
 		// Chunk *chunk_ptr = get_current_chunk_ptr();
-		std::string str;
-		if (_debug_mode) {
-			str = "Timer: " + std::to_string(currentTime)
-					+ '\n' + DayCycle::Get()->getInfos()
-					+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
-					+ "\nTPS: " + std::to_string(nbTicksLastSecond)
-					+ '\n' + _camera->getCamString(_game_mode)
-					+ "\nBlock\t> " + s_blocks[_block_hit.value]->name
-					+ ((_block_hit.value != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
-					+ ((_block_hit.value) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
-					+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
-					+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
-					+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
-					// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
-					+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size());
-			
-			mtx_perimeter.lock();
-			str += '/' + std::to_string(_perimeter_chunks.size());
-			mtx_perimeter.unlock();
-			mtx.lock();
-			str += '/' + std::to_string(_chunks.size());
-			mtx.unlock();
-			str += "\nDisplayed faces\t> " + std::to_string(faceCounter)
-					+ "\nSky faces\t> " + std::to_string(skyFaces)
-					+ "\nWater faces\t> " + std::to_string(waterFaces)
-					+ "\n\nRender Distance\t> " + std::to_string(_render_distance)
-					+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE");
-			mtx_backup.lock();
-			str += "\nBackups\t> " + std::to_string(_backups.size());
-			mtx_backup.unlock();
-			str += _inventory->getSlotString()
-					+ _menu->getInfoString();
-					// + _inventory->getDuraString()
-					// + _inventory->getInventoryString();
-		} else {
-			str = "\n\nFPS: " + std::to_string(nbFramesLastSecond) + "\nTPS: " + std::to_string(nbTicksLastSecond);
-		}
-		// b.stamp("stringing");
 		if (_menu->getState() >= MENU::PAUSE) {
+			std::string str;
+			if (_debug_mode) {
+				str = "Timer: " + std::to_string(currentTime)
+						+ '\n' + DayCycle::Get()->getInfos()
+						+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
+						+ "\nTPS: " + std::to_string(nbTicksLastSecond)
+						+ '\n' + _camera->getCamString(_game_mode)
+						+ "\nBlock\t> " + s_blocks[_block_hit.value]->name
+						+ ((_block_hit.value != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
+						+ ((_block_hit.value) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
+						+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
+						+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
+						+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
+						// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
+						+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size());
+				
+				mtx_perimeter.lock();
+				str += '/' + std::to_string(_perimeter_chunks.size());
+				mtx_perimeter.unlock();
+				mtx.lock();
+				str += '/' + std::to_string(_chunks.size());
+				mtx.unlock();
+				str += "\nDisplayed faces\t> " + std::to_string(faceCounter)
+						+ "\nSky faces\t> " + std::to_string(skyFaces)
+						+ "\nWater faces\t> " + std::to_string(waterFaces)
+						+ "\n\nRender Distance\t> " + std::to_string(_render_distance)
+						+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE");
+				mtx_backup.lock();
+				str += "\nBackups\t> " + std::to_string(_backups.size());
+				mtx_backup.unlock();
+				str += _inventory->getSlotString()
+						+ _menu->getInfoString();
+						// + _inventory->getDuraString()
+						// + _inventory->getInventoryString();
+			} else {
+				str = "\n\nFPS: " + std::to_string(nbFramesLastSecond) + "\nTPS: " + std::to_string(nbTicksLastSecond);
+			}
+			// b.stamp("stringing");
 			_ui->drawUserInterface(str, _game_mode, deltaTime);
 		}
 		// b.stamp("UI");
 		if (_paused) {
-			mtx.lock();
-			_menu->setChunks(_chunks);
-			mtx.unlock();
+			if (_menu->getState() == MENU::LOAD) {
+				mtx.lock();
+				_menu->setChunks(_chunks);
+				mtx.unlock();
+			}
 			switch (_menu->run(_render_distance, nbTicks == 1 && tickUpdate)) {
 				case (1): // back to game
 					if (!IS_LINUX) {

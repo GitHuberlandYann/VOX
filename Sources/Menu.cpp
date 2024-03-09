@@ -6,8 +6,7 @@ extern std::mutex mtx;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Menu::Menu( Inventory & inventory, UI *ui ) : _gui_size(3), _state(MENU::MAIN), _selection(0), _selected_world(0), _vaoSet(false),
-	_esc_released(false), _e_released(false), _left_released(false), _right_released(false), _textBar(true),
-	_key_1(0), _key_2(0), _key_3(0), _key_4(0), _key_5(0), _key_6(0), _key_7(0), _key_8(0), _key_9(0), _chat_released(0),
+	_textBar(true),
 	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _chest(NULL), _furnace(NULL)
 {
 	_world_file = "";
@@ -27,8 +26,6 @@ Menu::~Menu( void )
 void Menu::reset_values( void )
 {
 	_selection = 0;
-	_esc_released = false;
-	_e_released = false;
 	if (_selected_block.type != blocks::AIR) {
 		_inventory.restoreBlock(_selected_block);
 	}
@@ -48,7 +45,7 @@ void Menu::reset_values( void )
 
 int Menu::main_menu( void )
 {
-	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_selection == 1) { //singleplayer
 			_state = MENU::WORLD_SELECT;
 			reset_values();			
@@ -76,7 +73,7 @@ int Menu::main_menu( void )
 			return (-1);
 		}
 	}
-	if (glfwGetKey(_window, GLFW_KEY_SPACE) == GLFW_PRESS) { // skip world selection and launch with default seed
+	if (INPUT::key_down(INPUT::JUMP)) { // skip world selection and launch with default seed
 		_state = MENU::LOAD;
 		reset_values();
 		return (4);
@@ -106,7 +103,7 @@ int Menu::main_menu( void )
 
 int Menu::world_select_menu( void )
 {
-	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_selection == 1) { //play selected world
 			_world_file = _worlds[_selected_world - 1];
 			_state = MENU::LOAD;
@@ -186,7 +183,7 @@ int Menu::loading_screen( GLint render_dist )
 
 int Menu::death_menu( void )
 {
-	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_selection == 1) { // Respawn
 			_state = MENU::LOAD;
 			reset_values();
@@ -217,7 +214,7 @@ int Menu::death_menu( void )
 
 int Menu::pause_menu( void )
 {
-	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_selection == 1) { //Back to Game
 			reset_values();
 			return (1);
@@ -231,11 +228,8 @@ int Menu::pause_menu( void )
 			return (3);
 		}
 	}
-	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		_esc_released = false;
+	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
 		return (1);
-	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
-		_esc_released = true;
 	}
 
 	setup_array_buffer_pause();
@@ -269,7 +263,7 @@ int Menu::pause_menu( void )
 
 int Menu::options_menu( void )
 {
-	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_selection == 1) { // FOV
 
 		} else if (_selection == 11) { // Done
@@ -278,12 +272,10 @@ int Menu::options_menu( void )
 			return (0);
 		}
 	}
-	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
 		_state = (_state == MENU::OPTIONS) ? MENU::PAUSE : MENU::MAIN;
 		reset_values();
 		return (0);
-	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
-		_esc_released = true;
 	}
 
 	setup_array_buffer_options();
@@ -324,23 +316,15 @@ int Menu::options_menu( void )
 int Menu::ingame_inputs( void )
 {
 	int craft = _state + 1 - MENU::INVENTORY; // craft = 1: inventory, 2: crafting, 3: furnace
-	if (_esc_released && glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
 		reset_values();
 		return (1);
-	} else if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
-		_esc_released = true;
 	}
-	if (_e_released && glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::INVENTORY) && INPUT::key_update(INPUT::INVENTORY)) {
 		reset_values();
 		return (1);
-	} else if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_RELEASE) {
-		_e_released = true;
 	}
-	// if (_selection && glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
-	// 	_inventory.removeBlockAt(_selection - 1, _furnace, _chest);
-	// }
-	if (_left_released && glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-		_left_released = false;
+	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
 		if (_selection) {
 			if (_selected_block.type == blocks::AIR) {
 				_selected_block = _inventory.pickBlockAt(craft, _selection - 1, _furnace, _chest);
@@ -349,13 +333,11 @@ int Menu::ingame_inputs( void )
 				_ui->addFace({0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, false, true); // TODO better way to update ui than this
 			}
 		}
-	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
-		_left_released = true;
 	}
-	if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::USE)) {
 		if (_selection) {
 			if (_selected_block.type == blocks::AIR) {
-				if (_right_released) {
+				if (INPUT::key_update(INPUT::USE)) {
 					_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1, _furnace, _chest);
 					if (_selected_block.type != blocks::AIR) {
 						_selection_list.push_back(_selection);
@@ -379,55 +361,35 @@ int Menu::ingame_inputs( void )
 				}
 			}
 		}
-		_right_released = false;
-	} else if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
-		_right_released = true;
+	} else if (INPUT::key_update(INPUT::USE)) {
 		_selection_list.clear();
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_1) == GLFW_PRESS) && ++_key_1 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_0) && INPUT::key_update(INPUT::SLOT_0)) {
 		_inventory.swapCells(0, _selection - 1);
-	} else if (glfwGetKey(_window, GLFW_KEY_1) == GLFW_RELEASE) {
-		_key_1 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_2) == GLFW_PRESS) && ++_key_2 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_1) && INPUT::key_update(INPUT::SLOT_1)) {
 		_inventory.swapCells(1, _selection - 1);
-	} else if (glfwGetKey(_window, GLFW_KEY_2) == GLFW_RELEASE) {
-		_key_2 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_3) == GLFW_PRESS) && ++_key_3 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_2) && INPUT::key_update(INPUT::SLOT_2)) {
 		_inventory.swapCells(2, _selection - 1);
-	} else if (glfwGetKey(_window, GLFW_KEY_3) == GLFW_RELEASE) {
-		_key_3 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_4) == GLFW_PRESS) && ++_key_4 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_3) && INPUT::key_update(INPUT::SLOT_3)) {
 		_inventory.swapCells(3, _selection - 1);
-	} else if (glfwGetKey(_window, GLFW_KEY_4) == GLFW_RELEASE) {
-		_key_4 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_5) == GLFW_PRESS) && ++_key_5 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_4) && INPUT::key_update(INPUT::SLOT_4)) {
 		_inventory.swapCells(4, _selection - 1);
-	} else if (glfwGetKey(_window, GLFW_KEY_5) == GLFW_RELEASE) {
-		_key_5 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_6) == GLFW_PRESS) && ++_key_6 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_5) && INPUT::key_update(INPUT::SLOT_5)) {
 		_inventory.swapCells(5, _selection - 1);
-	} else if (glfwGetKey(_window, GLFW_KEY_6) == GLFW_RELEASE) {
-		_key_6 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_7) == GLFW_PRESS) && ++_key_7 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_6) && INPUT::key_update(INPUT::SLOT_6)) {
 		_inventory.swapCells(6, _selection - 1);
-	} else if (glfwGetKey(_window, GLFW_KEY_7) == GLFW_RELEASE) {
-		_key_7 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_8) == GLFW_PRESS) && ++_key_8 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_7) && INPUT::key_update(INPUT::SLOT_7)) {
 		_inventory.swapCells(7, _selection - 1);
-	} else if (glfwGetKey(_window, GLFW_KEY_8) == GLFW_RELEASE) {
-		_key_8 = 0;
 	}
-	if ((glfwGetKey(_window, GLFW_KEY_9) == GLFW_PRESS) && ++_key_9 == 1) {
+	if (INPUT::key_down(INPUT::SLOT_8) && INPUT::key_update(INPUT::SLOT_8)) {
 		_inventory.swapCells(8, _selection - 1);
-	} else if (glfwGetKey(_window, GLFW_KEY_9) == GLFW_RELEASE) {
-		_key_9 = 0;
 	}
 	return (0);
 }
@@ -462,37 +424,31 @@ int Menu::ingame_menu( void )
 
 int Menu::chat_menu( bool animUpdate )
 {
-	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::CLOSE)) {
 		glfwSetCharCallback(_window, NULL);
 		INPUT::resetMessage();
 		_chat->resetHistoCursor();
 		return (1);
 	}
-	if (++_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::ENTER) && INPUT::key_update(INPUT::ENTER)) {
 		_chat->sendMessage(INPUT::getCurrentMessage());
 		INPUT::resetMessage();
 	}
-	if (_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::DELETE) && INPUT::key_update(INPUT::DELETE)) {
 		INPUT::rmLetter();
 	}
-	if (_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::LOOK_UP) && INPUT::key_update(INPUT::LOOK_UP)) {
 		INPUT::setCurrentMessage(_chat->getHistoMsg(true));
 	}
-	if (_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+	if (INPUT::key_down(INPUT::LOOK_DOWN) && INPUT::key_update(INPUT::LOOK_DOWN)) {
 		INPUT::setCurrentMessage(_chat->getHistoMsg(false));
 	}
-	if (_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-		INPUT::moveCursor(true, glfwGetKey(_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS);
+	if (INPUT::key_down(INPUT::LOOK_RIGHT) && INPUT::key_update(INPUT::LOOK_RIGHT)) {
+		INPUT::moveCursor(true, INPUT::key_down(INPUT::RUN));
 	}
-	if (_chat_released == 1 && glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-		INPUT::moveCursor(false, glfwGetKey(_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS);
+	if (INPUT::key_down(INPUT::LOOK_LEFT) && INPUT::key_update(INPUT::LOOK_LEFT)) {
+		INPUT::moveCursor(false, INPUT::key_down(INPUT::RUN));
 	}
-	if (glfwGetKey(_window, GLFW_KEY_ENTER) == GLFW_RELEASE && glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_RELEASE
-		&& glfwGetKey(_window, GLFW_KEY_UP) == GLFW_RELEASE && glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_RELEASE
-		&& glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_RELEASE && glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_RELEASE) {
-		_chat_released = 0;
-	}
-
 
 	setup_array_buffer_chat();
 	glUseProgram(_shaderProgram);
@@ -1183,7 +1139,7 @@ std::string Menu::getWorldFile( void )
 
 int Menu::run( GLint render_dist, bool animUpdate )
 {
-	if (_state != MENU::CHAT && glfwGetKey(_window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
+	if (_state != MENU::CHAT && INPUT::key_down(INPUT::QUIT_PROGRAM)) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return (-1);
 	}
