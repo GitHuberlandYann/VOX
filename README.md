@@ -5,11 +5,12 @@ My first procedural world. Using OpenGL and C++
 ## Building
 ```
 $ git clone --recurse-submodules git@github.com:GitHuberlandYann/VOX.git
+$ cd VOX
 $ make setup
 $ make
 $ make log
 ```
-make setup takes a while as it installs the needed [static libraries](#libraries), but you only need to do it once. Also, for now, it "fails" upon making the glew library, but the needed file is still created so go on after the error pops up.
+make setup takes a while as it installs the needed [static libraries](#libraries), but you only need to do it once.
 
 ## Goal
 Recreate [Minecraft](https://www.minecraft.net). That's it.

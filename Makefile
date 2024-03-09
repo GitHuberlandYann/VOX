@@ -13,15 +13,15 @@ OBJS 		= $(addprefix $(OBJS_DIR)/, $(addsuffix .o, $(FILES)))
 CC 			= clang++
 CPPFLAGS 	= -Wall -Wextra -Werror -O3 -std=c++17
 SAN 		= -fsanitize=address -g3
-INCLUDES	= -I Includes -I Libs/glm -I Libs/glfw/include -I Libs/SOIL/build/include/SOIL
-LDFLAGS		= Libs/glm/glm/libglm.a Libs/glfw/src/libglfw3.a Libs/SOIL/build/lib/libSOIL.a
+INCLUDES	= -I Includes -I Libs/glm -I Libs/glfw/include -I Libs/glew-2.2.0/include -I Libs/SOIL/build/include
+LDFLAGS		= Libs/glm/glm/libglm.a Libs/glfw/src/libglfw3.a Libs/glew-2.2.0/build/lib/libGLEW.a Libs/SOIL/build/lib/libSOIL.a
 
 # ===---===---===---===---===---===---===---===---===---===---===---===---
 
 ifeq ($(shell uname), Linux)
-LDFLAGS		+= -L Libs `pkg-config --static --libs glew` -lGL -lX11 -lpthread -lXrandr -lXi -ldl 
+LDFLAGS		+= -lGL -lX11 -lpthread -lXrandr -lXi -ldl
 else
-LDFLAGS		+= -framework OpenGl -framework AppKit -framework IOkit Libs/mac/libGLEW.a # todo check if glew compiles on mac
+LDFLAGS		+= -framework OpenGl -framework AppKit -framework IOkit
 endif
 
 # ===---===---===---===---===---===---===---===---===---===---===---===---
@@ -33,13 +33,13 @@ $(OBJS_DIR):
 
 setup:
 	cd Libs/glm && cmake . && make
+	cd Libs/glew-2.2.0/build && cmake ./cmake && make
 	cd Libs/glfw && cmake . && make
 	cd Libs/SOIL && ./configure && make
-	cd Libs/glew/build && cmake ./cmake && make
 
 cleanLibs:
 	cd Libs/glm && make clean
-	cd Libs/glew && make clean
+	cd Libs/glew-2.2.0 && make clean
 	cd Libs/glfw && make clean
 	cd Libs/SOIL && make clean
 
