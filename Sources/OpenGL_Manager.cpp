@@ -476,12 +476,12 @@ void OpenGL_Manager::main_loop( void )
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, faceCounter);
 			if (!gamePaused) {
-				c->updateFurnaces(currentTime);
 				if (fluidUpdate) {
 					c->updateFluids();
 					c->updateScheduledBlocks();
 				}
 				if (tickUpdate) {
+					c->updateFurnaces(currentTime);
 					c->tickUpdate();
 				}
 				c->updateEntities(_entities, _particles, deltaTime);

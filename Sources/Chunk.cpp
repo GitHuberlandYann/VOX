@@ -1095,9 +1095,6 @@ GLint Chunk::getBlockAt( int posX, int posY, int posZ, bool askNeighbours )
 		}
 	} else {
 		res = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ];
-		if (res < blocks::AIR) {
-			res += blocks::NOTVISIBLE;
-		}
 	}
 	return (res);
 }

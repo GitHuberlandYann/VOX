@@ -335,9 +335,10 @@ int Menu::ingame_inputs( void )
 		}
 	}
 	if (INPUT::key_down(INPUT::USE)) {
+		bool first_frame = INPUT::key_update(INPUT::USE);
 		if (_selection) {
 			if (_selected_block.type == blocks::AIR) {
-				if (INPUT::key_update(INPUT::USE)) {
+				if (first_frame) {
 					_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1, _furnace, _chest);
 					if (_selected_block.type != blocks::AIR) {
 						_selection_list.push_back(_selection);
