@@ -103,6 +103,7 @@ class Camera
 
 		void setCurrentChunkPtr( Chunk *ptr );
 		void changeCamPlacement( void );
+		void setFov( float fov );
 		void setRun( bool value );
 		void setSneak( bool value );
 		void setArmAnimation( bool state );

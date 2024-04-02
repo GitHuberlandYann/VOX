@@ -600,6 +600,9 @@ void OpenGL_Manager::main_loop( void )
 					saveWorld();
 					_ui->_hideUI = true;
 					break ;
+				case (7): // fov change
+					update_cam_perspective();
+					break ;
 			}
 		}
 		_ui->textToScreen();

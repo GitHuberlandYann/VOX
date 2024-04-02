@@ -6,7 +6,7 @@ extern std::mutex mtx;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Menu::Menu( Inventory & inventory, UI *ui ) : _gui_size(3), _state(MENU::MAIN), _selection(0), _selected_world(0), _vaoSet(false),
-	_textBar(true),
+	_textBar(true), _fov_gradient(70),
 	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _chest(NULL), _furnace(NULL)
 {
 	_world_file = "";
@@ -41,11 +41,12 @@ void Menu::reset_values( void )
 	_selected_world = 0;
 	_worlds.clear();
 	_selection_list.clear();
+	_moving_slider = false;
 }
 
 int Menu::main_menu( void )
 {
-	if (INPUT::key_down(INPUT::BREAK)) {
+	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
 		if (_selection == 1) { //singleplayer
 			_state = MENU::WORLD_SELECT;
 			reset_values();			
@@ -103,7 +104,7 @@ int Menu::main_menu( void )
 
 int Menu::world_select_menu( void )
 {
-	if (INPUT::key_down(INPUT::BREAK)) {
+	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
 		if (_selection == 1) { //play selected world
 			_world_file = _worlds[_selected_world - 1];
 			_state = MENU::LOAD;
@@ -183,7 +184,7 @@ int Menu::loading_screen( GLint render_dist )
 
 int Menu::death_menu( void )
 {
-	if (INPUT::key_down(INPUT::BREAK)) {
+	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
 		if (_selection == 1) { // Respawn
 			_state = MENU::LOAD;
 			reset_values();
@@ -214,14 +215,14 @@ int Menu::death_menu( void )
 
 int Menu::pause_menu( void )
 {
-	if (INPUT::key_down(INPUT::BREAK)) {
+	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
 		if (_selection == 1) { //Back to Game
 			reset_values();
 			return (1);
 		} else if (_selection == 6) { // Options...
 			_state = MENU::OPTIONS;
 			reset_values();
-			return (0);
+			return (options_menu());
 		} else if (_selection == 8) { //Save and Quit to Title
 			_state = MENU::MAIN;
 			reset_values();
@@ -263,19 +264,24 @@ int Menu::pause_menu( void )
 
 int Menu::options_menu( void )
 {
+	_moving_slider = false;
 	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_selection == 1) { // FOV
-
+			_moving_slider = true;
+			if (_state == MENU::OPTIONS) {
+				_ui->setFov(_fov_gradient);
+			}
+		} else if (!INPUT::key_update(INPUT::BREAK)) {
 		} else if (_selection == 11) { // Done
 			_state = (_state == MENU::OPTIONS) ? MENU::PAUSE : MENU::MAIN;
 			reset_values();
-			return (0);
+			return (pause_menu());
 		}
 	}
 	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
 		_state = (_state == MENU::OPTIONS) ? MENU::PAUSE : MENU::MAIN;
 		reset_values();
-		return (0);
+		return (pause_menu());
 	}
 
 	setup_array_buffer_options();
@@ -285,7 +291,7 @@ int Menu::options_menu( void )
 
 	// first draw text shadow
 	// _text->addText(WIN_WIDTH / 2 - 100 + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size - 40 + _gui_size, 24, false, "Options");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 10 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "FOV");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 20 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, std::string("FOV: ") + ((static_cast<int>(_fov_gradient) == 70) ? "Normal" : std::to_string(static_cast<int>(_fov_gradient))));
 	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 58 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Realms Notifications");
 	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 53 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Skin Customization");
 	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Video Settings...");
@@ -299,7 +305,7 @@ int Menu::options_menu( void )
 
 	// then draw text in white
 	_text->addText(WIN_WIDTH / 2 - 22 * (_gui_size + 1), WIN_HEIGHT / 2 - 105 * _gui_size, (_gui_size + 1) * 7, true, "Options");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 10 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "FOV");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 20 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, std::string("FOV: ") + ((static_cast<int>(_fov_gradient) == 70) ? "Normal" : std::to_string(static_cast<int>(_fov_gradient))));
 	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 58 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Realms Notifications");
 	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 53 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Skin Customization");
 	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 47 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Video Settings...");
@@ -310,7 +316,7 @@ int Menu::options_menu( void )
 	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 38 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Chat Settings");
 	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 61 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Accessibility Settings");
 	_text->addText(WIN_WIDTH / 2 - 10 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Done");
-	return (0);
+	return (_moving_slider * 7);
 }
 
 int Menu::ingame_inputs( void )
@@ -565,6 +571,7 @@ void Menu::setup_array_buffer_options( void )
 {
 	_vertices.push_back({1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1}); // occult window
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // FOV
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_fov_gradient, 50, 110, 0, 190)) * _gui_size, WIN_HEIGHT / 2 - 84 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20}); // FOV Slider
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Realms Notifications
 
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Skin Customization...
@@ -1007,7 +1014,14 @@ void Menu::processMouseMovement( float posX, float posY )
 			_selection = 0;
 		}
 	} else if (_state == MENU::OPTIONS || _state == MENU::MAIN_OPTIONS) {
-		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+		if (_moving_slider) {
+			_fov_gradient = gradient(posX, WIN_WIDTH / 2 - 200 * _gui_size, WIN_WIDTH / 2 - 10 * _gui_size, 50, 110);
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 1;
+			if (_moving_slider) {
+				_fov_gradient = gradient(posX, WIN_WIDTH / 2 - 200 * _gui_size, WIN_WIDTH / 2 - 10 * _gui_size, 50, 110);
+			}
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 11;
 		} else {
 			_selection = 0;

@@ -238,6 +238,12 @@ void Camera::changeCamPlacement( void )
 	_update = true;
 }
 
+void Camera::setFov( float fov )
+{
+	_fov = fov;
+	_fovUpdate = true;
+}
+
 void Camera::setRun( bool value )
 {
 	_sprinting = value;

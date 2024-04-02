@@ -35,7 +35,8 @@ class Menu
 		GLuint _shaderProgram;
         GLint _gui_size, _nb_points, _state, _selection, _selected_world;
 		t_item _selected_block;
-		bool _vaoSet, _textBar;
+		bool _vaoSet, _textBar, _moving_slider;
+		float _fov_gradient;
 		std::vector<std::string> _worlds;
 		std::vector<int> _selection_list;
 		std::vector<std::array<int, 9>> _vertices;

@@ -58,6 +58,7 @@ class UI
 		Text *getTextPtr( void );
 		Chat *getChatPtr( void );
 		void changeGuiSize( int offset );
+        void setFov( float fov );
 		GLuint getShaderProgram( void );
         void setup_shader( void );
 		void addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement = false );

@@ -1481,7 +1481,7 @@ void Chunk::shootArrow( float timer )
 
 void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 {
-	if (block_hit.w == blocks::AIR || _displayed_faces > _displayed_alloc) {
+	if (block_hit.w == blocks::AIR || _displayed_faces > _displayed_alloc || !_vaoReset) {
 		return ;
 	}
 	glm::ivec3 chunk_pos = {block_hit.x - _startX, block_hit.y - _startY, block_hit.z};
