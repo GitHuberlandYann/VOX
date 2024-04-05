@@ -71,7 +71,7 @@ void Camera::moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, G
 		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).z * speed_frame;
 		_position.z += movement;
 		mtx.lock();
-		if (_current_chunk_ptr->collisionBox(_position, 0.3f, getHitBox())) {
+		if (_current_chunk_ptr->collisionBox(_position, 0.3f, getHitBox()).type == COLLISION::TOTAL) { // TODO handle partial collision underwater
 			_position.z -= movement;
 		}
 		mtx.unlock();
@@ -361,6 +361,31 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z )
 	if (_sprinting && movement != 0) {
 		updateExhaustion(glm::abs(movement * EXHAUSTION_SPRINTING));
 	}
+}
+
+// if collision after movement, restore position
+void Camera::unmoveHuman( glm::vec3 pos )
+{
+	_mtx.lock();
+	_position = pos;
+	_mtx.unlock();
+}
+
+// adjust position.z to given obstacle, if player can't pass obstacle return false
+bool Camera::customObstacle( float minZ, float maxZ )
+{
+	(void)minZ;
+	if (!_touchGround) return (false);
+
+	_mtx.lock();
+	// std::cout << "DEBUG customObstacle " << _position.z << " vs " << maxZ << std::endl;
+	if (_position.z < maxZ && _position.z + 0.6f > maxZ) {
+		_position.z = maxZ + 0.01f;
+		_mtx.unlock();
+		return (true);
+	}
+	_mtx.unlock();
+	return (false);
 }
 
 void Camera::resetFall( void )

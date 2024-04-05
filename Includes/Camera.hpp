@@ -111,6 +111,8 @@ class Camera
 		void update_movement_speed( GLint key_cam_speed );
 		void moveFly( GLint v, GLint h, GLint z );
 		void moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z );
+		void unmoveHuman( glm::vec3 pos );
+		bool customObstacle( float minZ, float maxZ );
 		void resetFall( void );
 		void applyGravity( void );
 		void touchGround( float value );

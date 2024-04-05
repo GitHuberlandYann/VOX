@@ -483,25 +483,43 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	if (rayCast) {
 		if (_game_mode == SURVIVAL && current_chunk_ptr) { // on first frame -> no current_chunk_ptr
 			_camera->moveHuman((key_cam_z == 1 && INPUT::key_update(INPUT::JUMP)) ? UP : DOWN, key_cam_v, key_cam_h, key_cam_z); // sets inJump variable, no actual movement
+			glm::vec3 originalPos = _camera->getPos();
 			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h, 0); // move on X_AXIS
 			float hitBoxHeight = _camera->getHitBox();
 			mtx.lock();
-			if (current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight)) {
-				mtx.unlock();
-				_camera->moveHuman(X_AXIS, -key_cam_v, -key_cam_h, 0); // if collision after movement, undo movement
-				_camera->setRun(false);
-				mtx.lock();
-			}
+			t_collision coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight);
 			mtx.unlock();
+			if (coll.type == COLLISION::TOTAL) {
+				if (!_camera->customObstacle(coll.minZ, coll.maxZ)) {
+					_camera->unmoveHuman(originalPos); // if collision after movement, undo movement
+					_camera->setRun(false);
+				}
+			} else if (coll.type == COLLISION::PARTIAL) {
+				_camera->customObstacle(coll.minZ, coll.maxZ);
+				coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight);
+				if (coll.type != COLLISION::NONE) {
+					_camera->unmoveHuman(originalPos); // if collision after slab correction, undo movement
+					_camera->setRun(false);
+				}
+			}
+			originalPos = _camera->getPos();
 			_camera->moveHuman(Y_AXIS, key_cam_v, key_cam_h, 0); // move on Y_AXIS
 			mtx.lock();
-			if (current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight)) {
-				mtx.unlock();
-				_camera->moveHuman(Y_AXIS, -key_cam_v, -key_cam_h, 0); // if collision after movement, undo movement
-				_camera->setRun(false);
-				mtx.lock();
-			}
+			coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight);
 			mtx.unlock();
+			if (coll.type == COLLISION::TOTAL) {
+				if (!_camera->customObstacle(coll.minZ, coll.maxZ)) {
+					_camera->unmoveHuman(originalPos); // if collision after movement, undo movement
+					_camera->setRun(false);
+				}
+			} else if (coll.type == COLLISION::PARTIAL) {
+				_camera->customObstacle(coll.minZ, coll.maxZ);
+				coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight);
+				if (coll.type != COLLISION::NONE) {
+					_camera->unmoveHuman(originalPos); // if collision after slab correction, undo movement
+					_camera->setRun(false);
+				}
+			}
 			mtx.lock();
 			current_chunk_ptr->applyGravity(); // move on Z_AXIS
 			mtx.unlock();

@@ -1647,36 +1647,83 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 
 /* collisionBox takes feet position of object, dimension of its hitbox and returns wether object is inside block or not
  * WATCHOUT if width > 0.5 problemos because we check block left and right but not middle */
-bool Chunk::collisionBox( glm::vec3 pos, float width, float height )
+t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height )
 {
-	glm::ivec3 top0 = {glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height)};
-	if (s_blocks[getBlockAt(top0.x, top0.y, top0.z, true) & 0xFF]->collisionHitbox) {
-		return (true);
+	t_collision res = {COLLISION::NONE}, recurse_res = {COLLISION::NONE};
+	int minX = glm::floor(pos.x - width - _startX);
+	int maxX = glm::floor(pos.x + width - _startX);
+	int minY = glm::floor(pos.y - width - _startY);
+	int maxY = glm::floor(pos.y + width - _startY);
+	int top  = glm::floor(pos.z + height);
+	const Block *target = s_blocks[getBlockAt(minX, minY, top, true) & 0xFF];
+	if (target->collisionHitbox_1x1x1) {
+		return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
+	} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, height},
+		{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
+		target->hitboxHalfSize)) {
+		res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
 	}
-	glm::ivec3 top1 = {glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height)};
-	if (top1 != top0) {
-		if (s_blocks[getBlockAt(top1.x, top1.y, top1.z, true) & 0xFF]->collisionHitbox) {
-			return (true);
+	if (minX != maxX) {
+		target = s_blocks[getBlockAt(maxX, minY, top, true) & 0xFF];
+		if (target->collisionHitbox_1x1x1) {
+			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
+		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, height},
+			{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
+			target->hitboxHalfSize)) {
+			if (res.type == COLLISION::NONE) {
+				res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
+			} else {
+				res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
+				res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
+			}
 		}
 	}
-	glm::ivec3 top2 = {glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height)};
-	if (top2 != top0) {
-		if (s_blocks[getBlockAt(top2.x, top2.y, top2.z, true) & 0xFF]->collisionHitbox) {
-			return (true);
+	if (minY != maxY) {
+		target = s_blocks[getBlockAt(minX, maxY, top, true) & 0xFF];
+		if (target->collisionHitbox_1x1x1) {
+			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
+		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, height},
+			{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
+			target->hitboxHalfSize)) {
+			if (res.type == COLLISION::NONE) {
+				res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
+			} else {
+				res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
+				res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
+			}
 		}
 	}
-	glm::ivec3 top3 = {glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height)};
-	if (top3 != top0) {
-		if (s_blocks[getBlockAt(top3.x, top3.y, top3.z, true) & 0xFF]->collisionHitbox) {
-			return (true);
+	if (minX != maxX && minY != maxY) {
+		target = s_blocks[getBlockAt(maxX, maxY, top, true) & 0xFF];
+		if (target->collisionHitbox_1x1x1) {
+			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
+		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, height},
+			{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
+			target->hitboxHalfSize)) {
+			if (res.type == COLLISION::NONE) {
+				res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
+			} else {
+				res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
+				res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
+			}
 		}
 	}
 	if (height > 1) {
-		return (collisionBox(pos, width, height - 1));
-	} else if (top0.z != glm::floor(pos.z)) {
-		return (collisionBox(pos, width, 0));
+		recurse_res = collisionBox(pos, width, height - 1);
+	} else if (top != glm::floor(pos.z)) {
+		recurse_res = collisionBox(pos, width, 0);
 	}
-	return (false);
+	if (recurse_res.type == COLLISION::TOTAL) {
+		return (recurse_res);
+	} else if (recurse_res.type == COLLISION::PARTIAL) {
+		if (res.type == COLLISION::NONE) {
+			res = recurse_res;
+		} else {
+			res.minZ = glm::min(res.minZ, recurse_res.minZ);
+			res.maxZ = glm::max(res.maxZ, recurse_res.maxZ);
+		}
+	}
+	return (res);
 }
 
 /* collisionBoxWater takes feet position of object, dimension of its hitbox and returns wether object is inside water or not
@@ -1720,38 +1767,57 @@ void Chunk::applyGravity( void )
 	_camera->applyGravity();
 	glm::vec3 pos = _camera->getPos();
 	float distZ = saved_posZ - pos.z;
+	t_collision coll;
 	if (distZ < 0) { // jumping
 		_camera->_touchGround = false;
 		float hitBoxHeight = _camera->getHitBox();
 		// std::cout << "DEBUG: " << std::to_string(_camera->_position.z) << std::endl;
 		for (float posZ = saved_posZ; posZ < pos.z; posZ++) {
 			// std::cout << "testing with posZ " << posZ << std::endl;
-			if (collisionBox({pos.x, pos.y, posZ + hitBoxHeight}, 0.3f, 0)) {
+			coll = collisionBox({pos.x, pos.y, posZ + hitBoxHeight}, 0.3f, 0);
+			if (coll.type == COLLISION::TOTAL) {
 				_camera->touchCeiling(glm::floor(posZ) + 0.19f);
 				// std::cout << "hit roof from loop" << std::endl;
 				return ;
+			} else if (coll.type == COLLISION::PARTIAL) {
+				_camera->touchCeiling(coll.minZ - 0.01f);
+				return ;
 			}
 		}
-		if (collisionBox({pos.x, pos.y, pos.z + hitBoxHeight}, 0.3f, 0)) {
+		coll = collisionBox({pos.x, pos.y, pos.z + hitBoxHeight}, 0.3f, 0);
+		if (coll.type == COLLISION::TOTAL) {
 			_camera->touchCeiling(glm::floor(pos.z) + 0.19f);
 			// std::cout << "hit roof out of loop, " << pos.z << " -> " << _camera->getPos().z << std::endl;
 			return ;
+		} else if (coll.type == COLLISION::PARTIAL) {
+			_camera->touchCeiling(coll.minZ - 0.01f);
+			return ;
 		}
 	} else { // falling
-		for (float posZ = saved_posZ; posZ > pos.z; posZ--) {
-			if (collisionBox({pos.x, pos.y, posZ}, 0.3f, 0)) {
+		for (float posZ = saved_posZ; posZ > pos.z; posZ -= 0.5f) {
+			coll = collisionBox({pos.x, pos.y, posZ}, 0.3f, 0);
+			if (coll.type == COLLISION::TOTAL) {
 				_camera->touchGround(glm::floor((posZ + 1)));
 				if (saved_posZ != _camera->getPos().z) {
 					_camera->_update = true;
 				}
 				return ;
+			} else if (coll.type == COLLISION::PARTIAL) {
+				_camera->touchGround(coll.maxZ + 0.01f);
+				return ;
 			}
 		}
-		if (collisionBox(pos, 0.3f, 0)) {
+		coll = collisionBox(pos, 0.3f, 0);
+		if (coll.type == COLLISION::TOTAL) {
+			// std::cout << "\tgravity total saved " << saved_posZ << " dist " << distZ << std::endl;
 			_camera->touchGround(glm::floor((pos.z + 1)));
 			if (saved_posZ != _camera->getPos().z) {
 				_camera->_update = true;
 			}
+			return ;
+		} else if (coll.type == COLLISION::PARTIAL) {
+			// std::cout << "\tgravity partial" << std::endl;
+			_camera->touchGround(coll.maxZ + 0.01f);
 			return ;
 		}
 	}

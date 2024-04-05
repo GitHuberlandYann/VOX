@@ -712,6 +712,16 @@ bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeC
 			);
 }
 
+// returns if cubes a and b intersect
+// posA, posB are center points of cubes
+// sizeA, sizeB are halfSizes of cubes
+bool cube_cube_intersection( glm::vec3 posA, glm::vec3 sizeA, glm::vec3 posB, glm::vec3 sizeB )
+{
+	return (posA.x - sizeA.x <= posB.x + sizeB.x && posA.x + sizeA.x >= posB.x - sizeB.x
+			&& posA.y - sizeA.y <= posB.y + sizeB.y && posA.y + sizeA.y >= posB.y - sizeB.y
+			&& posA.z - sizeA.z <= posB.z + sizeB.z && posA.z + sizeA.z >= posB.z - sizeB.z);
+}
+
 /*
 int main( void )
 {

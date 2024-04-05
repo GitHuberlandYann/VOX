@@ -74,6 +74,18 @@ const GLint oak_normal[61][3] = {
 	{0, 1, 1}
 };
 
+enum COLLISION {
+	NONE,
+	TOTAL,
+	PARTIAL
+};
+
+typedef struct s_collision {
+	int type;
+	float minZ = 0.0f;
+	float maxZ = 0.0f;
+}				t_collision;
+
 struct s_backup { // TODO add fluids and entities to backups
 	std::map<int, int> added;
 	std::set<int> removed;
@@ -203,7 +215,7 @@ class Chunk
 		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
 		void insertFluidAt( std::set<int> *newFluids, int posX, int posY, int posZ );
 		void update_border( int posX, int posY, int level, int type, bool adding, int origin );
-		bool collisionBox( glm::vec3 pos, float width, float height );
+		t_collision collisionBox( glm::vec3 pos, float width, float height );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( void );
 

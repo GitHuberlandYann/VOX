@@ -127,7 +127,8 @@ struct Block {
 		int getProduction = blocks::AIR;
 		float blast_resistance = FLT_MAX;
 		bool hasHitbox = false;
-		bool collisionHitbox = true;
+		bool collisionHitbox_1x1x1 = true;
+		bool collisionHitbox = false;
 		glm::vec3 hitboxCenter = {0, 0, 0};
 		glm::vec3 hitboxHalfSize = {0, 0, 0};
 		bool isFood = false;
@@ -164,7 +165,7 @@ struct Air : Block {
 		Air() {
 			name = "AIR";
 			blast_resistance = 0.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 		}
 };
 
@@ -227,7 +228,7 @@ struct Cactus : Block {
 			name = "CACTUS";
 			mined = blocks::CACTUS;
 			blast_resistance = 0.4f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			byHand = true;
 			hardness = 0.4f;
 			textureY = 3;
@@ -633,7 +634,8 @@ struct OakSlab : Block {
 			mined = blocks::OAK_SLAB;
 			blast_resistance = 3.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
 			isFuel = true;
@@ -653,7 +655,7 @@ struct Poppy : Block {
 			mined = blocks::POPPY;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -671,7 +673,7 @@ struct Dandelion : Block {
 			mined = blocks::DANDELION;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -689,7 +691,7 @@ struct BlueOrchid : Block {
 			mined = blocks::BLUE_ORCHID;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -707,7 +709,7 @@ struct Allium : Block {
 			mined = blocks::ALLIUM;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -725,7 +727,7 @@ struct CornFlower : Block {
 			mined = blocks::CORNFLOWER;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -743,7 +745,7 @@ struct PinkTulip : Block {
 			mined = blocks::PINK_TULIP;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
@@ -760,7 +762,7 @@ struct Grass : Block {
 			name = "GRASS";
 			mined = blocks::WHEAT_SEEDS;
 			blast_resistance = 0.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			byHand = true;
 			hardness = 0.0f;
 			item3D = false;
@@ -775,7 +777,7 @@ struct SugarCane : Block {
 			name = "SUGAR_CANE";
 			mined = blocks::SUGAR_CANE;
 			blast_resistance = 0.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			byHand = true;
 			hardness = 0.0f;
 			item3D = false;
@@ -791,7 +793,7 @@ struct DeadBush : Block {
 			mined = blocks::STICK;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			isFuel = true;
@@ -811,7 +813,7 @@ struct OakSapling : Block {
 			mined = blocks::OAK_SAPLING;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			isFuel = true;
@@ -831,7 +833,7 @@ struct Torch : Block {
 			mined = blocks::TORCH;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 5 / 16.0f};
 			hitboxHalfSize = {1 / 16.0f, 1 / 16.0f, 5 / 16.0f};
 			light_level = 14;
@@ -867,7 +869,7 @@ struct WheatCrop : Block {
 			mined = blocks::WHEAT_SEEDS;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 1 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
 			byHand = true;
@@ -888,7 +890,7 @@ struct WheatCrop1 : Block {
 			mined = blocks::WHEAT_SEEDS;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 3 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 3 / 32.0f};
 			byHand = true;
@@ -903,7 +905,7 @@ struct WheatCrop2 : Block {
 			mined = blocks::WHEAT_SEEDS;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 5 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 5 / 32.0f};
 			byHand = true;
@@ -918,7 +920,7 @@ struct WheatCrop3 : Block {
 			mined = blocks::WHEAT_SEEDS;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 7 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 7 / 32.0f};
 			byHand = true;
@@ -933,7 +935,7 @@ struct WheatCrop4 : Block {
 			mined = blocks::WHEAT_SEEDS;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 9 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 9 / 32.0f};
 			byHand = true;
@@ -948,7 +950,7 @@ struct WheatCrop5 : Block {
 			mined = blocks::WHEAT_SEEDS;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 11 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 11 / 32.0f};
 			byHand = true;
@@ -963,7 +965,7 @@ struct WheatCrop6 : Block {
 			mined = blocks::WHEAT_SEEDS;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 13 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 13 / 32.0f};
 			byHand = true;
@@ -978,7 +980,7 @@ struct WheatCrop7 : Block {
 			mined = blocks::WHEAT;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 15 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 15 / 32.0f};
 			byHand = true;
@@ -992,7 +994,7 @@ struct Water : Block {
 			name = "WATER";
 			mined = blocks::WATER_BUCKET;
 			blast_resistance = 100.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 		}
 };
 
@@ -1001,7 +1003,7 @@ struct Water1 : Block {
 		Water1() {
 			name = "WATER 1";
 			blast_resistance = 100.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 		}
 };
 
@@ -1010,7 +1012,7 @@ struct Water2 : Block {
 		Water2() {
 			name = "WATER 2";
 			blast_resistance = 100.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 		}
 };
 
@@ -1019,7 +1021,7 @@ struct Water3 : Block {
 		Water3() {
 			name = "WATER 3";
 			blast_resistance = 100.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 		}
 };
 
@@ -1028,7 +1030,7 @@ struct Water4 : Block {
 		Water4() {
 			name = "WATER 4";
 			blast_resistance = 100.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 		}
 };
 
@@ -1037,7 +1039,7 @@ struct Water5 : Block {
 		Water5() {
 			name = "WATER 5";
 			blast_resistance = 100.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 		}
 };
 
@@ -1046,7 +1048,7 @@ struct Water6 : Block {
 		Water6() {
 			name = "WATER 6";
 			blast_resistance = 100.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 		}
 };
 
@@ -1055,7 +1057,7 @@ struct Water7 : Block {
 		Water7() {
 			name = "WATER 7";
 			blast_resistance = 100.0f;
-			collisionHitbox = false;
+			collisionHitbox_1x1x1 = false;
 		}
 };
 
