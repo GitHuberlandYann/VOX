@@ -431,7 +431,7 @@ int Menu::ingame_menu( void )
 
 int Menu::chat_menu( bool animUpdate )
 {
-	if (INPUT::key_down(INPUT::CLOSE)) {
+	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
 		glfwSetCharCallback(_window, NULL);
 		INPUT::resetMessage();
 		_chat->resetHistoCursor();

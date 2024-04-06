@@ -163,6 +163,7 @@ class Inventory
 		void produceCraft( int craft );
 		t_item pickCrafted( int craft, t_item block );
 		int findEmptyCell( t_item block, bool swap = false );
+		int findBlockCell( int type );
 		void pickAllCrafted( int craft );
 
     public:
@@ -190,7 +191,7 @@ class Inventory
         void addBlock( int type );
 		// void removeBlockAt( int value, FurnaceInstance *furnace, ChestInstance *chest );
         t_item removeBlock( bool thrown );
-		void replaceSlot( int type );
+		void replaceSlot( int type, bool creative );
 		void swapCells( int slot, int location );
 		void decrementDurabitilty( void );
 

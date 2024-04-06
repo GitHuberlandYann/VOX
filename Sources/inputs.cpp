@@ -405,9 +405,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			}
 		}
 	}
-	if (_game_mode == CREATIVE && _block_hit.value != blocks::AIR
-		&& INPUT::key_down(INPUT::SAMPLE) && INPUT::key_update(INPUT::SAMPLE)) { // pick up in creative mode
-		_inventory->replaceSlot(_block_hit.value);
+	if (_block_hit.value != blocks::AIR
+		&& INPUT::key_down(INPUT::SAMPLE) && INPUT::key_update(INPUT::SAMPLE)) { // pick up in creative mode, or swap
+		_inventory->replaceSlot(_block_hit.value, _game_mode == CREATIVE);
 	}
 
 	// toggle polygon mode fill / lines

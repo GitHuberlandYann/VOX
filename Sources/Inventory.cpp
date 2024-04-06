@@ -156,6 +156,21 @@ int Inventory::findEmptyCell( t_item block, bool swap )
 	return (-1);
 }
 
+int Inventory::findBlockCell( int type )
+{
+	for (int index = 0; index < 9; index++) {
+		if (_content[index].type == type) {
+			return (index);
+		}
+	}
+	for (int index = 0; index < 27; index++) {
+		if (_backpack[index].type == type) {
+			return (index + 9);
+		}
+	}
+	return (-1);
+}
+
 void Inventory::pickAllCrafted( int craft )
 {
 	int location = findEmptyCell(_crafted);
@@ -479,10 +494,16 @@ t_item Inventory::removeBlock( bool thrown )
 	return (res);
 }
 
-void Inventory::replaceSlot( int type )
+void Inventory::replaceSlot( int type, bool creative )
 {
-	_content[_slot] = {type, 1, {0, 0}};
 	_modif = true;
+	if (creative) {
+		_content[_slot] = {type, 1, {0, 0}};
+		return ;
+	}
+	int cell = findBlockCell(type);
+	if (cell == -1) return ;
+	swapCells(_slot, cell);
 }
 
 void Inventory::swapCells( int slot, int location )
