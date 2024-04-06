@@ -1648,7 +1648,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 
 /* collisionBox takes feet position of object, dimension of its hitbox and returns wether object is inside block or not
  * WATCHOUT if width > 0.5 problemos because we check block left and right but not middle */
-t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height )
+t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float originalHeight )
 {
 	t_collision res = {COLLISION::NONE}, recurse_res = {COLLISION::NONE};
 	int minX = glm::floor(pos.x - width - _startX);
@@ -1659,7 +1659,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height )
 	const Block *target = s_blocks[getBlockAt(minX, minY, top, true) & 0xFF];
 	if (target->collisionHitbox_1x1x1) {
 		return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-	} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, height},
+	} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, originalHeight},
 		{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
 		target->hitboxHalfSize)) {
 		res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
@@ -1668,7 +1668,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height )
 		target = s_blocks[getBlockAt(maxX, minY, top, true) & 0xFF];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, height},
+		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, originalHeight},
 			{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
 			target->hitboxHalfSize)) {
 			if (res.type == COLLISION::NONE) {
@@ -1683,7 +1683,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height )
 		target = s_blocks[getBlockAt(minX, maxY, top, true) & 0xFF];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, height},
+		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, originalHeight},
 			{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
 			target->hitboxHalfSize)) {
 			if (res.type == COLLISION::NONE) {
@@ -1698,7 +1698,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height )
 		target = s_blocks[getBlockAt(maxX, maxY, top, true) & 0xFF];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, height},
+		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, originalHeight},
 			{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
 			target->hitboxHalfSize)) {
 			if (res.type == COLLISION::NONE) {
@@ -1710,9 +1710,9 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height )
 		}
 	}
 	if (height > 1) {
-		recurse_res = collisionBox(pos, width, height - 1);
+		recurse_res = collisionBox(pos, width, height - 1, originalHeight);
 	} else if (top != glm::floor(pos.z)) {
-		recurse_res = collisionBox(pos, width, 0);
+		recurse_res = collisionBox(pos, width, 0, originalHeight);
 	}
 	if (recurse_res.type == COLLISION::TOTAL) {
 		return (recurse_res);
@@ -1775,7 +1775,7 @@ void Chunk::applyGravity( void )
 		// std::cout << "DEBUG: " << std::to_string(_camera->_position.z) << std::endl;
 		for (float posZ = saved_posZ; posZ < pos.z; posZ++) {
 			// std::cout << "testing with posZ " << posZ << std::endl;
-			coll = collisionBox({pos.x, pos.y, posZ + hitBoxHeight}, 0.3f, 0);
+			coll = collisionBox({pos.x, pos.y, posZ + hitBoxHeight}, 0.3f, 0, 0);
 			if (coll.type == COLLISION::TOTAL) {
 				_camera->touchCeiling(glm::floor(posZ) + 0.19f);
 				// std::cout << "hit roof from loop" << std::endl;
@@ -1785,7 +1785,7 @@ void Chunk::applyGravity( void )
 				return ;
 			}
 		}
-		coll = collisionBox({pos.x, pos.y, pos.z + hitBoxHeight}, 0.3f, 0);
+		coll = collisionBox({pos.x, pos.y, pos.z + hitBoxHeight}, 0.3f, 0, 0);
 		if (coll.type == COLLISION::TOTAL) {
 			_camera->touchCeiling(glm::floor(pos.z) + 0.19f);
 			// std::cout << "hit roof out of loop, " << pos.z << " -> " << _camera->getPos().z << std::endl;
@@ -1796,7 +1796,7 @@ void Chunk::applyGravity( void )
 		}
 	} else { // falling
 		for (float posZ = saved_posZ; posZ > pos.z; posZ -= 0.5f) {
-			coll = collisionBox({pos.x, pos.y, posZ}, 0.3f, 0);
+			coll = collisionBox({pos.x, pos.y, posZ}, 0.3f, 0, 0);
 			if (coll.type == COLLISION::TOTAL) {
 				_camera->touchGround(glm::floor((posZ + 1)));
 				if (saved_posZ != _camera->getPos().z) {
@@ -1808,7 +1808,7 @@ void Chunk::applyGravity( void )
 				return ;
 			}
 		}
-		coll = collisionBox(pos, 0.3f, 0);
+		coll = collisionBox(pos, 0.3f, 0, 0);
 		if (coll.type == COLLISION::TOTAL) {
 			// std::cout << "\tgravity total saved " << saved_posZ << " dist " << distZ << std::endl;
 			_camera->touchGround(glm::floor((pos.z + 1)));

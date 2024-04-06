@@ -71,7 +71,7 @@ void Camera::moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, G
 		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).z * speed_frame;
 		_position.z += movement;
 		mtx.lock();
-		if (_current_chunk_ptr->collisionBox(_position, 0.3f, getHitBox()).type == COLLISION::TOTAL) { // TODO handle partial collision underwater
+		if (_current_chunk_ptr->collisionBox(_position, 0.3f, getHitBox(), getHitBox()).type == COLLISION::TOTAL) { // TODO handle partial collision underwater
 			_position.z -= movement;
 		}
 		mtx.unlock();

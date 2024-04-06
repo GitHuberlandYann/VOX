@@ -215,7 +215,7 @@ class Chunk
 		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
 		void insertFluidAt( std::set<int> *newFluids, int posX, int posY, int posZ );
 		void update_border( int posX, int posY, int level, int type, bool adding, int origin );
-		t_collision collisionBox( glm::vec3 pos, float width, float height );
+		t_collision collisionBox( glm::vec3 pos, float width, float height, float originalHeight );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( void );
 

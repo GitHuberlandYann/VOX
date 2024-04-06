@@ -502,8 +502,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h, 0); // move on X_AXIS
 			float hitBoxHeight = _camera->getHitBox();
 			mtx.lock();
-			t_collision coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight);
+			t_collision coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight);
 			mtx.unlock();
+			// _ui->chatMessage("coll " + std::to_string(coll.type) + ", " + std::to_string(coll.minZ) + " ~ " + std::to_string(coll.maxZ) + " h " + std::to_string(hitBoxHeight));
 			if (coll.type == COLLISION::TOTAL) {
 				if (!_camera->customObstacle(coll.minZ, coll.maxZ)) {
 					_camera->unmoveHuman(originalPos); // if collision after movement, undo movement
@@ -511,7 +512,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				}
 			} else if (coll.type == COLLISION::PARTIAL) {
 				_camera->customObstacle(coll.minZ, coll.maxZ);
-				coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight);
+				coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight);
 				if (coll.type != COLLISION::NONE) {
 					_camera->unmoveHuman(originalPos); // if collision after slab correction, undo movement
 					_camera->setRun(false);
@@ -520,7 +521,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			originalPos = _camera->getPos();
 			_camera->moveHuman(Y_AXIS, key_cam_v, key_cam_h, 0); // move on Y_AXIS
 			mtx.lock();
-			coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight);
+			coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight);
 			mtx.unlock();
 			if (coll.type == COLLISION::TOTAL) {
 				if (!_camera->customObstacle(coll.minZ, coll.maxZ)) {
@@ -529,7 +530,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				}
 			} else if (coll.type == COLLISION::PARTIAL) {
 				_camera->customObstacle(coll.minZ, coll.maxZ);
-				coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight);
+				coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight);
 				if (coll.type != COLLISION::NONE) {
 					_camera->unmoveHuman(originalPos); // if collision after slab correction, undo movement
 					_camera->setRun(false);
