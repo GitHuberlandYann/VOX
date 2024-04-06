@@ -147,6 +147,21 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		} else {
 			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
 		}
+	} else if (type == blocks::OAK_SLAB) {
+		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
+			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? blocks::OAK_SLAB_BOTTOM : blocks::OAK_SLAB_TOP);
+		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
+			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.x > _block_hit.prev_pos.x) ? glm::ivec3(0, 0, 0) : glm::ivec3(1, 0, 0));
+			glm::vec3 intersect = line_plane_intersection(_camera->getEyePos(), _camera->getDir(), p0, {1, 0, 0});
+			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? blocks::OAK_SLAB_BOTTOM : blocks::OAK_SLAB_TOP);
+			// _ui->chatMessage("block hit " + std::to_string(_block_hit.pos.x) + ", " + std::to_string(_block_hit.pos.y) + ", " + std::to_string(_block_hit.pos.z));
+			// _ui->chatMessage("p0 at " + std::to_string(p0.x) + ", " + std::to_string(p0.y) + ", " + std::to_string(p0.z));
+			// _ui->chatMessage("intersect at " + std::to_string(intersect.x) + ", " + std::to_string(intersect.y) + ", " + std::to_string(intersect.z));
+		} else {
+			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
+			glm::vec3 intersect = line_plane_intersection(_camera->getEyePos(), _camera->getDir(), p0, {0, 1, 0});
+			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? blocks::OAK_SLAB_BOTTOM : blocks::OAK_SLAB_TOP);
+		}
 	}
 
 	if (_block_hit.value) { // rm if statement for nice cheat

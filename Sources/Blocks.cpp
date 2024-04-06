@@ -6,7 +6,7 @@ const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new Bedrock(), new Dirt(), new SmoothStone(), new Stone(), new Cobblestone(), new StoneBrick(), new CrackedStoneBrick(), new Sand(),
 	new Gravel(), new OakLeaves(), new OakPlanks(), new Glass(), new TBD(), new TBD(), new TBD(), new TBD(),
 	new CoalOre(), new IronOre(), new DiamondOre(), new CoalBlock(), new IronBlock(), new DiamondBlock(), new TBD(), new TBD(),
-	new OakSlab(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(),
+	new OakSlabBottom(), new OakSlabTop(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(),
 	new Poppy(), new Dandelion(), new BlueOrchid(), new Allium(), new CornFlower(), new PinkTulip(), new Grass(), new SugarCane(),
 	new DeadBush(), new OakSapling(), new Torch(), new TBD(), new TBD(), new TBD(), new TBD(), new Chest(),
 	new WheatCrop(), new WheatCrop1(), new WheatCrop2(), new WheatCrop3(), new WheatCrop4(), new WheatCrop5(), new WheatCrop6(), new WheatCrop7(),

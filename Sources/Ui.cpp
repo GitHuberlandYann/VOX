@@ -40,8 +40,6 @@ void UI::add_inventory_elem( int index )
 	int type = _inventory.getSlotBlock(index).type;
 	if (type == blocks::AIR) {
 		return ;
-	} else if (type == blocks::OAK_SLAB) { // TODO CHANGE THIS ?
-		type = blocks::OAK_PLANKS;
 	}
 	int x = (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3;
 	int y = WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3;
@@ -54,45 +52,41 @@ void UI::add_inventory_elem( int index )
 		glm::ivec3 v0 = {spec + (cornerLight << 24) + (shade << 22), x, y};
 		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 		// shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-		glm::ivec3 v1 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 8), x + 16 * _gui_size, y};
+		glm::ivec3 v1 = {spec + (cornerLight << 24) + (shade << 22) + 1, x + 16 * _gui_size, y};
 		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
 		// shade = computeShade(row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-		glm::ivec3 v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 10) + (1 << 12), x, y + 16 * _gui_size};
+		glm::ivec3 v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4), x, y + 16 * _gui_size};
 		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
 		// shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-		glm::ivec3 v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 16 * _gui_size, y + 16 * _gui_size};
+		glm::ivec3 v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 4), x + 16 * _gui_size, y + 16 * _gui_size};
 		addFace(v0, v1, v2, v3, false);
 		return ;
 	}
 	x += 2 * _gui_size;
 	y += _gui_size;
 	int offset = face_dir::PLUSX;
+	int yTop = (type == blocks::OAK_SLAB) ? y + 16 * _gui_size * 100.0f / 362.5f : y;
+	int slabOffset = (type == blocks::OAK_SLAB) ? (8 << 8) : 0;
 	// top face
 	int spec = (15 << 24) + s_blocks[type]->texX(face_dir::PLUSZ, offset) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 4);
-	// if (type == blocks::DIRT_PATH) {
-	// 	p4.z -= ONE_SIXTEENTH;
-	// 	p5.z -= ONE_SIXTEENTH;
-	// 	p0.z -= ONE_SIXTEENTH;
-	// 	p1.z -= ONE_SIXTEENTH;
-	// }
-	glm::ivec3 v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
-	glm::ivec3 v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 6.5f * _gui_size, y};
-	glm::ivec3 v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
-	glm::ivec3 v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 13 * _gui_size, y + 15 * _gui_size * 81.25f / 362.5f};
+	glm::ivec3 v0 = {spec, x, yTop + 15 * _gui_size * 81.25f / 362.5f};
+	glm::ivec3 v1 = {spec + 1, x + 6.5f * _gui_size, yTop};
+	glm::ivec3 v2 = {spec + (1 << 4), x + 6.5f * _gui_size, yTop + 15 * _gui_size * 162.5f / 362.5f};
+	glm::ivec3 v3 = {spec + 1 + (1 << 4), x + 13 * _gui_size, yTop + 15 * _gui_size * 81.25f / 362.5f};
 	addFace(v0, v1, v2, v3, false);
 	// left face
 	spec = (10 << 24) + s_blocks[type]->texX(face_dir::MINUSY, offset) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 4);
-	v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
-	v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
-	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x, y + 15 * _gui_size * 281.25f / 362.5f};
-	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size};
+	v0 = {spec + slabOffset, x, yTop + 15 * _gui_size * 81.25f / 362.5f};
+	v1 = {spec + slabOffset + 1, x + 6.5f * _gui_size, yTop + 15 * _gui_size * 162.5f / 362.5f};
+	v2 = {spec + (1 << 4), x, y + 15 * _gui_size * 281.25f / 362.5f};
+	v3 = {spec + 1 + (1 << 4), x + 6.5f * _gui_size, y + 15 * _gui_size};
 	addFace(v0, v1, v2, v3, false);
 	// right face
 	spec = (7 << 24) + s_blocks[type]->texX(face_dir::PLUSX, offset) + (s_blocks[type]->texY(face_dir::PLUSX, offset) << 4);
-	v0 = {spec, x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
-	v1 = {spec + 1 + (1 << 9) + (1 << 8), x + 13 * _gui_size, y + 15 * _gui_size * 81.25f / 362.5f};
-	v2 = {spec + (1 << 4) + (1 << 10) + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size};
-	v3 = {spec + 1 + (1 << 9) + (1 << 4) + (1 << 10) + (1 << 8) + (1 << 12), x + 13 * _gui_size, y + 15 * _gui_size * 281.25f / 362.5f};
+	v0 = {spec + slabOffset, x + 6.5f * _gui_size, yTop + 15 * _gui_size * 162.5f / 362.5f};
+	v1 = {spec + slabOffset + 1, x + 13 * _gui_size, yTop + 15 * _gui_size * 81.25f / 362.5f};
+	v2 = {spec + (1 << 4), x + 6.5f * _gui_size, y + 15 * _gui_size};
+	v3 = {spec + 1 + (1 << 4), x + 13 * _gui_size, y + 15 * _gui_size * 281.25f / 362.5f};
 	addFace(v0, v1, v2, v3, false);
 }
 

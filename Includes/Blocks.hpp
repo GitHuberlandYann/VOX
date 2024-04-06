@@ -50,6 +50,8 @@ namespace blocks {
 		IRON_BLOCK,
 		DIAMOND_BLOCK,
 		OAK_SLAB = 40,
+		OAK_SLAB_BOTTOM = 40,
+		OAK_SLAB_TOP,
 		POPPY = 48,
 		DANDELION,
 		BLUE_ORCHID,
@@ -627,16 +629,37 @@ struct DiamondBlock : Block {
 		}
 };
 
-struct OakSlab : Block {
+struct OakSlabBottom : Block {
 	public:
-		OakSlab() {
-			name = "OAK_SLAB";
+		OakSlabBottom() {
+			name = "OAK_SLAB_BOTTOM";
 			mined = blocks::OAK_SLAB;
 			blast_resistance = 3.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
+			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 2.0f;
+			textureX = 4;
+			textureY = 10;
+		}
+};
+
+struct OakSlabTop : Block {
+	public:
+		OakSlabTop() {
+			name = "OAK_SLAB_TOP";
+			mined = blocks::OAK_SLAB;
+			blast_resistance = 3.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.75f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
 			isFuel = true;
 			fuel_time = 15;

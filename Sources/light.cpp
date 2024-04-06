@@ -76,7 +76,7 @@ void Chunk::generate_lights( void )
 			for (int level = WORLD_HEIGHT - 1; level >= 0; level--) {
 				if (light_level) {
 					int type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xFF;
-					if (air_flower(type, true, true, false) && type != blocks::OAK_SLAB && type != blocks::FARMLAND && type != blocks::DIRT_PATH) { // block hit
+					if (air_flower(type, true, true, false) && type != blocks::OAK_SLAB_BOTTOM && type != blocks::FARMLAND && type != blocks::DIRT_PATH) { // block hit
 						light_level = 0;
 					} else if (type == blocks::OAK_LEAVES || type >= blocks::WATER) {
 						--light_level;
@@ -188,25 +188,26 @@ void Chunk::fill_vertex_array( void )
 					v3 = {spec + YTEX, {p2.x, p2.y + THIRTEEN_SIXTEENTH, p2.z}};
 					face_vertices(_vertices, v0, v1, v2, v3, index); // +y
 				} else if (type != blocks::AIR && type < blocks::WATER && type != blocks::GLASS) {
-					float zSize = ((type == blocks::OAK_SLAB) ? 0.5f : ((type == blocks::FARMLAND) ? FIFTEEN_SIXTEENTH: 1.0f));
+					float zSize = ((type == blocks::OAK_SLAB_BOTTOM) ? 0.5f : ((type == blocks::FARMLAND) ? FIFTEEN_SIXTEENTH: 1.0f));
+					float bSize = ((type == blocks::OAK_SLAB_TOP) ? 0.5f : 0.0f);
 					p0 = {_startX + row + 0, _startY + col + 0, level + zSize};
 					p1 = {_startX + row + 1, _startY + col + 0, level + zSize};
-					p2 = {_startX + row + 0, _startY + col + 0, level + 0};
-					p3 = {_startX + row + 1, _startY + col + 0, level + 0};
+					p2 = {_startX + row + 0, _startY + col + 0, level + bSize};
+					p3 = {_startX + row + 1, _startY + col + 0, level + bSize};
 
 					p4 = {_startX + row + 0, _startY + col + 1, level + zSize};
 					p5 = {_startX + row + 1, _startY + col + 1, level + zSize};
-					p6 = {_startX + row + 0, _startY + col + 1, level + 0};
-					p7 = {_startX + row + 1, _startY + col + 1, level + 0};
+					p6 = {_startX + row + 0, _startY + col + 1, level + bSize};
+					p7 = {_startX + row + 1, _startY + col + 1, level + bSize};
 
-					if (type == blocks::OAK_SLAB) {
+					if (type == blocks::OAK_SLAB_BOTTOM || type == blocks::OAK_SLAB_TOP) {
 						if (visible_face(type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)) {
 							int spec = s_blocks[type]->texX() + (s_blocks[type]->texY() << 4) + (3 << 19);
 							int faceLight = computeLight(row - 1, col, level);
 							int shade = 0;//computeShade(row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 							spec += (faceLight << 24);
-							v0 = {spec + (shade << 22), p4};
-							v1 = {spec + (shade << 22) + XTEX, p0};
+							v0 = {spec + (8 << 8) + (shade << 22), p4};
+							v1 = {spec + (8 << 8) + (shade << 22) + XTEX, p0};
 							v2 = {spec + (shade << 22) + YTEX, p6};
 							v3 = {spec + (shade << 22) + XTEX + YTEX, p2};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
@@ -216,8 +217,8 @@ void Chunk::fill_vertex_array( void )
 							int faceLight = computeLight(row + 1, col, level);
 							int shade = 0;//computeShade(row + 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 							spec += (faceLight << 24);
-							v0 = {spec + (shade << 22), p1};
-							v1 = {spec + (shade << 22) + XTEX, p5};
+							v0 = {spec + (8 << 8) + (shade << 22), p1};
+							v1 = {spec + (8 << 8) + (shade << 22) + XTEX, p5};
 							v2 = {spec + (shade << 22) + YTEX, p3};
 							v3 = {spec + (shade << 22) + XTEX + YTEX, p7};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
@@ -227,8 +228,8 @@ void Chunk::fill_vertex_array( void )
 							int faceLight = computeLight(row, col - 1, level);
 							int shade = 0;//computeShade(row, col - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
 							spec += (faceLight << 24);
-							v0 = {spec + (shade << 22), p0};
-							v1 = {spec + (shade << 22) + XTEX, p1};
+							v0 = {spec + (8 << 8) + (shade << 22), p0};
+							v1 = {spec + (8 << 8) + (shade << 22) + XTEX, p1};
 							v2 = {spec + (shade << 22) + YTEX, p2};
 							v3 = {spec + (shade << 22) + XTEX + YTEX, p3};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
@@ -238,8 +239,8 @@ void Chunk::fill_vertex_array( void )
 							int faceLight = computeLight(row, col + 1, level);
 							int shade = 0;//computeShade(row, col + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
 							spec += (faceLight << 24);
-							v0 = {spec + (shade << 22), p5};
-							v1 = {spec + (shade << 22) + XTEX, p4};
+							v0 = {spec + (8 << 8) + (shade << 22), p5};
+							v1 = {spec + (8 << 8) + (shade << 22) + XTEX, p4};
 							v2 = {spec + (shade << 22) + YTEX, p7};
 							v3 = {spec + (shade << 22) + XTEX + YTEX, p6};
 							face_vertices(_vertices, v0, v1, v2, v3, index);
@@ -605,7 +606,7 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 		}
 	} else {
 		int type = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] & 0xFF;
-		if (air_flower(type, false, true, true) && type != blocks::OAK_SLAB && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
+		if (air_flower(type, false, true, true) && type != blocks::OAK_SLAB_BOTTOM && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
 			return ;
 		}
 		short neighbour = (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] >> (8 * skySpread));

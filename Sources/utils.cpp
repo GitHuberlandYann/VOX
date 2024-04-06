@@ -297,14 +297,23 @@ bool visible_face( int value, int next, face_dir dir )
 		&& (dir == face_dir::PLUSX || dir == face_dir::PLUSY || dir == face_dir::PLUSZ)))) {
 		return (true);
 	}
-	if (dir == face_dir::PLUSZ && (value == blocks::OAK_SLAB || value == blocks::FARMLAND || value == blocks::DIRT_PATH)) {
+	if (dir == face_dir::PLUSZ && (value == blocks::OAK_SLAB_BOTTOM || value == blocks::FARMLAND || value == blocks::DIRT_PATH)) {
 		return (true);
 	}
-	if (next == blocks::OAK_SLAB) {
+	if (dir == face_dir::MINUSZ && value == blocks::OAK_SLAB_TOP) {
+		return (true);
+	}
+	if (next == blocks::OAK_SLAB_BOTTOM) {
 		if (dir == face_dir::MINUSZ) {
 			return (true);
 		}
-		return (value != blocks::OAK_SLAB);
+		return (value != next);
+	}
+	if (next == blocks::OAK_SLAB_TOP) {
+		if (dir == face_dir::PLUSZ) {
+			return (true);
+		}
+		return (value != next);
 	}
 	if (next == blocks::FARMLAND || next == blocks::DIRT_PATH) {
 		if (dir == face_dir::MINUSZ) {
@@ -312,7 +321,7 @@ bool visible_face( int value, int next, face_dir dir )
 		} else if (dir == face_dir::PLUSZ) {
 			return (false);
 		}
-		return (value != blocks::OAK_SLAB && value != blocks::FARMLAND && value != blocks::DIRT_PATH);
+		return (value != blocks::OAK_SLAB_BOTTOM && value != blocks::FARMLAND && value != blocks::DIRT_PATH);
 	}
 	return (false);
 }
@@ -598,8 +607,8 @@ bool blockFace( GLfloat *vertices, std::array<glm::vec3, 8> v, size_t index, boo
 
 /**
  * @brief returns all the voxels that are traversed by a ray going from start to end
- * @param start : continous world position where the ray starts
- * @param end   : continous world position where the ray end
+ * @param start : world position where the ray starts
+ * @param end   : world position where the ray end
  * @return vector of voxel ids hit by the ray in temporal order
  *
  * J. Amanatides, A. Woo. A Fast Voxel Traversal Algorithm for Ray Tracing. Eurographics '87
@@ -651,16 +660,16 @@ std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end
 	float tDeltaZ = (ray.z != 0) ? 1.0f / ray.z * stepZ : FLT_MAX;
 
 	visited_voxels.push_back(current_voxel);
-	while(last_voxel != current_voxel) {
+	while (last_voxel != current_voxel) {
 		if (tMaxX < tMaxY && tMaxX < tMaxZ) { // x will reach border before others
-		current_voxel.x += stepX;
-		tMaxX += tDeltaX;
+			current_voxel.x += stepX;
+			tMaxX += tDeltaX;
 		} else if (tMaxY < tMaxZ) { // y will reach border before others
-		current_voxel.y += stepY;
-		tMaxY += tDeltaY;
+			current_voxel.y += stepY;
+			tMaxY += tDeltaY;
 		} else { // z will reach border before others
-		current_voxel.z += stepZ;
-		tMaxZ += tDeltaZ;
+			current_voxel.z += stepZ;
+			tMaxZ += tDeltaZ;
 		}
 		visited_voxels.push_back(current_voxel);
 	}
@@ -677,7 +686,7 @@ std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end
  *
  * https://en.wikipedia.org/wiki/Line-plane_intersection
  */
-static glm::vec3 line_plane_intersection( glm::vec3 &camPos, glm::vec3 &camDir, glm::vec3 &p0, glm::vec3 cross ) {
+glm::vec3 line_plane_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 p0, glm::vec3 cross ) {
 	float determinant = -glm::dot(camDir, cross);
 	if (!determinant) { // div zero -> line parallel to plane -> no intersection
 		return {FLT_MIN, FLT_MIN, FLT_MIN};

@@ -33,7 +33,6 @@ TODOS:
 	- fire
 	- mobs
 	- redstone
-	- slabs
 	- stairs
 	- doors
 	- bed
@@ -91,6 +90,7 @@ DONE:
     - player gravity
 	- change physics in water
     - hitbox around player for collisions - https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
+	- slabs
     - items on ground after break
 	- item number color/placement/size in ingame menus
     - fix fall going through blocks + fix jump into block above head

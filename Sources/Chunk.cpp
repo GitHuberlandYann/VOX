@@ -799,7 +799,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	if (!air_flower(type, true, true, false)) {
 		return ;
 	}
-	if (type != blocks::OAK_SLAB) { // TODO s_blocks[type]->transparent or something
+	if (type != blocks::OAK_SLAB_BOTTOM && type != blocks::OAK_SLAB_TOP) { // TODO s_blocks[type]->transparent or something
 		_lights[offset] = 0; // rm light if solid block added
 	}
 	for (int index = 0; index < 6; index++) {
@@ -1502,16 +1502,17 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 			_particles.push_back(new Particle(this, {block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][0] + 0.55f * adj_blocks[i][0], block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][1] + 0.55f * adj_blocks[i][1], block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][2] + 0.55f * adj_blocks[i][2]}, PARTICLES::BREAKING, 0, type));
 		}
 	}
-	float zSize = ((type == blocks::OAK_SLAB) ? 0.5f : ((type == blocks::FARMLAND) ? FIFTEEN_SIXTEENTH: 1));
+	float zSize = ((type == blocks::OAK_SLAB_BOTTOM) ? 0.5f : ((type == blocks::FARMLAND) ? FIFTEEN_SIXTEENTH: 1));
+	float bSize = ((type == blocks::OAK_SLAB_TOP) ? 0.5f : 0.0f);
 	glm::vec3 p0 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + zSize};
 	glm::vec3 p1 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + zSize};
-	glm::vec3 p2 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + 0};
-	glm::vec3 p3 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + 0};
+	glm::vec3 p2 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + bSize};
+	glm::vec3 p3 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + bSize};
 
 	glm::vec3 p4 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + zSize};
 	glm::vec3 p5 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + zSize};
-	glm::vec3 p6 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
-	glm::vec3 p7 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + 0};
+	glm::vec3 p6 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + bSize};
+	glm::vec3 p7 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + bSize};
 	int count = face_count(type, chunk_pos.x, chunk_pos.y, chunk_pos.z);
 	int cnt = 0;
 	GLfloat *vertFloat = static_cast<GLfloat*>(_vertices);

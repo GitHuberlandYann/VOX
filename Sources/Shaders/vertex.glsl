@@ -36,10 +36,10 @@ void main()
 	int skyLight = internal_light - (15 - ((specifications >> 28) & 0xF));
 	int shadow = 15 - max(blockLight, skyLight);
 	int cornerLight = ((specifications >> 22) & 3);
-	int faceLight = 100;
-	if (((specifications >> 19) & 0x7) > 0) {
-		faceLight -= 8 + (((specifications >> 19) & 0x7) << 2);
-	}
+	int faceLight = 100 - ((((specifications >> 19) & 0x7) > 0) ? 8 + (((specifications >> 19) & 0x7) << 2) : 0);
+	// if (((specifications >> 19) & 0x7) > 0) { // TODO get rid of this if statement
+	// 	faceLight -= 8 + (((specifications >> 19) & 0x7) << 2);
+	// }
 	FaceShadow = max(0.05, (max(10, faceLight - 7 * shadow) - 17 * cornerLight) * 0.01f);
 	zDist = gl_Position.z;
 }
