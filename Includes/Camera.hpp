@@ -5,14 +5,9 @@
 # include "Chunk.hpp"
 
 enum Camera_Movement {
-    FORWARD,
-    BACKWARD,
-    LEFT,
-    RIGHT,
-	UP,
-	DOWN,
 	X_AXIS,
-	Y_AXIS
+	Y_AXIS,
+	Z_AXIS
 };
 
 # define YAW          		90.0f
@@ -106,6 +101,7 @@ class Camera
 		void setFov( float fov );
 		void setRun( bool value );
 		void setSneak( bool value );
+		void setJump( bool value );
 		void setArmAnimation( bool state );
 		void setDelta( float deltaTime );
 		void update_movement_speed( GLint key_cam_speed );

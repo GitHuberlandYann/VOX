@@ -469,7 +469,8 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	// camera work
 	GLint key_cam_v = INPUT::key_down(INPUT::MOVE_FORWARD) - INPUT::key_down(INPUT::MOVE_BACKWARD);
 	GLint key_cam_h = INPUT::key_down(INPUT::MOVE_RIGHT) - INPUT::key_down(INPUT::MOVE_LEFT);
-	GLint key_cam_z = INPUT::key_down(INPUT::JUMP) - INPUT::key_down(INPUT::SNEAK);
+	bool key_cam_zup = INPUT::key_down(INPUT::JUMP);
+	bool key_cam_zdown = INPUT::key_down(INPUT::SNEAK);
 
 	// this will be commented at some point
 	GLint key_cam_yaw = INPUT::key_down(INPUT::LOOK_LEFT) - INPUT::key_down(INPUT::LOOK_RIGHT);
@@ -481,8 +482,6 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_camera->processPitch(key_cam_pitch * 5);
 	}
 
-	_camera->setSneak(key_cam_z == -1);
-
 	if (!key_cam_v && !key_cam_h) {
 		_camera->setRun(false);
 	} else {
@@ -490,14 +489,16 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 
 	if (_game_mode == CREATIVE) { // no collision check, free to move however you want
-		_camera->moveFly(key_cam_v, key_cam_h, key_cam_z);
+		_camera->moveFly(key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown);
 	}
 
 	// we update the current chunk before we update cam view, because we check in current chunk for collision
 	// update block hit
 	if (rayCast) {
 		if (_game_mode == SURVIVAL && current_chunk_ptr) { // on first frame -> no current_chunk_ptr
-			_camera->moveHuman((key_cam_z == 1 && INPUT::key_update(INPUT::JUMP)) ? UP : DOWN, key_cam_v, key_cam_h, key_cam_z); // sets inJump variable, no actual movement
+			_camera->setSneak(key_cam_zdown);
+			_camera->setJump(key_cam_zup && INPUT::key_update(INPUT::JUMP));
+			_camera->moveHuman(Z_AXIS, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement
 			glm::vec3 originalPos = _camera->getPos();
 			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h, 0); // move on X_AXIS
 			float hitBoxHeight = _camera->getHitBox();

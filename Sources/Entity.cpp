@@ -339,44 +339,47 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<s
     float cosRot = glm::cos(_lifeTime);
     float sinRot = glm::sin(_lifeTime);
 
-	glm::vec3 p0 = {_pos.x - 0.176777f * cosRot, _pos.y - 0.176777f * sinRot, _pos.z + 0.25f + (cosRot + 1) / 4};
-	glm::vec3 p1 = {_pos.x + 0.176777f * sinRot, _pos.y - 0.176777f * cosRot, _pos.z + 0.25f + (cosRot + 1) / 4};
+	float zSize = (_item.type == blocks::OAK_SLAB) ? 0.125f : 0.25f;
+
+	glm::vec3 p0 = {_pos.x - 0.176777f * cosRot, _pos.y - 0.176777f * sinRot, _pos.z + zSize + (cosRot + 1) / 4};
+	glm::vec3 p1 = {_pos.x + 0.176777f * sinRot, _pos.y - 0.176777f * cosRot, _pos.z + zSize + (cosRot + 1) / 4};
 	glm::vec3 p2 = {_pos.x - 0.176777f * cosRot, _pos.y - 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
 	glm::vec3 p3 = {_pos.x + 0.176777f * sinRot, _pos.y - 0.176777f * cosRot, _pos.z + (cosRot + 1) / 4};
 
-	glm::vec3 p4 = {_pos.x - 0.176777f * sinRot, _pos.y + 0.176777f * cosRot, _pos.z + 0.25f + (cosRot + 1) / 4};
-	glm::vec3 p5 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + 0.25f + (cosRot + 1) / 4};
+	glm::vec3 p4 = {_pos.x - 0.176777f * sinRot, _pos.y + 0.176777f * cosRot, _pos.z + zSize + (cosRot + 1) / 4};
+	glm::vec3 p5 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + zSize + (cosRot + 1) / 4};
 	glm::vec3 p6 = {_pos.x - 0.176777f * sinRot, _pos.y + 0.176777f * cosRot, _pos.z + (cosRot + 1) / 4};
 	glm::vec3 p7 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
 
 	if (_item.type < blocks::POPPY) {
 		int offset = ((_item.type >= blocks::CRAFTING_TABLE && _item.type < blocks::BEDROCK) ? face_dir::MINUSX: 0);
 	    int itemLight = _chunk->computePosLight(_pos);
+		int slabOffset = (_item.type == blocks::OAK_SLAB) ? (8 << 8) : 0;
 
 	    int spec = s_blocks[_item.type]->texX(face_dir::MINUSX, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19) + (itemLight << 24);
-	    std::pair<int, glm::vec3> v0 = {spec, p4};
-	    std::pair<int, glm::vec3> v1 = {spec + XTEX, p0};
+	    std::pair<int, glm::vec3> v0 = {spec + slabOffset, p4};
+	    std::pair<int, glm::vec3> v1 = {spec + slabOffset + XTEX, p0};
 	    std::pair<int, glm::vec3> v2 = {spec + YTEX, p6};
 	    std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p2};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 		spec = s_blocks[_item.type]->texX(face_dir::PLUSX, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19) + (itemLight << 24);
-	    v0 = {spec, p1};
-	    v1 = {spec + XTEX, p5};
+	    v0 = {spec + slabOffset, p1};
+	    v1 = {spec + slabOffset + XTEX, p5};
 	    v2 = {spec + YTEX, p3};
 	    v3 = {spec + XTEX + YTEX, p7};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 		spec = s_blocks[_item.type]->texX(face_dir::MINUSY, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSY, offset) << 4) + (1 << 19) + (itemLight << 24);
-	    v0 = {spec, p0};
-	    v1 = {spec + XTEX, p1};
+	    v0 = {spec + slabOffset, p0};
+	    v1 = {spec + slabOffset + XTEX, p1};
 	    v2 = {spec + YTEX, p2};
 	    v3 = {spec + XTEX + YTEX, p3};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 		spec = s_blocks[_item.type]->texX(face_dir::PLUSY, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSY, offset) << 4) + (2 << 19) + (itemLight << 24);
-	    v0 = {spec, p5};
-	    v1 = {spec + XTEX, p4};
+	    v0 = {spec + slabOffset, p5};
+	    v1 = {spec + slabOffset + XTEX, p4};
 	    v2 = {spec + YTEX, p7};
 	    v3 = {spec + XTEX + YTEX, p6};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);

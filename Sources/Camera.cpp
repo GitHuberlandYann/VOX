@@ -47,7 +47,7 @@ void Camera::updateCameraVectors( void )
 void Camera::moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, GLint z )
 {
 	if (!v && !h) {
-		if (direction == UP || direction == DOWN) {
+		if (direction == Z_AXIS) {
 			_inJump = z == 1;
 			_sneaking = z == -1;
 		}
@@ -271,7 +271,25 @@ void Camera::setSneak( bool value )
 {
 	if (value != _sneaking) {
 		_sneaking = value;
+		if (value == false) {
+			mtx.lock();
+			if (_current_chunk_ptr->collisionBox(_position, 0.3f, getHitBox(), getHitBox()).type != COLLISION::NONE) {
+				_sneaking = true;
+				mtx.unlock();
+				return ;
+			}
+			mtx.unlock();
+		}
 		_update = true;
+	}
+}
+
+void Camera::setJump( bool value )
+{
+	if (value && _touchGround) {
+		_update = true;
+		_inJump = true;
+		updateExhaustion((_sprinting) ? EXHAUSTION_SPRINT_JUMP : EXHAUSTION_JUMP);
 	}
 }
 
@@ -330,13 +348,7 @@ void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z )
 {
 	if (_waterFeet || _waterHead) {
 		return (moveHumanUnderwater(direction, v, h, z));
-	}
-	if (direction == UP && _touchGround) {
-		_update = true;
-		_inJump = true;
-		updateExhaustion((_sprinting) ? EXHAUSTION_SPRINT_JUMP : EXHAUSTION_JUMP);
-		return ;
-	} else if (direction == UP || direction == DOWN) {
+	} else if (direction == Z_AXIS) {
 		return ;
 	} else if (!v && !h) {
 		_walking = false;
@@ -380,7 +392,7 @@ bool Camera::customObstacle( float minZ, float maxZ )
 	_mtx.lock();
 	// std::cout << "DEBUG customObstacle " << _position.z << " vs " << maxZ << std::endl;
 	if (_position.z < maxZ && _position.z + 0.6f > maxZ) {
-		_position.z = maxZ + 0.01f;
+		_position.z = maxZ;
 		_mtx.unlock();
 		return (true);
 	}

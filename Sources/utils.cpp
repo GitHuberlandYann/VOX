@@ -274,6 +274,24 @@ face_dir opposite_dir( int dir )
 	return (face_dir::MINUSX);
 }
 
+// shapewise, all bottom slabs are treated the same
+static int blockShape( int value )
+{
+	if (value >= blocks::POPPY) {
+		return (blocks::AIR);
+	}
+	switch (value) {
+		case blocks::CHEST:
+		case blocks::CACTUS:
+			return (blocks::AIR);
+		case blocks::DIRT_PATH:
+			return (blocks::FARMLAND);
+		// case blocks::*_SLAB_BOTTOM:
+		// 	return (blocks::OAK_SLAB_BOTTOM);
+	}
+	return (value);
+}
+
 /**
  * @brief checks if a specific face should be drawn by using neighbour
  * @param value  value of block being drawn
@@ -283,12 +301,12 @@ face_dir opposite_dir( int dir )
  */
 bool visible_face( int value, int next, face_dir dir )
 {
-	value &= 0xFF;
-	next &= 0xFF;
-	if (value == blocks::AIR || value == blocks::CHEST) {
+	value = blockShape(value & 0xFF);
+	next = blockShape(next & 0xFF);
+	if (value == blocks::AIR) {
 		return (false);
 	}
-	if (next == blocks::AIR || next >= blocks::POPPY || next == blocks::CACTUS
+	if (next == blocks::AIR
 		|| (value != blocks::GLASS && next == blocks::GLASS)) {
 		return (true);
 	}
@@ -297,7 +315,7 @@ bool visible_face( int value, int next, face_dir dir )
 		&& (dir == face_dir::PLUSX || dir == face_dir::PLUSY || dir == face_dir::PLUSZ)))) {
 		return (true);
 	}
-	if (dir == face_dir::PLUSZ && (value == blocks::OAK_SLAB_BOTTOM || value == blocks::FARMLAND || value == blocks::DIRT_PATH)) {
+	if (dir == face_dir::PLUSZ && (value == blocks::OAK_SLAB_BOTTOM || value == blocks::FARMLAND)) {
 		return (true);
 	}
 	if (dir == face_dir::MINUSZ && value == blocks::OAK_SLAB_TOP) {
@@ -315,13 +333,13 @@ bool visible_face( int value, int next, face_dir dir )
 		}
 		return (value != next);
 	}
-	if (next == blocks::FARMLAND || next == blocks::DIRT_PATH) {
+	if (next == blocks::FARMLAND) {
 		if (dir == face_dir::MINUSZ) {
 			return (true);
 		} else if (dir == face_dir::PLUSZ) {
 			return (false);
 		}
-		return (value != blocks::OAK_SLAB_BOTTOM && value != blocks::FARMLAND && value != blocks::DIRT_PATH);
+		return (value != blocks::OAK_SLAB_BOTTOM && value != blocks::FARMLAND);
 	}
 	return (false);
 }
@@ -728,9 +746,9 @@ bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeC
 // WATCHOUT sizeA.z is fullHeight of cube a
 bool cube_cube_intersection( glm::vec3 posA, glm::vec3 sizeA, glm::vec3 posB, glm::vec3 sizeB )
 {
-	return (posA.x - sizeA.x <= posB.x + sizeB.x && posA.x + sizeA.x >= posB.x - sizeB.x
-			&& posA.y - sizeA.y <= posB.y + sizeB.y && posA.y + sizeA.y >= posB.y - sizeB.y
-			&& posA.z <= posB.z + sizeB.z && posA.z + sizeA.z >= posB.z - sizeB.z);
+	return (posA.x - sizeA.x < posB.x + sizeB.x && posA.x + sizeA.x > posB.x - sizeB.x
+			&& posA.y - sizeA.y < posB.y + sizeB.y && posA.y + sizeA.y > posB.y - sizeB.y
+			&& posA.z < posB.z + sizeB.z && posA.z + sizeA.z > posB.z - sizeB.z);
 }
 
 /*

@@ -55,11 +55,11 @@ IN PROGRES:
 	- double chests
 	- bow and arrow
 	- universal use of tps instead of deltatimes
-	- commands /say /me /save /setblock /sc(/screenshot) /kill
+	- commands /say /me /save /setblock /kill
 
 SHORTTERM memory:
-	- work on cleanAtlas
-	\ - work on readme
+	\/ - work on cleanAtlas
+	\/ - work on readme
 	\/ - rework Makefile
 	- replace glm with own small lib
 	- rework general code structure (who owns who)

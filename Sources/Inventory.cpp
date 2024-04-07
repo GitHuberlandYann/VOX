@@ -496,6 +496,9 @@ t_item Inventory::removeBlock( bool thrown )
 
 void Inventory::replaceSlot( int type, bool creative )
 {
+	if (type == blocks::OAK_SLAB_TOP) {
+		type = blocks::OAK_SLAB;
+	}
 	_modif = true;
 	if (creative) {
 		_content[_slot] = {type, 1, {0, 0}};

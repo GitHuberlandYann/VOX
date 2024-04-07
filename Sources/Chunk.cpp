@@ -733,7 +733,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || s_blocks[neighbour]->hasHitbox) {
 			type = blocks::TORCH + (face_dir::MINUSZ << 9);
 			neighbour = getBlockAt(pos.x, pos.y, pos.z - 1, false) & 0xFF;
-			if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || s_blocks[neighbour]->hasHitbox) {
+			if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || (s_blocks[neighbour]->hasHitbox && neighbour != blocks::OAK_SLAB_TOP)) {
 				return ;
 			}
 		}
@@ -1781,7 +1781,7 @@ void Chunk::applyGravity( void )
 				// std::cout << "hit roof from loop" << std::endl;
 				return ;
 			} else if (coll.type == COLLISION::PARTIAL) {
-				_camera->touchCeiling(coll.minZ - 0.01f);
+				_camera->touchCeiling(coll.minZ - EYE_LEVEL - 1);
 				return ;
 			}
 		}
@@ -1791,10 +1791,11 @@ void Chunk::applyGravity( void )
 			// std::cout << "hit roof out of loop, " << pos.z << " -> " << _camera->getPos().z << std::endl;
 			return ;
 		} else if (coll.type == COLLISION::PARTIAL) {
-			_camera->touchCeiling(coll.minZ - 0.01f);
+			_camera->touchCeiling(coll.minZ - EYE_LEVEL - 1);
 			return ;
 		}
 	} else { // falling
+		saved_posZ += 0.01f; // mini offset to handle slabs
 		for (float posZ = saved_posZ; posZ > pos.z; posZ -= 0.5f) {
 			coll = collisionBox({pos.x, pos.y, posZ}, 0.3f, 0, 0);
 			if (coll.type == COLLISION::TOTAL) {
@@ -1804,7 +1805,7 @@ void Chunk::applyGravity( void )
 				}
 				return ;
 			} else if (coll.type == COLLISION::PARTIAL) {
-				_camera->touchGround(coll.maxZ + 0.01f);
+				_camera->touchGround(coll.maxZ);
 				return ;
 			}
 		}
@@ -1818,7 +1819,7 @@ void Chunk::applyGravity( void )
 			return ;
 		} else if (coll.type == COLLISION::PARTIAL) {
 			// std::cout << "\tgravity partial" << std::endl;
-			_camera->touchGround(coll.maxZ + 0.01f);
+			_camera->touchGround(coll.maxZ);
 			return ;
 		}
 	}
