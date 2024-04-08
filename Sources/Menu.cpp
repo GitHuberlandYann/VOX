@@ -698,6 +698,42 @@ void Menu::add_item_value( t_item item, int x, int y, bool movement )
 	}
 	x += _gui_size;
 	int offset = face_dir::PLUSX;
+		if (type == blocks::OAK_STAIRS) {
+		int spec = (15 << 24) + s_blocks[type]->texX(face_dir::PLUSZ, offset) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 4);
+		// top of second step
+		glm::ivec3 v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
+		glm::ivec3 v1 = {spec + 1, x + 6.5f * _gui_size, y};
+		glm::ivec3 v2 = {spec + (1 << 4), x + 3.25f * _gui_size, y + 15 * _gui_size * 121.875f / 362.5f};
+		glm::ivec3 v3 = {spec + 1 + (1 << 4), x + 9.75f * _gui_size, y + 15 * _gui_size * 40.625f / 362.5f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// top of first step
+		v0 = {spec, x + 3.25f * _gui_size, y + 15 * _gui_size * 221.875f / 362.5f};
+		v1 = {spec + 1, x + 9.75f * _gui_size, y + 15 * _gui_size * 140.624f / 362.5f};
+		v2 = {spec + (1 << 4), x + 6.5f * _gui_size, y + 15 * _gui_size * 262.5f / 362.5f};
+		v3 = {spec + 1 + (1 << 4), x + 13 * _gui_size, y + 15 * _gui_size * 181.25f / 362.5f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// front of second step
+		spec -= (8 << 24);
+		v0 = {spec, x + 3.25f * _gui_size, y + 15 * _gui_size * 121.875f / 362.5f};
+		v1 = {spec + 1, x + 9.75f * _gui_size, y + 15 * _gui_size * 40.625f / 362.5f};
+		v2 = {spec + (1 << 4), x + 3.25f * _gui_size, y + 15 * _gui_size * 221.875f / 362.5f};
+		v3 = {spec + 1 + (1 << 4), x + 9.75f * _gui_size, y + 15 * _gui_size * 140.624f / 362.5f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// front of first step
+		v0 = {spec, x + 6.5f * _gui_size, y + 15 * _gui_size * 262.5f / 362.5f};
+		v1 = {spec + 1, x + 13 * _gui_size, y + 15 * _gui_size * 181.25f / 362.5f};
+		v2 = {spec + (1 << 4), x + 6.5f * _gui_size, y + 15 * _gui_size};
+		v3 = {spec + 1 + (1 << 4), x + 13 * _gui_size, y + 15 * _gui_size * 281.25f / 362.5f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// left face
+		spec = (10 << 24) + s_blocks[type]->texX(face_dir::MINUSY, offset) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 4);
+		v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
+		v1 = {spec + 1, x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
+		v2 = {spec + (1 << 4), x, y + 15 * _gui_size * 281.25f / 362.5f};
+		v3 = {spec + 1 + (1 << 4), x + 6.5f * _gui_size, y + 15 * _gui_size};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		return ;
+	}
 	int yTop = (type == blocks::OAK_SLAB) ? y + 16 * _gui_size * 100.0f / 362.5f : y;
 	int slabOffset = (type == blocks::OAK_SLAB) ? (8 << 8) : 0;
 	// top face

@@ -134,6 +134,7 @@ struct Block {
 		bool hasHitbox = false;
 		bool collisionHitbox_1x1x1 = true;
 		bool collisionHitbox = false;
+		bool orientedCollisionHitbox = false;
 		glm::vec3 hitboxCenter = {0, 0, 0};
 		glm::vec3 hitboxHalfSize = {0, 0, 0};
 		bool isFood = false;
@@ -161,6 +162,9 @@ struct Block {
 		virtual int texY( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
 			(void)dir;(void)offset;
 			return (textureY);
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int offset ) const {
+			(void)hitbox;(void)offset;
 		}
 		virtual ~Block() {}
 };
@@ -376,6 +380,7 @@ struct OakStairsBottom : Block {
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
+			orientedCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
 			isFuel = true;
@@ -398,6 +403,26 @@ struct OakStairsBottom : Block {
 					return (4 + (offset == face_dir::MINUSX || offset == face_dir::PLUSX));
 			}
 		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int offset ) const {
+			switch (offset) {
+				case face_dir::PLUSX:
+					hitbox[0] = {0.25f, 0.5f, 0.75f}; // hitboxCenter
+					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
+					break ;
+				case face_dir::MINUSX:
+					hitbox[0] = {0.75f, 0.5f, 0.75f};
+					hitbox[1] = {0.25f, 0.5f, 0.25f};
+					break ;
+				case face_dir::PLUSY:
+					hitbox[0] = {0.5f, 0.25f, 0.75f};
+					hitbox[1] = {0.5f, 0.25f, 0.25f};
+					break ;
+				case face_dir::MINUSY:
+					hitbox[0] = {0.5f, 0.75f, 0.75f};
+					hitbox[1] = {0.5f, 0.25f, 0.25f};
+					break ;
+			}
+		}
 };
 
 struct OakStairsTop : Block {
@@ -409,6 +434,7 @@ struct OakStairsTop : Block {
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
+			orientedCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.75f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
 			isFuel = true;
@@ -429,6 +455,26 @@ struct OakStairsTop : Block {
 				case face_dir::PLUSY:
 				case face_dir::MINUSY:
 					return (4 + (offset == face_dir::MINUSX || offset == face_dir::PLUSX));
+			}
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int offset ) const {
+			switch (offset) {
+				case face_dir::PLUSX:
+					hitbox[0] = {0.5f, 0.25f, 0.75f}; // hitboxCenter
+					hitbox[1] = {0.5f, 0.25f, 0.25f}; // hitboxHalfSize
+					break ;
+				case face_dir::MINUSX:
+					hitbox[0] = {0.5f, 0.75f, 0.75f};
+					hitbox[1] = {0.5f, 0.25f, 0.25f};
+					break ;
+				case face_dir::PLUSY:
+					hitbox[0] = {0.25f, 0.5f, 0.75f};
+					hitbox[1] = {0.25f, 0.5f, 0.25f};
+					break ;
+				case face_dir::MINUSY:
+					hitbox[0] = {0.75f, 0.5f, 0.75f};
+					hitbox[1] = {0.25f, 0.5f, 0.25f};
+					break ;
 			}
 		}
 };

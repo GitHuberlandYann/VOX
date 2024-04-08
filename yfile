@@ -33,7 +33,6 @@ TODOS:
 	- fire
 	- mobs
 	- redstone
-	- stairs
 	- doors
 	- bed
 	- enchanting table
@@ -91,6 +90,7 @@ DONE:
 	- change physics in water
     - hitbox around player for collisions - https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
 	- slabs
+	- stairs
     - items on ground after break
 	- item number color/placement/size in ingame menus
     - fix fall going through blocks + fix jump into block above head

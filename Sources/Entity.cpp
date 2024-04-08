@@ -351,7 +351,66 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<s
 	glm::vec3 p6 = {_pos.x - 0.176777f * sinRot, _pos.y + 0.176777f * cosRot, _pos.z + (cosRot + 1) / 4};
 	glm::vec3 p7 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
 
-	if (_item.type < blocks::POPPY) {
+	if (_item.type == blocks::OAK_STAIRS) {
+		int offset = face_dir::MINUSX;
+	    int itemLight = _chunk->computePosLight(_pos);
+
+	    int spec = s_blocks[_item.type]->texX(face_dir::MINUSX, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19) + (itemLight << 24);
+	    std::pair<int, glm::vec3> v0 = {spec + (8 << 8), p4 - glm::vec3(0, 0, 0.125f)};
+	    std::pair<int, glm::vec3> v1 = {spec + (8 << 8) + XTEX, p0 - glm::vec3(0, 0, 0.125f)};
+	    std::pair<int, glm::vec3> v2 = {spec + YTEX, p6};
+	    std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p2};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+		spec = s_blocks[_item.type]->texX(face_dir::PLUSX, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19) + (itemLight << 24);
+	    v0 = {spec, p1};
+	    v1 = {spec + XTEX, p5};
+	    v2 = {spec + YTEX, p3};
+	    v3 = {spec + XTEX + YTEX, p7};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+		spec = s_blocks[_item.type]->texX(face_dir::MINUSY, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSY, offset) << 4) + (1 << 19) + (itemLight << 24);
+	    v0 = {spec + XTEX, p0};
+		v1 = {spec, p1};
+		v2 = {spec + XTEX + YTEX, p2};
+		v3 = {spec + YTEX, p3};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+		spec = s_blocks[_item.type]->texX(face_dir::PLUSY, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSY, offset) << 4) + (2 << 19) + (itemLight << 24);
+	    v0 = {spec, p5};
+	    v1 = {spec + XTEX, p4};
+	    v2 = {spec + YTEX, p7};
+	    v3 = {spec + XTEX + YTEX, p6};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+		// top of second step
+		spec = s_blocks[_item.type]->texX(face_dir::PLUSZ, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSZ, offset) << 4) + (0 << 19) + (itemLight << 24);
+	    v0 = {spec + (8 << 8), p1};
+		v1 = {spec + (8 << 8) + XTEX, p5};
+		v2 = {spec + YTEX, (p0 + p1) * 0.5f};
+		v3 = {spec + XTEX + YTEX, (p4 + p5) * 0.5f};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	    // top of first step
+		v0 = {spec + (8 << 8), (p0 + p1) * 0.5f - glm::vec3(0, 0, 0.125f)};
+		v1 = {spec + (8 << 8) + XTEX, (p4 + p5) * 0.5f - glm::vec3(0, 0, 0.125f)};
+		v2 = {spec + YTEX, p0 + glm::vec3(0, 0, -0.125f)};
+		v3 = {spec + XTEX + YTEX, p4 + glm::vec3(0, 0, -0.125f)};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	    // front of second step
+		spec += (3 << 19);
+		v0 = {spec + (8 << 8), (p0 + p1) * 0.5f};
+		v1 = {spec + (8 << 8) + XTEX, (p4 + p5) * 0.5f};
+		v2 = {spec + YTEX, (p0 + p1) * 0.5f - glm::vec3(0, 0, 0.125f)};
+		v3 = {spec + XTEX + YTEX, (p4 + p5) * 0.5f - glm::vec3(0, 0, 0.125f)};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+		spec = s_blocks[_item.type]->texX(face_dir::MINUSZ, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSZ, offset) << 4) + (5 << 19) + (itemLight << 24);
+	    v0 = {spec, p2};
+	    v1 = {spec + XTEX, p3};
+	    v2 = {spec + YTEX, p6};
+	    v3 = {spec + XTEX + YTEX, p7};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	} else if (_item.type < blocks::POPPY) {
 		int offset = ((_item.type >= blocks::CRAFTING_TABLE && _item.type < blocks::BEDROCK) ? face_dir::MINUSX: 0);
 	    int itemLight = _chunk->computePosLight(_pos);
 		int slabOffset = (_item.type == blocks::OAK_SLAB) ? (8 << 8) : 0;
@@ -399,7 +458,7 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<s
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	} else { // flowers
 	    int itemLight = _chunk->computePosLight(_pos);
-		if (1 && EXTRUSION::drawItem3D(partArr, _item.type, itemLight, p0 + glm::vec3(0, 0, 0.25f), glm::normalize(glm::vec3(-0.176777f * sinRot, 0.176777f * cosRot, 0)), glm::normalize(glm::vec3(0.176777f * cosRot, 0.176777f * sinRot, 0)), {0, 0, 1}, 0.5f)) { // TODO replace 1 by var toggle fancy_item
+		if (EXTRUSION::drawItem3D(partArr, _item.type, itemLight, p0 + glm::vec3(0, 0, 0.25f), glm::normalize(glm::vec3(-0.176777f * sinRot, 0.176777f * cosRot, 0)), glm::normalize(glm::vec3(0.176777f * cosRot, 0.176777f * sinRot, 0)), {0, 0, 1}, 0.5f)) { // TODO replace 1 by var toggle fancy_item
 
 		} else {
 			int spec = s_blocks[_item.type]->texX() + (s_blocks[_item.type]->texY() << 4) + (0 << 19) + (itemLight << 24);

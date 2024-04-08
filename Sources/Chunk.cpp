@@ -1659,56 +1659,124 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	int minY = glm::floor(pos.y - width - _startY);
 	int maxY = glm::floor(pos.y + width - _startY);
 	int top  = glm::floor(pos.z + height);
-	const Block *target = s_blocks[getBlockAt(minX, minY, top, true) & 0xFF];
+	int value = getBlockAt(minX, minY, top, true);
+	const Block *target = s_blocks[value & 0xFF];
 	if (target->collisionHitbox_1x1x1) {
 		return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-	} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, originalHeight},
-		{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
-		target->hitboxHalfSize)) {
-		res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
-	}
-	if (minX != maxX) {
-		target = s_blocks[getBlockAt(maxX, minY, top, true) & 0xFF];
-		if (target->collisionHitbox_1x1x1) {
-			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, originalHeight},
+	} else if (target->collisionHitbox) {
+		if (cube_cube_intersection(pos, {width, width, originalHeight},
 			{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
 			target->hitboxHalfSize)) {
-			if (res.type == COLLISION::NONE) {
-				res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
-			} else {
-				res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
-				res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
+			res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
+		}
+		if (target->orientedCollisionHitbox) { // stairs have secondary(and tertiary for cornered stairs) hitbox
+			glm::vec3 hitbox[2];
+			target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7);
+			if (cube_cube_intersection(pos, {width, width, originalHeight},
+				{minX + hitbox[0].x + _startX, minY + hitbox[0].y + _startY, top + hitbox[0].z},
+				hitbox[1])) {
+				if (res.type == COLLISION::NONE) {
+					res = {COLLISION::PARTIAL, top + hitbox[0].z - hitbox[1].z, top + hitbox[0].z + hitbox[1].z};
+				} else {
+					res.minZ = glm::min(res.minZ, top + hitbox[0].z - hitbox[1].z);
+					res.maxZ = glm::max(res.maxZ, top + hitbox[0].z + hitbox[1].z);
+				}
+			}
+		}
+	}
+	if (minX != maxX) {
+		value = getBlockAt(maxX, minY, top, true);
+		target = s_blocks[value & 0xFF];
+		if (target->collisionHitbox_1x1x1) {
+			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
+		} else if (target->collisionHitbox) {
+			if (cube_cube_intersection(pos, {width, width, originalHeight},
+				{maxX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
+				target->hitboxHalfSize)) {
+				if (res.type == COLLISION::NONE) {
+					res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
+				} else {
+					res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
+					res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
+				}
+			}
+			if (target->orientedCollisionHitbox) {
+				glm::vec3 hitbox[2];
+				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7);
+				if (cube_cube_intersection(pos, {width, width, originalHeight},
+					{maxX + hitbox[0].x + _startX, minY + hitbox[0].y + _startY, top + hitbox[0].z},
+					hitbox[1])) {
+					if (res.type == COLLISION::NONE) {
+						res = {COLLISION::PARTIAL, top + hitbox[0].z - hitbox[1].z, top + hitbox[0].z + hitbox[1].z};
+					} else {
+						res.minZ = glm::min(res.minZ, top + hitbox[0].z - hitbox[1].z);
+						res.maxZ = glm::max(res.maxZ, top + hitbox[0].z + hitbox[1].z);
+					}
+				}
 			}
 		}
 	}
 	if (minY != maxY) {
-		target = s_blocks[getBlockAt(minX, maxY, top, true) & 0xFF];
+		value = getBlockAt(minX, maxY, top, true);
+		target = s_blocks[value & 0xFF];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, originalHeight},
-			{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
-			target->hitboxHalfSize)) {
-			if (res.type == COLLISION::NONE) {
-				res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
-			} else {
-				res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
-				res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
+		} else if (target->collisionHitbox) {
+			if (cube_cube_intersection(pos, {width, width, originalHeight},
+				{minX + target->hitboxCenter.x + _startX, maxY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
+				target->hitboxHalfSize)) {
+				if (res.type == COLLISION::NONE) {
+					res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
+				} else {
+					res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
+					res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
+				}
+			}
+			if (target->orientedCollisionHitbox) {
+				glm::vec3 hitbox[2];
+				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7);
+				if (cube_cube_intersection(pos, {width, width, originalHeight},
+					{minX + hitbox[0].x + _startX, maxY + hitbox[0].y + _startY, top + hitbox[0].z},
+					hitbox[1])) {
+					if (res.type == COLLISION::NONE) {
+						res = {COLLISION::PARTIAL, top + hitbox[0].z - hitbox[1].z, top + hitbox[0].z + hitbox[1].z};
+					} else {
+						res.minZ = glm::min(res.minZ, top + hitbox[0].z - hitbox[1].z);
+						res.maxZ = glm::max(res.maxZ, top + hitbox[0].z + hitbox[1].z);
+					}
+				}
 			}
 		}
 	}
 	if (minX != maxX && minY != maxY) {
-		target = s_blocks[getBlockAt(maxX, maxY, top, true) & 0xFF];
+		value = getBlockAt(maxX, maxY, top, true);
+		target = s_blocks[value & 0xFF];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-		} else if (target->collisionHitbox && cube_cube_intersection(pos, {width, width, originalHeight},
-			{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
-			target->hitboxHalfSize)) {
-			if (res.type == COLLISION::NONE) {
-				res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
-			} else {
-				res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
-				res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
+		} else if (target->collisionHitbox) {
+			if (cube_cube_intersection(pos, {width, width, originalHeight},
+				{maxX + target->hitboxCenter.x + _startX, maxY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
+				target->hitboxHalfSize)) {
+				if (res.type == COLLISION::NONE) {
+					res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
+				} else {
+					res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
+					res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
+				}
+			}
+			if (target->orientedCollisionHitbox) {
+				glm::vec3 hitbox[2];
+				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7);
+				if (cube_cube_intersection(pos, {width, width, originalHeight},
+					{maxX + hitbox[0].x + _startX, maxY + hitbox[0].y + _startY, top + hitbox[0].z},
+					hitbox[1])) {
+					if (res.type == COLLISION::NONE) {
+						res = {COLLISION::PARTIAL, top + hitbox[0].z - hitbox[1].z, top + hitbox[0].z + hitbox[1].z};
+					} else {
+						res.minZ = glm::min(res.minZ, top + hitbox[0].z - hitbox[1].z);
+						res.maxZ = glm::max(res.maxZ, top + hitbox[0].z + hitbox[1].z);
+					}
+				}
 			}
 		}
 	}
@@ -1721,7 +1789,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 		return (recurse_res);
 	} else if (recurse_res.type == COLLISION::PARTIAL) {
 		if (res.type == COLLISION::NONE) {
-			res = recurse_res;
+			return (recurse_res);
 		} else {
 			res.minZ = glm::min(res.minZ, recurse_res.minZ);
 			res.maxZ = glm::max(res.maxZ, recurse_res.maxZ);
