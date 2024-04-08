@@ -142,6 +142,9 @@ GLint Chunk::face_count( int type, int row, int col, int level )
 			res += visible_face(type, getBlockAt(row, col, level - 1, true), face_dir::MINUSZ);
 			res += visible_face(type, getBlockAt(row, col, level + 1, true), face_dir::PLUSZ);
 	}
+	if (type == blocks::OAK_STAIRS_BOTTOM || type == blocks::OAK_STAIRS_TOP) {
+		res += 2;
+	}
 	return (res);
 }
 

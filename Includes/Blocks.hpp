@@ -31,6 +31,9 @@ namespace blocks {
 		TNT,
 		CRAFTING_TABLE = 8,
 		FURNACE,
+		OAK_STAIRS = 10,
+		OAK_STAIRS_BOTTOM = 10,
+		OAK_STAIRS_TOP,
 		BEDROCK = 16,
 		DIRT,
 		SMOOTH_STONE,
@@ -361,6 +364,72 @@ struct Furnace : Block {
 				return (2 + ((offset >> 4) & 0x1));
 			}
 			return (0);
+		}
+};
+
+struct OakStairsBottom : Block {
+	public:
+		OakStairsBottom() {
+			name = "OAK_STAIRS_BOTTOM";
+			mined = blocks::OAK_STAIRS;
+			blast_resistance = 3.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.25f};
+			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 2.0f;
+			textureY = 10;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			switch (dir) {
+				case face_dir::PLUSZ:
+				case face_dir::MINUSZ:
+					return (4);
+				case face_dir::PLUSX:
+				case face_dir::MINUSX:
+					return (4 + (offset == face_dir::MINUSY || offset == face_dir::PLUSY));
+				case face_dir::PLUSY:
+				case face_dir::MINUSY:
+					return (4 + (offset == face_dir::MINUSX || offset == face_dir::PLUSX));
+			}
+		}
+};
+
+struct OakStairsTop : Block {
+	public:
+		OakStairsTop() {
+			name = "OAK_STAIRS_TOP";
+			mined = blocks::OAK_STAIRS;
+			blast_resistance = 3.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.75f};
+			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 2.0f;
+			textureY = 10;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			switch (dir) {
+				case face_dir::PLUSZ:
+				case face_dir::MINUSZ:
+					return (4);
+				case face_dir::PLUSX:
+				case face_dir::MINUSX:
+					return (4 + (offset == face_dir::MINUSY || offset == face_dir::PLUSY));
+				case face_dir::PLUSY:
+				case face_dir::MINUSY:
+					return (4 + (offset == face_dir::MINUSX || offset == face_dir::PLUSX));
+			}
 		}
 };
 

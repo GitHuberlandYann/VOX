@@ -9,7 +9,7 @@ class FurnaceInstance;
 class ChestInstance;
 
 # define IRECEIPT_SIZE 25
-# define RECEIPT_SIZE 89
+# define RECEIPT_SIZE 90
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
@@ -77,6 +77,7 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::CRAFTING_TABLE, 1},
 	
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_SLAB, 6},
+	{blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_STAIRS, 4},
 	{blocks::WHEAT, blocks::WHEAT, blocks::WHEAT, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::BREAD, 1},
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::WHEAT, blocks::WHEAT, blocks::WHEAT, blocks::AIR, blocks::AIR, blocks::AIR, blocks::BREAD, 1},
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::WHEAT, blocks::WHEAT, blocks::WHEAT, blocks::BREAD, 1},
