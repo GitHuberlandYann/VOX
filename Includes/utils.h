@@ -35,6 +35,7 @@ enum {
 };
 
 class Chunk;
+typedef struct s_shaderInput t_shaderInput;
 
 std::string get_file_content( std::string file_name );
 std::string	trim_spaces( std::string str );
@@ -61,11 +62,11 @@ bool visible_face( int value, int next, face_dir dir );
 void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks );
 
 std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 );
-void face_vertices( void *vertices, std::pair<int, glm::vec3> &v0, std::pair<int, glm::vec3> &v1, std::pair<int, glm::vec3> &v2, std::pair<int, glm::vec3> &v3, size_t & vindex );
+void face_vertices( std::vector<t_shaderInput> &vertices, t_shaderInput v0, t_shaderInput v1, t_shaderInput v2, t_shaderInput v3 );
 void face_water_vertices( GLint *vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::ivec4 &v2, glm::ivec4 &v3, size_t & vindex );
-bool torchFace( GLfloat *vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v6, size_t index );
-bool crossFace( GLfloat *vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v5, size_t index );
-bool blockFace( GLfloat *vertices, std::array<glm::vec3, 8> v, size_t index, bool special );
+bool torchFace( std::vector<t_shaderInput> &vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v6, size_t index );
+bool crossFace( std::vector<t_shaderInput> &vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v5, size_t index );
+bool blockFace( std::vector<t_shaderInput> &vertices, std::array<glm::vec3, 8> v, size_t index, bool special );
 std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end );
 glm::vec3 line_plane_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 p0, glm::vec3 cross );
 bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeCenter, glm::vec3 cubeHalfSize );

@@ -467,38 +467,16 @@ std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 )
 	return {6 << 10, 8 << 10, 9 << 10, 4 << 10, 1 << 9}; // -x +y
 }
 
-void face_vertices( void *vertices, std::pair<int, glm::vec3> &v0, std::pair<int, glm::vec3> &v1, std::pair<int, glm::vec3> &v2, std::pair<int, glm::vec3> &v3, size_t & vindex )
+
+void face_vertices( std::vector<t_shaderInput> &vertices, t_shaderInput v0, t_shaderInput v1, t_shaderInput v2, t_shaderInput v3 )
 {
-	GLfloat *vertFloat = static_cast<GLfloat*>(vertices);
-	GLint *vertInt = static_cast<GLint*>(vertices);
+	vertices.push_back(v0);
+	vertices.push_back(v1);
+	vertices.push_back(v2);
 
-	vertInt[vindex] = v0.first;
-	vertFloat[vindex + 1] = v0.second.x;
-	vertFloat[vindex + 2] = v0.second.y;
-	vertFloat[vindex + 3] = v0.second.z;
-	vertInt[vindex + 4] = v1.first;
-	vertFloat[vindex + 5] = v1.second.x;
-	vertFloat[vindex + 6] = v1.second.y;
-	vertFloat[vindex + 7] = v1.second.z;
-	vertInt[vindex + 8] = v2.first;
-	vertFloat[vindex + 9] = v2.second.x;
-	vertFloat[vindex + 10] = v2.second.y;
-	vertFloat[vindex + 11] = v2.second.z;
-	vindex += 12;
-
-	vertInt[vindex] = v1.first;
-	vertFloat[vindex + 1] = v1.second.x;
-	vertFloat[vindex + 2] = v1.second.y;
-	vertFloat[vindex + 3] = v1.second.z;
-	vertInt[vindex + 4] = v3.first;
-	vertFloat[vindex + 5] = v3.second.x;
-	vertFloat[vindex + 6] = v3.second.y;
-	vertFloat[vindex + 7] = v3.second.z;
-	vertInt[vindex + 8] = v2.first;
-	vertFloat[vindex + 9] = v2.second.x;
-	vertFloat[vindex + 10] = v2.second.y;
-	vertFloat[vindex + 11] = v2.second.z;
-	vindex += 12;
+	vertices.push_back(v1);
+	vertices.push_back(v3);
+	vertices.push_back(v2);
 }
 
 void face_water_vertices( GLint *vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::ivec4 &v2, glm::ivec4 &v3, size_t & vindex )
@@ -533,73 +511,31 @@ void face_water_vertices( GLint *vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::
 }
 
 // looks though vertices to check if elements starting at pos index represent a face of the torch v012345678
-bool torchFace( GLfloat *vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v6, size_t index )
+bool torchFace( std::vector<t_shaderInput> &vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v6, size_t index )
 {
-	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
-	if ((vertices[index + 3]) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& (vertices[index + 4 + 3]) == v1.z && vertices[index + 4 + 1] == v1.x && vertices[index + 4 + 2] == v1.y
-		&& (vertices[index + 8 + 3]) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
-		return (true);
-	}
-	if ((vertices[index + 3]) == v4.z && vertices[index + 1] == v4.x && vertices[index + 2] == v4.y
-		&& (vertices[index + 4 + 3]) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
-		&& (vertices[index + 8 + 3]) == v6.z && vertices[index + 8 + 1] == v6.x && vertices[index + 8 + 2] == v6.y) {
-		return (true);
-	}
-	if ((vertices[index + 3]) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
-		&& (vertices[index + 4 + 3]) == v0.z && vertices[index + 4 + 1] == v0.x && vertices[index + 4 + 2] == v0.y
-		&& (vertices[index + 8 + 3]) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
-		return (true);
-	}
-	if ((vertices[index + 3]) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& (vertices[index + 4 + 3]) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
-		&& (vertices[index + 8 + 3]) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
-		return (true);
-	}
-
-	return (false);
+	return ((vertices[index].pos == v0 && vertices[index + 1].pos == v1 && vertices[index + 2].pos == v2)
+		|| (vertices[index].pos == v4 && vertices[index + 1].pos == v0 && vertices[index + 2].pos == v6)
+		|| (vertices[index].pos == v1 && vertices[index + 1].pos == v0 && vertices[index + 2].pos == v3)
+		|| (vertices[index].pos == v0 && vertices[index + 1].pos == v4 && vertices[index + 2].pos == v2));
 }
 
 // looks though vertices to check if elements starting at pos index represent a face of the flower v012345678
-bool crossFace( GLfloat *vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v5, size_t index )
+bool crossFace( std::vector<t_shaderInput> &vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v5, size_t index )
 {
-	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
-	if ((vertices[index + 3]) == v0.z && vertices[index + 1] == v0.x && vertices[index + 2] == v0.y
-		&& (vertices[index + 4 + 3]) == v5.z && vertices[index + 4 + 1] == v5.x && vertices[index + 4 + 2] == v5.y
-		&& (vertices[index + 8 + 3]) == v2.z && vertices[index + 8 + 1] == v2.x && vertices[index + 8 + 2] == v2.y) {
-		return (true);
-	}
-	if ((vertices[index + 3]) == v1.z && vertices[index + 1] == v1.x && vertices[index + 2] == v1.y
-		&& (vertices[index + 4 + 3]) == v4.z && vertices[index + 4 + 1] == v4.x && vertices[index + 4 + 2] == v4.y
-		&& (vertices[index + 8 + 3]) == v3.z && vertices[index + 8 + 1] == v3.x && vertices[index + 8 + 2] == v3.y) {
-		return (true);
-	}
-
-	return (false);
+	return ((vertices[index].pos == v0 && vertices[index + 1].pos == v5 && vertices[index + 2].pos == v2)
+		|| (vertices[index].pos == v1 && vertices[index + 1].pos == v4 && vertices[index + 2].pos == v3));
 }
 
 // looks though vertices to check if elements starting at pos index represent a face of the cube v012345678
-bool blockFace( GLfloat *vertices, std::array<glm::vec3, 8> v, size_t index, bool special )
+bool blockFace( std::vector<t_shaderInput> &vertices, std::array<glm::vec3, 8> v, size_t index, bool special )
 {
-	// (_vertices[index + 3] == block_hit.z && _vertices[index + 1] == block_hit.x && _vertices[index + 2] == block_hit.y) {
 	// 4062, 1537, 0123, 5476, 4501, 2367
-	if (((vertices[index + 3]) == v[4].z && vertices[index + 1] == v[4].x && vertices[index + 2] == v[4].y
-		&& (vertices[index + 4 + 3]) == v[0].z && vertices[index + 4 + 1] == v[0].x && vertices[index + 4 + 2] == v[0].y
-		&& (vertices[index + 8 + 3]) == v[6].z && vertices[index + 8 + 1] == v[6].x && vertices[index + 8 + 2] == v[6].y)
-		
-		|| ((vertices[index + 3]) == v[1].z && vertices[index + 1] == v[1].x && vertices[index + 2] == v[1].y
-		&& (vertices[index + 4 + 3]) == v[5].z && vertices[index + 4 + 1] == v[5].x && vertices[index + 4 + 2] == v[5].y
-		&& (vertices[index + 8 + 3]) == v[3].z && vertices[index + 8 + 1] == v[3].x && vertices[index + 8 + 2] == v[3].y)
-		
-		|| ((vertices[index + 3]) == v[0].z && vertices[index + 1] == v[0].x && vertices[index + 2] == v[0].y
-		&& (vertices[index + 4 + 3]) == v[1].z && vertices[index + 4 + 1] == v[1].x && vertices[index + 4 + 2] == v[1].y
-		&& (vertices[index + 8 + 3]) == v[2].z && vertices[index + 8 + 1] == v[2].x && vertices[index + 8 + 2] == v[2].y)
-		
-		|| ((vertices[index + 3]) == v[5].z && vertices[index + 1] == v[5].x && vertices[index + 2] == v[5].y
-		&& (vertices[index + 4 + 3]) == v[4].z && vertices[index + 4 + 1] == v[4].x && vertices[index + 4 + 2] == v[4].y
-		&& (vertices[index + 8 + 3]) == v[7].z && vertices[index + 8 + 1] == v[7].x && vertices[index + 8 + 2] == v[7].y)) {
+	if ((vertices[index].pos == v[4] && vertices[index + 1].pos == v[0] && vertices[index + 2].pos == v[6])
+		|| (vertices[index].pos == v[1] && vertices[index + 1].pos == v[5] && vertices[index + 2].pos == v[3])
+		|| (vertices[index].pos == v[0] && vertices[index + 1].pos == v[1] && vertices[index + 2].pos == v[2])
+		|| (vertices[index].pos == v[5] && vertices[index + 1].pos == v[4] && vertices[index + 2].pos == v[7])) {
 		return (true);
 	}
 	if (special) {
@@ -608,13 +544,8 @@ bool blockFace( GLfloat *vertices, std::array<glm::vec3, 8> v, size_t index, boo
 		v[0].z -= ONE_SIXTEENTH;
 		v[1].z -= ONE_SIXTEENTH;
 	}
-	return ((vertices[index + 3]) == v[4].z && vertices[index + 1] == v[4].x && vertices[index + 2] == v[4].y
-		&& (vertices[index + 4 + 3]) == v[5].z && vertices[index + 4 + 1] == v[5].x && vertices[index + 4 + 2] == v[5].y
-		&& (vertices[index + 8 + 3]) == v[0].z && vertices[index + 8 + 1] == v[0].x && vertices[index + 8 + 2] == v[0].y)
-		
-		|| ((vertices[index + 3]) == v[2].z && vertices[index + 1] == v[2].x && vertices[index + 2] == v[2].y
-		&& (vertices[index + 4 + 3]) == v[3].z && vertices[index + 4 + 1] == v[3].x && vertices[index + 4 + 2] == v[3].y
-		&& (vertices[index + 8 + 3]) == v[6].z && vertices[index + 8 + 1] == v[6].x && vertices[index + 8 + 2] == v[6].y);
+	return ((vertices[index].pos == v[4] && vertices[index + 1].pos == v[5] && vertices[index + 2].pos == v[0])
+		|| (vertices[index].pos == v[2] && vertices[index + 1].pos == v[3] && vertices[index + 2].pos == v[6]));
 }
 
 // # include <glm/glm.hpp>

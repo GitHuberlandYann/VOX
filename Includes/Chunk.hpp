@@ -93,6 +93,11 @@ typedef struct s_collision {
 	float maxZ = 0.0f;
 }				t_collision;
 
+typedef struct s_shaderInput {
+	int spec = 0;
+	glm::vec3 pos = {0, 0, 0};
+}				t_shaderInput;
+
 struct s_backup { // TODO add fluids and entities to backups
 	std::map<int, int> added;
 	std::set<int> removed;
@@ -110,10 +115,10 @@ class Chunk
 		unsigned _seed;
 		GLint _continent;
 		GLint *_blocks, *_water_vert, *_sky_vert;
-		void *_vertices; // int, vec3
+		std::vector<t_shaderInput> _vertices;
 		short *_lights; // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
 		GLboolean *_sky, _hasWater;
-		std::atomic_size_t _displayed_faces, _displayed_alloc, _water_count, _sky_count;
+		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
 		std::array<Chunk *, 4> _neighbours;
 		Camera *_camera;
 		Inventory *_inventory;
