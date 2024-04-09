@@ -665,6 +665,214 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
+// takes stair_bottom at given pos and check if it should be corner stair
+void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
+{
+	int behind, front, left, right;
+	switch ((type >> 9) & 0x7) {
+		case face_dir::MINUSX:
+			type |= ((CORNERS::PM | CORNERS::PP) << 12);
+			behind = getBlockAt(pos.x + 1, pos.y, pos.z, true);
+			if ((behind & 0xFF) == (type & 0xFF)) {
+				if (((behind >> 9) & 0x7) == face_dir::MINUSY) {
+					type ^= (CORNERS::PM << 12); // outside corner
+					goto SKIP_FRONT_MINUSX;
+				} else if (((behind >> 9) & 0x7) == face_dir::PLUSY) {
+					type ^= (CORNERS::PP << 12);
+					goto SKIP_FRONT_MINUSX;
+				}
+			}
+			front = getBlockAt(pos.x - 1, pos.y, pos.z, true);
+			if ((front & 0xFF) == (type & 0xFF)) {
+				if (((front >> 9) & 0x7) == face_dir::MINUSY) {
+					type |= (CORNERS::MP << 12); // inside corner
+				} else if (((front >> 9) & 0x7) == face_dir::PLUSY) {
+					type |= (CORNERS::MM << 12);
+				}
+			}
+			SKIP_FRONT_MINUSX:
+			left = getBlockAt(pos.x, pos.y + 1, pos.z, true);
+			if ((left & 0xFF) == (type & 0xFF)) {
+				if (((left >> 9) & 0x7) == face_dir::MINUSY) {
+					if (((left >> 12) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
+						left |= (CORNERS::PM << 12); // transform left stair into inside corner stair
+						setBlockAt(left, pos.x, pos.y + 1, pos.z, true);
+					}
+				} else if (((left >> 9) & 0x7) == face_dir::PLUSY) {
+					if (((left >> 12) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
+						left ^= (CORNERS::MM << 12); // transform left stair into outside corner stair
+						setBlockAt(left, pos.x, pos.y + 1, pos.z, true);
+					}
+				}
+			}
+			right = getBlockAt(pos.x, pos.y - 1, pos.z, true);
+			if ((right & 0xFF) == (type & 0xFF)) {
+				if (((right >> 9) & 0x7) == face_dir::MINUSY) {
+					if (((right >> 12) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
+						right ^= (CORNERS::MP << 12); // transform left stair into outside corner stair
+						setBlockAt(right, pos.x, pos.y - 1, pos.z, true);
+					}
+				} else if (((right >> 9) & 0x7) == face_dir::PLUSY) {
+					if (((right >> 12) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
+						right |= (CORNERS::PP << 12); // transform right stair into inside corner stair
+						setBlockAt(right, pos.x, pos.y - 1, pos.z, true);
+					}
+				}
+			}
+			break ;
+		case face_dir::PLUSX:
+			type |= ((CORNERS::MM | CORNERS::MP) << 12);
+			behind = getBlockAt(pos.x - 1, pos.y, pos.z, true);
+			if ((behind & 0xFF) == (type & 0xFF)) {
+				if (((behind >> 9) & 0x7) == face_dir::MINUSY) {
+					type ^= (CORNERS::MM << 12); // outside corner
+					goto SKIP_FRONT_PLUSX;
+				} else if (((behind >> 9) & 0x7) == face_dir::PLUSY) {
+					type ^= (CORNERS::MP << 12);
+					goto SKIP_FRONT_PLUSX;
+				}
+			}
+			front = getBlockAt(pos.x + 1, pos.y, pos.z, true);
+			if ((front & 0xFF) == (type & 0xFF)) {
+				if (((front >> 9) & 0x7) == face_dir::MINUSY) {
+					type |= (CORNERS::PP << 12); // inside corner
+				} else if (((front >> 9) & 0x7) == face_dir::PLUSY) {
+					type |= (CORNERS::PM << 12);
+				}
+			}
+			SKIP_FRONT_PLUSX:
+			left = getBlockAt(pos.x, pos.y - 1, pos.z, true);
+			if ((left & 0xFF) == (type & 0xFF)) {
+				if (((left >> 9) & 0x7) == face_dir::MINUSY) {
+					if (((left >> 12) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
+						left ^= (CORNERS::PP << 12); // transform left stair into outside corner stair
+						setBlockAt(left, pos.x, pos.y - 1, pos.z, true);
+					}
+				} else if (((left >> 9) & 0x7) == face_dir::PLUSY) {
+					if (((left >> 12) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
+						left |= (CORNERS::MP << 12); // transform left stair into inside corner stair
+						setBlockAt(left, pos.x, pos.y - 1, pos.z, true);
+					}
+				}
+			}
+			right = getBlockAt(pos.x, pos.y + 1, pos.z, true);
+			if ((right & 0xFF) == (type & 0xFF)) {
+				if (((right >> 9) & 0x7) == face_dir::MINUSY) {
+					if (((right >> 12) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
+						right |= (CORNERS::MM << 12); // transform right stair into inside corner stair
+						setBlockAt(right, pos.x, pos.y + 1, pos.z, true);
+					}
+				} else if (((right >> 9) & 0x7) == face_dir::PLUSY) {
+					if (((right >> 12) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
+						right ^= (CORNERS::PM << 12); // transform left stair into outside corner stair
+						setBlockAt(right, pos.x, pos.y + 1, pos.z, true);
+					}
+				}
+			}
+			break ;
+		case face_dir::MINUSY:
+			type |= ((CORNERS::MP | CORNERS::PP) << 12);
+			behind = getBlockAt(pos.x, pos.y + 1, pos.z, true);
+			if ((behind & 0xFF) == (type & 0xFF)) {
+				if (((behind >> 9) & 0x7) == face_dir::MINUSX) {
+					type ^= (CORNERS::MP << 12); // outside corner
+					goto SKIP_FRONT_MINUSY;
+				} else if (((behind >> 9) & 0x7) == face_dir::PLUSX) {
+					type ^= (CORNERS::PP << 12);
+					goto SKIP_FRONT_MINUSY;
+				}
+			}
+			front = getBlockAt(pos.x, pos.y - 1, pos.z, true);
+			if ((front & 0xFF) == (type & 0xFF)) {
+				if (((front >> 9) & 0x7) == face_dir::MINUSX) {
+					type |= (CORNERS::PM << 12); // inside corner
+				} else if (((front >> 9) & 0x7) == face_dir::PLUSX) {
+					type |= (CORNERS::MM << 12);
+				}
+			}
+			SKIP_FRONT_MINUSY:
+			left = getBlockAt(pos.x - 1, pos.y, pos.z, true);
+			if ((left & 0xFF) == (type & 0xFF)) {
+				if (((left >> 9) & 0x7) == face_dir::MINUSX) {
+					if (((left >> 12) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
+						left ^= (CORNERS::PM << 12); // transform left stair into outside corner stair
+						setBlockAt(left, pos.x - 1, pos.y, pos.z, true);
+					}
+				} else if (((left >> 9) & 0x7) == face_dir::PLUSX) {
+					if (((left >> 12) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
+						left |= (CORNERS::PP << 12); // transform left stair into inside corner stair
+						setBlockAt(left, pos.x - 1, pos.y, pos.z, true);
+					}
+				}
+			}
+			right = getBlockAt(pos.x + 1, pos.y, pos.z, true);
+			if ((right & 0xFF) == (type & 0xFF)) {
+				if (((right >> 9) & 0x7) == face_dir::MINUSX) {
+					if (((right >> 12) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
+						right |= (CORNERS::MP << 12); // transform right stair into inside corner stair
+						setBlockAt(right, pos.x + 1, pos.y, pos.z, true);
+					}
+				} else if (((right >> 9) & 0x7) == face_dir::PLUSX) {
+					if (((right >> 12) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
+						right ^= (CORNERS::MM << 12); // transform left stair into outside corner stair
+						setBlockAt(right, pos.x + 1, pos.y, pos.z, true);
+					}
+				}
+			}
+			break ;
+		case face_dir::PLUSY:
+			type |= ((CORNERS::MM | CORNERS::PM) << 12);
+			behind = getBlockAt(pos.x, pos.y - 1, pos.z, true);
+			if ((behind & 0xFF) == (type & 0xFF)) {
+				if (((behind >> 9) & 0x7) == face_dir::MINUSX) {
+					type ^= (CORNERS::MM << 12); // outside corner
+					goto SKIP_FRONT_PLUSY;
+				} else if (((behind >> 9) & 0x7) == face_dir::PLUSX) {
+					type ^= (CORNERS::PM << 12);
+					goto SKIP_FRONT_PLUSY;
+				}
+			}
+			front = getBlockAt(pos.x, pos.y + 1, pos.z, true);
+			if ((front & 0xFF) == (type & 0xFF)) {
+				if (((front >> 9) & 0x7) == face_dir::MINUSX) {
+					type |= (CORNERS::PP << 12); // inside corner
+				} else if (((front >> 9) & 0x7) == face_dir::PLUSX) {
+					type |= (CORNERS::MP << 12);
+				}
+			}
+			SKIP_FRONT_PLUSY:
+			left = getBlockAt(pos.x + 1, pos.y, pos.z, true);
+			if ((left & 0xFF) == (type & 0xFF)) {
+				if (((left >> 9) & 0x7) == face_dir::MINUSX) {
+					if (((left >> 12) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
+						left |= (CORNERS::MM << 12); // transform left stair into inside corner stair
+						setBlockAt(left, pos.x + 1, pos.y, pos.z, true);
+					}
+				} else if (((left >> 9) & 0x7) == face_dir::PLUSX) {
+					if (((left >> 12) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
+						left ^= (CORNERS::MP << 12); // transform left stair into outside corner stair
+						setBlockAt(left, pos.x + 1, pos.y, pos.z, true);
+					}
+				}
+			}
+			right = getBlockAt(pos.x - 1, pos.y, pos.z, true);
+			if ((right & 0xFF) == (type & 0xFF)) {
+				if (((right >> 9) & 0x7) == face_dir::MINUSX) {
+					if (((right >> 12) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
+						right ^= (CORNERS::PP << 12); // transform left stair into outside corner stair
+						setBlockAt(right, pos.x - 1, pos.y, pos.z, true);
+					}
+				} else if (((right >> 9) & 0x7) == face_dir::PLUSX) {
+					if (((right >> 12) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
+						right |= (CORNERS::PM << 12); // transform right stair into inside corner stair
+						setBlockAt(right, pos.x - 1, pos.y, pos.z, true);
+					}
+				}
+			}
+			break ;
+	}
+}
+
 void Chunk::addFlame( int offset, glm::vec3 pos, int source, int orientation )
 {
 	if (source == blocks::TORCH) {
@@ -754,6 +962,9 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	}
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
 		type += (_camera->getOrientation() << 9);
+		if ((type & 0xFF) == blocks::OAK_STAIRS_BOTTOM) { // handle stair corners
+			handle_stair_corners(pos, type);
+		}
 	}
 
 	_blocks[offset] = type;
@@ -1069,6 +1280,36 @@ GLint Chunk::getBlockAt( int posX, int posY, int posZ, bool askNeighbours )
 	return (res);
 }
 
+void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool askNeighbours )
+{
+	if (!_blocks || posZ < 0 || posZ >= WORLD_HEIGHT || !(value & 0xFF)) {
+		return ;
+	}
+	if (posX < 0) {
+		if (askNeighbours && _neighbours[face_dir::MINUSX]) {
+			_neighbours[face_dir::MINUSX]->setBlockAt(value, posX + CHUNK_SIZE, posY, posZ, askNeighbours);
+		}
+	} else if (posX >= CHUNK_SIZE) {
+		if (askNeighbours && _neighbours[face_dir::PLUSX]) {
+			_neighbours[face_dir::PLUSX]->setBlockAt(value, posX - CHUNK_SIZE, posY, posZ, askNeighbours);
+		}
+	} else if (posY < 0) {
+		if (askNeighbours && _neighbours[face_dir::MINUSY]) {
+			_neighbours[face_dir::MINUSY]->setBlockAt(value, posX, posY + CHUNK_SIZE, posZ, askNeighbours);
+		}
+	} else if (posY >= CHUNK_SIZE) {
+		if (askNeighbours && _neighbours[face_dir::PLUSY]) {
+			_neighbours[face_dir::PLUSY]->setBlockAt(value, posX, posY - CHUNK_SIZE, posZ, askNeighbours);
+		}
+	} else {
+		int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
+		_blocks[offset] = value;
+		_added[offset] = value;
+		_removed.erase(offset);
+		_vertex_update = true;
+	}
+}
+
 static void thread_setup_chunk( Chunk *current )
 {
 	current->generation();
@@ -1342,8 +1583,8 @@ int Chunk::isHit( glm::ivec3 pos )
 	// if (_thread.joinable()) {
 	// 	_thread.join();
 	// }
-	int type = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z] & 0xFF;
-	if (type > blocks::WATER) {
+	int type = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z]; // TODO RESTORE & 0xFF;
+	if ((type & 0xFF) > blocks::WATER) { // ... TODO AND RM & 0xFF from here
 		return (blocks::AIR);
 	}
 	return (type);

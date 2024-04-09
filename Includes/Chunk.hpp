@@ -156,6 +156,7 @@ class Chunk
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
+		void handle_stair_corners( glm::ivec3 pos, int &type );
 		void addFlame( int offset, glm::vec3 pos, int source, int orientation );
 		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 		void replace_block( bool useInventory, glm::ivec3 pos, int type, int previous );
@@ -200,6 +201,7 @@ class Chunk
 		ChestInstance *getChestInstance( glm::ivec3 pos );
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
 		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours );
+		void setBlockAt( int value, int posX, int posY, int posZ, bool askNeighbours );
 		void turnDirtToGrass( int posX, int posY, int posZ );
 
 		void generation( void );

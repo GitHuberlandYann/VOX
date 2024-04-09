@@ -51,7 +51,14 @@ t_hit OpenGL_Manager::get_block_hit( void )
 			first_loop = false;
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
-		int value = chunk->isHit(i);
+		int value = chunk->isHit(i); // TODO restore &0xFF in isHit()
+		// if ((value & 0xFF) == blocks::OAK_STAIRS_BOTTOM) {
+		// 	_ui->chatMessage("hit stair MM " + std::to_string((value >> 12) & CORNERS::MM)
+		// 		+ " MP " + std::to_string((value >> 12) & CORNERS::MP)
+		// 		+ " PM " + std::to_string((value >> 12) & CORNERS::PM)
+		// 		+ " PP " + std::to_string((value >> 12) & CORNERS::PP));
+		// }
+		value &= 0xFF;
 		if (value == blocks::WATER) {
 			if (!res.water_value) {
 				res.water_pos = i;
