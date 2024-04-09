@@ -460,20 +460,20 @@ struct OakStairsTop : Block {
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int offset ) const {
 			switch (offset) {
 				case face_dir::PLUSX:
-					hitbox[0] = {0.5f, 0.25f, 0.75f}; // hitboxCenter
-					hitbox[1] = {0.5f, 0.25f, 0.25f}; // hitboxHalfSize
+					hitbox[0] = {0.25f, 0.5f, 0.25f}; // hitboxCenter
+					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
 					break ;
 				case face_dir::MINUSX:
-					hitbox[0] = {0.5f, 0.75f, 0.75f};
-					hitbox[1] = {0.5f, 0.25f, 0.25f};
+					hitbox[0] = {0.75f, 0.5f, 0.25f};
+					hitbox[1] = {0.25f, 0.5f, 0.25f};
 					break ;
 				case face_dir::PLUSY:
-					hitbox[0] = {0.25f, 0.5f, 0.75f};
-					hitbox[1] = {0.25f, 0.5f, 0.25f};
+					hitbox[0] = {0.5f, 0.25f, 0.25f};
+					hitbox[1] = {0.5f, 0.25f, 0.25f};
 					break ;
 				case face_dir::MINUSY:
-					hitbox[0] = {0.75f, 0.5f, 0.75f};
-					hitbox[1] = {0.25f, 0.5f, 0.25f};
+					hitbox[0] = {0.5f, 0.75f, 0.25f};
+					hitbox[1] = {0.5f, 0.25f, 0.25f};
 					break ;
 			}
 		}
