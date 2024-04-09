@@ -270,3 +270,4 @@ Some info:
 	- Farmland 0x1 << 9 == WET_FARMLAND, 0x7 << 10 == wetness
 	- Leaves 0x1 << 9 == hand placed
 	- saplings 0x1 << 9 == growth stage
+	- stairs 0x7 << 9 == orientation

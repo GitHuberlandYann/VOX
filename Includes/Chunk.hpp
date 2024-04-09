@@ -80,6 +80,13 @@ enum COLLISION {
 	PARTIAL
 };
 
+enum CORNERS {
+	MM = 0b1, // -x-y
+	MP = 0b10, // -x+y
+	PM = 0b100, // +x-y
+	PP = 0b1000, // +x+y
+};
+
 typedef struct s_collision {
 	int type;
 	float minZ = 0.0f;

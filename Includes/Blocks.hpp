@@ -451,10 +451,10 @@ struct OakStairsTop : Block {
 					return (4);
 				case face_dir::PLUSX:
 				case face_dir::MINUSX:
-					return (4 + (offset == face_dir::MINUSY || offset == face_dir::PLUSY));
+					return (4 - (offset == face_dir::MINUSY || offset == face_dir::PLUSY));
 				case face_dir::PLUSY:
 				case face_dir::MINUSY:
-					return (4 + (offset == face_dir::MINUSX || offset == face_dir::PLUSX));
+					return (4 - (offset == face_dir::MINUSX || offset == face_dir::PLUSX));
 			}
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int offset ) const {
