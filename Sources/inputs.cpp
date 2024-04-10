@@ -51,28 +51,39 @@ t_hit OpenGL_Manager::get_block_hit( void )
 			first_loop = false;
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
-		int value = chunk->isHit(i); // TODO restore &0xFF in isHit()
+		int value = chunk->isHit(i);
 		// if ((value & 0xFF) == blocks::OAK_STAIRS_TOP) {
 		// 	_ui->chatMessage("hit stair MM " + std::to_string((value >> 12) & CORNERS::MM)
 		// 		+ " MP " + std::to_string((value >> 12) & CORNERS::MP)
 		// 		+ " PM " + std::to_string((value >> 12) & CORNERS::PM)
 		// 		+ " PP " + std::to_string((value >> 12) & CORNERS::PP));
 		// }
-		value &= 0xFF;
-		if (value == blocks::WATER) {
+		int type = value & 0xFF;
+		if (type == blocks::WATER) {
 			if (!res.water_value) {
 				res.water_pos = i;
 				res.water_value = true;
 			}
 			res.prev_pos = i;
-		} else if (value) {
+		} else if (type) {
 			// we know cube is hit, now check if hitbox is hit (only on non cube-filling values)
 			// TODO move hitboxes of torches depending on the wall they hang on
-			if (!s_blocks[value]->hasHitbox || line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + s_blocks[value]->hitboxCenter, s_blocks[value]->hitboxHalfSize)) {
+			const Block *target = s_blocks[type];
+			if (!target->hasHitbox || line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + target->hitboxCenter, target->hitboxHalfSize)) {
 				chunk_hit = chunk;
 				res.pos = i;
-				res.value = value;
+				res.value = type;
 				return (res);
+			} else if (target->orientedCollisionHitbox) {
+				glm::vec3 hitbox[2];
+				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7, (value >> 12) & 0xF);
+				if (line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
+					chunk_hit = chunk;
+					res.pos = i;
+					res.value = type;
+					return (res);
+				}
+
 			}
 		} else {
 			res.prev_pos = i;

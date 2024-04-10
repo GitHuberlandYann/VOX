@@ -288,6 +288,8 @@ static int blockShape( int value )
 			return (blocks::FARMLAND);
 		// case blocks::*_SLAB_BOTTOM:
 		// 	return (blocks::OAK_SLAB_BOTTOM);
+		// case blocks::*_STAIRS_BOTTOM:
+		// return (blocks::OAK_STAIRS_BOTTOM)
 	}
 	return (value);
 }
@@ -321,25 +323,34 @@ bool visible_face( int value, int next, face_dir dir )
 	if (dir == face_dir::MINUSZ && value == blocks::OAK_SLAB_TOP) {
 		return (true);
 	}
-	if (next == blocks::OAK_SLAB_BOTTOM) {
-		if (dir == face_dir::MINUSZ) {
+	switch (next) {
+		case blocks::OAK_SLAB_BOTTOM:
+			if (dir == face_dir::MINUSZ) {
+				return (true);
+			}
+			return (value != next);
+		case blocks::OAK_SLAB_TOP:
+			if (dir == face_dir::PLUSZ) {
+				return (true);
+			}
+			return (value != next);
+		case blocks::OAK_STAIRS_BOTTOM:
+			if (dir == face_dir::PLUSZ) {
+				return (false);
+			}
 			return (true);
-		}
-		return (value != next);
-	}
-	if (next == blocks::OAK_SLAB_TOP) {
-		if (dir == face_dir::PLUSZ) {
+		case blocks::OAK_STAIRS_TOP:
+			if (dir == face_dir::MINUSZ) {
+				return (false);
+			}
 			return (true);
-		}
-		return (value != next);
-	}
-	if (next == blocks::FARMLAND) {
-		if (dir == face_dir::MINUSZ) {
-			return (true);
-		} else if (dir == face_dir::PLUSZ) {
-			return (false);
-		}
-		return (value != blocks::OAK_SLAB_BOTTOM && value != blocks::FARMLAND);
+		case blocks::FARMLAND:
+			if (dir == face_dir::MINUSZ) {
+				return (true);
+			} else if (dir == face_dir::PLUSZ) {
+				return (false);
+			}
+			return (value != blocks::OAK_SLAB_BOTTOM && value != blocks::FARMLAND);
 	}
 	return (false);
 }
