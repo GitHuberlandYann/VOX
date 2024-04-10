@@ -962,7 +962,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	}
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
 		type += (_camera->getOrientation() << 9);
-		if ((type & 0xFF) == blocks::OAK_STAIRS_BOTTOM) { // handle stair corners
+		if ((type & 0xFF) >= blocks::OAK_STAIRS_BOTTOM) { // handle stair corners
 			handle_stair_corners(pos, type);
 		}
 	}

@@ -52,7 +52,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		int value = chunk->isHit(i); // TODO restore &0xFF in isHit()
-		// if ((value & 0xFF) == blocks::OAK_STAIRS_BOTTOM) {
+		// if ((value & 0xFF) == blocks::OAK_STAIRS_TOP) {
 		// 	_ui->chatMessage("hit stair MM " + std::to_string((value >> 12) & CORNERS::MM)
 		// 		+ " MP " + std::to_string((value >> 12) & CORNERS::MP)
 		// 		+ " PM " + std::to_string((value >> 12) & CORNERS::PM)
