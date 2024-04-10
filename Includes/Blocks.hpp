@@ -20,6 +20,13 @@ enum face_dir {
 	PLUSZ
 };
 
+enum CORNERS {
+	MM = 0b0001, // -x-y
+	MP = 0b0010, // -x+y
+	PM = 0b0100, // +x-y
+	PP = 0b1000, // +x+y
+};
+
 namespace blocks {
 	enum {
 		AIR,
@@ -163,8 +170,8 @@ struct Block {
 			(void)dir;(void)offset;
 			return (textureY);
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int offset ) const {
-			(void)hitbox;(void)offset;
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
+			(void)hitbox;(void)orientation;(void)corners;
 		}
 		virtual ~Block() {}
 };
@@ -403,23 +410,75 @@ struct OakStairsBottom : Block {
 					return (4 + (offset == face_dir::MINUSX || offset == face_dir::PLUSX));
 			}
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int offset ) const {
-			switch (offset) {
-				case face_dir::PLUSX:
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
+			switch (corners) {
+				case CORNERS::MM | CORNERS::MP:
 					hitbox[0] = {0.25f, 0.5f, 0.75f}; // hitboxCenter
 					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
 					break ;
-				case face_dir::MINUSX:
+				case CORNERS::PM | CORNERS::PP:
 					hitbox[0] = {0.75f, 0.5f, 0.75f};
 					hitbox[1] = {0.25f, 0.5f, 0.25f};
 					break ;
-				case face_dir::PLUSY:
+				case CORNERS::MM | CORNERS::PM:
 					hitbox[0] = {0.5f, 0.25f, 0.75f};
 					hitbox[1] = {0.5f, 0.25f, 0.25f};
 					break ;
-				case face_dir::MINUSY:
+				case CORNERS::MP | CORNERS::PP:
 					hitbox[0] = {0.5f, 0.75f, 0.75f};
 					hitbox[1] = {0.5f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MM:
+					hitbox[0] = {0.25f, 0.25f, 0.75f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MP:
+					hitbox[0] = {0.25f, 0.75f, 0.75f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::PM:
+					hitbox[0] = {0.75f, 0.25f, 0.75f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::PP:
+					hitbox[0] = {0.75f, 0.75f, 0.75f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MM | CORNERS::MP | CORNERS::PM:
+					if (orientation == face_dir::PLUSX) {
+						hitbox[0] = {0.25f, 0.5f, 0.75f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.25f, 0.75f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
+				case CORNERS::MM | CORNERS::MP | CORNERS::PP:
+					if (orientation == face_dir::PLUSX) {
+						hitbox[0] = {0.25f, 0.5f, 0.75f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.75f, 0.75f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
+				case CORNERS::PM | CORNERS::PP | CORNERS::MM:
+					if (orientation == face_dir::MINUSX) {
+						hitbox[0] = {0.75f, 0.5f, 0.75f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.25f, 0.75f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
+				case CORNERS::PM | CORNERS::PP | CORNERS::MP:
+					if (orientation == face_dir::MINUSX) {
+						hitbox[0] = {0.75f, 0.5f, 0.75f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.75f, 0.75f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
 					break ;
 			}
 		}
@@ -457,8 +516,9 @@ struct OakStairsTop : Block {
 					return (4 - (offset == face_dir::MINUSX || offset == face_dir::PLUSX));
 			}
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int offset ) const {
-			switch (offset) {
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
+			(void)corners;
+			switch (orientation) {
 				case face_dir::PLUSX:
 					hitbox[0] = {0.25f, 0.5f, 0.25f}; // hitboxCenter
 					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize

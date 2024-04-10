@@ -80,13 +80,6 @@ enum COLLISION {
 	PARTIAL
 };
 
-enum CORNERS {
-	MM = 0b1, // -x-y
-	MP = 0b10, // -x+y
-	PM = 0b100, // +x-y
-	PP = 0b1000, // +x+y
-};
-
 typedef struct s_collision {
 	int type;
 	float minZ = 0.0f;
@@ -134,6 +127,8 @@ class Chunk
 		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
+		void collisionWHitbox( t_collision &res, const Block *target, int value, glm::vec3 pos, float width,
+			float height, int bX, int bY, int bZ );
 		GLint face_count( int type, int row, int col, int level );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves, bool isNotGlass );
 	

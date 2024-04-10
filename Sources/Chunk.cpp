@@ -1853,6 +1853,36 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 	_vertex_update = true;
 }
 
+// called by Chunk::collisionBox
+// checks if given box collides with given custom hitboxed block
+void Chunk::collisionWHitbox( t_collision &res, const Block *target, int value, glm::vec3 pos, float width, float height, int bX, int bY, int bZ )
+{
+	if (cube_cube_intersection(pos, {width, width, height},
+		{bX + target->hitboxCenter.x + _startX, bY + target->hitboxCenter.y + _startY, bZ + target->hitboxCenter.z},
+		target->hitboxHalfSize)) {
+		if (res.type == COLLISION::NONE) {
+			res = {COLLISION::PARTIAL, bZ + target->hitboxCenter.z - target->hitboxHalfSize.z, bZ + target->hitboxCenter.z + target->hitboxHalfSize.z};
+		} else {
+			res.minZ = glm::min(res.minZ, bZ + target->hitboxCenter.z - target->hitboxHalfSize.z);
+			res.maxZ = glm::max(res.maxZ, bZ + target->hitboxCenter.z + target->hitboxHalfSize.z);
+		}
+	}
+	if (target->orientedCollisionHitbox) {
+		glm::vec3 hitbox[2];
+		target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7, (value >> 12) & 0xF);
+		if (cube_cube_intersection(pos, {width, width, height},
+			{bX + hitbox[0].x + _startX, bY + hitbox[0].y + _startY, bZ + hitbox[0].z},
+			hitbox[1])) {
+			if (res.type == COLLISION::NONE) {
+				res = {COLLISION::PARTIAL, bZ + hitbox[0].z - hitbox[1].z, bZ + hitbox[0].z + hitbox[1].z};
+			} else {
+				res.minZ = glm::min(res.minZ, bZ + hitbox[0].z - hitbox[1].z);
+				res.maxZ = glm::max(res.maxZ, bZ + hitbox[0].z + hitbox[1].z);
+			}
+		}
+	}
+}
+
 /* collisionBox takes feet position of object, dimension of its hitbox and returns wether object is inside block or not
  * WATCHOUT if width > 0.5 problemos because we check block left and right but not middle */
 t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float originalHeight )
@@ -1868,25 +1898,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	if (target->collisionHitbox_1x1x1) {
 		return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 	} else if (target->collisionHitbox) {
-		if (cube_cube_intersection(pos, {width, width, originalHeight},
-			{minX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
-			target->hitboxHalfSize)) {
-			res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
-		}
-		if (target->orientedCollisionHitbox) { // stairs have secondary(and tertiary for cornered stairs) hitbox
-			glm::vec3 hitbox[2];
-			target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7);
-			if (cube_cube_intersection(pos, {width, width, originalHeight},
-				{minX + hitbox[0].x + _startX, minY + hitbox[0].y + _startY, top + hitbox[0].z},
-				hitbox[1])) {
-				if (res.type == COLLISION::NONE) {
-					res = {COLLISION::PARTIAL, top + hitbox[0].z - hitbox[1].z, top + hitbox[0].z + hitbox[1].z};
-				} else {
-					res.minZ = glm::min(res.minZ, top + hitbox[0].z - hitbox[1].z);
-					res.maxZ = glm::max(res.maxZ, top + hitbox[0].z + hitbox[1].z);
-				}
-			}
-		}
+		collisionWHitbox(res, target, value, pos, width, originalHeight, minX, minY, top);
 	}
 	if (minX != maxX) {
 		value = getBlockAt(maxX, minY, top, true);
@@ -1894,30 +1906,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 		} else if (target->collisionHitbox) {
-			if (cube_cube_intersection(pos, {width, width, originalHeight},
-				{maxX + target->hitboxCenter.x + _startX, minY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
-				target->hitboxHalfSize)) {
-				if (res.type == COLLISION::NONE) {
-					res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
-				} else {
-					res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
-					res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
-				}
-			}
-			if (target->orientedCollisionHitbox) {
-				glm::vec3 hitbox[2];
-				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7);
-				if (cube_cube_intersection(pos, {width, width, originalHeight},
-					{maxX + hitbox[0].x + _startX, minY + hitbox[0].y + _startY, top + hitbox[0].z},
-					hitbox[1])) {
-					if (res.type == COLLISION::NONE) {
-						res = {COLLISION::PARTIAL, top + hitbox[0].z - hitbox[1].z, top + hitbox[0].z + hitbox[1].z};
-					} else {
-						res.minZ = glm::min(res.minZ, top + hitbox[0].z - hitbox[1].z);
-						res.maxZ = glm::max(res.maxZ, top + hitbox[0].z + hitbox[1].z);
-					}
-				}
-			}
+			collisionWHitbox(res, target, value, pos, width, originalHeight, maxX, minY, top);
 		}
 	}
 	if (minY != maxY) {
@@ -1926,30 +1915,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 		} else if (target->collisionHitbox) {
-			if (cube_cube_intersection(pos, {width, width, originalHeight},
-				{minX + target->hitboxCenter.x + _startX, maxY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
-				target->hitboxHalfSize)) {
-				if (res.type == COLLISION::NONE) {
-					res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
-				} else {
-					res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
-					res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
-				}
-			}
-			if (target->orientedCollisionHitbox) {
-				glm::vec3 hitbox[2];
-				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7);
-				if (cube_cube_intersection(pos, {width, width, originalHeight},
-					{minX + hitbox[0].x + _startX, maxY + hitbox[0].y + _startY, top + hitbox[0].z},
-					hitbox[1])) {
-					if (res.type == COLLISION::NONE) {
-						res = {COLLISION::PARTIAL, top + hitbox[0].z - hitbox[1].z, top + hitbox[0].z + hitbox[1].z};
-					} else {
-						res.minZ = glm::min(res.minZ, top + hitbox[0].z - hitbox[1].z);
-						res.maxZ = glm::max(res.maxZ, top + hitbox[0].z + hitbox[1].z);
-					}
-				}
-			}
+			collisionWHitbox(res, target, value, pos, width, originalHeight, minX, maxY, top);
 		}
 	}
 	if (minX != maxX && minY != maxY) {
@@ -1958,30 +1924,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 		} else if (target->collisionHitbox) {
-			if (cube_cube_intersection(pos, {width, width, originalHeight},
-				{maxX + target->hitboxCenter.x + _startX, maxY + target->hitboxCenter.y + _startY, top + target->hitboxCenter.z},
-				target->hitboxHalfSize)) {
-				if (res.type == COLLISION::NONE) {
-					res = {COLLISION::PARTIAL, top + target->hitboxCenter.z - target->hitboxHalfSize.z, top + target->hitboxCenter.z + target->hitboxHalfSize.z};
-				} else {
-					res.minZ = glm::min(res.minZ, top + target->hitboxCenter.z - target->hitboxHalfSize.z);
-					res.maxZ = glm::max(res.maxZ, top + target->hitboxCenter.z + target->hitboxHalfSize.z);
-				}
-			}
-			if (target->orientedCollisionHitbox) {
-				glm::vec3 hitbox[2];
-				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7);
-				if (cube_cube_intersection(pos, {width, width, originalHeight},
-					{maxX + hitbox[0].x + _startX, maxY + hitbox[0].y + _startY, top + hitbox[0].z},
-					hitbox[1])) {
-					if (res.type == COLLISION::NONE) {
-						res = {COLLISION::PARTIAL, top + hitbox[0].z - hitbox[1].z, top + hitbox[0].z + hitbox[1].z};
-					} else {
-						res.minZ = glm::min(res.minZ, top + hitbox[0].z - hitbox[1].z);
-						res.maxZ = glm::max(res.maxZ, top + hitbox[0].z + hitbox[1].z);
-					}
-				}
-			}
+			collisionWHitbox(res, target, value, pos, width, originalHeight, maxX, maxY, top);
 		}
 	}
 	if (height > 1) {
