@@ -132,6 +132,11 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
 		}
 		return ;
+	} else if (_block_hit.value == blocks::OAK_DOOR) {
+		if (current_chunk_ptr) {
+			current_chunk_ptr->handleHit(false, blocks::OAK_DOOR, _block_hit.pos, Modif::USE);
+		}
+		return ;
 	}
 	int type = _hand_content;
 	// std::cout << "aiming " << s_blocks[type]->name << " towards " << s_blocks[_block_hit.value]->name << std::endl;;

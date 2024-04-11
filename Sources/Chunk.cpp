@@ -599,6 +599,11 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		}
 		delete _furnaces[offset];
 		_furnaces.erase(offset);
+	} else if (type == blocks::OAK_DOOR) {
+		// break other part of door
+		_blocks[offset + (((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1)] = blocks::AIR;
+		_added.erase(offset + (((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1));
+		_removed.insert(offset + (((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1));
 	}
 	if (useInventory && type == blocks::WATER) {
 		_inventory->addBlock(type); // water bucket
@@ -657,7 +662,8 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		}
 	}
 	handle_border_block(pos, air_flower(value, true, false, true), false); // if block at border of chunk gets deleted, we update neighbours. doing it after light spread
-	if (type_above != blocks::TORCH && type_above != blocks::CHEST && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS)) { // del flower if block underneath deleted
+	if (type_above != blocks::TORCH && type_above != blocks::CHEST && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS
+		|| (type_above == blocks::OAK_DOOR && type != blocks::OAK_DOOR))) { // del flower if block underneath deleted
 		(type_above == blocks::GRASS)
 			? remove_block(false, {pos.x, pos.y, pos.z + 1}) // if grass above breaked block, don't collect it
 			: remove_block(useInventory, {pos.x, pos.y, pos.z + 1});
@@ -873,6 +879,20 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 	}
 }
 
+void Chunk::handle_door_placement( glm::ivec3 pos, int &type )
+{
+	int below = getBlockAt(pos.x, pos.y, pos.z - 1, false);
+	if (!s_blocks[below & 0xFF]->collisionHitbox_1x1x1) {
+		type = blocks::AIR;
+		return ;
+	}
+	int above = getBlockAt(pos.x, pos.y, pos.z + 1, false);
+	if (above != blocks::AIR) {
+		type = blocks::AIR;
+		return ;
+	}
+}
+
 void Chunk::addFlame( int offset, glm::vec3 pos, int source, int orientation )
 {
 	if (source == blocks::TORCH) {
@@ -962,8 +982,20 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	}
 	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
 		type += (_camera->getOrientation() << 9);
-		if ((type & 0xFF) >= blocks::OAK_STAIRS_BOTTOM) { // handle stair corners
-			handle_stair_corners(pos, type);
+		switch (type & 0xFF) {
+			case blocks::OAK_STAIRS_BOTTOM:
+			case blocks::OAK_STAIRS_TOP:
+				handle_stair_corners(pos, type);
+				break ;
+			case blocks::OAK_DOOR:
+				handle_door_placement(pos, type);
+				if (type == blocks::AIR) return ; // door couldn't be placed
+				else if (!((type >> 12) & DOOR::UPPER_HALF)) { // place upper_half
+					_blocks[offset + 1] = type | (DOOR::UPPER_HALF << 12);
+					_removed.erase(offset + 1);
+					_added[offset + 1] = type | (DOOR::UPPER_HALF << 12);
+				}
+				break ;
 		}
 	}
 
@@ -1392,30 +1424,48 @@ void Chunk::checkFillVertices( void )
 void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif )
 {
 	int previous_type = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z] & 0xFF;
-	if (modif == Modif::REMOVE) {
-		if (previous_type == blocks::AIR || previous_type == blocks::BEDROCK) { // can't rm bedrock
-			return ;
-		}
-		// std::cout << "remove_block. displayed before " << _displayed_faces << std::endl;
-		remove_block(useInventory, pos);
-	} else if (modif == Modif::ADD) {
-		if (type == blocks::WHEAT_CROP && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z - 1] & 0xFF) != blocks::FARMLAND) { // can't place crop on something other than farmland
-			return ;
-		} else if ((previous_type != blocks::AIR && previous_type < blocks::WATER) || type == blocks::AIR) { // can't replace block
-			return ;
-		}
-		// std::cout << "ADD BLOCK " << s_blocks[previous_type]->name << " -> " << s_blocks[type]->name << std::endl;
-		add_block(useInventory, pos, type, previous_type);
-	} else if (modif == Modif::REPLACE) {
-		if (type == blocks::DIRT_PATH && pos.z < 254 && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z + 1] & 0xFF) != blocks::AIR) { // can't turn dirt to dirt path if anything above it
-			return ;
-		} else if ((type == blocks::DIRT_PATH || type == blocks::FARMLAND) && previous_type != blocks::DIRT && previous_type != blocks::GRASS_BLOCK) {
-			return ;
-		}
-		replace_block(useInventory, pos, type, previous_type);
-	} else if (modif == Modif::LITNT) {
-		remove_block(false, pos);
-		_entities.push_back(new Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0.2f, 0.2f, 0.4f}, true, false, {type, 1, {0, 0}}));
+	switch (modif) {
+		case Modif::REMOVE:
+			if (previous_type == blocks::AIR || previous_type == blocks::BEDROCK) { // can't rm bedrock
+				return ;
+			}
+			// std::cout << "remove_block. displayed before " << _displayed_faces << std::endl;
+			remove_block(useInventory, pos);
+		break ;
+		case Modif::ADD:
+			if (type == blocks::WHEAT_CROP && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z - 1] & 0xFF) != blocks::FARMLAND) { // can't place crop on something other than farmland
+				return ;
+			} else if ((previous_type != blocks::AIR && previous_type < blocks::WATER) || type == blocks::AIR) { // can't replace block
+				return ;
+			}
+			// std::cout << "ADD BLOCK " << s_blocks[previous_type]->name << " -> " << s_blocks[type]->name << std::endl;
+			add_block(useInventory, pos, type, previous_type);
+			break ;
+		case Modif::REPLACE:
+			if (type == blocks::DIRT_PATH && pos.z < 254 && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z + 1] & 0xFF) != blocks::AIR) { // can't turn dirt to dirt path if anything above it
+				return ;
+			} else if ((type == blocks::DIRT_PATH || type == blocks::FARMLAND) && previous_type != blocks::DIRT && previous_type != blocks::GRASS_BLOCK) {
+				return ;
+			}
+			replace_block(useInventory, pos, type, previous_type);
+			break ;
+		case Modif::LITNT:
+			remove_block(false, pos);
+			_entities.push_back(new Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0.2f, 0.2f, 0.4f}, true, false, {type, 1, {0, 0}}));
+			break ;
+		case Modif::USE:
+			if (type == blocks::OAK_DOOR) {
+				int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
+				int value = _blocks[offset];
+				value ^= (DOOR::OPEN << 12);
+				_blocks[offset] = value;
+				_added[offset] = value;
+				offset += ((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1;
+				value ^= (DOOR::UPPER_HALF << 12);
+				_blocks[offset] = value;
+				_added[offset] = value;
+			}
+			break ;
 	}
 	if (type == blocks::WATER || type == blocks::BUCKET) {
 		// std::cout << "modif to water with " << ((type == blocks::WATER) ? "water" : "bucket") << std::endl;

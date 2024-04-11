@@ -46,7 +46,7 @@ void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item
 		v2 = {spec + (1 << 17) - (12 << 8), p2};
 		v3 = {spec - 4 - (12 << 8), p3};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-	} else if (item < blocks::POPPY) { // draw block
+	} else if (item < blocks::POPPY && item != blocks::OAK_DOOR) { // draw block
 		glm::vec3 itemFront = glm::normalize(glm::vec3(glm::vec2(_front + _right * 0.5f), 0));
 		glm::vec3 itemRight = glm::normalize(glm::cross(itemFront, _world_up));
 		if (_armAnimation) {

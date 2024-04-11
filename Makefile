@@ -68,6 +68,6 @@ rer: re
 	@./$(NAME)
 
 extrusion:
-	$(CC) $(CPPFLAGS) $(SAN) -I Includes Sources/Extrusion/main.cpp -o extrude $(LINKS)
+	$(CC) $(CPPFLAGS) $(SAN) $(INCLUDES) Sources/Extrusion/main.cpp -o extrude $(LDFLAGS)
 
 .PHONY: all setup cleanLibs clean fclean re run log rer extrusion

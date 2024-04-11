@@ -44,7 +44,7 @@ void UI::add_inventory_elem( int index )
 	int x = (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3;
 	int y = WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3;
 	if (!s_blocks[type]->item3D) {
-		int spec = s_blocks[type]->texX(face_dir::MINUSX, 0) + (s_blocks[type]->texY(face_dir::MINUSX, 0) << 4) + (3 << 19);
+		int spec = s_blocks[type]->texX(face_dir::MINUSX, 2) + (s_blocks[type]->texY(face_dir::MINUSX, 2) << 4) + (3 << 19);
 		// int faceLight = computeLight(row - 1, col, level);
 		int cornerLight = 15;//computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 		int shade = 0;//computeShade(row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});

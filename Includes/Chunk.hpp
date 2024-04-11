@@ -45,7 +45,8 @@ enum Modif {
 	REMOVE,
 	ADD,
 	REPLACE,
-	LITNT
+	LITNT,
+	USE
 };
 
 const GLint adj_blocks[6][3] = {
@@ -152,6 +153,7 @@ class Chunk
 		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
 		void handle_stair_corners( glm::ivec3 pos, int &type );
+		void handle_door_placement( glm::ivec3 pos, int &type );
 		void addFlame( int offset, glm::vec3 pos, int source, int orientation );
 		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 		void replace_block( bool useInventory, glm::ivec3 pos, int type, int previous );

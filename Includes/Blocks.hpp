@@ -27,6 +27,12 @@ enum CORNERS {
 	PP = 0b1000, // +x+y
 };
 
+enum DOOR {
+	UPPER_HALF  = 0b001,
+	RIGHT_HINGE = 0b010,
+	OPEN        = 0b100
+};
+
 namespace blocks {
 	enum {
 		AIR,
@@ -41,6 +47,7 @@ namespace blocks {
 		OAK_STAIRS = 10,
 		OAK_STAIRS_BOTTOM = 10,
 		OAK_STAIRS_TOP,
+		OAK_DOOR,
 		BEDROCK = 16,
 		DIRT,
 		SMOOTH_STONE,
@@ -590,6 +597,81 @@ struct OakStairsTop : Block {
 		}
 };
 
+struct OakDoor : Block {
+	public:
+		OakDoor() {
+			name = "OAK_DOOR";
+			mined = blocks::OAK_DOOR;
+			blast_resistance = 3.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			orientedCollisionHitbox = true;
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 3.0f;
+			item3D = false;
+		}
+		// offset is bool half or 2 if item
+		virtual int texX( face_dir dir, int offset ) const {
+			(void)dir;
+			return ((offset == 2) ? 9 : 0);
+		}
+		virtual int texY( face_dir dir, int offset ) const {
+			switch (dir) {
+				case face_dir::PLUSZ:
+					return (10);
+				case face_dir::MINUSZ:
+					return (11);
+				default:
+					return ((offset == 2) ? 14 : 11 - (offset & DOOR::UPPER_HALF));
+			}
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			switch (orientation) {
+				case face_dir::MINUSX:
+					if (!(bitfield & DOOR::OPEN)) {
+						hitbox[0] = {0.90625f, 0.5f, 0.5f};
+						hitbox[1] = {0.09375f, 0.5f, 0.5f};
+					} else {
+						hitbox[0] = {0.5f, (bitfield & DOOR::RIGHT_HINGE) ? 0.09375f : 0.90625f, 0.5f};
+						hitbox[1] = {0.5f, 0.09375f, 0.5f};
+					}
+					break ;
+				case face_dir::PLUSX:
+					if (!(bitfield & DOOR::OPEN)) {
+						hitbox[0] = {0.09375f, 0.5f, 0.5f};
+						hitbox[1] = {0.09375f, 0.5f, 0.5f};
+					} else {
+						hitbox[0] = {0.5f, (bitfield & DOOR::RIGHT_HINGE) ? 0.90625f : 0.09375f, 0.5f};
+						hitbox[1] = {0.5f, 0.09375f, 0.5f};
+					}
+					break ;
+				case face_dir::MINUSY:
+					if (!(bitfield & DOOR::OPEN)) {
+						hitbox[0] = {0.5f, 0.90625f, 0.5f};
+						hitbox[1] = {0.5f, 0.09375f, 0.5f};
+					} else {
+						hitbox[0] = {(bitfield & DOOR::RIGHT_HINGE) ? 0.90625f : 0.09375f, 0.5f, 0.5f};
+						hitbox[1] = {0.09375f, 0.5f, 0.5f};
+					}
+					break ;
+				case face_dir::PLUSY:
+					if (!(bitfield & DOOR::OPEN)) {
+						hitbox[0] = {0.5f, 0.09375f, 0.5f};
+						hitbox[1] = {0.5f, 0.09375f, 0.5f};
+					} else {
+						hitbox[0] = {(bitfield & DOOR::RIGHT_HINGE) ? 0.09375f : 0.90625f, 0.5f, 0.5f};
+						hitbox[1] = {0.09375f, 0.5f, 0.5f};
+					}
+					break ;
+			}
+		}
+};
+
 struct Bedrock : Block {
 	public:
 		Bedrock() {
@@ -1126,7 +1208,7 @@ struct WheatCrop : Block {
 			item3D = false;
 			textureX = 7;
 		}
-		virtual int texY(  face_dir dir, int offset ) const {
+		virtual int texY(  face_dir dir, int offset = 0 ) const {
 			(void)dir;
 			return (offset);
 		}
