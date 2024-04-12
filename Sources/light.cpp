@@ -1091,7 +1091,7 @@ void Chunk::fill_vertex_array( void )
 						switch (orientation) {
 							case face_dir::MINUSX:
 								spec = s_blocks[type]->texX(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) + (s_blocks[type]->texY(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 4) + (3 << 19);
-								faceLight = computeLight(row - 1, col, level);
+								faceLight = computeLight(row, col, level);
 								shade = 0;
 								spec += (faceLight << 24);
 								v0 = {spec + (shade << 22) + xtex_r, p4 + glm::vec3(0.8125f, 0, 0)};
@@ -1165,7 +1165,7 @@ void Chunk::fill_vertex_array( void )
 									face_vertices(_vertices, v0, v1, v2, v3);
 								}
 								spec = s_blocks[type]->texX(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) + (s_blocks[type]->texY(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 4) + (4 << 19);
-								faceLight = computeLight(row + 1, col, level);
+								faceLight = computeLight(row, col, level);
 								spec += (faceLight << 24);
 								v0 = {spec + (shade << 22) + xtex_l, p1 - glm::vec3(0.8125f, 0, 0)};
 								v1 = {spec + (shade << 22) + xtex_r, p5 - glm::vec3(0.8125f, 0, 0)};
@@ -1238,7 +1238,7 @@ void Chunk::fill_vertex_array( void )
 									face_vertices(_vertices, v0, v1, v2, v3);
 								}
 								spec = s_blocks[type]->texX(face_dir::MINUSY, bitfield & DOOR::UPPER_HALF) + (s_blocks[type]->texY(face_dir::MINUSY, bitfield & DOOR::UPPER_HALF) << 4) + (1 << 19);
-								faceLight = computeLight(row, col - 1, level);
+								faceLight = computeLight(row, col, level);
 								spec += (faceLight << 24);
 								v0 = {spec + (shade << 22) + xtex_r, p0 + glm::vec3(0, 0.8125f, 0)};
 								v1 = {spec + (shade << 22) + xtex_l, p1 + glm::vec3(0, 0.8125f, 0)};
@@ -1311,7 +1311,7 @@ void Chunk::fill_vertex_array( void )
 									face_vertices(_vertices, v0, v1, v2, v3);
 								}
 								spec = s_blocks[type]->texX(face_dir::PLUSY, bitfield & DOOR::UPPER_HALF) + (s_blocks[type]->texY(face_dir::PLUSY, bitfield & DOOR::UPPER_HALF) << 4) + (2 << 19);
-								faceLight = computeLight(row, col + 1, level);
+								faceLight = computeLight(row, col, level);
 								spec += (faceLight << 24);
 								v0 = {spec + (shade << 22) + xtex_l, p5 - glm::vec3(0, 0.8125f, 0)};
 								v1 = {spec + (shade << 22) + xtex_r, p4 - glm::vec3(0, 0.8125f, 0)};
@@ -1732,6 +1732,287 @@ void Chunk::fill_vertex_array( void )
 
 
 
+					} else if (type == blocks::OAK_FENCE) {
+						shade = 0;
+						// central pole
+						int baseSpec = s_blocks[type]->texX(face_dir::PLUSZ, FENCE::BASE) + (s_blocks[type]->texY() << 4);
+						faceLight = computeLight(row, col, level);
+						spec = baseSpec + (3 << 19);
+						spec += (faceLight << 24);
+						v0 = {spec + (shade << 22), p4 + glm::vec3(0.375f, 0, 0)};
+						v1 = {spec + (shade << 22) + XTEX, p0 + glm::vec3(0.375f, 0, 0)};
+						v2 = {spec + (shade << 22) + YTEX, p6 + glm::vec3(0.375f, 0, 0)};
+						v3 = {spec + (shade << 22) + XTEX + YTEX, p2 + glm::vec3(0.375f, 0, 0)};
+						face_vertices(_vertices, v0, v1, v2, v3);
+						spec = baseSpec + (4 << 19);
+						spec += (faceLight << 24);
+						v0 = {spec + (shade << 22), p1 - glm::vec3(0.375f, 0, 0)};
+						v1 = {spec + (shade << 22) + XTEX, p5 - glm::vec3(0.375f, 0, 0)};
+						v2 = {spec + (shade << 22) + YTEX, p3 - glm::vec3(0.375f, 0, 0)};
+						v3 = {spec + (shade << 22) + XTEX + YTEX, p7 - glm::vec3(0.375f, 0, 0)};
+						face_vertices(_vertices, v0, v1, v2, v3);
+						spec = baseSpec + (1 << 19);
+						spec += (faceLight << 24);
+						v0 = {spec + (shade << 22), p0 + glm::vec3(0, 0.375f, 0)};
+						v1 = {spec + (shade << 22) + XTEX, p1 + glm::vec3(0, 0.375f, 0)};
+						v2 = {spec + (shade << 22) + YTEX, p2 + glm::vec3(0, 0.375f, 0)};
+						v3 = {spec + (shade << 22) + XTEX + YTEX, p3 + glm::vec3(0, 0.375f, 0)};
+						face_vertices(_vertices, v0, v1, v2, v3);
+						spec = baseSpec + (2 << 19);
+						spec += (faceLight << 24);
+						v0 = {spec + (shade << 22), p5 - glm::vec3(0, 0.375f, 0)};
+						v1 = {spec + (shade << 22) + XTEX, p4 - glm::vec3(0, 0.375f, 0)};
+						v2 = {spec + (shade << 22) + YTEX, p7 - glm::vec3(0, 0.375f, 0)};
+						v3 = {spec + (shade << 22) + XTEX + YTEX, p6 - glm::vec3(0, 0.375f, 0)};
+						face_vertices(_vertices, v0, v1, v2, v3);
+						if (visible_face(type, getBlockAt(row, col, level + 1, true), face_dir::PLUSZ)) {
+							spec = baseSpec + (0 << 19);
+							faceLight = computeLight(row, col, level + 1);
+							spec += (faceLight << 24);
+							v0 = {spec + (6 << 8) + (shade << 22), p4 - glm::vec3(0, 0.375f, 0)};
+							v1 = {spec + (6 << 8) + (shade << 22) + XTEX, p5 - glm::vec3(0, 0.375f, 0)};
+							v2 = {spec - (1 << 4) + (10 << 8) + (shade << 22) + YTEX, p0 + glm::vec3(0, 0.375f, 0)};
+							v3 = {spec - (1 << 4) + (10 << 8) + (shade << 22) + XTEX + YTEX, p1 + glm::vec3(0, 0.375f, 0)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+						}
+						if (visible_face(type, getBlockAt(row, col, level - 1, true), face_dir::MINUSZ)) {
+							spec = baseSpec + (5 << 19);
+							faceLight = computeLight(row, col, level - 1);
+							spec += (faceLight << 24);
+							v0 = {spec + (6 << 8) + (shade << 22), p2 + glm::vec3(0, 0.375f, 0)};
+							v1 = {spec + (6 << 8) + (shade << 22) + XTEX, p3 + glm::vec3(0, 0.375f, 0)};
+							v2 = {spec - (1 << 4) + (10 << 8) + (shade << 22) + YTEX, p6 - glm::vec3(0, 0.375f, 0)};
+							v3 = {spec - (1 << 4) + (10 << 8) + (shade << 22) + XTEX + YTEX, p7 - glm::vec3(0, 0.375f, 0)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+						}
+						// arms
+						if ((block_value >> 12) & FENCE::MX) {
+							if (visible_face(type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)) {
+								spec = s_blocks[type]->texX(face_dir::MINUSX, FENCE::ARM_END) + (s_blocks[type]->texY() << 4) + (3 << 19);
+								faceLight = computeLight(row - 1, col, level);
+								spec += (faceLight << 24);
+								v0 = {spec + (shade << 22), p4};
+								v1 = {spec + (shade << 22) + XTEX, p0};
+								v2 = {spec + (shade << 22) + YTEX, p6};
+								v3 = {spec + (shade << 22) + XTEX + YTEX, p2};
+								face_vertices(_vertices, v0, v1, v2, v3);
+							}
+							baseSpec = s_blocks[type]->texX(face_dir::PLUSZ, FENCE::ARM) + (s_blocks[type]->texY() << 4);
+							faceLight = computeLight(row, col, level);
+							spec = baseSpec + (1 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (shade << 22), p0 + glm::vec3(0, 0.4375f, 0)};
+							v1 = {spec + (shade << 22) + XTEX, p1 + glm::vec3(0, 0.4375f, 0)};
+							v2 = {spec + (shade << 22) + YTEX, p2 + glm::vec3(0, 0.4375f, 0)};
+							v3 = {spec + (shade << 22) + XTEX + YTEX, p3 + glm::vec3(0, 0.4375f, 0)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							spec = baseSpec + (2 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (shade << 22) + XTEX, p5 - glm::vec3(0, 0.4375f, 0)};
+							v1 = {spec + (shade << 22), p4 - glm::vec3(0, 0.4375f, 0)};
+							v2 = {spec + (shade << 22) + XTEX + YTEX, p7 - glm::vec3(0, 0.4375f, 0)};
+							v3 = {spec + (shade << 22) + YTEX, p6 - glm::vec3(0, 0.4375f, 0)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// top of top arm
+							spec = baseSpec + (0 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (7 << 8) + (shade << 22), p4 - glm::vec3(0, 0.4375f, 0.0625f)};
+							v1 = {spec + (7 << 8) + (shade << 22) + XTEX, p5 - glm::vec3(0, 0.4375f, 0.0625f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p0 + glm::vec3(0, 0.4375f, -0.0625f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p1 + glm::vec3(0, 0.4375f, -0.0625f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// top of bottom arm
+							v0 = {spec + (7 << 8) + (shade << 22), p4 - glm::vec3(0, 0.4375f, 0.4375f)};
+							v1 = {spec + (7 << 8) + (shade << 22) + XTEX, p5 - glm::vec3(0, 0.4375f, 0.4375f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p0 + glm::vec3(0, 0.4375f, -0.4375f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p1 + glm::vec3(0, 0.4375f, -0.4375f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// bottom of top arm
+							spec = baseSpec + (5 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (7 << 8) + (shade << 22), p2 + glm::vec3(0, 0.4375f, 0.75f)};
+							v1 = {spec + (7 << 8) + (shade << 22) + XTEX, p3 + glm::vec3(0, 0.4375f, 0.75f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p6 - glm::vec3(0, 0.4375f, -0.75f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p7 - glm::vec3(0, 0.4375f, -0.75f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// bottom of bottom arm
+							v0 = {spec + (7 << 8) + (shade << 22), p2 + glm::vec3(0, 0.4375f, 0.375f)};
+							v1 = {spec + (7 << 8) + (shade << 22) + XTEX, p3 + glm::vec3(0, 0.4375f, 0.375f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p6 - glm::vec3(0, 0.4375f, -0.375f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p7 - glm::vec3(0, 0.4375f, -0.375f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+						}
+						if ((block_value >> 12) & FENCE::PX) {
+							if (visible_face(type, getBlockAt(row + 1, col, level, true), face_dir::PLUSX)) {
+								spec = s_blocks[type]->texX(face_dir::PLUSX, FENCE::ARM_END) + (s_blocks[type]->texY() << 4) + (3 << 19);
+								faceLight = computeLight(row + 1, col, level);
+								spec += (faceLight << 24);
+								v0 = {spec + (shade << 22), p1};
+								v1 = {spec + (shade << 22) + XTEX, p5};
+								v2 = {spec + (shade << 22) + YTEX, p3};
+								v3 = {spec + (shade << 22) + XTEX + YTEX, p7};
+								face_vertices(_vertices, v0, v1, v2, v3);
+							}
+							baseSpec = s_blocks[type]->texX(face_dir::PLUSZ, FENCE::ARM) + (s_blocks[type]->texY() << 4);
+							faceLight = computeLight(row, col, level);
+							spec = baseSpec + (1 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (shade << 22) + XTEX, p0 + glm::vec3(0, 0.4375f, 0)};
+							v1 = {spec + (shade << 22), p1 + glm::vec3(0, 0.4375f, 0)};
+							v2 = {spec + (shade << 22) + XTEX + YTEX, p2 + glm::vec3(0, 0.4375f, 0)};
+							v3 = {spec + (shade << 22) + YTEX, p3 + glm::vec3(0, 0.4375f, 0)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							spec = baseSpec + (2 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (shade << 22), p5 - glm::vec3(0, 0.4375f, 0)};
+							v1 = {spec + (shade << 22) + XTEX, p4 - glm::vec3(0, 0.4375f, 0)};
+							v2 = {spec + (shade << 22) + YTEX, p7 - glm::vec3(0, 0.4375f, 0)};
+							v3 = {spec + (shade << 22) + XTEX + YTEX, p6 - glm::vec3(0, 0.4375f, 0)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// top of top arm
+							spec = baseSpec + (0 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (7 << 8) + (shade << 22) + XTEX, p4 - glm::vec3(0, 0.4375f, 0.0625f)};
+							v1 = {spec + (7 << 8) + (shade << 22), p5 - glm::vec3(0, 0.4375f, 0.0625f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p0 + glm::vec3(0, 0.4375f, -0.0625f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p1 + glm::vec3(0, 0.4375f, -0.0625f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// top of bottom arm
+							v0 = {spec + (7 << 8) + (shade << 22) + XTEX, p4 - glm::vec3(0, 0.4375f, 0.4375f)};
+							v1 = {spec + (7 << 8) + (shade << 22), p5 - glm::vec3(0, 0.4375f, 0.4375f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p0 + glm::vec3(0, 0.4375f, -0.4375f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p1 + glm::vec3(0, 0.4375f, -0.4375f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// bottom of top arm
+							spec = baseSpec + (5 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (7 << 8) + (shade << 22) + XTEX, p2 + glm::vec3(0, 0.4375f, 0.75f)};
+							v1 = {spec + (7 << 8) + (shade << 22), p3 + glm::vec3(0, 0.4375f, 0.75f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p6 - glm::vec3(0, 0.4375f, -0.75f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p7 - glm::vec3(0, 0.4375f, -0.75f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// bottom of bottom arm
+							v0 = {spec + (7 << 8) + (shade << 22) + XTEX, p2 + glm::vec3(0, 0.4375f, 0.375f)};
+							v1 = {spec + (7 << 8) + (shade << 22), p3 + glm::vec3(0, 0.4375f, 0.375f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p6 - glm::vec3(0, 0.4375f, -0.375f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p7 - glm::vec3(0, 0.4375f, -0.375f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+						}
+						if ((block_value >> 12) & FENCE::MY) {
+							if (visible_face(type, getBlockAt(row, col - 1, level, true), face_dir::MINUSY)) {
+								spec = s_blocks[type]->texX(face_dir::MINUSY, FENCE::ARM_END) + (s_blocks[type]->texY() << 4) + (1 << 19);
+								faceLight = computeLight(row, col - 1, level);
+								spec += (faceLight << 24);
+								v0 = {spec + (shade << 22), p0};
+								v1 = {spec + (shade << 22) + XTEX, p1};
+								v2 = {spec + (shade << 22) + YTEX, p2};
+								v3 = {spec + (shade << 22) + XTEX + YTEX, p3};
+								face_vertices(_vertices, v0, v1, v2, v3);
+							}
+							baseSpec = s_blocks[type]->texX(face_dir::PLUSZ, FENCE::ARM) + (s_blocks[type]->texY() << 4);
+							faceLight = computeLight(row, col, level);
+							spec = baseSpec + (3 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (shade << 22) + XTEX, p4 + glm::vec3(0.4375f, 0, 0)};
+							v1 = {spec + (shade << 22), p0 + glm::vec3(0.4375f, 0, 0)};
+							v2 = {spec + (shade << 22) + XTEX + YTEX, p6 + glm::vec3(0.4375f, 0, 0)};
+							v3 = {spec + (shade << 22) + YTEX, p2+ glm::vec3(0.4375f, 0, 0)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							spec = baseSpec + (4 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (shade << 22), p1 - glm::vec3(0.4375f, 0, 0)};
+							v1 = {spec + (shade << 22) + XTEX, p5 - glm::vec3(0.4375f, 0, 0)};
+							v2 = {spec + (shade << 22) + YTEX, p3 - glm::vec3(0.4375f, 0, 0)};
+							v3 = {spec + (shade << 22) + XTEX + YTEX, p7 - glm::vec3(0.4375f, 0, 0)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// top of top arm
+							spec = baseSpec + (0 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (7 << 8) + (shade << 22), p0 + glm::vec3(0.4375f, 0, -0.0625f)};
+							v1 = {spec + (7 << 8) + (shade << 22) + XTEX, p4 + glm::vec3(0.4375f, 0, -0.0625f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p1 - glm::vec3(0.4375f, 0, 0.0625f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p5 - glm::vec3(0.4375f, 0, 0.0625f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// top of bottom arm
+							v0 = {spec + (7 << 8) + (shade << 22), p0 + glm::vec3(0.4375f, 0, -0.4375f)};
+							v1 = {spec + (7 << 8) + (shade << 22) + XTEX, p4 + glm::vec3(0.4375f, 0, -0.4375f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p1 - glm::vec3(0.4375f, 0, 0.4375f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p5 - glm::vec3(0.4375f, 0, 0.4375f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// bottom of top arm
+							spec = baseSpec + (5 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (7 << 8) + (shade << 22) + XTEX, p6 + glm::vec3(0.4375f, 0, 0.75f)};
+							v1 = {spec + (7 << 8) + (shade << 22), p2 + glm::vec3(0.4375f, 0, 0.75f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p7 - glm::vec3(0.4375f, 0, -0.75f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p3 - glm::vec3(0.4375f, 0, -0.75f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// bottom of bottom arm
+							v0 = {spec + (7 << 8) + (shade << 22) + XTEX, p6 + glm::vec3(0.4375f, 0, 0.375f)};
+							v1 = {spec + (7 << 8) + (shade << 22), p2 + glm::vec3(0.4375f, 0, 0.375f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p7 - glm::vec3(0.4375f, 0, -0.375f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p3 - glm::vec3(0.4375f, 0, -0.375f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+						}
+						if ((block_value >> 12) & FENCE::PY) {
+							if (visible_face(type, getBlockAt(row, col + 1, level, true), face_dir::PLUSY)) {
+								spec = s_blocks[type]->texX(face_dir::PLUSY, FENCE::ARM_END) + (s_blocks[type]->texY() << 4) + (2 << 19);
+								faceLight = computeLight(row, col + 1, level);
+								spec += (faceLight << 24);
+								v0 = {spec + (shade << 22), p5};
+								v1 = {spec + (shade << 22) + XTEX, p4};
+								v2 = {spec + (shade << 22) + YTEX, p7};
+								v3 = {spec + (shade << 22) + XTEX + YTEX, p6};
+								face_vertices(_vertices, v0, v1, v2, v3);
+							}
+							baseSpec = s_blocks[type]->texX(face_dir::PLUSZ, FENCE::ARM) + (s_blocks[type]->texY() << 4);
+							faceLight = computeLight(row, col, level);
+							spec = baseSpec + (3 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (shade << 22), p4 + glm::vec3(0.4375f, 0, 0)};
+							v1 = {spec + (shade << 22) + XTEX, p0 + glm::vec3(0.4375f, 0, 0)};
+							v2 = {spec + (shade << 22) + YTEX, p6 + glm::vec3(0.4375f, 0, 0)};
+							v3 = {spec + (shade << 22) + XTEX + YTEX, p2+ glm::vec3(0.4375f, 0, 0)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							spec = baseSpec + (4 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (shade << 22) + XTEX, p1 - glm::vec3(0.4375f, 0, 0)};
+							v1 = {spec + (shade << 22), p5 - glm::vec3(0.4375f, 0, 0)};
+							v2 = {spec + (shade << 22) + XTEX + YTEX, p3 - glm::vec3(0.4375f, 0, 0)};
+							v3 = {spec + (shade << 22) + YTEX, p7 - glm::vec3(0.4375f, 0, 0)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// top of top arm
+							spec = baseSpec + (0 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (7 << 8) + (shade << 22) + XTEX, p0 + glm::vec3(0.4375f, 0, -0.0625f)};
+							v1 = {spec + (7 << 8) + (shade << 22), p4 + glm::vec3(0.4375f, 0, -0.0625f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p1 - glm::vec3(0.4375f, 0, 0.0625f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p5 - glm::vec3(0.4375f, 0, 0.0625f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// top of bottom arm
+							v0 = {spec + (7 << 8) + (shade << 22) + XTEX, p0 + glm::vec3(0.4375f, 0, -0.4375f)};
+							v1 = {spec + (7 << 8) + (shade << 22), p4 + glm::vec3(0.4375f, 0, -0.4375f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p1 - glm::vec3(0.4375f, 0, 0.4375f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p5 - glm::vec3(0.4375f, 0, 0.4375f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// bottom of top arm
+							spec = baseSpec + (5 << 19);
+							spec += (faceLight << 24);
+							v0 = {spec + (7 << 8) + (shade << 22), p6 + glm::vec3(0.4375f, 0, 0.75f)};
+							v1 = {spec + (7 << 8) + (shade << 22) + XTEX, p2 + glm::vec3(0.4375f, 0, 0.75f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p7 - glm::vec3(0.4375f, 0, -0.75f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p3 - glm::vec3(0.4375f, 0, -0.75f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+							// bottom of bottom arm
+							v0 = {spec + (7 << 8) + (shade << 22), p6 + glm::vec3(0.4375f, 0, 0.375f)};
+							v1 = {spec + (7 << 8) + (shade << 22) + XTEX, p2 + glm::vec3(0.4375f, 0, 0.375f)};
+							v2 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + YTEX, p7 - glm::vec3(0.4375f, 0, -0.375f)};
+							v3 = {spec - (1 << 4) + (9 << 8) + (shade << 22) + XTEX + YTEX, p3 - glm::vec3(0.4375f, 0, -0.375f)};
+							face_vertices(_vertices, v0, v1, v2, v3);
+						}
+
+
+
 					} else if (type < blocks::POPPY) {
 						int offset = 0;
 						int orientation = -1, litFurnace = 0;
@@ -2072,7 +2353,10 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 		}
 	} else {
 		int type = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] & 0xFF;
-		if (air_flower(type, false, true, true) && type != blocks::OAK_SLAB_BOTTOM && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
+		// if (air_flower(type, false, true, true) && type != blocks::OAK_SLAB_BOTTOM && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
+		// 	return ;
+		// }
+		if (!s_blocks[type]->transparent) {
 			return ;
 		}
 		short neighbour = (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] >> (8 * skySpread));

@@ -92,6 +92,7 @@ DONE:
 	- stairs
 	- doors
 	- trapdoors
+	- fences
     - items on ground after break
 	- item number color/placement/size in ingame menus
     - fix fall going through blocks + fix jump into block above head
@@ -274,3 +275,4 @@ Some info:
 	- stairs 0x7 << 9 == orientation, 0xF << 12 == corners
 	- doors 0x7 << 9 == orientation, 0x1000 == half, 0x2000 == hinge, 0x4000 == open
 	- trapdoors 0x7 << 9 == orientation, 0x1000 == half, 0x4000 == open
+	- fence 0xF << 12 == 'arms'

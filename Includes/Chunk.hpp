@@ -16,7 +16,6 @@ class Camera;
 # include "Particle.hpp"
 
 # define SEA_LEVEL 64
-// # define CHUNK_SIZE 16 in utils
 # define LIGHT_RECURSE 32
 # define CHUNK_SHIFT 4
 # define WORLD_HEIGHT 256
@@ -154,6 +153,7 @@ class Chunk
 		void remove_block( bool useInventory, glm::ivec3 pos );
 		void handle_stair_corners( glm::ivec3 pos, int &type );
 		void handle_door_placement( glm::ivec3 pos, int &type );
+		void handle_fence_placement( glm::ivec3 pos, int &type );
 		void addFlame( int offset, glm::vec3 pos, int source, int orientation );
 		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 		void replace_block( bool useInventory, glm::ivec3 pos, int type, int previous );

@@ -52,7 +52,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		int value = chunk->isHit(i);
-		// if ((value & 0xFF) == blocks::OAK_TRAPDOOR) {
+		// if ((value & 0xFF) == blocks::OAK_FENCE) {
 		// 	_ui->chatMessage("orientation " + std::to_string((value >> 9) & 0x7)
 		// 		+ " bitfield " + std::to_string(value >> 12));
 		// }

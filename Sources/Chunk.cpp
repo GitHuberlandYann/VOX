@@ -658,6 +658,26 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 					std::cout << "rm adj torch" << std::endl;
 					remove_block(useInventory, {pos.x + delta[0], pos.y + delta[1], pos.z + delta[2]});
 				}
+				if ((adj & 0xFF) == blocks::OAK_FENCE) {
+					switch (index) {
+						case face_dir::MINUSX:
+							_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::PX << 12);
+							_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::PX << 12);
+							break ;
+						case face_dir::PLUSX:
+							_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::MX << 12);
+							_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::MX << 12);
+							break ;
+						case face_dir::MINUSY:
+							_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::PY << 12);
+							_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::PY << 12);
+							break ;
+						case face_dir::PLUSY:
+							_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::MY << 12);
+							_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::MY << 12);
+							break ;
+					}
+				}
 			}
 		}
 	}
@@ -891,6 +911,27 @@ void Chunk::handle_door_placement( glm::ivec3 pos, int &type )
 		type = blocks::AIR;
 		return ;
 	}
+	// TODO DOOR::RIGHT_HINGE
+}
+
+void Chunk::handle_fence_placement( glm::ivec3 pos, int &type )
+{
+	int next = getBlockAt(pos.x - 1, pos.y, pos.z, true);
+	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == blocks::OAK_FENCE) {
+		type |= (FENCE::MX << 12);
+	}
+	next = getBlockAt(pos.x + 1, pos.y, pos.z, true);
+	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == blocks::OAK_FENCE) {
+		type |= (FENCE::PX << 12);
+	}
+	next = getBlockAt(pos.x, pos.y - 1, pos.z, true);
+	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == blocks::OAK_FENCE) {
+		type |= (FENCE::MY << 12);
+	}
+	next = getBlockAt(pos.x, pos.y + 1, pos.z, true);
+	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == blocks::OAK_FENCE) {
+		type |= (FENCE::PY << 12);
+	}
 }
 
 void Chunk::addFlame( int offset, glm::vec3 pos, int source, int orientation )
@@ -980,6 +1021,8 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 				}
 				break ;
 		}
+	} else if (type == blocks::OAK_FENCE) {
+		handle_fence_placement(pos, type);
 	} else if (type >= blocks::POPPY && pos.z > 0) {
 		if (previous >= blocks::WATER) {
 			return ;
@@ -1045,6 +1088,26 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 			if (adj > blocks::AIR && adj < blocks::WATER && !face_count(adj, pos.x + delta[0], pos.y + delta[1], pos.z + delta[2])) {
 				// was exposed before, but isn't anymore
 				_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] += blocks::NOTVISIBLE;
+			}
+			if ((adj & 0xFF) == blocks::OAK_FENCE) {
+				switch (index) {
+					case face_dir::MINUSX:
+						_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::PX << 12);
+						_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::PX << 12);
+						break ;
+					case face_dir::PLUSX:
+						_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::MX << 12);
+						_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::MX << 12);
+						break ;
+					case face_dir::MINUSY:
+						_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::PY << 12);
+						_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::PY << 12);
+						break ;
+					case face_dir::PLUSY:
+						_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::MY << 12);
+						_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::MY << 12);
+						break ;
+				}
 			}
 		}
 	}
@@ -1399,7 +1462,7 @@ void Chunk::checkFillVertices( void )
 					for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
 						if (!(_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xF000)) {
 							int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-							if (!air_flower(value, false, true, true)) { // underground hole
+							if (s_blocks[value & 0xFF]->transparent) { // underground hole
 								// spread_light TODO watch out for leaves and water light damping..
 								light_spread(row, col, level, true);
 							}
@@ -1874,6 +1937,26 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 		if (type >= blocks::WATER) {
 			return ;
 		}
+		if ((value & 0xFF) == blocks::OAK_FENCE) {
+			switch (origin) {
+				case face_dir::MINUSX:
+					_blocks[offset] |= (FENCE::MX << 12);
+					_added[offset] |= (FENCE::MX << 12);
+					break ;
+				case face_dir::PLUSX:
+					_blocks[offset] |= (FENCE::PX << 12);
+					_added[offset] |= (FENCE::PX << 12);
+					break ;
+				case face_dir::MINUSY:
+					_blocks[offset] |= (FENCE::MY << 12);
+					_added[offset] |= (FENCE::MY << 12);
+					break ;
+				case face_dir::PLUSY:
+					_blocks[offset] |= (FENCE::PY << 12);
+					_added[offset] |= (FENCE::PY << 12);
+					break ;
+			}
+		}
 		if (!air_flower(type, true, true, false) || !air_flower(value, false, false, false)) {
 			// std::cout << "took jump" << std::endl;
 			goto FILL; // this is only to update face shading TODO only update concerned faces
@@ -1892,6 +1975,26 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 		if ((value & 0xFF) >= blocks::WATER) {
 			_hasWater = true;
 			_fluids.insert(offset);
+		}
+		if ((value & 0xFF) == blocks::OAK_FENCE) {
+			switch (origin) {
+				case face_dir::MINUSX:
+					_blocks[offset] ^= (FENCE::MX << 12);
+					_added[offset] ^= (FENCE::MX << 12);
+					break ;
+				case face_dir::PLUSX:
+					_blocks[offset] ^= (FENCE::PX << 12);
+					_added[offset] ^= (FENCE::PX << 12);
+					break ;
+				case face_dir::MINUSY:
+					_blocks[offset] ^= (FENCE::MY << 12);
+					_added[offset] ^= (FENCE::MY << 12);
+					break ;
+				case face_dir::PLUSY:
+					_blocks[offset] ^= (FENCE::PY << 12);
+					_added[offset] ^= (FENCE::PY << 12);
+					break ;
+			}
 		}
 		if (type >= blocks::WATER) {
 			return ;

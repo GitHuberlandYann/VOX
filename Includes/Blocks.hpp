@@ -27,6 +27,16 @@ enum CORNERS {
 	PP = 0b1000, // +x+y
 };
 
+enum FENCE {
+	MY = 0b0001, // -y
+	PY = 0b0010, // +y
+	MX = 0b0100, // -x
+	PX = 0b1000, // +x
+	BASE,
+	ARM,
+	ARM_END,
+};
+
 enum DOOR {
 	UPPER_HALF  = 0b001,
 	RIGHT_HINGE = 0b010,
@@ -70,6 +80,7 @@ namespace blocks {
 		OAK_SLAB = 40,
 		OAK_SLAB_BOTTOM = 40,
 		OAK_SLAB_TOP,
+		OAK_FENCE,
 		POPPY = 48,
 		DANDELION,
 		BLUE_ORCHID,
@@ -1033,6 +1044,70 @@ struct OakSlabTop : Block {
 			transparent = true;
 			textureX = 4;
 			textureY = 10;
+		}
+};
+
+struct OakFence : Block {
+	public:
+		OakFence() {
+			name = "OAK_FENCE";
+			mined = blocks::OAK_FENCE;
+			blast_resistance = 3.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			orientedCollisionHitbox = true;
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 2.0f;
+			transparent = true;
+			textureY = 12;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			(void)dir;
+			switch (offset) {
+				case FENCE::BASE:
+					return (0);
+				case FENCE::ARM:
+					return (2);
+				case FENCE::ARM_END:
+					return (1);
+			}
+			return (0);
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			(void)orientation;
+			hitbox[0] = {0.5f, 0.5f, 0.5f};
+			hitbox[1] = {0.125f, 0.125f, 0.5f};
+			switch (bitfield & (FENCE::MX | FENCE::PX)) {
+				case FENCE::MX:
+					hitbox[0].x = 0.375f;
+					hitbox[1].x = 0.375f;
+					break ;
+				case FENCE::PX:
+					hitbox[0].x = 1 - 0.375f;
+					hitbox[1].x = 0.375f;
+					break ;
+				case FENCE::MX | FENCE::PX:
+					hitbox[1].x = 0.5f;
+					break ;
+			}
+			switch (bitfield & (FENCE::MY | FENCE::PY)) {
+				case FENCE::MY:
+					hitbox[0].y = 0.375f;
+					hitbox[1].y = 0.375f;
+					break ;
+				case FENCE::PY:
+					hitbox[0].y = 1 - 0.375f;
+					hitbox[1].y = 0.375f;
+					break ;
+				case FENCE::MY | FENCE::PY:
+					hitbox[1].y = 0.5f;
+					break ;
+			}
 		}
 };
 

@@ -9,7 +9,7 @@ class FurnaceInstance;
 class ChestInstance;
 
 # define IRECEIPT_SIZE 25
-# define RECEIPT_SIZE 94
+# define RECEIPT_SIZE 96
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
@@ -81,7 +81,9 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_DOOR, 3},
 	{blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_DOOR, 3},
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_TRAPDOOR, 2},
-	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_TRAPDOOR, 2},
+	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_TRAPDOOR, 2},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::STICK, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::STICK, blocks::OAK_PLANKS, blocks::OAK_FENCE, 3},
+	{blocks::OAK_PLANKS, blocks::STICK, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::STICK, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_FENCE, 3},
 
 	{blocks::WHEAT, blocks::WHEAT, blocks::WHEAT, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::BREAD, 1},
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::WHEAT, blocks::WHEAT, blocks::WHEAT, blocks::AIR, blocks::AIR, blocks::AIR, blocks::BREAD, 1},

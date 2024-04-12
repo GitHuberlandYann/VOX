@@ -309,7 +309,7 @@ bool visible_face( int value, int next, face_dir dir )
 		return (false);
 	}
 	if (next == blocks::AIR || next == blocks::OAK_DOOR || next == blocks::OAK_TRAPDOOR
-		|| (value != blocks::GLASS && next == blocks::GLASS)) {
+		|| ((next == blocks::GLASS || next == blocks::OAK_FENCE) && value != next)) {
 		return (true);
 	}
 	if (next == blocks::OAK_LEAVES && (value != blocks::OAK_LEAVES
