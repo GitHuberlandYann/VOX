@@ -52,11 +52,9 @@ t_hit OpenGL_Manager::get_block_hit( void )
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		int value = chunk->isHit(i);
-		// if ((value & 0xFF) == blocks::OAK_STAIRS_TOP) {
-		// 	_ui->chatMessage("hit stair MM " + std::to_string((value >> 12) & CORNERS::MM)
-		// 		+ " MP " + std::to_string((value >> 12) & CORNERS::MP)
-		// 		+ " PM " + std::to_string((value >> 12) & CORNERS::PM)
-		// 		+ " PP " + std::to_string((value >> 12) & CORNERS::PP));
+		// if ((value & 0xFF) == blocks::OAK_TRAPDOOR) {
+		// 	_ui->chatMessage("orientation " + std::to_string((value >> 9) & 0x7)
+		// 		+ " bitfield " + std::to_string(value >> 12));
 		// }
 		int type = value & 0xFF;
 		if (type == blocks::WATER) {
@@ -132,9 +130,9 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
 		}
 		return ;
-	} else if (_block_hit.value == blocks::OAK_DOOR) {
+	} else if (_block_hit.value == blocks::OAK_DOOR || _block_hit.value == blocks::OAK_TRAPDOOR) {
 		if (current_chunk_ptr) {
-			current_chunk_ptr->handleHit(false, blocks::OAK_DOOR, _block_hit.pos, Modif::USE);
+			current_chunk_ptr->handleHit(false, _block_hit.value, _block_hit.pos, Modif::USE);
 		}
 		return ;
 	}
@@ -170,7 +168,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		} else {
 			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
 		}
-	} else if (type == blocks::OAK_SLAB || type == blocks::OAK_STAIRS) {
+	} else if (type == blocks::OAK_SLAB || type == blocks::OAK_STAIRS) { // TODO get rid of oak_slab_top and oak_stairs_top and use DOOR::UPPER_HALF instead
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
 			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? type : type + 1); // oak_slab_top = oak_slab_bottom + 1
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
@@ -184,6 +182,21 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
 			glm::vec3 intersect = line_plane_intersection(_camera->getEyePos(), _camera->getDir(), p0, {0, 1, 0});
 			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type + 1);
+		}
+	} else if (type == blocks::OAK_TRAPDOOR) {
+		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
+			type += ((_block_hit.pos.z < _block_hit.prev_pos.z) ? 0 : (DOOR::UPPER_HALF << 12));
+		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
+			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.x > _block_hit.prev_pos.x) ? glm::ivec3(0, 0, 0) : glm::ivec3(1, 0, 0));
+			glm::vec3 intersect = line_plane_intersection(_camera->getEyePos(), _camera->getDir(), p0, {1, 0, 0});
+			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (DOOR::UPPER_HALF << 12));
+			// _ui->chatMessage("block hit " + std::to_string(_block_hit.pos.x) + ", " + std::to_string(_block_hit.pos.y) + ", " + std::to_string(_block_hit.pos.z));
+			// _ui->chatMessage("p0 at " + std::to_string(p0.x) + ", " + std::to_string(p0.y) + ", " + std::to_string(p0.z));
+			// _ui->chatMessage("intersect at " + std::to_string(intersect.x) + ", " + std::to_string(intersect.y) + ", " + std::to_string(intersect.z));
+		} else {
+			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
+			glm::vec3 intersect = line_plane_intersection(_camera->getEyePos(), _camera->getDir(), p0, {0, 1, 0});
+			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (DOOR::UPPER_HALF << 12));
 		}
 	}
 

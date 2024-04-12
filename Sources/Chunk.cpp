@@ -963,24 +963,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 			}
 		}
 		addFlame(offset, pos, blocks::TORCH, (type >> 9) & 0x7);
-	} else if (type >= blocks::POPPY && pos.z > 0) {
-		if (previous >= blocks::WATER) {
-			return ;
-		}
-		int type_below = _blocks[offset - 1] & 0xFF;
-		if (type == blocks::WHEAT_CROP) {
-		} else if (type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
-			return ; // can't place flower on something else than grass/dirt block
-		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY) || s_blocks[type_below]->hasHitbox) {
-			return ;
-		}
-	} else if (previous >= blocks::WATER) { // replace water block with something else
-		_fluids.insert(offset);
-	}
-	if (useInventory) {
-		_inventory->removeBlock(false);
-	}
-	if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
+	} else if ((type & 0xFF) >= blocks::CRAFTING_TABLE && (type & 0xFF) < blocks::BEDROCK) { // oriented blocks
 		type += (_camera->getOrientation() << 9);
 		switch (type & 0xFF) {
 			case blocks::OAK_STAIRS_BOTTOM:
@@ -997,6 +980,22 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 				}
 				break ;
 		}
+	} else if (type >= blocks::POPPY && pos.z > 0) {
+		if (previous >= blocks::WATER) {
+			return ;
+		}
+		int type_below = _blocks[offset - 1] & 0xFF;
+		if (type == blocks::WHEAT_CROP) {
+		} else if (type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
+			return ; // can't place flower on something else than grass/dirt block
+		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY) || s_blocks[type_below]->hasHitbox) {
+			return ;
+		}
+	} else if (previous >= blocks::WATER) { // replace water block with something else
+		_fluids.insert(offset);
+	}
+	if (useInventory) {
+		_inventory->removeBlock(false);
 	}
 
 	_blocks[offset] = type;
@@ -1026,7 +1025,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 	if (!air_flower(type, true, true, false)) {
 		return ;
 	}
-	if (type != blocks::OAK_SLAB_BOTTOM && type != blocks::OAK_SLAB_TOP) { // TODO s_blocks[type]->transparent or something
+	if (!s_blocks[type]->transparent) {
 		_lights[offset] = 0; // rm light if solid block added
 	}
 	for (int index = 0; index < 6; index++) {
@@ -1462,6 +1461,12 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 				_added[offset] = value;
 				offset += ((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1;
 				value ^= (DOOR::UPPER_HALF << 12);
+				_blocks[offset] = value;
+				_added[offset] = value;
+			} else if (type == blocks::OAK_TRAPDOOR) {
+				int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
+				int value = _blocks[offset];
+				value ^= (DOOR::OPEN << 12);
 				_blocks[offset] = value;
 				_added[offset] = value;
 			}
@@ -2064,10 +2069,10 @@ void Chunk::applyGravity( void )
 		}
 	} else { // falling
 		saved_posZ += 0.01f; // mini offset to handle slabs
-		for (float posZ = saved_posZ; posZ > pos.z; posZ -= 0.5f) {
+		for (float posZ = saved_posZ; posZ > pos.z; posZ -= 0.125f) { // TODO rethink this to make less checks
 			coll = collisionBox({pos.x, pos.y, posZ}, 0.3f, 0, 0);
 			if (coll.type == COLLISION::TOTAL) {
-				_camera->touchGround(glm::floor((posZ + 1)));
+				_camera->touchGround(coll.maxZ);//glm::floor((posZ + 1)));
 				if (saved_posZ != _camera->getPos().z) {
 					_camera->_update = true;
 				}
@@ -2080,7 +2085,7 @@ void Chunk::applyGravity( void )
 		coll = collisionBox(pos, 0.3f, 0, 0);
 		if (coll.type == COLLISION::TOTAL) {
 			// std::cout << "\tgravity total saved " << saved_posZ << " dist " << distZ << std::endl;
-			_camera->touchGround(glm::floor((pos.z + 1)));
+			_camera->touchGround(coll.maxZ);//glm::floor((pos.z + 1)));
 			if (saved_posZ != _camera->getPos().z) {
 				_camera->_update = true;
 			}

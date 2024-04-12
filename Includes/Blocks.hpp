@@ -48,6 +48,7 @@ namespace blocks {
 		OAK_STAIRS_BOTTOM = 10,
 		OAK_STAIRS_TOP,
 		OAK_DOOR,
+		OAK_TRAPDOOR,
 		BEDROCK = 16,
 		DIRT,
 		SMOOTH_STONE,
@@ -159,6 +160,7 @@ struct Block {
 		int needed_material_level = 0;
 		int durability = 0;
 		float hardness = -1;
+		bool transparent = false;
 		bool item3D = true;
 		int textureX = 1;
 		int textureY = 15;
@@ -189,6 +191,7 @@ struct Air : Block {
 			name = "AIR";
 			blast_resistance = 0.0f;
 			collisionHitbox_1x1x1 = false;
+			transparent = true;
 		}
 };
 
@@ -254,6 +257,7 @@ struct Cactus : Block {
 			collisionHitbox_1x1x1 = false;
 			byHand = true;
 			hardness = 0.4f;
+			transparent = true;
 			textureY = 3;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -402,6 +406,7 @@ struct OakStairsBottom : Block {
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.0f;
+			transparent = true;
 			textureY = 10;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -508,6 +513,7 @@ struct OakStairsTop : Block {
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.0f;
+			transparent = true;
 			textureY = 10;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -613,6 +619,7 @@ struct OakDoor : Block {
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 3.0f;
+			transparent = true;
 			item3D = false;
 		}
 		// offset is bool half or 2 if item
@@ -668,6 +675,53 @@ struct OakDoor : Block {
 						hitbox[1] = {0.09375f, 0.5f, 0.5f};
 					}
 					break ;
+			}
+		}
+};
+
+struct OakTrapdoor : Block {
+	public:
+		OakTrapdoor() {
+			name = "OAK_TRAPDOOR";
+			mined = blocks::OAK_TRAPDOOR;
+			blast_resistance = 3.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			orientedCollisionHitbox = true;
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 3.0f;
+			transparent = true;
+			textureX = 2;
+			textureY = 11;
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			if (!(bitfield & DOOR::OPEN)) {
+				hitbox[0] = {0.5f, 0.5f, (bitfield & DOOR::UPPER_HALF) ? 0.90625f : 0.09375f};
+				hitbox[1] = {0.5f, 0.5f, 0.09375f};
+			} else {
+				switch (orientation) {
+					case face_dir::MINUSX:
+						hitbox[0] = {0.90625f, 0.5f, 0.5f};
+						hitbox[1] = {0.09375f, 0.5f, 0.5f};
+						break ;
+					case face_dir::PLUSX:
+						hitbox[0] = {0.09375f, 0.5f, 0.5f};
+						hitbox[1] = {0.09375f, 0.5f, 0.5f};
+						break ;
+					case face_dir::MINUSY:
+						hitbox[0] = {0.5f, 0.90625f, 0.5f};
+						hitbox[1] = {0.5f, 0.09375f, 0.5f};
+						break ;
+					case face_dir::PLUSY:
+						hitbox[0] = {0.5f, 0.09375f, 0.5f};
+						hitbox[1] = {0.5f, 0.09375f, 0.5f};
+						break ;
+				}
 			}
 		}
 };
@@ -809,6 +863,7 @@ struct OakLeaves : Block {
 			blast_resistance = 0.2f;
 			byHand = true;
 			hardness = 0.2f;
+			transparent = true;
 			textureX = 4;
 			textureY = 9;
 		}
@@ -953,6 +1008,7 @@ struct OakSlabBottom : Block {
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.0f;
+			transparent = true;
 			textureX = 4;
 			textureY = 10;
 		}
@@ -974,6 +1030,7 @@ struct OakSlabTop : Block {
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.0f;
+			transparent = true;
 			textureX = 4;
 			textureY = 10;
 		}
@@ -991,6 +1048,7 @@ struct Poppy : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 0;
@@ -1009,6 +1067,7 @@ struct Dandelion : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 1;
@@ -1027,6 +1086,7 @@ struct BlueOrchid : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 2;
@@ -1045,6 +1105,7 @@ struct Allium : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 3;
@@ -1063,6 +1124,7 @@ struct CornFlower : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 4;
@@ -1081,6 +1143,7 @@ struct PinkTulip : Block {
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 5;
@@ -1096,6 +1159,7 @@ struct Grass : Block {
 			collisionHitbox_1x1x1 = false;
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 6;
@@ -1111,6 +1175,7 @@ struct SugarCane : Block {
 			collisionHitbox_1x1x1 = false;
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 7;
@@ -1131,6 +1196,7 @@ struct DeadBush : Block {
 			fuel_time = 5;
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 8;
@@ -1151,6 +1217,7 @@ struct OakSapling : Block {
 			fuel_time = 5;
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 9;
@@ -1170,6 +1237,7 @@ struct Torch : Block {
 			light_level = 14;
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 6;
 			textureY = 10;
@@ -1183,11 +1251,14 @@ struct Chest : Block {
 			mined = blocks::CHEST;
 			blast_resistance = 2.5f;
 			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5 / 16.0f};
 			hitboxHalfSize = {7 / 16.0f, 7 / 16.0f, 7.5 / 16.0f};
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.5f;
+			transparent = true;
 			textureX = 0;
 			textureY = 15;
 		}
@@ -1205,6 +1276,7 @@ struct WheatCrop : Block {
 			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 			item3D = false;
 			textureX = 7;
 		}
@@ -1226,6 +1298,7 @@ struct WheatCrop1 : Block {
 			hitboxHalfSize = {0.4f, 0.4f, 3 / 32.0f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 		}
 };
 
@@ -1241,6 +1314,7 @@ struct WheatCrop2 : Block {
 			hitboxHalfSize = {0.4f, 0.4f, 5 / 32.0f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 		}
 };
 
@@ -1256,6 +1330,7 @@ struct WheatCrop3 : Block {
 			hitboxHalfSize = {0.4f, 0.4f, 7 / 32.0f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 		}
 };
 
@@ -1271,6 +1346,7 @@ struct WheatCrop4 : Block {
 			hitboxHalfSize = {0.4f, 0.4f, 9 / 32.0f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 		}
 };
 
@@ -1286,6 +1362,7 @@ struct WheatCrop5 : Block {
 			hitboxHalfSize = {0.4f, 0.4f, 11 / 32.0f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 		}
 };
 
@@ -1301,6 +1378,7 @@ struct WheatCrop6 : Block {
 			hitboxHalfSize = {0.4f, 0.4f, 13 / 32.0f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 		}
 };
 
@@ -1316,6 +1394,7 @@ struct WheatCrop7 : Block {
 			hitboxHalfSize = {0.4f, 0.4f, 15 / 32.0f};
 			byHand = true;
 			hardness = 0.0f;
+			transparent = true;
 		}
 };
 
@@ -1326,6 +1405,7 @@ struct Water : Block {
 			mined = blocks::WATER_BUCKET;
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			transparent = true;
 		}
 };
 
@@ -1335,6 +1415,7 @@ struct Water1 : Block {
 			name = "WATER 1";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			transparent = true;
 		}
 };
 
@@ -1344,6 +1425,7 @@ struct Water2 : Block {
 			name = "WATER 2";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			transparent = true;
 		}
 };
 
@@ -1353,6 +1435,7 @@ struct Water3 : Block {
 			name = "WATER 3";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			transparent = true;
 		}
 };
 
@@ -1362,6 +1445,7 @@ struct Water4 : Block {
 			name = "WATER 4";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			transparent = true;
 		}
 };
 
@@ -1371,6 +1455,7 @@ struct Water5 : Block {
 			name = "WATER 5";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			transparent = true;
 		}
 };
 
@@ -1380,6 +1465,7 @@ struct Water6 : Block {
 			name = "WATER 6";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			transparent = true;
 		}
 };
 
@@ -1389,6 +1475,7 @@ struct Water7 : Block {
 			name = "WATER 7";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			transparent = true;
 		}
 };
 

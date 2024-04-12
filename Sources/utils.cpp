@@ -308,7 +308,7 @@ bool visible_face( int value, int next, face_dir dir )
 	if (value == blocks::AIR) {
 		return (false);
 	}
-	if (next == blocks::AIR || next == blocks::OAK_DOOR
+	if (next == blocks::AIR || next == blocks::OAK_DOOR || next == blocks::OAK_TRAPDOOR
 		|| (value != blocks::GLASS && next == blocks::GLASS)) {
 		return (true);
 	}
