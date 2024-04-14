@@ -101,6 +101,9 @@ void UI::add_inventory_elem( int index )
 		addFace(v0, v1, v2, v3, false);
 		return ;
 	}
+	if (type == blocks::OAK_LOG) {
+		offset = AXIS::Z;
+	}
 	int yTop = (type == blocks::OAK_SLAB) ? y + 16 * _gui_size * 100.0f / 362.5f : y;
 	int slabOffset = (type == blocks::OAK_SLAB) ? (8 << 8) : 0;
 	// top face

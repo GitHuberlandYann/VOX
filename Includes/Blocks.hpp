@@ -43,6 +43,12 @@ enum DOOR {
 	OPEN        = 0b100
 };
 
+enum AXIS {
+	Z,
+	X,
+	Y
+};
+
 namespace blocks {
 	enum {
 		AIR,
@@ -71,6 +77,7 @@ namespace blocks {
 		OAK_LEAVES,
 		OAK_PLANKS,
 		GLASS,
+		GLASS_PANE,
 		COAL_ORE = 32,
 		IRON_ORE,
 		DIAMOND_ORE,
@@ -251,9 +258,16 @@ struct OakLog : Block {
 			textureY = 2;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
-			(void)offset;
-			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
-				return (1);
+			switch (dir) {
+				case face_dir::MINUSZ:
+				case face_dir::PLUSZ:
+					return ((offset == AXIS::Z) + 2 * (offset == AXIS::X));
+				case face_dir::MINUSX:
+				case face_dir::PLUSX:
+					return ((offset == AXIS::X) + 2 * (offset == AXIS::Y));
+				case face_dir::MINUSY:
+				case face_dir::PLUSY:
+					return ((offset == AXIS::Y) + 2 * (offset == AXIS::X));
 			}
 			return (0);
 		}
@@ -902,8 +916,69 @@ struct Glass : Block {
 			name = "GLASS";
 			blast_resistance = 0.3f;
 			hardness = 0.3f;
+			transparent = true;
 			textureX = 4;
 			textureY = 11;
+		}
+};
+
+struct GlassPane : Block {
+	public:
+		GlassPane() {
+			name = "GLASS_PANE";
+			blast_resistance = 0.3f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			orientedCollisionHitbox = true;
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			hardness = 0.3f;
+			transparent = true;
+			item3D = false;
+			textureY = 11;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			(void)dir;
+			switch (offset) {
+				case FENCE::BASE:
+					return (4);
+				case FENCE::ARM:
+					return (5);
+				case FENCE::ARM_END:
+					return (3);
+			}
+			return (4);
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			(void)orientation;
+			hitbox[0] = {0.5f, 0.5f, 0.5f};
+			hitbox[1] = {0.0625, 0.0625, 0.5f};
+			switch (bitfield & (FENCE::MX | FENCE::PX)) {
+				case FENCE::MX:
+					hitbox[0].x = 0.28125f;
+					hitbox[1].x = 0.28125f;
+					break ;
+				case FENCE::PX:
+					hitbox[0].x = 1 - 0.28125f;
+					hitbox[1].x = 0.28125f;
+					break ;
+				case FENCE::MX | FENCE::PX:
+					hitbox[1].x = 0.5f;
+					break ;
+			}
+			switch (bitfield & (FENCE::MY | FENCE::PY)) {
+				case FENCE::MY:
+					hitbox[0].y = 0.28125f;
+					hitbox[1].y = 0.28125f;
+					break ;
+				case FENCE::PY:
+					hitbox[0].y = 1 - 0.28125f;
+					hitbox[1].y = 0.28125f;
+					break ;
+				case FENCE::MY | FENCE::PY:
+					hitbox[1].y = 0.5f;
+					break ;
+			}
 		}
 };
 

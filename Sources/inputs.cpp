@@ -52,10 +52,10 @@ t_hit OpenGL_Manager::get_block_hit( void )
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		int value = chunk->isHit(i);
-		// if ((value & 0xFF) == blocks::OAK_FENCE) {
-		// 	_ui->chatMessage("orientation " + std::to_string((value >> 9) & 0x7)
-		// 		+ " bitfield " + std::to_string(value >> 12));
-		// }
+		if ((value & 0xFF) == blocks::GLASS_PANE) {
+			_ui->chatMessage("orientation " + std::to_string((value >> 9) & 0x7)
+				+ " bitfield " + std::to_string(value >> 12));
+		}
 		int type = value & 0xFF;
 		if (type == blocks::WATER) {
 			if (!res.water_value) {
@@ -197,6 +197,14 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
 			glm::vec3 intersect = line_plane_intersection(_camera->getEyePos(), _camera->getDir(), p0, {0, 1, 0});
 			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (DOOR::UPPER_HALF << 12));
+		}
+	} else if (type == blocks::OAK_LOG) {
+		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
+			type += (AXIS::Z << 9);
+		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
+			type += (AXIS::X << 9);
+		} else {
+			type += (AXIS::Y << 9);
 		}
 	}
 

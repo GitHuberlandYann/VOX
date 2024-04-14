@@ -155,7 +155,7 @@ class Chunk
 		void handle_door_placement( glm::ivec3 pos, int &type );
 		void handle_fence_placement( glm::ivec3 pos, int &type );
 		void addFlame( int offset, glm::vec3 pos, int source, int orientation );
-		void add_block( bool useInventory, glm::ivec3 pos, int type, int previous );
+		void add_block( bool useInventory, glm::ivec3 pos, int block_value, int previous );
 		void replace_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 
 		void light_spread( int posX, int posY, int level, bool skySpread, int recurse = LIGHT_RECURSE );

@@ -658,7 +658,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 					std::cout << "rm adj torch" << std::endl;
 					remove_block(useInventory, {pos.x + delta[0], pos.y + delta[1], pos.z + delta[2]});
 				}
-				if ((adj & 0xFF) == blocks::OAK_FENCE) {
+				if ((adj & 0xFF) == blocks::OAK_FENCE || (adj & 0xFF) == blocks::GLASS_PANE) {
 					switch (index) {
 						case face_dir::MINUSX:
 							_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::PX << 12);
@@ -914,22 +914,23 @@ void Chunk::handle_door_placement( glm::ivec3 pos, int &type )
 	// TODO DOOR::RIGHT_HINGE
 }
 
+// used by glass pane too
 void Chunk::handle_fence_placement( glm::ivec3 pos, int &type )
 {
 	int next = getBlockAt(pos.x - 1, pos.y, pos.z, true);
-	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == blocks::OAK_FENCE) {
+	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == (type & 0xFF)) {
 		type |= (FENCE::MX << 12);
 	}
 	next = getBlockAt(pos.x + 1, pos.y, pos.z, true);
-	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == blocks::OAK_FENCE) {
+	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == (type & 0xFF)) {
 		type |= (FENCE::PX << 12);
 	}
 	next = getBlockAt(pos.x, pos.y - 1, pos.z, true);
-	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == blocks::OAK_FENCE) {
+	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == (type & 0xFF)) {
 		type |= (FENCE::MY << 12);
 	}
 	next = getBlockAt(pos.x, pos.y + 1, pos.z, true);
-	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == blocks::OAK_FENCE) {
+	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == (type & 0xFF)) {
 		type |= (FENCE::PY << 12);
 	}
 }
@@ -957,11 +958,12 @@ void Chunk::addFlame( int offset, glm::vec3 pos, int source, int orientation )
 	}
 }
 
-void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous )
+void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int previous )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":add block " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
+	int type = block_value & 0xFF;
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		int type_under = (_blocks[offset - 1] & 0xFF);
 		if (type_under == blocks::AIR) {
@@ -977,12 +979,12 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		if (previous < blocks::WATER) {
 			_hasWater = true;
 		}
-	} else if ((type & 0xFF) == blocks::TORCH) {
+	} else if (type == blocks::TORCH) {
 		// check if orientation possible (wall available to hang from)
 		// if not, check if block underneath and change orientation
 		// else abort mission
 		int neighbour = 0;
-		switch ((type >> 9) & 0x7) {
+		switch ((block_value >> 9) & 0x7) {
 		case face_dir::PLUSX:
 			neighbour = getBlockAt(pos.x + 1, pos.y, pos.z, true) & 0xFF;
 			break;
@@ -997,32 +999,32 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 			break;
 		}
 		if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || s_blocks[neighbour]->hasHitbox) {
-			type = blocks::TORCH + (face_dir::MINUSZ << 9);
+			block_value = blocks::TORCH + (face_dir::MINUSZ << 9);
 			neighbour = getBlockAt(pos.x, pos.y, pos.z - 1, false) & 0xFF;
 			if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || (s_blocks[neighbour]->hasHitbox && neighbour != blocks::OAK_SLAB_TOP)) {
 				return ;
 			}
 		}
-		addFlame(offset, pos, blocks::TORCH, (type >> 9) & 0x7);
-	} else if ((type & 0xFF) >= blocks::CRAFTING_TABLE && (type & 0xFF) < blocks::BEDROCK) { // oriented blocks
-		type += (_camera->getOrientation() << 9);
-		switch (type & 0xFF) {
+		addFlame(offset, pos, blocks::TORCH, (block_value >> 9) & 0x7);
+	} else if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
+		block_value += (_camera->getOrientation() << 9);
+		switch (type) {
 			case blocks::OAK_STAIRS_BOTTOM:
 			case blocks::OAK_STAIRS_TOP:
-				handle_stair_corners(pos, type);
+				handle_stair_corners(pos, block_value);
 				break ;
 			case blocks::OAK_DOOR:
-				handle_door_placement(pos, type);
-				if (type == blocks::AIR) return ; // door couldn't be placed
-				else if (!((type >> 12) & DOOR::UPPER_HALF)) { // place upper_half
-					_blocks[offset + 1] = type | (DOOR::UPPER_HALF << 12);
+				handle_door_placement(pos, block_value);
+				if (block_value == blocks::AIR) return ; // door couldn't be placed
+				else if (!((block_value >> 12) & DOOR::UPPER_HALF)) { // place upper_half
+					_blocks[offset + 1] = block_value | (DOOR::UPPER_HALF << 12);
 					_removed.erase(offset + 1);
-					_added[offset + 1] = type | (DOOR::UPPER_HALF << 12);
+					_added[offset + 1] = block_value | (DOOR::UPPER_HALF << 12);
 				}
 				break ;
 		}
-	} else if (type == blocks::OAK_FENCE) {
-		handle_fence_placement(pos, type);
+	} else if (type == blocks::OAK_FENCE || type == blocks::GLASS_PANE) {
+		handle_fence_placement(pos, block_value);
 	} else if (type >= blocks::POPPY && pos.z > 0) {
 		if (previous >= blocks::WATER) {
 			return ;
@@ -1041,10 +1043,9 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 		_inventory->removeBlock(false);
 	}
 
-	_blocks[offset] = type;
+	_blocks[offset] = block_value;
 	_removed.erase(offset);
-	_added[offset] = type;
-	type &= 0xFF;
+	_added[offset] = block_value;
 	if (type == blocks::WATER) {
 		_fluids.insert(offset);
 		// std::cout << "adding water" << std::endl;
@@ -1089,7 +1090,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int type, int previous
 				// was exposed before, but isn't anymore
 				_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] += blocks::NOTVISIBLE;
 			}
-			if ((adj & 0xFF) == blocks::OAK_FENCE) {
+			if ((adj & 0xFF) == blocks::OAK_FENCE || (adj & 0xFF) == blocks::GLASS_PANE) {
 				switch (index) {
 					case face_dir::MINUSX:
 						_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::PX << 12);
@@ -1937,7 +1938,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 		if (type >= blocks::WATER) {
 			return ;
 		}
-		if ((value & 0xFF) == blocks::OAK_FENCE) {
+		if ((value & 0xFF) == blocks::OAK_FENCE || (value & 0xFF) == blocks::GLASS_PANE) {
 			switch (origin) {
 				case face_dir::MINUSX:
 					_blocks[offset] |= (FENCE::MX << 12);
@@ -1976,7 +1977,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 			_hasWater = true;
 			_fluids.insert(offset);
 		}
-		if ((value & 0xFF) == blocks::OAK_FENCE) {
+		if ((value & 0xFF) == blocks::OAK_FENCE || (value & 0xFF) == blocks::GLASS_PANE) {
 			switch (origin) {
 				case face_dir::MINUSX:
 					_blocks[offset] ^= (FENCE::MX << 12);
