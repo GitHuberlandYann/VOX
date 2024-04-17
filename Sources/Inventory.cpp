@@ -1,4 +1,7 @@
-#include "Chunk.hpp"
+#include "Inventory.hpp"
+#include "ChestInstance.hpp"
+#include "FurnaceInstance.hpp"
+#include "OpenGL_Manager.hpp"
 
 Inventory::Inventory( void ) : _slot(0), _modif(false)
 {
@@ -255,6 +258,10 @@ void Inventory::setSlot( int value )
 	}
     _slot = value;
 	_modif = true;
+	int type = _content[_slot].type;
+	if (type != blocks::AIR) {
+		_ui->inventoryMessage(s_blocks[type]->name);
+	}
 }
 
 t_item Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
@@ -574,7 +581,8 @@ void Inventory::spillInventory( Chunk *chunk )
 	_modif = true;
 }
 
-// TODO DEL THOSE
+// -------------------------
+
 std::string Inventory::getInventoryString( void )
 {
     std::string res = "\nCurrent Slot > " + std::to_string(_slot);
@@ -594,4 +602,9 @@ std::string Inventory::getSlotString( void )
 		res += " (" + std::to_string(_content[_slot].amount) + ')';
 	}
 	return (res);
+}
+
+void Inventory::setUIPtr( UI *ui )
+{
+	_ui = ui;
 }

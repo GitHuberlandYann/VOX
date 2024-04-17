@@ -64,7 +64,7 @@ void UI::add_inventory_elem( int index )
 	}
 	x += 2 * _gui_size;
 	y += _gui_size;
-	int offset = face_dir::PLUSX;
+	int offset = (type == blocks::OAK_LOG) ? AXIS::Z : face_dir::PLUSX;
 	if (type == blocks::OAK_STAIRS) {
 		int spec = (15 << 24) + s_blocks[type]->texX(face_dir::PLUSZ, offset) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 4);
 		// top of second step
@@ -101,11 +101,10 @@ void UI::add_inventory_elem( int index )
 		addFace(v0, v1, v2, v3, false);
 		return ;
 	}
-	if (type == blocks::OAK_LOG) {
-		offset = AXIS::Z;
-	}
-	int yTop = (type == blocks::OAK_SLAB) ? y + 16 * _gui_size * 100.0f / 362.5f : y;
-	int slabOffset = (type == blocks::OAK_SLAB) ? (8 << 8) : 0;
+	int yTop = (type == blocks::OAK_SLAB) ? y + 16 * _gui_size * 100.0f / 362.5f
+											: (type == blocks::OAK_TRAPDOOR) ? y + 16 * _gui_size * 162.5f / 362.5f : y;
+	int slabOffset = (type == blocks::OAK_SLAB) ? (8 << 8)
+											: (type == blocks::OAK_TRAPDOOR) ? (13 << 8) : 0;
 	// top face
 	int spec = (15 << 24) + s_blocks[type]->texX(face_dir::PLUSZ, offset) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 4);
 	glm::ivec3 v0 = {spec, x, yTop + 15 * _gui_size * 81.25f / 362.5f};
@@ -376,6 +375,10 @@ void UI::addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bo
 
 void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 {
+	if (_inventoryMessage.timer > 0) {
+		_inventoryMessage.timer -= deltaTime;
+		_text->addText((WIN_WIDTH - _text->textWidth(_gui_size * 3, _inventoryMessage.str)) / 2, WIN_HEIGHT - (35 * _gui_size) * 2, _gui_size * 3, true, _inventoryMessage.str);
+	}
 	_chat->blitMessages(deltaTime);
 	_text->addText(12, 24, _gui_size * 3, true, str);
 	if (_hideUI) {
@@ -406,6 +409,11 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 void UI::chatMessage( std::string str )
 {
 	_chat->chatMessage(str);
+}
+
+void UI::inventoryMessage( std::string str )
+{
+	_inventoryMessage = {str, 2};
 }
 
 void UI::textToScreen( void )

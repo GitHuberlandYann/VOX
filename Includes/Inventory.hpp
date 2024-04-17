@@ -7,6 +7,7 @@
 class Chunk;
 class FurnaceInstance;
 class ChestInstance;
+class UI;
 
 # define IRECEIPT_SIZE 25
 # define RECEIPT_SIZE 98
@@ -168,6 +169,7 @@ class Inventory
 		t_item _crafted;
         int _slot;
 		bool _modif;
+		UI *_ui;
 
 		t_item *getBlockPtr( int value, int & craft_place, FurnaceInstance *furnace, ChestInstance *chest );
 		void changeCrafted( int craft );
@@ -211,6 +213,7 @@ class Inventory
         std::string getInventoryString( void );
 		std::string getSlotString( void );
 		std::string saveString( void );
+		void setUIPtr( UI *ui );
 		void loadWorld( std::ofstream & ofs, std::ifstream & indata );
 };
 

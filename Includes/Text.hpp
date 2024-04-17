@@ -22,6 +22,7 @@ class Text
 
         void setup_shader( void );
 		void load_texture( void );
+		int textWidth( int font_size, std::string str, int limit = -1 );
         void addText( int posX, int posY, int font_size, bool white, std::string str );
 		void toScreen( void );
 };

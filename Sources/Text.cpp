@@ -59,6 +59,54 @@ void Text::load_texture( void )
 	glUniform1i(glGetUniformLocation(_shaderProgram, "asciiAtlas"), 1); // sampler2D #index in fragment shader
 }
 
+int Text::textWidth( int font_size, std::string str, int limit )
+{
+	int res = 0;
+	for (size_t i = 0, charLine = 0; str[i]; ++i, ++charLine) {
+		if (limit != -1 && static_cast<int>(i) >= limit) return (res);
+		switch (str[i]) {
+			case '\n':
+				break ;
+			case '\t':
+				charLine += 4 - (charLine & 3);
+				res = charLine * font_size;
+				break ;
+			case 'i':
+			case '.':
+			case ':':
+			case '!':
+			case '\'':
+			case ',':
+			case ';':
+			case '|':
+			case '`':
+				res += font_size * 0.5f;
+				break ;
+			case 'I':
+			case '[':
+			case ']':
+			case '"':
+			case '*':
+				res += font_size * 0.6f;
+				break ;
+			case 'l':
+			case 't':
+			case '(':
+			case ')':
+			case '<':
+			case '>':
+			case '{':
+			case '}':
+				res += font_size * 0.7f;
+				break ;
+			default:
+				res += font_size;
+				break ;
+		}
+	}
+	return (res);
+}
+
 void Text::addText( int posX, int posY, int font_size, bool white, std::string str )
 {
 	int startX = posX;

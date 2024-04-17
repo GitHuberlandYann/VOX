@@ -15,6 +15,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_camera = new Camera(glm::vec3(1.0f, -2.0f, 66.0f));
 	_inventory = new Inventory();
 	_ui = new UI(*_inventory, *_camera);
+	_inventory->setUIPtr(_ui);
 	_ui->getChatPtr()->setOGLManPtr(this);
 	_menu = new Menu(*_inventory, _ui);
 

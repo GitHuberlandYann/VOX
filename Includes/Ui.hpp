@@ -18,6 +18,11 @@ enum {
 class Inventory;
 class Camera;
 
+typedef struct s_inv_mess {
+	std::string str = "";
+	float timer = 2;
+}				t_inv_mess;
+
 class UI
 {
     private:
@@ -27,6 +32,7 @@ class UI
         GLint _gui_size, _nb_points, _nb_points_crea, _nb_items;
 		bool _movement;
 		std::vector<int> _items;
+		t_inv_mess _inventoryMessage;
 		Text *_text;
 		Chat *_chat;
 		Inventory &_inventory;
@@ -64,6 +70,7 @@ class UI
 		void addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement = false );
         void drawUserInterface( std::string str, bool game_mode, float deltaTime );
         void chatMessage( std::string str );
+		void inventoryMessage( std::string str );
 		void textToScreen( void );
 };
 
