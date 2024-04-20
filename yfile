@@ -28,7 +28,6 @@ Project Requirements:
 TODOS:
 	- hitbox change + no fall on sneak
     - biomes
-    - skybox
 	- fix light spread problems caused by recurse limitation (when torches are next to each other)
 	- fire
 	- mobs
@@ -48,6 +47,7 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+    - skybox
     - settings menu
 	- centralize settings and save/load them in file
 	- double chests

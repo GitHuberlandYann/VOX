@@ -7,6 +7,7 @@
 # include "Text.hpp"
 # include "Ui.hpp"
 # include "Menu.hpp"
+# include "Skybox.hpp"
 
 extern std::mutex mtx;
 extern std::mutex mtx_perimeter;
@@ -48,6 +49,7 @@ class OpenGL_Manager
 		t_hit _block_hit;
 		UI *_ui;
 		Menu *_menu;
+		Skybox *_skybox;
 
 
 		void update_visible_chunks( void );

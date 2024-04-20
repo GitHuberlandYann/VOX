@@ -216,6 +216,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 void OpenGL_Manager::update_cam_view( void )
 {
 	glm::mat4 view = _camera->getViewMatrix();
+	_skybox->update_cam_view(view);
 	glUseProgram(_skyShaderProgram);
 	glUniformMatrix4fv(_skyUniView, 1, GL_FALSE, glm::value_ptr(view));
 	glUseProgram(_particleShaderProgram);
@@ -229,6 +230,7 @@ void OpenGL_Manager::update_cam_view( void )
 void OpenGL_Manager::update_cam_perspective( void )
 {
 	glm::mat4 proj = _camera->getPerspectiveMatrix();
+	_skybox->update_cam_perspective(proj);
 	glUseProgram(_skyShaderProgram);
 	glUniformMatrix4fv(_skyUniProj, 1, GL_FALSE, glm::value_ptr(proj));
 	glUseProgram(_particleShaderProgram);

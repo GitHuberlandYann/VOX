@@ -121,6 +121,11 @@ void DayCycle::tickUpdate( void )
 	setInternals();
 }
 
+int DayCycle::getTicks( void )
+{
+	return (_ticks);
+}
+
 void DayCycle::setTicks( int ticks )
 {
 	_ticks = ticks;

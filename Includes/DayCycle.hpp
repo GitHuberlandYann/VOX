@@ -39,6 +39,7 @@ class DayCycle
 			GLint internal_light, GLint partice_internal_light );
 		void setCloudsColor( GLint uniform_location );
 		void tickUpdate( void );
+		int getTicks( void );
 		void setTicks( int ticks );
 		void addTicks( int ticks );
 		void updateTimeMultiplier( GLint mul );

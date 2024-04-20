@@ -18,6 +18,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_inventory->setUIPtr(_ui);
 	_ui->getChatPtr()->setOGLManPtr(this);
 	_menu = new Menu(*_inventory, _ui);
+	_skybox = new Skybox();
 
 	startThread();
 }
@@ -48,6 +49,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	delete _inventory;
 	delete _ui;
 	delete _menu;
+	delete _skybox;
 
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
@@ -282,6 +284,9 @@ void OpenGL_Manager::create_shaders( void )
 	glUseProgram(_particleShaderProgram);
 
 	check_glstate("particleShader program successfully created", true);
+
+	// then setup the skybox shader
+	_skybox->create_shader();
 	
 	// then setup the main shader
 	_shaderProgram = createShaderProgram("vertex", "", "fragment");
@@ -299,6 +304,9 @@ void OpenGL_Manager::create_shaders( void )
 
 void OpenGL_Manager::setup_communication_shaders( void )
 {
+	_skybox->setup_communication_shaders();
+
+	glUseProgram(_shaderProgram);
 	_uniFog = glGetUniformLocation(_shaderProgram, "fogDist");
 	glUniform1f(_uniFog, (1 + _render_distance) << CHUNK_SHIFT);
 	_skyUniFog = glGetUniformLocation(_skyShaderProgram, "fogDist");
@@ -472,7 +480,14 @@ void OpenGL_Manager::main_loop( void )
 		}
 		// b.stamp("user inputs");
 		glEnable(GL_DEPTH_TEST);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		if (0 && _menu->getState() >= MENU::PAUSE) {
+			glClear(GL_DEPTH_BUFFER_BIT);
+			_skybox->render(_camera->getEyePos());
+			glUseProgram(_shaderProgram);
+		} else {
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, faceCounter);
