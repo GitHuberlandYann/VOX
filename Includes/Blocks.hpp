@@ -303,6 +303,8 @@ struct Farmland : Block {
 			mined = blocks::DIRT;
 			blast_resistance = 0.6f;
 			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
 			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
 			byHand = true;
@@ -325,6 +327,8 @@ struct DirtPath : Block {
 			mined = blocks::DIRT;
 			blast_resistance = 0.65f;
 			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
 			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
 			byHand = true;

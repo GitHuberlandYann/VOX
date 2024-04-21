@@ -392,6 +392,8 @@ bool Camera::customObstacle( float minZ, float maxZ )
 	_mtx.lock();
 	// std::cout << "DEBUG customObstacle " << _position.z << " vs " << maxZ << std::endl;
 	if (_position.z < maxZ && _position.z + 0.6f > maxZ) {
+		// TODO set cam offset to true to have smoother transition upon climbing stairs
+		// ie player will teleport, but cam will follow smoothly to enhance user experience
 		_position.z = maxZ;
 		_mtx.unlock();
 		return (true);

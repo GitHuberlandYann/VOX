@@ -47,7 +47,6 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-    - skybox
     - settings menu
 	- centralize settings and save/load them in file
 	- double chests
@@ -67,6 +66,7 @@ SHORTTERM memory:
 
 DONE:
 	- pthread chunk creation
+    - skybox
     - only display chunks in fieldview + little offset
 	- write stuff on screen
 	- mailbox system to display anouncements on screen

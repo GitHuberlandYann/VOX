@@ -480,14 +480,8 @@ void OpenGL_Manager::main_loop( void )
 		}
 		// b.stamp("user inputs");
 		glEnable(GL_DEPTH_TEST);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (0 && _menu->getState() >= MENU::PAUSE) {
-			glClear(GL_DEPTH_BUFFER_BIT);
-			_skybox->render(_camera->getEyePos());
-			glUseProgram(_shaderProgram);
-		} else {
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		}
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, faceCounter);
@@ -513,6 +507,10 @@ void OpenGL_Manager::main_loop( void )
 			drawParticles();
 			glUseProgram(_shaderProgram);
 			drawEntities();
+		}
+
+		if (_menu->getState() >= MENU::PAUSE) {
+			_skybox->render(_camera->getEyePos());
 		}
 
 		#if 1

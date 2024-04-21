@@ -9,6 +9,7 @@ out vec4 outColor;
 /* 				some info
  *
  *
+ * nevermind the following lines, we use cartesian coords
  * we use spherical coordinates to plot sun, sunset/rise gradients and stars
  * inclination = theta [0:pi], theta = 0 <=> coord = (0, 0, 1), theta = pi <=> coord = (0, 0, -1)
  * azimuth = phi [-pi:pi], phi = 0 <=> coord = (1, 0), phi = -pi <=> coord = (-1, 0) <=> phi = pi
@@ -49,36 +50,99 @@ const float pi = 3.14159265358f;
 
 const vec3 white = vec3(1, 1, 1);
 const vec3 black = vec3(0, 0, 0);
+const vec3 sunColor = vec3(1, 1, 0);
+const vec3 sunsetColor = vec3 (1.0f, 0.3f, 0);
 const vec3 sky_day = vec3(120.0f / 255.0f, 169.0f / 255.0f, 1.0f);
 const vec3 sky_night = black;
 
-// const vec3 sun_wakes = vec3(1, 0, 0);
-// const vec3 sun_highest = vec3(0, 0, 1.0f);
-// const vec3 sun_sleeps = vec3(-1, 0, 0);
-// const vec3 sun_lowest = vec3(0, 0, -1.0f);
+// return (inclination, azimuth), both in range [0:1]
+/*vec2 cartesianToSpherical( vec3 pos )
+{
+	float r = length(pos);
+	float inclination = acos(pos.z / r);
+	float azimuth = sign(pos.y) * acos(pos.x / length(pos.xy));
+
+	inclination /= pi;
+	azimuth /= pi;
+	azimuth = (azimuth + 1) * 0.5f;
+
+	return vec2(inclination, azimuth);
+}*/
 
 void main()
 {
 	// outColor = vec4(1, 0, 0, 1);
-	vec3 color;
-	vec3 sun;
+
+	vec3 skyColor;
 	if (ticks > 12000 && ticks < 13671) {
-		color = mix(sky_day, sky_night, (ticks - 12010.0f) / (13670.0f - 12010));
+		skyColor = mix(sky_day, sky_night, (ticks - 12010.0f) / (13670.0f - 12010));
 	} else if (ticks > 22299) {
-		color = mix(sky_night, sky_day, (ticks - 22299.0f) / (24000.0f - 22299));
+		skyColor = mix(sky_night, sky_day, (ticks - 22299.0f) / (24000.0f - 22299));
 	} else {
-		color = (ticks < 12500) ? sky_day : sky_night;
+		skyColor = (ticks < 12500) ? sky_day : sky_night;
 	}
-	// outColor = vec4(mix(white, color, texCoord.z * 4), 1.0f);
-	// outColor = vec4(texCoord, 1.0f);
-	outColor = vec4(color, 1.0f);
 
-/* spherical coordinates will be used for sun and stars
-	float r = length(texCoord);
-	float inclination = acos(texCoord.z / r);
-	float azimuth = sign(texCoord.y) * acos(texCoord.x / length(texCoord.xy));
+	/*/ spherical coordinates will be used for sun and stars
+	vec2 sunPos = vec2(0.3f, 0.5f); // vec2(inclination, azimuth)
+	if (ticks < 6000) {
+		// 0 - 6000 azimuth = 0.5f, inclination = 0.5 - 0
+		sunPos = vec2(0.5f - ticks / 12000.0f, 0.5f);
+	} else if (ticks < 12000) {
+		// 6000 - 12000 azimuth = 0, inclination = 0 - 0.5
+		sunPos = vec2((ticks - 6000) / 12000.0f, 0);
+	}
+	vec2 texPos = cartesianToSpherical(texCoord);
 
+	// skyColor = mix(skyColor, yellow, clamp(1 - 3 * distance(sunPos, vec2(texPos.x, texPos.y)), 0, 1));
+	// skyColor = mix(skyColor, yellow, clamp(1 - 30 * distance(vec2(sunPos.x, sunPos.y * 0.5f), vec2(texPos.x, texPos.y * 0.5f)), 0, 1)); // fails close to pole
+	skyColor = mix(skyColor, yellow, clamp(1 - 30 * (abs(sunPos.x - texPos.x) + abs(sunPos.y - texPos.y)), 0, 1)); // losange
+	// skyColor = mix(skyColor, yellow, clamp(1 - 30 * (abs(sunPos.x - texPos.x) * abs(sunPos.y - texPos.y)), 0, 1)); // funny line
+	// if (abs(sunPos.x - texPos.x) < 0.05 && abs(sunPos.y - texPos.y) < 0.1) {
+	// 	skyColor = yellow;
+	// }*/
+
+	// float r = length(texCoord);
+	// float inclination = acos(texCoord.z / r);
+	// float azimuth = sign(texCoord.y) * acos(texCoord.x / length(texCoord.xy));
+
+	// ticks -> (cos, 0, sin) = angle   <=> ticks / 12000 * pi = radians
+	// 00000 -> ( 1,  0,   0) = 0
+	// 06000 -> ( 0,  0,   1) = pi/2
+	// 12000 -> (-1,  0,   0) = pi
+	// 18000 -> ( 0,  0,  -1) = 3pi/2
+	// 24000 -> ( 1,  0,   0) = 2pi
+	float angle = ticks / 12000.0f * pi;
+	vec3 sunPos = vec3(cos(angle), 0, sin(angle));
+	sunPos = normalize(sunPos);
+
+	vec3 dir = normalize(texCoord);
+
+	float sunAngle = dot(dir, sunPos);
+	// skyColor = mix(sky_night, sky_day, (sunAngle + 1) * 0.5f);
+	skyColor = mix(skyColor, sunColor, clamp(sunAngle * 10 - 9, 0, 1) * 0.3f); // dimmer light around sun
+	skyColor = mix(skyColor, sunColor, clamp(sunAngle * 160 - 159, 0, 1));
+
+	float moonAngle = -sunAngle;
+	skyColor = mix(skyColor, white, clamp(moonAngle * 20 - 19, 0, 1) * 0.1f);
+	skyColor = mix(skyColor, white, clamp(moonAngle * 320 - 319, 0, 1));
+
+	// compute skyColor from normalized sunPos and texCoord
+	const float atmospherePow = 10.0f; // increase to reduce atmosphere height
+    const float scatterPow = 0.25f; // increase to make sunset last longer
+
+    float atmosphere = sqrt(pow(1.0f - abs(dir.z), atmospherePow));
+    atmosphere = clamp(atmosphere / 1.3f, 0, 1);
+
+    float scatter = 1 - pow(clamp(abs(sunPos.z) + 0.01f, 0, 1) * 2, scatterPow);
+    vec3 scatterColor = mix(skyColor, sunsetColor * 1.5f, scatter);
+
+    skyColor = mix(skyColor, scatterColor, atmosphere);
+
+	// float shade = dir.z;
 	// float shade = inclination / pi;
 	// float shade = (azimuth + pi) / (2.0f * pi);
-	// outColor = vec4(shade, shade, shade, 1.0f);*/
+	// outColor = vec4(shade, shade, shade, 1.0f);
+	// outColor = vec4(texCoord, 1.0f);
+
+	outColor = vec4(skyColor, 1.0f);
 }
