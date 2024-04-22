@@ -1,4 +1,5 @@
 #include "OpenGL_Manager.hpp"
+#include "Settings.hpp"
 #include <chrono>
 #include <thread>
 
@@ -7,6 +8,7 @@ void thread_chunk_update( OpenGL_Manager *render )
 	std::cout << "thread_chunk_update started" << std::endl;
 	glm::ivec2 pos;
 	int render_dist;
+	Settings *settings = Settings::Get();
 
 	while (!render->getThreadUpdate()) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -18,7 +20,7 @@ void thread_chunk_update( OpenGL_Manager *render )
 	while (true) {
 		// std::cout << "thread chunk update" << std::endl;
 		pos = render->getCurrentChunk();
-		render_dist = render->getRenderDist();
+		render_dist = settings->getInt(SETTINGS::RENDER_DIST);
 		render->setThreadUpdate(false);
 		// Bench b;
 		std::set<std::pair<int, int>> coords;
@@ -129,7 +131,7 @@ glm::ivec2 OpenGL_Manager::getCurrentChunk( void )
 int OpenGL_Manager::getRenderDist( void )
 {
 	_mtx.lock();
-	int res = _render_distance;
+	int res = 0; // TODO DEL THIS FUNC
 	_mtx.unlock();
 	return (res);
 }

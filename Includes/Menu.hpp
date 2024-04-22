@@ -15,11 +15,13 @@ namespace MENU
 	enum {
 		MAIN,
 		MAIN_OPTIONS,
+		MAIN_VIDEO_SETTINGS,
 		WORLD_SELECT,
 		LOAD,
 		DEATH,
 		PAUSE,
 		OPTIONS,
+		VIDEO_SETTINGS,
 		INVENTORY,
 		CRAFTING,
 		CHEST,
@@ -36,7 +38,7 @@ class Menu
         GLint _gui_size, _nb_points, _state, _selection, _selected_world;
 		t_item _selected_block;
 		bool _vaoSet, _textBar, _moving_slider;
-		float _fov_gradient;
+		float _fov_gradient, _render_gradient;
 		std::vector<std::string> _worlds;
 		std::vector<int> _selection_list;
 		std::vector<std::array<int, 9>> _vertices;
@@ -53,10 +55,11 @@ class Menu
 		void reset_values( void );
 		int main_menu( void );
 		int world_select_menu( void );
-		int loading_screen( GLint render_dist );
+		int loading_screen( void );
 		int death_menu( void );
 		int pause_menu( void );
 		int options_menu( void );
+		int video_menu( void );
 		int ingame_inputs( void );
 		int ingame_menu( void );
 		int chat_menu( bool animUpdate );
@@ -67,6 +70,7 @@ class Menu
 		void setup_array_buffer_death( void );
         void setup_array_buffer_pause( void );
         void setup_array_buffer_options( void );
+        void setup_array_buffer_video( void );
         void setup_array_buffer_chat( void );
 
 		void occult_selection( void );
@@ -102,7 +106,7 @@ class Menu
 		int getState( void );
 		void changeGuiSize( int offset );
 		std::string getWorldFile( void );
-		int run( GLint render_dist, bool animUpdate );
+		int run( bool animUpdate );
 
 		std::string getInfoString( void );
 };

@@ -1,12 +1,13 @@
 #include "Menu.hpp"
 #include "Ui.hpp"
 #include "callbacks.hpp"
+#include "Settings.hpp"
 #include <dirent.h>
 extern std::mutex mtx;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Menu::Menu( Inventory & inventory, UI *ui ) : _gui_size(3), _state(MENU::MAIN), _selection(0), _selected_world(0), _vaoSet(false),
-	_textBar(true), _fov_gradient(70),
+	_textBar(true), _fov_gradient(70), _render_gradient(10),
 	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _chest(NULL), _furnace(NULL)
 {
 	_world_file = "";
@@ -155,7 +156,7 @@ int Menu::world_select_menu( void )
 	return (0);
 }
 
-int Menu::loading_screen( GLint render_dist )
+int Menu::loading_screen( void )
 {
 	GLint current_size = 0, newVaoCounter = 0;
 	for (auto& c : _chunks) {
@@ -164,6 +165,7 @@ int Menu::loading_screen( GLint render_dist )
 		mtx.unlock();
 	}
 
+	int render_dist = Settings::Get()->getInt(SETTINGS::RENDER_DIST);
 	GLint goal = (1 + 2 * render_dist) * (1 + 2 * render_dist);
 	// std::cout << "CURRENT IS " << current_size << ", GOAL IS " << goal << std::endl;
 	if (current_size >= goal) {
@@ -269,19 +271,23 @@ int Menu::options_menu( void )
 		if (_selection == 1) { // FOV
 			_moving_slider = true;
 			if (_state == MENU::OPTIONS) {
-				_ui->setFov(_fov_gradient);
+				Settings::Get()->setFloat(SETTINGS::FOV, _fov_gradient);
 			}
 		} else if (!INPUT::key_update(INPUT::BREAK)) {
+		} else if (_selection == 5) { // video_settings
+			_state = (_state == MENU::OPTIONS) ? MENU::VIDEO_SETTINGS : MENU::MAIN_VIDEO_SETTINGS;
+			reset_values();
+			return (video_menu());
 		} else if (_selection == 11) { // Done
 			_state = (_state == MENU::OPTIONS) ? MENU::PAUSE : MENU::MAIN;
 			reset_values();
-			return (pause_menu());
+			return ((_state == MENU::PAUSE) ? pause_menu() : main_menu());
 		}
 	}
 	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
 		_state = (_state == MENU::OPTIONS) ? MENU::PAUSE : MENU::MAIN;
 		reset_values();
-		return (pause_menu());
+		return ((_state == MENU::PAUSE) ? pause_menu() : main_menu());
 	}
 
 	setup_array_buffer_options();
@@ -316,7 +322,62 @@ int Menu::options_menu( void )
 	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 38 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Chat Settings");
 	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 61 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Accessibility Settings");
 	_text->addText(WIN_WIDTH / 2 - 10 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Done");
-	return (_moving_slider * 7);
+	return (_moving_slider ? 7 : 0);
+}
+
+int Menu::video_menu( void )
+{
+	_moving_slider = false;
+	if (INPUT::key_down(INPUT::BREAK)) {
+		if (_selection == 1) { // Render dist
+			_moving_slider = true;
+			Settings::Get()->setInt(SETTINGS::RENDER_DIST, static_cast<int>(_render_gradient));
+		} else if (!INPUT::key_update(INPUT::BREAK)) {
+		} else if (_selection == 11) { // Done
+			_state = (_state == MENU::VIDEO_SETTINGS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
+			reset_values();
+			return (options_menu());
+		}
+	}
+	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
+		_state = (_state == MENU::VIDEO_SETTINGS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
+		reset_values();
+		return (options_menu());
+	}
+
+	setup_array_buffer_video();
+	glUseProgram(_shaderProgram);
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_POINTS, 0, _nb_points);
+
+	// first draw text shadow
+	// _text->addText(WIN_WIDTH / 2 - 100 + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size - 40 + _gui_size, 24, false, "Options");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 20 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Render dist " + std::to_string(static_cast<int>(_render_gradient)));
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 58 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Resolution");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 53 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Clouds - Fancy");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Gui scale");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 33 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Brightness");
+	// _text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 51 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Resource Packs...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Skybox on");
+	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 29 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Controls...");
+	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 38 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Chat Settings");
+	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 61 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Accessibility Settings");
+	_text->addText(WIN_WIDTH / 2 - 10 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Done");
+
+	// then draw text in white
+	_text->addText(WIN_WIDTH / 2 - 22 * (_gui_size + 1), WIN_HEIGHT / 2 - 105 * _gui_size, (_gui_size + 1) * 7, true, "Video");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 20 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Render dist " + std::to_string(static_cast<int>(_render_gradient)));
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 58 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Resolution");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 53 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Clouds - Fancy");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 47 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Gui scale");
+	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 33 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Brightness");
+	// _text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 51 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Resource Packs...");
+	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Skybox on");
+	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 29 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Controls...");
+	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 38 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Chat Settings");
+	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 61 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Accessibility Settings");
+	_text->addText(WIN_WIDTH / 2 - 10 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Done");
+	return ((_moving_slider && _state == MENU::VIDEO_SETTINGS) ? 8 : 0);
 }
 
 int Menu::ingame_inputs( void )
@@ -575,7 +636,7 @@ void Menu::setup_array_buffer_options( void )
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Realms Notifications
 
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Skin Customization...
-    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Video Settings...
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 5) ? 111 : 91, 200, 20}); // Video Settings...
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Language...
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Resource Packs...
 
@@ -583,6 +644,28 @@ void Menu::setup_array_buffer_options( void )
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Controls...
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Chat Settings...
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Accessibility Settings...
+
+    _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 11) ? 111 : 91, 200, 20}); // Done
+
+	setup_shader();
+}
+
+void Menu::setup_array_buffer_video( void )
+{
+	_vertices.push_back({1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1}); // occult window
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Render dist
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_render_gradient, 8, 32, 0, 190)) * _gui_size, WIN_HEIGHT / 2 - 84 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20}); // render Slider
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Resolution
+
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Clouds
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 5) ? 111 : 91, 200, 20}); // Gui scale
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // brightness
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
+
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
 
     _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 11) ? 111 : 91, 200, 20}); // Done
 
@@ -1005,7 +1088,8 @@ static bool inRectangle( float posX, float posY, int rx, int ry, int width, int 
 
 void Menu::processMouseMovement( float posX, float posY )
 {
-	if (_state == MENU::MAIN) {
+	switch (_state) {
+	case MENU::MAIN:
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size)) {
@@ -1015,7 +1099,8 @@ void Menu::processMouseMovement( float posX, float posY )
 		} else {
 			_selection = 0;
 		}
-	} else if (_state == MENU::WORLD_SELECT) {
+		break ;
+	case MENU::WORLD_SELECT:
 		if (_selected_world && inRectangle(posX, posY, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size)) {
@@ -1030,7 +1115,8 @@ void Menu::processMouseMovement( float posX, float posY )
 				_selection = index + 7;
 			}
 		}
-	} else if (_state == MENU::DEATH) {
+		break ;
+	case MENU::DEATH:
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 5 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
@@ -1038,7 +1124,8 @@ void Menu::processMouseMovement( float posX, float posY )
 		} else {
 			_selection = 0;
 		}
-	} else if (_state == MENU::PAUSE) {
+		break ;
+	case MENU::PAUSE:
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size, 95 * _gui_size, 20 * _gui_size)) {
@@ -1048,7 +1135,9 @@ void Menu::processMouseMovement( float posX, float posY )
 		} else {
 			_selection = 0;
 		}
-	} else if (_state == MENU::OPTIONS || _state == MENU::MAIN_OPTIONS) {
+		break ;
+	case MENU::OPTIONS:
+	case MENU::MAIN_OPTIONS:
 		if (_moving_slider) {
 			_fov_gradient = gradient(posX, WIN_WIDTH / 2 - 200 * _gui_size, WIN_WIDTH / 2 - 10 * _gui_size, 50, 110);
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
@@ -1056,12 +1145,30 @@ void Menu::processMouseMovement( float posX, float posY )
 			if (_moving_slider) {
 				_fov_gradient = gradient(posX, WIN_WIDTH / 2 - 200 * _gui_size, WIN_WIDTH / 2 - 10 * _gui_size, 50, 110);
 			}
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 5;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 11;
 		} else {
 			_selection = 0;
 		}
-	} else if (_state >= MENU::INVENTORY) {
+		break ;
+	case MENU::MAIN_VIDEO_SETTINGS:
+	case MENU::VIDEO_SETTINGS:
+		if (_moving_slider) {
+			_render_gradient = gradient(posX, WIN_WIDTH / 2 - 200 * _gui_size, WIN_WIDTH / 2 - 10 * _gui_size, 8, 32);
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 1;
+			if (_moving_slider) {
+				_render_gradient = gradient(posX, WIN_WIDTH / 2 - 200 * _gui_size, WIN_WIDTH / 2 - 10 * _gui_size, 8, 32);
+			}
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 11;
+		} else {
+			_selection = 0;
+		}
+		break ;
+	default:
 		for (int index = 0; index < 9; index++) {
 			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * index * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 + 59 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
 				_selection = index + 1;
@@ -1187,7 +1294,7 @@ std::string Menu::getWorldFile( void )
 	return (_world_file);
 }
 
-int Menu::run( GLint render_dist, bool animUpdate )
+int Menu::run( bool animUpdate )
 {
 	if (_state != MENU::CHAT && INPUT::key_down(INPUT::QUIT_PROGRAM)) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
@@ -1200,7 +1307,7 @@ int Menu::run( GLint render_dist, bool animUpdate )
 		case MENU::WORLD_SELECT:
 			return (world_select_menu());
 		case MENU::LOAD:
-			return (loading_screen(render_dist));
+			return (loading_screen());
 		case MENU::DEATH:
 			return (death_menu());
 		case MENU::PAUSE:
@@ -1208,6 +1315,9 @@ int Menu::run( GLint render_dist, bool animUpdate )
 		case MENU::MAIN_OPTIONS:
 		case MENU::OPTIONS:
 			return (options_menu());
+		case MENU::MAIN_VIDEO_SETTINGS:
+		case MENU::VIDEO_SETTINGS:
+			return (video_menu());
 		case MENU::INVENTORY:
 			return (ingame_menu());
 		case MENU::CRAFTING:

@@ -14,8 +14,6 @@ extern std::mutex mtx_perimeter;
 extern std::mutex mtx_deleted_chunks;
 extern std::mutex mtx_backup;
 
-# define RENDER_DISTANCE 10//20
-
 enum {
 	FILL,
 	LINE,
@@ -36,7 +34,7 @@ class OpenGL_Manager
 		GLint _uniFog, _uniView, _uniProj, _skyUniFog, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim, _partUniView, _partUniProj;
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
-		GLint _render_distance, _fill;
+		GLint _fill;
 		bool _debug_mode, _game_mode, _outline, _paused, _threadUpdate, _threadStop;
 		float _break_time, _eat_timer, _bow_timer;
 		int _break_frame, _hand_content;

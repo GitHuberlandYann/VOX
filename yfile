@@ -47,20 +47,15 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-    - settings menu
-	- centralize settings and save/load them in file
 	- double chests
 	- bow and arrow
 	- universal use of tps instead of deltatimes
 	- commands /say /me /save /setblock /kill
 
 TODAY:
-	- DONE smooth partial collision instead of teleportation
-	- DONE fix slab to slab transition makes you go up 1 full block
-	- DONE change applyGravity to make use of height in collision box and avoid for loops
-	- skybox on off in settings
+    - settings menu
+	- centralize settings and save/load them in file
 	- check tp 1000 ~ ~ light spread stackoverflow
-	- stairs in hand
 
 SHORTTERM memory:
 	\/ - work on cleanAtlas
@@ -93,6 +88,9 @@ DONE:
     - obstacle detection for physics + game mode
     - hide faces not oriented towards us // face culling .. only on mac, gains no fps
     - save block changed into backup map
+	- smooth partial collision instead of teleportation
+	- fix <slab to slab transition makes you go up 1 full block>
+	- change applyGravity to make use of height in collision box and avoid for loops
     - player gravity
 	- change physics in water
     - hitbox around player for collisions - https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes

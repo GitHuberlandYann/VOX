@@ -1,11 +1,12 @@
 #include "OpenGL_Manager.hpp"
 #include "callbacks.hpp"
+#include "Settings.hpp"
 // #include "Benchmark.hpp"
 void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _textures(NULL),
-		_render_distance(RENDER_DISTANCE), _fill(FILL),
+		_fill(FILL),
 		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
 		_threadUpdate(false), _threadStop(false),
 		_break_time(0), _eat_timer(0), _bow_timer(0), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0})
@@ -82,6 +83,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	mtx_backup.unlock();
 
 	DayCycle::Destroy();
+	Settings::Destroy();
 	check_glstate("openGL_Manager destructed", true);
 }
 
@@ -308,10 +310,10 @@ void OpenGL_Manager::setup_communication_shaders( void )
 
 	glUseProgram(_shaderProgram);
 	_uniFog = glGetUniformLocation(_shaderProgram, "fogDist");
-	glUniform1f(_uniFog, (1 + _render_distance) << CHUNK_SHIFT);
+	glUniform1f(_uniFog, (1 + Settings::Get()->getInt(SETTINGS::RENDER_DIST)) << CHUNK_SHIFT);
 	_skyUniFog = glGetUniformLocation(_skyShaderProgram, "fogDist");
 	glUseProgram(_skyShaderProgram);
-	glUniform1f(_skyUniFog, (1 + _render_distance) << CHUNK_SHIFT);
+	glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(SETTINGS::RENDER_DIST)) << CHUNK_SHIFT);
 	glUseProgram(_shaderProgram);
 
 	_uniView = glGetUniformLocation(_shaderProgram, "view");
@@ -556,7 +558,7 @@ void OpenGL_Manager::main_loop( void )
 				str += "\nDisplayed faces\t> " + std::to_string(faceCounter)
 						+ "\nSky faces\t> " + std::to_string(skyFaces)
 						+ "\nWater faces\t> " + std::to_string(waterFaces)
-						+ "\n\nRender Distance\t> " + std::to_string(_render_distance)
+						+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(SETTINGS::RENDER_DIST))
 						+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE");
 				mtx_backup.lock();
 				str += "\nBackups\t> " + std::to_string(_backups.size());
@@ -578,7 +580,7 @@ void OpenGL_Manager::main_loop( void )
 				_menu->setChunks(_chunks);
 				mtx.unlock();
 			}
-			switch (_menu->run(_render_distance, nbTicks == 1 && tickUpdate)) {
+			switch (_menu->run(nbTicks == 1 && tickUpdate)) {
 				case (1): // back to game
 					if (!IS_LINUX) {
 						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -616,6 +618,15 @@ void OpenGL_Manager::main_loop( void )
 					break ;
 				case (7): // fov change
 					update_cam_perspective();
+					break ;
+				case (8): // render dist change
+					int render_dist = Settings::Get()->getInt(SETTINGS::RENDER_DIST);
+					// _ui->chatMessage("Render distance set to " + std::to_string(render_dist));
+					glUseProgram(_skyShaderProgram);
+					glUniform1f(_skyUniFog, (1 + render_dist) << CHUNK_SHIFT);
+					glUseProgram(_shaderProgram);
+					glUniform1f(_uniFog, (1 + render_dist) << CHUNK_SHIFT);
+					setThreadUpdate(true);
 					break ;
 			}
 		}

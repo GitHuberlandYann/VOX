@@ -284,11 +284,6 @@ void UI::changeGuiSize( int offset )
 	else _vaoSet = false;
 }
 
-void UI::setFov( float fov )
-{
-	_camera.setFov(fov);
-}
-
 GLuint UI::getShaderProgram( void )
 {
 	return (_shaderProgram);

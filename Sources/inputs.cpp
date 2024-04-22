@@ -1,6 +1,7 @@
 #include "OpenGL_Manager.hpp"
 #include "callbacks.hpp"
 #include "utils.h"
+#include "Settings.hpp"
 #include <iostream>
 
 Chunk *current_chunk_ptr = NULL;
@@ -17,7 +18,7 @@ void OpenGL_Manager::resetInputsPtrs( void )
 t_hit OpenGL_Manager::get_block_hit( void )
 {
 	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0};
-	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (_render_distance << CHUNK_SHIFT) >> 1 : REACH);
+	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (Settings::Get()->getInt(SETTINGS::RENDER_DIST) << CHUNK_SHIFT) >> 1 : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
 	Chunk *chunk = NULL;
@@ -488,7 +489,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				break;
 		}
 	}
-	// change render dist
+	/*/ change render dist
 	GLint key_render_dist = (INPUT::key_down(INPUT::RENDER_DIST_UP) && INPUT::key_update(INPUT::RENDER_DIST_UP))
 		- (INPUT::key_down(INPUT::RENDER_DIST_DOWN) && INPUT::key_update(INPUT::RENDER_DIST_DOWN));
 	if (key_render_dist && _render_distance + key_render_dist > 0) {
@@ -503,7 +504,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		setThreadUpdate(true);
 		// update_visible_chunks();
 		// std::cout << "render distance set to " << _render_distance << std::endl;
-	}
+	}*/
 	// change gui size
 	GLint key_gui_size = (INPUT::key_down(INPUT::GUI_UP) && INPUT::key_update(INPUT::GUI_UP))
 		- (INPUT::key_down(INPUT::GUI_DOWN) && INPUT::key_update(INPUT::GUI_DOWN));

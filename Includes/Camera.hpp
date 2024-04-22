@@ -16,7 +16,6 @@ enum Camera_Movement {
 # define REACH		  		4.5f
 # define EYE_LEVEL    		0.62f
 # define SNEAK_EYE_LEVEL	0.32f
-# define FOV          		70.0f // if fov = -fov, world is upside down
 
 # define FLY_SPEED    		20
 # define WALK_SPEED   		4.317f
@@ -57,7 +56,7 @@ class Camera
 		glm::vec2 _front2, _right2;
 		float _yaw, _pitch;
 		float _deltaTime, _fall_time, _walk_time, _breathTime, _armAnimTime;
-		float _fov, _fov_offset;
+		float _fov_offset;
 		float _fall_distance;
 		int _foodTickTimer, _camPlacement;
 		float _foodExhaustionLevel;
@@ -100,7 +99,6 @@ class Camera
 
 		void setCurrentChunkPtr( Chunk *ptr );
 		void changeCamPlacement( void );
-		void setFov( float fov );
 		void setRun( bool value );
 		void setSneak( bool value );
 		void setJump( bool value );

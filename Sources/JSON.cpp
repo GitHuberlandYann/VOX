@@ -1,4 +1,5 @@
 #include "OpenGL_Manager.hpp"
+#include "Settings.hpp"
 #include <fstream>
 extern siv::PerlinNoise::seed_type perlin_seed;
 
@@ -30,7 +31,7 @@ void OpenGL_Manager::saveWorld( void )
 		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
 		+ ",\n\t\"f5_mode\": " + ((_ui->_hideUI) ? "true" : "false")
 		+ ",\n\t\"outline\": " + ((_outline) ? "true" : "false")
-		+ ",\n\t\"render_distance\": " + std::to_string(_render_distance) + ",\n\t"
+		+ ",\n\t\"render_distance\": " + std::to_string(Settings::Get()->getInt(SETTINGS::RENDER_DIST)) + ",\n\t"
 		+ DayCycle::Get()->saveString()
 		+ _camera->saveString()
 		+ _inventory->saveString()
@@ -64,7 +65,7 @@ std::string Camera::saveString( void )
 		+ std::to_string(_spawnpoint.x) + ", \"y\": " + std::to_string(_spawnpoint.y) + ", \"z\": " + std::to_string(_spawnpoint.z)
 		+ "},\n\t\t\"yaw\": " + std::to_string(_yaw)
 		+ ",\n\t\t\"pitch\": " + std::to_string(_pitch)
-		+ ",\n\t\t\"fov\": " + std::to_string(_fov)
+		+ ",\n\t\t\"fov\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FOV))
 		+ ",\n\t\t\"health_points\": " + std::to_string(_health_points)
 		+ ",\n\t\t\"foodLevel\": " + std::to_string(_foodLevel)
 		+ ",\n\t\t\"foodSaturation\": " + std::to_string(_foodSaturationLevel)
@@ -225,13 +226,14 @@ void OpenGL_Manager::loadWorld( std::string file )
 				_outline = line.substr(11, 4) == "true";
 				ofs << "outline set to " << _outline << std::endl;
 			} else if (!line.compare(0, 19, "\"render_distance\": ")) {
-				_render_distance = std::atoi(&line[19]);
+				int render = std::atoi(&line[19]);
+				Settings::Get()->setInt(SETTINGS::RENDER_DIST, render);
 				glUseProgram(_shaderProgram);
-				glUniform1f(_uniFog, (1 + _render_distance) << CHUNK_SHIFT);
+				glUniform1f(_uniFog, (1 + render) << CHUNK_SHIFT);
 				glUseProgram(_skyShaderProgram);
-				glUniform1f(_skyUniFog, (1 + _render_distance) << CHUNK_SHIFT);
+				glUniform1f(_skyUniFog, (1 + render) << CHUNK_SHIFT);
 				glUseProgram(_shaderProgram);
-				ofs << "render dist set to " << _render_distance << std::endl;
+				ofs << "render dist set to " << render << std::endl;
 			} else if (!line.compare(0, 12, "\"dayCycle\": ")) {
 				DayCycle::Get()->loadWorld(ofs, line);
 			} else if (!line.compare(0, 10, "\"camera\": ")) {
@@ -297,9 +299,10 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			_pitch = std::stof(&line[9]);
 			ofs << "camera pitch set to " << _pitch << std::endl;
 		} else if (!line.compare(0, 7, "\"fov\": ")) {
-			_fov = std::stof(&line[7]);
+			float fov = std::stof(&line[7]);
+			Settings::Get()->setFloat(SETTINGS::FOV, fov);
 			_fovUpdate = true;
-			ofs << "camera fov set to " << _fov << std::endl;
+			ofs << "camera fov set to " << fov << std::endl;
 		} else if (!line.compare(0, 17, "\"health_points\": ")) {
 			_health_points = std::atoi(&line[17]);
 			ofs << "camera health points set to " << _health_points << std::endl;
