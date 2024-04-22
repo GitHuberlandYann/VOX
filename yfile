@@ -54,6 +54,14 @@ IN PROGRES:
 	- universal use of tps instead of deltatimes
 	- commands /say /me /save /setblock /kill
 
+TODAY:
+	- DONE smooth partial collision instead of teleportation
+	- DONE fix slab to slab transition makes you go up 1 full block
+	- DONE change applyGravity to make use of height in collision box and avoid for loops
+	- skybox on off in settings
+	- check tp 1000 ~ ~ light spread stackoverflow
+	- stairs in hand
+
 SHORTTERM memory:
 	\/ - work on cleanAtlas
 	\/ - work on readme

@@ -510,7 +510,7 @@ void OpenGL_Manager::main_loop( void )
 		}
 
 		if (_menu->getState() >= MENU::PAUSE) {
-			_skybox->render(_camera->getEyePos());
+			_skybox->render(_camera->getCamPos());
 		}
 
 		#if 1

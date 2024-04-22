@@ -2092,6 +2092,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 		recurse_res = collisionBox(pos, width, 0, originalHeight);
 	}
 	if (recurse_res.type == COLLISION::TOTAL) {
+		recurse_res.maxZ = glm::max(res.maxZ, recurse_res.maxZ);
 		return (recurse_res);
 	} else if (recurse_res.type == COLLISION::PARTIAL) {
 		if (res.type == COLLISION::NONE) {
@@ -2148,55 +2149,23 @@ void Chunk::applyGravity( void )
 	t_collision coll;
 	if (distZ < 0) { // jumping
 		_camera->_touchGround = false;
-		float hitBoxHeight = _camera->getHitBox();
-		// std::cout << "DEBUG: " << std::to_string(_camera->_position.z) << std::endl;
-		for (float posZ = saved_posZ; posZ < pos.z; posZ++) {
-			// std::cout << "testing with posZ " << posZ << std::endl;
-			coll = collisionBox({pos.x, pos.y, posZ + hitBoxHeight}, 0.3f, 0, 0);
-			if (coll.type == COLLISION::TOTAL) {
-				_camera->touchCeiling(glm::floor(posZ) + 0.19f);
-				// std::cout << "hit roof from loop" << std::endl;
-				return ;
-			} else if (coll.type == COLLISION::PARTIAL) {
-				_camera->touchCeiling(coll.minZ - EYE_LEVEL - 1);
-				return ;
-			}
-		}
-		coll = collisionBox({pos.x, pos.y, pos.z + hitBoxHeight}, 0.3f, 0, 0);
+		float hitboxHeight = _camera->getHitBox();
+		coll = collisionBox({pos.x, pos.y, pos.z + hitboxHeight}, 0.3f, -distZ, -distZ);
 		if (coll.type == COLLISION::TOTAL) {
 			_camera->touchCeiling(glm::floor(pos.z) + 0.19f);
-			// std::cout << "hit roof out of loop, " << pos.z << " -> " << _camera->getPos().z << std::endl;
+			// std::cout << "hit roof, " << pos.z << " -> " << _camera->getPos().z << std::endl;
 			return ;
 		} else if (coll.type == COLLISION::PARTIAL) {
-			_camera->touchCeiling(coll.minZ - EYE_LEVEL - 1);
+			_camera->touchCeiling(coll.minZ - hitboxHeight);
 			return ;
 		}
 	} else { // falling
-		saved_posZ += 0.01f; // mini offset to handle slabs
-		for (float posZ = saved_posZ; posZ > pos.z; posZ -= 0.125f) { // TODO rethink this to make less checks
-			coll = collisionBox({pos.x, pos.y, posZ}, 0.3f, 0, 0);
-			if (coll.type == COLLISION::TOTAL) {
-				_camera->touchGround(coll.maxZ);//glm::floor((posZ + 1)));
-				if (saved_posZ != _camera->getPos().z) {
-					_camera->_update = true;
-				}
-				return ;
-			} else if (coll.type == COLLISION::PARTIAL) {
-				_camera->touchGround(coll.maxZ);
-				return ;
-			}
-		}
-		coll = collisionBox(pos, 0.3f, 0, 0);
-		if (coll.type == COLLISION::TOTAL) {
-			// std::cout << "\tgravity total saved " << saved_posZ << " dist " << distZ << std::endl;
-			_camera->touchGround(coll.maxZ);//glm::floor((pos.z + 1)));
+		coll = collisionBox(pos, 0.3f, distZ, distZ);
+		if (coll.type != COLLISION::NONE) {
+			_camera->touchGround(coll.maxZ);
 			if (saved_posZ != _camera->getPos().z) {
 				_camera->_update = true;
 			}
-			return ;
-		} else if (coll.type == COLLISION::PARTIAL) {
-			// std::cout << "\tgravity partial" << std::endl;
-			_camera->touchGround(coll.maxZ);
 			return ;
 		}
 	}

@@ -6,10 +6,11 @@ void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item
 	if (_hideUI || game_mode == CREATIVE) {
 		return ;
 	}
-	int itemLight = _current_chunk_ptr->computePosLight(getEyePos()) << 24;
+	glm::vec3 pos = getCamPos();
+	int itemLight = _current_chunk_ptr->computePosLight(pos) << 24;
 	const float scale = 0.057857142857142864 * 0.5f;
 
-	glm::vec3 pos = getEyePos() + _right * 8.0f * scale - _world_up * 9.0f * scale + _world_up * glm::sin(_walk_time * 7) * 0.03f + _right * glm::cos(_walk_time * 4) * 0.03f;
+	pos += _right * 8.0f * scale - _world_up * 9.0f * scale + _world_up * glm::sin(_walk_time * 7) * 0.03f + _right * glm::cos(_walk_time * 4) * 0.03f;
 	if (item == blocks::AIR) { // draw arm, only the two visible faces
 		const int speco = 0; // 64 for second skin
 		glm::vec3 armFront = glm::normalize(_front + _world_up * 0.3f);

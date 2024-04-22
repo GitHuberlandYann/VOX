@@ -27,6 +27,7 @@ enum Camera_Movement {
 # define SWIM_SPEED			1.97f
 # define SWIM_UP_SPEED		0.39f
 # define SWIM_DOWN_SPEED	1.81f
+# define SMOOTH_CAM_SPEED	5.0f
 
 # define INITIAL_JUMP 		9.317f
 # define INITIAL_FALL 		-6.605f
@@ -60,8 +61,8 @@ class Camera
 		float _fall_distance;
 		int _foodTickTimer, _camPlacement;
 		float _foodExhaustionLevel;
-		float _z0, _fall_immunity;
-		bool _walking, _sprinting, _sneaking, _healthUpdate, _waterHead, _waterFeet, _armAnimation, _hideUI;
+		float _smoothCamZ, _z0, _fall_immunity;
+		bool _walking, _sprinting, _sneaking, _smoothCam, _healthUpdate, _waterHead, _waterFeet, _armAnimation, _hideUI;
 		std::mutex _mtx;
 		Chunk *_current_chunk_ptr;
 
@@ -88,6 +89,7 @@ class Camera
 		int getOrientation( void );
 		glm::vec3 getPos( void );
 		glm::vec3 getEyePos( void );
+		glm::vec3 getCamPos( void );
 		glm::vec3 getDir( void );
 		float getHitBox( void );
 		void setPosZ( float value );

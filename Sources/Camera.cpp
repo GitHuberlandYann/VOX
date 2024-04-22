@@ -4,8 +4,8 @@ extern std::mutex mtx;
 
 Camera::Camera( glm::vec3 position )
 	: _fall_time(0), _walk_time(0), _breathTime(0), _armAnimTime(0), _fov(FOV), _fov_offset(0), _fall_distance(0),
-	_foodTickTimer(0), _camPlacement(CAMPLACEMENT::DEFAULT), _foodExhaustionLevel(0), _z0(position.z), _fall_immunity(true),
-	_walking(false), _sprinting(false), _sneaking(false), _healthUpdate(false),
+	_foodTickTimer(0), _camPlacement(CAMPLACEMENT::DEFAULT), _foodExhaustionLevel(0), _smoothCamZ(0), _z0(position.z), _fall_immunity(true),
+	_walking(false), _sprinting(false), _sneaking(false), _smoothCam(false), _healthUpdate(false),
 	_waterHead(false), _waterFeet(false), _armAnimation(false), _hideUI(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
 	_inJump(false), _touchGround(false), _foodSaturationLevel(20)
 {
@@ -99,10 +99,18 @@ void Camera::applyGravityUnderwater( void )
 //                                Public                                      //
 // ************************************************************************** //
 
- glm::mat4 Camera::getViewMatrix( void )
+glm::mat4 Camera::getViewMatrix( void )
 {
 	_update = false;
 	glm::vec3 pos = getEyePos();
+	if (_smoothCam) {
+		if (_smoothCamZ < pos.z) {
+			pos.z = _smoothCamZ;
+			_smoothCamZ += _deltaTime * SMOOTH_CAM_SPEED;
+		} else {
+			_smoothCam = false;
+		}
+	}
 	switch (_camPlacement) {
 	case CAMPLACEMENT::DEFAULT:
 		return (glm::lookAt(pos, pos + _front, _up));
@@ -157,6 +165,23 @@ glm::vec3 Camera::getEyePos( void )
 	_mtx.unlock();
 	res.z += 1 + ((_sneaking) ? SNEAK_EYE_LEVEL : EYE_LEVEL);
 	return (res);
+}
+
+glm::vec3 Camera::getCamPos( void )
+{
+	glm::vec3 pos = getEyePos();
+	if (_smoothCam) {
+		pos.z = _smoothCamZ - _deltaTime * SMOOTH_CAM_SPEED;
+	}
+	switch (_camPlacement) {
+	case CAMPLACEMENT::DEFAULT:
+		return (pos);
+	case CAMPLACEMENT::BEHIND:
+		return (pos - _front * 5.0f);
+	case CAMPLACEMENT::FRONT:
+		return (pos + _front * 5.0f);
+	}
+	return (pos);
 }
 
 glm::vec3 Camera::getDir( void )
@@ -381,6 +406,7 @@ void Camera::unmoveHuman( glm::vec3 pos )
 	_mtx.lock();
 	_position = pos;
 	_mtx.unlock();
+	setRun(false);
 }
 
 // adjust position.z to given obstacle, if player can't pass obstacle return false
@@ -392,8 +418,10 @@ bool Camera::customObstacle( float minZ, float maxZ )
 	_mtx.lock();
 	// std::cout << "DEBUG customObstacle " << _position.z << " vs " << maxZ << std::endl;
 	if (_position.z < maxZ && _position.z + 0.6f > maxZ) {
-		// TODO set cam offset to true to have smoother transition upon climbing stairs
+		// set smoothcam to true to have smoother transition upon climbing stairs
 		// ie player will teleport, but cam will follow smoothly to enhance user experience
+		_smoothCam = true;
+		_smoothCamZ = _position.z + 1 + ((_sneaking) ? SNEAK_EYE_LEVEL : EYE_LEVEL);
 		_position.z = maxZ;
 		_mtx.unlock();
 		return (true);
@@ -625,6 +653,7 @@ void Camera::setPos( glm::vec3 pos )
 	_z0 = pos.z;
 	_fall_time = 0;
 	_update = true;
+	_smoothCam = false;
 	_current_chunk_ptr = NULL;
 }
 
@@ -649,6 +678,8 @@ void Camera::respawn( void )
 	_breathTime = 0;
 	_z0 = _spawnpoint.z;
 	_sprinting = false;
+	_sneaking = false;
+	_smoothCam = false;
 	_healthUpdate = true;
 	_waterHead = false;
 	_waterFeet = false;
