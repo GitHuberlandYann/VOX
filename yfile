@@ -54,6 +54,7 @@ IN PROGRES:
 
 TODAY:
     - settings menu
+	- change main menu and world select menu to use gui_size for text placement and size
 	- centralize settings and save/load them in file
 	- check tp 1000 ~ ~ light spread stackoverflow
 

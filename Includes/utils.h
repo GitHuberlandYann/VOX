@@ -29,6 +29,9 @@
 #  define IS_LINUX false
 # endif
 
+# define GUI_MIN 1
+# define GUI_MAX glm::max(1, static_cast<int>(glm::min(glm::floor(WIN_WIDTH / 320), glm::floor(WIN_HEIGHT / 240))))
+
 enum {
 	CREATIVE = false,
 	SURVIVAL = true

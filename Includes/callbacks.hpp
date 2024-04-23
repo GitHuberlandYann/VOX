@@ -22,57 +22,54 @@ namespace INPUT
 	bool key_down( int index );
 	bool key_update( int index );
 
+	enum {
+		MOVE_FORWARD,
+		MOVE_BACKWARD,
+		MOVE_RIGHT,
+		MOVE_LEFT,
+		SNEAK,
+		RUN,
+		JUMP,
+		BREAK,
+		SAMPLE,
+		USE,
+		INVENTORY,
+		DROP,
+		GAMEMODE,
+		NBR_KEYS_PACKET,
 
-	const int MOVE_FORWARD     = 0;
-	const int MOVE_BACKWARD    = 1;
-	const int MOVE_RIGHT       = 2;
-	const int MOVE_LEFT        = 3;
-	const int SNEAK            = 4;
-	const int RUN              = 5;
-	const int JUMP             = 6;
-	const int BREAK            = 7;
-	const int SAMPLE           = 8;
-	const int USE              = 9;
-	const int INVENTORY        = 10;
-	const int DROP             = 11;
-	const int GAMEMODE         = 12;
-	const int NBR_KEYS_PACKET  = 13;
-	// from here, we don't send to server
-	const int CHAT             = 13;
-	const int CLOSE            = 14;
-	const int ENTER            = 15;
-	const int DELETE           = 16;
-	const int QUIT_PROGRAM     = 16;
-	const int WIREFRAME        = 17;
-	const int BLOCK_HIGHLIGHT  = 18;
-	const int HOTBAR           = 19;
-	const int SCREENSHOT       = 20;
-	const int DEBUG            = 21;
-	const int CAMERA           = 22;
-	const int DAYCYCLE_UP      = 23;
-	const int DAYCYCLE_DOWN    = 24;
-	const int RENDER_DIST_UP   = 25;
-	const int RENDER_DIST_DOWN = 26;
-	const int FLY_SPEED_UP     = 27;
-	const int FLY_SPEED_DOWN   = 28;
-	const int GUI_UP           = 29;
-	const int GUI_DOWN         = 30;
-	const int LOOK_UP          = 31;
-	const int LOOK_DOWN        = 32;
-	const int LOOK_RIGHT       = 33;
-	const int LOOK_LEFT        = 34;
-	const int SLOT_0           = 35;
-	const int SLOT_1           = 36;
-	const int SLOT_2           = 37;
-	const int SLOT_3           = 38;
-	const int SLOT_4           = 39;
-	const int SLOT_5           = 40;
-	const int SLOT_6           = 41;
-	const int SLOT_7           = 42;
-	const int SLOT_8           = 43;
-	const int SLOT_9           = 44;
+		CHAT = NBR_KEYS_PACKET,
+		CLOSE,
+		ENTER,
+		DELETE,
+		QUIT_PROGRAM = DELETE,
+		WIREFRAME,
+		BLOCK_HIGHLIGHT,
+		HOTBAR,
+		SCREENSHOT,
+		DEBUG,
+		CAMERA,
+		DAYCYCLE_UP,
+		DAYCYCLE_DOWN,
+		FLY_SPEED_UP,
+		FLY_SPEED_DOWN,
+		LOOK_UP,
+		LOOK_DOWN,
+		LOOK_RIGHT,
+		LOOK_LEFT,
+		SLOT_0,
+		SLOT_1,
+		SLOT_2,
+		SLOT_3,
+		SLOT_4,
+		SLOT_5,
+		SLOT_6,
+		SLOT_7,
+		SLOT_8,
+		SLOT_9,
 
-	const int KEY_SIZE         = 45;
+		KEY_SIZE,
+	};
 }
 
 #endif

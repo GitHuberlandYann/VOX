@@ -104,7 +104,7 @@ class Menu
 		void setFurnaceInstance( FurnaceInstance *furnace );
 		void setState( int state );
 		int getState( void );
-		void changeGuiSize( int offset );
+		void changeGuiSize( void );
 		std::string getWorldFile( void );
 		int run( bool animUpdate );
 

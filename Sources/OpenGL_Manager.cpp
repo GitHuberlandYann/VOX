@@ -511,7 +511,7 @@ void OpenGL_Manager::main_loop( void )
 			drawEntities();
 		}
 
-		if (_menu->getState() >= MENU::PAUSE) {
+		if (_menu->getState() >= MENU::PAUSE && Settings::Get()->getBool(SETTINGS::SKYBOX)) {
 			_skybox->render(_camera->getCamPos());
 		}
 

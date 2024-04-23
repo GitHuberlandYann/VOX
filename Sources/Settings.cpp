@@ -3,9 +3,12 @@
 #include <cassert>
 
 Settings::Settings( void )
-	: _render_distance(RENDER_DISTANCE), _fov(FOV_START)
 {
+	_bools[SETTINGS::SKYBOX] = true;
 
+	_ints[SETTINGS::RENDER_DIST] = RENDER_DISTANCE;
+
+	_floats[SETTINGS::FOV] = FOV_START;
 }
 
 Settings::~Settings( void )
@@ -44,40 +47,50 @@ void Settings::Destroy( void )
 //                                Public                                      //
 // ************************************************************************** //
 
+bool Settings::getBool( int target )
+{
+	if (target < 0 || target >= SETTINGS::NBR_BOOL) {
+		assert((0 == 1 && "Settings::getBool out of bound"));
+	}
+	return (_bools[target]);
+}
+
+void Settings::setBool( int target, bool value )
+{
+	if (target < 0 || target >= SETTINGS::NBR_BOOL) {
+		assert((0 == 1 && "Settings::setBool out of bound"));
+	}
+	_bools[target] = value;
+}
+
 int Settings::getInt( int target )
 {
-	switch (target) {
-		case SETTINGS::RENDER_DIST:
-			return (_render_distance);
+	if (target < 0 || target >= SETTINGS::NBR_INT) {
+		assert((0 == 1 && "Settings::getInt out of bound"));
 	}
-	assert((0 == 1 && "Settings::getInt reached end of function"));
+	return (_ints[target]);
 }
 
 void Settings::setInt( int target, int value )
 {
-	switch (target) {
-		case SETTINGS::RENDER_DIST:
-			_render_distance = value;
-			return ;
+	if (target < 0 || target >= SETTINGS::NBR_INT) {
+		assert((0 == 1 && "Settings::setInt out of bound"));
 	}
-	assert((0 == 1 && "Settings::setInt reached end of function"));
+	_ints[target] = value;
 }
 
 float Settings::getFloat( int target )
 {
-	switch (target) {
-		case SETTINGS::FOV:
-			return (_fov);
+	if (target < 0 || target >= SETTINGS::NBR_FLOAT) {
+		assert((0 == 1 && "Settings::getFloat out of bound"));
 	}
-	assert((0 == 1 && "Settings::getFloat reached end of function"));
+	return (_floats[target]);
 }
 
 void Settings::setFloat( int target, float value )
 {
-	switch (target) {
-		case SETTINGS::FOV:
-			_fov = value;
-			return ;
+	if (target < 0 || target >= SETTINGS::NBR_FLOAT) {
+		assert((0 == 1 && "Settings::setFloat out of bound"));
 	}
-	assert((0 == 1 && "Settings::setFloat reached end of function"));
+	_floats[target] = value;
 }

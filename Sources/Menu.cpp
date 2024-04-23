@@ -86,20 +86,13 @@ int Menu::main_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	_text->addText(WIN_WIDTH / 2 - 220, WIN_HEIGHT / 2 - 120 * 3, 24, true, "Press space to start");
+	// _text->addText(WIN_WIDTH / 2 - 220, WIN_HEIGHT / 2 - 120 * 3, 24, true, "Press space to start");
 
-	// shadows
-	_text->addText(WIN_WIDTH / 2 - 110 + _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Singleplayer");
-	_text->addText(WIN_WIDTH / 2 - 100 + _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Multiplayer");
-	_text->addText(WIN_WIDTH / 2 - 150 + _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Minecraft Realms");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 80 + _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Options...");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 75 + _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Quit Game");
-	// white
-	_text->addText(WIN_WIDTH / 2 - 110, WIN_HEIGHT / 2 - 10 * _gui_size + 6 * _gui_size, 20, true, "Singleplayer");
-	_text->addText(WIN_WIDTH / 2 - 100, WIN_HEIGHT / 2 + 15 * _gui_size + 6 * _gui_size, 20, true, "Multiplayer");
-	_text->addText(WIN_WIDTH / 2 - 150, WIN_HEIGHT / 2 + 40 * _gui_size + 6 * _gui_size, 20, true, "Minecraft Realms");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 80, WIN_HEIGHT / 2 + 80 * _gui_size + 6 * _gui_size, 20, true, "Options...");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 75, WIN_HEIGHT / 2 + 80 * _gui_size + 6 * _gui_size, 20, true, "Quit Game");
+   _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 200 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Singleplayer");
+   _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size, 200 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Multiplayer");
+   _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Minecraft Realms");
+   _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Options...");
+   _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Quit Game");
 	return (0);
 }
 
@@ -133,25 +126,16 @@ int Menu::world_select_menu( void )
 
 	_text->addText(WIN_WIDTH / 2 - 120, 30, 24, true, "Select World");
 
-	// shadows
-	_text->addText(WIN_WIDTH / 2 - 406 + _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Play Selected World");
-	_text->addText(WIN_WIDTH / 2 - 390 + _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Edit");
-	_text->addText(WIN_WIDTH / 2 - 180 + _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Delete");
-	_text->addText(WIN_WIDTH / 2 + 76 + _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Create New World");
-	_text->addText(WIN_WIDTH / 2 + 40 * _gui_size - 80 + _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Re-Create");
-	_text->addText(WIN_WIDTH / 2 + 128 * _gui_size - 80 + _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Cancel");
-	// white
-	_text->addText(WIN_WIDTH / 2 - 406, WIN_HEIGHT / 2 + 90 * _gui_size + 6 * _gui_size, 20, true, "Play Selected World");
-	_text->addText(WIN_WIDTH / 2 - 390, WIN_HEIGHT / 2 + 115 * _gui_size + 6 * _gui_size, 20, true, "Edit");
-	_text->addText(WIN_WIDTH / 2 - 180, WIN_HEIGHT / 2 + 115 * _gui_size + 6 * _gui_size, 20, true, "Delete");
-	_text->addText(WIN_WIDTH / 2 + 76, WIN_HEIGHT / 2 + 90 * _gui_size + 6 * _gui_size, 20, true, "Create New World");
-	_text->addText(WIN_WIDTH / 2 + 40 * _gui_size - 80, WIN_HEIGHT / 2 + 115 * _gui_size + 6 * _gui_size, 20, true, "Re-Create");
-	_text->addText(WIN_WIDTH / 2 + 128 * _gui_size - 80, WIN_HEIGHT / 2 + 115 * _gui_size + 6 * _gui_size, 20, true, "Cancel");
+	_text->addCenteredText(WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Play Selected World");
+	_text->addCenteredText(WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Edit");
+	_text->addCenteredText(WIN_WIDTH / 2 - 78 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Delete");
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Create New World");
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Re-Create");
+	_text->addCenteredText(WIN_WIDTH / 2 + 82 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Cancel");
 
-	for (int index = 0; index < static_cast<int>(_worlds.size()) && index < 8; index++) {
+	for (int index = 0; index < static_cast<int>(static_cast<int>(_worlds.size())) && index < 8; index++) {
 		std::string str = _worlds[index].substr(0, _worlds[index].size() - 5);
-		_text->addText(WIN_WIDTH / 2 - str.size() * 10 + _gui_size, (30 + 20 * index) * _gui_size + 6 * _gui_size + _gui_size, 20, false, str);
-		_text->addText(WIN_WIDTH / 2 - str.size() * 10, (30 + 20 * index) * _gui_size + 6 * _gui_size, 20, true, str);
+		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, (30 + 20 * index) * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, str);
 	}
 	return (0);
 }
@@ -203,15 +187,9 @@ int Menu::death_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	// first draw text shadow
-	_text->addText(WIN_WIDTH / 2 - 150 + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size - 29 + _gui_size, 40, false, "You Died!");
-	_text->addText(WIN_WIDTH / 2 - 70 + _gui_size, WIN_HEIGHT / 2 - 5 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Respawn");
-	_text->addText(WIN_WIDTH / 2 - 110 + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 20, false, "Title Screen");
-
-	// then draw text in white
-	_text->addText(WIN_WIDTH / 2 - 150, WIN_HEIGHT / 2 - 60 * _gui_size - 29, 40, true, "You Died!");
-	_text->addText(WIN_WIDTH / 2 - 70, WIN_HEIGHT / 2 + - 5 * _gui_size + 6 * _gui_size, 20, true, "Respawn");
-	_text->addText(WIN_WIDTH / 2 - 110, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 20, true, "Title Screen");
+	_text->addCenteredText(0, WIN_HEIGHT / 2 - 60 * _gui_size, WIN_WIDTH, 20 * _gui_size, 14 * _gui_size, true, "You Died!");
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Respawn");
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Title Screen");
 	return (0);
 }
 
@@ -240,27 +218,15 @@ int Menu::pause_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	// first draw text shadow
-	// _text->addText(WIN_WIDTH / 2 - 100 + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size - 40 + _gui_size, 24, false, "Game Menu");
-	_text->addText(WIN_WIDTH / 2 - 38 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Back to Game");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 42 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Advancements");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 44 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Give Feedback");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 28 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Options...");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 24 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Statistics");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 35 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Report Bugs");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 35 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Open to LAN");
-	_text->addText(WIN_WIDTH / 2 - 70 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Save and Quit to Title");
-
-	// then draw text in white
 	_text->addText(WIN_WIDTH / 2 - 25 * (_gui_size + 1), WIN_HEIGHT / 2 - 60 * _gui_size - 40, (_gui_size + 1) * 7, true, "Game Menu");
-	_text->addText(WIN_WIDTH / 2 - 38 * _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Back to Game");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 42 * _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Advancements");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 44 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Give Feedback");
-	_text->addText(WIN_WIDTH / 2 - 50 * _gui_size - 28 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Options...");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 24 * _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Statistics");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 35 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Report Bugs");
-	_text->addText(WIN_WIDTH / 2 + 50 * _gui_size - 35 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Open to LAN");
-	_text->addText(WIN_WIDTH / 2 - 70 * _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Save and Quit to Title");
+	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Back to Game");
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Advancements");
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Give Feedback");
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Options...");
+    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Statistics");
+    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Report Bugs");
+    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Open to LAN");
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Save and Quit to Title");
 	return (0);
 }
 
@@ -295,33 +261,18 @@ int Menu::options_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	// first draw text shadow
-	// _text->addText(WIN_WIDTH / 2 - 100 + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size - 40 + _gui_size, 24, false, "Options");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 20 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, std::string("FOV: ") + ((static_cast<int>(_fov_gradient) == 70) ? "Normal" : std::to_string(static_cast<int>(_fov_gradient))));
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 58 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Realms Notifications");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 53 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Skin Customization");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Video Settings...");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 33 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Language...");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 51 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Resource Packs...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Music & Sounds...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 29 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Controls...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 38 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Chat Settings");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 61 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Accessibility Settings");
-	_text->addText(WIN_WIDTH / 2 - 10 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Done");
-
-	// then draw text in white
 	_text->addText(WIN_WIDTH / 2 - 22 * (_gui_size + 1), WIN_HEIGHT / 2 - 105 * _gui_size, (_gui_size + 1) * 7, true, "Options");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 20 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, std::string("FOV: ") + ((static_cast<int>(_fov_gradient) == 70) ? "Normal" : std::to_string(static_cast<int>(_fov_gradient))));
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 58 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Realms Notifications");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 53 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Skin Customization");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 47 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Video Settings...");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 33 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Language...");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 51 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Resource Packs...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Music & Sounds...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 29 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Controls...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 38 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Chat Settings");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 61 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Accessibility Settings");
-	_text->addText(WIN_WIDTH / 2 - 10 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Done");
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("FOV: ") + ((static_cast<int>(_fov_gradient) == 70) ? "Normal" : std::to_string(static_cast<int>(_fov_gradient))));
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Realms Notifications");
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Skin Customization");
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Video Settings...");
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Language");
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Resource Packs...");
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Music & Sounds...");
+    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Controls...");
+    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Chat Settings");
+    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Accessibility Settings");
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
 	return (_moving_slider ? 7 : 0);
 }
 
@@ -333,6 +284,11 @@ int Menu::video_menu( void )
 			_moving_slider = true;
 			Settings::Get()->setInt(SETTINGS::RENDER_DIST, static_cast<int>(_render_gradient));
 		} else if (!INPUT::key_update(INPUT::BREAK)) {
+		} else if (_selection == 4) { // Skybox
+			Settings::Get()->setBool(SETTINGS::SKYBOX, !Settings::Get()->getBool(SETTINGS::SKYBOX));
+		} else if (_selection == 5) { // Gui scale
+			changeGuiSize();
+			_ui->changeGuiSize();
 		} else if (_selection == 11) { // Done
 			_state = (_state == MENU::VIDEO_SETTINGS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
 			reset_values();
@@ -350,33 +306,18 @@ int Menu::video_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	// first draw text shadow
-	// _text->addText(WIN_WIDTH / 2 - 100 + _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size - 40 + _gui_size, 24, false, "Options");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 20 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Render dist " + std::to_string(static_cast<int>(_render_gradient)));
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 58 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Resolution");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 53 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Clouds - Fancy");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Gui scale");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 33 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Brightness");
-	// _text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 51 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Resource Packs...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Skybox on");
-	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 29 * _gui_size + _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Controls...");
-	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 38 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Chat Settings");
-	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 61 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Accessibility Settings");
-	_text->addText(WIN_WIDTH / 2 - 10 * _gui_size + _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size + _gui_size, 7 * _gui_size, false, "Done");
-
-	// then draw text in white
 	_text->addText(WIN_WIDTH / 2 - 22 * (_gui_size + 1), WIN_HEIGHT / 2 - 105 * _gui_size, (_gui_size + 1) * 7, true, "Video");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 20 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Render dist " + std::to_string(static_cast<int>(_render_gradient)));
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 58 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Resolution");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 53 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Clouds - Fancy");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 47 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Gui scale");
-	_text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 33 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Brightness");
-	// _text->addText(WIN_WIDTH / 2 - 102 * _gui_size - 51 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Resource Packs...");
-	_text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 48 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Skybox on");
-	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 29 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Controls...");
-	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 38 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Chat Settings");
-	// _text->addText(WIN_WIDTH / 2 + 102 * _gui_size - 61 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Accessibility Settings");
-	_text->addText(WIN_WIDTH / 2 - 10 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size + 6 * _gui_size, 7 * _gui_size, true, "Done");
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Render dist " + std::to_string(static_cast<int>(_render_gradient)));
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Resolution");
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Clouds - Fancy");
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Gui scale " + std::to_string(_gui_size));
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Brightness");
+	// _text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Resource Packs...");
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Skybox ") + ((Settings::Get()->getBool(SETTINGS::SKYBOX)) ? "ON" : "OFF"));
+    // _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Controls...");
+    // _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Chat Settings");
+    // _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Accessibility Settings");
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
 	return ((_moving_slider && _state == MENU::VIDEO_SETTINGS) ? 8 : 0);
 }
 
@@ -662,7 +603,7 @@ void Menu::setup_array_buffer_video( void )
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // brightness
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
 
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20}); // Skybox
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
@@ -1162,6 +1103,10 @@ void Menu::processMouseMovement( float posX, float posY )
 			if (_moving_slider) {
 				_render_gradient = gradient(posX, WIN_WIDTH / 2 - 200 * _gui_size, WIN_WIDTH / 2 - 10 * _gui_size, 8, 32);
 			}
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 4;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 5;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 11;
 		} else {
@@ -1282,11 +1227,11 @@ int Menu::getState( void )
 	return (_state);
 }
 
-void Menu::changeGuiSize( int offset )
+void Menu::changeGuiSize( void )
 {
-	_gui_size += offset;
-	if (_gui_size < 1) _gui_size = 1;
-	else if (_gui_size > 6) _gui_size = 6;
+	if (++_gui_size > GUI_MAX) {
+		_gui_size = GUI_MIN;
+	}
 }
 
 std::string Menu::getWorldFile( void )

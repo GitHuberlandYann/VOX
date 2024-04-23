@@ -142,6 +142,17 @@ void Text::addText( int posX, int posY, int font_size, bool white, std::string s
 	}
 }
 
+void Text::addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, std::string str )
+{
+	int text_width = textWidth(font_size, str);
+	if (shadow) {
+		int offset = font_size / 8;
+		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, false, str);
+	}
+	addText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, true, str);
+}
+
+
 void Text::toScreen( void )
 {
 	size_t tSize = _texts.size();

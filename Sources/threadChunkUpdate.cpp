@@ -128,14 +128,6 @@ glm::ivec2 OpenGL_Manager::getCurrentChunk( void )
 	return (res);
 }
 
-int OpenGL_Manager::getRenderDist( void )
-{
-	_mtx.lock();
-	int res = 0; // TODO DEL THIS FUNC
-	_mtx.unlock();
-	return (res);
-}
-
 void OpenGL_Manager::setThreadUpdate( bool state )
 {
 	_mtx.lock();

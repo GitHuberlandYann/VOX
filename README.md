@@ -107,9 +107,7 @@ middle_click       - sample targeted block in gamemode creative
 scoll / 1234656789 - scrolls through hotbar
 
 []                 - change daycycle speed
-+-                 - change render distance
 kp_+ kp_-          - change player speed in gamemode creative
-kp_* kp_/          - change gui_size
 ```
 
 

@@ -489,29 +489,6 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				break;
 		}
 	}
-	/*/ change render dist
-	GLint key_render_dist = (INPUT::key_down(INPUT::RENDER_DIST_UP) && INPUT::key_update(INPUT::RENDER_DIST_UP))
-		- (INPUT::key_down(INPUT::RENDER_DIST_DOWN) && INPUT::key_update(INPUT::RENDER_DIST_DOWN));
-	if (key_render_dist && _render_distance + key_render_dist > 0) {
-		_mtx.lock();
-		_render_distance += key_render_dist;
-		_mtx.unlock();
-		_ui->chatMessage("Render distance set to " + std::to_string(_render_distance));
-		glUniform1f(_uniFog, (1 + _render_distance) << CHUNK_SHIFT);
-		glUseProgram(_skyShaderProgram);
-		glUniform1f(_skyUniFog, (1 + _render_distance) << CHUNK_SHIFT);
-		glUseProgram(_shaderProgram);
-		setThreadUpdate(true);
-		// update_visible_chunks();
-		// std::cout << "render distance set to " << _render_distance << std::endl;
-	}*/
-	// change gui size
-	GLint key_gui_size = (INPUT::key_down(INPUT::GUI_UP) && INPUT::key_update(INPUT::GUI_UP))
-		- (INPUT::key_down(INPUT::GUI_DOWN) && INPUT::key_update(INPUT::GUI_DOWN));
-	if (key_gui_size) {
-		_menu->changeGuiSize(key_gui_size);
-		_ui->changeGuiSize(key_gui_size);
-	}
 
 	// camera work
 	GLint key_cam_v = INPUT::key_down(INPUT::MOVE_FORWARD) - INPUT::key_down(INPUT::MOVE_BACKWARD);

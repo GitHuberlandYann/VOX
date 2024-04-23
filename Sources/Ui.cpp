@@ -276,12 +276,12 @@ Chat *UI::getChatPtr( void )
 	return (_chat);
 }
 
-void UI::changeGuiSize( int offset )
+void UI::changeGuiSize( void )
 {
-	_gui_size += offset;
-	if (_gui_size < 2) _gui_size = 2;
-	else if (_gui_size > 7) _gui_size = 7;
-	else _vaoSet = false;
+	if (++_gui_size > GUI_MAX + 1) {
+		_gui_size = GUI_MIN + 1;
+	}
+	_vaoSet = false;
 }
 
 GLuint UI::getShaderProgram( void )

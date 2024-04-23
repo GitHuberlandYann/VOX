@@ -24,6 +24,7 @@ class Text
 		void load_texture( void );
 		int textWidth( int font_size, std::string str, int limit = -1 );
         void addText( int posX, int posY, int font_size, bool white, std::string str );
+		void addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, std::string str );
 		void toScreen( void );
 };
 

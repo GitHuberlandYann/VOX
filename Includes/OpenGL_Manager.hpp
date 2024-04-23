@@ -95,7 +95,6 @@ class OpenGL_Manager
 		void main_loop( void );
 
 		glm::ivec2 getCurrentChunk( void );
-		int getRenderDist( void );
 		void setThreadUpdate( bool state );
 		bool getThreadUpdate( void );
 		bool getThreadStop( void );
