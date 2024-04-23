@@ -47,6 +47,7 @@ out vec4 outColor;
 */
 
 const float pi = 3.14159265358f;
+const float threepi2 = 3 * pi / 2;
 
 const vec3 white = vec3(1, 1, 1);
 const vec3 black = vec3(0, 0, 0);
@@ -113,7 +114,9 @@ void main()
 	// 24000 -> ( 1,  0,   0) = 2pi
 	float angle = ticks / 12000.0f * pi;
 	vec3 sunPos = vec3(cos(angle), 0, sin(angle));
+	vec3 moonPos = vec3(sunPos.x, 0, sin((clamp(angle, pi, 7) - 1) * threepi2 / (threepi2 - 1)));
 	sunPos = normalize(sunPos);
+	moonPos = normalize(moonPos);
 
 	vec3 dir = normalize(texCoord);
 
@@ -122,7 +125,8 @@ void main()
 	skyColor = mix(skyColor, sunColor, clamp(sunAngle * 10 - 9, 0, 1) * 0.3f); // dimmer light around sun
 	skyColor = mix(skyColor, sunColor, clamp(sunAngle * 160 - 159, 0, 1));
 
-	float moonAngle = -sunAngle;
+	// float moonAngle = -sunAngle; // just do this for moon opposite from sun
+	float moonAngle = -dot(dir, moonPos);
 	skyColor = mix(skyColor, white, clamp(moonAngle * 20 - 19, 0, 1) * 0.1f);
 	skyColor = mix(skyColor, white, clamp(moonAngle * 320 - 319, 0, 1));
 

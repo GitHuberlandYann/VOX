@@ -75,6 +75,7 @@ OpenGL uses shaders, which are programs coded in glsl and running on the GPU.
 * text - draws character from given screen coord and sizes
 * item - used to draw 3d items in inventory, x[0:15] y[0:15]
 * particle - used to draw particles and models, x[0:255] y[0:255]
+* skybox - used to draw cubic skybox around player, with sun, moon, and atmosphere
 
 ## Sound engine
 Not implemented yet, as I am mainly working on this project on WSL, which [does not support sound](https://github.com/microsoft/WSL/issues/237).
