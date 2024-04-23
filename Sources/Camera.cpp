@@ -108,6 +108,7 @@ glm::mat4 Camera::getViewMatrix( void )
 		if (_smoothCamZ < pos.z) {
 			pos.z = _smoothCamZ;
 			_smoothCamZ += _deltaTime * SMOOTH_CAM_SPEED;
+			_update = true;
 		} else {
 			_smoothCam = false;
 		}
