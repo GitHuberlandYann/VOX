@@ -349,6 +349,12 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_menu->setState(MENU::CHAT);
 		return ;
 	}
+	// toggle 'command' chat, id open chat, whit '/' already written
+	if (INPUT::key_down(INPUT::COMMAND) && INPUT::key_update(INPUT::COMMAND)) {
+		_paused = true;
+		_menu->setState(MENU::COMMAND);
+		return ;
+	}
 	// quit program
 	if (INPUT::key_down(INPUT::QUIT_PROGRAM)) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);

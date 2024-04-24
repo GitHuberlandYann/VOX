@@ -26,7 +26,8 @@ namespace MENU
 		CRAFTING,
 		CHEST,
 		FURNACE,
-		CHAT
+		CHAT,
+		COMMAND,
 	};
 
 	enum RET {

@@ -127,6 +127,7 @@ namespace INPUT
 		{GLFW_KEY_ESCAPE, CLOSE},
 		{GLFW_KEY_E, INVENTORY},
 		{GLFW_KEY_T, CHAT},
+		{GLFW_KEY_SLASH, COMMAND},
 		{GLFW_KEY_F2, SCREENSHOT},
 		{GLFW_KEY_F3, DEBUG},
 		{GLFW_KEY_G, GAMEMODE},
@@ -171,7 +172,11 @@ namespace INPUT
 		if (action == GLFW_REPEAT) return ;
 
 		auto search = key_map.find(key);
-		if (search == key_map.end()) return ;
+		if (search == key_map.end()) {
+			// std::cout << "couldn't find key " << key << " in key_map" << std::endl;
+			return ;
+		}
+		// std::cout << "found key " << key << " in key_map" << std::endl;
 
 		down[search->second] = action == GLFW_PRESS;
 		updated[search->second] = true;

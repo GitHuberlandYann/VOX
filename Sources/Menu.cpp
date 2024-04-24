@@ -1231,6 +1231,10 @@ void Menu::setState( int state )
 
 	if (state == MENU::CHAT) {
 		glfwSetCharCallback(_window, INPUT::character_callback);
+	} else if (state == MENU::COMMAND) {
+		_state = MENU::CHAT;
+		glfwSetCharCallback(_window, INPUT::character_callback);
+		INPUT::setCurrentMessage("/");
 	}
 }
 
