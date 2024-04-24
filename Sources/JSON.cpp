@@ -31,7 +31,7 @@ void OpenGL_Manager::saveWorld( void )
 		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
 		+ ",\n\t\"f5_mode\": " + ((_ui->_hideUI) ? "true" : "false")
 		+ ",\n\t\"outline\": " + ((_outline) ? "true" : "false")
-		+ ",\n\t\"render_distance\": " + std::to_string(Settings::Get()->getInt(SETTINGS::RENDER_DIST)) + ",\n\t"
+		+ ",\n\t\"render_distance\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)) + ",\n\t"
 		+ DayCycle::Get()->saveString()
 		+ _camera->saveString()
 		+ _inventory->saveString()
@@ -65,7 +65,7 @@ std::string Camera::saveString( void )
 		+ std::to_string(_spawnpoint.x) + ", \"y\": " + std::to_string(_spawnpoint.y) + ", \"z\": " + std::to_string(_spawnpoint.z)
 		+ "},\n\t\t\"yaw\": " + std::to_string(_yaw)
 		+ ",\n\t\t\"pitch\": " + std::to_string(_pitch)
-		+ ",\n\t\t\"fov\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FOV))
+		+ ",\n\t\t\"fov\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV))
 		+ ",\n\t\t\"health_points\": " + std::to_string(_health_points)
 		+ ",\n\t\t\"foodLevel\": " + std::to_string(_foodLevel)
 		+ ",\n\t\t\"foodSaturation\": " + std::to_string(_foodSaturationLevel)
@@ -227,7 +227,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 				ofs << "outline set to " << _outline << std::endl;
 			} else if (!line.compare(0, 19, "\"render_distance\": ")) {
 				int render = std::atoi(&line[19]);
-				Settings::Get()->setInt(SETTINGS::RENDER_DIST, render);
+				Settings::Get()->setInt(SETTINGS::INT::RENDER_DIST, render);
 				glUseProgram(_shaderProgram);
 				glUniform1f(_uniFog, (1 + render) << CHUNK_SHIFT);
 				glUseProgram(_skyShaderProgram);
@@ -300,7 +300,7 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			ofs << "camera pitch set to " << _pitch << std::endl;
 		} else if (!line.compare(0, 7, "\"fov\": ")) {
 			float fov = std::stof(&line[7]);
-			Settings::Get()->setFloat(SETTINGS::FOV, fov);
+			Settings::Get()->setFloat(SETTINGS::FLOAT::FOV, fov);
 			_fovUpdate = true;
 			ofs << "camera fov set to " << fov << std::endl;
 		} else if (!line.compare(0, 17, "\"health_points\": ")) {

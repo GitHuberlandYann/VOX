@@ -4,11 +4,13 @@
 
 Settings::Settings( void )
 {
-	_bools[SETTINGS::SKYBOX] = true;
+	_bools[SETTINGS::BOOL::SKYBOX] = true;
 
-	_ints[SETTINGS::RENDER_DIST] = RENDER_DISTANCE;
+	_ints[SETTINGS::INT::RENDER_DIST] = RENDER_DISTANCE;
+	_ints[SETTINGS::CLOUDS] = SETTINGS::FANCY;
 
-	_floats[SETTINGS::FOV] = FOV_START;
+	_floats[SETTINGS::FLOAT::FOV] = FOV_START;
+	_floats[SETTINGS::FLOAT::BRIGHTNESS] = BRIGHTNESS_START;
 }
 
 Settings::~Settings( void )

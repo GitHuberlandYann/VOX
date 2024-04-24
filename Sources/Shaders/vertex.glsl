@@ -19,6 +19,7 @@ in vec3 position;
 uniform mat4 view;
 uniform mat4 proj;
 uniform int internal_light;
+uniform float min_brightness;
 
 out vec2 Texcoord;
 out vec2 Breakcoord;
@@ -40,6 +41,6 @@ void main()
 	// if (((specifications >> 19) & 0x7) > 0) { // TODO get rid of this if statement
 	// 	faceLight -= 8 + (((specifications >> 19) & 0x7) << 2);
 	// }
-	FaceShadow = max(0.05, (max(10, faceLight - 7 * shadow) - 17 * cornerLight) * 0.01f);
+	FaceShadow = max(min_brightness, (max(10, faceLight - 7 * shadow) - 17 * cornerLight) * 0.01f);
 	zDist = gl_Position.z;
 }

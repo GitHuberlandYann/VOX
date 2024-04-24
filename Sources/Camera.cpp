@@ -42,7 +42,7 @@ void Camera::updateCameraVectors( void )
 	_right = glm::normalize(glm::cross(_front, _world_up));
 	_up    = glm::normalize(glm::cross(_right, _front));
 	_front2 = glm::normalize(glm::vec2(_front)); // used in chunkInFront
-	_right2 = glm::vec2(glm::cos(glm::radians(Settings::Get()->getFloat(SETTINGS::FOV) + _fov_offset))) * glm::normalize(glm::vec2(_right));
+	_right2 = glm::vec2(glm::cos(glm::radians(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV) + _fov_offset))) * glm::normalize(glm::vec2(_right));
 }
 
 void Camera::moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, GLint z )
@@ -126,7 +126,7 @@ glm::mat4 Camera::getViewMatrix( void )
 
 glm::mat4 Camera::getPerspectiveMatrix( void )
 {
-	return (glm::perspective(glm::radians(Settings::Get()->getFloat(SETTINGS::FOV) + _fov_offset), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
+	return (glm::perspective(glm::radians(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV) + _fov_offset), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
 }
 
 bool Camera::chunkInFront( glm::ivec2 current_chunk, int posX, int posY )

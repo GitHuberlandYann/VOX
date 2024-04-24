@@ -310,10 +310,10 @@ void OpenGL_Manager::setup_communication_shaders( void )
 
 	glUseProgram(_shaderProgram);
 	_uniFog = glGetUniformLocation(_shaderProgram, "fogDist");
-	glUniform1f(_uniFog, (1 + Settings::Get()->getInt(SETTINGS::RENDER_DIST)) << CHUNK_SHIFT);
+	glUniform1f(_uniFog, (1 + Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)) << CHUNK_SHIFT);
 	_skyUniFog = glGetUniformLocation(_skyShaderProgram, "fogDist");
 	glUseProgram(_skyShaderProgram);
-	glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(SETTINGS::RENDER_DIST)) << CHUNK_SHIFT);
+	glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)) << CHUNK_SHIFT);
 	glUseProgram(_shaderProgram);
 
 	_uniView = glGetUniformLocation(_shaderProgram, "view");
@@ -328,6 +328,9 @@ void OpenGL_Manager::setup_communication_shaders( void )
 
 	DayCycle::Get()->setUniInternalLight(_shaderProgram, _particleShaderProgram,
 		glGetUniformLocation(_shaderProgram, "internal_light"), glGetUniformLocation(_particleShaderProgram, "internal_light"));
+	
+	_uniBrightness = glGetUniformLocation(_shaderProgram, "min_brightness");
+	glUniform1f(_uniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
 
 	_skyUniColor = glGetUniformLocation(_skyShaderProgram, "color");
 	_skyUniAnim = glGetUniformLocation(_skyShaderProgram, "animFrame");
@@ -511,7 +514,7 @@ void OpenGL_Manager::main_loop( void )
 			drawEntities();
 		}
 
-		if (_menu->getState() >= MENU::PAUSE && Settings::Get()->getBool(SETTINGS::SKYBOX)) {
+		if (_menu->getState() >= MENU::PAUSE && Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX)) {
 			_skybox->render(_camera->getCamPos());
 		}
 
@@ -521,8 +524,10 @@ void OpenGL_Manager::main_loop( void )
 			update_anim_frame();
 		}
 		DayCycle::Get()->setCloudsColor(_skyUniColor);
-		for (auto& c: _visible_chunks) {
-			c->drawSky(newVaoCounter, skyFaces);
+		if (Settings::Get()->getInt(SETTINGS::INT::CLOUDS) != SETTINGS::OFF) {
+			for (auto& c: _visible_chunks) {
+				c->drawSky(newVaoCounter, skyFaces);
+			}
 		}
 		glUniform3f(_skyUniColor, 0.24705882f, 0.4627451f, 0.89411765f); // water color
 		for (auto&c: _visible_chunks) {
@@ -558,7 +563,7 @@ void OpenGL_Manager::main_loop( void )
 				str += "\nDisplayed faces\t> " + std::to_string(faceCounter)
 						+ "\nSky faces\t> " + std::to_string(skyFaces)
 						+ "\nWater faces\t> " + std::to_string(waterFaces)
-						+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(SETTINGS::RENDER_DIST))
+						+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST))
 						+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE");
 				mtx_backup.lock();
 				str += "\nBackups\t> " + std::to_string(_backups.size());
@@ -581,7 +586,7 @@ void OpenGL_Manager::main_loop( void )
 				mtx.unlock();
 			}
 			switch (_menu->run(nbTicks == 1 && tickUpdate)) {
-				case (1): // back to game
+				case (MENU::RET::BACK_TO_GAME): // back to game
 					if (!IS_LINUX) {
 						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 						if (glfwRawMouseMotionSupported()) {
@@ -595,38 +600,43 @@ void OpenGL_Manager::main_loop( void )
 					_camera->_update = true;
 					setThreadUpdate(true);
 					break ;
-				case (2): // world selected, go into loading mode
+				case (MENU::RET::WORLD_SELECTED): // world selected, go into loading mode
 					_world_name = _menu->getWorldFile();
 					glUseProgram(_shaderProgram); // used by dayCycle to modif internal light
 					loadWorld("Worlds/" + _world_name);
 					initWorld();
 					break ;
-				case (4): // skip world selection and play with default seed of 123456
+				case (MENU::RET::PLAY_DEFAULT): // skip world selection and play with default seed of 123456
 					DayCycle::Get()->addTicks(0); // used to forceReset sky color
 					initWorld();
 					break ;
-				case (5): // Respawn player, init world again
+				case (MENU::RET::RESPAWN_PLAYER): // Respawn player, init world again
 					_camera->respawn();
 					initWorld();
 					break ;
-				case (6): // Respawn player, then save and quit to menu
+				case (MENU::RET::RESPAWN_SAVE_QUIT): // Respawn player, then save and quit to menu
 					_camera->respawn();
-				case (3): // save and quit to menu
+				case (MENU::RET::SAVE_AND_QUIT): // save and quit to menu
 					resetInputsPtrs();
 					saveWorld();
 					_ui->_hideUI = true;
 					break ;
-				case (7): // fov change
+				case (MENU::RET::FOV_UPDATE): // fov change
 					update_cam_perspective();
 					break ;
-				case (8): // render dist change
-					int render_dist = Settings::Get()->getInt(SETTINGS::RENDER_DIST);
+				case (MENU::RET::RENDER_DIST_UPDATE): // render dist change
 					// _ui->chatMessage("Render distance set to " + std::to_string(render_dist));
 					glUseProgram(_skyShaderProgram);
-					glUniform1f(_skyUniFog, (1 + render_dist) << CHUNK_SHIFT);
+					glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)) << CHUNK_SHIFT);
 					glUseProgram(_shaderProgram);
-					glUniform1f(_uniFog, (1 + render_dist) << CHUNK_SHIFT);
+					glUniform1f(_uniFog, (1 + Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)) << CHUNK_SHIFT);
 					setThreadUpdate(true);
+					break ;
+				case (MENU::RET::BRIGHTNESS_UPDATE): // brightness change
+					glUseProgram(_shaderProgram);
+					glUniform1f(_uniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
+					break ;
+				default:
 					break ;
 			}
 		}

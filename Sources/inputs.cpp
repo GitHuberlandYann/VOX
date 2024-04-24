@@ -18,7 +18,7 @@ void OpenGL_Manager::resetInputsPtrs( void )
 t_hit OpenGL_Manager::get_block_hit( void )
 {
 	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0};
-	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (Settings::Get()->getInt(SETTINGS::RENDER_DIST) << CHUNK_SHIFT) >> 1 : REACH);
+	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? (Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST) << CHUNK_SHIFT) >> 1 : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
 	Chunk *chunk = NULL;

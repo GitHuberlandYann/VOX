@@ -29,6 +29,7 @@ TODOS:
 	- hitbox change + no fall on sneak
     - biomes
 	- fix light spread problems caused by recurse limitation (when torches are next to each other)
+	- display item name and details upon mouse hover in menus
 	- fire
 	- mobs
 	- redstone
@@ -47,14 +48,13 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+    - settings menu
 	- double chests
 	- bow and arrow
 	- universal use of tps instead of deltatimes
 	- commands /say /me /save /setblock /kill
 
 TODAY:
-    - settings menu
-	- change main menu and world select menu to use gui_size for text placement and size
 	- centralize settings and save/load them in file
 	- check tp 1000 ~ ~ light spread stackoverflow
 

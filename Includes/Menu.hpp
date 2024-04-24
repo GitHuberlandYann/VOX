@@ -28,6 +28,20 @@ namespace MENU
 		FURNACE,
 		CHAT
 	};
+
+	enum RET {
+		QUIT = -1,
+		NO_CHANGE,
+		BACK_TO_GAME,
+		WORLD_SELECTED,
+		SAVE_AND_QUIT,
+		PLAY_DEFAULT,
+		RESPAWN_PLAYER,
+		RESPAWN_SAVE_QUIT,
+		FOV_UPDATE,
+		RENDER_DIST_UPDATE,
+		BRIGHTNESS_UPDATE,
+	};
 }
 
 class Menu
@@ -38,7 +52,7 @@ class Menu
         GLint _gui_size, _nb_points, _state, _selection, _selected_world;
 		t_item _selected_block;
 		bool _vaoSet, _textBar, _moving_slider;
-		float _fov_gradient, _render_gradient;
+		float _fov_gradient, _render_gradient, _brightness_gradient;
 		std::vector<std::string> _worlds;
 		std::vector<int> _selection_list;
 		std::vector<std::array<int, 9>> _vertices;
@@ -53,16 +67,16 @@ class Menu
 		FurnaceInstance *_furnace;
 
 		void reset_values( void );
-		int main_menu( void );
-		int world_select_menu( void );
-		int loading_screen( void );
-		int death_menu( void );
-		int pause_menu( void );
-		int options_menu( void );
-		int video_menu( void );
-		int ingame_inputs( void );
-		int ingame_menu( void );
-		int chat_menu( bool animUpdate );
+		MENU::RET main_menu( void );
+		MENU::RET world_select_menu( void );
+		MENU::RET loading_screen( void );
+		MENU::RET death_menu( void );
+		MENU::RET pause_menu( void );
+		MENU::RET options_menu( void );
+		MENU::RET video_menu( void );
+		MENU::RET ingame_inputs( void );
+		MENU::RET ingame_menu( void );
+		MENU::RET chat_menu( bool animUpdate );
 
         void setup_array_buffer_main( void );
         void setup_array_buffer_select( void );
@@ -106,7 +120,7 @@ class Menu
 		int getState( void );
 		void changeGuiSize( void );
 		std::string getWorldFile( void );
-		int run( bool animUpdate );
+		MENU::RET run( bool animUpdate );
 
 		std::string getInfoString( void );
 };

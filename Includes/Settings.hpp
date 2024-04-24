@@ -4,19 +4,32 @@
 # include <mutex>
 # include <array>
 
-# define RENDER_DISTANCE 10//20
-# define FOV_START     	 70.0f // if fov = -fov, world is upside down
+# define RENDER_DISTANCE  10
+# define FOV_START     	  70.0f // if fov = -fov, world is upside down
+# define BRIGHTNESS_START 0.05f
 
 namespace SETTINGS {
-	enum {
-		SKYBOX = 0,
-		NBR_BOOL,
+	enum BOOL {
+		SKYBOX,
+		NBR_BOOL
+	};
 
-		RENDER_DIST = 0,
-		NBR_INT,
+	enum INT {
+		RENDER_DIST,
+		CLOUDS,
+		NBR_INT
+	};
 
-		FOV = 0,
+	enum FLOAT {
+		FOV,
+		BRIGHTNESS,
 		NBR_FLOAT
+	};
+
+	enum {
+		FANCY,
+		FAST,
+		OFF,
 	};
 };
 

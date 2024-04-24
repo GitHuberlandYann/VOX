@@ -20,7 +20,7 @@ void thread_chunk_update( OpenGL_Manager *render )
 	while (true) {
 		// std::cout << "thread chunk update" << std::endl;
 		pos = render->getCurrentChunk();
-		render_dist = settings->getInt(SETTINGS::RENDER_DIST);
+		render_dist = settings->getInt(SETTINGS::INT::RENDER_DIST);
 		render->setThreadUpdate(false);
 		// Bench b;
 		std::set<std::pair<int, int>> coords;
