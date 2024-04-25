@@ -48,15 +48,14 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-    - settings menu
 	- double chests
 	- bow and arrow
 	- universal use of tps instead of deltatimes
 	- commands /say /me /save /setblock /kill
 
 TODAY:
+	- blocks with oriented light occlusion (ie slabs, stairs)
 	- centralize settings and save/load them in file
-	- check tp 1000 ~ ~ light spread stackoverflow
 
 SHORTTERM memory:
 	\/ - work on cleanAtlas
@@ -66,7 +65,7 @@ SHORTTERM memory:
 	- rework general code structure (who owns who)
 	- turn menu, chat, text, ui, camera, settings into singletons, then use ::Get() once to get their ptrs
 	\/ - check how to update atlas texture ingame
-	- make menus texts responsive
+	\/ - make menus texts responsive
 
 DONE:
 	- pthread chunk creation
@@ -152,10 +151,14 @@ DONE:
 	- gui size
 	- main menu
     - load menu
+	- pause menu
+	- options menu
+	- video settings menu
     - inventory menu
     - crafting menu
 	- chest menu
 	- furnace menu
+	- chat menu
 
 
 Controls (QWERTY):

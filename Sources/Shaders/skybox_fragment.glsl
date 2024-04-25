@@ -56,6 +56,8 @@ const float sqrt0dot5 = 0.7071067811865476f;
 const vec3 white = vec3(1, 1, 1);
 const vec3 black = vec3(0, 0, 0);
 const vec3 sunColor = vec3(1, 1, 0);
+// const vec3 sunColorLow = vec3(1, 129 / 255.0f, 0);
+// const vec3 sunColorHigh = vec3(1, 240.0f / 255.0f, 232.0f / 255.0f);
 const vec3 sunsetColor = vec3 (1.0f, 0.3f, 0);
 const vec3 sky_day = vec3(120.0f / 255.0f, 169.0f / 255.0f, 1.0f);
 const vec3 sky_night = black;
@@ -89,6 +91,7 @@ void main()
 	vec3 dir = normalize(texCoord);
 
 	float sunAngle = dot(dir, sunPos);
+	// vec3 sunColor = mix(sunColorLow, sunColorHigh, abs(sunPos.z));
 	// skyColor = mix(sky_night, sky_day, (sunAngle + 1) * 0.5f);
 	// by drawing sun before atmosphere, it is 'absorbed' by sunset
 	skyColor = mix(skyColor, sunColor, clamp(sunAngle * 160 - 159, 0, 1));
@@ -107,7 +110,7 @@ void main()
 	float scatter = 1 - pow(clamp(abs(sunPos.z) + 0.01f, 0, 1) * 2, scatterPow);
 	parabol = -parabol + 1.5f;
 	// vec3 scatterColor = mix(skyColor, sunsetColor * 1.5f, scatter * parabol);
-	vec3 atmosphereColor = mix(skyColor, (skyColor + white) / 2, (1 - scatter) * (parabol - 0.5f));
+	vec3 atmosphereColor = mix(skyColor, skyColor + (white - skyColor) / 4.0f, (1 - scatter) * (parabol - 0.5f));
 	vec3 scatterColor = mix(atmosphereColor, sunsetColor * 1.5f, scatter * parabol);
 
 	skyColor = mix(skyColor, scatterColor, atmosphere);

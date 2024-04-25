@@ -58,7 +58,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 	for (int index = 0; index < 6; index++) {
 		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
 		if (skySpread && index == face_dir::MINUSZ && level == 0xFF) {
-			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0xF0, skySpread, LIGHT_RECURSE);
+			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0xF0, skySpread, recurse - 1);
 		} else {
 			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], level, skySpread, recurse - 1);
 		}
