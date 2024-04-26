@@ -16,12 +16,14 @@ namespace MENU
 		MAIN,
 		MAIN_OPTIONS,
 		MAIN_VIDEO_SETTINGS,
+		MAIN_RESOURCE_PACKS,
 		WORLD_SELECT,
 		LOAD,
 		DEATH,
 		PAUSE,
 		OPTIONS,
 		VIDEO_SETTINGS,
+		RESOURCE_PACKS,
 		INVENTORY,
 		CRAFTING,
 		CHEST,
@@ -75,6 +77,7 @@ class Menu
 		MENU::RET pause_menu( void );
 		MENU::RET options_menu( void );
 		MENU::RET video_menu( void );
+		MENU::RET resource_packs_menu( void );
 		MENU::RET ingame_inputs( void );
 		MENU::RET ingame_menu( void );
 		MENU::RET chat_menu( bool animUpdate );
@@ -86,6 +89,7 @@ class Menu
         void setup_array_buffer_pause( void );
         void setup_array_buffer_options( void );
         void setup_array_buffer_video( void );
+        void setup_array_buffer_resource_packs( void );
         void setup_array_buffer_chat( void );
 
 		void occult_selection( void );
