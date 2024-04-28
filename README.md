@@ -7,7 +7,7 @@ My first procedural world. Using OpenGL and C++
 $ git clone --recurse-submodules git@github.com:GitHuberlandYann/VOX.git
 $ cd VOX
 $ make setup
-$ make
+$ make -j
 $ make log
 ```
 make setup takes a while as it installs the needed [static libraries](#libraries), but you only need to do it once.
@@ -24,6 +24,7 @@ Saving and loading worlds in .json files
 Collision and physics systems
 Multithreading generation for smooth rendering
 Day/Night cycle
+Skybox with atmosphere, sunsets, astral bodies
 Hunger system
 Farming simulation
 First and third person point of vue
@@ -42,7 +43,7 @@ Breaking animation
 Ambiant occlusion, smooth lighting
 Distance fog
 Gravity-affected blocks (sand, gravel, lit tnts)
-UI with inventory
+UI for inventory and ingame menus
 Crafting system, storage system
 
 And a lot more! All done in C++
