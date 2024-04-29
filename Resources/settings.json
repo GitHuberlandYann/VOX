@@ -5,5 +5,5 @@
 	"clouds": 0,
 	"skybox": 1,
 	"gui_scale": 3,
-	"resource_packs": ["Resources/Resource_Packs/default.json"]
+	"resource_packs": ["default.json"]
 }

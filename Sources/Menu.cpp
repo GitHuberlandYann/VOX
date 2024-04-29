@@ -43,6 +43,7 @@ void Menu::reset_values( void )
 	_furnace = NULL;
 	_selected_world = 0;
 	_worlds.clear();
+	_resource_packs.clear();
 	_selection_list.clear();
 	_moving_slider = false;
 }
@@ -103,7 +104,7 @@ MENU::RET Menu::main_menu( void )
 MENU::RET Menu::world_select_menu( void )
 {
 	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
-		if (_selection == 1) { //play selected world
+		if (_selection == 1) { // play selected world
 			_world_file = _worlds[_selected_world - 1];
 			_state = MENU::LOAD;
 			reset_values();
@@ -114,7 +115,7 @@ MENU::RET Menu::world_select_menu( void )
 			_state = MENU::LOAD;
 			reset_values();
 			return (MENU::RET::PLAY_DEFAULT);
-		} else if (_selection == 6) { //cancel, go back to main menu
+		} else if (_selection == 6) { // cancel, go back to main menu
 			_state = MENU::MAIN;
 			reset_values();
 			return (MENU::RET::NO_CHANGE);
@@ -249,6 +250,27 @@ MENU::RET Menu::options_menu( void )
 		} else if (_selection == 9) { // resource_packs
 			_state = (_state == MENU::OPTIONS) ? MENU::RESOURCE_PACKS : MENU::MAIN_RESOURCE_PACKS;
 			reset_values();
+			_active_resource_packs = Settings::Get()->getResourcePacks();
+			DIR *dir = opendir("Resources/Resource_Packs");
+			if (dir == NULL) {
+				std::cerr << "failed to open dir Resource/Resource_Packs" << std::endl;
+				_state = (_state == MENU::RESOURCE_PACKS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
+				return (MENU::RET::NO_CHANGE);
+			}
+			struct dirent *dent;
+			while ((dent = readdir(dir)) != NULL)
+			{
+				std::string file = dent->d_name;
+				if (file != "." && file != ".." && file.size() >= 6 && !file.compare(file.size() - 5, 5, ".json")) {
+					_resource_packs.push_back(file);
+					for (auto &pack: _active_resource_packs) {
+						if (pack == file) {
+							_resource_packs.pop_back();
+						}
+					}
+				}
+			}
+			closedir(dir);
 			return (resource_packs_menu());
 		} else if (_selection == 11) { // Done
 			_state = (_state == MENU::OPTIONS) ? MENU::PAUSE : MENU::MAIN;
@@ -333,12 +355,17 @@ MENU::RET Menu::video_menu( void )
 MENU::RET Menu::resource_packs_menu( void )
 {
 	if (INPUT::key_down(INPUT::BREAK)) {
-		if (!INPUT::key_update(INPUT::BREAK)) {
-		} else if (_selection == 11) { // Done
+		if (_moving_slider) {
+		} else if (!INPUT::key_update(INPUT::BREAK)) {
+		} else if (_selection == 2) { // Done
 			_state = (_state == MENU::RESOURCE_PACKS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
 			reset_values();
 			return (options_menu());
+		} else if (_selection > 2) {
+			_moving_slider = true;
 		}
+	} else {
+		_moving_slider = false;
 	}
 	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
 		_state = (_state == MENU::RESOURCE_PACKS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
@@ -354,6 +381,19 @@ MENU::RET Menu::resource_packs_menu( void )
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, "Select Resource Packs");
     _text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Apply Changes");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
+
+	int index = 0;
+	for (auto &pack : _resource_packs) {
+		_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, pack.substr(0, pack.size() - 5));
+		++index;
+	}
+
+	index = 0;
+	for (auto &pack : _active_resource_packs) {
+		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, pack.substr(0, pack.size() - 5));
+		++index;
+	}
+	_text->addText(20, 20, 30, true, "select " + std::to_string(_selection));
 	return (MENU::RET::NO_CHANGE);
 }
 
@@ -657,8 +697,29 @@ void Menu::setup_array_buffer_resource_packs( void )
 	_vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 135 * _gui_size, 3, 29, 1, 1}); // occult available section
 	_vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 135 * _gui_size, 3, 29, 1, 1}); // occult selected section
 
-    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (false) ? (_selection == 10) ? 111 : 91 : 71, 200, 20}); // Apply
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 11) ? 111 : 91, 200, 20}); // Done
+	int rp_size = 0;
+	for (;rp_size < static_cast<int>(_resource_packs.size()); ++rp_size) {
+		if (_moving_slider && _selection == 3 + rp_size) {
+			double mouseX, mouseY;
+			glfwGetCursorPos(_window, &mouseX, &mouseY);
+			_vertices.push_back({1, static_cast<int>(mouseX) - 95 * _gui_size, static_cast<int>(mouseY) - 10 * _gui_size, 190 * _gui_size, 20 * _gui_size, 0, 71, 200, 20});
+		} else {
+			_vertices.push_back({1, WIN_WIDTH / 2 - 200 * _gui_size, WIN_HEIGHT / 2 - (80 - rp_size * 20) * _gui_size, 190 * _gui_size, 20 * _gui_size, 0, 71, 200, 20});
+		}
+	}
+
+	for (int index = 0; index < static_cast<int>(_active_resource_packs.size()); ++index) {
+		if (_moving_slider && _selection == 3 + rp_size + index) {
+			double mouseX, mouseY;
+			glfwGetCursorPos(_window, &mouseX, &mouseY);
+			_vertices.push_back({1, static_cast<int>(mouseX) - 95 * _gui_size, static_cast<int>(mouseY) - 10 * _gui_size, 190 * _gui_size, 20 * _gui_size, 0, 71, 200, 20});
+		} else {
+			_vertices.push_back({1, WIN_WIDTH / 2 + 10 * _gui_size, WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size, 190 * _gui_size, 20 * _gui_size, 0, 71, 200, 20});
+		}
+	}
+
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (false) ? (_selection == 1) ? 111 : 91 : 71, 200, 20}); // Apply
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 2) ? 111 : 91, 200, 20}); // Done
 
 	setup_shader();
 }
@@ -1169,11 +1230,26 @@ void Menu::processMouseMovement( float posX, float posY )
 		break ;
 	case MENU::MAIN_RESOURCE_PACKS:
 	case MENU::RESOURCE_PACKS:
-		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
-			_selection = 10;
+		if (_moving_slider) {
+			// .. move selected resource pack around, which in turn moves every other packs accordingly
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 1;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
-			_selection = 11;
+			_selection = 2;
 		} else {
+			int rp_size = 0;
+			for (; rp_size < static_cast<int>(_resource_packs.size()); ++rp_size) {
+				if (inRectangle(posX, posY, WIN_WIDTH / 2 - 200 * _gui_size, WIN_HEIGHT / 2 - (80 - rp_size * 20) * _gui_size, 190 * _gui_size, 20 * _gui_size)) {
+					_selection = 3 + rp_size;
+					return ;
+				}
+			}
+			for (int index = 0; index < static_cast<int>(_active_resource_packs.size()); ++index) {
+				if (inRectangle(posX, posY, WIN_WIDTH / 2 + 10 * _gui_size, WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size, 190 * _gui_size, 20 * _gui_size)) {
+					_selection = 3 + rp_size + index;
+					return ;
+				}
+			}
 			_selection = 0;
 		}
 		break ;

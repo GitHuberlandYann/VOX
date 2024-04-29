@@ -551,20 +551,6 @@ void Menu::loadSettings( void )
 	}
 }
 
-std::string Settings::getPacksString( void )
-{
-	std::string res = "[";
-	bool start = true;
-	for (auto &pack: _packs) {
-		if (!start) {
-			res += ", ";
-		}
-		res += '\"' + pack + '\"';
-		start = false;
-	}
-	return (res + ']');
-}
-
 void Menu::saveSettings( void )
 {
 	std::string json = "{\n\t\"fov\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV))
@@ -573,8 +559,17 @@ void Menu::saveSettings( void )
 					+ ",\n\t\"clouds\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::CLOUDS))
 					+ ",\n\t\"skybox\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX))
 					+ ",\n\t\"gui_scale\": " + std::to_string(_gui_size)
-					+ ",\n\t\"resource_packs\": " + Settings::Get()->getPacksString()
-					+ "\n}";
+					+ ",\n\t\"resource_packs\": [";
+	std::vector<std::string> &packs = Settings::Get()->getResourcePacks();
+	bool start = true;
+	for (auto &pack: packs) {
+		if (!start) {
+			json += ", ";
+		}
+		json += '\"' + pack + '\"';
+		start = false;
+	}
+	json += "]\n}";
 	try {
 		std::ofstream ofs("Resources/settings.json", std::ofstream::out | std::ofstream::trunc);
 		ofs << json;
@@ -591,8 +586,8 @@ void Settings::loadResourcePacks( void )
 	std::array<bool, SETTINGS::NBR_TEXTURES> check_set = {false};
 	for (auto &pack: _packs) {
 		try {
-			ofs << "Opening file " << pack << std::endl;
-			std::ifstream indata(pack);
+			ofs << "Opening file Resources/Resource_Packs/" << pack << std::endl;
+			std::ifstream indata("Resources/Resource_Packs/" + pack);
 			if (!indata.is_open()) {
 				throw InvalidFileException();
 			}

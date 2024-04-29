@@ -395,10 +395,10 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	// change time multiplier
 	if (INPUT::key_down(INPUT::DAYCYCLE_UP) && INPUT::key_update(INPUT::DAYCYCLE_UP)) {
 		DayCycle::Get()->updateTimeMultiplier(1);
-		loadTextureShader(0, _textures[0], "Resources/cleanAtlas.png");
+		loadTextureShader(0, _textures[0], "Resources/Textures/cleanAtlas.png");
 	} else if (INPUT::key_down(INPUT::DAYCYCLE_DOWN) && INPUT::key_update(INPUT::DAYCYCLE_DOWN)) {
 		DayCycle::Get()->updateTimeMultiplier(-1);
-		loadTextureShader(0, _textures[0], "Resources/blockAtlas.png");
+		loadTextureShader(0, _textures[0], "Resources/Textures/blockAtlas.png");
 	}
 
 	// add and remove blocks

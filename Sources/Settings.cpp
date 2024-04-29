@@ -101,3 +101,8 @@ void Settings::pushResourcePack( std::string pack )
 {
 	_packs.push_back(pack);
 }
+
+std::vector<std::string> &Settings::getResourcePacks( void )
+{
+	return (_packs);
+}

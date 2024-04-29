@@ -56,7 +56,7 @@ class Menu
 		t_item _selected_block;
 		bool _vaoSet, _textBar, _moving_slider;
 		float _fov_gradient, _render_gradient, _brightness_gradient;
-		std::vector<std::string> _worlds;
+		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs;
 		std::vector<int> _selection_list;
 		std::vector<std::array<int, 9>> _vertices;
 		std::string _world_file;
