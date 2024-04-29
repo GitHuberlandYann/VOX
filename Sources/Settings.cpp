@@ -51,48 +51,53 @@ void Settings::Destroy( void )
 
 bool Settings::getBool( int target )
 {
-	if (target < 0 || target >= SETTINGS::NBR_BOOL) {
-		assert((0 == 1 && "Settings::getBool out of bound"));
-	}
+	assert(((target >= 0 && target < SETTINGS::NBR_BOOL) && "Settings::getBool out of bound"));
 	return (_bools[target]);
 }
 
 void Settings::setBool( int target, bool value )
 {
-	if (target < 0 || target >= SETTINGS::NBR_BOOL) {
-		assert((0 == 1 && "Settings::setBool out of bound"));
-	}
+	assert(((target >= 0 && target < SETTINGS::NBR_BOOL) && "Settings::setBool out of bound"));
 	_bools[target] = value;
 }
 
 int Settings::getInt( int target )
 {
-	if (target < 0 || target >= SETTINGS::NBR_INT) {
-		assert((0 == 1 && "Settings::getInt out of bound"));
-	}
+	assert(((target >= 0 && target < SETTINGS::NBR_INT) && "Settings::getInt out of bound"));
 	return (_ints[target]);
 }
 
 void Settings::setInt( int target, int value )
 {
-	if (target < 0 || target >= SETTINGS::NBR_INT) {
-		assert((0 == 1 && "Settings::setInt out of bound"));
-	}
+	assert(((target >= 0 && target < SETTINGS::NBR_INT) && "Settings::setInt out of bound"));
 	_ints[target] = value;
 }
 
 float Settings::getFloat( int target )
 {
-	if (target < 0 || target >= SETTINGS::NBR_FLOAT) {
-		assert((0 == 1 && "Settings::getFloat out of bound"));
-	}
+	assert(((target >= 0 && target < SETTINGS::NBR_FLOAT) && "Settings::getFloat out of bound"));
 	return (_floats[target]);
 }
 
 void Settings::setFloat( int target, float value )
 {
-	if (target < 0 || target >= SETTINGS::NBR_FLOAT) {
-		assert((0 == 1 && "Settings::setFloat out of bound"));
-	}
+	assert(((target >= 0 && target < SETTINGS::NBR_FLOAT) && "Settings::setFloat out of bound"));
 	_floats[target] = value;
+}
+
+std::string Settings::getString( int target )
+{
+	assert(((target >= 0 && target < SETTINGS::NBR_STRING) && "Settings::getString out of bound"));
+	return (_strings[target]);
+}
+
+void Settings::setString( int target, std::string value )
+{
+	assert(((target >= 0 && target < SETTINGS::NBR_STRING) && "Settings::setString out of bound"));
+	_strings[target] = value;
+}
+
+void Settings::pushResourcePack( std::string pack )
+{
+	_packs.push_back(pack);
 }

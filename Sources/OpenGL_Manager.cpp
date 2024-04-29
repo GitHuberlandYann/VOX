@@ -345,28 +345,32 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	check_glstate("VAO and VBO for particles", false);
 }
 
-void OpenGL_Manager::load_texture( std::string texture_file )
+void OpenGL_Manager::load_texture( void )
 {
+	Settings::Get()->loadResourcePacks();
+	_ui->load_texture();
+
 	_textures = new GLuint[5];
 	glGenTextures(5, _textures);
 
-	loadTextureShader(0, _textures[0], texture_file);
+	glUseProgram(_shaderProgram);
+	loadTextureShader(0, _textures[0], Settings::Get()->getString(SETTINGS::STRING::BLOCK_ATLAS));
 	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // sampler2D #index in fragment shader
 
 	glUseProgram(_skyShaderProgram);
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
 
-	loadTextureShader(4, _textures[1], "Resources/waterStill.png");
+	loadTextureShader(4, _textures[1], Settings::Get()->getString(SETTINGS::STRING::WATER_STILL));
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterStill"), 4);
 
-	loadTextureShader(5, _textures[2], "Resources/waterFlow.png");
+	loadTextureShader(5, _textures[2], Settings::Get()->getString(SETTINGS::STRING::WATER_FLOW));
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterFlow"), 5);
 
 	glUseProgram(_particleShaderProgram);
-	loadTextureShader(6, _textures[3], "Resources/particleAtlas.png");
 	glUniform1i(glGetUniformLocation(_particleShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
+	loadTextureShader(6, _textures[3], Settings::Get()->getString(SETTINGS::STRING::PARTICLE_ATLAS));
 	glUniform1i(glGetUniformLocation(_particleShaderProgram, "particleAtlas"), 6);
-	loadTextureShader(7, _textures[4], "Resources/modelAtlas.png");
+	loadTextureShader(7, _textures[4], Settings::Get()->getString(SETTINGS::STRING::MODEL_ATLAS));
 	glUniform1i(glGetUniformLocation(_particleShaderProgram, "modelAtlas"), 7);
 }
 

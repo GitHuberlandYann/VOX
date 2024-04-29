@@ -39,7 +39,6 @@ class UI
         Camera &_camera;
 		bool _vaoSet;
 
-		void load_texture( std::string texstr, std::string shname, int index );
         void add_inventory_elem( int index );
         void add_dura_value( std::vector<std::array<int, 9>> &vertices, int index );
         void add_hearts_holder( std::vector<std::array<int, 9>> &vertices, int index );
@@ -63,9 +62,11 @@ class UI
 
 		Text *getTextPtr( void );
 		Chat *getChatPtr( void );
-		void changeGuiSize( void );
+		void setGuiSize( int gui_size );
 		GLuint getShaderProgram( void );
         void setup_shader( void );
+		void load_texture( void );
+
 		void addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement = false );
         void drawUserInterface( std::string str, bool game_mode, float deltaTime );
         void chatMessage( std::string str );

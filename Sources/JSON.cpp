@@ -31,7 +31,6 @@ void OpenGL_Manager::saveWorld( void )
 		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
 		+ ",\n\t\"f5_mode\": " + ((_ui->_hideUI) ? "true" : "false")
 		+ ",\n\t\"outline\": " + ((_outline) ? "true" : "false")
-		+ ",\n\t\"render_distance\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)) + ",\n\t"
 		+ DayCycle::Get()->saveString()
 		+ _camera->saveString()
 		+ _inventory->saveString()
@@ -65,7 +64,6 @@ std::string Camera::saveString( void )
 		+ std::to_string(_spawnpoint.x) + ", \"y\": " + std::to_string(_spawnpoint.y) + ", \"z\": " + std::to_string(_spawnpoint.z)
 		+ "},\n\t\t\"yaw\": " + std::to_string(_yaw)
 		+ ",\n\t\t\"pitch\": " + std::to_string(_pitch)
-		+ ",\n\t\t\"fov\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV))
 		+ ",\n\t\t\"health_points\": " + std::to_string(_health_points)
 		+ ",\n\t\t\"foodLevel\": " + std::to_string(_foodLevel)
 		+ ",\n\t\t\"foodSaturation\": " + std::to_string(_foodSaturationLevel)
@@ -225,15 +223,6 @@ void OpenGL_Manager::loadWorld( std::string file )
 			} else if (!line.compare(0, 11, "\"outline\": ")) {
 				_outline = line.substr(11, 4) == "true";
 				ofs << "outline set to " << _outline << std::endl;
-			} else if (!line.compare(0, 19, "\"render_distance\": ")) {
-				int render = std::atoi(&line[19]);
-				Settings::Get()->setInt(SETTINGS::INT::RENDER_DIST, render);
-				glUseProgram(_shaderProgram);
-				glUniform1f(_uniFog, (1 + render) << CHUNK_SHIFT);
-				glUseProgram(_skyShaderProgram);
-				glUniform1f(_skyUniFog, (1 + render) << CHUNK_SHIFT);
-				glUseProgram(_shaderProgram);
-				ofs << "render dist set to " << render << std::endl;
 			} else if (!line.compare(0, 12, "\"dayCycle\": ")) {
 				DayCycle::Get()->loadWorld(ofs, line);
 			} else if (!line.compare(0, 10, "\"camera\": ")) {
@@ -298,11 +287,6 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 		} else if (!line.compare(0, 9, "\"pitch\": ")) {
 			_pitch = std::stof(&line[9]);
 			ofs << "camera pitch set to " << _pitch << std::endl;
-		} else if (!line.compare(0, 7, "\"fov\": ")) {
-			float fov = std::stof(&line[7]);
-			Settings::Get()->setFloat(SETTINGS::FLOAT::FOV, fov);
-			_fovUpdate = true;
-			ofs << "camera fov set to " << fov << std::endl;
 		} else if (!line.compare(0, 17, "\"health_points\": ")) {
 			_health_points = std::atoi(&line[17]);
 			ofs << "camera health points set to " << _health_points << std::endl;
@@ -495,4 +479,181 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 		}
 	}
 	throw UnclosedBracketException();
+}
+
+// ************************************************************************** //
+//                                Settings                                    //
+// ************************************************************************** //
+
+void Menu::loadSettings( void )
+{
+	try {
+		std::ofstream ofs("Resources/loadingSettings.log", std::ofstream::out | std::ofstream::trunc);
+
+		ofs << "Opening file Resources/settings.json" << std::endl;
+		std::ifstream indata("Resources/settings.json");
+		if (!indata.is_open()) {
+			throw InvalidFileException();
+		}
+		std::string line;
+		while (!indata.eof()) {
+			std::getline(indata, line);
+			line = trim_spaces(line);
+			if (line.empty() || line[0] == '#') {
+				continue ;
+			} else if (!line.compare(0, 7, "\"fov\": ")) {
+				_fov_gradient = std::stof(&line[7]);
+				Settings::Get()->setFloat(SETTINGS::FLOAT::FOV, _fov_gradient);
+				ofs << "fov set to " << _fov_gradient << std::endl;
+			} else if (!line.compare(0, 19, "\"render_distance\": ")) {
+				int render = std::atoi(&line[19]);
+				_render_gradient = render;
+				Settings::Get()->setInt(SETTINGS::INT::RENDER_DIST, render);
+				ofs << "render dist set to " << render << std::endl;
+			} else if (!line.compare(0, 14, "\"brightness\": ")) {
+				_brightness_gradient = std::stof(&line[14]);
+				Settings::Get()->setFloat(SETTINGS::FLOAT::BRIGHTNESS, _brightness_gradient);
+				ofs << "brightness set to " << _brightness_gradient << std::endl;
+			} else if (!line.compare(0, 10, "\"clouds\": ")) {
+				int clouds = std::atoi(&line[10]);
+				Settings::Get()->setInt(SETTINGS::INT::CLOUDS, clouds);
+				const std::array<std::string, 3> cloudstr = {"Clouds - Fancy", "Clouds - Fast", "Clouds - OFF"};
+				ofs << "clouds set to " << cloudstr[clouds] << std::endl;
+			} else if (!line.compare(0, 10, "\"skybox\": ")) {
+				int skybox = std::atoi(&line[10]);
+				Settings::Get()->setBool(SETTINGS::BOOL::SKYBOX, skybox);
+				ofs << "skybox set to " << ((skybox) ? "true" : "false") << std::endl;
+			} else if (!line.compare(0, 13, "\"gui_scale\": ")) {
+				_gui_size = std::atoi(&line[13]) - 1;
+				changeGuiSize();
+				ofs << "gui_size set to " << _gui_size << std::endl;
+			} else if (!line.compare(0, 19, "\"resource_packs\": [")) {
+				size_t index = 19;
+				size_t endindex = line.rfind(']');
+				ofs << "resource packs" << std::endl;
+				if (endindex == std::string::npos) throw UnclosedBracketException();
+				while (index < endindex) {
+					size_t start = line.find('\"', index);
+					if (start == std::string::npos) throw UnclosedBracketException();
+					size_t end = line.find('\"', start + 1);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					std::string pack = line.substr(start + 1, end - 1 - start);
+					ofs << "push resource pack " << pack << std::endl;
+					Settings::Get()->pushResourcePack(pack);
+					index = end + 1;
+				}
+			}
+		}
+	}
+	catch (std::exception & e) {
+		std::cerr << e.what() << std::endl;
+		exit (1);
+	}
+}
+
+std::string Settings::getPacksString( void )
+{
+	std::string res = "[";
+	bool start = true;
+	for (auto &pack: _packs) {
+		if (!start) {
+			res += ", ";
+		}
+		res += '\"' + pack + '\"';
+		start = false;
+	}
+	return (res + ']');
+}
+
+void Menu::saveSettings( void )
+{
+	std::string json = "{\n\t\"fov\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV))
+					+ ",\n\t\"render_distance\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST))
+					+ ",\n\t\"brightness\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS))
+					+ ",\n\t\"clouds\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::CLOUDS))
+					+ ",\n\t\"skybox\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX))
+					+ ",\n\t\"gui_scale\": " + std::to_string(_gui_size)
+					+ ",\n\t\"resource_packs\": " + Settings::Get()->getPacksString()
+					+ "\n}";
+	try {
+		std::ofstream ofs("Resources/settings.json", std::ofstream::out | std::ofstream::trunc);
+		ofs << json;
+		ofs.close();
+	}
+	catch (std::exception & e) {
+		std::cerr << e.what() << std::endl << "Settings save on Resources/settings.json failure." << std::endl;
+	}
+}
+
+void Settings::loadResourcePacks( void )
+{
+	std::ofstream ofs("Resources/loadingSettings.log", std::ofstream::out | std::ofstream::app);
+	std::array<bool, SETTINGS::NBR_TEXTURES> check_set = {false};
+	for (auto &pack: _packs) {
+		try {
+			ofs << "Opening file " << pack << std::endl;
+			std::ifstream indata(pack);
+			if (!indata.is_open()) {
+				throw InvalidFileException();
+			}
+			ofs << "Success" << std::endl;
+			std::string line;
+			while (!indata.eof()) {
+				std::getline(indata, line);
+				line = trim_spaces(line);
+				if (line.empty() || line[0] == '#') {
+					continue ;
+				} else if (!line.compare(0, 15, "\"BLOCK_ATLAS\": ")) {
+					size_t end = line.find('\"', 16);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::BLOCK_ATLAS] = line.substr(16, end - 16);
+					check_set[SETTINGS::STRING::BLOCK_ATLAS] = true;
+				} else if (!line.compare(0, 15, "\"ASCII_ATLAS\": ")) {
+					size_t end = line.find('\"', 16);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::ASCII_ATLAS] = line.substr(16, end - 16);
+					check_set[SETTINGS::STRING::ASCII_ATLAS] = true;
+				} else if (!line.compare(0, 12, "\"UI_ATLAS\": ")) {
+					size_t end = line.find('\"', 13);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::UI_ATLAS] = line.substr(13, end - 13);
+					check_set[SETTINGS::STRING::UI_ATLAS] = true;
+				} else if (!line.compare(0, 19, "\"CONTAINER_ATLAS\": ")) {
+					size_t end = line.find('\"', 20);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::CONTAINER_ATLAS] = line.substr(20, end - 20);
+					check_set[SETTINGS::STRING::CONTAINER_ATLAS] = true;
+				} else if (!line.compare(0, 18, "\"PARTICLE_ATLAS\": ")) {
+					size_t end = line.find('\"', 19);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::PARTICLE_ATLAS] = line.substr(19, end - 19);
+					check_set[SETTINGS::STRING::PARTICLE_ATLAS] = true;
+				} else if (!line.compare(0, 15, "\"MODEL_ATLAS\": ")) {
+					size_t end = line.find('\"', 16);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::MODEL_ATLAS] = line.substr(16, end - 16);
+					check_set[SETTINGS::STRING::MODEL_ATLAS] = true;
+				} else if (!line.compare(0, 15, "\"WATER_STILL\": ")) {
+					size_t end = line.find('\"', 16);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::WATER_STILL] = line.substr(16, end - 16);
+					check_set[SETTINGS::STRING::WATER_STILL] = true;
+				} else if (!line.compare(0, 14, "\"WATER_FLOW\": ")) {
+					size_t end = line.find('\"', 15);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::WATER_FLOW] = line.substr(15, end - 15);
+					check_set[SETTINGS::STRING::WATER_FLOW] = true;
+				}
+			}
+		}
+		catch (std::exception & e) {
+			std::cerr << e.what() << std::endl << "Settings::loadResourcePacks" << std::endl;
+		}
+	}
+	for (int i = 0; i < SETTINGS::STRING::NBR_TEXTURES; ++i) {
+		if (!check_set[i]) {
+			std::cerr << "missing field " << i << " in check_set" << std::endl;
+			return ;
+		}
+	}
 }

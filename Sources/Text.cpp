@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "Text.hpp"
+#include "Settings.hpp"
 
 Text::Text( void ) : _textures(NULL)
 {
@@ -55,7 +56,8 @@ void Text::load_texture( void )
 	_textures = new GLuint[1];
 	glGenTextures(1, _textures);
 
-	loadTextureShader(1, _textures[0], "Resources/asciiAtlas.png");
+	glUseProgram(_shaderProgram);
+	loadTextureShader(1, _textures[0], Settings::Get()->getString(SETTINGS::STRING::ASCII_ATLAS));
 	glUniform1i(glGetUniformLocation(_shaderProgram, "asciiAtlas"), 1); // sampler2D #index in fragment shader
 }
 

@@ -56,8 +56,6 @@ IN PROGRES:
 TODAY:
 THIS WEEKEND
 	- blocks with oriented light occlusion (ie slabs, stairs)
-	- centralize settings and save/load them in file
-	- resource packs
 
 SHORTTERM memory:
 	\/ - work on cleanAtlas
@@ -151,6 +149,8 @@ DONE:
 	- water flow
 	- clouds
 	- gui size
+	- centralize settings and save/load them in file
+	- resource packs
 	- main menu
     - load menu
 	- pause menu

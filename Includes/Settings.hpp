@@ -3,6 +3,8 @@
 
 # include <mutex>
 # include <array>
+# include <vector>
+# include <string>
 
 # define RENDER_DISTANCE  10
 # define FOV_START     	  70.0f // if fov = -fov, world is upside down
@@ -26,6 +28,19 @@ namespace SETTINGS {
 		NBR_FLOAT
 	};
 
+	enum STRING {
+		BLOCK_ATLAS,
+		ASCII_ATLAS,
+		UI_ATLAS,
+		CONTAINER_ATLAS,
+		PARTICLE_ATLAS,
+		MODEL_ATLAS,
+		WATER_STILL,
+		WATER_FLOW,
+		NBR_TEXTURES,
+		NBR_STRING = NBR_TEXTURES
+	};
+
 	enum {
 		FANCY,
 		FAST,
@@ -42,6 +57,8 @@ class Settings
 		std::array<bool, SETTINGS::NBR_BOOL> _bools;
 		std::array<int, SETTINGS::NBR_INT> _ints;
 		std::array<float, SETTINGS::NBR_FLOAT> _floats;
+		std::array<std::string, SETTINGS::NBR_STRING> _strings;
+		std::vector<std::string> _packs;
 
 		Settings( void );
 		~Settings( void );
@@ -55,13 +72,19 @@ class Settings
 
 		bool getBool( int target );
 		void setBool( int target, bool value );
+
 		int getInt( int target );
 		void setInt( int target, int value );
+
 		float getFloat( int target );
 		void setFloat( int target, float value );
 
-// 		std::string saveString( void );
-// 		void loadWorld( std::ofstream & ofs, std::string line );
+		std::string getString( int target );
+		void setString( int target, std::string value );
+
+		void pushResourcePack( std::string pack );
+		std::string getPacksString( void );
+		void loadResourcePacks( void );
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include "Camera.hpp"
 #include "Ui.hpp"
-
+#include "Settings.hpp"
 
 UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _gui_size(4), _nb_items(0), _movement(false), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
 {
@@ -28,12 +28,6 @@ UI::~UI( void )
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
-
-void UI::load_texture( std::string texstr, std::string shname, int index )
-{
-	loadTextureShader(index, _textures[index - 2], texstr);
-	glUniform1i(glGetUniformLocation(_shaderProgram, shname.c_str()), index); // sampler2D #index in fragment shader
-}
 
 void UI::add_inventory_elem( int index )
 {
@@ -276,11 +270,9 @@ Chat *UI::getChatPtr( void )
 	return (_chat);
 }
 
-void UI::changeGuiSize( void )
+void UI::setGuiSize( int gui_size )
 {
-	if (++_gui_size > GUI_MAX + 1) {
-		_gui_size = GUI_MIN + 1;
-	}
+	_gui_size = gui_size;
 	_vaoSet = false;
 }
 
@@ -292,10 +284,9 @@ GLuint UI::getShaderProgram( void )
 void UI::setup_shader( void )
 {
 	_text->setup_shader();
-	_text->load_texture();
 
 	// setup item shader program
-	_itemShaderProgram =createShaderProgram("item_vertex", "", "item_fragment");
+	_itemShaderProgram = createShaderProgram("item_vertex", "", "item_fragment");
 
 	glBindFragDataLocation(_itemShaderProgram, 0, "outColor");
 
@@ -307,8 +298,6 @@ void UI::setup_shader( void )
 
 	glUniform1i(glGetUniformLocation(_itemShaderProgram, "window_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_itemShaderProgram, "window_height"), WIN_HEIGHT);
-
-	glUniform1i(glGetUniformLocation(_itemShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
 
 	check_glstate("Item_Shader program successfully created\n", true);
 
@@ -327,14 +316,27 @@ void UI::setup_shader( void )
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "window_height"), WIN_HEIGHT);
 
-	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // TODO get rid of this because we use itemShaderProgram for it now
-
 	check_glstate("UI_Shader program successfully created\n", true);
+}
+
+void UI::load_texture( void )
+{
+	_text->load_texture();
+
+	glUseProgram(_itemShaderProgram);
+	glUniform1i(glGetUniformLocation(_itemShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
+
+	glUseProgram(_shaderProgram);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0);
 
 	_textures = new GLuint[2];
 	glGenTextures(2, _textures);
-	load_texture("Resources/uiAtlas.png", "uiAtlas", 2);
-	load_texture("Resources/containersAtlas.png", "containerAtlas", 3);
+
+	loadTextureShader(2, _textures[0], Settings::Get()->getString(SETTINGS::STRING::UI_ATLAS));
+	glUniform1i(glGetUniformLocation(_shaderProgram, "uiAtlas"), 2);
+
+	loadTextureShader(3, _textures[1], Settings::Get()->getString(SETTINGS::STRING::CONTAINER_ATLAS));
+	glUniform1i(glGetUniformLocation(_shaderProgram, "containerAtlas"), 3);
 }
 
 void UI::addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement )

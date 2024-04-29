@@ -172,7 +172,7 @@ void loadTextureShader( int index, GLuint texture, std::string texture_file )
 
 	SOIL_free_image_data(img.content);
 
-	check_glstate("Succesfully loaded " + texture_file + " to shader", true);
+	check_glstate("Successfully loaded img[" + std::to_string(index) + "] " + texture_file + " to shader", true);
 }
 
 int chunk_pos( int pos )

@@ -12,6 +12,7 @@ Menu::Menu( Inventory & inventory, UI *ui ) : _gui_size(3), _state(MENU::MAIN), 
 	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _chest(NULL), _furnace(NULL)
 {
 	_world_file = "";
+	loadSettings();
 }
 
 Menu::~Menu( void )
@@ -55,6 +56,7 @@ MENU::RET Menu::main_menu( void )
 			DIR *dir = opendir("Worlds");
 			if (dir == NULL) {
 				std::cerr << "failed to open dir Worlds/" << std::endl;
+				_state = MENU::MAIN;
 				return (MENU::RET::NO_CHANGE);
 			}
 			struct dirent *dent;
@@ -73,6 +75,7 @@ MENU::RET Menu::main_menu( void )
 			return (MENU::RET::NO_CHANGE);
 		} else if (_selection == 6) { //quit game
 			glfwSetWindowShouldClose(_window, GL_TRUE);
+			saveSettings();
 			return (MENU::RET::QUIT);
 		}
 	}
@@ -237,9 +240,7 @@ MENU::RET Menu::options_menu( void )
 	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_selection == 1) { // FOV
 			_moving_slider = true;
-			if (_state == MENU::OPTIONS) {
-				Settings::Get()->setFloat(SETTINGS::FLOAT::FOV, _fov_gradient);
-			}
+			Settings::Get()->setFloat(SETTINGS::FLOAT::FOV, _fov_gradient);
 		} else if (!INPUT::key_update(INPUT::BREAK)) {
 		} else if (_selection == 5) { // video_settings
 			_state = (_state == MENU::OPTIONS) ? MENU::VIDEO_SETTINGS : MENU::MAIN_VIDEO_SETTINGS;
@@ -298,7 +299,6 @@ MENU::RET Menu::video_menu( void )
 			Settings::Get()->setBool(SETTINGS::BOOL::SKYBOX, !Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX));
 		} else if (_selection == 5) { // Gui scale
 			changeGuiSize();
-			_ui->changeGuiSize();
 		} else if (_selection == 11) { // Done
 			_state = (_state == MENU::VIDEO_SETTINGS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
 			reset_values();
@@ -1300,6 +1300,7 @@ void Menu::changeGuiSize( void )
 	if (++_gui_size > GUI_MAX) {
 		_gui_size = GUI_MIN;
 	}
+	_ui->setGuiSize(_gui_size + 1);
 }
 
 std::string Menu::getWorldFile( void )

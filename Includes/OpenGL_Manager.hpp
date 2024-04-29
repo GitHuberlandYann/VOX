@@ -86,7 +86,7 @@ class OpenGL_Manager
 		void initWorld( void );
 		void create_shaders( void );
 		void setup_communication_shaders( void );
-		void load_texture( std::string texture_file );
+		void load_texture( void );
 		void resetInputsPtrs( void );
 		void setGamemode( bool gamemode );
 		void getGamemode( void );

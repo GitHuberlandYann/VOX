@@ -1,0 +1,9 @@
+{
+	"fov": 70.250305,
+	"render_distance": 10,
+	"brightness": 0.057494,
+	"clouds": 0,
+	"skybox": 1,
+	"gui_scale": 3,
+	"resource_packs": ["Resources/Resource_Packs/default.json"]
+}

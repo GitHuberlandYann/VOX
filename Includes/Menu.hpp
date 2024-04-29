@@ -111,6 +111,9 @@ class Menu
         void setup_array_buffer_furnace( void );
 		void setup_shader( void );
 
+		void loadSettings( void );
+		void saveSettings( void );
+
 	public:
 		Menu( Inventory & inventory, UI *ui );
 		~Menu( void );

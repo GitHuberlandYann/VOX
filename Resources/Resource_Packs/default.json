@@ -1,0 +1,10 @@
+{
+    "BLOCK_ATLAS": "Resources/Textures/blockAtlas.png",
+	"ASCII_ATLAS": "Resources/Textures/asciiAtlas.png",
+	"UI_ATLAS": "Resources/Textures/uiAtlas.png",
+	"CONTAINER_ATLAS": "Resources/Textures/containersAtlas.png",
+	"PARTICLE_ATLAS": "Resources/Textures/particleAtlas.png",
+	"MODEL_ATLAS": "Resources/Textures/modelAtlas.png",
+	"WATER_STILL": "Resources/Textures/waterStill.png",
+	"WATER_FLOW": "Resources/Textures/waterFlow.png"
+}
