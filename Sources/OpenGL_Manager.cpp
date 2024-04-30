@@ -347,9 +347,15 @@ void OpenGL_Manager::setup_communication_shaders( void )
 
 void OpenGL_Manager::load_texture( void )
 {
-	Settings::Get()->loadResourcePacks();
+	if (Settings::Get()->loadResourcePacks()) {
+		return ; // missing field in resource packs, abort load
+	}
 	_ui->load_texture();
 
+	if (_textures) {
+		glDeleteTextures(5, _textures);
+		delete [] _textures;
+	}
 	_textures = new GLuint[5];
 	glGenTextures(5, _textures);
 
@@ -639,6 +645,9 @@ void OpenGL_Manager::main_loop( void )
 				case (MENU::RET::BRIGHTNESS_UPDATE): // brightness change
 					glUseProgram(_shaderProgram);
 					glUniform1f(_uniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
+					break ;
+				case (MENU::RET::APPLY_RESOURCE_PACKS):
+					load_texture();
 					break ;
 				default:
 					break ;

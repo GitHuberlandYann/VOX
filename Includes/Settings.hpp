@@ -83,8 +83,9 @@ class Settings
 		void setString( int target, std::string value );
 
 		void pushResourcePack( std::string pack );
+		void setResourcePacks( std::vector<std::string> &packs );
 		std::vector<std::string> &getResourcePacks( void );
-		void loadResourcePacks( void );
+		bool loadResourcePacks( void );
 };
 
 #endif

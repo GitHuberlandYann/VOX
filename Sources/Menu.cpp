@@ -7,7 +7,8 @@ extern std::mutex mtx;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Menu::Menu( Inventory & inventory, UI *ui ) : _gui_size(3), _state(MENU::MAIN), _selection(0), _selected_world(0), _vaoSet(false),
-	_textBar(true), _fov_gradient(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV)), _render_gradient(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)),
+	_textBar(true), _change_to_apply(false), _fov_gradient(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV)),
+	_render_gradient(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)),
 	_brightness_gradient(Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS)),
 	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _chest(NULL), _furnace(NULL)
 {
@@ -46,6 +47,7 @@ void Menu::reset_values( void )
 	_resource_packs.clear();
 	_selection_list.clear();
 	_moving_slider = false;
+	_change_to_apply = false;
 }
 
 MENU::RET Menu::main_menu( void )
@@ -354,9 +356,14 @@ MENU::RET Menu::video_menu( void )
 
 MENU::RET Menu::resource_packs_menu( void )
 {
+	MENU::RET ret = MENU::RET::NO_CHANGE;
 	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_moving_slider) {
 		} else if (!INPUT::key_update(INPUT::BREAK)) {
+		} else if (_selection == 1 && _change_to_apply) { // Apply Change
+			_change_to_apply = false;
+			Settings::Get()->setResourcePacks(_active_resource_packs); // TODO visual feedback if missing field in resource_packs
+			ret = MENU::RET::APPLY_RESOURCE_PACKS;
 		} else if (_selection == 2) { // Done
 			_state = (_state == MENU::RESOURCE_PACKS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
 			reset_values();
@@ -378,23 +385,12 @@ MENU::RET Menu::resource_packs_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
+	// resource packs' texts are written in setup_array_buffer_resource_packs
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, "Select Resource Packs");
     _text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Apply Changes");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
-
-	int index = 0;
-	for (auto &pack : _resource_packs) {
-		_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, pack.substr(0, pack.size() - 5));
-		++index;
-	}
-
-	index = 0;
-	for (auto &pack : _active_resource_packs) {
-		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, pack.substr(0, pack.size() - 5));
-		++index;
-	}
-	_text->addText(20, 20, 30, true, "select " + std::to_string(_selection));
-	return (MENU::RET::NO_CHANGE);
+	// _text->addText(20, 20, 30, true, "select " + std::to_string(_selection));
+	return (ret);
 }
 
 MENU::RET Menu::ingame_inputs( void )
@@ -703,22 +699,26 @@ void Menu::setup_array_buffer_resource_packs( void )
 			double mouseX, mouseY;
 			glfwGetCursorPos(_window, &mouseX, &mouseY);
 			_vertices.push_back({1, static_cast<int>(mouseX) - 95 * _gui_size, static_cast<int>(mouseY) - 10 * _gui_size, 190 * _gui_size, 20 * _gui_size, 0, 71, 200, 20});
+			_text->addCenteredText(mouseX, mouseY, 0, 0, 7 * _gui_size, true, _resource_packs[rp_size].substr(0, _resource_packs[rp_size].size() - 5));
 		} else {
 			_vertices.push_back({1, WIN_WIDTH / 2 - 200 * _gui_size, WIN_HEIGHT / 2 - (80 - rp_size * 20) * _gui_size, 190 * _gui_size, 20 * _gui_size, 0, 71, 200, 20});
+			_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - (80 - rp_size * 20) * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, _resource_packs[rp_size].substr(0, _resource_packs[rp_size].size() - 5));
 		}
 	}
 
 	for (int index = 0; index < static_cast<int>(_active_resource_packs.size()); ++index) {
-		if (_moving_slider && _selection == 3 + rp_size + index) {
+		if (_moving_slider && _selection == 4 + rp_size + index) {
 			double mouseX, mouseY;
 			glfwGetCursorPos(_window, &mouseX, &mouseY);
 			_vertices.push_back({1, static_cast<int>(mouseX) - 95 * _gui_size, static_cast<int>(mouseY) - 10 * _gui_size, 190 * _gui_size, 20 * _gui_size, 0, 71, 200, 20});
+			_text->addCenteredText(mouseX, mouseY, 0, 0, 7 * _gui_size, true, _active_resource_packs[index].substr(0, _active_resource_packs[index].size() - 5));
 		} else {
 			_vertices.push_back({1, WIN_WIDTH / 2 + 10 * _gui_size, WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size, 190 * _gui_size, 20 * _gui_size, 0, 71, 200, 20});
+			_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, _active_resource_packs[index].substr(0, _active_resource_packs[index].size() - 5));
 		}
 	}
 
-    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (false) ? (_selection == 1) ? 111 : 91 : 71, 200, 20}); // Apply
+    _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_change_to_apply) ? (_selection == 1) ? 111 : 91 : 71, 200, 20}); // Apply
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 2) ? 111 : 91, 200, 20}); // Done
 
 	setup_shader();
@@ -1231,7 +1231,53 @@ void Menu::processMouseMovement( float posX, float posY )
 	case MENU::MAIN_RESOURCE_PACKS:
 	case MENU::RESOURCE_PACKS:
 		if (_moving_slider) {
-			// .. move selected resource pack around, which in turn moves every other packs accordingly
+			int cursor_selection = -1, rp_size = _resource_packs.size(), arp_size = _active_resource_packs.size();
+			// move selected resource pack around, which in turn moves every other packs accordingly
+			if (posX < WIN_WIDTH / 2) { // _resource_packs column
+				for (int index = 0; index < rp_size; ++index) {
+					if (posY < WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size + 20 * _gui_size) {
+						cursor_selection = 3 + index;
+						break ;
+					}
+				}
+				if (cursor_selection == -1) {
+					cursor_selection = (_selection == 2 + rp_size) ? _selection : 3 + rp_size;
+				}
+			} else { // _active_resource_packs column
+				for (int index = 0; index < arp_size; ++index) {
+					if (posY < WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size + 20 * _gui_size) {
+						cursor_selection = 4 + rp_size + index;
+						break ;
+					}
+				}
+				if (cursor_selection == -1) {
+					cursor_selection = (_selection == 3 + rp_size + arp_size) ? _selection : 4 + rp_size + arp_size;
+				}
+			}
+			if (_selection != cursor_selection) {
+				std::string change;
+				if (_selection < 4 + rp_size) {
+					change = _resource_packs[_selection - 3];
+					_resource_packs.erase(_resource_packs.begin() + (_selection - 3));
+				} else {
+					change = _active_resource_packs[_selection - 4 - rp_size];
+					_active_resource_packs.erase(_active_resource_packs.begin() + (_selection - 4 - rp_size));
+				}
+				if (cursor_selection == 3 + rp_size) {
+					_resource_packs.push_back(change);
+					_selection = cursor_selection;
+				} else if (cursor_selection == 4 + rp_size + arp_size) {
+					_active_resource_packs.push_back(change);
+					_selection = cursor_selection - 1;
+				} else if (cursor_selection < 4 + rp_size) {
+					_resource_packs.insert(_resource_packs.begin() + (cursor_selection - 3), change);
+					_selection = cursor_selection;
+				} else {
+					_active_resource_packs.insert(_active_resource_packs.begin() + (cursor_selection - 4 - rp_size), change);
+					_selection = cursor_selection;
+				}
+				_change_to_apply = true;
+			}
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
@@ -1246,7 +1292,7 @@ void Menu::processMouseMovement( float posX, float posY )
 			}
 			for (int index = 0; index < static_cast<int>(_active_resource_packs.size()); ++index) {
 				if (inRectangle(posX, posY, WIN_WIDTH / 2 + 10 * _gui_size, WIN_HEIGHT / 2 - (80 - index * 20) * _gui_size, 190 * _gui_size, 20 * _gui_size)) {
-					_selection = 3 + rp_size + index;
+					_selection = 4 + rp_size + index;
 					return ;
 				}
 			}

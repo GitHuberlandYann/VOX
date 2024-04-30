@@ -44,6 +44,7 @@ namespace MENU
 		FOV_UPDATE,
 		RENDER_DIST_UPDATE,
 		BRIGHTNESS_UPDATE,
+		APPLY_RESOURCE_PACKS,
 	};
 }
 
@@ -54,7 +55,7 @@ class Menu
 		GLuint _shaderProgram;
         GLint _gui_size, _nb_points, _state, _selection, _selected_world;
 		t_item _selected_block;
-		bool _vaoSet, _textBar, _moving_slider;
+		bool _vaoSet, _textBar, _moving_slider, _change_to_apply;
 		float _fov_gradient, _render_gradient, _brightness_gradient;
 		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs;
 		std::vector<int> _selection_list;

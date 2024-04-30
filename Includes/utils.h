@@ -15,7 +15,7 @@
 # define FIFTEEN_SIXTEENTH 15.0f / 16.0f
 
 # if __linux__
-#  if 1
+#  if 0
 #   define WIN_WIDTH 1680
 #   define WIN_HEIGHT 1050
 #  else

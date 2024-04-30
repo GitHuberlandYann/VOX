@@ -580,7 +580,7 @@ void Menu::saveSettings( void )
 	}
 }
 
-void Settings::loadResourcePacks( void )
+bool Settings::loadResourcePacks( void )
 {
 	std::ofstream ofs("Resources/loadingSettings.log", std::ofstream::out | std::ofstream::app);
 	std::array<bool, SETTINGS::NBR_TEXTURES> check_set = {false};
@@ -591,7 +591,6 @@ void Settings::loadResourcePacks( void )
 			if (!indata.is_open()) {
 				throw InvalidFileException();
 			}
-			ofs << "Success" << std::endl;
 			std::string line;
 			while (!indata.eof()) {
 				std::getline(indata, line);
@@ -648,7 +647,8 @@ void Settings::loadResourcePacks( void )
 	for (int i = 0; i < SETTINGS::STRING::NBR_TEXTURES; ++i) {
 		if (!check_set[i]) {
 			std::cerr << "missing field " << i << " in check_set" << std::endl;
-			return ;
+			return (1);
 		}
 	}
+	return (0);
 }

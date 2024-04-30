@@ -329,6 +329,10 @@ void UI::load_texture( void )
 	glUseProgram(_shaderProgram);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0);
 
+	if (_textures) {
+		glDeleteTextures(2, _textures);
+		delete [] _textures;
+	}
 	_textures = new GLuint[2];
 	glGenTextures(2, _textures);
 

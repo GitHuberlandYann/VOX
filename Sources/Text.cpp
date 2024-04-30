@@ -53,6 +53,10 @@ void Text::setup_shader( void )
 
 void Text::load_texture( void )
 {
+	if (_textures) {
+		glDeleteTextures(1, _textures);
+		delete [] _textures;
+	}
 	_textures = new GLuint[1];
 	glGenTextures(1, _textures);
 
