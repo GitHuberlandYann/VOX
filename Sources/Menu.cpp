@@ -808,13 +808,12 @@ void Menu::display_item_value( int x, int y, int amount )
 
 void Menu::add_item_value( t_item item, int x, int y, bool movement )
 {
-	// TODO change item to ivec3(type, amount, dura) + handle durabilities over here
 	display_item_value(x, y, item.amount);
 	add_dura_value(item.dura, x, y);
 	int type = item.type;
 	if (!s_blocks[type]->item3D) {
 		// texX texY receive 2 to indicate we wan't item's texture
-		int spec = s_blocks[type]->texX(face_dir::MINUSX, 2) + (s_blocks[type]->texY(face_dir::MINUSX, 2) << 4) + (3 << 19);
+		int spec = (s_blocks[type]->texX(face_dir::MINUSX, 2) << 4) + (s_blocks[type]->texY(face_dir::MINUSX, 2) << 12) + (3 << 19);
 		// int faceLight = computeLight(row - 1, col, level);
 		int cornerLight = 15;//computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 		int shade = 0;//computeShade(row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
@@ -822,51 +821,119 @@ void Menu::add_item_value( t_item item, int x, int y, bool movement )
 		glm::ivec3 v0 = {spec + (cornerLight << 24) + (shade << 22), x, y};
 		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 		// shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-		glm::ivec3 v1 = {spec + (cornerLight << 24) + (shade << 22) + 1, x + 16 * _gui_size, y};
+		glm::ivec3 v1 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4), x + 16 * _gui_size, y};
 		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
 		// shade = computeShade(row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-		glm::ivec3 v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4), x, y + 16 * _gui_size};
+		glm::ivec3 v2 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 12), x, y + 16 * _gui_size};
 		// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
 		// shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-		glm::ivec3 v3 = {spec + (cornerLight << 24) + (shade << 22) + 1 + (1 << 4), x + 16 * _gui_size, y + 16 * _gui_size};
+		glm::ivec3 v3 = {spec + (cornerLight << 24) + (shade << 22) + (1 << 4) + (1 << 12), x + 16 * _gui_size, y + 16 * _gui_size};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		return ;
 	}
 	x += _gui_size;
 	int offset = (type == blocks::OAK_LOG) ? AXIS::Z : face_dir::PLUSX;
 	if (type == blocks::OAK_STAIRS) {
-		int spec = (15 << 24) + s_blocks[type]->texX(face_dir::PLUSZ, offset) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 4);
+		int spec = (15 << 24) + (s_blocks[type]->texX(face_dir::PLUSZ, offset) << 4) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 12);
 		// top of second step
 		glm::ivec3 v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
-		glm::ivec3 v1 = {spec + 1, x + 6.5f * _gui_size, y};
-		glm::ivec3 v2 = {spec + (1 << 4), x + 3.25f * _gui_size, y + 15 * _gui_size * 121.875f / 362.5f};
-		glm::ivec3 v3 = {spec + 1 + (1 << 4), x + 9.75f * _gui_size, y + 15 * _gui_size * 40.625f / 362.5f};
+		glm::ivec3 v1 = {spec + (1 << 4), x + 6.5f * _gui_size, y};
+		glm::ivec3 v2 = {spec + (1 << 12), x + 3.25f * _gui_size, y + 15 * _gui_size * 121.875f / 362.5f};
+		glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + 9.75f * _gui_size, y + 15 * _gui_size * 40.625f / 362.5f};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		// top of first step
 		v0 = {spec, x + 3.25f * _gui_size, y + 15 * _gui_size * 221.875f / 362.5f};
-		v1 = {spec + 1, x + 9.75f * _gui_size, y + 15 * _gui_size * 140.624f / 362.5f};
-		v2 = {spec + (1 << 4), x + 6.5f * _gui_size, y + 15 * _gui_size * 262.5f / 362.5f};
-		v3 = {spec + 1 + (1 << 4), x + 13 * _gui_size, y + 15 * _gui_size * 181.25f / 362.5f};
+		v1 = {spec + (1 << 4), x + 9.75f * _gui_size, y + 15 * _gui_size * 140.624f / 362.5f};
+		v2 = {spec + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size * 262.5f / 362.5f};
+		v3 = {spec + (1 << 4) + (1 << 12), x + 13 * _gui_size, y + 15 * _gui_size * 181.25f / 362.5f};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		// front of second step
 		spec -= (8 << 24);
 		v0 = {spec, x + 3.25f * _gui_size, y + 15 * _gui_size * 121.875f / 362.5f};
-		v1 = {spec + 1, x + 9.75f * _gui_size, y + 15 * _gui_size * 40.625f / 362.5f};
-		v2 = {spec + (1 << 4), x + 3.25f * _gui_size, y + 15 * _gui_size * 221.875f / 362.5f};
-		v3 = {spec + 1 + (1 << 4), x + 9.75f * _gui_size, y + 15 * _gui_size * 140.624f / 362.5f};
+		v1 = {spec + (1 << 4), x + 9.75f * _gui_size, y + 15 * _gui_size * 40.625f / 362.5f};
+		v2 = {spec + (1 << 12), x + 3.25f * _gui_size, y + 15 * _gui_size * 221.875f / 362.5f};
+		v3 = {spec + (1 << 4) + (1 << 12), x + 9.75f * _gui_size, y + 15 * _gui_size * 140.624f / 362.5f};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		// front of first step
 		v0 = {spec, x + 6.5f * _gui_size, y + 15 * _gui_size * 262.5f / 362.5f};
-		v1 = {spec + 1, x + 13 * _gui_size, y + 15 * _gui_size * 181.25f / 362.5f};
-		v2 = {spec + (1 << 4), x + 6.5f * _gui_size, y + 15 * _gui_size};
-		v3 = {spec + 1 + (1 << 4), x + 13 * _gui_size, y + 15 * _gui_size * 281.25f / 362.5f};
+		v1 = {spec + (1 << 4), x + 13 * _gui_size, y + 15 * _gui_size * 181.25f / 362.5f};
+		v2 = {spec + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size};
+		v3 = {spec + (1 << 4) + (1 << 12), x + 13 * _gui_size, y + 15 * _gui_size * 281.25f / 362.5f};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		// left face
-		spec = (10 << 24) + s_blocks[type]->texX(face_dir::MINUSY, offset) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 4);
+		spec = (10 << 24) + (s_blocks[type]->texX(face_dir::MINUSY, offset) << 4) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 12);
 		v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
-		v1 = {spec + 1, x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
-		v2 = {spec + (1 << 4), x, y + 15 * _gui_size * 281.25f / 362.5f};
-		v3 = {spec + 1 + (1 << 4), x + 6.5f * _gui_size, y + 15 * _gui_size};
+		v1 = {spec + (1 << 4), x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
+		v2 = {spec + (1 << 12), x, y + 15 * _gui_size * 281.25f / 362.5f};
+		v3 = {spec + (1 << 4) + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		return ;
+	} else if (type == blocks::OAK_FENCE) {
+		x -= _gui_size;
+		int spec = (15 << 24) + (s_blocks[blocks::OAK_PLANKS]->texX() << 4) + (s_blocks[blocks::OAK_PLANKS]->texY() << 12);
+		// top of left pole
+		glm::ivec3 v0 = {spec + 6, x + _gui_size * 3.0f, y + _gui_size * 3.66f};
+		glm::ivec3 v1 = {spec + 10, x + _gui_size * 5.0f, y + _gui_size * 3.0f};
+		glm::ivec3 v2 = {spec + 6 + (4 << 8), x + _gui_size * 5.0f, y + _gui_size * 4.33f};
+		glm::ivec3 v3 = {spec + 10 + (4 << 8), x + _gui_size * 7.0f, y + _gui_size * 3.66f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// top of right pole
+		v0 = {spec + 6, x + _gui_size * 9.0f, y + _gui_size * 1.66f};
+		v1 = {spec + 10, x + _gui_size * 11.0f, y + _gui_size * 1.0f};
+		v2 = {spec + 6 + (4 << 8), x + _gui_size * 11.0f, y + _gui_size * 2.33f};
+		v3 = {spec + 10 + (4 << 8), x + _gui_size * 13.0f, y + _gui_size * 1.66f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// left of left pole
+		spec -= (5 << 24);
+		v0 = {spec + 6, x + _gui_size * 3.0f, y + _gui_size * 3.66f};
+		v1 = {spec + 10, x + _gui_size * 5.0f, y + _gui_size * 4.33f};
+		v2 = {spec + 6 + (1 << 12), x + _gui_size * 3.0f, y + _gui_size * 14.33f};
+		v3 = {spec + 10 + (1 << 12), x + _gui_size * 5.0f, y + _gui_size * 15.0f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// left of right pole
+		v0 = {spec + 6, x + _gui_size * 9.0f, y + _gui_size * 1.66f};
+		v1 = {spec + 10, x + _gui_size * 11.0f, y + _gui_size * 2.33f};
+		v2 = {spec + 6 + (1 << 12), x + _gui_size * 9.0f, y + _gui_size * 12.33f};
+		v3 = {spec + 10 + (1 << 12), x + _gui_size * 11.0f, y + _gui_size * 13.0f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// right of left pole
+		spec -= (3 << 24);
+		v0 = {spec + 6, x + _gui_size * 5.0f, y + _gui_size * 4.33f};
+		v1 = {spec + 10, x + _gui_size * 7.0f, y + _gui_size * 3.66f};
+		v2 = {spec + 6 + (1 << 12), x + _gui_size * 5.0f, y + _gui_size * 15.0f};
+		v3 = {spec + 10 + (1 << 12), x + _gui_size * 7.0f, y + _gui_size * 14.33f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// right of right pole
+		v0 = {spec + 6, x + _gui_size * 11.0f, y + _gui_size * 2.33f};
+		v1 = {spec + 10, x + _gui_size * 13.0f, y + _gui_size * 1.66f};
+		v2 = {spec + 6 + (1 << 12), x + _gui_size * 11.0f, y + _gui_size * 13.0f};
+		v3 = {spec + 10 + (1 << 12), x + _gui_size * 13.0f, y + _gui_size * 12.33f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// top of top bar
+		spec += (8 << 24);
+		v0 = {spec + (1 << 8), x + _gui_size * 6.5f, y + _gui_size * 3.66f};
+		v1 = {spec + (1 << 4) + (1 << 8), x + _gui_size * 9.5f, y + _gui_size * 2.66f};
+		v2 = {spec + (3 << 8), x + _gui_size * 7.5f, y + _gui_size * 4.0f};
+		v3 = {spec + (1 << 4) + (3 << 8), x + _gui_size * 10.5f, y + _gui_size * 3.0f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// top of bottom bar
+		v0 = {spec + (1 << 8), x + _gui_size * 7.0f, y + _gui_size * 7.5f};
+		v1 = {spec + (1 << 4) + (1 << 8), x + _gui_size * 9.5f, y + _gui_size * 6.66f};
+		v2 = {spec + (3 << 8), x + _gui_size * 7.5f, y + _gui_size * 8.0f};
+		v3 = {spec + (1 << 4) + (3 << 8), x + _gui_size * 10.5f, y + _gui_size * 7.0f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// right of top bar
+		spec -= (8 << 24);
+		v0 = {spec + (1 << 8), x + _gui_size * 7.0f, y + _gui_size * 4.16f};
+		v1 = {spec + (1 << 4) + (1 << 8), x + _gui_size * 10.5f, y + _gui_size * 3.0f};
+		v2 = {spec + (4 << 8), x + _gui_size * 7.0f, y + _gui_size * 6.16f};
+		v3 = {spec + (1 << 4) + (4 << 8), x + _gui_size * 10.5f, y + _gui_size * 5.0f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// right of bottom bar
+		v0 = {spec + (1 << 8), x + _gui_size * 7.0f, y + _gui_size * 8.16f};
+		v1 = {spec + (1 << 4) + (1 << 8), x + _gui_size * 10.5f, y + _gui_size * 7.0f};
+		v2 = {spec + (4 << 8), x + _gui_size * 7.0f, y + _gui_size * 10.16f};
+		v3 = {spec + (1 << 4) + (4 << 8), x + _gui_size * 10.5f, y + _gui_size * 9.0f};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		return ;
 	}
@@ -875,25 +942,25 @@ void Menu::add_item_value( t_item item, int x, int y, bool movement )
 	int slabOffset = (type == blocks::OAK_SLAB) ? (8 << 8)
 											: (type == blocks::OAK_TRAPDOOR) ? (13 << 8) : 0;
 	// top face
-	int spec = (15 << 24) + s_blocks[type]->texX(face_dir::PLUSZ, offset) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 4);
+	int spec = (15 << 24) + (s_blocks[type]->texX(face_dir::PLUSZ, offset) << 4) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 12);
 	glm::ivec3 v0 = {spec, x, yTop + 16 * _gui_size * 81.25f / 362.5f};
-	glm::ivec3 v1 = {spec + 1, x + 7 * _gui_size, yTop};
-	glm::ivec3 v2 = {spec + (1 << 4), x + 7 * _gui_size, yTop + 16 * _gui_size * 162.5f / 362.5f};
-	glm::ivec3 v3 = {spec + 1 + (1 << 4), x + 14 * _gui_size, yTop + 16 * _gui_size * 81.25f / 362.5f};
+	glm::ivec3 v1 = {spec + (1 << 4), x + 7 * _gui_size, yTop};
+	glm::ivec3 v2 = {spec + (1 << 12), x + 7 * _gui_size, yTop + 16 * _gui_size * 162.5f / 362.5f};
+	glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + 14 * _gui_size, yTop + 16 * _gui_size * 81.25f / 362.5f};
 	_ui->addFace(v0, v1, v2, v3, true, movement);
 	// left face
-	spec = (10 << 24) + s_blocks[type]->texX(face_dir::MINUSY, offset) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 4);
+	spec = (10 << 24) + (s_blocks[type]->texX(face_dir::MINUSY, offset) << 4) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 12);
 	v0 = {spec + slabOffset, x, yTop + 16 * _gui_size * 81.25f / 362.5f};
-	v1 = {spec + slabOffset + 1, x + 7 * _gui_size, yTop + 16 * _gui_size * 162.5f / 362.5f};
-	v2 = {spec + (1 << 4), x, y + 16 * _gui_size * 281.25f / 362.5f};
-	v3 = {spec + 1 + (1 << 4), x + 7 * _gui_size, y + 16 * _gui_size};
+	v1 = {spec + slabOffset + (1 << 4), x + 7 * _gui_size, yTop + 16 * _gui_size * 162.5f / 362.5f};
+	v2 = {spec + (1 << 12), x, y + 16 * _gui_size * 281.25f / 362.5f};
+	v3 = {spec + (1 << 4) + (1 << 12), x + 7 * _gui_size, y + 16 * _gui_size};
 	_ui->addFace(v0, v1, v2, v3, true, movement);
 	// right face
-	spec = (7 << 24) + s_blocks[type]->texX(face_dir::PLUSX, offset) + (s_blocks[type]->texY(face_dir::PLUSX, offset) << 4);
+	spec = (7 << 24) + (s_blocks[type]->texX(face_dir::PLUSX, offset) << 4) + (s_blocks[type]->texY(face_dir::PLUSX, offset) << 12);
 	v0 = {spec + slabOffset, x + 7 * _gui_size, yTop + 16 * _gui_size * 162.5f / 362.5f};
-	v1 = {spec + slabOffset + 1, x + 14 * _gui_size, yTop + 16 * _gui_size * 81.25f / 362.5f};
-	v2 = {spec + (1 << 4), x + 7 * _gui_size, y + 16 * _gui_size};
-	v3 = {spec + 1 + (1 << 4), x + 14 * _gui_size, y + 16 * _gui_size * 281.25f / 362.5f};
+	v1 = {spec + slabOffset + (1 << 4), x + 14 * _gui_size, yTop + 16 * _gui_size * 81.25f / 362.5f};
+	v2 = {spec + (1 << 12), x + 7 * _gui_size, y + 16 * _gui_size};
+	v3 = {spec + (1 << 4) + (1 << 12), x + 14 * _gui_size, y + 16 * _gui_size * 281.25f / 362.5f};
 	_ui->addFace(v0, v1, v2, v3, true, movement);
 }
 
@@ -1269,14 +1336,15 @@ void Menu::processMouseMovement( float posX, float posY )
 				} else if (cursor_selection == 4 + rp_size + arp_size) {
 					_active_resource_packs.push_back(change);
 					_selection = cursor_selection - 1;
+					_change_to_apply = true;
 				} else if (cursor_selection < 4 + rp_size) {
 					_resource_packs.insert(_resource_packs.begin() + (cursor_selection - 3), change);
 					_selection = cursor_selection;
 				} else {
 					_active_resource_packs.insert(_active_resource_packs.begin() + (cursor_selection - 4 - rp_size), change);
 					_selection = cursor_selection;
+					_change_to_apply = true;
 				}
-				_change_to_apply = true;
 			}
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;

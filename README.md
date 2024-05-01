@@ -74,7 +74,7 @@ OpenGL uses shaders, which are programs coded in glsl and running on the GPU.
 * sky - used for sorted transparent blocks (clouds and water and glass), uses animated sprites
 * ui - draws rectangles from given screen coord and sizes
 * text - draws character from given screen coord and sizes
-* item - used to draw 3d items in inventory, x[0:15] y[0:15]
+* item - used to draw 3d items in inventory, x[0:255] y[0:255]
 * particle - used to draw particles and models, x[0:255] y[0:255]
 * skybox - used to draw cubic skybox around player, with sun, moon, and atmosphere
 

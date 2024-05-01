@@ -27,18 +27,18 @@ void main()
 	// if (gl_FrontFacing) // this works but doesn't gain fps
 	// 	discard ;
 	outColor = texture(blockAtlas, Texcoord);
-	if(outColor.a < 0.01) {
+	if(outColor.a < 0.01f) {
 		discard ;
 	}
-	if (Breakcoord.y != 0) {
+	if (Breakcoord.y > 0.0625f) {
 		vec4 break_ = texture(blockAtlas, Breakcoord);
-		if (break_.a > 0.01) {
+		if (break_.a > 0.01f) {
 			outColor *= break_;
 		}
 	}
-	float smoothies = 1.0 - smoothstep(fogDist / 2, fogDist, zDist);
+	float smoothies = 1.0f - smoothstep(fogDist / 2.0f, fogDist, zDist);
 	outColor.a *= smoothies;
-	outColor *= vec4(FaceShadow, FaceShadow, FaceShadow, 1.0);
+	outColor *= vec4(FaceShadow, FaceShadow, FaceShadow, 1.0f);
 	
 	// if (Invert == 1) {
 	// 	outColor = vec4(1.0, 1.0, 1.0, 2.0) - outColor;

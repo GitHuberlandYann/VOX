@@ -31,15 +31,15 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 				short adj = getLightLevel(posX + delta[0], posY + delta[1], posZ + delta[2]) >> shift;
 				maxLevel = maxs(maxLevel, adj & 0xF);
 				if (skySpread && index == face_dir::PLUSZ && (adj & 0xF0)) {
+					// TODO if _blocks[offset].. is not water/leaves
+					// 	maxLevel = adj&0xFF - (0x10 if adj & 0xF0 else 0);
+					// else
 					maxLevel = (adj & 0xFF) + 1; // if sky light above is source, own sky light becomes source too
 				}
 			}
 		}
 		if ((maxLevel && maxLevel - 1 != level) || (!maxLevel && level)) {
 			level = maxs(0, maxLevel - 1);
-			// if (level < ((saveLight >> shift) & 0xFF)) { // if light gets dimmer, we accelerate process and put it to 0, it will spread to a nearby light source which will spread again
-			// 	level = 0;
-			// }
 			_lights[offset] = (saveLight & (0xFF << (8 - shift))) + (level << shift);
 			_light_update = true;
 		} else {
@@ -129,9 +129,12 @@ int Chunk::computeSmoothLight( int faceLight, int row, int col, int level, std::
 int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets )
 {
 	// (void)row;(void)col;(void)level;(void)offsets;return (0);
-	return (!!air_flower(getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2], true), true, true, false)
-			+ !!air_flower(getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5], true), true, true, false)
-			+ !!air_flower(getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8], true), true, true, false));
+	// return (!!air_flower(getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2], true), true, true, false)
+	// 		+ !!air_flower(getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5], true), true, true, false)
+	// 		+ !!air_flower(getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8], true), true, true, false));
+	return (!s_blocks[getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2], true) & 0xFF]->transparent
+			+ !s_blocks[getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5], true) & 0xFF]->transparent
+			+ !s_blocks[getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8], true) & 0xFF]->transparent);
 }
 
 void Chunk::fill_vertex_array( void )

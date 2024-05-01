@@ -47,7 +47,7 @@ void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item
 		v2 = {spec + (1 << 17) - (12 << 8), p2};
 		v3 = {spec - 4 - (12 << 8), p3};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-	} else if (item < blocks::POPPY && item != blocks::OAK_DOOR && item != blocks::GLASS_PANE) { // draw block
+	} else if (s_blocks[item]->item3D) { //(item < blocks::POPPY && item != blocks::OAK_DOOR && item != blocks::GLASS_PANE) { // draw block
 		glm::vec3 itemFront = glm::normalize(glm::vec3(glm::vec2(_front + _right * 0.5f), 0));
 		glm::vec3 itemRight = glm::normalize(glm::cross(itemFront, _world_up));
 		if (_armAnimation) {
@@ -58,7 +58,68 @@ void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item
 			pos += itemFront * sinaright * 0.05f;
 		}
 		glm::vec3 itemUp = glm::normalize(glm::cross(itemRight, itemFront));
-		// up
+
+		if (item == blocks::OAK_STAIRS) {
+			// up
+			glm::vec3 p0 = pos + _world_up * (0.1f + 0.5f * _front.z) + itemFront * 12.0f * scale - itemRight * 0.25f;
+			glm::vec3 p1 = p0 + itemRight * 0.25f;
+			glm::vec3 p2 = p0 - itemFront * 0.125f;
+			glm::vec3 p3 = p1 - itemFront * 0.125f;
+
+			int spec = s_blocks[item]->texX(face_dir::PLUSZ) * 16 + ((s_blocks[item]->texY(face_dir::PLUSZ) * 16) << 8) + itemLight;
+			std::pair<int, glm::vec3> v0 = {spec, p0};
+			std::pair<int, glm::vec3> v1 = {spec + 16 + (1 << 17), p1};
+			std::pair<int, glm::vec3> v2 = {spec + (8 << 8) + (1 << 18), p2};
+			std::pair<int, glm::vec3> v3 = {spec + 16 + (1 << 17) + (8 << 8) + (1 << 18), p3};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			// left
+			p1 = p2 - itemFront * 0.125f;
+			p2 = p0 - itemUp * 0.25f;
+			p3 = p1 - itemUp * 0.25f;
+			spec = 5 * 16 + ((s_blocks[item]->texY(face_dir::MINUSX) * 16) << 8) + itemLight;
+			v0 = {spec, p0};
+			v1 = {spec + 16 + (1 << 17), p1};
+			v2 = {spec + (16 << 8) + (1 << 18), p2};
+			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			// front
+			p0 = p1 - itemUp * 0.125f;
+			p1 = p0 + itemRight * 0.25f;
+			p2 = p3;
+			p3 = p2 + itemRight * 0.25f;
+			spec = s_blocks[item]->texX(face_dir::PLUSZ) * 16 + ((s_blocks[item]->texY(face_dir::PLUSZ) * 16) << 8) + itemLight;
+			v0 = {spec, p0};
+			v1 = {spec + 16 + (1 << 17), p1};
+			v2 = {spec + (8 << 8) + (1 << 18), p2};
+			v3 = {spec + 16 + (1 << 17) + (8 << 8) + (1 << 18), p3};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			// up first stair
+			p2 = p0;
+			p3 = p1;
+			p0 += itemFront * 0.125f;
+			p1 += itemFront * 0.125f;
+			v0 = {spec, p0};
+			v1 = {spec + 16 + (1 << 17), p1};
+			v2 = {spec + (8 << 8) + (1 << 18), p2};
+			v3 = {spec + 16 + (1 << 17) + (8 << 8) + (1 << 18), p3};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+			// front second stair
+			p2 = p0;
+			p3 = p1;
+			p0 += itemUp * 0.125f;
+			p1 += itemUp * 0.125f;
+			v0 = {spec, p0};
+			v1 = {spec + 16 + (1 << 17), p1};
+			v2 = {spec + (8 << 8) + (1 << 18), p2};
+			v3 = {spec + 16 + (1 << 17) + (8 << 8) + (1 << 18), p3};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+			return ;
+		}
+
 		// up
 		glm::vec3 p0 = pos + _world_up * (0.1f + 0.5f * _front.z) + itemFront * 12.0f * scale - itemRight * 0.25f;
 		glm::vec3 p1 = p0 + itemRight * 0.25f;
@@ -72,15 +133,17 @@ void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item
 		std::pair<int, glm::vec3> v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 		
+		float height = (item == blocks::OAK_SLAB) ? 0.125f : (item == blocks::OAK_TRAPDOOR) ? 0.046875f : 0.25f;
+		int yoff = (item == blocks::OAK_SLAB) ? 8 : (item == blocks::OAK_TRAPDOOR) ? 3 : 16;
 		// left
 		p1 = p2;
-		p2 = p0 - itemUp * 0.25f;
-		p3 = p1 - itemUp * 0.25f;
+		p2 = p0 - itemUp * height;
+		p3 = p1 - itemUp * height;
 		spec = s_blocks[item]->texX(face_dir::MINUSX) * 16 + ((s_blocks[item]->texY(face_dir::MINUSX) * 16) << 8) + itemLight;
 		v0 = {spec, p0};
 		v1 = {spec + 16 + (1 << 17), p1};
-		v2 = {spec + (16 << 8) + (1 << 18), p2};
-		v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
+		v2 = {spec + (yoff << 8) + (1 << 18), p2};
+		v3 = {spec + 16 + (1 << 17) + (yoff << 8) + (1 << 18), p3};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 		// back
@@ -90,8 +153,8 @@ void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item
 		p3 = p2 + itemRight * 0.25f;
 		v0 = {spec, p0};
 		v1 = {spec + 16 + (1 << 17), p1};
-		v2 = {spec + (16 << 8) + (1 << 18), p2};
-		v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
+		v2 = {spec + (yoff << 8) + (1 << 18), p2};
+		v3 = {spec + 16 + (1 << 17) + (yoff << 8) + (1 << 18), p3};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	} else {
 		pos += _front * 0.7f + _world_up * 0.2f;
