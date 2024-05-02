@@ -188,6 +188,9 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item, 
 // draw head
 	// draw face
 	glm::vec3 pos = getEyePos();
+	if (_smoothCam) {
+		pos.z = _smoothCamZ - _deltaTime * SMOOTH_CAM_SPEED;
+	}
 	glm::vec3 p0 = pos + _right * 4.0f * scale + _front * 4.0f * scale + _up * 4.0f * scale;
 	glm::vec3 p1 = p0 - _right * 8.0f * scale;
 	glm::vec3 p2 = p0 - _up * 8.0f * scale;

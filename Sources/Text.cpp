@@ -25,30 +25,41 @@ Text::~Text( void )
 //                                Private                                     //
 // ************************************************************************** //
 
+void Text::addQuads( int spec, int posX, int posY, int width, int height, int color )
+{
+	_texts.push_back({spec + (0 << 8) + (0 << 9), color, posX,         posY});
+	_texts.push_back({spec + (1 << 8) + (0 << 9), color, posX + width, posY});
+	_texts.push_back({spec + (0 << 8) + (1 << 9), color, posX,         posY + height});
+
+	_texts.push_back({spec + (1 << 8) + (0 << 9), color, posX + width, posY});
+	_texts.push_back({spec + (1 << 8) + (1 << 9), color, posX + width, posY + height});
+	_texts.push_back({spec + (0 << 8) + (1 << 9), color, posX,         posY + height});
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
 
 void Text::setup_shader( void )
 {
-	_shaderProgram = createShaderProgram("text_vertex", "text_geometry", "text_fragment");
+	_shaderProgram = createShaderProgram("text_vertex", "", "text_fragment");
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
-	glBindAttribLocation(_shaderProgram, TEXT_POSATTRIB, "position");
-	glBindAttribLocation(_shaderProgram, TEXT_SIZEATTRIB, "size");
-	glBindAttribLocation(_shaderProgram, TEXT_CHARATTRIB, "character");
-	glBindAttribLocation(_shaderProgram, TEXT_COLORATTRIB, "color");
+	glBindAttribLocation(_shaderProgram, TEXT::SPECATTRIB, "specifications");
+	glBindAttribLocation(_shaderProgram, TEXT::COLATTRIB, "color");
+	glBindAttribLocation(_shaderProgram, TEXT::POSATTRIB, "position");
 
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
 
 	check_glstate("text_Shader program successfully created", true);
 
-	glUniform1i(glGetUniformLocation(_shaderProgram, "window_width"), WIN_WIDTH);
-	glUniform1i(glGetUniformLocation(_shaderProgram, "window_height"), WIN_HEIGHT);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "win_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "win_height"), WIN_HEIGHT);
 
-	// _uniColor = glGetUniformLocation(_shaderProgram, "color");
+	glGenVertexArrays(1, &_vao);
+	glGenBuffers(1, &_vbo);
 }
 
 void Text::load_texture( void )
@@ -113,28 +124,25 @@ int Text::textWidth( int font_size, std::string str, int limit )
 	return (res);
 }
 
-void Text::addText( int posX, int posY, int font_size, bool white, std::string str )
+void Text::addText( int posX, int posY, int font_size, int color, std::string str )
 {
 	int startX = posX;
+	char c;
 	for (size_t i = 0, charLine = 0; i < str.size(); i++) {
-		if (str[i] == '\n') {
+		c = str[i];
+		if (c == '\n') {
 			posY += 1.2f * font_size;
 			posX = startX;
 			charLine = 0;
-		} else if (str[i] == ' ') {
+		} else if (c == ' ') {
 			posX += font_size;
 			++charLine;
-		} else if (str[i] == '\t') {
+		} else if (c == '\t') {
 			charLine += 4 - (charLine & 3);
 			posX = startX + charLine * font_size;
 		} else {
-			_texts.push_back(posX);
-			_texts.push_back(posY);
-			_texts.push_back(font_size);
-			_texts.push_back(str[i]);
-			_texts.push_back(white);
-			char c = str[i];
-			if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') { // TODO might want to use strchr here
+			addQuads(c, posX, posY, font_size, font_size, color);
+			if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') {
 				posX += font_size * 0.5;
 			} else if (c == 'I' || c == '[' || c == ']' || c == '"' || c == '*') {
 				posX += font_size * 0.6;	
@@ -153,11 +161,10 @@ void Text::addCenteredText( int left, int top, int width, int height, int font_s
 	int text_width = textWidth(font_size, str);
 	if (shadow) {
 		int offset = font_size / 8;
-		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, false, str);
+		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, TEXT::BLACK, str);
 	}
-	addText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, true, str);
+	addText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, TEXT::WHITE, str);
 }
-
 
 void Text::toScreen( void )
 {
@@ -166,32 +173,23 @@ void Text::toScreen( void )
 		return ;
 	}
 
-	glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
 
-	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, tSize * sizeof(GLint), &_texts[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, tSize * 4 * sizeof(GLint), &_texts[0][0], GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(TEXT_POSATTRIB);
-	glVertexAttribIPointer(TEXT_POSATTRIB, 2, GL_INT, 5 * sizeof(GLint), 0);
-	// check_glstate("text_posattrib successfully set");
-	
-	glEnableVertexAttribArray(TEXT_SIZEATTRIB);
-	glVertexAttribIPointer(TEXT_SIZEATTRIB, 1, GL_INT, 5 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
-	// check_glstate("text_sizeattrib successfully set");
-
-	glEnableVertexAttribArray(TEXT_CHARATTRIB);
-	glVertexAttribIPointer(TEXT_CHARATTRIB, 1, GL_INT, 5 * sizeof(GLint), (void *)(3 * sizeof(GLint)));
-	// check_glstate("text_charattrib successfully set");
-
-	glEnableVertexAttribArray(TEXT_COLORATTRIB);
-	glVertexAttribIPointer(TEXT_COLORATTRIB, 1, GL_INT, 5 * sizeof(GLint), (void *)(4 * sizeof(GLint)));
+	glEnableVertexAttribArray(TEXT::SPECATTRIB);
+	glVertexAttribIPointer(TEXT::SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
+	glEnableVertexAttribArray(TEXT::COLATTRIB);
+	glVertexAttribIPointer(TEXT::COLATTRIB, 1, GL_INT, 4 * sizeof(GLint), (void *)(1 * sizeof(GLint)));
+	glEnableVertexAttribArray(TEXT::POSATTRIB);
+	glVertexAttribIPointer(TEXT::POSATTRIB, 2, GL_INT, 4 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
 
 	check_glstate("Text::toScreen", false);
 
 	glUseProgram(_shaderProgram);
-	glDrawArrays(GL_POINTS, 0, tSize / 5);
+	glDrawArrays(GL_TRIANGLES, 0, tSize);
 
 	_texts.clear();
+	_texts.reserve(tSize);
 }

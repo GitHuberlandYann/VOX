@@ -93,7 +93,7 @@ MENU::RET Menu::main_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	// _text->addText(WIN_WIDTH / 2 - 220, WIN_HEIGHT / 2 - 120 * 3, 24, true, "Press space to start");
+	// _text->addText(WIN_WIDTH / 2 - 220, WIN_HEIGHT / 2 - 120 * 3, 24, TEXT::WHITE, "Press space to start");
 
    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 200 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Singleplayer");
    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size, 200 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Multiplayer");
@@ -131,7 +131,7 @@ MENU::RET Menu::world_select_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	_text->addText(WIN_WIDTH / 2 - 120, 30, 24, true, "Select World");
+	_text->addText(WIN_WIDTH / 2 - 120, 30, 24, TEXT::WHITE, "Select World");
 
 	_text->addCenteredText(WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Play Selected World");
 	_text->addCenteredText(WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Edit");
@@ -171,7 +171,7 @@ MENU::RET Menu::loading_screen( void )
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
 	std::string str = "LOADING.. " + std::to_string(percentage).substr(0, 5) + '%' + " (" + std::to_string(current_size) + '/' + std::to_string(goal) + ')';
-	_text->addText(WIN_WIDTH / 2 - 24 * str.length() / 2, WIN_HEIGHT / 2 - 150, 24, true, str);
+	_text->addText(WIN_WIDTH / 2 - 24 * str.length() / 2, WIN_HEIGHT / 2 - 150, 24, TEXT::WHITE, str);
 	return (MENU::RET::NO_CHANGE);
 }
 
@@ -225,7 +225,7 @@ MENU::RET Menu::pause_menu( void )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_POINTS, 0, _nb_points);
 
-	_text->addText(WIN_WIDTH / 2 - 25 * (_gui_size + 1), WIN_HEIGHT / 2 - 60 * _gui_size - 40, (_gui_size + 1) * 7, true, "Game Menu");
+	_text->addText(WIN_WIDTH / 2 - 25 * (_gui_size + 1), WIN_HEIGHT / 2 - 60 * _gui_size - 40, (_gui_size + 1) * 7, TEXT::WHITE, "Game Menu");
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Back to Game");
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Advancements");
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Give Feedback");
@@ -389,7 +389,7 @@ MENU::RET Menu::resource_packs_menu( void )
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, "Select Resource Packs");
     _text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Apply Changes");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
-	// _text->addText(20, 20, 30, true, "select " + std::to_string(_selection));
+	// _text->addText(20, 20, 30, TEXT::WHITE, "select " + std::to_string(_selection));
 	return (ret);
 }
 
@@ -540,7 +540,7 @@ MENU::RET Menu::chat_menu( bool animUpdate )
 		_textBar = !_textBar;
 	}
 	_chat->blitPastMessages();
-	_text->addText(36, WIN_HEIGHT - 48 - 12, 12, true, INPUT::getCurrentInputStr((_textBar) ? '|' : '.'));
+	_text->addText(36, WIN_HEIGHT - 48 - 12, 12, TEXT::WHITE, INPUT::getCurrentInputStr((_textBar) ? '|' : '.'));
 	return (MENU::RET::NO_CHANGE);
 }
 
@@ -799,11 +799,11 @@ void Menu::display_item_value( int x, int y, int amount )
 		return ;
 	}
 	if (amount > 9) {
-		_text->addText(x + 11 * _gui_size - 6 * _gui_size + _gui_size, y + 9 * _gui_size + _gui_size, 8 * _gui_size, false, std::to_string(amount / 10));
-		_text->addText(x + 11 * _gui_size - 6 * _gui_size, y + 9 * _gui_size, 8 * _gui_size, true, std::to_string(amount / 10));
+		_text->addText(x + 11 * _gui_size - 6 * _gui_size + _gui_size, y + 9 * _gui_size + _gui_size, 8 * _gui_size, TEXT::BLACK, std::to_string(amount / 10));
+		_text->addText(x + 11 * _gui_size - 6 * _gui_size, y + 9 * _gui_size, 8 * _gui_size, TEXT::WHITE, std::to_string(amount / 10));
 	}
-	_text->addText(x + 11 * _gui_size + _gui_size, y + 9 * _gui_size + _gui_size, 8 * _gui_size, false, std::to_string(amount % 10));
-	_text->addText(x + 11 * _gui_size, y + 9 * _gui_size, 8 * _gui_size, true, std::to_string(amount % 10));
+	_text->addText(x + 11 * _gui_size + _gui_size, y + 9 * _gui_size + _gui_size, 8 * _gui_size, TEXT::BLACK, std::to_string(amount % 10));
+	_text->addText(x + 11 * _gui_size, y + 9 * _gui_size, 8 * _gui_size, TEXT::WHITE, std::to_string(amount % 10));
 }
 
 void Menu::add_item_value( t_item item, int x, int y, bool movement )

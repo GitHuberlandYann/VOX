@@ -405,7 +405,7 @@ void Chat::blitMessages( float deltaTime )
 	int size = _current.size(), index = 0;
 
 	for (auto m = _current.begin(); m != _current.end();) {
-		_text->addText(36, WIN_HEIGHT - 68 - 18 * (size - index), 12, true, m->first);
+		_text->addText(36, WIN_HEIGHT - 68 - 18 * (size - index), 12, TEXT::WHITE, m->first);
 		m->second -= deltaTime;
 		if (m->second < 0) {
 			_past.push_back(m->first);
@@ -422,7 +422,7 @@ void Chat::blitPastMessages( void )
 {
 	int nbr_past = maxi(0, mini(10, _past.size() + _current.size()) - _current.size());
 	for (int index = 0; index < nbr_past; ++index) {
-		_text->addText(36, WIN_HEIGHT - 68 - 18 * (mini(10, _past.size() + _current.size()) - index), 12, true, _past[_past.size() - nbr_past + index]);
+		_text->addText(36, WIN_HEIGHT - 68 - 18 * (mini(10, _past.size() + _current.size()) - index), 12, TEXT::WHITE, _past[_past.size() - nbr_past + index]);
 	}
 }
 
