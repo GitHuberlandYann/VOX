@@ -108,6 +108,8 @@ void Chunk::spreadGrassblock( int offset )
 	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
 	if (posZ < 254) {
 		int above = _blocks[offset + 1];
+		// TODO use s_blocks->transparent instead, but I first want to implement oriented light
+		// and fix light damping from water and leaves on skyLight
 		if (air_flower(above, true, true, true)) {
 			_blocks[offset] = blocks::DIRT;
 			_added[offset] = blocks::DIRT;

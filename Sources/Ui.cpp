@@ -163,9 +163,32 @@ void UI::add_inventory_elem( int index )
 		v3 = {spec + (1 << 4) + (4 << 8), x + 15 * _gui_size * 10.5f / 16.0f, y + 15 * _gui_size * 9.0f / 16.0f};
 		addFace(v0, v1, v2, v3, false);
 		return ;
+	} else if (type == blocks::CHEST) {
+		// top face
+		int spec = (15 << 24) + ((s_blocks[type]->texX() + 2) << 4) + (s_blocks[type]->texY() << 12);
+		glm::ivec3 v0 = {spec + 1, x, y + 15 * _gui_size * 81.25f / 362.5f};
+		glm::ivec3 v1 = {spec + 15, x + 6.5f * _gui_size, y};
+		glm::ivec3 v2 = {spec + 1 + (14 << 8), x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
+		glm::ivec3 v3 = {spec + 15 + (14 << 8), x + 13 * _gui_size, y + 15 * _gui_size * 81.25f / 362.5f};
+		addFace(v0, v1, v2, v3, false);
+		// left face
+		spec -= (5 << 24) + (2 << 4);
+		v0 = {spec + 1, x, y + 15 * _gui_size * 81.25f / 362.5f};
+		v1 = {spec + 15, x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
+		v2 = {spec + 1 + (15 << 8), x, y + 15 * _gui_size * 281.25f / 362.5f};
+		v3 = {spec + 15 + (15 << 8), x + 6.5f * _gui_size, y + 15 * _gui_size};
+		addFace(v0, v1, v2, v3, false);
+		// right face
+		spec -= (3 << 24) - (1 << 4);
+		v0 = {spec + 1, x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
+		v1 = {spec + 15, x + 13 * _gui_size, y + 15 * _gui_size * 81.25f / 362.5f};
+		v2 = {spec + 1 + (15 << 8), x + 6.5f * _gui_size, y + 15 * _gui_size};
+		v3 = {spec + 15 + (15 << 8), x + 13 * _gui_size, y + 15 * _gui_size * 281.25f / 362.5f};
+		addFace(v0, v1, v2, v3, false);
+		return ;
 	}
-	int yTop = (type == blocks::OAK_SLAB) ? y + 16 * _gui_size * 100.0f / 362.5f
-											: (type == blocks::OAK_TRAPDOOR) ? y + 16 * _gui_size * 162.5f / 362.5f : y;
+	int yTop = (type == blocks::OAK_SLAB) ? y + 15 * _gui_size * 100.0f / 362.5f
+											: (type == blocks::OAK_TRAPDOOR) ? y + 15 * _gui_size * 162.5f / 362.5f : y;
 	int slabOffset = (type == blocks::OAK_SLAB) ? (8 << 8)
 											: (type == blocks::OAK_TRAPDOOR) ? (13 << 8) : 0;
 	// top face

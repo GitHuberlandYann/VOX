@@ -936,6 +936,29 @@ void Menu::add_item_value( t_item item, int x, int y, bool movement )
 		v3 = {spec + (1 << 4) + (4 << 8), x + _gui_size * 10.5f, y + _gui_size * 9.0f};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		return ;
+	} else if (type == blocks::CHEST) {
+		// top face
+		int spec = (15 << 24) + ((s_blocks[type]->texX() + 2) << 4) + (s_blocks[type]->texY() << 12);
+		glm::ivec3 v0 = {spec + 1, x, y + 16 * _gui_size * 81.25f / 362.5f};
+		glm::ivec3 v1 = {spec + 15, x + 7 * _gui_size, y};
+		glm::ivec3 v2 = {spec + 1 + (14 << 8), x + 7 * _gui_size, y + 16 * _gui_size * 162.5f / 362.5f};
+		glm::ivec3 v3 = {spec + 15 + (14 << 8), x + 14 * _gui_size, y + 16 * _gui_size * 81.25f / 362.5f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// left face
+		spec -= (5 << 24) + (2 << 4);
+		v0 = {spec + 1, x, y + 16 * _gui_size * 81.25f / 362.5f};
+		v1 = {spec + 15, x + 7 * _gui_size, y + 16 * _gui_size * 162.5f / 362.5f};
+		v2 = {spec + 1 + (15 << 8), x, y + 16 * _gui_size * 281.25f / 362.5f};
+		v3 = {spec + 15 + (15 << 8), x + 7 * _gui_size, y + 16 * _gui_size};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		// right face
+		spec -= (3 << 24) - (1 << 4);
+		v0 = {spec + 1, x + 7 * _gui_size, y + 16 * _gui_size * 162.5f / 362.5f};
+		v1 = {spec + 15, x + 14 * _gui_size, y + 16 * _gui_size * 81.25f / 362.5f};
+		v2 = {spec + 1 + (15 << 8), x + 7 * _gui_size, y + 16 * _gui_size};
+		v3 = {spec + 15 + (15 << 8), x + 14 * _gui_size, y + 16 * _gui_size * 281.25f / 362.5f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		return ;
 	}
 	int yTop = (type == blocks::OAK_SLAB) ? y + 16 * _gui_size * 100.0f / 362.5f
 											: (type == blocks::OAK_TRAPDOOR) ? y + 16 * _gui_size * 162.5f / 362.5f : y;
