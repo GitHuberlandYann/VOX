@@ -26,22 +26,28 @@ out vec2 Breakcoord;
 out float FaceShadow;
 out float zDist;
 
+const float one16th = 0.0625f;
+const float one256th = 0.00390625f;
+const float half_pxl = 0.0001220703125f;
+
 void main()
 {
 	gl_Position = proj * view * vec4(position, 1.0);
 
-	float x_half = (((specifications & (1 << 17)) == 0) ? 0.0001220703125 : -0.0001220703125);
-	float y_half = (((specifications & (1 << 18)) == 0) ? 0.0001220703125 : -0.0001220703125);
-	Texcoord = vec2((specifications & 0xF) / 16.0f + x_half, ((specifications & 0xF0) + ((specifications >> 8) & 0xF)) / 256.0f + y_half);
-	Breakcoord = vec2((15 + ((specifications >> 16) & 0x1)) / 16.0f + x_half, ((specifications >> 12) & 0xF) / 16.0f + y_half);
+	float x_half = (((specifications & (1 << 17)) == 0) ? half_pxl : -half_pxl);
+	float y_half = (((specifications & (1 << 18)) == 0) ? half_pxl : -half_pxl);
+	Texcoord = vec2((specifications & 0xF) * one16th + x_half, ((specifications & 0xF0) + ((specifications >> 8) & 0xF)) * one256th + y_half);
+	Breakcoord = vec2((15 + ((specifications >> 16) & 0x1)) * one16th + x_half, ((specifications >> 12) & 0xF) * one16th + y_half);
 
 	int blockLight = ((specifications >> 24) & 0xF);
 	int skyLight = internal_light - (15 - ((specifications >> 28) & 0xF));
 	int shadow = 15 - max(blockLight, skyLight);
 	int cornerLight = ((specifications >> 22) & 3);
 	int faceLight = 100 - ((((specifications >> 19) & 0x7) > 0) ? 8 + (((specifications >> 19) & 0x7) << 2) : 0);
-	FaceShadow = max(0.05f, (max(10, faceLight - 7 * shadow) - 17 * cornerLight) * 0.01f);
-	FaceShadow = mix(min_brightness, 1, (FaceShadow - 0.05f) / (0.95f));
+	FaceShadow = max(0, (max(10, faceLight - 7 * shadow) - 17 * cornerLight) * 0.01f);
+	FaceShadow = mix(min_brightness, 1, FaceShadow);
+	// FaceShadow = max(0.05f, (max(10, faceLight - 7 * shadow) - 17 * cornerLight) * 0.01f);
+	// FaceShadow = mix(min_brightness, 1, (FaceShadow - 0.05f) / (0.95f));
 
 	zDist = gl_Position.z;
 }

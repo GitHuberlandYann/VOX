@@ -12,7 +12,9 @@
 
 namespace SETTINGS {
 	enum BOOL {
+		FULLSCREEN,
 		SKYBOX,
+		PARTICLES,
 		NBR_BOOL
 	};
 

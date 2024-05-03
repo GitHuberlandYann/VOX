@@ -223,10 +223,9 @@ void OpenGL_Manager::setup_window( void )
 	glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE); // doesn't seem to work in windowed mode
 
 	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << std::endl;
-	// (IS_LINUX)
-	// 	? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", nullptr, nullptr)
-	// 	: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr);
-	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr);
+	(Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN))
+		? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr)
+		: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", nullptr, nullptr);
 	if (_window == NULL)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -328,8 +327,12 @@ void OpenGL_Manager::setup_communication_shaders( void )
 
 	DayCycle::Get()->setUniInternalLight(_shaderProgram, _particleShaderProgram,
 		glGetUniformLocation(_shaderProgram, "internal_light"), glGetUniformLocation(_particleShaderProgram, "internal_light"));
-	
+
 	_uniBrightness = glGetUniformLocation(_shaderProgram, "min_brightness");
+	_partUniBrightness = glGetUniformLocation(_particleShaderProgram, "min_brightness");
+	glUseProgram(_particleShaderProgram);
+	glUniform1f(_partUniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
+	glUseProgram(_shaderProgram);
 	glUniform1f(_uniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
 
 	_skyUniColor = glGetUniformLocation(_skyShaderProgram, "color");
@@ -510,7 +513,9 @@ void OpenGL_Manager::main_loop( void )
 					c->tickUpdate();
 				}
 				c->updateEntities(_entities, _particles, deltaTime);
-				c->updateParticles(_particles, deltaTime);
+				if (Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES)) {
+					c->updateParticles(_particles, deltaTime);
+				}
 			}
 		}
 		// if (newVaoCounter) {
@@ -597,12 +602,12 @@ void OpenGL_Manager::main_loop( void )
 			}
 			switch (_menu->run(nbTicks == 1 && tickUpdate)) {
 				case (MENU::RET::BACK_TO_GAME): // back to game
-					if (!IS_LINUX) {
+					#if !__linux__
 						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 						if (glfwRawMouseMotionSupported()) {
 							glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 						}
-					}
+					#endif
 					set_cursor_position_callback(_camera, NULL);
 					set_scroll_callback(_inventory);
 					_paused = false;
@@ -643,6 +648,8 @@ void OpenGL_Manager::main_loop( void )
 					setThreadUpdate(true);
 					break ;
 				case (MENU::RET::BRIGHTNESS_UPDATE): // brightness change
+					glUseProgram(_particleShaderProgram);
+					glUniform1f(_partUniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
 					glUseProgram(_shaderProgram);
 					glUniform1f(_uniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
 					break ;

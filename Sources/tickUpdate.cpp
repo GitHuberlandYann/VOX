@@ -107,10 +107,8 @@ void Chunk::spreadGrassblock( int offset )
 	int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
 	if (posZ < 254) {
-		int above = _blocks[offset + 1];
-		// TODO use s_blocks->transparent instead, but I first want to implement oriented light
-		// and fix light damping from water and leaves on skyLight
-		if (air_flower(above, true, true, true)) {
+		int above = _blocks[offset + 1] & 0xFF;
+		if (!s_blocks[above]->transparent || above >= blocks::WATER) {
 			_blocks[offset] = blocks::DIRT;
 			_added[offset] = blocks::DIRT;
 			_vertex_update = true;
@@ -132,8 +130,8 @@ void Chunk::spreadGrassblock( int offset )
 		const int delta[3] = {neighbour45[selected][0], neighbour45[selected][1], neighbour45[selected][2]};
 		int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2], true);
 		if ((adj & 0xFF) == blocks::DIRT && !(adj & blocks::NOTVISIBLE)) {
-			int above_adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2] + 1, true);
-			if (!air_flower(above_adj, true, true, true)) {
+			int above_adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2] + 1, true) & 0xFF;
+			if (s_blocks[above_adj]->transparent && above_adj < blocks::WATER) {
 				turnDirtToGrass(posX + delta[0], posY + delta[1], posZ + delta[2]);
 			}
 		}

@@ -55,6 +55,8 @@ IN PROGRES:
 
 TODAY:
 THIS WEEKEND
+	- add top and bottom faces to torches
+	- custom resolution in settings + original resolution by using opengl
 	- blocks with oriented light occlusion (ie slabs, stairs)
 
 SHORTTERM memory:
@@ -147,6 +149,8 @@ DONE:
 	- fluid at border
     - Water buckets
 	- water flow
+	- settings fullScreen on off, ie call glfwSetWindowMonitor(glfwGetPrimaryMonitor/NULL)
+	- settings particles on off
 	- clouds
 	- gui size
 	- centralize settings and save/load them in file

@@ -4,7 +4,9 @@
 
 Settings::Settings( void )
 {
+	_bools[SETTINGS::BOOL::FULLSCREEN] = true;
 	_bools[SETTINGS::BOOL::SKYBOX] = true;
+	_bools[SETTINGS::BOOL::PARTICLES] = true;
 
 	_ints[SETTINGS::INT::RENDER_DIST] = RENDER_DISTANCE;
 	_ints[SETTINGS::CLOUDS] = SETTINGS::FANCY;

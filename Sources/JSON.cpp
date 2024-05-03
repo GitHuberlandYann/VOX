@@ -523,6 +523,10 @@ void Menu::loadSettings( void )
 				int skybox = std::atoi(&line[10]);
 				Settings::Get()->setBool(SETTINGS::BOOL::SKYBOX, skybox);
 				ofs << "skybox set to " << ((skybox) ? "true" : "false") << std::endl;
+			} else if (!line.compare(0, 13, "\"particles\": ")) {
+				int particles = std::atoi(&line[13]);
+				Settings::Get()->setBool(SETTINGS::BOOL::PARTICLES, particles);
+				ofs << "particles set to " << ((particles) ? "true" : "false") << std::endl;
 			} else if (!line.compare(0, 13, "\"gui_scale\": ")) {
 				_gui_size = std::atoi(&line[13]) - 1;
 				changeGuiSize();
@@ -555,10 +559,11 @@ void Menu::saveSettings( void )
 {
 	std::string json = "{\n\t\"fov\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV))
 					+ ",\n\t\"render_distance\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST))
-					+ ",\n\t\"brightness\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS))
 					+ ",\n\t\"clouds\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::CLOUDS))
-					+ ",\n\t\"skybox\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX))
 					+ ",\n\t\"gui_scale\": " + std::to_string(_gui_size)
+					+ ",\n\t\"skybox\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX))
+					+ ",\n\t\"brightness\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS))
+					+ ",\n\t\"particles\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES))
 					+ ",\n\t\"resource_packs\": [";
 	std::vector<std::string> &packs = Settings::Get()->getResourcePacks();
 	bool start = true;

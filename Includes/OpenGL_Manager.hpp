@@ -31,7 +31,7 @@ class OpenGL_Manager
 	private:
 		GLFWwindow* _window;
 		GLuint _vaoEntities, _vboEntities, _vaoParticles, _vboParticles, _shaderProgram, _skyShaderProgram, _particleShaderProgram;
-		GLint _uniFog, _uniView, _uniProj, _uniBrightness, _skyUniFog, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim, _partUniView, _partUniProj;
+		GLint _uniFog, _uniView, _uniProj, _uniBrightness, _skyUniFog, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim, _partUniView, _partUniProj, _partUniBrightness;
 		glm::ivec2 _current_chunk;
 		GLuint *_textures;
 		GLint _fill;

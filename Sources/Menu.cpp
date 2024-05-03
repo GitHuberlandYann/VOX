@@ -319,10 +319,17 @@ MENU::RET Menu::video_menu( void )
 		} else if (!INPUT::key_update(INPUT::BREAK)) {
 		} else if (_selection == 3) { // Clouds
 			Settings::Get()->setInt(SETTINGS::INT::CLOUDS, (Settings::Get()->getInt(SETTINGS::INT::CLOUDS) + 1) % (SETTINGS::OFF + 1));
-		} else if (_selection == 4) { // Skybox
-			Settings::Get()->setBool(SETTINGS::BOOL::SKYBOX, !Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX));
+		} else if (_selection == 4) { // FullScreen
+			// Settings::Get()->setBool(SETTINGS::BOOL::FULLSCREEN, !Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN));
+			// (Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN))
+			// 	? glfwSetWindowMonitor(_window, glfwGetPrimaryMonitor(), 0, 0, WIN_WIDTH, WIN_HEIGHT, GLFW_DONT_CARE)
+			// 	: glfwSetWindowMonitor(_window, nullptr, 0, 0, WIN_WIDTH, WIN_HEIGHT, GLFW_DONT_CARE);
 		} else if (_selection == 5) { // Gui scale
 			changeGuiSize();
+		} else if (_selection == 6) { // Skybox
+			Settings::Get()->setBool(SETTINGS::BOOL::SKYBOX, !Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX));
+		} else if (_selection == 8) { // Particles
+			Settings::Get()->setBool(SETTINGS::BOOL::PARTICLES, !Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES));
 		} else if (_selection == 11) { // Done
 			_state = (_state == MENU::VIDEO_SETTINGS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
 			reset_values();
@@ -347,7 +354,9 @@ MENU::RET Menu::video_menu( void )
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, clouds[Settings::Get()->getInt(SETTINGS::INT::CLOUDS)]);
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Gui scale " + std::to_string(_gui_size));
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Brightness " + std::to_string(static_cast<int>(_brightness_gradient * 100)));
-	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Skybox ") + ((Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX)) ? "ON" : "OFF"));
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("FullScreen ") + ((Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN)) ? "ON" : "OFF"));
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Skybox ") + ((Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX)) ? "ON" : "OFF"));
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Particles ") + ((Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES)) ? "ON" : "OFF"));
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
 	return ((_moving_slider && _state == MENU::VIDEO_SETTINGS)
 		? ((_selection == 1) ? MENU::RET::RENDER_DIST_UPDATE : MENU::RET::BRIGHTNESS_UPDATE)
@@ -676,9 +685,9 @@ void Menu::setup_array_buffer_video( void )
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_brightness_gradient, 0, 1, 0, 190)) * _gui_size, WIN_HEIGHT / 2 + 6 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 7) ? 111 : 91, 200, 20}); // brightness Slider
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
 
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20}); // Skybox
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Fullscreen
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20}); // Skybox
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 8) ? 111 : 91, 200, 20}); // Particles
     _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // tbd
 
     _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 11) ? 111 : 91, 200, 20}); // Done
@@ -1306,12 +1315,16 @@ void Menu::processMouseMovement( float posX, float posY )
 			_selection = 1;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 3;
-		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
-			_selection = 4;
+		// } else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+		// 	_selection = 4;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 5;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 6;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 7;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 8;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 11;
 		} else {
@@ -1485,12 +1498,12 @@ void Menu::setFurnaceInstance( FurnaceInstance *furnace )
 void Menu::setState( int state )
 {
 	_state = state;
-	if (!IS_LINUX) {
+	#if !__linux__
 		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		if (glfwRawMouseMotionSupported()) {
 			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
 		}
-	}
+	#endif
 	set_cursor_position_callback(NULL, this);
 	set_scroll_callback(NULL);
 

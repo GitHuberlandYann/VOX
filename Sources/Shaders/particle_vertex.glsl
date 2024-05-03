@@ -17,6 +17,7 @@ in vec3 position;
 uniform mat4 view;
 uniform mat4 proj;
 uniform int internal_light;
+uniform float min_brightness;
 
 out vec2 Texcoord;
 out float FaceShadow;
@@ -32,5 +33,6 @@ void main()
 	int skyLight = internal_light - (15 - ((specifications >> 28) & 0xF));
 	int shadow = 15 - max(blockLight, skyLight);
 	FaceShadow = max(0, (100 - 7 * shadow) * 0.01f);
+	FaceShadow = mix(min_brightness, 1, FaceShadow);
 	Atlas = ((specifications >> 19) & 0x7);
 }
