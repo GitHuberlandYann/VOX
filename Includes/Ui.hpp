@@ -40,18 +40,17 @@ class UI
 		bool _vaoSet;
 
         void add_inventory_elem( int index );
-        void add_dura_value( std::vector<std::array<int, 9>> &vertices, int index );
-        void add_hearts_holder( std::vector<std::array<int, 9>> &vertices, int index );
-        void add_hearts( std::vector<std::array<int, 9>> &vertices, int index );
-        void add_armor_holder( std::vector<std::array<int, 9>> &vertices, int index );
-        void add_armor( std::vector<std::array<int, 9>> &vertices, int index );
-        void add_food_holder( std::vector<std::array<int, 9>> &vertices, int index, int saturation );
-        void add_food( std::vector<std::array<int, 9>> &vertices, int index );
-        void add_bubbles( std::vector<std::array<int, 9>> &vertices, int index );
-		void fill_vertices( std::vector<std::array<int, 9>> &vertices, std::array<int, 9> values );
+		void addQuads( std::vector<std::array<int, 3>> &vertices, int atlas, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
+        void add_dura_value( std::vector<std::array<int, 3>> &vertices, int index );
+        void add_hearts_holder( std::vector<std::array<int, 3>> &vertices, int index );
+        void add_hearts( std::vector<std::array<int, 3>> &vertices, int index );
+        void add_armor_holder( std::vector<std::array<int, 3>> &vertices, int index );
+        void add_armor( std::vector<std::array<int, 3>> &vertices, int index );
+        void add_food_holder( std::vector<std::array<int, 3>> &vertices, int index, int saturation );
+        void add_food( std::vector<std::array<int, 3>> &vertices, int index );
+        void add_bubbles( std::vector<std::array<int, 3>> &vertices, int index );
         void setup_array_buffer( void );
         void setup_item_array_buffer( void );
-		void display_item_value( int x, int y, int amount );
         void display_slot_value( int index );
 
     public:

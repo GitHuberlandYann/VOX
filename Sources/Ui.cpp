@@ -214,62 +214,74 @@ void UI::add_inventory_elem( int index )
 	addFace(v0, v1, v2, v3, false);
 }
 
-void UI::add_dura_value( std::vector<std::array<int, 9>> &vertices, int index )
+void UI::addQuads( std::vector<std::array<int, 3>> &vertices, int atlas, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight )
+{
+	--texWidth;--texHeight;
+	vertices.push_back({texX + 0        + ((texY + 0        ) << 8) + (0 << 16) + (0 << 17) + (atlas << 18), posX,         posY});
+	vertices.push_back({texX + texWidth + ((texY + 0        ) << 8) + (1 << 16) + (0 << 17) + (atlas << 18), posX + width, posY});
+	vertices.push_back({texX + 0        + ((texY + texHeight) << 8) + (0 << 16) + (1 << 17) + (atlas << 18), posX,         posY + height});
+
+	vertices.push_back({texX + texWidth + ((texY + 0        ) << 8) + (1 << 16) + (0 << 17) + (atlas << 18), posX + width, posY});
+	vertices.push_back({texX + texWidth + ((texY + texHeight) << 8) + (1 << 16) + (1 << 17) + (atlas << 18), posX + width, posY + height});
+	vertices.push_back({texX + 0        + ((texY + texHeight) << 8) + (0 << 16) + (1 << 17) + (atlas << 18), posX,         posY + height});
+}
+
+void UI::add_dura_value( std::vector<std::array<int, 3>> &vertices, int index )
 {
 	glm::ivec2 dura = _inventory.getSlotBlock(index).dura;
 	if (dura.y == 0 || dura.x == dura.y) {
 		return ;
 	}
 	// adding grey bar first
-	vertices.push_back({0, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1});
+	addQuads(vertices, 0, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1);
 	// adding progress bar second
 	float percent = 1.0f * dura.x / dura.y;
-	vertices.push_back({0, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1});
+	addQuads(vertices, 0, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1);
 }
 
-void UI::add_hearts_holder( std::vector<std::array<int, 9>> &vertices, int index )
+void UI::add_hearts_holder( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	vertices.push_back({1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 0, 16, 9, 9});
+	addQuads(vertices, 1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 0, 16, 9, 9);
 }
 
-void UI::add_hearts( std::vector<std::array<int, 9>> &vertices, int index )
+void UI::add_hearts( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	vertices.push_back({1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 18 * (_camera._health_points == (1 + 2 * index)) + 9 * (_camera._health_points > (1 + 2 * index)), 16, 9, 9});
+	addQuads(vertices, 1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 18 * (_camera._health_points == (1 + 2 * index)) + 9 * (_camera._health_points > (1 + 2 * index)), 16, 9, 9);
 }
 
-void UI::add_armor_holder( std::vector<std::array<int, 9>> &vertices, int index )
+void UI::add_armor_holder( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	vertices.push_back({1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 27, 16, 9, 9});
+	addQuads(vertices, 1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 27, 16, 9, 9);
 }
 
-void UI::add_armor( std::vector<std::array<int, 9>> &vertices, int index )
+void UI::add_armor( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	vertices.push_back({1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 36 + 9 * (index == 3), 16, 9, 9});
+	addQuads(vertices, 1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 36 + 9 * (index == 3), 16, 9, 9);
 }
 
-void UI::add_food_holder( std::vector<std::array<int, 9>> &vertices, int index, int saturation )
+void UI::add_food_holder( std::vector<std::array<int, 3>> &vertices, int index, int saturation )
 {
-	vertices.push_back({1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 10 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, ((saturation > 2 * index) ? ((saturation == 2 * index + 1) ? 54 + 18 : 54 + 9): 54), 16, 9, 9});
+	addQuads(vertices, 1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 10 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, ((saturation > 2 * index) ? ((saturation == 2 * index + 1) ? 54 + 18 : 54 + 9): 54), 16, 9, 9);
 }
 
-void UI::add_food( std::vector<std::array<int, 9>> &vertices, int index )
+void UI::add_food( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	vertices.push_back({1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 82 + 9 * (_camera._foodLevel == (1 + 2 * index)), 16, 9, 9});
+	addQuads(vertices, 1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 82 + 9 * (_camera._foodLevel == (1 + 2 * index)), 16, 9, 9);
 }
 
-void UI::add_bubbles( std::vector<std::array<int, 9>> &vertices, int index )
+void UI::add_bubbles( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	vertices.push_back({1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 99 + 9 * (_camera.getWaterStatus() == (1 + 2 * index)), 16, 9, 9});
+	addQuads(vertices, 1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 99 + 9 * (_camera.getWaterStatus() == (1 + 2 * index)), 16, 9, 9);
 }
 
 void UI::setup_array_buffer( void )
 {
-	std::vector<std::array<int, 9>> vertices;
+	std::vector<std::array<int, 3>> vertices;
 
-	vertices.push_back({1, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16}); // crosshair
-	vertices.push_back({1, (WIN_WIDTH - (182 * _gui_size)) / 2, WIN_HEIGHT - (22 * _gui_size) * 2, 182 * _gui_size, 22 * _gui_size, 0, 25, 182, 22}); // hot bar
+	addQuads(vertices, 1, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16); // crosshair
+	addQuads(vertices, 1, (WIN_WIDTH - (182 * _gui_size)) / 2, WIN_HEIGHT - (22 * _gui_size) * 2, 182 * _gui_size, 22 * _gui_size, 0, 25, 182, 22); // hot bar
 	int slotNum = _inventory.getSlotNum();
-	vertices.push_back({1, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * slotNum * _gui_size) - _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 - _gui_size, 24 * _gui_size, 24 * _gui_size, 0, 47, 24, 24}); // slot select
+	addQuads(vertices, 1, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * slotNum * _gui_size) - _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 - _gui_size, 24 * _gui_size, 24 * _gui_size, 0, 47, 24, 24); // slot select
 
 	for (int index = 0; index < 9; index++) {
 		add_dura_value(vertices, index);
@@ -309,16 +321,13 @@ void UI::setup_array_buffer( void )
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _nb_points * 9 * sizeof(GLint), &vertices[0][0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _nb_points * 3 * sizeof(GLint), &vertices[0][0], GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(UI_ATLASATTRIB);
-	glVertexAttribIPointer(UI_ATLASATTRIB, 1, GL_INT, 9 * sizeof(GLint), 0);
+	glEnableVertexAttribArray(ITEM_SPECATTRIB);
+	glVertexAttribIPointer(ITEM_SPECATTRIB, 1, GL_INT, 3 * sizeof(GLint), 0);
 
-    glEnableVertexAttribArray(UI_POSATTRIB);
-	glVertexAttribIPointer(UI_POSATTRIB, 4, GL_INT, 9 * sizeof(GLint), (void *)(sizeof(GLint)));
-	
-	glEnableVertexAttribArray(UI_TEXATTRIB);
-	glVertexAttribIPointer(UI_TEXATTRIB, 4, GL_INT, 9 * sizeof(GLint), (void *)(5 * sizeof(GLint)));
+	glEnableVertexAttribArray(ITEM_POSATTRIB);
+	glVertexAttribIPointer(ITEM_POSATTRIB, 2, GL_INT, 3 * sizeof(GLint), (void *)(sizeof(GLint)));
 
 	check_glstate("UI::setup_array_buffer", false);
 }
@@ -394,13 +403,12 @@ void UI::setup_shader( void )
 	check_glstate("Item_Shader program successfully created\n", true);
 
 	// then setup ui shader program
-	_shaderProgram = createShaderProgram("ui_vertex", "ui_geometry", "ui_fragment");
+	_shaderProgram = createShaderProgram("ui_vertex", "", "ui_fragment");
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
-	glBindAttribLocation(_shaderProgram, UI_ATLASATTRIB, "atlas");
-	glBindAttribLocation(_shaderProgram, UI_POSATTRIB, "pos");
-	glBindAttribLocation(_shaderProgram, UI_TEXATTRIB, "textcoord");
+	glBindAttribLocation(_shaderProgram, ITEM_SPECATTRIB, "specifications");
+	glBindAttribLocation(_shaderProgram, ITEM_POSATTRIB, "position");
 
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
@@ -498,8 +506,8 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 	glUseProgram(_shaderProgram);
     glBindVertexArray(_vao);
 	(game_mode == SURVIVAL)
-		? glDrawArrays(GL_POINTS, 0, _nb_points)
-		: glDrawArrays(GL_POINTS, 0, _nb_points_crea);
+		? glDrawArrays(GL_TRIANGLES, 0, _nb_points)
+		: glDrawArrays(GL_TRIANGLES, 0, _nb_points_crea);
 	// b.stop("drawArrays");
 	// b.reset();
 

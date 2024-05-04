@@ -70,7 +70,7 @@ class Menu
 		float _fov_gradient, _render_gradient, _brightness_gradient;
 		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs;
 		std::vector<int> _selection_list;
-		std::vector<std::array<int, 9>> _vertices;
+		std::vector<std::array<int, 3>> _vertices;
 		std::string _world_file;
 		GLFWwindow *_window;
 		Inventory &_inventory;
@@ -94,6 +94,7 @@ class Menu
 		MENU::RET ingame_menu( void );
 		MENU::RET chat_menu( bool animUpdate );
 
+		void addQuads( int atlas, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
         void setup_array_buffer_main( void );
         void setup_array_buffer_select( void );
 		void setup_array_buffer_load( int completion );
