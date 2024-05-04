@@ -46,6 +46,17 @@ namespace MENU
 		BRIGHTNESS_UPDATE,
 		APPLY_RESOURCE_PACKS,
 	};
+
+	const int resolutions_size = 7;
+	const std::array<std::array<int, 2>, resolutions_size> resolutions = {{
+		{960,  540},  // 540p  / qHD
+		{1280, 720},  // 720p  / HD
+		{1920, 1080}, // 1080p / Full HD
+		{2048, 1048}, // 2K
+		{2560, 1440}, // 1440p / QuadHD
+		{3840, 2160}, // 2160p / UltraHD
+		{4096, 2160}, // 4K
+	}};
 }
 
 class Menu
@@ -55,7 +66,7 @@ class Menu
 		GLuint _shaderProgram;
         GLint _gui_size, _nb_points, _state, _selection, _selected_world;
 		t_item _selected_block;
-		bool _vaoSet, _textBar, _moving_slider, _change_to_apply;
+		bool _vaoSet, _textBar, _moving_slider, _change_to_apply, _drop_down_menu;
 		float _fov_gradient, _render_gradient, _brightness_gradient;
 		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs;
 		std::vector<int> _selection_list;

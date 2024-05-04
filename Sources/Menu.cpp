@@ -7,13 +7,10 @@ extern std::mutex mtx;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Menu::Menu( Inventory & inventory, UI *ui ) : _gui_size(3), _state(MENU::MAIN), _selection(0), _selected_world(0), _vaoSet(false),
-	_textBar(true), _change_to_apply(false), _fov_gradient(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV)),
-	_render_gradient(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)),
-	_brightness_gradient(Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS)),
+	_textBar(true), _change_to_apply(false),
 	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _chest(NULL), _furnace(NULL)
 {
 	_world_file = "";
-	loadSettings();
 }
 
 Menu::~Menu( void )
@@ -48,6 +45,7 @@ void Menu::reset_values( void )
 	_selection_list.clear();
 	_moving_slider = false;
 	_change_to_apply = false;
+	_drop_down_menu = false;
 }
 
 MENU::RET Menu::main_menu( void )
@@ -317,13 +315,12 @@ MENU::RET Menu::video_menu( void )
 			_moving_slider = true;
 			Settings::Get()->setFloat(SETTINGS::FLOAT::BRIGHTNESS, _brightness_gradient);
 		} else if (!INPUT::key_update(INPUT::BREAK)) {
+		} else if (_selection == 2) { // Resolution
+			_drop_down_menu = !_drop_down_menu;
 		} else if (_selection == 3) { // Clouds
 			Settings::Get()->setInt(SETTINGS::INT::CLOUDS, (Settings::Get()->getInt(SETTINGS::INT::CLOUDS) + 1) % (SETTINGS::OFF + 1));
 		} else if (_selection == 4) { // FullScreen
-			// Settings::Get()->setBool(SETTINGS::BOOL::FULLSCREEN, !Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN));
-			// (Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN))
-			// 	? glfwSetWindowMonitor(_window, glfwGetPrimaryMonitor(), 0, 0, WIN_WIDTH, WIN_HEIGHT, GLFW_DONT_CARE)
-			// 	: glfwSetWindowMonitor(_window, nullptr, 0, 0, WIN_WIDTH, WIN_HEIGHT, GLFW_DONT_CARE);
+			// Settings::Get()->setBool(SETTINGS::BOOL::FULLSCREEN, !Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN)); (Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN)) ? glfwSetWindowMonitor(_window, glfwGetPrimaryMonitor(), 0, 0, WIN_WIDTH, WIN_HEIGHT, GLFW_DONT_CARE)	: glfwSetWindowMonitor(_window, nullptr, 0, 0, WIN_WIDTH, WIN_HEIGHT, GLFW_DONT_CARE);
 		} else if (_selection == 5) { // Gui scale
 			changeGuiSize();
 		} else if (_selection == 6) { // Skybox
@@ -334,6 +331,19 @@ MENU::RET Menu::video_menu( void )
 			_state = (_state == MENU::VIDEO_SETTINGS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
 			reset_values();
 			return (options_menu());
+		} else if (_selection >= 70) {
+			WIN_WIDTH = MENU::resolutions[_selection - 70][0];
+			WIN_HEIGHT = MENU::resolutions[_selection - 70][1];
+			#if __linux__
+				glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
+			#endif
+			glfwSetWindowSize(_window, WIN_WIDTH, WIN_HEIGHT);
+			// update shaders uniforms
+			_text->updateWinSize();
+			_ui->updateWinSize();
+			--_gui_size;
+			changeGuiSize();
+			_drop_down_menu = false;
 		}
 	}
 	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
@@ -349,14 +359,20 @@ MENU::RET Menu::video_menu( void )
 
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, "Video");
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Render dist " + std::to_string(static_cast<int>(_render_gradient)));
-	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Resolution");
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Resolution: " + std::to_string(WIN_WIDTH) + "x" + std::to_string(WIN_HEIGHT));
 	const std::array<std::string, 3> clouds = {"Clouds - Fancy", "Clouds - Fast", "Clouds - OFF"};
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, clouds[Settings::Get()->getInt(SETTINGS::INT::CLOUDS)]);
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Gui scale " + std::to_string(_gui_size));
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Brightness " + std::to_string(static_cast<int>(_brightness_gradient * 100)));
-	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("FullScreen ") + ((Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN)) ? "ON" : "OFF"));
-	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Skybox ") + ((Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX)) ? "ON" : "OFF"));
-	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Particles ") + ((Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES)) ? "ON" : "OFF"));
+	if (_drop_down_menu) {
+		for (int index = 0; index < Settings::Get()->getInt(SETTINGS::INT::AVAILABLE_RES); ++index) {
+			_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - (65 - 18 * index) * _gui_size, 200 * _gui_size, 18 * _gui_size, 7 * _gui_size, true, std::to_string(MENU::resolutions[index][0]) + "x" + std::to_string(MENU::resolutions[index][1]));
+		}
+	} else {
+		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("FullScreen ") + ((Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN)) ? "ON" : "OFF"));
+		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Skybox ") + ((Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX)) ? "ON" : "OFF"));
+		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Particles ") + ((Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES)) ? "ON" : "OFF"));
+	}
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
 	return ((_moving_slider && _state == MENU::VIDEO_SETTINGS)
 		? ((_selection == 1) ? MENU::RET::RENDER_DIST_UPDATE : MENU::RET::BRIGHTNESS_UPDATE)
@@ -677,7 +693,7 @@ void Menu::setup_array_buffer_video( void )
 	_vertices.push_back({1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1}); // occult window
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Render dist
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_render_gradient, 8, 32, 0, 190)) * _gui_size, WIN_HEIGHT / 2 - 84 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20}); // render Slider
-    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20}); // Resolution
+    _vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 2) ? 111 : 91, 200, 20}); // Resolution
 
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 3) ? 111 : 91, 200, 20}); // Clouds
     _vertices.push_back({1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 5) ? 111 : 91, 200, 20}); // Gui scale
@@ -692,6 +708,11 @@ void Menu::setup_array_buffer_video( void )
 
     _vertices.push_back({1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 11) ? 111 : 91, 200, 20}); // Done
 
+	if (_drop_down_menu) {
+		for (int index = 0; index < Settings::Get()->getInt(SETTINGS::INT::AVAILABLE_RES); ++index) {
+			_vertices.push_back({1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - (65 - 18 * index) * _gui_size, 200 * _gui_size, 18 * _gui_size, 0, 72, 200, 18});
+		}
+	}
 	setup_shader();
 }
 
@@ -1313,6 +1334,16 @@ void Menu::processMouseMovement( float posX, float posY )
 			}
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 2;
+		} else if (_drop_down_menu) {
+			for (int i = 0; i < Settings::Get()->getInt(SETTINGS::INT::AVAILABLE_RES); ++i) {
+				if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - (65 - 18 * i) * _gui_size, 200 * _gui_size, 18 * _gui_size)) {
+					_selection = 70 + i;
+					return ;
+				}
+			}
+			_drop_down_menu = false;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 3;
 		// } else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
@@ -1471,6 +1502,16 @@ void Menu::processMouseMovement( float posX, float posY )
 void Menu::setWindow( GLFWwindow *window )
 {
 	_window = window;
+	Settings::Get()->setInt(SETTINGS::INT::MONITOR_WIDTH, WIN_WIDTH);
+	Settings::Get()->setInt(SETTINGS::INT::MONITOR_HEIGHT, WIN_HEIGHT);
+	Settings::Get()->setInt(SETTINGS::INT::AVAILABLE_RES, MENU::resolutions_size);
+	for (int i = 0; i < MENU::resolutions_size; ++i) {
+		if (WIN_WIDTH < MENU::resolutions[i][0] || WIN_HEIGHT < MENU::resolutions[i][1]) {
+			Settings::Get()->setInt(SETTINGS::INT::AVAILABLE_RES, i);
+			break ;
+		}
+	}
+	loadSettings();
 }
 
 void Menu::setShaderProgram( GLuint shaderProgram )

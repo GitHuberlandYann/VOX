@@ -21,6 +21,9 @@ namespace SETTINGS {
 	enum INT {
 		RENDER_DIST,
 		CLOUDS,
+		MONITOR_WIDTH,
+		MONITOR_HEIGHT,
+		AVAILABLE_RES,
 		NBR_INT
 	};
 

@@ -66,6 +66,7 @@ class UI
 		GLuint getShaderProgram( void );
         void setup_shader( void );
 		void load_texture( void );
+		void updateWinSize( void );
 
 		void addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement = false );
         void drawUserInterface( std::string str, bool game_mode, float deltaTime );

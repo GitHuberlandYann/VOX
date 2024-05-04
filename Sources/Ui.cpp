@@ -388,8 +388,8 @@ void UI::setup_shader( void )
 	glLinkProgram(_itemShaderProgram);
 	glUseProgram(_itemShaderProgram);
 
-	glUniform1i(glGetUniformLocation(_itemShaderProgram, "window_width"), WIN_WIDTH);
-	glUniform1i(glGetUniformLocation(_itemShaderProgram, "window_height"), WIN_HEIGHT);
+	glUniform1i(glGetUniformLocation(_itemShaderProgram, "win_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_itemShaderProgram, "win_height"), WIN_HEIGHT);
 
 	check_glstate("Item_Shader program successfully created\n", true);
 
@@ -405,8 +405,8 @@ void UI::setup_shader( void )
 	glLinkProgram(_shaderProgram);
 	glUseProgram(_shaderProgram);
 
-	glUniform1i(glGetUniformLocation(_shaderProgram, "window_width"), WIN_WIDTH);
-	glUniform1i(glGetUniformLocation(_shaderProgram, "window_height"), WIN_HEIGHT);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "win_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "win_height"), WIN_HEIGHT);
 
 	check_glstate("UI_Shader program successfully created\n", true);
 }
@@ -433,6 +433,16 @@ void UI::load_texture( void )
 
 	loadTextureShader(3, _textures[1], Settings::Get()->getString(SETTINGS::STRING::CONTAINER_ATLAS));
 	glUniform1i(glGetUniformLocation(_shaderProgram, "containerAtlas"), 3);
+}
+
+void UI::updateWinSize( void )
+{
+	glUseProgram(_itemShaderProgram);
+	glUniform1i(glGetUniformLocation(_itemShaderProgram, "win_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_itemShaderProgram, "win_height"), WIN_HEIGHT);
+	glUseProgram(_shaderProgram);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "win_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "win_height"), WIN_HEIGHT);
 }
 
 void UI::addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement )

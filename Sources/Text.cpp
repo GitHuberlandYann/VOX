@@ -76,6 +76,13 @@ void Text::load_texture( void )
 	glUniform1i(glGetUniformLocation(_shaderProgram, "asciiAtlas"), 1); // sampler2D #index in fragment shader
 }
 
+void Text::updateWinSize( void )
+{
+	glUseProgram(_shaderProgram);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "win_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_shaderProgram, "win_height"), WIN_HEIGHT);
+}
+
 int Text::textWidth( int font_size, std::string str, int limit )
 {
 	int res = 0;

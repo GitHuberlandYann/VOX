@@ -14,21 +14,23 @@
 # define THIRTEEN_SIXTEENTH 13.0f / 16.0f
 # define FIFTEEN_SIXTEENTH 15.0f / 16.0f
 
-# if __linux__
-#  if 0
-#   define WIN_WIDTH 1680
-#   define WIN_HEIGHT 1050
-#  else
-#   define WIN_WIDTH 1920
-#   define WIN_HEIGHT 1080
-#  endif
-# else
-#  define WIN_WIDTH 2560
-#  define WIN_HEIGHT 1440
-# endif
+extern int WIN_WIDTH;
+extern int WIN_HEIGHT;
+// # if __linux__
+// #  if 0
+// #   define WIN_WIDTH 1680
+// #   define WIN_HEIGHT 1050
+// #  else
+// #   define WIN_WIDTH 1920
+// #   define WIN_HEIGHT 1080
+// #  endif
+// # else
+// #  define WIN_WIDTH 2560
+// #  define WIN_HEIGHT 1440
+// # endif
 
 # define GUI_MIN 1
-# define GUI_MAX glm::max(1, static_cast<int>(glm::min(glm::floor(WIN_WIDTH / 320), glm::floor(WIN_HEIGHT / 240))))
+# define GUI_MAX glm::max(1, glm::min(WIN_WIDTH / 320, WIN_HEIGHT / 240))
 
 enum {
 	CREATIVE = false,
