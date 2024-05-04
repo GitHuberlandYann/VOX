@@ -2317,114 +2317,159 @@ void Chunk::fill_vertex_array( void )
 						spec = s_blocks[type]->texX() + (s_blocks[type]->texY() << 4) + (0 << 19) + (15 << 24);
 						switch ((block_value >> 9) & 0x7) { // orientation
 							case face_dir::MINUSZ: // default
-								v0 = {spec, {p4.x + 7.0 / 16, p4.y, p4.z}};
-								v1 = {spec + XTEX, {p0.x + 7.0 / 16, p0.y, p0.z}};
-								v2 = {spec + YTEX, {p6.x + 7.0 / 16, p6.y, p6.z}};
-								v3 = {spec + XTEX + YTEX, {p2.x + 7.0 / 16, p2.y, p2.z}};
+								v0 = {spec, {p4.x + 7.0 * ONE16TH, p4.y, p4.z}};
+								v1 = {spec + XTEX, {p0.x + 7.0 * ONE16TH, p0.y, p0.z}};
+								v2 = {spec + YTEX, {p6.x + 7.0 * ONE16TH, p6.y, p6.z}};
+								v3 = {spec + XTEX + YTEX, {p2.x + 7.0 * ONE16TH, p2.y, p2.z}};
 								face_vertices(_vertices, v0, v1, v2, v3); // -x
-								v0 = {spec, {p0.x + 9.0 / 16, p0.y, p0.z}};
-								v1 = {spec + XTEX, {p4.x + 9.0 / 16, p4.y, p4.z}};
-								v2 = {spec + YTEX, {p2.x + 9.0 / 16, p2.y, p2.z}};
-								v3 = {spec + XTEX + YTEX, {p6.x + 9.0 / 16, p6.y, p6.z}};
+								v0 = {spec, {p0.x + 9.0 * ONE16TH, p0.y, p0.z}};
+								v1 = {spec + XTEX, {p4.x + 9.0 * ONE16TH, p4.y, p4.z}};
+								v2 = {spec + YTEX, {p2.x + 9.0 * ONE16TH, p2.y, p2.z}};
+								v3 = {spec + XTEX + YTEX, {p6.x + 9.0 * ONE16TH, p6.y, p6.z}};
 								face_vertices(_vertices, v0, v1, v2, v3); // +x
-								v0 = {spec, {p0.x, p0.y + 7.0 / 16, p0.z}};
-								v1 = {spec + XTEX, {p1.x, p1.y + 7.0 / 16, p1.z}};
-								v2 = {spec + YTEX, {p2.x, p2.y + 7.0 / 16, p2.z}};
-								v3 = {spec + XTEX + YTEX, {p3.x, p3.y + 7.0 / 16, p3.z}};
+								v0 = {spec, {p0.x, p0.y + 7.0 * ONE16TH, p0.z}};
+								v1 = {spec + XTEX, {p1.x, p1.y + 7.0 * ONE16TH, p1.z}};
+								v2 = {spec + YTEX, {p2.x, p2.y + 7.0 * ONE16TH, p2.z}};
+								v3 = {spec + XTEX + YTEX, {p3.x, p3.y + 7.0 * ONE16TH, p3.z}};
 								face_vertices(_vertices, v0, v1, v2, v3); // -y
-								v0 = {spec, {p1.x, p1.y + 9.0 / 16, p1.z}};
-								v1 = {spec + XTEX, {p0.x, p0.y + 9.0 / 16, p0.z}};
-								v2 = {spec + YTEX, {p3.x, p3.y + 9.0 / 16, p3.z}};
-								v3 = {spec + XTEX + YTEX, {p2.x, p2.y + 9.0 / 16, p2.z}};
+								v0 = {spec, {p1.x, p1.y + 9.0 * ONE16TH, p1.z}};
+								v1 = {spec + XTEX, {p0.x, p0.y + 9.0 * ONE16TH, p0.z}};
+								v2 = {spec + YTEX, {p3.x, p3.y + 9.0 * ONE16TH, p3.z}};
+								v3 = {spec + XTEX + YTEX, {p2.x, p2.y + 9.0 * ONE16TH, p2.z}};
 								face_vertices(_vertices, v0, v1, v2, v3); // +y
+								v0 = {spec + (6 << 8), {p4.x, p4.y - 7.0 * ONE16TH, p4.z - 6.0f * ONE16TH}};
+								v1 = {spec + (6 << 8) + XTEX, {p5.x, p5.y - 7.0 * ONE16TH, p5.z - 6.0f * ONE16TH}};
+								v2 = {spec + (8 << 8) + (1 << 18), {p0.x, p0.y + 7.0 * ONE16TH, p0.z - 6.0f * ONE16TH}};
+								v3 = {spec + (8 << 8) + (1 << 18) + XTEX, {p1.x, p1.y + 7.0 * ONE16TH, p1.z - 6.0f * ONE16TH}};
+								face_vertices(_vertices, v0, v1, v2, v3); // +z
 								break ;
 							case face_dir::PLUSX:
-								v0 = {spec, {p4.x + 8.6 / 16, p4.y, p4.z + 3.0/16}};
-								v1 = {spec + XTEX, {p0.x + 8.6 / 16, p0.y, p0.z + 3.0/16}};
-								v2 = {spec + YTEX, {p6.x + 15.0 / 16, p6.y, p6.z + 3.0/16}};
-								v3 = {spec + XTEX + YTEX, {p2.x + 15.0 / 16, p2.y, p2.z + 3.0/16}};
+								v0 = {spec, {p4.x + 8.6 * ONE16TH, p4.y, p4.z + 3.0 * ONE16TH}};
+								v1 = {spec + XTEX, {p0.x + 8.6 * ONE16TH, p0.y, p0.z + 3.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p6.x + 15.0 * ONE16TH, p6.y, p6.z + 3.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p2.x + 15.0 * ONE16TH, p2.y, p2.z + 3.0 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // -x
-								v0 = {spec, {p0.x + 10.6 / 16, p0.y, p0.z + 4.0/16}};
-								v1 = {spec + XTEX, {p4.x + 10.6 / 16, p4.y, p4.z + 4.0/16}};
-								v2 = {spec + YTEX, {p2.x + 17.0 / 16, p2.y, p2.z + 4.0/16}};
-								v3 = {spec + XTEX + YTEX, {p6.x + 17.0 / 16, p6.y, p6.z + 4.0/16}};
+								v0 = {spec, {p0.x + 10.6 * ONE16TH, p0.y, p0.z + 4.0 * ONE16TH}};
+								v1 = {spec + XTEX, {p4.x + 10.6 * ONE16TH, p4.y, p4.z + 4.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p2.x + 17.0 * ONE16TH, p2.y, p2.z + 4.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p6.x + 17.0 * ONE16TH, p6.y, p6.z + 4.0 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // +x
-								v0 = {spec, {p0.x + 1.6/16, p0.y + 7.0 / 16, p0.z - 0.5/16}};
-								v1 = {spec + XTEX, {p1.x + 1.6/16, p1.y + 7.0 / 16, p1.z + 7.5/16}};
-								v2 = {spec + YTEX, {p2.x + 8.0/16, p2.y + 7.0 / 16, p2.z - 0.5/16}};
-								v3 = {spec + XTEX + YTEX, {p3.x + 8.0/16, p3.y + 7.0 / 16, p3.z + 7.5/16}};
+								v0 = {spec, {p0.x + 1.6 * ONE16TH, p0.y + 7.0 * ONE16TH, p0.z - 0.5 * ONE16TH}};
+								v1 = {spec + XTEX, {p1.x + 1.6 * ONE16TH, p1.y + 7.0 * ONE16TH, p1.z + 7.5 * ONE16TH}};
+								v2 = {spec + YTEX, {p2.x + 8.0 * ONE16TH, p2.y + 7.0 * ONE16TH, p2.z - 0.5 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p3.x + 8.0 * ONE16TH, p3.y + 7.0 * ONE16TH, p3.z + 7.5 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // -y
-								v0 = {spec, {p1.x + 1.6/16, p1.y + 9.0 / 16, p1.z + 7.5/16}};
-								v1 = {spec + XTEX, {p0.x + 1.6/16, p0.y + 9.0 / 16, p0.z - 0.5/16}};
-								v2 = {spec + YTEX, {p3.x + 8.0/16, p3.y + 9.0 / 16, p3.z + 7.5/16}};
-								v3 = {spec + XTEX + YTEX, {p2.x + 8.0/16, p2.y + 9.0 / 16, p2.z - 0.5/16}};
+								v0 = {spec, {p1.x + 1.6 * ONE16TH, p1.y + 9.0 * ONE16TH, p1.z + 7.5 * ONE16TH}};
+								v1 = {spec + XTEX, {p0.x + 1.6 * ONE16TH, p0.y + 9.0 * ONE16TH, p0.z - 0.5 * ONE16TH}};
+								v2 = {spec + YTEX, {p3.x + 8.0 * ONE16TH, p3.y + 9.0 * ONE16TH, p3.z + 7.5 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p2.x + 8.0 * ONE16TH, p2.y + 9.0 * ONE16TH, p2.z - 0.5 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // +y
+								v0 = {spec + (6 << 8), {p4.x + 11 * ONE16TH, p4.y, p4.z - 3.0 * ONE16TH}};
+								v1 = {spec + (6 << 8) + XTEX, {p0.x + 11 * ONE16TH, p0.y, p0.z - 3.0 * ONE16TH}};
+								v2 = {spec + (8 << 8) + (1 << 18), {p4.x + 13 * ONE16TH, p4.y, p4.z - 2 * ONE16TH}};
+								v3 = {spec + (8 << 8) + (1 << 18) + XTEX, {p0.x + 13 * ONE16TH, p0.y, p0.z - 2 * ONE16TH}};
+								face_vertices(_vertices, v0, v1, v2, v3); // +z
+								v0 = {spec + (14 << 8), {p6.x + 15.0 * ONE16TH, p6.y, p6.z + 3.0 * ONE16TH}};
+								v1 = {spec + (14 << 8) + XTEX, {p2.x + 15.0 * ONE16TH, p2.y, p2.z + 3.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p6.x + 17.0 * ONE16TH, p6.y, p6.z + 4.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p2.x + 17.0 * ONE16TH, p2.y, p2.z + 4.0 * ONE16TH}};
+								face_vertices(_vertices, v0, v1, v2, v3); // -z
 								break ;
 							case face_dir::MINUSX:
-								v0 = {spec, {p4.x + 1 - 8.6/16, p4.y, p4.z + 3.0/16}};
-								v1 = {spec + XTEX, {p0.x + 1 - 8.6/16, p0.y, p0.z + 3.0/16}};
-								v2 = {spec + YTEX, {p6.x + 1 - 15.0/16, p6.y, p6.z + 3.0/16}};
-								v3 = {spec + XTEX + YTEX, {p2.x + 1 - 15.0/16, p2.y, p2.z + 3.0/16}};
+								v0 = {spec, {p4.x + 1 - 8.6 * ONE16TH, p4.y, p4.z + 3.0 * ONE16TH}};
+								v1 = {spec + XTEX, {p0.x + 1 - 8.6 * ONE16TH, p0.y, p0.z + 3.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p6.x + 1 - 15.0 * ONE16TH, p6.y, p6.z + 3.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p2.x + 1 - 15.0 * ONE16TH, p2.y, p2.z + 3.0 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // -x
-								v0 = {spec, {p0.x + 1 - 10.6/16, p0.y, p0.z + 4.0/16}};
-								v1 = {spec + XTEX, {p4.x + 1 - 10.6/16, p4.y, p4.z + 4.0/16}};
-								v2 = {spec + YTEX, {p2.x + 1 - 17.0/16, p2.y, p2.z + 4.0/16}};
-								v3 = {spec + XTEX + YTEX, {p6.x + 1 - 17.0/16, p6.y, p6.z + 4.0/16}};
+								v0 = {spec, {p0.x + 1 - 10.6 * ONE16TH, p0.y, p0.z + 4.0 * ONE16TH}};
+								v1 = {spec + XTEX, {p4.x + 1 - 10.6 * ONE16TH, p4.y, p4.z + 4.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p2.x + 1 - 17.0 * ONE16TH, p2.y, p2.z + 4.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p6.x + 1 - 17.0 * ONE16TH, p6.y, p6.z + 4.0 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // +x
-								v0 = {spec, {p0.x - 1.6/16, p0.y + 7.0 / 16, p0.z + 7.5/16}};
-								v1 = {spec + XTEX, {p1.x - 1.6/16, p1.y + 7.0 / 16, p1.z - 0.5/16}};
-								v2 = {spec + YTEX, {p2.x - 8.0/16, p2.y + 7.0 / 16, p2.z + 7.5/16}};
-								v3 = {spec + XTEX + YTEX, {p3.x - 8.0/16, p3.y + 7.0 / 16, p3.z - 0.5/16}};
+								v0 = {spec, {p0.x - 1.6 * ONE16TH, p0.y + 7.0 * ONE16TH, p0.z + 7.5 * ONE16TH}};
+								v1 = {spec + XTEX, {p1.x - 1.6 * ONE16TH, p1.y + 7.0 * ONE16TH, p1.z - 0.5 * ONE16TH}};
+								v2 = {spec + YTEX, {p2.x - 8.0 * ONE16TH, p2.y + 7.0 * ONE16TH, p2.z + 7.5 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p3.x - 8.0 * ONE16TH, p3.y + 7.0 * ONE16TH, p3.z - 0.5 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // -y
-								v0 = {spec, {p1.x - 1.6/16, p1.y + 9.0 / 16, p1.z - 0.5/16}};
-								v1 = {spec + XTEX, {p0.x - 1.6/16, p0.y + 9.0 / 16, p0.z + 7.5/16}};
-								v2 = {spec + YTEX, {p3.x - 8.0/16, p3.y + 9.0 / 16, p3.z - 0.5/16}};
-								v3 = {spec + XTEX + YTEX, {p2.x - 8.0/16, p2.y + 9.0 / 16, p2.z + 7.5/16}};
+								v0 = {spec, {p1.x - 1.6 * ONE16TH, p1.y + 9.0 * ONE16TH, p1.z - 0.5 * ONE16TH}};
+								v1 = {spec + XTEX, {p0.x - 1.6 * ONE16TH, p0.y + 9.0 * ONE16TH, p0.z + 7.5 * ONE16TH}};
+								v2 = {spec + YTEX, {p3.x - 8.0 * ONE16TH, p3.y + 9.0 * ONE16TH, p3.z - 0.5 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p2.x - 8.0 * ONE16TH, p2.y + 9.0 * ONE16TH, p2.z + 7.5 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // +y
+								v0 = {spec + (6 << 8), {p4.x + 1 - 11 * ONE16TH, p4.y, p4.z - 3.0 * ONE16TH}};
+								v1 = {spec + (6 << 8) + XTEX, {p0.x + 1 - 11 * ONE16TH, p0.y, p0.z - 3.0 * ONE16TH}};
+								v2 = {spec + (8 << 8) + (1 << 18), {p4.x + 1 - 13 * ONE16TH, p4.y, p4.z - 2 * ONE16TH}};
+								v3 = {spec + (8 << 8) + (1 << 18) + XTEX, {p0.x + 1 - 13 * ONE16TH, p0.y, p0.z - 2 * ONE16TH}};
+								face_vertices(_vertices, v0, v1, v2, v3); // +z
+								v0 = {spec + (14 << 8), {p6.x + 1 - 15.0 * ONE16TH, p6.y, p6.z + 3.0 * ONE16TH}};
+								v1 = {spec + (14 << 8) + XTEX, {p2.x + 1 - 15.0 * ONE16TH, p2.y, p2.z + 3.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p6.x + 1 - 17.0 * ONE16TH, p6.y, p6.z + 4.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p2.x + 1 - 17.0 * ONE16TH, p2.y, p2.z + 4.0 * ONE16TH}};
+								face_vertices(_vertices, v0, v1, v2, v3); // -z
 								break ;
 							case face_dir::PLUSY:
-								v0 = {spec, {p4.x + 7.0/16, p4.y + 1.6 / 16, p4.z + 7.5/16}};
-								v1 = {spec + XTEX, {p0.x + 7.0/16, p0.y + 1.6 / 16, p0.z - 0.5/16}};
-								v2 = {spec + YTEX, {p6.x + 7.0/16, p6.y + 8.0 / 16, p6.z + 7.5/16}};
-								v3 = {spec + XTEX + YTEX, {p2.x + 7.0/16, p2.y + 8.0 / 16, p2.z - 0.5/16}};
+								v0 = {spec, {p4.x + 7.0 * ONE16TH, p4.y + 1.6 * ONE16TH, p4.z + 7.5 * ONE16TH}};
+								v1 = {spec + XTEX, {p0.x + 7.0 * ONE16TH, p0.y + 1.6 * ONE16TH, p0.z - 0.5 * ONE16TH}};
+								v2 = {spec + YTEX, {p6.x + 7.0 * ONE16TH, p6.y + 8.0 * ONE16TH, p6.z + 7.5 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p2.x + 7.0 * ONE16TH, p2.y + 8.0 * ONE16TH, p2.z - 0.5 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // -x
-								v0 = {spec, {p0.x + 9.0 / 16, p0.y + 1.6/16, p0.z - 0.5/16}};
-								v1 = {spec + XTEX, {p4.x + 9.0 / 16, p4.y + 1.6/16, p4.z + 7.5/16}};
-								v2 = {spec + YTEX, {p2.x + 9.0 / 16, p2.y + 8.0/16, p2.z - 0.5/16}};
-								v3 = {spec + XTEX + YTEX, {p6.x + 9.0 / 16, p6.y + 8.0/16, p6.z + 7.5/16}};
+								v0 = {spec, {p0.x + 9.0 * ONE16TH, p0.y + 1.6 * ONE16TH, p0.z - 0.5 * ONE16TH}};
+								v1 = {spec + XTEX, {p4.x + 9.0 * ONE16TH, p4.y + 1.6 * ONE16TH, p4.z + 7.5 * ONE16TH}};
+								v2 = {spec + YTEX, {p2.x + 9.0 * ONE16TH, p2.y + 8.0 * ONE16TH, p2.z - 0.5 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p6.x + 9.0 * ONE16TH, p6.y + 8.0 * ONE16TH, p6.z + 7.5 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // +x
-								v0 = {spec, {p0.x, p0.y + 8.6 / 16, p0.z + 3.0/16}};
-								v1 = {spec + XTEX, {p1.x, p1.y + 8.6 / 16, p1.z + 3.0/16}};
-								v2 = {spec + YTEX, {p2.x, p2.y + 15.0 / 16, p2.z + 3.0/16}};
-								v3 = {spec + XTEX + YTEX, {p3.x, p3.y + 15.0 / 16, p3.z + 3.0/16}};
+								v0 = {spec, {p0.x, p0.y + 8.6 * ONE16TH, p0.z + 3.0 * ONE16TH}};
+								v1 = {spec + XTEX, {p1.x, p1.y + 8.6 * ONE16TH, p1.z + 3.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p2.x, p2.y + 15.0 * ONE16TH, p2.z + 3.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p3.x, p3.y + 15.0 * ONE16TH, p3.z + 3.0 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // -y
-								v0 = {spec, {p1.x, p1.y + 10.6 / 16, p1.z + 4.0/16}};
-								v1 = {spec + XTEX, {p0.x, p0.y + 10.6 / 16, p0.z + 4.0/16}};
-								v2 = {spec + YTEX, {p3.x, p3.y + 17.0 / 16, p3.z + 4.0/16}};
-								v3 = {spec + XTEX + YTEX, {p2.x, p2.y + 17.0 / 16, p2.z + 4.0/16}};
+								v0 = {spec, {p1.x, p1.y + 10.6 * ONE16TH, p1.z + 4.0 * ONE16TH}};
+								v1 = {spec + XTEX, {p0.x, p0.y + 10.6 * ONE16TH, p0.z + 4.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p3.x, p3.y + 17.0 * ONE16TH, p3.z + 4.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p2.x, p2.y + 17.0 * ONE16TH, p2.z + 4.0 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // +y
+								v0 = {spec + (6 << 8), {p0.x, p0.y + 11 * ONE16TH, p0.z - 3.0 * ONE16TH}};
+								v1 = {spec + (6 << 8) + XTEX, {p1.x, p1.y + 11 * ONE16TH, p1.z - 3.0 * ONE16TH}};
+								v2 = {spec + (8 << 8) + (1 << 18), {p0.x, p0.y + 13 * ONE16TH, p0.z - 2 * ONE16TH}};
+								v3 = {spec + (8 << 8) + (1 << 18) + XTEX, {p1.x, p1.y + 13 * ONE16TH, p1.z - 2 * ONE16TH}};
+								face_vertices(_vertices, v0, v1, v2, v3); // +z
+								v0 = {spec + (14 << 8), {p2.x, p2.y + 15.0 * ONE16TH, p2.z + 3.0 * ONE16TH}};
+								v1 = {spec + (14 << 8) + XTEX, {p3.x, p3.y + 15.0 * ONE16TH, p3.z + 3.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p2.x, p2.y + 17.0 * ONE16TH, p2.z + 4.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p3.x, p3.y + 17.0 * ONE16TH, p3.z + 4.0 * ONE16TH}};
+								face_vertices(_vertices, v0, v1, v2, v3); // -z
 								break ;
 							case face_dir::MINUSY:
-								v0 = {spec, {p4.x + 7.0/16, p4.y - 1.6 / 16, p4.z - 0.5/16}};
-								v1 = {spec + XTEX, {p0.x + 7.0/16, p0.y - 1.6 / 16, p0.z + 7.5/16}};
-								v2 = {spec + YTEX, {p6.x + 7.0/16, p6.y - 8.0 / 16, p6.z - 0.5/16}};
-								v3 = {spec + XTEX + YTEX, {p2.x + 7.0/16, p2.y - 8.0 / 16, p2.z + 7.5/16}};
+								v0 = {spec, {p4.x + 7.0 * ONE16TH, p4.y - 1.6 * ONE16TH, p4.z - 0.5 * ONE16TH}};
+								v1 = {spec + XTEX, {p0.x + 7.0 * ONE16TH, p0.y - 1.6 * ONE16TH, p0.z + 7.5 * ONE16TH}};
+								v2 = {spec + YTEX, {p6.x + 7.0 * ONE16TH, p6.y - 8.0 * ONE16TH, p6.z - 0.5 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p2.x + 7.0 * ONE16TH, p2.y - 8.0 * ONE16TH, p2.z + 7.5 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // -x
-								v0 = {spec, {p0.x + 9.0 / 16, p0.y - 1.6/16, p0.z + 7.5/16}};
-								v1 = {spec + XTEX, {p4.x + 9.0 / 16, p4.y - 1.6/16, p4.z - 0.5/16}};
-								v2 = {spec + YTEX, {p2.x + 9.0 / 16, p2.y - 8.0/16, p2.z + 7.5/16}};
-								v3 = {spec + XTEX + YTEX, {p6.x + 9.0 / 16, p6.y - 8.0/16, p6.z - 0.5/16}};
+								v0 = {spec, {p0.x + 9.0 * ONE16TH, p0.y - 1.6 * ONE16TH, p0.z + 7.5 * ONE16TH}};
+								v1 = {spec + XTEX, {p4.x + 9.0 * ONE16TH, p4.y - 1.6 * ONE16TH, p4.z - 0.5 * ONE16TH}};
+								v2 = {spec + YTEX, {p2.x + 9.0 * ONE16TH, p2.y - 8.0 * ONE16TH, p2.z + 7.5 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p6.x + 9.0 * ONE16TH, p6.y - 8.0 * ONE16TH, p6.z - 0.5 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // +x
-								v0 = {spec, {p0.x, p0.y + 1 - 8.6 / 16, p0.z + 3.0/16}};
-								v1 = {spec + XTEX, {p1.x, p1.y + 1 - 8.6 / 16, p1.z + 3.0/16}};
-								v2 = {spec + YTEX, {p2.x, p2.y + 1 - 15.0 / 16, p2.z + 3.0/16}};
-								v3 = {spec + XTEX + YTEX, {p3.x, p3.y + 1 - 15.0 / 16, p3.z + 3.0/16}};
+								v0 = {spec, {p0.x, p0.y + 1 - 8.6 * ONE16TH, p0.z + 3.0 * ONE16TH}};
+								v1 = {spec + XTEX, {p1.x, p1.y + 1 - 8.6 * ONE16TH, p1.z + 3.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p2.x, p2.y + 1 - 15.0 * ONE16TH, p2.z + 3.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p3.x, p3.y + 1 - 15.0 * ONE16TH, p3.z + 3.0 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // -y
-								v0 = {spec, {p1.x, p1.y + 1 - 10.6 / 16, p1.z + 4.0/16}};
-								v1 = {spec + XTEX, {p0.x, p0.y + 1 - 10.6 / 16, p0.z + 4.0/16}};
-								v2 = {spec + YTEX, {p3.x, p3.y + 1 - 17.0 / 16, p3.z + 4.0/16}};
-								v3 = {spec + XTEX + YTEX, {p2.x, p2.y + 1 - 17.0 / 16, p2.z + 4.0/16}};
+								v0 = {spec, {p1.x, p1.y + 1 - 10.6 * ONE16TH, p1.z + 4.0 * ONE16TH}};
+								v1 = {spec + XTEX, {p0.x, p0.y + 1 - 10.6 * ONE16TH, p0.z + 4.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p3.x, p3.y + 1 - 17.0 * ONE16TH, p3.z + 4.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p2.x, p2.y + 1 - 17.0 * ONE16TH, p2.z + 4.0 * ONE16TH}};
 								face_vertices(_vertices, v0, v1, v2, v3); // +y
+								v0 = {spec + (6 << 8), {p0.x, p0.y + 1 - 11 * ONE16TH, p0.z - 3.0 * ONE16TH}};
+								v1 = {spec + (6 << 8) + XTEX, {p1.x, p1.y + 1 - 11 * ONE16TH, p1.z - 3.0 * ONE16TH}};
+								v2 = {spec + (8 << 8) + (1 << 18), {p0.x, p0.y + 1 - 13 * ONE16TH, p0.z - 2 * ONE16TH}};
+								v3 = {spec + (8 << 8) + (1 << 18) + XTEX, {p1.x, p1.y + 1 - 13 * ONE16TH, p1.z - 2 * ONE16TH}};
+								face_vertices(_vertices, v0, v1, v2, v3); // +z
+								v0 = {spec + (14 << 8), {p2.x, p2.y + 1 - 15.0 * ONE16TH, p2.z + 3.0 * ONE16TH}};
+								v1 = {spec + (14 << 8) + XTEX, {p3.x, p3.y + 1 - 15.0 * ONE16TH, p3.z + 3.0 * ONE16TH}};
+								v2 = {spec + YTEX, {p2.x, p2.y + 1 - 17.0 * ONE16TH, p2.z + 4.0 * ONE16TH}};
+								v3 = {spec + XTEX + YTEX, {p3.x, p3.y + 1 - 17.0 * ONE16TH, p3.z + 4.0 * ONE16TH}};
+								face_vertices(_vertices, v0, v1, v2, v3); // -z
 								break ;
 						}
 

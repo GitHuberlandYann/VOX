@@ -55,7 +55,6 @@ IN PROGRES:
 
 TODAY:
 THIS WEEKEND
-	- add top and bottom faces to torches
 	- blocks with oriented light occlusion (ie slabs, stairs)
 
 SHORTTERM memory:
@@ -134,6 +133,7 @@ DONE:
 	- smooth lighting using corner max
 	- update skylight on leave break
 	- torches can be placed on walls
+	- add top and bottom faces to torches
     - FOV changed on isRunning change
     - stop fov run if player idle
 	- water if air && level > surface_level && level < 64
