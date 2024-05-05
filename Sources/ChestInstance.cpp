@@ -18,7 +18,7 @@ ChestInstance::~ChestInstance( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-void ChestInstance::display_open( std::vector<std::pair<int, glm::vec3>> &arr )
+void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
 {
 	int itemLight = _chunk->computePosLight(_pos);
 
@@ -60,10 +60,10 @@ void ChestInstance::display_open( std::vector<std::pair<int, glm::vec3>> &arr )
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
     int spec = 1 + (15 << 4) + (3 << 19) + (itemLight << 24);
-    std::pair<int, glm::vec3> v0 = {spec + (5 << 8), p0 + ONE_SIXTEENTH * back};
-    std::pair<int, glm::vec3> v1 = {spec + XTEX + (5 << 8), p1 + ONE_SIXTEENTH * back};
-    std::pair<int, glm::vec3> v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
-    std::pair<int, glm::vec3> v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
+    t_shaderInput v0 = {spec + (5 << 8), p0 + ONE_SIXTEENTH * back};
+    t_shaderInput v1 = {spec + XTEX + (5 << 8), p1 + ONE_SIXTEENTH * back};
+    t_shaderInput v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
+    t_shaderInput v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 4) + (4 << 19) + (itemLight << 24);
@@ -160,7 +160,7 @@ void ChestInstance::display_open( std::vector<std::pair<int, glm::vec3>> &arr )
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 }
 
-void ChestInstance::display_moving( std::vector<std::pair<int, glm::vec3>> &arr )
+void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
 {
 	int itemLight = _chunk->computePosLight(_pos);
 
@@ -202,10 +202,10 @@ void ChestInstance::display_moving( std::vector<std::pair<int, glm::vec3>> &arr 
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
     int spec = 1 + (15 << 4) + (3 << 19) + (itemLight << 24);
-    std::pair<int, glm::vec3> v0 = {spec + (5 << 8), p0 + ONE_SIXTEENTH * back};
-    std::pair<int, glm::vec3> v1 = {spec + XTEX + (5 << 8), p1 + ONE_SIXTEENTH * back};
-    std::pair<int, glm::vec3> v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
-    std::pair<int, glm::vec3> v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
+    t_shaderInput v0 = {spec + (5 << 8), p0 + ONE_SIXTEENTH * back};
+    t_shaderInput v1 = {spec + XTEX + (5 << 8), p1 + ONE_SIXTEENTH * back};
+    t_shaderInput v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
+    t_shaderInput v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 4) + (4 << 19) + (itemLight << 24);
@@ -308,7 +308,7 @@ void ChestInstance::display_moving( std::vector<std::pair<int, glm::vec3>> &arr 
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 }
 
-void ChestInstance::display_closed( std::vector<std::pair<int, glm::vec3>> &arr )
+void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
 {
 	glm::vec3 pos, right, back;
 	switch (_orientation) {
@@ -349,10 +349,10 @@ void ChestInstance::display_closed( std::vector<std::pair<int, glm::vec3>> &arr 
 	int itemLight = _chunk->computePosLight(_pos);
 
     int spec = 1 + (15 << 4) + (3 << 19) + (itemLight << 24);
-    std::pair<int, glm::vec3> v0 = {spec, p0 + ONE_SIXTEENTH * back};
-    std::pair<int, glm::vec3> v1 = {spec + XTEX, p1 + ONE_SIXTEENTH * back};
-    std::pair<int, glm::vec3> v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
-    std::pair<int, glm::vec3> v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
+    t_shaderInput v0 = {spec, p0 + ONE_SIXTEENTH * back};
+    t_shaderInput v1 = {spec + XTEX, p1 + ONE_SIXTEENTH * back};
+    t_shaderInput v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
+    t_shaderInput v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 4) + (4 << 19) + (itemLight << 24);
@@ -435,7 +435,7 @@ t_item *ChestInstance::getItem( int index )
 	return (&_content[index]);
 }
 
-void ChestInstance::update( std::vector<std::pair<int, glm::vec3>> &arr, float deltaTime )
+void ChestInstance::update( std::vector<t_shaderInput> &arr, float deltaTime )
 {
 	if (!_chunk) {
 		std::cout << "chestInstance with NULL chunk" << std::endl;

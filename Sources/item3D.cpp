@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "Chunk.hpp"
 #include <map>
 
 namespace EXTRUSION {
@@ -281,7 +281,7 @@ namespace EXTRUSION {
 	 * drawItem3D uses particle shader
 	 * front, right, up should be normalized
 	 */
-	bool drawItem3D( std::vector<std::pair<int, glm::vec3>> &arr, int type, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size )
+	bool drawItem3D( std::vector<t_shaderInput> &arr, int type, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size )
 	{
 		auto search = exList.find(type);
 		if (search == exList.end()) {
@@ -292,10 +292,10 @@ namespace EXTRUSION {
 		int texStartX = s_blocks[type]->texX(face_dir::MINUSY, 2) * 16, texStartY = s_blocks[type]->texY(face_dir::MINUSY, 2) * 16;
 		// front face
 		int spec = texStartX + (texStartY << 8) + light;
-		std::pair<int, glm::vec3> v0 = {spec, pos};
-		std::pair<int, glm::vec3> v1 = {spec + 16 + (1 << 17), pos + right * size};
-		std::pair<int, glm::vec3> v2 = {spec + (16 << 8) + (1 << 18), pos - up * size};
-		std::pair<int, glm::vec3> v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), pos + right * size - up * size};
+		t_shaderInput v0 = {spec, pos};
+		t_shaderInput v1 = {spec + 16 + (1 << 17), pos + right * size};
+		t_shaderInput v2 = {spec + (16 << 8) + (1 << 18), pos - up * size};
+		t_shaderInput v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), pos + right * size - up * size};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 		// back face
 		spec += 16;

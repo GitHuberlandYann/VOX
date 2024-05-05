@@ -78,8 +78,8 @@ class Camera
 		Camera( glm::vec3 position );
 		~Camera( void );
 
-		void drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item, bool game_mode );
-		void drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item, bool game_mode );
+		void drawHeldItem( std::vector<t_shaderInput> &arr, int item, bool game_mode );
+		void drawPlayer( std::vector<t_shaderInput> &arr, int item, bool game_mode );
 
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );

@@ -26,7 +26,7 @@ Particle::~Particle( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-bool Particle::updateFlame( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camDir )
+bool Particle::updateFlame( std::vector<t_shaderInput> &arr, glm::vec3 camDir )
 {
 	while (_lifeTime > TICK * 4) {
 		_lifeTime -= TICK * 4;
@@ -58,15 +58,15 @@ bool Particle::updateFlame( std::vector<std::pair<int, glm::vec3>> &arr, glm::ve
 
 	int itemLight = 15;
 	int spec = (1 << 19) + (160 << 8) + (itemLight << 24);
-	std::pair<int, glm::vec3> v0 = {spec, p0};
-	std::pair<int, glm::vec3> v1 = {spec + 8 + (1 << 17), p1};
-	std::pair<int, glm::vec3> v2 = {spec + (8 << 8) + (1 << 18), p2};
-	std::pair<int, glm::vec3> v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p3};
+	t_shaderInput v0 = {spec, p0};
+	t_shaderInput v1 = {spec + 8 + (1 << 17), p1};
+	t_shaderInput v2 = {spec + (8 << 8) + (1 << 18), p2};
+	t_shaderInput v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	return (false);
 }
 
-bool Particle::updateSmoke( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camDir, float deltaTime )
+bool Particle::updateSmoke( std::vector<t_shaderInput> &arr, glm::vec3 camDir, float deltaTime )
 {
 	_pos += _dir * deltaTime;
 	while (_lifeTime > TICK) {
@@ -87,15 +87,15 @@ bool Particle::updateSmoke( std::vector<std::pair<int, glm::vec3>> &arr, glm::ve
 
 	int itemLight = 0;
 	int spec = (1 << 19) + (7 - _frame) * 8 + (168 << 8) + (itemLight << 24);
-	std::pair<int, glm::vec3> v0 = {spec, p0};
-	std::pair<int, glm::vec3> v1 = {spec + 8 + (1 << 17), p1};
-	std::pair<int, glm::vec3> v2 = {spec + (8 << 8) + (1 << 18), p2};
-	std::pair<int, glm::vec3> v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p3};
+	t_shaderInput v0 = {spec, p0};
+	t_shaderInput v1 = {spec + 8 + (1 << 17), p1};
+	t_shaderInput v2 = {spec + (8 << 8) + (1 << 18), p2};
+	t_shaderInput v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	return (false);
 }
 
-bool Particle::updateExplosion( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camDir )
+bool Particle::updateExplosion( std::vector<t_shaderInput> &arr, glm::vec3 camDir )
 {
 	while (_lifeTime > TICK) {
 		_lifeTime -= TICK;
@@ -116,15 +116,15 @@ bool Particle::updateExplosion( std::vector<std::pair<int, glm::vec3>> &arr, glm
 	int itemLight = _chunk->computePosLight(_pos);
 	itemLight = (static_cast<int>((itemLight >> 4) * _shade) << 4) + (static_cast<int>((itemLight & 0xF) * _shade));
 	int spec = (1 << 19) + ((_frame & 0x3) * 32) + (((_frame >> 2) * 32) << 8) + (itemLight << 24);
-	std::pair<int, glm::vec3> v0 = {spec, p0};
-	std::pair<int, glm::vec3> v1 = {spec + 32 + (1 << 17), p1};
-	std::pair<int, glm::vec3> v2 = {spec + (32 << 8) + (1 << 18), p2};
-	std::pair<int, glm::vec3> v3 = {spec + 32 + (1 << 17) + (32 << 8) + (1 << 18), p3};
+	t_shaderInput v0 = {spec, p0};
+	t_shaderInput v1 = {spec + 32 + (1 << 17), p1};
+	t_shaderInput v2 = {spec + (32 << 8) + (1 << 18), p2};
+	t_shaderInput v3 = {spec + 32 + (1 << 17) + (32 << 8) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	return (false);
 }
 
-bool Particle::updateBreaking( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camDir, float deltaTime )
+bool Particle::updateBreaking( std::vector<t_shaderInput> &arr, glm::vec3 camDir, float deltaTime )
 {
 	_pos += _dir * deltaTime;
 	_dir.z -= 0.1f;
@@ -147,10 +147,10 @@ bool Particle::updateBreaking( std::vector<std::pair<int, glm::vec3>> &arr, glm:
 
 	int itemLight = _chunk->computePosLight(_pos);
 	int spec = (0 << 16) +  s_blocks[_block]->texX() * 16 + _texOffset.x + ((s_blocks[_block]->texY() * 16 + _texOffset.y) << 8) + (itemLight << 24);
-	std::pair<int, glm::vec3> v0 = {spec, p0};
-	std::pair<int, glm::vec3> v1 = {spec + 2 + (1 << 17), p1};
-	std::pair<int, glm::vec3> v2 = {spec + (2 << 8) + (1 << 18), p2};
-	std::pair<int, glm::vec3> v3 = {spec + 2 + (1 << 17) + (2 << 8) + (1 << 18), p3};
+	t_shaderInput v0 = {spec, p0};
+	t_shaderInput v1 = {spec + 2 + (1 << 17), p1};
+	t_shaderInput v2 = {spec + (2 << 8) + (1 << 18), p2};
+	t_shaderInput v3 = {spec + 2 + (1 << 17) + (2 << 8) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	return (false);
 }
@@ -159,7 +159,7 @@ bool Particle::updateBreaking( std::vector<std::pair<int, glm::vec3>> &arr, glm:
 //                                Public                                      //
 // ************************************************************************** //
 
-bool Particle::update( std::vector<std::pair<int, glm::vec3>> &arr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime )
+bool Particle::update( std::vector<t_shaderInput> &arr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime )
 {
 	_lifeTime += deltaTime;
 

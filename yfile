@@ -54,7 +54,8 @@ IN PROGRES:
 	- commands /say /me /save /setblock /kill
 
 TODAY:
-THIS WEEKEND
+	- RM breakCoord from shaders, use addBreakingAnim instead
+		- change spec to have 0xFF x and 0xFF y texCoords <=> change light.cpp a lot
 	- blocks with oriented light occlusion (ie slabs, stairs)
 
 SHORTTERM memory:

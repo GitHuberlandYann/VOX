@@ -19,7 +19,7 @@ Entity::~Entity( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-bool Entity::updateTNT( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime )
+bool Entity::updateTNT( std::vector<t_shaderInput> &arr, double deltaTime )
 {
 	if (_lifeTime > 4) { // explosion
 		std::cout << "BOOM" << std::endl;
@@ -65,10 +65,10 @@ bool Entity::updateTNT( std::vector<std::pair<int, glm::vec3>> &arr, double delt
 	int saturation = (static_cast<int>(_lifeTime * 10) / 3) & 0x2;
 
 	int spec = s_blocks[_item.type]->texX(face_dir::MINUSX) + ((s_blocks[_item.type]->texY(face_dir::MINUSX) - saturation) << 4) + (3 << 19) + (itemLight << 24);
-	std::pair<int, glm::vec3> v0 = {spec, p4};
-	std::pair<int, glm::vec3> v1 = {spec + XTEX, p0};
-	std::pair<int, glm::vec3> v2 = {spec + YTEX, p6};
-	std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p2};
+	t_shaderInput v0 = {spec, p4};
+	t_shaderInput v1 = {spec + XTEX, p0};
+	t_shaderInput v2 = {spec + YTEX, p6};
+	t_shaderInput v3 = {spec + XTEX + YTEX, p2};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = s_blocks[_item.type]->texX(face_dir::PLUSX) + ((s_blocks[_item.type]->texY(face_dir::PLUSX) - saturation) << 4) + (4 << 19) + (itemLight << 24);
@@ -109,7 +109,7 @@ bool Entity::updateTNT( std::vector<std::pair<int, glm::vec3>> &arr, double delt
 }
 
 
-bool Entity::updateFallingBlock( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime )
+bool Entity::updateFallingBlock( std::vector<t_shaderInput> &arr, double deltaTime )
 {
 	// std::cout << "FALLING BLOCK UPDATE" << std::endl;
 	_dir.z -= 0.1f;
@@ -142,10 +142,10 @@ bool Entity::updateFallingBlock( std::vector<std::pair<int, glm::vec3>> &arr, do
 	int faceLight = _chunk->computePosLight(_pos);
 	int spec = texture + (3 << 19);
 	spec += (faceLight << 24);
-	std::pair<int, glm::vec3> v0 = {spec, p4};
-	std::pair<int, glm::vec3> v1 = {spec + XTEX, p0};
-	std::pair<int, glm::vec3> v2 = {spec + YTEX, p6};
-	std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p2};
+	t_shaderInput v0 = {spec, p4};
+	t_shaderInput v1 = {spec + XTEX, p0};
+	t_shaderInput v2 = {spec + YTEX, p6};
+	t_shaderInput v3 = {spec + XTEX + YTEX, p2};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = texture + (4 << 19);
@@ -190,7 +190,7 @@ bool Entity::updateFallingBlock( std::vector<std::pair<int, glm::vec3>> &arr, do
 	return (false);
 }
 
-bool Entity::updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float deltaTime )
+bool Entity::updateArrow( std::vector<t_shaderInput> &arr, float deltaTime )
 {
 	if (_lifeTime > 60) {
 		return (true);
@@ -220,10 +220,10 @@ bool Entity::updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float del
 
 	int itemLight = _chunk->computePosLight(_pos - _dir * 0.25f);
     int spec = s_blocks[_item.type]->texX() + ((s_blocks[_item.type]->texY() + 1) << 4) + (0 << 19) + (itemLight << 24);
-    std::pair<int, glm::vec3> v0 = {spec, p0};
-    std::pair<int, glm::vec3> v1 = {spec + XTEX, p1};
-    std::pair<int, glm::vec3> v2 = {spec + (1 << 18) + (5 << 8), p2};
-    std::pair<int, glm::vec3> v3 = {spec + XTEX + (1 << 18) + (5 << 8), p3};
+    t_shaderInput v0 = {spec, p0};
+    t_shaderInput v1 = {spec + XTEX, p1};
+    t_shaderInput v2 = {spec + (1 << 18) + (5 << 8), p2};
+    t_shaderInput v3 = {spec + XTEX + (1 << 18) + (5 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	// then vertical plane
@@ -277,7 +277,7 @@ void Entity::getBlasted( glm::vec3 pos, float blast_radius )
 
 // update entity's position and push_back arr with new pos
 // returns true if entity despawns this frame
-bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<std::pair<int, glm::vec3>> &partArr, glm::vec3 camPos, double deltaTime )
+bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime )
 {
 	_lifeTime += deltaTime;
     if (_lifeTime > 300 || _pos.z < 0) {
@@ -356,10 +356,10 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<s
 	    int itemLight = _chunk->computePosLight(_pos);
 
 	    int spec = s_blocks[_item.type]->texX(face_dir::MINUSX, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19) + (itemLight << 24);
-	    std::pair<int, glm::vec3> v0 = {spec + (8 << 8), p4 - glm::vec3(0, 0, 0.125f)};
-	    std::pair<int, glm::vec3> v1 = {spec + (8 << 8) + XTEX, p0 - glm::vec3(0, 0, 0.125f)};
-	    std::pair<int, glm::vec3> v2 = {spec + YTEX, p6};
-	    std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p2};
+	    t_shaderInput v0 = {spec + (8 << 8), p4 - glm::vec3(0, 0, 0.125f)};
+	    t_shaderInput v1 = {spec + (8 << 8) + XTEX, p0 - glm::vec3(0, 0, 0.125f)};
+	    t_shaderInput v2 = {spec + YTEX, p6};
+	    t_shaderInput v3 = {spec + XTEX + YTEX, p2};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 		spec = s_blocks[_item.type]->texX(face_dir::PLUSX, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19) + (itemLight << 24);
@@ -416,10 +416,10 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<s
 		int slabOffset = (_item.type == blocks::OAK_SLAB) ? (8 << 8) : (_item.type == blocks::OAK_TRAPDOOR) ? (13 << 8) : 0;
 
 	    int spec = s_blocks[_item.type]->texX(face_dir::MINUSX, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19) + (itemLight << 24);
-	    std::pair<int, glm::vec3> v0 = {spec + slabOffset, p4};
-	    std::pair<int, glm::vec3> v1 = {spec + slabOffset + XTEX, p0};
-	    std::pair<int, glm::vec3> v2 = {spec + YTEX, p6};
-	    std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p2};
+	    t_shaderInput v0 = {spec + slabOffset, p4};
+	    t_shaderInput v1 = {spec + slabOffset + XTEX, p0};
+	    t_shaderInput v2 = {spec + YTEX, p6};
+	    t_shaderInput v3 = {spec + XTEX + YTEX, p2};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 		spec = s_blocks[_item.type]->texX(face_dir::PLUSX, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19) + (itemLight << 24);
@@ -462,10 +462,10 @@ bool Entity::update( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<s
 
 		} else {
 			int spec = s_blocks[_item.type]->texX() + (s_blocks[_item.type]->texY() << 4) + (0 << 19) + (itemLight << 24);
-			std::pair<int, glm::vec3> v0 = {spec, p0};
-			std::pair<int, glm::vec3> v1 = {spec + XTEX, p5};
-			std::pair<int, glm::vec3> v2 = {spec + YTEX, p2};
-			std::pair<int, glm::vec3> v3 = {spec + XTEX + YTEX, p7};
+			t_shaderInput v0 = {spec, p0};
+			t_shaderInput v1 = {spec + XTEX, p5};
+			t_shaderInput v2 = {spec + YTEX, p2};
+			t_shaderInput v3 = {spec + XTEX + YTEX, p7};
 			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 			v0 = {spec, p1};

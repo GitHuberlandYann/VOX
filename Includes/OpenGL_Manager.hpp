@@ -40,8 +40,8 @@ class OpenGL_Manager
 		int _break_frame, _hand_content;
 		std::string _world_name;
 		std::vector<Chunk *> _visible_chunks;
-		std::vector<std::pair<int, glm::vec3>> _entities;
-		std::vector<std::pair<int, glm::vec3>> _particles;
+		std::vector<t_shaderInput> _entities;
+		std::vector<t_shaderInput> _particles;
 		std::thread _thread;
 		std::mutex _mtx;
 		t_hit _block_hit;
@@ -65,6 +65,7 @@ class OpenGL_Manager
 		void loadWorld( std::string file );
 		void loadBackups( std::ofstream & ofs, std::ifstream & indata );
 
+		void addBreakingAnim( void );
 		void addLine( glm::vec3 a, glm::vec3 b );
 		void drawEntities( void );
 		void drawParticles( void );

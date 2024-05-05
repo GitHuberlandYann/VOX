@@ -27,9 +27,9 @@ class ChestInstance
 		std::array<t_item, 27> _content;
 		Chunk *_chunk;
 
-		void display_open( std::vector<std::pair<int, glm::vec3>> &arr );
-		void display_moving( std::vector<std::pair<int, glm::vec3>> &arr );
-		void display_closed( std::vector<std::pair<int, glm::vec3>> &arr );
+		void display_open( std::vector<t_shaderInput> &arr );
+		void display_moving( std::vector<t_shaderInput> &arr );
+		void display_closed( std::vector<t_shaderInput> &arr );
 
 	public:
 		ChestInstance( Chunk *chunk, glm::ivec3 pos, int orientation );
@@ -39,7 +39,7 @@ class ChestInstance
 		void setState( int state );
 		int getOrientation( void );
 		t_item *getItem( int index );
-		void update( std::vector<std::pair<int, glm::vec3>> &arr, float deltaTime );
+		void update( std::vector<t_shaderInput> &arr, float deltaTime );
 
 		// std::string getInfoString( void );
 		void loadContent( std::ofstream & ofs, std::string &line, int &index );

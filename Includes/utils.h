@@ -77,7 +77,7 @@ bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeC
 bool cube_cube_intersection( glm::vec3 posA, glm::vec3 sizeA, glm::vec3 posB, glm::vec3 sizeB );
 
 namespace EXTRUSION {
-	bool drawItem3D( std::vector<std::pair<int, glm::vec3>> &arr, int type, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size );
+	bool drawItem3D( std::vector<t_shaderInput> &arr, int type, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size );
 }
 
 #endif

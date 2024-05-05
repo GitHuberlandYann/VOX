@@ -1,7 +1,7 @@
 #include "Camera.hpp"
 #include "utils.h"
 
-void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item, bool game_mode )
+void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, bool game_mode )
 {
 	if (_hideUI || game_mode == CREATIVE) {
 		return ;
@@ -30,10 +30,10 @@ void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item
 		glm::vec3 p3 = p1 - armFront * 12.0f * scale;
 
 		int spec = speco + (2 << 19) + 48 + (32 << 8) + itemLight;
-		std::pair<int, glm::vec3> v0 = {spec + (1 << 17) + (1 << 18), p0};
-		std::pair<int, glm::vec3> v1 = {spec - 4 + (1 << 18), p1};
-		std::pair<int, glm::vec3> v2 = {spec + (1 << 17) - (12 << 8), p2};
-		std::pair<int, glm::vec3> v3 = {spec - 4 - (12 << 8), p3};
+		t_shaderInput v0 = {spec + (1 << 17) + (1 << 18), p0};
+		t_shaderInput v1 = {spec - 4 + (1 << 18), p1};
+		t_shaderInput v2 = {spec + (1 << 17) - (12 << 8), p2};
+		t_shaderInput v3 = {spec - 4 - (12 << 8), p3};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 		// left
@@ -67,10 +67,10 @@ void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item
 			glm::vec3 p3 = p1 - itemFront * 0.125f;
 
 			int spec = s_blocks[item]->texX(face_dir::PLUSZ) * 16 + ((s_blocks[item]->texY(face_dir::PLUSZ) * 16) << 8) + itemLight;
-			std::pair<int, glm::vec3> v0 = {spec, p0};
-			std::pair<int, glm::vec3> v1 = {spec + 16 + (1 << 17), p1};
-			std::pair<int, glm::vec3> v2 = {spec + (8 << 8) + (1 << 18), p2};
-			std::pair<int, glm::vec3> v3 = {spec + 16 + (1 << 17) + (8 << 8) + (1 << 18), p3};
+			t_shaderInput v0 = {spec, p0};
+			t_shaderInput v1 = {spec + 16 + (1 << 17), p1};
+			t_shaderInput v2 = {spec + (8 << 8) + (1 << 18), p2};
+			t_shaderInput v3 = {spec + 16 + (1 << 17) + (8 << 8) + (1 << 18), p3};
 			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 			// left
@@ -127,10 +127,10 @@ void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item
 		glm::vec3 p3 = p1 - itemFront * 0.25f;
 
 		int spec = s_blocks[item]->texX(face_dir::PLUSZ) * 16 + ((s_blocks[item]->texY(face_dir::PLUSZ) * 16) << 8) + itemLight;
-		std::pair<int, glm::vec3> v0 = {spec, p0};
-		std::pair<int, glm::vec3> v1 = {spec + 16 + (1 << 17), p1};
-		std::pair<int, glm::vec3> v2 = {spec + (16 << 8) + (1 << 18), p2};
-		std::pair<int, glm::vec3> v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
+		t_shaderInput v0 = {spec, p0};
+		t_shaderInput v1 = {spec + 16 + (1 << 17), p1};
+		t_shaderInput v2 = {spec + (16 << 8) + (1 << 18), p2};
+		t_shaderInput v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 		
 		float height = (item == blocks::OAK_SLAB) ? 0.125f : (item == blocks::OAK_TRAPDOOR) ? 0.046875f : 0.25f;
@@ -172,7 +172,7 @@ void Camera::drawHeldItem( std::vector<std::pair<int, glm::vec3>> &arr, int item
 	}
 }
 
-void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item, bool game_mode )
+void Camera::drawPlayer( std::vector<t_shaderInput> &arr, int item, bool game_mode )
 {
 	if (!_current_chunk_ptr) {
 		return ;
@@ -198,10 +198,10 @@ void Camera::drawPlayer( std::vector<std::pair<int, glm::vec3>> &arr, int item, 
 
 	int itemLight = _current_chunk_ptr->computePosLight(pos);
 	int spec = speco + (2 << 19) + 8 + (8 << 8) + (itemLight << 24);
-	std::pair<int, glm::vec3> v0 = {spec, p0};
-	std::pair<int, glm::vec3> v1 = {spec + 8 + (1 << 17), p1};
-	std::pair<int, glm::vec3> v2 = {spec + (8 << 8) + (1 << 18), p2};
-	std::pair<int, glm::vec3> v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p3};
+	t_shaderInput v0 = {spec, p0};
+	t_shaderInput v1 = {spec + 8 + (1 << 17), p1};
+	t_shaderInput v2 = {spec + (8 << 8) + (1 << 18), p2};
+	t_shaderInput v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	// draw neck

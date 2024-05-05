@@ -236,9 +236,9 @@ class Chunk
 		void updateFluids( void );
 		void tickUpdate( void );
 		void updateScheduledBlocks( void );
-		void updateEntities( std::vector<std::pair<int, glm::vec3>> &arr, std::vector<std::pair<int, glm::vec3>> &partArr, double deltaTime );
+		void updateEntities( std::vector<t_shaderInput> &arr, std::vector<t_shaderInput> &partArr, double deltaTime );
 		size_t clearEntities( void );
-		void updateParticles( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
+		void updateParticles( std::vector<t_shaderInput> &arr, double deltaTime );
 		size_t clearParticles( void );
 		void drawSky( GLint & counter, GLint &face_counter );
 		void drawWater( GLint & counter, GLint &face_counter );

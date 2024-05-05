@@ -91,6 +91,126 @@ OpenGL_Manager::~OpenGL_Manager( void )
 //                                Private                                     //
 // ************************************************************************** //
 
+void OpenGL_Manager::addBreakingAnim( void )
+{
+	if (_block_hit.value == blocks::AIR) {
+		return ;
+	}
+
+	glm::vec3 p0 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z + 1.001f};
+	glm::vec3 p1 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z + 1.001f};
+	glm::vec3 p2 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z - 0.001f};
+	glm::vec3 p3 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z - 0.001f};
+
+	glm::vec3 p4 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z + 1.001f};
+	glm::vec3 p5 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z + 1.001f};
+	glm::vec3 p6 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
+	glm::vec3 p7 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
+
+	int spec = 14 + (_break_frame << 4);
+	// int faceLight = computeLight(row - 1, col, level);
+	// 	cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
+		// shade = computeShade(row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
+		// spec += (faceLight << 24);
+	t_shaderInput v0 = {spec, p4};
+	// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
+	// shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
+	t_shaderInput v1 = {spec + XTEX, p0};
+	// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
+	// shade = computeShade(row - 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
+	t_shaderInput v2 = {spec + YTEX, p6};
+	// cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
+	// shade = computeShade(row - 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
+	t_shaderInput v3 = {spec + XTEX + YTEX, p2};
+	face_vertices(_entities, v0, v1, v2, v3);
+	// spec = s_blocks[type]->texX(face_dir::PLUSX, offset) + (s_blocks[type]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19);
+	// faceLight = computeLight(row + 1, col, level);
+	// cornerLight = computeSmoothLight(faceLight, row + 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
+	// shade = computeShade(row + 1, col, level, {0, -1, 0, 0, -1, 1, 0, 0, 1});
+	// spec += (faceLight << 24);
+	v0 = {spec, p1};
+	// cornerLight = computeSmoothLight(faceLight, row + 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
+	// shade = computeShade(row + 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
+	v1 = {spec + XTEX, p5};
+	// cornerLight = computeSmoothLight(faceLight, row + 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
+	// shade = computeShade(row + 1, col, level, {0, -1, 0, 0, -1, -1, 0, 0, -1});
+	v2 = {spec + YTEX, p3};
+	// cornerLight = computeSmoothLight(faceLight, row + 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
+	// shade = computeShade(row + 1, col, level, {0, 1, 0, 0, 1, -1, 0, 0, -1});
+	v3 = {spec + XTEX + YTEX, p7};
+	face_vertices(_entities, v0, v1, v2, v3);
+	// spec = s_blocks[type]->texX(face_dir::MINUSY, offset) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 4) + (1 << 19);
+	// faceLight = computeLight(row, col - 1, level);
+	// cornerLight = computeSmoothLight(faceLight, row, col - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
+	// shade = computeShade(row, col - 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
+	// spec += (faceLight << 24);
+	v0 = {spec, p0};
+	// cornerLight = computeSmoothLight(faceLight, row, col - 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
+	// shade = computeShade(row, col - 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
+	v1 = {spec + XTEX, p1};
+	// cornerLight = computeSmoothLight(faceLight, row, col - 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
+	// shade = computeShade(row, col - 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
+	v2 = {spec + YTEX, p2};
+	// cornerLight = computeSmoothLight(faceLight, row, col - 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
+	// shade = computeShade(row, col - 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
+	v3 = {spec + XTEX + YTEX, p3};
+	face_vertices(_entities, v0, v1, v2, v3);
+	// spec = s_blocks[type]->texX(face_dir::PLUSY, offset) + (s_blocks[type]->texY(face_dir::PLUSY, offset) << 4) + (2 << 19);
+	// faceLight = computeLight(row, col + 1, level);
+	// cornerLight = computeSmoothLight(faceLight, row, col + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
+	// shade = computeShade(row, col + 1, level, {1, 0, 0, 1, 0, 1, 0, 0, 1});
+	// spec += (faceLight << 24);
+	v0 = {spec, p5};
+	// cornerLight = computeSmoothLight(faceLight, row, col + 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
+	// shade = computeShade(row, col + 1, level, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
+	v1 = {spec + XTEX, p4};
+	// cornerLight = computeSmoothLight(faceLight, row, col + 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
+	// shade = computeShade(row, col + 1, level, {1, 0, 0, 1, 0, -1, 0, 0, -1});
+	v2 = {spec + YTEX, p7};
+	// cornerLight = computeSmoothLight(faceLight, row, col + 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
+	// shade = computeShade(row, col + 1, level, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
+	v3 = {spec + XTEX + YTEX, p6};
+	face_vertices(_entities, v0, v1, v2, v3);
+	// spec = s_blocks[type]->texX(face_dir::PLUSZ, offset) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 4);
+	// faceLight = computeLight(row, col, level + 1);
+	// cornerLight = computeSmoothLight(faceLight, row, col, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+	// shade = computeShade(row, col, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+	// spec += (faceLight << 24);
+	// if (type == blocks::DIRT_PATH) {
+	// 	p4.z -= ONE_SIXTEENTH;
+	// 	p5.z -= ONE_SIXTEENTH;
+	// 	p0.z -= ONE_SIXTEENTH;
+	// 	p1.z -= ONE_SIXTEENTH;
+	// }
+	v0 = {spec, p4};
+	// cornerLight = computeSmoothLight(faceLight, row, col, level + 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+	// shade = computeShade(row, col, level + 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+	v1 = {spec + XTEX, p5};
+	// cornerLight = computeSmoothLight(faceLight, row, col, level + 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+	// shade = computeShade(row, col, level + 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+	v2 = {spec + YTEX, p0};
+	// cornerLight = computeSmoothLight(faceLight, row, col, level + 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+	// shade = computeShade(row, col, level + 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+	v3 = {spec + XTEX + YTEX, p1};
+	face_vertices(_entities, v0, v1, v2, v3);
+	// spec = s_blocks[type]->texX(face_dir::MINUSZ, offset) + (s_blocks[type]->texY(face_dir::MINUSZ, offset) << 4) + (5 << 19);
+	// faceLight = computeLight(row, col, level - 1);
+	// cornerLight = computeSmoothLight(faceLight, row, col, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+	// shade = computeShade(row, col, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+	// spec += (faceLight << 24);
+	v0 = {spec, p2};
+	// cornerLight = computeSmoothLight(faceLight, row, col, level - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+	// shade = computeShade(row, col, level - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+	v1 = {spec + XTEX, p3};
+	// cornerLight = computeSmoothLight(faceLight, row, col, level - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+	// shade = computeShade(row, col, level - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+	v2 = {spec + YTEX, p6};
+	// cornerLight = computeSmoothLight(faceLight, row, col, level - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+	// shade = computeShade(row, col, level - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+	v3 = {spec + XTEX + YTEX, p7};
+	face_vertices(_entities, v0, v1, v2, v3);
+}
+
 void OpenGL_Manager::addLine( glm::vec3 a, glm::vec3 b )
 {
 	_entities.push_back({11, a});
@@ -147,7 +267,7 @@ void OpenGL_Manager::drawEntities( void )
 	glBindVertexArray(_vaoEntities);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vboEntities);
-	glBufferData(GL_ARRAY_BUFFER, ((hitBox) ? esize + 24 : esize) * 4 * sizeof(GLint), &(_entities[0].first), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, ((hitBox) ? esize + 24 : esize) * 4 * sizeof(GLint), &(_entities[0].spec), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(SPECATTRIB);
 	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
@@ -168,7 +288,6 @@ void OpenGL_Manager::drawEntities( void )
 
 void OpenGL_Manager::drawParticles( void )
 {
-	_camera->drawPlayer(_particles, _hand_content, _game_mode);
 	size_t psize = _particles.size();
 
 	if (!psize) {
@@ -179,7 +298,7 @@ void OpenGL_Manager::drawParticles( void )
 	glBindVertexArray(_vaoParticles);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vboParticles);
-	glBufferData(GL_ARRAY_BUFFER, psize * 4 * sizeof(GLint), &(_particles[0].first), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, psize * 4 * sizeof(GLint), &(_particles[0].spec), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(SPECATTRIB);
 	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
@@ -528,8 +647,10 @@ void OpenGL_Manager::main_loop( void )
 		// b.stamp("solids");
 
 		if (!gamePaused) {
+			_camera->drawPlayer(_particles, _hand_content, _game_mode);
 			drawParticles();
 			glUseProgram(_shaderProgram);
+			// addBreakingAnim();
 			drawEntities();
 		}
 

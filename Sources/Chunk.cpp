@@ -2240,7 +2240,7 @@ void Chunk::updateFurnaces( double currentTime )
 	}
 }
 
-void Chunk::updateEntities( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<std::pair<int, glm::vec3>> &partArr, double deltaTime )
+void Chunk::updateEntities( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, double deltaTime )
 {
 	// TODO merge identical close(3/4 of a block) stackable items together
 	// 			on merge, item timer set to longest of 2
@@ -2287,7 +2287,7 @@ size_t Chunk::clearEntities( void )
 	return (res);
 }
 
-void Chunk::updateParticles( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime )
+void Chunk::updateParticles( std::vector<t_shaderInput> &arr, double deltaTime )
 {
 	glm::vec3 camPos = _camera->getPos(), camDir = _camera->getDir();
 	size_t size = _particles.size();

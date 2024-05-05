@@ -16,9 +16,9 @@ class Entity
 		Chunk *_chunk;
 		Inventory *_inventory;
 
-		bool updateTNT( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
-		bool updateFallingBlock( std::vector<std::pair<int, glm::vec3>> &arr, double deltaTime );
-		bool updateArrow( std::vector<std::pair<int, glm::vec3>> &arr, float deltaTime );
+		bool updateTNT( std::vector<t_shaderInput> &arr, double deltaTime );
+		bool updateFallingBlock( std::vector<t_shaderInput> &arr, double deltaTime );
+		bool updateArrow( std::vector<t_shaderInput> &arr, float deltaTime );
 
 	public:
 		Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool solid, bool thrown, t_item item );
@@ -26,7 +26,7 @@ class Entity
 
 		void setLifetime( double lifetime );
 		void getBlasted( glm::vec3 pos, float blast_radius );
-		bool update( std::vector<std::pair<int, glm::vec3>> &arr,  std::vector<std::pair<int, glm::vec3>> &partArr, glm::vec3 camPos, double deltaTime );
+		bool update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime );
 };
 
 #endif
