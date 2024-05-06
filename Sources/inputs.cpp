@@ -387,9 +387,6 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	if (INPUT::key_down(INPUT::BLOCK_HIGHLIGHT) && INPUT::key_update(INPUT::BLOCK_HIGHLIGHT)) {
 		_ui->chatMessage(std::string("outlines ") + ((_outline) ? "HIDDEN" : "SHOWN"));
 		_outline = !_outline;
-		if (_break_frame != _outline && chunk_hit) {
-			chunk_hit->updateBreak({_block_hit.pos, _block_hit.value}, _outline);
-		}
 		_break_frame = _outline;
 	}
 	// change time multiplier
@@ -420,7 +417,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
 				if (_break_frame != break_frame) {
 					if (chunk_hit) {
-						chunk_hit->updateBreak({_block_hit.pos, _block_hit.value}, break_frame);
+						chunk_hit->updateBreak({_block_hit.pos, _block_hit.value});
 					}
 					_break_frame = break_frame;
 				}
@@ -431,9 +428,6 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	} else if (INPUT::key_update(INPUT::BREAK)) {
 		_camera->setArmAnimation(false);
 		_break_time = 0;
-		if (_break_frame != _outline && chunk_hit) {
-			chunk_hit->updateBreak({_block_hit.pos, _block_hit.value}, _outline);
-		}
 		_break_frame = _outline;
 	} else {
 		_camera->setArmAnimation(false);
@@ -554,15 +548,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			_camera->setWaterStatus(true, current_chunk_ptr->collisionBoxWater(_camera->getEyePos(), 0.05f, 0));
 		}
 
-		Chunk *save_chunk = chunk_hit;
+		// Chunk *save_chunk = chunk_hit;
 		t_hit block_hit = get_block_hit();
 		if (_block_hit.pos != block_hit.pos) {
-			if (_break_frame && save_chunk) {
-				save_chunk->updateBreak({_block_hit.pos, _block_hit.value}, 0);
-			}
-			if (_outline && chunk_hit) {
-				chunk_hit->updateBreak({block_hit.pos, block_hit.value}, 1);
-			}
 			_break_time = 0;
 			_break_frame = _outline;
 		}

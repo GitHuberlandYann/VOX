@@ -16,6 +16,7 @@ namespace chest_state {
 		CLOSING
 	};
 }
+typedef struct s_shaderInput t_shaderInput;
 
 class ChestInstance
 {

@@ -59,35 +59,35 @@ void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
 	glm::vec3 p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 0};
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
-    int spec = 1 + (15 << 4) + (3 << 19) + (itemLight << 24);
+    int spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
     t_shaderInput v0 = {spec + (5 << 8), p0 + ONE_SIXTEENTH * back};
     t_shaderInput v1 = {spec + XTEX + (5 << 8), p1 + ONE_SIXTEENTH * back};
     t_shaderInput v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
     t_shaderInput v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (4 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (4 << 19) + (itemLight << 24);
     v0 = {spec + (5 << 8), p5 - ONE_SIXTEENTH * back};
     v1 = {spec + XTEX + (5 << 8), p4 - ONE_SIXTEENTH * back};
     v2 = {spec + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * back};
     v3 = {spec + XTEX + (1 << 18) + (15 << 8), p6 - ONE_SIXTEENTH * back};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (1 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
     v0 = {spec + (5 << 8), p4 + ONE_SIXTEENTH * right};
     v1 = {spec + XTEX + (5 << 8), p0 + ONE_SIXTEENTH * right};
     v2 = {spec + (1 << 18) + (15 << 8), p6 + ONE_SIXTEENTH * right};
     v3 = {spec + XTEX + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * right};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (2 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
     v0 = {spec + (5 << 8), p1 - ONE_SIXTEENTH * right};
     v1 = {spec + XTEX + (5 << 8), p5 - ONE_SIXTEENTH * right};
     v2 = {spec + (1 << 18) + (15 << 8), p3 - ONE_SIXTEENTH * right};
     v3 = {spec + XTEX + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * right};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
-	spec = 3 + (15 << 4) + (0 << 19) + (itemLight << 24);
+	spec = (3 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
     v0 = {spec, p4 - ONE_SIXTEENTH * back};
     v1 = {spec + XTEX, p5 - ONE_SIXTEENTH * back};
     v2 = {spec + (1 << 18) + (14 << 8), p0 + ONE_SIXTEENTH * back};
@@ -95,7 +95,7 @@ void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
 	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1), true), false, false, false)) {
-		spec = 2 + (15 << 4) + (5 << 19) + (itemLight << 24);
+		spec = (2 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
 		v0 = {spec, p2 + ONE_SIXTEENTH * back};
 		v1 = {spec + XTEX, p3 + ONE_SIXTEENTH * back};
 		v2 = {spec + (1 << 18) + (14 << 8), p6 - ONE_SIXTEENTH * back};
@@ -116,14 +116,14 @@ void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
 	p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 10.0f / 16.0f};
 	p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f / 16.0f};
 
-    spec = 4 + (15 << 4) + (5 << 19) + (itemLight << 24);
+    spec = (4 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
     v0 = {spec, p0};
     v1 = {spec + XTEX, p1};
     v2 = {spec + (1 << 18) + (14 << 8), p2};
     v3 = {spec + XTEX + (1 << 18) + (14 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 2 + (15 << 4) + (0 << 19) + (itemLight << 24);
+	spec = (2 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
     v0 = {spec, p6};
     v1 = {spec + XTEX, p7};
     v2 = {spec + (1 << 18) + (14 << 8), p4};
@@ -131,28 +131,28 @@ void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	glm::vec3 up = {0, 0, ONE_SIXTEENTH};
-	spec = 0 + (15 << 4) + (1 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
     v0 = {spec, p6 + ONE_SIXTEENTH * right - up};
     v1 = {spec + XTEX, p4 + ONE_SIXTEENTH * right + up};
     v2 = {spec + (1 << 18) + (5 << 8), p2 + ONE_SIXTEENTH * right - up};
     v3 = {spec + XTEX + (1 << 18) + (5 << 8), p0 + ONE_SIXTEENTH * right + up};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (2 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
     v0 = {spec, p5 - ONE_SIXTEENTH * right + up};
     v1 = {spec + XTEX, p7 - ONE_SIXTEENTH * right - up};
     v2 = {spec + (1 << 18) + (5 << 8), p1 - ONE_SIXTEENTH * right + up};
     v3 = {spec + XTEX + (1 << 18) + (5 << 8), p3 - ONE_SIXTEENTH * right - up};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
-	spec = 1 + (15 << 4) + (3 << 19) + (itemLight << 24);
+	spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
     v0 = {spec, p4};
     v1 = {spec + XTEX, p5};
     v2 = {spec + (1 << 18) + (5 << 8), p0};
     v3 = {spec + XTEX + (1 << 18) + (5 << 8), p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
-	spec = 0 + (15 << 4) + (2 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
 	v0 = {spec, p7};
 	v1 = {spec + XTEX, p6};
 	v2 = {spec + (1 << 18) + (5 << 8), p3};
@@ -201,35 +201,35 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
 	glm::vec3 p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 0};
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
-    int spec = 1 + (15 << 4) + (3 << 19) + (itemLight << 24);
+    int spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
     t_shaderInput v0 = {spec + (5 << 8), p0 + ONE_SIXTEENTH * back};
     t_shaderInput v1 = {spec + XTEX + (5 << 8), p1 + ONE_SIXTEENTH * back};
     t_shaderInput v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
     t_shaderInput v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (4 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (4 << 19) + (itemLight << 24);
     v0 = {spec + (5 << 8), p5 - ONE_SIXTEENTH * back};
     v1 = {spec + XTEX + (5 << 8), p4 - ONE_SIXTEENTH * back};
     v2 = {spec + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * back};
     v3 = {spec + XTEX + (1 << 18) + (15 << 8), p6 - ONE_SIXTEENTH * back};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (1 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
     v0 = {spec + (5 << 8), p4 + ONE_SIXTEENTH * right};
     v1 = {spec + XTEX + (5 << 8), p0 + ONE_SIXTEENTH * right};
     v2 = {spec + (1 << 18) + (15 << 8), p6 + ONE_SIXTEENTH * right};
     v3 = {spec + XTEX + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * right};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (2 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
     v0 = {spec + (5 << 8), p1 - ONE_SIXTEENTH * right};
     v1 = {spec + XTEX + (5 << 8), p5 - ONE_SIXTEENTH * right};
     v2 = {spec + (1 << 18) + (15 << 8), p3 - ONE_SIXTEENTH * right};
     v3 = {spec + XTEX + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * right};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
-	spec = 3 + (15 << 4) + (0 << 19) + (itemLight << 24);
+	spec = (3 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
     v0 = {spec, p4 - ONE_SIXTEENTH * back};
     v1 = {spec + XTEX, p5 - ONE_SIXTEENTH * back};
     v2 = {spec + (1 << 18) + (14 << 8), p0 + ONE_SIXTEENTH * back};
@@ -237,7 +237,7 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
 	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1), true), false, false, false)) {
-		spec = 2 + (15 << 4) + (5 << 19) + (itemLight << 24);
+		spec = (2 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
 		v0 = {spec, p2 + ONE_SIXTEENTH * back};
 		v1 = {spec + XTEX, p3 + ONE_SIXTEENTH * back};
 		v2 = {spec + (1 << 18) + (14 << 8), p6 - ONE_SIXTEENTH * back};
@@ -264,14 +264,14 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
 	p6 = p2 + back;
 	p7 = p3 + back;
 
-    spec = 4 + (15 << 4) + (5 << 19) + (itemLight << 24);
+    spec = (4 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
     v0 = {spec, p0};
     v1 = {spec + XTEX, p1};
     v2 = {spec + (1 << 18) + (14 << 8), p2};
     v3 = {spec + XTEX + (1 << 18) + (14 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 2 + (15 << 4) + (0 << 19) + (itemLight << 24);
+	spec = (2 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
     v0 = {spec, p6};
     v1 = {spec + XTEX, p7};
     v2 = {spec + (1 << 18) + (14 << 8), p4};
@@ -279,28 +279,28 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	glm::vec3 up = ONE_SIXTEENTH * top;
-	spec = 0 + (15 << 4) + (1 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
     v0 = {spec, p6 + ONE_SIXTEENTH * right - up};
     v1 = {spec + XTEX, p4 + ONE_SIXTEENTH * right + up};
     v2 = {spec + (1 << 18) + (5 << 8), p2 + ONE_SIXTEENTH * right - up};
     v3 = {spec + XTEX + (1 << 18) + (5 << 8), p0 + ONE_SIXTEENTH * right + up};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (2 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
     v0 = {spec, p5 - ONE_SIXTEENTH * right + up};
     v1 = {spec + XTEX, p7 - ONE_SIXTEENTH * right - up};
     v2 = {spec + (1 << 18) + (5 << 8), p1 - ONE_SIXTEENTH * right + up};
     v3 = {spec + XTEX + (1 << 18) + (5 << 8), p3 - ONE_SIXTEENTH * right - up};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
-	spec = 1 + (15 << 4) + (3 << 19) + (itemLight << 24);
+	spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
     v0 = {spec, p4};
     v1 = {spec + XTEX, p5};
     v2 = {spec + (1 << 18) + (5 << 8), p0};
     v3 = {spec + XTEX + (1 << 18) + (5 << 8), p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
-	spec = 0 + (15 << 4) + (2 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
 	v0 = {spec, p7};
 	v1 = {spec + XTEX, p6};
 	v2 = {spec + (1 << 18) + (5 << 8), p3};
@@ -348,35 +348,35 @@ void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
 
 	int itemLight = _chunk->computePosLight(_pos);
 
-    int spec = 1 + (15 << 4) + (3 << 19) + (itemLight << 24);
+    int spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
     t_shaderInput v0 = {spec, p0 + ONE_SIXTEENTH * back};
     t_shaderInput v1 = {spec + XTEX, p1 + ONE_SIXTEENTH * back};
     t_shaderInput v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
     t_shaderInput v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (4 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (4 << 19) + (itemLight << 24);
     v0 = {spec, p5 - ONE_SIXTEENTH * back};
     v1 = {spec + XTEX, p4 - ONE_SIXTEENTH * back};
     v2 = {spec + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * back};
     v3 = {spec + XTEX + (1 << 18) + (15 << 8), p6 - ONE_SIXTEENTH * back};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (1 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
     v0 = {spec, p4 + ONE_SIXTEENTH * right};
     v1 = {spec + XTEX, p0 + ONE_SIXTEENTH * right};
     v2 = {spec + (1 << 18) + (15 << 8), p6 + ONE_SIXTEENTH * right};
     v3 = {spec + XTEX + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * right};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 4) + (2 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
     v0 = {spec, p1 - ONE_SIXTEENTH * right};
     v1 = {spec + XTEX, p5 - ONE_SIXTEENTH * right};
     v2 = {spec + (1 << 18) + (15 << 8), p3 - ONE_SIXTEENTH * right};
     v3 = {spec + XTEX + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * right};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
-	spec = 2 + (15 << 4) + (0 << 19) + (itemLight << 24);
+	spec = (2 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
     v0 = {spec, p4 - ONE_SIXTEENTH * back};
     v1 = {spec + XTEX, p5 - ONE_SIXTEENTH * back};
     v2 = {spec + (1 << 18) + (14 << 8), p0 + ONE_SIXTEENTH * back};
@@ -384,7 +384,7 @@ void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
 	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1), true), false, false, false)) {
-		spec = 2 + (15 << 4) + (5 << 19) + (itemLight << 24);
+		spec = (2 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
 		v0 = {spec, p2 + ONE_SIXTEENTH * back};
 		v1 = {spec + XTEX, p3 + ONE_SIXTEENTH * back};
 		v2 = {spec + (1 << 18) + (14 << 8), p6 - ONE_SIXTEENTH * back};
@@ -408,17 +408,6 @@ void ChestInstance::setChunk( Chunk *chunk, glm::ivec3 pos )
 void ChestInstance::setState( int state )
 {
 	_state = state;
-	// (void) state;
-	// switch (_state) {
-	// 	case chest_state::OPEN:
-	// 	case chest_state::OPENING:
-	// 		_state = chest_state::CLOSING;
-	// 		break ;
-	// 	case chest_state::CLOSED:
-	// 	case chest_state::CLOSING:
-	// 		_state = chest_state::OPENING;
-	// 		break ;
-	// }
 }
 
 int ChestInstance::getOrientation( void )

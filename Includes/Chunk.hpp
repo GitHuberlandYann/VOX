@@ -22,8 +22,8 @@ class Camera;
 # define WORLD_SHIFT 8
 # define ALLOC_SIZE 1 << 16 // represents CHUNK_SIZE * CHUNK_SIZE * WORLD_HEIGHT
 
-# define XTEX 1 + (1 << 17) + (1 << 16)
-# define YTEX (1 << 4) + (1 << 18) + (1 << 12)
+# define XTEX (1 << 4) + (1 << 17)
+# define YTEX (1 << 12) + (1 << 18)
 
 enum cont {
 	CONT_MUSHROOM_FIELDS,
@@ -221,7 +221,7 @@ class Chunk
 		void handleBlast( glm::vec3 pos, int blast_radius );
 		void explosion( glm::vec3 pos, int power );
 		void shootArrow( float timer );
-		void updateBreak( glm::ivec4 block_hit, int frame );
+		void updateBreak( glm::ivec4 block_hit );
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread, int recurse );
 		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
 		void insertFluidAt( std::set<int> *newFluids, int posX, int posY, int posZ );

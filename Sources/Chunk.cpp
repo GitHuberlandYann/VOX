@@ -1809,7 +1809,7 @@ void Chunk::shootArrow( float timer )
 	_entities.push_back(new Entity(this, _inventory, camPos, camDir * timer, true, false, {blocks::ARROW, 1, {0, 0}}));
 }
 
-void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
+void Chunk::updateBreak( glm::ivec4 block_hit )
 {
 	if (block_hit.w == blocks::AIR || !_vaoReset) {
 		return ;
@@ -1819,101 +1819,9 @@ void Chunk::updateBreak( glm::ivec4 block_hit, int frame )
 		std::cout << "ERROR block hit out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 		return ;
 	}
-	// if (_thread.joinable()) {
-	// 	_thread.join();
-	// }
-	int value = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z];
-	if (value == blocks::AIR || value & blocks::NOTVISIBLE) {
-		return ;
+	for (int i = 0; i < 6; ++i) {
+		_particles.push_back(new Particle(this, {block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][0] + 0.55f * adj_blocks[i][0], block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][1] + 0.55f * adj_blocks[i][1], block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][2] + 0.55f * adj_blocks[i][2]}, PARTICLES::BREAKING, 0, block_hit.w));
 	}
-	int type = value & 0xFF;
-	if (frame > 1) {
-		for (int i = 0; i < 6; ++i) {
-			_particles.push_back(new Particle(this, {block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][0] + 0.55f * adj_blocks[i][0], block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][1] + 0.55f * adj_blocks[i][1], block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][2] + 0.55f * adj_blocks[i][2]}, PARTICLES::BREAKING, 0, type));
-		}
-	}
-	float zSize = ((type == blocks::OAK_SLAB_BOTTOM) ? 0.5f : ((type == blocks::FARMLAND) ? FIFTEEN_SIXTEENTH: 1));
-	float bSize = ((type == blocks::OAK_SLAB_TOP) ? 0.5f : 0.0f);
-	glm::vec3 p0 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + zSize};
-	glm::vec3 p1 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + zSize};
-	glm::vec3 p2 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 0, chunk_pos.z + bSize};
-	glm::vec3 p3 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 0, chunk_pos.z + bSize};
-
-	glm::vec3 p4 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + zSize};
-	glm::vec3 p5 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + zSize};
-	glm::vec3 p6 = {_startX + chunk_pos.x + 0, _startY + chunk_pos.y + 1, chunk_pos.z + bSize};
-	glm::vec3 p7 = {_startX + chunk_pos.x + 1, _startY + chunk_pos.y + 1, chunk_pos.z + bSize};
-	int count = face_count(type, chunk_pos.x, chunk_pos.y, chunk_pos.z);
-	int cnt = 0;
-	if (type == blocks::TORCH) {
-		for (size_t index = 0; index < _displayed_faces * 6; index += 6) {
-			_mtx.lock();
-			if (torchFace(_vertices, p0, p1, p2, p3, p4, p6, index)) { // TODO add top(/bottom ?) face too
-				_vertices[index + 0].spec = (_vertices[index + 0].spec & 0xFFFF0FFF) + (frame << 12);
-				_vertices[index + 1].spec = (_vertices[index + 1].spec & 0xFFFF0FFF) + (frame << 12);
-				_vertices[index + 2].spec = (_vertices[index + 2].spec & 0xFFFF0FFF) + ((frame + 1) << 12);
-				_vertices[index + 3].spec = (_vertices[index + 3].spec & 0xFFFF0FFF) + (frame << 12);
-				_vertices[index + 4].spec = (_vertices[index + 4].spec & 0xFFFF0FFF) + ((frame + 1) << 12);
-				_vertices[index + 5].spec = (_vertices[index + 5].spec & 0xFFFF0FFF) + ((frame + 1) << 12);
-				_mtx.unlock();
-				glBindVertexArray(_vao);
-				glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-				glBufferSubData(GL_ARRAY_BUFFER, index * 4 * sizeof(int), 24 * sizeof(int), &_vertices[index].spec);
-				if (++cnt >= count) {
-					check_glstate("Chunk::updateBreak torch", false);
-					return ;
-				}
-				_mtx.lock();
-			}
-			_mtx.unlock();
-		}
-		return ;
-	} else if (!air_flower(type, false, false, true)) { // cross image
-		for (size_t index = 0; index < _displayed_faces * 6; index += 6) {
-			_mtx.lock();
-			if (crossFace(_vertices, p0, p1, p2, p3, p4, p5, index)) {
-				_vertices[index + 0].spec = (_vertices[index + 0].spec & 0xFFFF0FFF) + (frame << 12);
-				_vertices[index + 1].spec = (_vertices[index + 1].spec & 0xFFFF0FFF) + (frame << 12);
-				_vertices[index + 2].spec = (_vertices[index + 2].spec & 0xFFFF0FFF) + ((frame + 1) << 12);
-				_vertices[index + 3].spec = (_vertices[index + 3].spec & 0xFFFF0FFF) + (frame << 12);
-				_vertices[index + 4].spec = (_vertices[index + 4].spec & 0xFFFF0FFF) + ((frame + 1) << 12);
-				_vertices[index + 5].spec = (_vertices[index + 5].spec & 0xFFFF0FFF) + ((frame + 1) << 12);
-				_mtx.unlock();
-				glBindVertexArray(_vao);
-				glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-				glBufferSubData(GL_ARRAY_BUFFER, index * 4 * sizeof(int), 24 * sizeof(int), &_vertices[index].spec);
-				if (++cnt >= count) {
-					check_glstate("Chunk::updateBreak cross", false);
-					return ;
-				}
-				_mtx.lock();
-			}
-			_mtx.unlock();
-		}
-		return ;
-	}
-	for (size_t index = 0; index < _displayed_faces * 6; index += 6) {
-		_mtx.lock();
-		if (blockFace(_vertices, {p0, p1, p2, p3, p4, p5, p6, p7}, index, type == blocks::DIRT_PATH)) {
-			_vertices[index + 0].spec = (_vertices[index + 0].spec & 0xFFFF0FFF) + (frame << 12);
-			_vertices[index + 1].spec = (_vertices[index + 1].spec & 0xFFFF0FFF) + (frame << 12);
-			_vertices[index + 2].spec = (_vertices[index + 2].spec & 0xFFFF0FFF) + ((frame + 1) << 12);
-			_vertices[index + 3].spec = (_vertices[index + 3].spec & 0xFFFF0FFF) + (frame << 12);
-			_vertices[index + 4].spec = (_vertices[index + 4].spec & 0xFFFF0FFF) + ((frame + 1) << 12);
-			_vertices[index + 5].spec = (_vertices[index + 5].spec & 0xFFFF0FFF) + ((frame + 1) << 12);
-			_mtx.unlock();
-			glBindVertexArray(_vao);
-			glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-			glBufferSubData(GL_ARRAY_BUFFER, index * 4 * sizeof(int), 24 * sizeof(int), &_vertices[index].spec);
-			if (++cnt >= count) {
-				check_glstate("Chunk::updateBreak", false);
-				return ;
-			}
-			_mtx.lock();
-		}
-		_mtx.unlock();
-	}
-	// std::cout << "update break not found " << cnt << std::endl; // TODO find out conditions for this to be printed
 }
 
 // called by neighbour chunk if block change at border

@@ -107,7 +107,7 @@ void OpenGL_Manager::addBreakingAnim( void )
 	glm::vec3 p6 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
 	glm::vec3 p7 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
 
-	int spec = 14 + (_break_frame << 4);
+	int spec = (14 << 4) + (_break_frame << 12);
 	// int faceLight = computeLight(row - 1, col, level);
 	// 	cornerLight = computeSmoothLight(faceLight, row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 		// shade = computeShade(row - 1, col, level, {0, 1, 0, 0, 1, 1, 0, 0, 1});
@@ -650,7 +650,7 @@ void OpenGL_Manager::main_loop( void )
 			_camera->drawPlayer(_particles, _hand_content, _game_mode);
 			drawParticles();
 			glUseProgram(_shaderProgram);
-			// addBreakingAnim();
+			addBreakingAnim();
 			drawEntities();
 		}
 

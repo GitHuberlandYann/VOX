@@ -64,42 +64,42 @@ bool Entity::updateTNT( std::vector<t_shaderInput> &arr, double deltaTime )
 	int itemLight = _chunk->computePosLight(_pos);
 	int saturation = (static_cast<int>(_lifeTime * 10) / 3) & 0x2;
 
-	int spec = s_blocks[_item.type]->texX(face_dir::MINUSX) + ((s_blocks[_item.type]->texY(face_dir::MINUSX) - saturation) << 4) + (3 << 19) + (itemLight << 24);
+	int spec = (s_blocks[_item.type]->texX(face_dir::MINUSX) << 4) + ((s_blocks[_item.type]->texY(face_dir::MINUSX) - saturation) << 12) + (3 << 19) + (itemLight << 24);
 	t_shaderInput v0 = {spec, p4};
 	t_shaderInput v1 = {spec + XTEX, p0};
 	t_shaderInput v2 = {spec + YTEX, p6};
 	t_shaderInput v3 = {spec + XTEX + YTEX, p2};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = s_blocks[_item.type]->texX(face_dir::PLUSX) + ((s_blocks[_item.type]->texY(face_dir::PLUSX) - saturation) << 4) + (4 << 19) + (itemLight << 24);
+	spec = (s_blocks[_item.type]->texX(face_dir::PLUSX) << 4) + ((s_blocks[_item.type]->texY(face_dir::PLUSX) - saturation) << 12) + (4 << 19) + (itemLight << 24);
     v0 = {spec, p1};
     v1 = {spec + XTEX, p5};
     v2 = {spec + YTEX, p3};
     v3 = {spec + XTEX + YTEX, p7};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = s_blocks[_item.type]->texX(face_dir::MINUSY) + ((s_blocks[_item.type]->texY(face_dir::MINUSY) - saturation) << 4) + (1 << 19) + (itemLight << 24);
+	spec = (s_blocks[_item.type]->texX(face_dir::MINUSY) << 4) + ((s_blocks[_item.type]->texY(face_dir::MINUSY) - saturation) << 12) + (1 << 19) + (itemLight << 24);
     v0 = {spec, p0};
     v1 = {spec + XTEX, p1};
     v2 = {spec + YTEX, p2};
     v3 = {spec + XTEX + YTEX, p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = s_blocks[_item.type]->texX(face_dir::PLUSY) + ((s_blocks[_item.type]->texY(face_dir::PLUSY) - saturation) << 4) + (2 << 19) + (itemLight << 24);
+	spec = (s_blocks[_item.type]->texX(face_dir::PLUSY) << 4) + ((s_blocks[_item.type]->texY(face_dir::PLUSY) - saturation) << 12) + (2 << 19) + (itemLight << 24);
     v0 = {spec, p5};
     v1 = {spec + XTEX, p4};
     v2 = {spec + YTEX, p7};
     v3 = {spec + XTEX + YTEX, p6};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = s_blocks[_item.type]->texX(face_dir::PLUSZ) + ((s_blocks[_item.type]->texY(face_dir::PLUSZ) - saturation) << 4) + (0 << 19) + (itemLight << 24);
+	spec = (s_blocks[_item.type]->texX(face_dir::PLUSZ) << 4) + ((s_blocks[_item.type]->texY(face_dir::PLUSZ) - saturation) << 12) + (0 << 19) + (itemLight << 24);
     v0 = {spec, p4};
     v1 = {spec + XTEX, p5};
     v2 = {spec + YTEX, p0};
     v3 = {spec + XTEX + YTEX, p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = s_blocks[_item.type]->texX(face_dir::MINUSZ) + ((s_blocks[_item.type]->texY(face_dir::MINUSZ) - saturation) << 4) + (5 << 19) + (itemLight << 24);
+	spec = (s_blocks[_item.type]->texX(face_dir::MINUSZ) << 4) + ((s_blocks[_item.type]->texY(face_dir::MINUSZ) - saturation) << 12) + (5 << 19) + (itemLight << 24);
     v0 = {spec, p2};
     v1 = {spec + XTEX, p3};
     v2 = {spec + YTEX, p6};
@@ -138,7 +138,7 @@ bool Entity::updateFallingBlock( std::vector<t_shaderInput> &arr, double deltaTi
 	glm::vec3 p6 = {_pos.x + 0, _pos.y + 1, _pos.z + 0};
 	glm::vec3 p7 = {_pos.x + 1, _pos.y + 1, _pos.z + 0};
 
-	int texture = s_blocks[_item.type]->texX(face_dir::MINUSX) + (s_blocks[_item.type]->texY(face_dir::MINUSX) << 4);
+	int texture = (s_blocks[_item.type]->texX(face_dir::MINUSX) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSX) << 12);
 	int faceLight = _chunk->computePosLight(_pos);
 	int spec = texture + (3 << 19);
 	spec += (faceLight << 24);
@@ -219,7 +219,7 @@ bool Entity::updateArrow( std::vector<t_shaderInput> &arr, float deltaTime )
 	glm::vec3 p2 =  _pos - dir * 0.5f + hnormal * (1.25f / 16);
 
 	int itemLight = _chunk->computePosLight(_pos - _dir * 0.25f);
-    int spec = s_blocks[_item.type]->texX() + ((s_blocks[_item.type]->texY() + 1) << 4) + (0 << 19) + (itemLight << 24);
+    int spec = (s_blocks[_item.type]->texX() << 4) + ((s_blocks[_item.type]->texY() + 1) << 12) + (0 << 19) + (itemLight << 24);
     t_shaderInput v0 = {spec, p0};
     t_shaderInput v1 = {spec + XTEX, p1};
     t_shaderInput v2 = {spec + (1 << 18) + (5 << 8), p2};
@@ -355,28 +355,28 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 		int offset = face_dir::MINUSX;
 	    int itemLight = _chunk->computePosLight(_pos);
 
-	    int spec = s_blocks[_item.type]->texX(face_dir::MINUSX, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19) + (itemLight << 24);
+	    int spec = (s_blocks[_item.type]->texX(face_dir::MINUSX, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 12) + (3 << 19) + (itemLight << 24);
 	    t_shaderInput v0 = {spec + (8 << 8), p4 - glm::vec3(0, 0, 0.125f)};
 	    t_shaderInput v1 = {spec + (8 << 8) + XTEX, p0 - glm::vec3(0, 0, 0.125f)};
 	    t_shaderInput v2 = {spec + YTEX, p6};
 	    t_shaderInput v3 = {spec + XTEX + YTEX, p2};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_item.type]->texX(face_dir::PLUSX, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::PLUSX, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 12) + (4 << 19) + (itemLight << 24);
 	    v0 = {spec, p1};
 	    v1 = {spec + XTEX, p5};
 	    v2 = {spec + YTEX, p3};
 	    v3 = {spec + XTEX + YTEX, p7};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_item.type]->texX(face_dir::MINUSY, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSY, offset) << 4) + (1 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::MINUSY, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSY, offset) << 12) + (1 << 19) + (itemLight << 24);
 	    v0 = {spec + XTEX, p0};
 		v1 = {spec, p1};
 		v2 = {spec + XTEX + YTEX, p2};
 		v3 = {spec + YTEX, p3};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_item.type]->texX(face_dir::PLUSY, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSY, offset) << 4) + (2 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::PLUSY, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSY, offset) << 12) + (2 << 19) + (itemLight << 24);
 	    v0 = {spec, p5};
 	    v1 = {spec + XTEX, p4};
 	    v2 = {spec + YTEX, p7};
@@ -384,7 +384,7 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 		// top of second step
-		spec = s_blocks[_item.type]->texX(face_dir::PLUSZ, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSZ, offset) << 4) + (0 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::PLUSZ, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSZ, offset) << 12) + (0 << 19) + (itemLight << 24);
 	    v0 = {spec + (8 << 8), p1};
 		v1 = {spec + (8 << 8) + XTEX, p5};
 		v2 = {spec + YTEX, (p0 + p1) * 0.5f};
@@ -404,7 +404,7 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 		v3 = {spec + XTEX + YTEX, (p4 + p5) * 0.5f - glm::vec3(0, 0, 0.125f)};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_item.type]->texX(face_dir::MINUSZ, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSZ, offset) << 4) + (5 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::MINUSZ, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSZ, offset) << 12) + (5 << 19) + (itemLight << 24);
 	    v0 = {spec, p2};
 	    v1 = {spec + XTEX, p3};
 	    v2 = {spec + YTEX, p6};
@@ -415,42 +415,42 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	    int itemLight = _chunk->computePosLight(_pos);
 		int slabOffset = (_item.type == blocks::OAK_SLAB) ? (8 << 8) : (_item.type == blocks::OAK_TRAPDOOR) ? (13 << 8) : 0;
 
-	    int spec = s_blocks[_item.type]->texX(face_dir::MINUSX, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 4) + (3 << 19) + (itemLight << 24);
+	    int spec = (s_blocks[_item.type]->texX(face_dir::MINUSX, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 12) + (3 << 19) + (itemLight << 24);
 	    t_shaderInput v0 = {spec + slabOffset, p4};
 	    t_shaderInput v1 = {spec + slabOffset + XTEX, p0};
 	    t_shaderInput v2 = {spec + YTEX, p6};
 	    t_shaderInput v3 = {spec + XTEX + YTEX, p2};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_item.type]->texX(face_dir::PLUSX, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 4) + (4 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::PLUSX, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 12) + (4 << 19) + (itemLight << 24);
 	    v0 = {spec + slabOffset, p1};
 	    v1 = {spec + slabOffset + XTEX, p5};
 	    v2 = {spec + YTEX, p3};
 	    v3 = {spec + XTEX + YTEX, p7};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_item.type]->texX(face_dir::MINUSY, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSY, offset) << 4) + (1 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::MINUSY, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSY, offset) << 12) + (1 << 19) + (itemLight << 24);
 	    v0 = {spec + slabOffset, p0};
 	    v1 = {spec + slabOffset + XTEX, p1};
 	    v2 = {spec + YTEX, p2};
 	    v3 = {spec + XTEX + YTEX, p3};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_item.type]->texX(face_dir::PLUSY, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSY, offset) << 4) + (2 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::PLUSY, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSY, offset) << 12) + (2 << 19) + (itemLight << 24);
 	    v0 = {spec + slabOffset, p5};
 	    v1 = {spec + slabOffset + XTEX, p4};
 	    v2 = {spec + YTEX, p7};
 	    v3 = {spec + XTEX + YTEX, p6};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_item.type]->texX(face_dir::PLUSZ, offset) + (s_blocks[_item.type]->texY(face_dir::PLUSZ, offset) << 4) + (0 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::PLUSZ, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSZ, offset) << 12) + (0 << 19) + (itemLight << 24);
 	    v0 = {spec, p4};
 	    v1 = {spec + XTEX, p5};
 	    v2 = {spec + YTEX, p0};
 	    v3 = {spec + XTEX + YTEX, p1};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = s_blocks[_item.type]->texX(face_dir::MINUSZ, offset) + (s_blocks[_item.type]->texY(face_dir::MINUSZ, offset) << 4) + (5 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::MINUSZ, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSZ, offset) << 12) + (5 << 19) + (itemLight << 24);
 	    v0 = {spec, p2};
 	    v1 = {spec + XTEX, p3};
 	    v2 = {spec + YTEX, p6};
@@ -461,7 +461,7 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 		if (1 && EXTRUSION::drawItem3D(partArr, _item.type, itemLight, p0 + glm::vec3(0, 0, 0.25f), glm::normalize(glm::vec3(-0.176777f * sinRot, 0.176777f * cosRot, 0)), glm::normalize(glm::vec3(0.176777f * cosRot, 0.176777f * sinRot, 0)), {0, 0, 1}, 0.5f)) { // TODO replace 1 by var toggle fancy_item
 
 		} else {
-			int spec = s_blocks[_item.type]->texX() + (s_blocks[_item.type]->texY() << 4) + (0 << 19) + (itemLight << 24);
+			int spec = (s_blocks[_item.type]->texX() << 4) + (s_blocks[_item.type]->texY() << 12) + (0 << 19) + (itemLight << 24);
 			t_shaderInput v0 = {spec, p0};
 			t_shaderInput v1 = {spec + XTEX, p5};
 			t_shaderInput v2 = {spec + YTEX, p2};

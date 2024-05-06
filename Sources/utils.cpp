@@ -521,44 +521,6 @@ void face_water_vertices( GLint *vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::
 	vindex += 12;
 }
 
-// looks though vertices to check if elements starting at pos index represent a face of the torch v012345678
-bool torchFace( std::vector<t_shaderInput> &vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v6, size_t index )
-{
-	// 4062, 1537, 0123, 5476, 4501, 2367
-	return ((vertices[index].pos == v0 && vertices[index + 1].pos == v1 && vertices[index + 2].pos == v2)
-		|| (vertices[index].pos == v4 && vertices[index + 1].pos == v0 && vertices[index + 2].pos == v6)
-		|| (vertices[index].pos == v1 && vertices[index + 1].pos == v0 && vertices[index + 2].pos == v3)
-		|| (vertices[index].pos == v0 && vertices[index + 1].pos == v4 && vertices[index + 2].pos == v2));
-}
-
-// looks though vertices to check if elements starting at pos index represent a face of the flower v012345678
-bool crossFace( std::vector<t_shaderInput> &vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v5, size_t index )
-{
-	// 4062, 1537, 0123, 5476, 4501, 2367
-	return ((vertices[index].pos == v0 && vertices[index + 1].pos == v5 && vertices[index + 2].pos == v2)
-		|| (vertices[index].pos == v1 && vertices[index + 1].pos == v4 && vertices[index + 2].pos == v3));
-}
-
-// looks though vertices to check if elements starting at pos index represent a face of the cube v012345678
-bool blockFace( std::vector<t_shaderInput> &vertices, std::array<glm::vec3, 8> v, size_t index, bool special )
-{
-	// 4062, 1537, 0123, 5476, 4501, 2367
-	if ((vertices[index].pos == v[4] && vertices[index + 1].pos == v[0] && vertices[index + 2].pos == v[6])
-		|| (vertices[index].pos == v[1] && vertices[index + 1].pos == v[5] && vertices[index + 2].pos == v[3])
-		|| (vertices[index].pos == v[0] && vertices[index + 1].pos == v[1] && vertices[index + 2].pos == v[2])
-		|| (vertices[index].pos == v[5] && vertices[index + 1].pos == v[4] && vertices[index + 2].pos == v[7])) {
-		return (true);
-	}
-	if (special) {
-		v[4].z -= ONE_SIXTEENTH;
-		v[5].z -= ONE_SIXTEENTH;
-		v[0].z -= ONE_SIXTEENTH;
-		v[1].z -= ONE_SIXTEENTH;
-	}
-	return ((vertices[index].pos == v[4] && vertices[index + 1].pos == v[5] && vertices[index + 2].pos == v[0])
-		|| (vertices[index].pos == v[2] && vertices[index + 1].pos == v[3] && vertices[index + 2].pos == v[6]));
-}
-
 // # include <glm/glm.hpp>
 // # include <glm/gtc/matrix_transform.hpp>
 // # include <glm/gtc/type_ptr.hpp>

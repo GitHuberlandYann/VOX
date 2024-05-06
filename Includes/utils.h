@@ -10,7 +10,7 @@
 # define CHUNK_SIZE 16
 # define TICK 0.05
 const float ONE16TH = 0.0625f;
-# define ONE_SIXTEENTH 1.0f / 16.0f
+# define ONE_SIXTEENTH 1.0f / 16.0f // TODO get rid of those and only use ONE16TH
 # define THREE_SIXTEENTH 3.0f / 16.0f
 # define THIRTEEN_SIXTEENTH 13.0f / 16.0f
 # define FIFTEEN_SIXTEENTH 15.0f / 16.0f
@@ -68,9 +68,6 @@ void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks );
 std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 );
 void face_vertices( std::vector<t_shaderInput> &vertices, t_shaderInput v0, t_shaderInput v1, t_shaderInput v2, t_shaderInput v3 );
 void face_water_vertices( GLint *vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::ivec4 &v2, glm::ivec4 &v3, size_t & vindex );
-bool torchFace( std::vector<t_shaderInput> &vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v6, size_t index );
-bool crossFace( std::vector<t_shaderInput> &vertices, glm::vec3 &v0, glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3, glm::vec3 &v4, glm::vec3 &v5, size_t index );
-bool blockFace( std::vector<t_shaderInput> &vertices, std::array<glm::vec3, 8> v, size_t index, bool special );
 std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end );
 glm::vec3 line_plane_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 p0, glm::vec3 cross );
 bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeCenter, glm::vec3 cubeHalfSize );
