@@ -55,7 +55,7 @@ IN PROGRES:
 
 TODAY:
 	- fix faces open/closed trapdoors not matching
-	- finish stair rework
+	- fix touchy stairs still displaying touchy faces
 	- blocks with oriented light occlusion (ie slabs, stairs)
 
 SHORTTERM memory:
