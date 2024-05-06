@@ -54,6 +54,8 @@ IN PROGRES:
 	- commands /say /me /save /setblock /kill
 
 TODAY:
+	- fix faces open/closed trapdoors not matching
+	- finish stair rework
 	- blocks with oriented light occlusion (ie slabs, stairs)
 
 SHORTTERM memory:

@@ -17,6 +17,8 @@ void main()
 
 	outColor = texture(blockAtlas, TexCoords);
 	if(outColor.a < 0.01f) {
+		//outColor = vec4(1, 0, 0, 1);
+		//return ;
 		discard ;
 	}
 
