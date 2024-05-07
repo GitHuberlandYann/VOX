@@ -26,137 +26,136 @@ void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
 	glm::vec3 pos, right, back;
 	switch (_orientation) {
 		case face_dir::MINUSY:
-			pos = {_pos.x + 0, _pos.y + 0, _pos.z + 0};
-			right = {1, 0, 0};
-			back = {0, 1, 0};
+			pos   = {_pos.x + ONE16TH,        _pos.y + ONE16TH,        _pos.z + 0};
+			right = {14.0f * ONE16TH,        0,                        0};
+			back  = {0,                      14.0f * ONE16TH,          0};
 			break ;
 		case face_dir::PLUSY:
-			pos = {_pos.x + 1, _pos.y + 1, _pos.z + 0};
-			right = {-1, 0, 0};
-			back = {0, -1, 0};
+			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + 1.0f - ONE16TH, _pos.z + 0};
+			right = {-14.0f * ONE16TH,       0,                        0};
+			back  = {0,                      -14.0f * ONE16TH,         0};
 			break ;
 		case face_dir::PLUSX:
-			pos = {_pos.x + 1, _pos.y + 0, _pos.z + 0};
-			right = {0, 1, 0};
-			back = {-1, 0, 0};
+			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + ONE16TH,        _pos.z + 0};
+			right = {0,                      14.0f * ONE16TH,          0};
+			back  = {-14.0f * ONE16TH,       0,                        0};
 			break ;
 		case face_dir::MINUSX:
-			pos = {_pos.x + 0, _pos.y + 1, _pos.z + 0};
-			right = {0, -1, 0};
-			back = {1, 0, 0};
+			pos   = {_pos.x + ONE16TH,       _pos.y + 1.0f - ONE16TH,  _pos.z + 0};
+			right = {0,                      -14.0f * ONE16TH,         0};
+			back  = {14.0f * ONE16TH,        0,                        0};
 			break ;
 		default:
 			std::cout << "ERROR DISPLAY OPEN CHEST" << std::endl;
 			return ;
 	}
-	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f / 16.0f};
-	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f / 16.0f};
+	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f * ONE16TH};
+	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f * ONE16TH};
 	glm::vec3 p2 = {pos.x + 0,       pos.y + 0,       pos.z + 0};
 	glm::vec3 p3 = {pos.x + right.x, pos.y + right.y, pos.z + 0};
 
-	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 10.0f / 16.0f};
-	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f / 16.0f};
+	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 10.0f * ONE16TH};
+	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f * ONE16TH};
 	glm::vec3 p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 0};
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
     int spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
-    t_shaderInput v0 = {spec + (5 << 8), p0 + ONE_SIXTEENTH * back};
-    t_shaderInput v1 = {spec + XTEX + (5 << 8), p1 + ONE_SIXTEENTH * back};
-    t_shaderInput v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
-    t_shaderInput v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
+    t_shaderInput v0 = {spec + 1 + (5 << 8), p0};
+    t_shaderInput v1 = {spec - 1 + XTEX + (5 << 8), p1};
+    t_shaderInput v2 = {spec + 1 + (1 << 18) + (15 << 8), p2};
+    t_shaderInput v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (4 << 19) + (itemLight << 24);
-    v0 = {spec + (5 << 8), p5 - ONE_SIXTEENTH * back};
-    v1 = {spec + XTEX + (5 << 8), p4 - ONE_SIXTEENTH * back};
-    v2 = {spec + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * back};
-    v3 = {spec + XTEX + (1 << 18) + (15 << 8), p6 - ONE_SIXTEENTH * back};
+    v0 = {spec + 1 + (5 << 8), p5};
+    v1 = {spec - 1 + XTEX + (5 << 8), p4};
+    v2 = {spec + 1 + (1 << 18) + (15 << 8), p7};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p6};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
-    v0 = {spec + (5 << 8), p4 + ONE_SIXTEENTH * right};
-    v1 = {spec + XTEX + (5 << 8), p0 + ONE_SIXTEENTH * right};
-    v2 = {spec + (1 << 18) + (15 << 8), p6 + ONE_SIXTEENTH * right};
-    v3 = {spec + XTEX + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * right};
+    v0 = {spec + 1 + (5 << 8), p4};
+    v1 = {spec - 1 + XTEX + (5 << 8), p0};
+    v2 = {spec + 1 + (1 << 18) + (15 << 8), p6};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p2};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
-    v0 = {spec + (5 << 8), p1 - ONE_SIXTEENTH * right};
-    v1 = {spec + XTEX + (5 << 8), p5 - ONE_SIXTEENTH * right};
-    v2 = {spec + (1 << 18) + (15 << 8), p3 - ONE_SIXTEENTH * right};
-    v3 = {spec + XTEX + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * right};
+    v0 = {spec + 1 + (5 << 8), p1};
+    v1 = {spec - 1 + XTEX + (5 << 8), p5};
+    v2 = {spec + 1 + (1 << 18) + (15 << 8), p3};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p7};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
 	spec = (3 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
-    v0 = {spec, p4 - ONE_SIXTEENTH * back};
-    v1 = {spec + XTEX, p5 - ONE_SIXTEENTH * back};
-    v2 = {spec + (1 << 18) + (14 << 8), p0 + ONE_SIXTEENTH * back};
-    v3 = {spec + XTEX + (1 << 18) + (14 << 8), p1 + ONE_SIXTEENTH * back};
+    v0 = {spec + 1, p4};
+    v1 = {spec - 1 + XTEX, p5};
+    v2 = {spec + 1 + (1 << 18) + (14 << 8), p0};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
 	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1), true), false, false, false)) {
 		spec = (2 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
-		v0 = {spec, p2 + ONE_SIXTEENTH * back};
-		v1 = {spec + XTEX, p3 + ONE_SIXTEENTH * back};
-		v2 = {spec + (1 << 18) + (14 << 8), p6 - ONE_SIXTEENTH * back};
-		v3 = {spec + XTEX + (1 << 18) + (14 << 8), p7 - ONE_SIXTEENTH * back};
+		v0 = {spec + 1, p2};
+		v1 = {spec - 1 + XTEX, p3};
+		v2 = {spec + 1 + (1 << 18) + (14 << 8), p6};
+		v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p7};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	}
 
 	// top box
-	pos += back * FIFTEEN_SIXTEENTH;
-	back *= 5 * ONE_SIXTEENTH;
-	p0 = {pos.x + 0,       pos.y + 0      , pos.z + 24.0f / 16.0f};
-	p1 = {pos.x + right.x, pos.y + right.y, pos.z + 24.0f / 16.0f};
-	p2 = {pos.x + 0,       pos.y + 0,       pos.z + 10.0f / 16.0f};
-	p3 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f / 16.0f};
+	pos += back;
+	back *= (5 / 14.0f);
+	p0 = {pos.x + 0,       pos.y + 0      , pos.z + 24.0f * ONE16TH};
+	p1 = {pos.x + right.x, pos.y + right.y, pos.z + 24.0f * ONE16TH};
+	p2 = {pos.x + 0,       pos.y + 0,       pos.z + 10.0f * ONE16TH};
+	p3 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f * ONE16TH};
 
-	p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 24.0f / 16.0f};
-	p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 24.0f / 16.0f};
-	p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 10.0f / 16.0f};
-	p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f / 16.0f};
+	p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 24.0f * ONE16TH};
+	p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 24.0f * ONE16TH};
+	p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 10.0f * ONE16TH};
+	p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f * ONE16TH};
 
     spec = (4 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
-    v0 = {spec, p0};
-    v1 = {spec + XTEX, p1};
-    v2 = {spec + (1 << 18) + (14 << 8), p2};
-    v3 = {spec + XTEX + (1 << 18) + (14 << 8), p3};
+    v0 = {spec + 1, p0};
+    v1 = {spec - 1 + XTEX, p1};
+    v2 = {spec + 1 + (1 << 18) + (14 << 8), p2};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = (2 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
-    v0 = {spec, p6};
-    v1 = {spec + XTEX, p7};
-    v2 = {spec + (1 << 18) + (14 << 8), p4};
-    v3 = {spec + XTEX + (1 << 18) + (14 << 8), p5};
+    v0 = {spec + 1, p6};
+    v1 = {spec - 1 + XTEX, p7};
+    v2 = {spec + 1 + (1 << 18) + (14 << 8), p4};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p5};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	glm::vec3 up = {0, 0, ONE_SIXTEENTH};
 	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
-    v0 = {spec, p6 + ONE_SIXTEENTH * right - up};
-    v1 = {spec + XTEX, p4 + ONE_SIXTEENTH * right + up};
-    v2 = {spec + (1 << 18) + (5 << 8), p2 + ONE_SIXTEENTH * right - up};
-    v3 = {spec + XTEX + (1 << 18) + (5 << 8), p0 + ONE_SIXTEENTH * right + up};
+    v0 = {spec + 1, p6};
+    v1 = {spec - 1 + XTEX, p4};
+    v2 = {spec + 1 + (1 << 18) + (5 << 8), p2};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (5 << 8), p0};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
-    v0 = {spec, p5 - ONE_SIXTEENTH * right + up};
-    v1 = {spec + XTEX, p7 - ONE_SIXTEENTH * right - up};
-    v2 = {spec + (1 << 18) + (5 << 8), p1 - ONE_SIXTEENTH * right + up};
-    v3 = {spec + XTEX + (1 << 18) + (5 << 8), p3 - ONE_SIXTEENTH * right - up};
+    v0 = {spec + 1, p5};
+    v1 = {spec - 1 + XTEX, p7};
+    v2 = {spec + 1 + (1 << 18) + (5 << 8), p1};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (5 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
 	spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
-    v0 = {spec, p4};
-    v1 = {spec + XTEX, p5};
-    v2 = {spec + (1 << 18) + (5 << 8), p0};
-    v3 = {spec + XTEX + (1 << 18) + (5 << 8), p1};
+    v0 = {spec + 1, p4};
+    v1 = {spec - 1 + XTEX, p5};
+    v2 = {spec + 1 + (1 << 18) + (5 << 8), p0};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (5 << 8), p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
 	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
-	v0 = {spec, p7};
-	v1 = {spec + XTEX, p6};
-	v2 = {spec + (1 << 18) + (5 << 8), p3};
-	v3 = {spec + XTEX + (1 << 18) + (5 << 8), p2};
+	v0 = {spec + 1, p7};
+	v1 = {spec - 1 + XTEX, p6};
+	v2 = {spec + 1 + (1 << 18) + (5 << 8), p3};
+	v3 = {spec - 1 + XTEX + (1 << 18) + (5 << 8), p2};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 }
 
@@ -168,92 +167,92 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
 	glm::vec3 pos, right, back;
 	switch (_orientation) {
 		case face_dir::MINUSY:
-			pos = {_pos.x + 0, _pos.y + 0, _pos.z + 0};
-			right = {1, 0, 0};
-			back = {0, 1, 0};
+			pos   = {_pos.x + ONE16TH,        _pos.y + ONE16TH,        _pos.z + 0};
+			right = {14.0f * ONE16TH,        0,                        0};
+			back  = {0,                      14.0f * ONE16TH,          0};
 			break ;
 		case face_dir::PLUSY:
-			pos = {_pos.x + 1, _pos.y + 1, _pos.z + 0};
-			right = {-1, 0, 0};
-			back = {0, -1, 0};
+			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + 1.0f - ONE16TH, _pos.z + 0};
+			right = {-14.0f * ONE16TH,       0,                        0};
+			back  = {0,                      -14.0f * ONE16TH,         0};
 			break ;
 		case face_dir::PLUSX:
-			pos = {_pos.x + 1, _pos.y + 0, _pos.z + 0};
-			right = {0, 1, 0};
-			back = {-1, 0, 0};
+			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + ONE16TH,        _pos.z + 0};
+			right = {0,                      14.0f * ONE16TH,          0};
+			back  = {-14.0f * ONE16TH,       0,                        0};
 			break ;
 		case face_dir::MINUSX:
-			pos = {_pos.x + 0, _pos.y + 1, _pos.z + 0};
-			right = {0, -1, 0};
-			back = {1, 0, 0};
+			pos   = {_pos.x + ONE16TH,       _pos.y + 1.0f - ONE16TH,  _pos.z + 0};
+			right = {0,                      -14.0f * ONE16TH,         0};
+			back  = {14.0f * ONE16TH,        0,                        0};
 			break ;
 		default:
 			std::cout << "ERROR DISPLAY OPEN CHEST" << std::endl;
 			return ;
 	}
-	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f / 16.0f};
-	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f / 16.0f};
+	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f * ONE16TH};
+	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f * ONE16TH};
 	glm::vec3 p2 = {pos.x + 0,       pos.y + 0,       pos.z + 0};
 	glm::vec3 p3 = {pos.x + right.x, pos.y + right.y, pos.z + 0};
 
-	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 10.0f / 16.0f};
-	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f / 16.0f};
+	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 10.0f * ONE16TH};
+	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f * ONE16TH};
 	glm::vec3 p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 0};
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
     int spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
-    t_shaderInput v0 = {spec + (5 << 8), p0 + ONE_SIXTEENTH * back};
-    t_shaderInput v1 = {spec + XTEX + (5 << 8), p1 + ONE_SIXTEENTH * back};
-    t_shaderInput v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
-    t_shaderInput v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
+    t_shaderInput v0 = {spec + 1 + (5 << 8), p0};
+    t_shaderInput v1 = {spec - 1 + XTEX + (5 << 8), p1};
+    t_shaderInput v2 = {spec + 1 + (1 << 18) + (15 << 8), p2};
+    t_shaderInput v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (4 << 19) + (itemLight << 24);
-    v0 = {spec + (5 << 8), p5 - ONE_SIXTEENTH * back};
-    v1 = {spec + XTEX + (5 << 8), p4 - ONE_SIXTEENTH * back};
-    v2 = {spec + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * back};
-    v3 = {spec + XTEX + (1 << 18) + (15 << 8), p6 - ONE_SIXTEENTH * back};
+    v0 = {spec + 1 + (5 << 8), p5};
+    v1 = {spec - 1 + XTEX + (5 << 8), p4};
+    v2 = {spec + 1 + (1 << 18) + (15 << 8), p7};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p6};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
-    v0 = {spec + (5 << 8), p4 + ONE_SIXTEENTH * right};
-    v1 = {spec + XTEX + (5 << 8), p0 + ONE_SIXTEENTH * right};
-    v2 = {spec + (1 << 18) + (15 << 8), p6 + ONE_SIXTEENTH * right};
-    v3 = {spec + XTEX + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * right};
+    v0 = {spec + 1 + (5 << 8), p4};
+    v1 = {spec - 1 + XTEX + (5 << 8), p0};
+    v2 = {spec + 1 + (1 << 18) + (15 << 8), p6};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p2};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
-    v0 = {spec + (5 << 8), p1 - ONE_SIXTEENTH * right};
-    v1 = {spec + XTEX + (5 << 8), p5 - ONE_SIXTEENTH * right};
-    v2 = {spec + (1 << 18) + (15 << 8), p3 - ONE_SIXTEENTH * right};
-    v3 = {spec + XTEX + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * right};
+    v0 = {spec + 1 + (5 << 8), p1};
+    v1 = {spec - 1 + XTEX + (5 << 8), p5};
+    v2 = {spec + 1 + (1 << 18) + (15 << 8), p3};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p7};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
 	spec = (3 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
-    v0 = {spec, p4 - ONE_SIXTEENTH * back};
-    v1 = {spec + XTEX, p5 - ONE_SIXTEENTH * back};
-    v2 = {spec + (1 << 18) + (14 << 8), p0 + ONE_SIXTEENTH * back};
-    v3 = {spec + XTEX + (1 << 18) + (14 << 8), p1 + ONE_SIXTEENTH * back};
+    v0 = {spec + 1, p4};
+    v1 = {spec - 1 + XTEX, p5};
+    v2 = {spec + 1 + (1 << 18) + (14 << 8), p0};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
 	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1), true), false, false, false)) {
 		spec = (2 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
-		v0 = {spec, p2 + ONE_SIXTEENTH * back};
-		v1 = {spec + XTEX, p3 + ONE_SIXTEENTH * back};
-		v2 = {spec + (1 << 18) + (14 << 8), p6 - ONE_SIXTEENTH * back};
-		v3 = {spec + XTEX + (1 << 18) + (14 << 8), p7 - ONE_SIXTEENTH * back};
+		v0 = {spec + 1, p2};
+		v1 = {spec - 1 + XTEX, p3};
+		v2 = {spec + 1 + (1 << 18) + (14 << 8), p6};
+		v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p7};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	}
 
 	// top box
 	// alpha is angle between top and bottom boxes
-	float alpha = _timer / CHEST_ANIM_TIME * 90;
-	float sina = glm::sin(glm::radians(alpha)), cosa = glm::cos(glm::radians(alpha));
-	glm::vec3 top = {-cosa * back.x * 14.0f / 16.0f, -cosa * back.y * 14.0f / 16.0f, sina * 14.0f / 16.0f};
-	pos += back * FIFTEEN_SIXTEENTH;
-	pos.z += 10.f / 16.0f;
-	back *= 5 * ONE_SIXTEENTH * sina;
-	back.z = 5 * ONE_SIXTEENTH * cosa;
+	float alpha = glm::radians(_timer / CHEST_ANIM_TIME * 90);
+	float sina = glm::sin(alpha), cosa = glm::cos(alpha);
+	glm::vec3 top = {-cosa * back.x, -cosa * back.y, sina * 14.0f * ONE16TH};
+	pos += back;
+	pos.z += 10.f * ONE16TH;
+	back *= (5 / 14.0f * sina);
+	back.z = 5 * ONE16TH * cosa;
 	p0 = pos + top;
 	p1 = pos + top + right;
 	p2 = pos;
@@ -265,46 +264,45 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
 	p7 = p3 + back;
 
     spec = (4 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
-    v0 = {spec, p0};
-    v1 = {spec + XTEX, p1};
-    v2 = {spec + (1 << 18) + (14 << 8), p2};
-    v3 = {spec + XTEX + (1 << 18) + (14 << 8), p3};
+    v0 = {spec + 1, p0};
+    v1 = {spec - 1 + XTEX, p1};
+    v2 = {spec + 1 + (1 << 18) + (14 << 8), p2};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = (2 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
-    v0 = {spec, p6};
-    v1 = {spec + XTEX, p7};
-    v2 = {spec + (1 << 18) + (14 << 8), p4};
-    v3 = {spec + XTEX + (1 << 18) + (14 << 8), p5};
+    v0 = {spec + 1, p6};
+    v1 = {spec - 1 + XTEX, p7};
+    v2 = {spec + 1 + (1 << 18) + (14 << 8), p4};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p5};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	glm::vec3 up = ONE_SIXTEENTH * top;
 	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
-    v0 = {spec, p6 + ONE_SIXTEENTH * right - up};
-    v1 = {spec + XTEX, p4 + ONE_SIXTEENTH * right + up};
-    v2 = {spec + (1 << 18) + (5 << 8), p2 + ONE_SIXTEENTH * right - up};
-    v3 = {spec + XTEX + (1 << 18) + (5 << 8), p0 + ONE_SIXTEENTH * right + up};
+    v0 = {spec + 1, p6};
+    v1 = {spec - 1 + XTEX, p4};
+    v2 = {spec + 1 + (1 << 18) + (5 << 8), p2};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (5 << 8), p0};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
-    v0 = {spec, p5 - ONE_SIXTEENTH * right + up};
-    v1 = {spec + XTEX, p7 - ONE_SIXTEENTH * right - up};
-    v2 = {spec + (1 << 18) + (5 << 8), p1 - ONE_SIXTEENTH * right + up};
-    v3 = {spec + XTEX + (1 << 18) + (5 << 8), p3 - ONE_SIXTEENTH * right - up};
+    v0 = {spec + 1, p5};
+    v1 = {spec - 1 + XTEX, p7};
+    v2 = {spec + 1 + (1 << 18) + (5 << 8), p1};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (5 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
 	spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
-    v0 = {spec, p4};
-    v1 = {spec + XTEX, p5};
-    v2 = {spec + (1 << 18) + (5 << 8), p0};
-    v3 = {spec + XTEX + (1 << 18) + (5 << 8), p1};
+    v0 = {spec + 1, p4};
+    v1 = {spec - 1 + XTEX, p5};
+    v2 = {spec + 1 + (1 << 18) + (5 << 8), p0};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (5 << 8), p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
 	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
-	v0 = {spec, p7};
-	v1 = {spec + XTEX, p6};
-	v2 = {spec + (1 << 18) + (5 << 8), p3};
-	v3 = {spec + XTEX + (1 << 18) + (5 << 8), p2};
+	v0 = {spec + 1, p7};
+	v1 = {spec - 1 + XTEX, p6};
+	v2 = {spec + 1 + (1 << 18) + (5 << 8), p3};
+	v3 = {spec - 1 + XTEX + (1 << 18) + (5 << 8), p2};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 }
 
@@ -313,82 +311,82 @@ void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
 	glm::vec3 pos, right, back;
 	switch (_orientation) {
 		case face_dir::MINUSY:
-			pos = {_pos.x + 0, _pos.y + 0, _pos.z + 0};
-			right = {1, 0, 0};
-			back = {0, 1, 0};
+			pos   = {_pos.x + ONE16TH,        _pos.y + ONE16TH,        _pos.z + 0};
+			right = {14.0f * ONE16TH,        0,                        0};
+			back  = {0,                      14.0f * ONE16TH,          0};
 			break ;
 		case face_dir::PLUSY:
-			pos = {_pos.x + 1, _pos.y + 1, _pos.z + 0};
-			right = {-1, 0, 0};
-			back = {0, -1, 0};
+			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + 1.0f - ONE16TH, _pos.z + 0};
+			right = {-14.0f * ONE16TH,       0,                        0};
+			back  = {0,                      -14.0f * ONE16TH,         0};
 			break ;
 		case face_dir::PLUSX:
-			pos = {_pos.x + 1, _pos.y + 0, _pos.z + 0};
-			right = {0, 1, 0};
-			back = {-1, 0, 0};
+			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + ONE16TH,        _pos.z + 0};
+			right = {0,                      14.0f * ONE16TH,          0};
+			back  = {-14.0f * ONE16TH,       0,                        0};
 			break ;
 		case face_dir::MINUSX:
-			pos = {_pos.x + 0, _pos.y + 1, _pos.z + 0};
-			right = {0, -1, 0};
-			back = {1, 0, 0};
+			pos   = {_pos.x + ONE16TH,       _pos.y + 1.0f - ONE16TH,  _pos.z + 0};
+			right = {0,                      -14.0f * ONE16TH,         0};
+			back  = {14.0f * ONE16TH,        0,                        0};
 			break ;
 		default:
 			std::cout << "ERROR DISPLAY CLOSED CHEST" << std::endl;
 			return ;
 	}
-	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + FIFTEEN_SIXTEENTH};
-	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + FIFTEEN_SIXTEENTH};
+	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 15.0f * ONE16TH};
+	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 15.0f * ONE16TH};
 	glm::vec3 p2 = {pos.x + 0,       pos.y + 0,       pos.z + 0};
 	glm::vec3 p3 = {pos.x + right.x, pos.y + right.y, pos.z + 0};
 
-	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + FIFTEEN_SIXTEENTH};
-	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + FIFTEEN_SIXTEENTH};
+	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 15.0f * ONE16TH};
+	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 15.0f * ONE16TH};
 	glm::vec3 p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 0};
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
 	int itemLight = _chunk->computePosLight(_pos);
 
     int spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
-    t_shaderInput v0 = {spec, p0 + ONE_SIXTEENTH * back};
-    t_shaderInput v1 = {spec + XTEX, p1 + ONE_SIXTEENTH * back};
-    t_shaderInput v2 = {spec + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * back};
-    t_shaderInput v3 = {spec + XTEX + (1 << 18) + (15 << 8), p3 + ONE_SIXTEENTH * back};
+    t_shaderInput v0 = {spec + 1, p0};
+    t_shaderInput v1 = {spec - 1 + XTEX, p1};
+    t_shaderInput v2 = {spec + 1 + (1 << 18) + (15 << 8), p2};
+    t_shaderInput v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (4 << 19) + (itemLight << 24);
-    v0 = {spec, p5 - ONE_SIXTEENTH * back};
-    v1 = {spec + XTEX, p4 - ONE_SIXTEENTH * back};
-    v2 = {spec + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * back};
-    v3 = {spec + XTEX + (1 << 18) + (15 << 8), p6 - ONE_SIXTEENTH * back};
+    v0 = {spec + 1, p5};
+    v1 = {spec - 1 + XTEX, p4};
+    v2 = {spec + 1 + (1 << 18) + (15 << 8), p7};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p6};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
-    v0 = {spec, p4 + ONE_SIXTEENTH * right};
-    v1 = {spec + XTEX, p0 + ONE_SIXTEENTH * right};
-    v2 = {spec + (1 << 18) + (15 << 8), p6 + ONE_SIXTEENTH * right};
-    v3 = {spec + XTEX + (1 << 18) + (15 << 8), p2 + ONE_SIXTEENTH * right};
+    v0 = {spec + 1, p4};
+    v1 = {spec - 1 + XTEX, p0};
+    v2 = {spec + 1 + (1 << 18) + (15 << 8), p6};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p2};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
-    v0 = {spec, p1 - ONE_SIXTEENTH * right};
-    v1 = {spec + XTEX, p5 - ONE_SIXTEENTH * right};
-    v2 = {spec + (1 << 18) + (15 << 8), p3 - ONE_SIXTEENTH * right};
-    v3 = {spec + XTEX + (1 << 18) + (15 << 8), p7 - ONE_SIXTEENTH * right};
+    v0 = {spec + 1, p1};
+    v1 = {spec - 1 + XTEX, p5};
+    v2 = {spec + 1 + (1 << 18) + (15 << 8), p3};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p7};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // +z
 	spec = (2 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
-    v0 = {spec, p4 - ONE_SIXTEENTH * back};
-    v1 = {spec + XTEX, p5 - ONE_SIXTEENTH * back};
-    v2 = {spec + (1 << 18) + (14 << 8), p0 + ONE_SIXTEENTH * back};
-    v3 = {spec + XTEX + (1 << 18) + (14 << 8), p1 + ONE_SIXTEENTH * back};
+    v0 = {spec + 1, p4};
+    v1 = {spec - 1 + XTEX, p5};
+    v2 = {spec + 1 + (1 << 18) + (14 << 8), p0};
+    v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
 	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1), true), false, false, false)) {
 		spec = (2 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
-		v0 = {spec, p2 + ONE_SIXTEENTH * back};
-		v1 = {spec + XTEX, p3 + ONE_SIXTEENTH * back};
-		v2 = {spec + (1 << 18) + (14 << 8), p6 - ONE_SIXTEENTH * back};
-		v3 = {spec + XTEX + (1 << 18) + (14 << 8), p7 - ONE_SIXTEENTH * back};
+		v0 = {spec + 1, p2};
+		v1 = {spec - 1 + XTEX, p3};
+		v2 = {spec + 1 + (1 << 18) + (14 << 8), p6};
+		v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p7};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	}
 }
