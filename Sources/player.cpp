@@ -66,7 +66,7 @@ void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, bool game_
 			glm::vec3 p2 = p0 - itemFront * 0.125f;
 			glm::vec3 p3 = p1 - itemFront * 0.125f;
 
-			int spec = s_blocks[item]->texX(face_dir::PLUSZ) * 16 + ((s_blocks[item]->texY(face_dir::PLUSZ) * 16) << 8) + itemLight;
+			int spec = s_blocks[item]->texX() * 16 + ((s_blocks[item]->texY() * 16) << 8) + itemLight;
 			t_shaderInput v0 = {spec, p0};
 			t_shaderInput v1 = {spec + 16 + (1 << 17), p1};
 			t_shaderInput v2 = {spec + (8 << 8) + (1 << 18), p2};
@@ -74,22 +74,29 @@ void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, bool game_
 			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 			// left
-			p1 = p2 - itemFront * 0.125f;
-			p2 = p0 - itemUp * 0.25f;
-			p3 = p1 - itemUp * 0.25f;
-			spec = 5 * 16 + ((s_blocks[item]->texY(face_dir::MINUSX) * 16) << 8) + itemLight;
+			p1 = p2;
+			p2 = p0 - itemUp * 0.125f;
+			p3 = p1 - itemUp * 0.125f;
 			v0 = {spec, p0};
-			v1 = {spec + 16 + (1 << 17), p1};
+			v1 = {spec + 8 + (1 << 17), p1};
+			v2 = {spec + (8 << 8) + (1 << 18), p2};
+			v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p3};
+			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+			p0 = p2;
+			p1 = p3 - itemFront * 0.125f;
+			p2 = p0 - itemUp * 0.125f;
+			p3 = p1 - itemUp * 0.125f;
+			v0 = {spec + (8 << 8), p0};
+			v1 = {spec + 16 + (1 << 17) + (8 << 8), p1};
 			v2 = {spec + (16 << 8) + (1 << 18), p2};
 			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
 			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 			// front
-			p0 = p1 - itemUp * 0.125f;
+			p0 = p1;
 			p1 = p0 + itemRight * 0.25f;
 			p2 = p3;
 			p3 = p2 + itemRight * 0.25f;
-			spec = s_blocks[item]->texX(face_dir::PLUSZ) * 16 + ((s_blocks[item]->texY(face_dir::PLUSZ) * 16) << 8) + itemLight;
 			v0 = {spec, p0};
 			v1 = {spec + 16 + (1 << 17), p1};
 			v2 = {spec + (8 << 8) + (1 << 18), p2};

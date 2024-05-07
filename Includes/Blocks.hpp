@@ -436,20 +436,8 @@ struct OakStairsBottom : Block {
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.0f;
 			transparent = true;
+			textureX = 4;
 			textureY = 10;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			switch (dir) {
-				case face_dir::PLUSZ:
-				case face_dir::MINUSZ:
-					return (4);
-				case face_dir::PLUSX:
-				case face_dir::MINUSX:
-					return (4 + (offset == face_dir::MINUSY || offset == face_dir::PLUSY));
-				case face_dir::PLUSY:
-				case face_dir::MINUSY:
-					return (4 + (offset == face_dir::MINUSX || offset == face_dir::PLUSX));
-			}
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
 			switch (corners) {
@@ -543,20 +531,8 @@ struct OakStairsTop : Block {
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.0f;
 			transparent = true;
+			textureX = 4;
 			textureY = 10;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			switch (dir) {
-				case face_dir::PLUSZ:
-				case face_dir::MINUSZ:
-					return (4);
-				case face_dir::PLUSX:
-				case face_dir::MINUSX:
-					return (4 - (offset == face_dir::MINUSY || offset == face_dir::PLUSY));
-				case face_dir::PLUSY:
-				case face_dir::MINUSY:
-					return (4 - (offset == face_dir::MINUSX || offset == face_dir::PLUSX));
-			}
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
 			switch (corners) {

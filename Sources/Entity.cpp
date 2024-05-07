@@ -352,39 +352,48 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	glm::vec3 p7 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
 
 	if (_item.type == blocks::OAK_STAIRS) {
-		int offset = face_dir::MINUSX;
 	    int itemLight = _chunk->computePosLight(_pos);
 
-	    int spec = (s_blocks[_item.type]->texX(face_dir::MINUSX, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 12) + (3 << 19) + (itemLight << 24);
+	    int spec = (s_blocks[_item.type]->texX() << 4) + (s_blocks[_item.type]->texY() << 12) + (3 << 19) + (itemLight << 24);
 	    t_shaderInput v0 = {spec + (8 << 8), p4 - glm::vec3(0, 0, 0.125f)};
 	    t_shaderInput v1 = {spec + (8 << 8) + XTEX, p0 - glm::vec3(0, 0, 0.125f)};
 	    t_shaderInput v2 = {spec + YTEX, p6};
 	    t_shaderInput v3 = {spec + XTEX + YTEX, p2};
-	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2); //-x
 
-		spec = (s_blocks[_item.type]->texX(face_dir::PLUSX, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 12) + (4 << 19) + (itemLight << 24);
+		spec += (1 << 19);
 	    v0 = {spec, p1};
 	    v1 = {spec + XTEX, p5};
 	    v2 = {spec + YTEX, p3};
 	    v3 = {spec + XTEX + YTEX, p7};
-	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2); //+x
 
-		spec = (s_blocks[_item.type]->texX(face_dir::MINUSY, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSY, offset) << 12) + (1 << 19) + (itemLight << 24);
-	    v0 = {spec + XTEX, p0};
-		v1 = {spec, p1};
-		v2 = {spec + XTEX + YTEX, p2};
-		v3 = {spec + YTEX, p3};
-	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+		spec -= (3 << 19);
+	    v0 = {spec + 8, (p0 + p1) * 0.5f};
+		v1 = {spec + XTEX, p1};
+		v2 = {spec + 8 - (8 << 8) + YTEX, (p0 + p3) * 0.5f};
+		v3 = {spec + XTEX - (8 << 8) + YTEX, (p1 + p3) * 0.5f};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2); //-y top right corner
+	    v0 = {spec + (8 << 8), (p0 + p2) * 0.5f};
+		v1 = {spec + XTEX + (8 << 8), (p1 + p3) * 0.5f};
+		v2 = {spec + YTEX, p2};
+		v3 = {spec + XTEX + YTEX, p3};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2); //-y bottom slice
 
-		spec = (s_blocks[_item.type]->texX(face_dir::PLUSY, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSY, offset) << 12) + (2 << 19) + (itemLight << 24);
+		spec += (1 << 19);
 	    v0 = {spec, p5};
-	    v1 = {spec + XTEX, p4};
+	    v1 = {spec - 8 + XTEX, (p5 + p4) * 0.5f};
+	    v2 = {spec - (8 << 8) + YTEX, (p5 + p7) * 0.5f};
+	    v3 = {spec - 8 + XTEX - (8 << 8) + YTEX, (p5 + p6) * 0.5f};
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2); //+y top left corner
+	    v0 = {spec + (8 << 8), (p5 + p7) * 0.5f};
+	    v1 = {spec + XTEX + (8 << 8), (p4 + p6) * 0.5f};
 	    v2 = {spec + YTEX, p7};
 	    v3 = {spec + XTEX + YTEX, p6};
-	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2); //+y bottom slice
 
 		// top of second step
-		spec = (s_blocks[_item.type]->texX(face_dir::PLUSZ, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSZ, offset) << 12) + (0 << 19) + (itemLight << 24);
+		spec -= (2 << 19);
 	    v0 = {spec + (8 << 8), p1};
 		v1 = {spec + (8 << 8) + XTEX, p5};
 		v2 = {spec + YTEX, (p0 + p1) * 0.5f};
@@ -404,7 +413,7 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 		v3 = {spec + XTEX + YTEX, (p4 + p5) * 0.5f - glm::vec3(0, 0, 0.125f)};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = (s_blocks[_item.type]->texX(face_dir::MINUSZ, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSZ, offset) << 12) + (5 << 19) + (itemLight << 24);
+		spec += (2 << 19);
 	    v0 = {spec, p2};
 	    v1 = {spec + XTEX, p3};
 	    v2 = {spec + YTEX, p6};

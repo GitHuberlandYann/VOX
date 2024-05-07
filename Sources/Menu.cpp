@@ -876,38 +876,43 @@ void Menu::add_item_value( t_item item, int x, int y, bool movement )
 	x += _gui_size;
 	int offset = (type == blocks::OAK_LOG) ? AXIS::Z : face_dir::PLUSX;
 	if (type == blocks::OAK_STAIRS) {
-		int spec = (15 << 24) + (s_blocks[type]->texX(face_dir::PLUSZ, offset) << 4) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 12);
+		int spec = (15 << 24) + (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
 		// top of second step
-		glm::ivec3 v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
-		glm::ivec3 v1 = {spec + (1 << 4), x + 6.5f * _gui_size, y};
-		glm::ivec3 v2 = {spec + (1 << 12), x + 3.25f * _gui_size, y + 15 * _gui_size * 121.875f / 362.5f};
-		glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + 9.75f * _gui_size, y + 15 * _gui_size * 40.625f / 362.5f};
+		glm::ivec3 v0 = {spec, x, y + 16 * _gui_size * 81.25f / 362.5f};
+		glm::ivec3 v1 = {spec + (1 << 4), x + 7 * _gui_size, y};
+		glm::ivec3 v2 = {spec + (1 << 12), x + 3.5f * _gui_size, y + 16 * _gui_size * 121.875f / 362.5f};
+		glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + 9.75f * _gui_size, y + 16 * _gui_size * 40.625f / 362.5f};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		// top of first step
-		v0 = {spec, x + 3.25f * _gui_size, y + 15 * _gui_size * 221.875f / 362.5f};
-		v1 = {spec + (1 << 4), x + 9.75f * _gui_size, y + 15 * _gui_size * 140.624f / 362.5f};
-		v2 = {spec + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size * 262.5f / 362.5f};
-		v3 = {spec + (1 << 4) + (1 << 12), x + 13 * _gui_size, y + 15 * _gui_size * 181.25f / 362.5f};
+		v0 = {spec, x + 3.5f * _gui_size, y + 16 * _gui_size * 221.875f / 362.5f};
+		v1 = {spec + (1 << 4), x + 9.75f * _gui_size, y + 16 * _gui_size * 140.624f / 362.5f};
+		v2 = {spec + (1 << 12), x + 7 * _gui_size, y + 16 * _gui_size * 262.5f / 362.5f};
+		v3 = {spec + (1 << 4) + (1 << 12), x + 13 * _gui_size, y + 16 * _gui_size * 181.25f / 362.5f};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		// front of second step
 		spec -= (8 << 24);
-		v0 = {spec, x + 3.25f * _gui_size, y + 15 * _gui_size * 121.875f / 362.5f};
-		v1 = {spec + (1 << 4), x + 9.75f * _gui_size, y + 15 * _gui_size * 40.625f / 362.5f};
-		v2 = {spec + (1 << 12), x + 3.25f * _gui_size, y + 15 * _gui_size * 221.875f / 362.5f};
-		v3 = {spec + (1 << 4) + (1 << 12), x + 9.75f * _gui_size, y + 15 * _gui_size * 140.624f / 362.5f};
+		v0 = {spec, x + 3.5f * _gui_size, y + 16 * _gui_size * 121.875f / 362.5f};
+		v1 = {spec + (1 << 4), x + 9.75f * _gui_size, y + 16 * _gui_size * 40.625f / 362.5f};
+		v2 = {spec + (1 << 12), x + 3.5f * _gui_size, y + 16 * _gui_size * 221.875f / 362.5f};
+		v3 = {spec + (1 << 4) + (1 << 12), x + 9.75f * _gui_size, y + 16 * _gui_size * 140.624f / 362.5f};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		// front of first step
-		v0 = {spec, x + 6.5f * _gui_size, y + 15 * _gui_size * 262.5f / 362.5f};
-		v1 = {spec + (1 << 4), x + 13 * _gui_size, y + 15 * _gui_size * 181.25f / 362.5f};
-		v2 = {spec + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size};
-		v3 = {spec + (1 << 4) + (1 << 12), x + 13 * _gui_size, y + 15 * _gui_size * 281.25f / 362.5f};
+		v0 = {spec, x + 7 * _gui_size, y + 16 * _gui_size * 262.5f / 362.5f};
+		v1 = {spec + (1 << 4), x + 13 * _gui_size, y + 16 * _gui_size * 181.25f / 362.5f};
+		v2 = {spec + (1 << 12), x + 7 * _gui_size, y + 16 * _gui_size};
+		v3 = {spec + (1 << 4) + (1 << 12), x + 13 * _gui_size, y + 16 * _gui_size * 281.25f / 362.5f};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
-		// left face
-		spec = (10 << 24) + (s_blocks[type]->texX(face_dir::MINUSY, offset) << 4) + (s_blocks[type]->texY(face_dir::MINUSY, offset) << 12);
-		v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
-		v1 = {spec + (1 << 4), x + 6.5f * _gui_size, y + 15 * _gui_size * 162.5f / 362.5f};
-		v2 = {spec + (1 << 12), x, y + 15 * _gui_size * 281.25f / 362.5f};
-		v3 = {spec + (1 << 4) + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size};
+		// left face (top corner + bottom horizontal)
+		spec += (3 << 24);
+		v0 = {spec, x, y + 16 * _gui_size * 81.25f / 362.5f};
+		v1 = {spec + 8, x + 3.5f * _gui_size, y + 16 * _gui_size * 121.875f / 362.5f};
+		v2 = {spec + (8 << 8), x, y + 16 * _gui_size * 181.25f / 362.5f};
+		v3 = {spec + 8 + (8 << 8), x + 3.5f * _gui_size, y + 16 * _gui_size * 221.875f / 362.5f};
+		_ui->addFace(v0, v1, v2, v3, true, movement);
+		v0 = {spec + (8 << 8), x, y + 16 * _gui_size * 181.25f / 362.5f};
+		v1 = {spec + (1 << 4) + (8 << 8), x + 7 * _gui_size, y + 16 * _gui_size * 262.5f / 362.5f};
+		v2 = {spec + (1 << 12), x, y + 16 * _gui_size * 281.25f / 362.5f};
+		v3 = {spec + (1 << 4) + (1 << 12), x + 7 * _gui_size, y + 16 * _gui_size};
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		return ;
 	} else if (type == blocks::OAK_FENCE) {
