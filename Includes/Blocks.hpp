@@ -49,6 +49,23 @@ enum AXIS {
 	Y
 };
 
+namespace GEOMETRY {
+	enum {
+		CUBE,
+		CROSS,
+		FARMLAND, // cube with z = 15 * ONE16TH
+		TORCH,
+		SLAB_BOTTOM,
+		SLAB_TOP,
+		STAIRS_BOTTOM,
+		STAIRS_TOP,
+		FENCE,
+		GLASS_PANE,
+		DOOR,
+		TRAPDOOR,
+	};
+};
+
 namespace blocks {
 	enum {
 		AIR,
@@ -170,6 +187,7 @@ struct Block {
 		bool orientedCollisionHitbox = false;
 		glm::vec3 hitboxCenter = {0, 0, 0};
 		glm::vec3 hitboxHalfSize = {0, 0, 0};
+		int geometry = GEOMETRY::CUBE;
 		bool isFood = false;
 		int hunger_restauration = 0;
 		float saturation_restauration = 0;
@@ -307,6 +325,7 @@ struct Farmland : Block {
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
 			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
+			geometry = GEOMETRY::FARMLAND;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
 			hardness = 0.6f;
@@ -331,6 +350,7 @@ struct DirtPath : Block {
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
 			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
+			geometry = GEOMETRY::FARMLAND;
 			byHand = true;
 			needed_tool = blocks::WOODEN_SHOVEL;
 			hardness = 0.65f;
@@ -430,6 +450,7 @@ struct OakStairsBottom : Block {
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			geometry = GEOMETRY::STAIRS_BOTTOM;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
@@ -525,6 +546,7 @@ struct OakStairsTop : Block {
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.75f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			geometry = GEOMETRY::STAIRS_TOP;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
@@ -619,6 +641,7 @@ struct OakDoor : Block {
 			collisionHitbox = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			geometry = GEOMETRY::DOOR;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
@@ -695,6 +718,7 @@ struct OakTrapdoor : Block {
 			collisionHitbox = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			geometry = GEOMETRY::TRAPDOOR;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
@@ -912,6 +936,7 @@ struct GlassPane : Block {
 			collisionHitbox = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			geometry = GEOMETRY::GLASS_PANE;
 			hardness = 0.3f;
 			transparent = true;
 			item3D = false;
@@ -1069,6 +1094,7 @@ struct OakSlabBottom : Block {
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			geometry = GEOMETRY::SLAB_BOTTOM;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
@@ -1091,6 +1117,7 @@ struct OakSlabTop : Block {
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.75f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			geometry = GEOMETRY::SLAB_TOP;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
@@ -1113,6 +1140,7 @@ struct OakFence : Block {
 			collisionHitbox = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			geometry = GEOMETRY::FENCE;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
@@ -1165,6 +1193,7 @@ struct Poppy : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
+			geometry = GEOMETRY::CROSS;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1184,6 +1213,7 @@ struct Dandelion : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
+			geometry = GEOMETRY::CROSS;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1203,6 +1233,7 @@ struct BlueOrchid : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
+			geometry = GEOMETRY::CROSS;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1222,6 +1253,7 @@ struct Allium : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
+			geometry = GEOMETRY::CROSS;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1241,6 +1273,7 @@ struct CornFlower : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
+			geometry = GEOMETRY::CROSS;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1260,6 +1293,7 @@ struct PinkTulip : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
+			geometry = GEOMETRY::CROSS;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1276,6 +1310,7 @@ struct Grass : Block {
 			mined = blocks::WHEAT_SEEDS;
 			blast_resistance = 0.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::CROSS;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1292,6 +1327,7 @@ struct SugarCane : Block {
 			mined = blocks::SUGAR_CANE;
 			blast_resistance = 0.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::CROSS;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1311,6 +1347,7 @@ struct DeadBush : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
+			geometry = GEOMETRY::CROSS;
 			isFuel = true;
 			fuel_time = 5;
 			byHand = true;
@@ -1332,6 +1369,7 @@ struct OakSapling : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
+			geometry = GEOMETRY::CROSS;
 			isFuel = true;
 			fuel_time = 5;
 			byHand = true;
@@ -1353,6 +1391,7 @@ struct Torch : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 5 / 16.0f};
 			hitboxHalfSize = {1 / 16.0f, 1 / 16.0f, 5 / 16.0f};
+			geometry = GEOMETRY::TORCH;
 			light_level = 14;
 			byHand = true;
 			hardness = 0.0f;

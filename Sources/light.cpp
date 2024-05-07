@@ -142,14 +142,16 @@ void Chunk::fill_vertex_array( void )
 	// std::cout << "filling " << _startX << ", " << _startY << "; expecting " << _displayed_faces << std::endl;
 	_mtx.lock();
 	_vertices.clear();
-	int spec, faceLight, cornerLight, shade;
+	int spec, faceLight, cornerLight, shade, baseSpec, corners, bitfield, offset, orientation, litFurnace;
 	glm::vec3 p0, p1, p2, p3, p4, p5, p6, p7;
+	glm::vec3 pp0, pp1, pp2, pp3, pp4, pp5, pp6, pp7;
 	t_shaderInput v0, v1, v2, v3;
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint block_value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level], type = block_value & 0xFF;
-				if (block_value & blocks::NOTVISIBLE || type == blocks::CHEST) // chests are drawn as entities
+				if (block_value & blocks::NOTVISIBLE || type == blocks::AIR || type == blocks::CHEST // chests are drawn as entities
+					|| type >= blocks::WATER || type == blocks::GLASS)
 					continue;
 				if (type >= blocks::WHEAT_CROP && type <= blocks::WHEAT_CROP7) {
 					p0 = {_startX + row + 0, _startY + col + 0, level + FIFTEEN_SIXTEENTH};
@@ -186,9 +188,10 @@ void Chunk::fill_vertex_array( void )
 
 
 
-				} else if (type != blocks::AIR && type < blocks::WATER && type != blocks::GLASS) {
-					float zSize = ((type == blocks::OAK_SLAB_BOTTOM) ? 0.5f : ((type == blocks::FARMLAND || type == blocks::DIRT_PATH) ? 1.0f - ONE16TH: 1.0f));
-					float bSize = ((type == blocks::OAK_SLAB_TOP) ? 0.5f : 0.0f);
+				} else {
+					int form = s_blocks[type]->geometry;
+					float zSize = ((form == GEOMETRY::SLAB_BOTTOM) ? 0.5f : ((form == GEOMETRY::FARMLAND) ? 1.0f - ONE16TH: 1.0f));
+					float bSize = ((form == GEOMETRY::SLAB_TOP) ? 0.5f : 0.0f);
 					p0 = {_startX + row + 0, _startY + col + 0, level + zSize};
 					p1 = {_startX + row + 1, _startY + col + 0, level + zSize};
 					p2 = {_startX + row + 0, _startY + col + 0, level + bSize};
@@ -200,9 +203,10 @@ void Chunk::fill_vertex_array( void )
 					p7 = {_startX + row + 1, _startY + col + 1, level + bSize};
 
 
-
-					if (type == blocks::OAK_SLAB_BOTTOM || type == blocks::OAK_SLAB_TOP) {
-						int baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
+					switch (form) {
+					case GEOMETRY::SLAB_BOTTOM:
+					case GEOMETRY::SLAB_TOP:
+						baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
 						if (visible_face(type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)) {
 							spec = baseSpec + (3 << 19);
 							faceLight = computeLight(row - 1, col, level);
@@ -271,12 +275,13 @@ void Chunk::fill_vertex_array( void )
 							v3 = {spec + (shade << 22) + XTEX + YTEX, p7};
 							face_vertices(_vertices, v0, v1, v2, v3);
 						}
+						break ;
 
 
 
-					} else if (type == blocks::OAK_STAIRS_BOTTOM) {
-						int corners = (block_value >> 12) & 0xF;
-						int baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
+					case GEOMETRY::STAIRS_BOTTOM:
+						corners = (block_value >> 12) & 0xF;
+						baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
 						if (visible_face(type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)) {
 							spec = baseSpec + (3 << 19);
 							faceLight = computeLight(row - 1, col, level);
@@ -648,12 +653,13 @@ void Chunk::fill_vertex_array( void )
 							v3 = {spec + (shade << 22) + XTEX + YTEX, p7};
 							face_vertices(_vertices, v0, v1, v2, v3);
 						}
+						break ;
 
 
 
-					} else if (type == blocks::OAK_STAIRS_TOP) {
-						int corners = (block_value >> 12) & 0xF;
-						int baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
+					case GEOMETRY::STAIRS_TOP:
+						corners = (block_value >> 12) & 0xF;
+						baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
 						if (visible_face(type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)) {
 							spec = baseSpec + (3 << 19);
 							faceLight = computeLight(row - 1, col, level);
@@ -1025,12 +1031,14 @@ void Chunk::fill_vertex_array( void )
 									break ;
 							}
 						}
+						break ;
 
 
 
-					} else if (type == blocks::OAK_DOOR) {
-						int orientation = 0, xtex_l, xtex_r;
-						int bitfield = block_value >> 12;
+					case GEOMETRY::DOOR:
+						orientation = 0;
+						int xtex_l, xtex_r;
+						bitfield = block_value >> 12;
 						switch ((block_value >> 9) & 0x7) {
 							case face_dir::MINUSX:
 								if (!(bitfield & DOOR::OPEN)) {
@@ -1198,7 +1206,7 @@ void Chunk::fill_vertex_array( void )
 								if (visible_face(type, getBlockAt(row, col + 1, level, true), face_dir::PLUSY)) {
 									spec = (s_blocks[type]->texX(face_dir::PLUSY, bitfield & DOOR::UPPER_HALF) << 4) + (s_blocks[type]->texY(face_dir::PLUSY, bitfield & DOOR::UPPER_HALF) << 12) + (2 << 19);
 									faceLight = computeLight(row, col + 1, level);
-									spec += (faceLight << 24) + (1 << 4);
+									spec += (faceLight << 24);
 									v0 = {spec + (shade << 22), p5};
 									v1 = {spec + (shade << 22) + 3 + (1 << 17), p4};
 									v2 = {spec + (shade << 22) + YTEX, p7};
@@ -1237,7 +1245,7 @@ void Chunk::fill_vertex_array( void )
 									spec = (s_blocks[type]->texX(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 4) + (s_blocks[type]->texY(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 12) + (3 << 19);
 									faceLight = computeLight(row - 1, col, level);
 									shade = 0;
-									spec += (faceLight << 24) + (1 << 4);
+									spec += (faceLight << 24);
 									v0 = {spec + (shade << 22), p4};
 									v1 = {spec + (shade << 22) + 3 + (1 << 17), p0};
 									v2 = {spec + (shade << 22) + YTEX, p6};
@@ -1247,7 +1255,7 @@ void Chunk::fill_vertex_array( void )
 								if (visible_face(type, getBlockAt(row + 1, col, level, true), face_dir::PLUSX)) {
 									spec = (s_blocks[type]->texX(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 4) + (s_blocks[type]->texY(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 12) + (4 << 19);
 									faceLight = computeLight(row + 1, col, level);
-									spec += (faceLight << 24) + (1 << 4);
+									spec += (faceLight << 24);
 									v0 = {spec + (shade << 22), p1};
 									v1 = {spec + (shade << 22) + 3 + (1 << 17), p5};
 									v2 = {spec + (shade << 22) + YTEX, p3};
@@ -1304,7 +1312,7 @@ void Chunk::fill_vertex_array( void )
 									spec = (s_blocks[type]->texX(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 4) + (s_blocks[type]->texY(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 12) + (3 << 19);
 									faceLight = computeLight(row - 1, col, level);
 									shade = 0;
-									spec += (faceLight << 24) + (1 << 4);
+									spec += (faceLight << 24);
 									v0 = {spec + (shade << 22), p4};
 									v1 = {spec + (shade << 22) + 3 + (1 << 17), p0};
 									v2 = {spec + (shade << 22) + YTEX, p6};
@@ -1314,7 +1322,7 @@ void Chunk::fill_vertex_array( void )
 								if (visible_face(type, getBlockAt(row + 1, col, level, true), face_dir::PLUSX)) {
 									spec = (s_blocks[type]->texX(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 4) + (s_blocks[type]->texY(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 12) + (4 << 19);
 									faceLight = computeLight(row + 1, col, level);
-									spec += (faceLight << 24) + (1 << 4);
+									spec += (faceLight << 24);
 									v0 = {spec + (shade << 22), p1};
 									v1 = {spec + (shade << 22) + 3 + (1 << 17), p5};
 									v2 = {spec + (shade << 22) + YTEX, p3};
@@ -1363,13 +1371,14 @@ void Chunk::fill_vertex_array( void )
 								}
 								break ;
 						}
+						break ;
 
 
 
-					} else if (type == blocks::OAK_TRAPDOOR) {
+					case GEOMETRY::TRAPDOOR:
 						shade = 0;
-						int bitfield = block_value >> 12;
-						int baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
+						bitfield = block_value >> 12;
+						baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
 						if (!(bitfield & DOOR::OPEN)) {
 							if (!(bitfield & DOOR::UPPER_HALF)) {
 								p0.z -= 0.8125f;
@@ -1758,21 +1767,22 @@ void Chunk::fill_vertex_array( void )
 									break ;
 							}
 						}
+						break ;
 
 
 
-					} else if (type == blocks::OAK_FENCE) {
+					case GEOMETRY::FENCE:
 						shade = 0;
-						glm::vec3 pp0 = p0 + glm::vec3( 0.375f,  0.375f, 0);
-						glm::vec3 pp1 = p1 + glm::vec3(-0.375f,  0.375f, 0);
-						glm::vec3 pp2 = p2 + glm::vec3( 0.375f,  0.375f, 0);
-						glm::vec3 pp3 = p3 + glm::vec3(-0.375f,  0.375f, 0);
-						glm::vec3 pp4 = p4 + glm::vec3( 0.375f, -0.375f, 0);
-						glm::vec3 pp5 = p5 + glm::vec3(-0.375f, -0.375f, 0);
-						glm::vec3 pp6 = p6 + glm::vec3( 0.375f, -0.375f, 0);
-						glm::vec3 pp7 = p7 + glm::vec3(-0.375f, -0.375f, 0);
+						pp0 = p0 + glm::vec3( 0.375f,  0.375f, 0);
+						pp1 = p1 + glm::vec3(-0.375f,  0.375f, 0);
+						pp2 = p2 + glm::vec3( 0.375f,  0.375f, 0);
+						pp3 = p3 + glm::vec3(-0.375f,  0.375f, 0);
+						pp4 = p4 + glm::vec3( 0.375f, -0.375f, 0);
+						pp5 = p5 + glm::vec3(-0.375f, -0.375f, 0);
+						pp6 = p6 + glm::vec3( 0.375f, -0.375f, 0);
+						pp7 = p7 + glm::vec3(-0.375f, -0.375f, 0);
 						// central pole
-						int baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
+						baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
 						faceLight = computeLight(row, col, level);
 						spec = baseSpec + (3 << 19);
 						spec += (faceLight << 24);
@@ -2020,12 +2030,13 @@ void Chunk::fill_vertex_array( void )
 								pp7.z -= 6.0f * ONE16TH;
 							}
 						}
+						break ;
 
 
 
-					} else if (type == blocks::GLASS_PANE) { // TODO move this to sky_vertex
+					case GEOMETRY::GLASS_PANE: // TODO move this to sky_vertex
 						shade = 0;
-						int baseSpec = (s_blocks[type]->texX(face_dir::PLUSZ, FENCE::ARM_END) << 4) + (s_blocks[type]->texY() << 12);
+						baseSpec = (s_blocks[type]->texX(face_dir::PLUSZ, FENCE::ARM_END) << 4) + (s_blocks[type]->texY() << 12);
 						faceLight = computeLight(row, col, level);
 						if ((block_value >> 12) & FENCE::MX) {
 							spec = baseSpec + (2 << 4) + (1 << 19);
@@ -2187,11 +2198,12 @@ void Chunk::fill_vertex_array( void )
 								face_vertices(_vertices, v0, v1, v2, v3);
 							}
 						}
+						break ;
 
 
 
-					} else if (type == blocks::FARMLAND || type == blocks::DIRT_PATH) {
-						int offset = (block_value & blocks::WET_FARMLAND);
+					case GEOMETRY::FARMLAND:
+						offset = (block_value & blocks::WET_FARMLAND);
 						if (visible_face(type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)) {
 							spec = (s_blocks[type]->texX(face_dir::MINUSX, offset) << 4) + (s_blocks[type]->texY(face_dir::MINUSX, offset) << 12) + (3 << 19);
 							faceLight = computeLight(row - 1, col, level);
@@ -2294,12 +2306,14 @@ void Chunk::fill_vertex_array( void )
 							v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p7};
 							face_vertices(_vertices, v0, v1, v2, v3);
 						}
+						break ;
 
 
 
-					} else if (type < blocks::POPPY) {
-						int offset = 0;
-						int orientation = -1, litFurnace = 0;
+					case GEOMETRY::CUBE:
+						offset = 0;
+						orientation = -1;
+						litFurnace = 0;
 						if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) {
 							orientation = (block_value >> 9) & 0x7;
 							litFurnace = (block_value >> 12) & 0x1;
@@ -2415,10 +2429,11 @@ void Chunk::fill_vertex_array( void )
 							v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p7};
 							face_vertices(_vertices, v0, v1, v2, v3);
 						}
+						break ;
 
 
 
-					} else if (type == blocks::TORCH) {
+					case GEOMETRY::TORCH:
 						spec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12) + (0 << 19) + (15 << 24);
 						switch ((block_value >> 9) & 0x7) { // orientation
 							case face_dir::MINUSZ: // default
@@ -2509,10 +2524,11 @@ void Chunk::fill_vertex_array( void )
 							v3 = {spec - 7 + XTEX + YTEX, p7};
 							face_vertices(_vertices, v0, v1, v2, v3); // -z
 						}
+						break ;
 
 
 
-					} else { // flowers
+					case GEOMETRY::CROSS:
 						spec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12) + (0 << 19);
 						faceLight = computeLight(row, col, level);
 						spec += (faceLight << 24);
@@ -2526,6 +2542,7 @@ void Chunk::fill_vertex_array( void )
 						v2 = {spec + YTEX, p3};
 						v3 = {spec + XTEX + YTEX, p6};
 						face_vertices(_vertices, v0, v1, v2, v3);
+						break ;
 					}
 				}
 			}
