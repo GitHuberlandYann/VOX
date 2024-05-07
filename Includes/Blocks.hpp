@@ -1119,19 +1119,8 @@ struct OakFence : Block {
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.0f;
 			transparent = true;
-			textureY = 12;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;
-			switch (offset) {
-				case FENCE::BASE:
-					return (0);
-				case FENCE::ARM:
-					return (2);
-				case FENCE::ARM_END:
-					return (1);
-			}
-			return (0);
+			textureX = 4;
+			textureY = 10;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
 			(void)orientation;
