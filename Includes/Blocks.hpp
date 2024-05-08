@@ -86,6 +86,12 @@ namespace blocks {
 		OAK_TRAPDOOR,
 		STONE_STAIRS_BOTTOM,
 		STONE_STAIRS_TOP,
+		SMOOTH_STONE_STAIRS_BOTTOM,
+		SMOOTH_STONE_STAIRS_TOP,
+		COBBLESTONE_STAIRS_BOTTOM,
+		COBBLESTONE_STAIRS_TOP,
+		STONE_BRICKS_STAIRS_BOTTOM,
+		STONE_BRICKS_STAIRS_TOP,
 		BEDROCK = 24,
 		DIRT,
 		SMOOTH_STONE,
@@ -110,6 +116,12 @@ namespace blocks {
 		OAK_FENCE,
 		STONE_SLAB_BOTTOM,
 		STONE_SLAB_TOP,
+		SMOOTH_STONE_SLAB_BOTTOM,
+		SMOOTH_STONE_SLAB_TOP,
+		COBBLESTONE_SLAB_BOTTOM,
+		COBBLESTONE_SLAB_TOP,
+		STONE_BRICKS_SLAB_BOTTOM,
+		STONE_BRICKS_SLAB_TOP,
 		POPPY = 64,
 		DANDELION,
 		BLUE_ORCHID,
@@ -766,8 +778,8 @@ struct StoneStairsBottom : OakStairsBottom {
 		StoneStairsBottom() {
 			name = "STONE_STAIRS_BOTTOM";
 			mined = blocks::STONE_STAIRS_BOTTOM;
-			// isComposant = true;
-			// getProduction = blocks::SMOOTH_STONE_STAIRS_BOTTOM;
+			isComposant = true;
+			getProduction = blocks::SMOOTH_STONE_STAIRS_BOTTOM;
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
@@ -788,6 +800,92 @@ struct StoneStairsTop : OakStairsTop {
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 3;
+		}
+};
+
+struct SmoothStoneStairsBottom : OakStairsBottom {
+	public:
+		SmoothStoneStairsBottom() {
+			name = "SMOOTH_STONE_STAIRS_BOTTOM";
+			mined = blocks::SMOOTH_STONE_STAIRS_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			textureX = 4;
+			textureY = 2;
+		}
+};
+
+struct SmoothStoneStairsTop : OakStairsTop {
+	public:
+		SmoothStoneStairsTop() {
+			name = "SMOOTH_STONE_STAIRS_TOP";
+			mined = blocks::SMOOTH_STONE_STAIRS_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			textureX = 4;
+			textureY = 2;
+		}
+};
+
+struct CobbleStoneStairsBottom : OakStairsBottom {
+	public:
+		CobbleStoneStairsBottom() {
+			name = "COBBLESTONE_STAIRS_BOTTOM";
+			mined = blocks::COBBLESTONE_STAIRS_BOTTOM;
+			isComposant = true;
+			getProduction = blocks::STONE_STAIRS_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			textureX = 4;
+			textureY = 4;
+		}
+};
+
+struct CobbleStoneStairsTop : OakStairsTop {
+	public:
+		CobbleStoneStairsTop() {
+			name = "COBBLESTONE_STAIRS_TOP";
+			mined = blocks::COBBLESTONE_STAIRS_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			textureX = 4;
+			textureY = 4;
+		}
+};
+
+struct StoneBricksStairsBottom : OakStairsBottom {
+	public:
+		StoneBricksStairsBottom() {
+			name = "STONE_BRICKS_STAIRS_BOTTOM";
+			mined = blocks::STONE_BRICKS_STAIRS_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			textureX = 4;
+			textureY = 5;
+		}
+};
+
+struct StoneBricksStairsTop : OakStairsTop {
+	public:
+		StoneBricksStairsTop() {
+			name = "STONE_BRICKS_STAIRS_TOP";
+			mined = blocks::STONE_BRICKS_STAIRS_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			textureX = 4;
+			textureY = 5;
 		}
 };
 
@@ -1225,8 +1323,8 @@ struct StoneSlabBottom : OakSlabBottom {
 		StoneSlabBottom() {
 			name = "STONE_SLAB_BOTTOM";
 			mined = blocks::STONE_SLAB_BOTTOM;
-			// isComposant = true;
-			// getProduction = blocks::SMOOTH_STONE_SLAB;
+			isComposant = true;
+			getProduction = blocks::SMOOTH_STONE_SLAB_BOTTOM;
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
@@ -1247,6 +1345,92 @@ struct StoneSlabTop : OakSlabTop {
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 3;
+		}
+};
+
+struct SmoothStoneSlabBottom : OakSlabBottom {
+	public:
+		SmoothStoneSlabBottom() {
+			name = "SMOOTH_STONE_SLAB_BOTTOM";
+			mined = blocks::SMOOTH_STONE_SLAB_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			textureX = 4;
+			textureY = 2;
+		}
+};
+
+struct SmoothStoneSlabTop : OakSlabTop {
+	public:
+		SmoothStoneSlabTop() {
+			name = "SMOOTH_STONE_SLAB_TOP";
+			mined = blocks::SMOOTH_STONE_SLAB_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 2.0f;
+			textureX = 4;
+			textureY = 2;
+		}
+};
+
+struct CobbleStoneSlabBottom : OakSlabBottom {
+	public:
+		CobbleStoneSlabBottom() {
+			name = "COBBLESTONE_SLAB_BOTTOM";
+			mined = blocks::COBBLESTONE_SLAB_BOTTOM;
+			isComposant = true;
+			getProduction = blocks::STONE_SLAB_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			textureX = 4;
+			textureY = 4;
+		}
+};
+
+struct CobbleStoneSlabTop : OakSlabTop {
+	public:
+		CobbleStoneSlabTop() {
+			name = "COBBLESTONE_SLAB_TOP";
+			mined = blocks::COBBLESTONE_SLAB_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 2.0f;
+			textureX = 4;
+			textureY = 4;
+		}
+};
+
+struct StoneBricksSlabBottom : OakSlabBottom {
+	public:
+		StoneBricksSlabBottom() {
+			name = "STONE_BRICKS_SLAB_BOTTOM";
+			mined = blocks::STONE_BRICKS_SLAB_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			textureX = 4;
+			textureY = 5;
+		}
+};
+
+struct StoneBricksSlabTop : OakSlabTop {
+	public:
+		StoneBricksSlabTop() {
+			name = "STONE_BRICKS_SLAB_TOP";
+			mined = blocks::STONE_BRICKS_SLAB_BOTTOM;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 2.0f;
+			textureX = 4;
+			textureY = 5;
 		}
 };
 

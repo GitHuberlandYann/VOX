@@ -161,6 +161,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 					+ "], \"fuel\": [" + std::to_string(fur.second->getFuel().type) + ", " + std::to_string(fur.second->getFuel().amount) + ", " + std::to_string(fur.second->getFuel().dura.x)
 					+ "], \"production\": [" + std::to_string(fur.second->getProduction().type) + ", " + std::to_string(fur.second->getProduction().amount) + ", " + std::to_string(fur.second->getProduction().dura.x)
 					+ "]}"; // TODO add current times for better backup
+				delete fur.second;
 			}
 		}
 		res += "]}";
