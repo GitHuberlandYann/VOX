@@ -107,7 +107,7 @@ void OpenGL_Manager::addBreakingAnim( void )
 	glm::vec3 p6 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
 	glm::vec3 p7 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
 
-	int spec = (14 << 4) + (_break_frame << 12);
+	int spec = (14 << 4) + ((_block_hit.value == blocks::GLASS && _break_frame == 1) ? 0 : (_break_frame << 12));
 	t_shaderInput v0 = {spec, p4};
 	t_shaderInput v1 = {spec + XTEX, p0};
 	t_shaderInput v2 = {spec + YTEX, p6};

@@ -1007,10 +1007,11 @@ void Menu::add_item_value( t_item item, int x, int y, bool movement )
 		_ui->addFace(v0, v1, v2, v3, true, movement);
 		return ;
 	}
-	int yTop = (type == blocks::OAK_SLAB) ? y + 16 * _gui_size * 100.0f / 362.5f
-											: (type == blocks::OAK_TRAPDOOR) ? y + 16 * _gui_size * 162.5f / 362.5f : y;
-	int slabOffset = (type == blocks::OAK_SLAB) ? (8 << 8)
-											: (type == blocks::OAK_TRAPDOOR) ? (13 << 8) : 0;
+	int shape = s_blocks[type]->geometry;
+	int yTop = (shape == GEOMETRY::SLAB_BOTTOM) ? y + 16 * _gui_size * 100.0f / 362.5f
+											: (shape == GEOMETRY::TRAPDOOR) ? y + 16 * _gui_size * 162.5f / 362.5f : y;
+	int slabOffset = (shape == GEOMETRY::SLAB_BOTTOM) ? (8 << 8)
+											: (shape == GEOMETRY::TRAPDOOR) ? (13 << 8) : 0;
 	// top face
 	int spec = (15 << 24) + (s_blocks[type]->texX(face_dir::PLUSZ, offset) << 4) + (s_blocks[type]->texY(face_dir::PLUSZ, offset) << 12);
 	glm::ivec3 v0 = {spec, x, yTop + 16 * _gui_size * 81.25f / 362.5f};

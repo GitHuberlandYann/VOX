@@ -274,26 +274,6 @@ face_dir opposite_dir( int dir )
 	return (face_dir::MINUSX);
 }
 
-// shapewise, all bottom slabs are treated the same
-static int blockShape( int value )
-{
-	if (value >= blocks::POPPY) {
-		return (blocks::AIR);
-	}
-	switch (value) {
-		case blocks::CHEST:
-		case blocks::CACTUS:
-			return (blocks::AIR);
-		case blocks::DIRT_PATH:
-			return (blocks::FARMLAND);
-		// case blocks::*_SLAB_BOTTOM:
-		// 	return (blocks::OAK_SLAB_BOTTOM);
-		// case blocks::*_STAIRS_BOTTOM:
-		// return (blocks::OAK_STAIRS_BOTTOM)
-	}
-	return (value);
-}
-
 /**
  * @brief checks if a specific face should be drawn by using neighbour
  * @param value  value of block being drawn
@@ -303,54 +283,70 @@ static int blockShape( int value )
  */
 bool visible_face( int value, int next, face_dir dir )
 {
-	value = blockShape(value & 0xFF);
-	next = blockShape(next & 0xFF);
-	if (value == blocks::AIR) {
-		return (false);
-	}
-	if (next == blocks::AIR || next == blocks::OAK_DOOR || next == blocks::OAK_TRAPDOOR
-		|| ((next == blocks::GLASS || next == blocks::OAK_FENCE || next == blocks::GLASS_PANE) && value != next)) {
-		return (true);
+	value &= 0xFF;
+	next &= 0xFF;
+	int valueShape = s_blocks[value]->geometry;
+	int nextShape = s_blocks[next]->geometry;
+
+	switch (valueShape) {
+		case GEOMETRY::NONE:
+			return (false);
+		case GEOMETRY::SLAB_BOTTOM:
+		case GEOMETRY::FARMLAND:
+			if (dir == face_dir::PLUSZ) {
+				return (true);
+			}
+			break ;
+		case GEOMETRY::SLAB_TOP:
+			if (dir == face_dir::MINUSZ) {
+				return (true);
+			}
+			break ;
 	}
 	if (next == blocks::OAK_LEAVES && (value != blocks::OAK_LEAVES
 		|| (value == blocks::OAK_LEAVES
 		&& (dir == face_dir::PLUSX || dir == face_dir::PLUSY || dir == face_dir::PLUSZ)))) {
 		return (true);
 	}
-	if (dir == face_dir::PLUSZ && (value == blocks::OAK_SLAB_BOTTOM || value == blocks::FARMLAND)) {
-		return (true);
-	}
-	if (dir == face_dir::MINUSZ && value == blocks::OAK_SLAB_TOP) {
-		return (true);
-	}
-	switch (next) {
-		case blocks::OAK_SLAB_BOTTOM:
+	switch (nextShape) {
+		case GEOMETRY::NONE:
+		case GEOMETRY::CROSS:
+		case GEOMETRY::TORCH:
+		case GEOMETRY::FENCE:
+		case GEOMETRY::DOOR:
+		case GEOMETRY::TRAPDOOR:
+		case GEOMETRY::CROP:
+			return (true);
+		case GEOMETRY::GLASS:
+		case GEOMETRY::GLASS_PANE:
+			return (valueShape != nextShape);
+		case GEOMETRY::SLAB_BOTTOM:
 			if (dir == face_dir::MINUSZ) {
 				return (true);
 			}
-			return (value != next);
-		case blocks::OAK_SLAB_TOP:
+			return (valueShape != nextShape);
+		case GEOMETRY::SLAB_TOP:
 			if (dir == face_dir::PLUSZ) {
 				return (true);
 			}
-			return (value != next);
-		case blocks::OAK_STAIRS_BOTTOM:
+			return (valueShape != nextShape);
+		case GEOMETRY::STAIRS_BOTTOM:
 			if (dir == face_dir::PLUSZ) {
 				return (false);
 			}
 			return (true);
-		case blocks::OAK_STAIRS_TOP:
+		case GEOMETRY::STAIRS_TOP:
 			if (dir == face_dir::MINUSZ) {
 				return (false);
 			}
 			return (true);
-		case blocks::FARMLAND:
+		case GEOMETRY::FARMLAND:
 			if (dir == face_dir::MINUSZ) {
 				return (true);
 			} else if (dir == face_dir::PLUSZ) {
 				return (false);
 			}
-			return (value != blocks::OAK_SLAB_BOTTOM && value != blocks::FARMLAND);
+			return (valueShape != GEOMETRY::SLAB_BOTTOM && valueShape != GEOMETRY::FARMLAND);
 	}
 	return (false);
 }

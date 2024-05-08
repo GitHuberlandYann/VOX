@@ -983,25 +983,26 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		// check if orientation possible (wall available to hang from)
 		// if not, check if block underneath and change orientation
 		// else abort mission
-		int neighbour = 0;
+		int neighbourShape = GEOMETRY::NONE;
 		switch ((block_value >> 9) & 0x7) {
 		case face_dir::PLUSX:
-			neighbour = getBlockAt(pos.x + 1, pos.y, pos.z, true) & 0xFF;
+			neighbourShape = s_blocks[getBlockAt(pos.x + 1, pos.y, pos.z, true) & 0xFF]->geometry;
 			break;
 		case face_dir::MINUSX:
-			neighbour = getBlockAt(pos.x - 1, pos.y, pos.z, true) & 0xFF;
+			neighbourShape = s_blocks[getBlockAt(pos.x - 1, pos.y, pos.z, true) & 0xFF]->geometry;
 			break;
 		case face_dir::PLUSY:
-			neighbour = getBlockAt(pos.x, pos.y + 1, pos.z, true) & 0xFF;
+			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y + 1, pos.z, true) & 0xFF]->geometry;
 			break;
 		case face_dir::MINUSY:
-			neighbour = getBlockAt(pos.x, pos.y - 1, pos.z, true) & 0xFF;
+			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y - 1, pos.z, true) & 0xFF]->geometry;
 			break;
 		}
-		if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || s_blocks[neighbour]->hasHitbox) {
+		if (neighbourShape != GEOMETRY::CUBE) {
 			block_value = blocks::TORCH + (face_dir::MINUSZ << 9);
-			neighbour = getBlockAt(pos.x, pos.y, pos.z - 1, false) & 0xFF;
-			if (!(neighbour > blocks::AIR && neighbour < blocks::POPPY) || (s_blocks[neighbour]->hasHitbox && neighbour != blocks::OAK_SLAB_TOP)) {
+			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1, false) & 0xFF]->geometry;
+			if (!(neighbourShape == GEOMETRY::CUBE || neighbourShape == GEOMETRY::SLAB_TOP
+				|| neighbourShape == GEOMETRY::STAIRS_TOP || neighbourShape == GEOMETRY::FENCE)) {
 				return ;
 			}
 		}

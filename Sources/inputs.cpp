@@ -138,6 +138,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	int type = _hand_content;
+	int shape = s_blocks[type]->geometry;
 	// std::cout << "aiming " << s_blocks[type]->name << " towards " << s_blocks[_block_hit.value]->name << std::endl;;
 	if (type == blocks::WATER_BUCKET) { // use it like any other block
 		type = blocks::WATER;
@@ -169,7 +170,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		} else {
 			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
 		}
-	} else if (type == blocks::OAK_SLAB || type == blocks::OAK_STAIRS) { // TODO get rid of oak_slab_top and oak_stairs_top and use DOOR::UPPER_HALF instead
+	} else if (shape == GEOMETRY::SLAB_BOTTOM || shape == GEOMETRY::STAIRS_BOTTOM) { // TODO get rid of oak_slab_top and oak_stairs_top and use DOOR::UPPER_HALF instead
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
 			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? type : type + 1); // oak_slab_top = oak_slab_bottom + 1
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
@@ -184,7 +185,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			glm::vec3 intersect = line_plane_intersection(_camera->getEyePos(), _camera->getDir(), p0, {0, 1, 0});
 			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type + 1);
 		}
-	} else if (type == blocks::OAK_TRAPDOOR) {
+	} else if (shape == GEOMETRY::TRAPDOOR) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
 			type += ((_block_hit.pos.z < _block_hit.prev_pos.z) ? 0 : (DOOR::UPPER_HALF << 12));
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {

@@ -139,9 +139,10 @@ void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, bool game_
 		t_shaderInput v2 = {spec + (16 << 8) + (1 << 18), p2};
 		t_shaderInput v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-		
-		float height = (item == blocks::OAK_SLAB) ? 0.125f : (item == blocks::OAK_TRAPDOOR) ? 0.046875f : 0.25f;
-		int yoff = (item == blocks::OAK_SLAB) ? 8 : (item == blocks::OAK_TRAPDOOR) ? 3 : 16;
+
+		int shape = s_blocks[item]->geometry;
+		float height = (shape == GEOMETRY::SLAB_BOTTOM) ? 0.125f : (shape == GEOMETRY::TRAPDOOR) ? 0.046875f : 0.25f;
+		int yoff = (shape == GEOMETRY::SLAB_BOTTOM) ? 8 : (shape == GEOMETRY::TRAPDOOR) ? 3 : 16;
 		// left
 		p1 = p2;
 		p2 = p0 - itemUp * height;

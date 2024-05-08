@@ -339,7 +339,8 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
     float cosRot = glm::cos(_lifeTime);
     float sinRot = glm::sin(_lifeTime);
 
-	float zSize = (_item.type == blocks::OAK_SLAB) ? 0.125f : (_item.type == blocks::OAK_TRAPDOOR) ? 0.046875f : 0.25f;
+	int shape = s_blocks[_item.type]->geometry;
+	float zSize = (shape == GEOMETRY::SLAB_BOTTOM) ? 0.125f : (shape == GEOMETRY::TRAPDOOR) ? 0.046875f : 0.25f;
 
 	glm::vec3 p0 = {_pos.x - 0.176777f * cosRot, _pos.y - 0.176777f * sinRot, _pos.z + zSize + (cosRot + 1) / 4};
 	glm::vec3 p1 = {_pos.x + 0.176777f * sinRot, _pos.y - 0.176777f * cosRot, _pos.z + zSize + (cosRot + 1) / 4};
@@ -351,7 +352,7 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	glm::vec3 p6 = {_pos.x - 0.176777f * sinRot, _pos.y + 0.176777f * cosRot, _pos.z + (cosRot + 1) / 4};
 	glm::vec3 p7 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
 
-	if (_item.type == blocks::OAK_STAIRS) {
+	if (shape == GEOMETRY::STAIRS_BOTTOM) {
 	    int itemLight = _chunk->computePosLight(_pos);
 
 	    int spec = (s_blocks[_item.type]->texX() << 4) + (s_blocks[_item.type]->texY() << 12) + (3 << 19) + (itemLight << 24);
@@ -422,7 +423,7 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	} else if (s_blocks[_item.type]->item3D) { //(_item.type < blocks::POPPY && _item.type != blocks::OAK_DOOR && _item.type != blocks::GLASS_PANE) {
 		int offset = ((_item.type >= blocks::CRAFTING_TABLE && _item.type < blocks::BEDROCK) ? face_dir::MINUSX: 0);
 	    int itemLight = _chunk->computePosLight(_pos);
-		int slabOffset = (_item.type == blocks::OAK_SLAB) ? (8 << 8) : (_item.type == blocks::OAK_TRAPDOOR) ? (13 << 8) : 0;
+		int slabOffset = (shape == GEOMETRY::SLAB_BOTTOM) ? (8 << 8) : (shape == GEOMETRY::TRAPDOOR) ? (13 << 8) : 0;
 
 	    int spec = (s_blocks[_item.type]->texX(face_dir::MINUSX, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 12) + (3 << 19) + (itemLight << 24);
 	    t_shaderInput v0 = {spec + slabOffset, p4};

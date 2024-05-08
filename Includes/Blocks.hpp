@@ -51,18 +51,21 @@ enum AXIS {
 
 namespace GEOMETRY {
 	enum {
-		CUBE,
-		CROSS,
-		FARMLAND, // cube with z = 15 * ONE16TH
+		NONE,          // air, water
+		CUBE,          // default blocks
+		CROSS,         // flowers and such
+		FARMLAND,      // cube with z = 15 * ONE16TH
 		TORCH,
 		SLAB_BOTTOM,
 		SLAB_TOP,
 		STAIRS_BOTTOM,
 		STAIRS_TOP,
 		FENCE,
+		GLASS,
 		GLASS_PANE,
 		DOOR,
 		TRAPDOOR,
+		CROP,
 	};
 };
 
@@ -227,6 +230,7 @@ struct Air : Block {
 			name = "AIR";
 			blast_resistance = 0.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::NONE;
 			transparent = true;
 		}
 };
@@ -920,6 +924,7 @@ struct Glass : Block {
 			name = "GLASS";
 			blast_resistance = 0.3f;
 			hardness = 0.3f;
+			geometry = GEOMETRY::GLASS;
 			transparent = true;
 			textureX = 4;
 			textureY = 11;
@@ -1413,6 +1418,7 @@ struct Chest : Block {
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5 / 16.0f};
 			hitboxHalfSize = {7 / 16.0f, 7 / 16.0f, 7.5 / 16.0f};
+			geometry = GEOMETRY::NONE;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.5f;
@@ -1432,6 +1438,7 @@ struct WheatCrop : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 1 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
+			geometry = GEOMETRY::CROP;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1454,6 +1461,7 @@ struct WheatCrop1 : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 3 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 3 / 32.0f};
+			geometry = GEOMETRY::CROP;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1470,6 +1478,7 @@ struct WheatCrop2 : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 5 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 5 / 32.0f};
+			geometry = GEOMETRY::CROP;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1486,6 +1495,7 @@ struct WheatCrop3 : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 7 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 7 / 32.0f};
+			geometry = GEOMETRY::CROP;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1502,6 +1512,7 @@ struct WheatCrop4 : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 9 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 9 / 32.0f};
+			geometry = GEOMETRY::CROP;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1518,6 +1529,7 @@ struct WheatCrop5 : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 11 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 11 / 32.0f};
+			geometry = GEOMETRY::CROP;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1534,6 +1546,7 @@ struct WheatCrop6 : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 13 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 13 / 32.0f};
+			geometry = GEOMETRY::CROP;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1550,6 +1563,7 @@ struct WheatCrop7 : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 15 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 15 / 32.0f};
+			geometry = GEOMETRY::CROP;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -1563,6 +1577,7 @@ struct Water : Block {
 			mined = blocks::WATER_BUCKET;
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::NONE;
 			transparent = true;
 		}
 };
@@ -1573,6 +1588,7 @@ struct Water1 : Block {
 			name = "WATER 1";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::NONE;
 			transparent = true;
 		}
 };
@@ -1583,6 +1599,7 @@ struct Water2 : Block {
 			name = "WATER 2";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::NONE;
 			transparent = true;
 		}
 };
@@ -1593,6 +1610,7 @@ struct Water3 : Block {
 			name = "WATER 3";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::NONE;
 			transparent = true;
 		}
 };
@@ -1603,6 +1621,7 @@ struct Water4 : Block {
 			name = "WATER 4";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::NONE;
 			transparent = true;
 		}
 };
@@ -1613,6 +1632,7 @@ struct Water5 : Block {
 			name = "WATER 5";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::NONE;
 			transparent = true;
 		}
 };
@@ -1623,6 +1643,7 @@ struct Water6 : Block {
 			name = "WATER 6";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::NONE;
 			transparent = true;
 		}
 };
@@ -1633,6 +1654,7 @@ struct Water7 : Block {
 			name = "WATER 7";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::NONE;
 			transparent = true;
 		}
 };

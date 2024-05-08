@@ -189,9 +189,9 @@ void Chunk::fill_vertex_array( void )
 
 
 				} else {
-					int form = s_blocks[type]->geometry;
-					float zSize = ((form == GEOMETRY::SLAB_BOTTOM) ? 0.5f : ((form == GEOMETRY::FARMLAND) ? 1.0f - ONE16TH: 1.0f));
-					float bSize = ((form == GEOMETRY::SLAB_TOP) ? 0.5f : 0.0f);
+					int shape = s_blocks[type]->geometry;
+					float zSize = ((shape == GEOMETRY::SLAB_BOTTOM) ? 0.5f : ((shape == GEOMETRY::FARMLAND) ? 1.0f - ONE16TH: 1.0f));
+					float bSize = ((shape == GEOMETRY::SLAB_TOP) ? 0.5f : 0.0f);
 					p0 = {_startX + row + 0, _startY + col + 0, level + zSize};
 					p1 = {_startX + row + 1, _startY + col + 0, level + zSize};
 					p2 = {_startX + row + 0, _startY + col + 0, level + bSize};
@@ -203,7 +203,7 @@ void Chunk::fill_vertex_array( void )
 					p7 = {_startX + row + 1, _startY + col + 1, level + bSize};
 
 
-					switch (form) {
+					switch (shape) {
 					case GEOMETRY::SLAB_BOTTOM:
 					case GEOMETRY::SLAB_TOP:
 						baseSpec = (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
