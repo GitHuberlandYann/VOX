@@ -50,7 +50,7 @@ void OpenGL_Manager::saveWorld( void )
 
 std::string DayCycle::saveString( void )
 {
-	std::string res = "\"dayCycle\": {\"day\": "
+	std::string res = ",\n\t\"dayCycle\": {\"day\": "
 		+ std::to_string(_day) + ", \"ticks\": " + std::to_string(_ticks) + "},\n\t";
 	return (res);
 }
@@ -145,6 +145,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 					}
 				}
 				res += "]}";
+				delete ch.second;
 			}
 		}
 		if (bup.second.furnaces.size()) {
@@ -308,6 +309,18 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 	}
 	throw UnclosedBracketException();
 }
+
+// static int convert( int value ) // used when I change s_blocks big time
+// {
+// 	int type = value & 0xFF;
+// 	if (type < blocks::BEDROCK - 8) {
+// 		return (value);
+// 	}
+// 	if (type < blocks::POPPY - 16) {
+// 		return (value + 8);
+// 	}
+// 	return (value + 16);
+// }
 
 void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 {

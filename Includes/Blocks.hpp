@@ -9,7 +9,7 @@
 # include <glm/gtc/type_ptr.hpp>
 # include <string>
 
-# define S_BLOCKS_SIZE 112
+# define S_BLOCKS_SIZE 128
 
 enum face_dir {
 	MINUSY,
@@ -86,7 +86,7 @@ namespace blocks {
 		OAK_TRAPDOOR,
 		STONE_STAIRS_BOTTOM,
 		STONE_STAIRS_TOP,
-		BEDROCK = 16,
+		BEDROCK = 24,
 		DIRT,
 		SMOOTH_STONE,
 		STONE,
@@ -99,18 +99,18 @@ namespace blocks {
 		OAK_PLANKS,
 		GLASS,
 		GLASS_PANE,
-		COAL_ORE = 32,
+		COAL_ORE = 40,
 		IRON_ORE,
 		DIAMOND_ORE,
 		COAL_BLOCK,
 		IRON_BLOCK,
 		DIAMOND_BLOCK,
-		OAK_SLAB_BOTTOM = 40,
+		OAK_SLAB_BOTTOM = 48,
 		OAK_SLAB_TOP,
 		OAK_FENCE,
 		STONE_SLAB_BOTTOM,
 		STONE_SLAB_TOP,
-		POPPY = 48,
+		POPPY = 64,
 		DANDELION,
 		BLUE_ORCHID,
 		ALLIUM,
@@ -121,8 +121,8 @@ namespace blocks {
 		DEAD_BUSH,
 		OAK_SAPLING,
 		TORCH,
-		CHEST = 63,
-		WHEAT_CROP = 64,
+		CHEST = 79,
+		WHEAT_CROP = 80,
 		WHEAT_CROP1,
 		WHEAT_CROP2,
 		WHEAT_CROP3,
@@ -130,7 +130,7 @@ namespace blocks {
 		WHEAT_CROP5,
 		WHEAT_CROP6,
 		WHEAT_CROP7,
-		WATER = 72,
+		WATER = 88,
 		WATER1,
 		WATER2,
 		WATER3,
@@ -138,7 +138,7 @@ namespace blocks {
 		WATER5,
 		WATER6,
 		WATER7,
-		STICK = 80,
+		STICK = 96,
 		WOODEN_SHOVEL,
 		STONE_SHOVEL,
 		IRON_SHOVEL,
@@ -153,7 +153,7 @@ namespace blocks {
 		DIAMOND_PICKAXE,
 		BOW,
 		ARROW,
-		COAL = 96,
+		COAL = 112,
 		CHARCOAL,
 		IRON_INGOT,
 		DIAMOND,
@@ -761,7 +761,7 @@ struct OakTrapdoor : Block {
 		}
 };
 
-struct StoneStairsBottom : Block {
+struct StoneStairsBottom : OakStairsBottom {
 	public:
 		StoneStairsBottom() {
 			name = "STONE_STAIRS_BOTTOM";
@@ -769,185 +769,25 @@ struct StoneStairsBottom : Block {
 			// isComposant = true;
 			// getProduction = blocks::SMOOTH_STONE_STAIRS_BOTTOM;
 			blast_resistance = 6.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 0.25f};
-			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = GEOMETRY::STAIRS_BOTTOM;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			hardness = 1.5f;
-			transparent = true;
 			textureX = 4;
 			textureY = 3;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
-			switch (corners) {
-				case CORNERS::MM | CORNERS::MP:
-					hitbox[0] = {0.25f, 0.5f, 0.75f}; // hitboxCenter
-					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
-					break ;
-				case CORNERS::PM | CORNERS::PP:
-					hitbox[0] = {0.75f, 0.5f, 0.75f};
-					hitbox[1] = {0.25f, 0.5f, 0.25f};
-					break ;
-				case CORNERS::MM | CORNERS::PM:
-					hitbox[0] = {0.5f, 0.25f, 0.75f};
-					hitbox[1] = {0.5f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::MP | CORNERS::PP:
-					hitbox[0] = {0.5f, 0.75f, 0.75f};
-					hitbox[1] = {0.5f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::MM:
-					hitbox[0] = {0.25f, 0.25f, 0.75f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::MP:
-					hitbox[0] = {0.25f, 0.75f, 0.75f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::PM:
-					hitbox[0] = {0.75f, 0.25f, 0.75f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::PP:
-					hitbox[0] = {0.75f, 0.75f, 0.75f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::MM | CORNERS::MP | CORNERS::PM:
-					if (orientation == face_dir::PLUSX) {
-						hitbox[0] = {0.25f, 0.5f, 0.75f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.25f, 0.75f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case CORNERS::MM | CORNERS::MP | CORNERS::PP:
-					if (orientation == face_dir::PLUSX) {
-						hitbox[0] = {0.25f, 0.5f, 0.75f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.75f, 0.75f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case CORNERS::PM | CORNERS::PP | CORNERS::MM:
-					if (orientation == face_dir::MINUSX) {
-						hitbox[0] = {0.75f, 0.5f, 0.75f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.25f, 0.75f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case CORNERS::PM | CORNERS::PP | CORNERS::MP:
-					if (orientation == face_dir::MINUSX) {
-						hitbox[0] = {0.75f, 0.5f, 0.75f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.75f, 0.75f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-			}
-		}
 };
 
-struct StoneStairsTop : Block {
+struct StoneStairsTop : OakStairsTop {
 	public:
 		StoneStairsTop() {
 			name = "STONE_STAIRS_TOP";
 			mined = blocks::STONE_STAIRS_BOTTOM;
 			blast_resistance = 6.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 0.75f};
-			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = GEOMETRY::STAIRS_TOP;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			hardness = 1.5f;
-			transparent = true;
 			textureX = 4;
 			textureY = 3;
-		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
-			switch (corners) {
-				case CORNERS::MM | CORNERS::MP:
-					hitbox[0] = {0.25f, 0.5f, 0.25f}; // hitboxCenter
-					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
-					break ;
-				case CORNERS::PM | CORNERS::PP:
-					hitbox[0] = {0.75f, 0.5f, 0.25f};
-					hitbox[1] = {0.25f, 0.5f, 0.25f};
-					break ;
-				case CORNERS::MM | CORNERS::PM:
-					hitbox[0] = {0.5f, 0.25f, 0.25f};
-					hitbox[1] = {0.5f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::MP | CORNERS::PP:
-					hitbox[0] = {0.5f, 0.75f, 0.25f};
-					hitbox[1] = {0.5f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::MM:
-					hitbox[0] = {0.25f, 0.25f, 0.25f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::MP:
-					hitbox[0] = {0.25f, 0.75f, 0.25f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::PM:
-					hitbox[0] = {0.75f, 0.25f, 0.25f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::PP:
-					hitbox[0] = {0.75f, 0.75f, 0.25f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case CORNERS::MM | CORNERS::MP | CORNERS::PM:
-					if (orientation == face_dir::PLUSX) {
-						hitbox[0] = {0.25f, 0.5f, 0.25f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.25f, 0.25f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case CORNERS::MM | CORNERS::MP | CORNERS::PP:
-					if (orientation == face_dir::PLUSX) {
-						hitbox[0] = {0.25f, 0.5f, 0.25f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.75f, 0.25f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case CORNERS::PM | CORNERS::PP | CORNERS::MM:
-					if (orientation == face_dir::MINUSX) {
-						hitbox[0] = {0.75f, 0.5f, 0.25f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.25f, 0.25f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case CORNERS::PM | CORNERS::PP | CORNERS::MP:
-					if (orientation == face_dir::MINUSX) {
-						hitbox[0] = {0.75f, 0.5f, 0.25f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.75f, 0.25f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-			}
 		}
 };
 
@@ -1380,7 +1220,7 @@ struct OakFence : Block {
 		}
 };
 
-struct StoneSlabBottom : Block {
+struct StoneSlabBottom : OakSlabBottom {
 	public:
 		StoneSlabBottom() {
 			name = "STONE_SLAB_BOTTOM";
@@ -1388,47 +1228,31 @@ struct StoneSlabBottom : Block {
 			// isComposant = true;
 			// getProduction = blocks::SMOOTH_STONE_SLAB;
 			blast_resistance = 6.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 0.25f};
-			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = GEOMETRY::SLAB_BOTTOM;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			hardness = 1.5f;
-			transparent = true;
 			textureX = 4;
 			textureY = 3;
 		}
 };
 
-struct StoneSlabTop : Block {
+struct StoneSlabTop : OakSlabTop {
 	public:
 		StoneSlabTop() {
 			name = "STONE_SLAB_TOP";
 			mined = blocks::STONE_SLAB_BOTTOM;
 			blast_resistance = 6.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 0.75f};
-			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = GEOMETRY::SLAB_TOP;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			hardness = 2.0f;
-			transparent = true;
 			textureX = 4;
 			textureY = 3;
 		}
 };
 
-struct Poppy : Block {
+struct Flower : Block {
 	public:
-		Poppy() {
-			name = "POPPY";
-			mined = blocks::POPPY;
+		Flower() {
 			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
@@ -1439,184 +1263,110 @@ struct Poppy : Block {
 			hardness = 0.0f;
 			transparent = true;
 			item3D = false;
+		}
+};
+
+struct Poppy : Flower {
+	public:
+		Poppy() {
+			name = "POPPY";
+			mined = blocks::POPPY;
 			textureX = 6;
 			textureY = 0;
 		}
 };
 
-struct Dandelion : Block {
+struct Dandelion : Flower {
 	public:
 		Dandelion() {
 			name = "DANDELION";
 			mined = blocks::DANDELION;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, 0.3f};
-			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
-			geometry = GEOMETRY::CROSS;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
 			textureX = 6;
 			textureY = 1;
 		}
 };
 
-struct BlueOrchid : Block {
+struct BlueOrchid : Flower {
 	public:
 		BlueOrchid() {
 			name = "BLUE_ORCHID";
 			mined = blocks::BLUE_ORCHID;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, 0.3f};
-			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
-			geometry = GEOMETRY::CROSS;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
 			textureX = 6;
 			textureY = 2;
 		}
 };
 
-struct Allium : Block {
+struct Allium : Flower {
 	public:
 		Allium() {
 			name = "ALLIUM";
 			mined = blocks::ALLIUM;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, 0.3f};
-			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
-			geometry = GEOMETRY::CROSS;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
 			textureX = 6;
 			textureY = 3;
 		}
 };
 
-struct CornFlower : Block {
+struct CornFlower : Flower {
 	public:
 		CornFlower() {
 			name = "CORNFLOWER";
 			mined = blocks::CORNFLOWER;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, 0.3f};
-			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
-			geometry = GEOMETRY::CROSS;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
 			textureX = 6;
 			textureY = 4;
 		}
 };
 
-struct PinkTulip : Block {
+struct PinkTulip : Flower {
 	public:
 		PinkTulip() {
 			name = "PINK_TULIP";
 			mined = blocks::PINK_TULIP;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, 0.3f};
-			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
-			geometry = GEOMETRY::CROSS;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
 			textureX = 6;
 			textureY = 5;
 		}
 };
 
-struct Grass : Block {
+struct Grass : Flower {
 	public:
 		Grass() {
 			name = "GRASS";
 			mined = blocks::WHEAT_SEEDS;
-			blast_resistance = 0.0f;
-			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::CROSS;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
+			hasHitbox = false;
 			textureX = 6;
 			textureY = 6;
 		}
 };
 
-struct SugarCane : Block {
+struct SugarCane : Flower {
 	public:
 		SugarCane() {
 			name = "SUGAR_CANE";
 			mined = blocks::SUGAR_CANE;
-			blast_resistance = 0.0f;
-			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::CROSS;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
+			hasHitbox = false;
 			textureX = 6;
 			textureY = 7;
 		}
 };
 
-struct DeadBush : Block {
+struct DeadBush : Flower {
 	public:
 		DeadBush() {
 			name = "DEAD_BUSH";
 			mined = blocks::STICK;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, 0.3f};
-			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
-			geometry = GEOMETRY::CROSS;
 			isFuel = true;
 			fuel_time = 5;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
 			textureX = 6;
 			textureY = 8;
 		}
 };
 
-struct OakSapling : Block {
+struct OakSapling : Flower {
 	public:
 		OakSapling() {
 			name = "OAK_SAPLING";
 			mined = blocks::OAK_SAPLING;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, 0.3f};
-			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
-			geometry = GEOMETRY::CROSS;
 			isFuel = true;
 			fuel_time = 5;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
 			textureX = 6;
 			textureY = 9;
 		}
