@@ -80,11 +80,12 @@ namespace blocks {
 		TNT,
 		CRAFTING_TABLE = 8,
 		FURNACE,
-		OAK_STAIRS = 10,
-		OAK_STAIRS_BOTTOM = 10,
+		OAK_STAIRS_BOTTOM,
 		OAK_STAIRS_TOP,
 		OAK_DOOR,
 		OAK_TRAPDOOR,
+		STONE_STAIRS_BOTTOM,
+		STONE_STAIRS_TOP,
 		BEDROCK = 16,
 		DIRT,
 		SMOOTH_STONE,
@@ -104,10 +105,11 @@ namespace blocks {
 		COAL_BLOCK,
 		IRON_BLOCK,
 		DIAMOND_BLOCK,
-		OAK_SLAB = 40,
 		OAK_SLAB_BOTTOM = 40,
 		OAK_SLAB_TOP,
 		OAK_FENCE,
+		STONE_SLAB_BOTTOM,
+		STONE_SLAB_TOP,
 		POPPY = 48,
 		DANDELION,
 		BLUE_ORCHID,
@@ -446,7 +448,7 @@ struct OakStairsBottom : Block {
 	public:
 		OakStairsBottom() {
 			name = "OAK_STAIRS_BOTTOM";
-			mined = blocks::OAK_STAIRS;
+			mined = blocks::OAK_STAIRS_BOTTOM;
 			blast_resistance = 3.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
@@ -542,7 +544,7 @@ struct OakStairsTop : Block {
 	public:
 		OakStairsTop() {
 			name = "OAK_STAIRS_TOP";
-			mined = blocks::OAK_STAIRS;
+			mined = blocks::OAK_STAIRS_BOTTOM;
 			blast_resistance = 3.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
@@ -755,6 +757,196 @@ struct OakTrapdoor : Block {
 						hitbox[1] = {0.5f, 0.09375f, 0.5f};
 						break ;
 				}
+			}
+		}
+};
+
+struct StoneStairsBottom : Block {
+	public:
+		StoneStairsBottom() {
+			name = "STONE_STAIRS_BOTTOM";
+			mined = blocks::STONE_STAIRS_BOTTOM;
+			// isComposant = true;
+			// getProduction = blocks::SMOOTH_STONE_STAIRS_BOTTOM;
+			blast_resistance = 6.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			orientedCollisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.25f};
+			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			geometry = GEOMETRY::STAIRS_BOTTOM;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			transparent = true;
+			textureX = 4;
+			textureY = 3;
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
+			switch (corners) {
+				case CORNERS::MM | CORNERS::MP:
+					hitbox[0] = {0.25f, 0.5f, 0.75f}; // hitboxCenter
+					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
+					break ;
+				case CORNERS::PM | CORNERS::PP:
+					hitbox[0] = {0.75f, 0.5f, 0.75f};
+					hitbox[1] = {0.25f, 0.5f, 0.25f};
+					break ;
+				case CORNERS::MM | CORNERS::PM:
+					hitbox[0] = {0.5f, 0.25f, 0.75f};
+					hitbox[1] = {0.5f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MP | CORNERS::PP:
+					hitbox[0] = {0.5f, 0.75f, 0.75f};
+					hitbox[1] = {0.5f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MM:
+					hitbox[0] = {0.25f, 0.25f, 0.75f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MP:
+					hitbox[0] = {0.25f, 0.75f, 0.75f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::PM:
+					hitbox[0] = {0.75f, 0.25f, 0.75f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::PP:
+					hitbox[0] = {0.75f, 0.75f, 0.75f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MM | CORNERS::MP | CORNERS::PM:
+					if (orientation == face_dir::PLUSX) {
+						hitbox[0] = {0.25f, 0.5f, 0.75f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.25f, 0.75f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
+				case CORNERS::MM | CORNERS::MP | CORNERS::PP:
+					if (orientation == face_dir::PLUSX) {
+						hitbox[0] = {0.25f, 0.5f, 0.75f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.75f, 0.75f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
+				case CORNERS::PM | CORNERS::PP | CORNERS::MM:
+					if (orientation == face_dir::MINUSX) {
+						hitbox[0] = {0.75f, 0.5f, 0.75f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.25f, 0.75f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
+				case CORNERS::PM | CORNERS::PP | CORNERS::MP:
+					if (orientation == face_dir::MINUSX) {
+						hitbox[0] = {0.75f, 0.5f, 0.75f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.75f, 0.75f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
+			}
+		}
+};
+
+struct StoneStairsTop : Block {
+	public:
+		StoneStairsTop() {
+			name = "STONE_STAIRS_TOP";
+			mined = blocks::STONE_STAIRS_BOTTOM;
+			blast_resistance = 6.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			orientedCollisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.75f};
+			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			geometry = GEOMETRY::STAIRS_TOP;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			transparent = true;
+			textureX = 4;
+			textureY = 3;
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
+			switch (corners) {
+				case CORNERS::MM | CORNERS::MP:
+					hitbox[0] = {0.25f, 0.5f, 0.25f}; // hitboxCenter
+					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
+					break ;
+				case CORNERS::PM | CORNERS::PP:
+					hitbox[0] = {0.75f, 0.5f, 0.25f};
+					hitbox[1] = {0.25f, 0.5f, 0.25f};
+					break ;
+				case CORNERS::MM | CORNERS::PM:
+					hitbox[0] = {0.5f, 0.25f, 0.25f};
+					hitbox[1] = {0.5f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MP | CORNERS::PP:
+					hitbox[0] = {0.5f, 0.75f, 0.25f};
+					hitbox[1] = {0.5f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MM:
+					hitbox[0] = {0.25f, 0.25f, 0.25f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MP:
+					hitbox[0] = {0.25f, 0.75f, 0.25f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::PM:
+					hitbox[0] = {0.75f, 0.25f, 0.25f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::PP:
+					hitbox[0] = {0.75f, 0.75f, 0.25f};
+					hitbox[1] = {0.25f, 0.25f, 0.25f};
+					break ;
+				case CORNERS::MM | CORNERS::MP | CORNERS::PM:
+					if (orientation == face_dir::PLUSX) {
+						hitbox[0] = {0.25f, 0.5f, 0.25f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.25f, 0.25f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
+				case CORNERS::MM | CORNERS::MP | CORNERS::PP:
+					if (orientation == face_dir::PLUSX) {
+						hitbox[0] = {0.25f, 0.5f, 0.25f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.75f, 0.25f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
+				case CORNERS::PM | CORNERS::PP | CORNERS::MM:
+					if (orientation == face_dir::MINUSX) {
+						hitbox[0] = {0.75f, 0.5f, 0.25f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.25f, 0.25f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
+				case CORNERS::PM | CORNERS::PP | CORNERS::MP:
+					if (orientation == face_dir::MINUSX) {
+						hitbox[0] = {0.75f, 0.5f, 0.25f};
+						hitbox[1] = {0.25f, 0.5f, 0.25f};
+					} else {
+						hitbox[0] = {0.5f, 0.75f, 0.25f};
+						hitbox[1] = {0.5f, 0.25f, 0.25f};
+					}
+					break ;
 			}
 		}
 };
@@ -1092,7 +1284,7 @@ struct OakSlabBottom : Block {
 	public:
 		OakSlabBottom() {
 			name = "OAK_SLAB_BOTTOM";
-			mined = blocks::OAK_SLAB;
+			mined = blocks::OAK_SLAB_BOTTOM;
 			blast_resistance = 3.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
@@ -1115,7 +1307,7 @@ struct OakSlabTop : Block {
 	public:
 		OakSlabTop() {
 			name = "OAK_SLAB_TOP";
-			mined = blocks::OAK_SLAB;
+			mined = blocks::OAK_SLAB_BOTTOM;
 			blast_resistance = 3.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
@@ -1185,6 +1377,50 @@ struct OakFence : Block {
 					hitbox[1].y = 0.5f;
 					break ;
 			}
+		}
+};
+
+struct StoneSlabBottom : Block {
+	public:
+		StoneSlabBottom() {
+			name = "STONE_SLAB_BOTTOM";
+			mined = blocks::STONE_SLAB_BOTTOM;
+			// isComposant = true;
+			// getProduction = blocks::SMOOTH_STONE_SLAB;
+			blast_resistance = 6.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.25f};
+			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			geometry = GEOMETRY::SLAB_BOTTOM;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			transparent = true;
+			textureX = 4;
+			textureY = 3;
+		}
+};
+
+struct StoneSlabTop : Block {
+	public:
+		StoneSlabTop() {
+			name = "STONE_SLAB_TOP";
+			mined = blocks::STONE_SLAB_BOTTOM;
+			blast_resistance = 6.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.75f};
+			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			geometry = GEOMETRY::SLAB_TOP;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 2.0f;
+			transparent = true;
+			textureX = 4;
+			textureY = 3;
 		}
 };
 

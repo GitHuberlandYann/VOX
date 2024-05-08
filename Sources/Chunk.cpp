@@ -1009,12 +1009,12 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		addFlame(offset, pos, blocks::TORCH, (block_value >> 9) & 0x7);
 	} else if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
 		block_value += (_camera->getOrientation() << 9);
-		switch (type) {
-			case blocks::OAK_STAIRS_BOTTOM:
-			case blocks::OAK_STAIRS_TOP:
+		switch (s_blocks[type]->geometry) {
+			case GEOMETRY::STAIRS_BOTTOM:
+			case GEOMETRY::STAIRS_TOP:
 				handle_stair_corners(pos, block_value);
 				break ;
-			case blocks::OAK_DOOR:
+			case GEOMETRY::DOOR:
 				handle_door_placement(pos, block_value);
 				if (block_value == blocks::AIR) return ; // door couldn't be placed
 				else if (!((block_value >> 12) & DOOR::UPPER_HALF)) { // place upper_half

@@ -60,7 +60,8 @@ void UI::add_inventory_elem( int index )
 	x += 2 * _gui_size;
 	y += _gui_size;
 	int offset = (type == blocks::OAK_LOG) ? AXIS::Z : face_dir::PLUSX;
-	if (type == blocks::OAK_STAIRS) {
+	int shape = s_blocks[type]->geometry;
+	if (shape == GEOMETRY::STAIRS_BOTTOM) {
 		int spec = (15 << 24) + (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
 		// top of second step
 		glm::ivec3 v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
@@ -100,7 +101,7 @@ void UI::add_inventory_elem( int index )
 		v3 = {spec + (1 << 4) + (1 << 12), x + 6.5f * _gui_size, y + 15 * _gui_size};
 		addFace(v0, v1, v2, v3, false);
 		return ;
-	} else if (type == blocks::OAK_FENCE) {
+	} else if (shape == GEOMETRY::FENCE) {
 		x -= _gui_size;
 		int spec = (15 << 24) + (s_blocks[blocks::OAK_PLANKS]->texX() << 4) + (s_blocks[blocks::OAK_PLANKS]->texY() << 12);
 		// top of left pole
@@ -192,7 +193,6 @@ void UI::add_inventory_elem( int index )
 		addFace(v0, v1, v2, v3, false);
 		return ;
 	}
-	int shape = s_blocks[type]->geometry;
 	int yTop = (shape == GEOMETRY::SLAB_BOTTOM) ? y + 15 * _gui_size * 100.0f / 362.5f
 											: (shape == GEOMETRY::TRAPDOOR) ? y + 15 * _gui_size * 162.5f / 362.5f : y;
 	int slabOffset = (shape == GEOMETRY::SLAB_BOTTOM) ? (8 << 8)

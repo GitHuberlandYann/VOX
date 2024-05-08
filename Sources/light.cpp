@@ -253,7 +253,7 @@ void Chunk::fill_vertex_array( void )
 						}
 						if (visible_face(type, getBlockAt(row, col, level + 1, true), face_dir::PLUSZ)) {
 							spec = baseSpec + (0 << 19);
-							faceLight = computeLight(row, col, level + 1);
+							faceLight = computeLight(row, col, shape == GEOMETRY::SLAB_BOTTOM ? level : level + 1);
 							shade = 0;//computeShade(row, col, level + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 							spec += (faceLight << 24);
 							// if (shade & 0xFF)std::cout << "shade is " << shade << std::endl;
@@ -266,7 +266,7 @@ void Chunk::fill_vertex_array( void )
 						}
 						if (visible_face(type, getBlockAt(row, col, level - 1, true), face_dir::MINUSZ)) {
 							spec = baseSpec + (5 << 19);
-							faceLight = computeLight(row, col, level - 1);
+							faceLight = computeLight(row, col, shape == GEOMETRY::SLAB_BOTTOM ? level - 1 : level);
 							shade = 0;//computeShade(row, col, level - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
 							spec += (faceLight << 24);
 							v0 = {spec + (shade << 22), p2};

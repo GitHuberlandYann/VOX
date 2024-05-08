@@ -59,7 +59,7 @@ void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, bool game_
 		}
 		glm::vec3 itemUp = glm::normalize(glm::cross(itemRight, itemFront));
 
-		if (item == blocks::OAK_STAIRS) {
+		if (s_blocks[item]->geometry == GEOMETRY::STAIRS_BOTTOM) {
 			// up
 			glm::vec3 p0 = pos + _world_up * (0.1f + 0.5f * _front.z) + itemFront * 12.0f * scale - itemRight * 0.25f;
 			glm::vec3 p1 = p0 + itemRight * 0.25f;
