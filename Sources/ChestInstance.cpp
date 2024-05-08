@@ -157,6 +157,60 @@ void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
 	v2 = {spec + 1 + (1 << 18) + (5 << 8), p3};
 	v3 = {spec - 1 + XTEX + (1 << 18) + (5 << 8), p2};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	const float ONE14TH = 1.0f / 14.0f;
+	// adding lock
+	p0 += glm::vec3( right.x * 6.0f * ONE14TH + back.x * 0.4f,  right.y * 6.0f * ONE14TH + back.y * 0.4f, ONE16TH);
+	p1 += glm::vec3(-right.x * 6.0f * ONE14TH + back.x * 0.4f, -right.y * 6.0f * ONE14TH + back.y * 0.4f, ONE16TH);
+	p2 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * 0.4f,  right.y * 6.0f * ONE14TH - back.y * 0.4f, 15.0f * ONE16TH);
+	p3 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * 0.4f, -right.y * 6.0f * ONE14TH - back.y * 0.4f, 15.0f * ONE16TH);
+
+	p4 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * 0.6f,  right.y * 6.0f * ONE14TH - back.y * 0.6f, 0);
+	p5 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * 0.6f, -right.y * 6.0f * ONE14TH - back.y * 0.6f, 0);
+	p6 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * 1.4f,  right.y * 6.0f * ONE14TH - back.y * 1.4f, 14.0f * ONE16TH);
+	p7 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * 1.4f, -right.y * 6.0f * ONE14TH - back.y * 1.4f, 14.0f * ONE16TH);
+
+    spec = (5 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24); // front
+    v0 = {spec, p0};
+    v1 = {spec - 14 + XTEX, p1};
+    v2 = {spec - (12 << 8) + YTEX, p2};
+    v3 = {spec - 14 + XTEX - (12 << 8) + YTEX, p3};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = (5 << 4) + (15 << 12) + (4 << 19) + (itemLight << 24); // back
+    v0 = {spec - 14 + XTEX, p5};
+    v1 = {spec, p4};
+    v2 = {spec - 14 + XTEX - (12 << 8) + YTEX, p7};
+    v3 = {spec - (12 << 8) + YTEX, p6};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = (5 << 4) + (15 << 12) + (1 << 19) + (itemLight << 24); // left side
+    v0 = {spec, p4};
+    v1 = {spec - 15 + XTEX, p0};
+    v2 = {spec - (12 << 8) + YTEX, p6};
+    v3 = {spec - 15 + XTEX - (12 << 8) + YTEX, p2};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = (5 << 4) + (15 << 12) + (2 << 19) + (itemLight << 24); // right side
+    v0 = {spec + 1, p1};
+    v1 = {spec - 14 + XTEX, p5};
+    v2 = {spec + 1 - (12 << 8) + YTEX, p3};
+    v3 = {spec - 14 + XTEX - (12 << 8) + YTEX, p7};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+// +z
+	spec = (5 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
+    v0 = {spec, p4};
+    v1 = {spec - 14 + XTEX, p5};
+    v2 = {spec - (15 << 8) + YTEX, p0};
+    v3 = {spec - 14 + XTEX - (15 << 8) + YTEX, p1};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+// -z
+	spec = (5 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
+	v0 = {spec + (3 << 8), p2};
+	v1 = {spec - 14 + XTEX + (3 << 8), p3};
+	v2 = {spec - (12 << 8) + YTEX, p6};
+	v3 = {spec - 14 + XTEX - (12 << 8) + YTEX, p7};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 }
 
 void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
@@ -304,6 +358,60 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
 	v2 = {spec + 1 + (1 << 18) + (5 << 8), p3};
 	v3 = {spec - 1 + XTEX + (1 << 18) + (5 << 8), p2};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	const float ONE14TH = 1.0f / 14.0f;
+	// adding lock
+	p0 +=  right * 6.0f * ONE14TH + back * 0.4f + top * ONE14TH;
+	p1 += -right * 6.0f * ONE14TH + back * 0.4f + top * ONE14TH;
+	p2 +=  right * 6.0f * ONE14TH - back * 0.4f + top * 15.0f * ONE14TH;
+	p3 += -right * 6.0f * ONE14TH - back * 0.4f + top * 15.0f * ONE14TH;
+
+	p4 +=  right * 6.0f * ONE14TH - back * 0.6f;
+	p5 += -right * 6.0f * ONE14TH - back * 0.6f;
+	p6 +=  right * 6.0f * ONE14TH - back * 1.4f + top * 14.0f * ONE14TH;
+	p7 += -right * 6.0f * ONE14TH - back * 1.4f + top * 14.0f * ONE14TH;
+
+    spec = (5 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24); // front
+    v0 = {spec, p0};
+    v1 = {spec - 14 + XTEX, p1};
+    v2 = {spec - (12 << 8) + YTEX, p2};
+    v3 = {spec - 14 + XTEX - (12 << 8) + YTEX, p3};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = (5 << 4) + (15 << 12) + (4 << 19) + (itemLight << 24); // back
+    v0 = {spec - 14 + XTEX, p5};
+    v1 = {spec, p4};
+    v2 = {spec - 14 + XTEX - (12 << 8) + YTEX, p7};
+    v3 = {spec - (12 << 8) + YTEX, p6};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = (5 << 4) + (15 << 12) + (1 << 19) + (itemLight << 24); // left side
+    v0 = {spec, p4};
+    v1 = {spec - 15 + XTEX, p0};
+    v2 = {spec - (12 << 8) + YTEX, p6};
+    v3 = {spec - 15 + XTEX - (12 << 8) + YTEX, p2};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = (5 << 4) + (15 << 12) + (2 << 19) + (itemLight << 24); // right side
+    v0 = {spec + 1, p1};
+    v1 = {spec - 14 + XTEX, p5};
+    v2 = {spec + 1 - (12 << 8) + YTEX, p3};
+    v3 = {spec - 14 + XTEX - (12 << 8) + YTEX, p7};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+// +z
+	spec = (5 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
+    v0 = {spec, p4};
+    v1 = {spec - 14 + XTEX, p5};
+    v2 = {spec - (15 << 8) + YTEX, p0};
+    v3 = {spec - 14 + XTEX - (15 << 8) + YTEX, p1};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+// -z
+	spec = (5 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
+	v0 = {spec + (3 << 8), p2};
+	v1 = {spec - 14 + XTEX + (3 << 8), p3};
+	v2 = {spec - (12 << 8) + YTEX, p6};
+	v3 = {spec - 14 + XTEX - (12 << 8) + YTEX, p7};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 }
 
 void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
@@ -346,28 +454,28 @@ void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
 
 	int itemLight = _chunk->computePosLight(_pos);
 
-    int spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24);
+    int spec = (1 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24); // front
     t_shaderInput v0 = {spec + 1, p0};
     t_shaderInput v1 = {spec - 1 + XTEX, p1};
     t_shaderInput v2 = {spec + 1 + (1 << 18) + (15 << 8), p2};
     t_shaderInput v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 12) + (4 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (4 << 19) + (itemLight << 24); // back
     v0 = {spec + 1, p5};
     v1 = {spec - 1 + XTEX, p4};
     v2 = {spec + 1 + (1 << 18) + (15 << 8), p7};
     v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p6};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (1 << 19) + (itemLight << 24); // left size
     v0 = {spec + 1, p4};
     v1 = {spec - 1 + XTEX, p0};
     v2 = {spec + 1 + (1 << 18) + (15 << 8), p6};
     v3 = {spec - 1 + XTEX + (1 << 18) + (15 << 8), p2};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24);
+	spec = 0 + (15 << 12) + (2 << 19) + (itemLight << 24); // right size
     v0 = {spec + 1, p1};
     v1 = {spec - 1 + XTEX, p5};
     v2 = {spec + 1 + (1 << 18) + (15 << 8), p3};
@@ -389,6 +497,53 @@ void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
 		v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p7};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	}
+
+	const float ONE14TH = 1.0f / 14.0f;
+	// adding lock
+	p0 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * ONE14TH,  right.y * 6.0f * ONE14TH - back.y * ONE14TH, -3.0f * ONE16TH);
+	p1 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * ONE14TH, -right.y * 6.0f * ONE14TH - back.y * ONE14TH, -3.0f * ONE16TH);
+	p2 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * ONE14TH,  right.y * 6.0f * ONE14TH - back.y * ONE14TH,  8.0f * ONE16TH);
+	p3 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * ONE14TH, -right.y * 6.0f * ONE14TH - back.y * ONE14TH,  8.0f * ONE16TH);
+
+	p4 += glm::vec3( right.x * 6.0f * ONE14TH - back.x,  right.y * 6.0f * ONE14TH - back.y, -3.0f * ONE16TH);
+	p5 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x, -right.y * 6.0f * ONE14TH - back.y, -3.0f * ONE16TH);
+	p6 += glm::vec3( right.x * 6.0f * ONE14TH - back.x,  right.y * 6.0f * ONE14TH - back.y,  8.0f * ONE16TH);
+	p7 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x, -right.y * 6.0f * ONE14TH - back.y,  8.0f * ONE16TH);
+
+    spec = (5 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24); // front
+    v0 = {spec, p0};
+    v1 = {spec - 14 + XTEX, p1};
+    v2 = {spec - (12 << 8) + YTEX, p2};
+    v3 = {spec - 14 + XTEX - (12 << 8) + YTEX, p3};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = (5 << 4) + (15 << 12) + (1 << 19) + (itemLight << 24); // left side
+    v0 = {spec, p4};
+    v1 = {spec - 15 + XTEX, p0};
+    v2 = {spec - (12 << 8) + YTEX, p6};
+    v3 = {spec - 15 + XTEX - (12 << 8) + YTEX, p2};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	spec = (5 << 4) + (15 << 12) + (2 << 19) + (itemLight << 24); // right side
+    v0 = {spec + 1, p1};
+    v1 = {spec - 14 + XTEX, p5};
+    v2 = {spec + 1 - (12 << 8) + YTEX, p3};
+    v3 = {spec - 14 + XTEX - (12 << 8) + YTEX, p7};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+// +z
+	spec = (5 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
+    v0 = {spec, p4};
+    v1 = {spec - 14 + XTEX, p5};
+    v2 = {spec - (15 << 8) + YTEX, p0};
+    v3 = {spec - 14 + XTEX - (15 << 8) + YTEX, p1};
+    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+// -z
+	spec = (5 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
+	v0 = {spec + (3 << 8), p2};
+	v1 = {spec - 14 + XTEX + (3 << 8), p3};
+	v2 = {spec - (12 << 8) + YTEX, p6};
+	v3 = {spec - 14 + XTEX - (12 << 8) + YTEX, p7};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 }
 
 // ************************************************************************** //
