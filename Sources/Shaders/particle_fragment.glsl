@@ -1,26 +1,15 @@
 #version 150 core
 
-in vec2 Texcoord;
+in vec3 TexCoords;
 in float FaceShadow;
-flat in int Atlas;
 
 out vec4 outColor;
 
-uniform sampler2D blockAtlas;
-uniform sampler2D particleAtlas;
-uniform sampler2D modelAtlas;
+uniform sampler2DArray textures;
 
 void main()
 {
-	if (Atlas == 0) {
-		outColor = texture(blockAtlas, Texcoord);
-	} else if (Atlas == 1) {
-		outColor = texture(particleAtlas, Texcoord);
-	} else if (Atlas == 2) {
-		outColor = texture(modelAtlas, Texcoord);
-	} else {
-		discard ;
-	}
+	outColor = texture(textures, TexCoords);
 	if(outColor.a < 0.01) {
 		discard ;
 	}

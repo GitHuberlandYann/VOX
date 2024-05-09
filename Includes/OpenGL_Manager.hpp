@@ -33,7 +33,7 @@ class OpenGL_Manager
 		GLuint _vaoEntities, _vboEntities, _vaoParticles, _vboParticles, _shaderProgram, _skyShaderProgram, _particleShaderProgram;
 		GLint _uniFog, _uniView, _uniProj, _uniBrightness, _skyUniFog, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim, _partUniView, _partUniProj, _partUniBrightness;
 		glm::ivec2 _current_chunk;
-		GLuint *_textures;
+		std::array<GLuint, 4> _textures;
 		GLint _fill;
 		bool _debug_mode, _game_mode, _outline, _paused, _threadUpdate, _threadStop;
 		float _break_time, _eat_timer, _bow_timer;

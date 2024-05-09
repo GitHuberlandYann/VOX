@@ -5,7 +5,7 @@
 void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
-	: _window(NULL), _textures(NULL),
+	: _window(NULL), _textures({NULL}),
 		_fill(FILL),
 		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
 		_threadUpdate(false), _threadStop(false),
@@ -30,9 +30,8 @@ OpenGL_Manager::~OpenGL_Manager( void )
 
 	stopThread();
 
-	if (_textures) {
-		glDeleteTextures(5, _textures);
-		delete [] _textures;
+	if (_textures[0]) {
+		glDeleteTextures(_textures.size(), &_textures[0]);
 	}
 	glDeleteProgram(_shaderProgram);
 	glDeleteProgram(_skyShaderProgram);
@@ -407,12 +406,11 @@ void OpenGL_Manager::load_texture( void )
 	}
 	_ui->load_texture();
 
-	if (_textures) {
-		glDeleteTextures(5, _textures);
-		delete [] _textures;
+	if (_textures[0]) {
+		glDeleteTextures(_textures.size(), &_textures[0]);
+		_textures[0] = 0;
 	}
-	_textures = new GLuint[5];
-	glGenTextures(5, _textures);
+	glGenTextures(4, &_textures[0]);
 
 	glUseProgram(_shaderProgram);
 	loadTextureShader(0, _textures[0], Settings::Get()->getString(SETTINGS::STRING::BLOCK_ATLAS));
@@ -428,11 +426,14 @@ void OpenGL_Manager::load_texture( void )
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterFlow"), 5);
 
 	glUseProgram(_particleShaderProgram);
-	glUniform1i(glGetUniformLocation(_particleShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
-	loadTextureShader(6, _textures[3], Settings::Get()->getString(SETTINGS::STRING::PARTICLE_ATLAS));
-	glUniform1i(glGetUniformLocation(_particleShaderProgram, "particleAtlas"), 6);
-	loadTextureShader(7, _textures[4], Settings::Get()->getString(SETTINGS::STRING::MODEL_ATLAS));
-	glUniform1i(glGetUniformLocation(_particleShaderProgram, "modelAtlas"), 7);
+	glActiveTexture(GL_TEXTURE0 + 6);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, _textures[3]);
+
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 3);
+	loadSubTextureArray(0, Settings::Get()->getString(SETTINGS::STRING::BLOCK_ATLAS));
+	loadSubTextureArray(1, Settings::Get()->getString(SETTINGS::STRING::PARTICLE_ATLAS));
+	loadSubTextureArray(2, Settings::Get()->getString(SETTINGS::STRING::MODEL_ATLAS));
+	glUniform1i(glGetUniformLocation(_particleShaderProgram, "textures"), 6);
 }
 
 void OpenGL_Manager::setGamemode( bool gamemode )

@@ -175,6 +175,37 @@ void loadTextureShader( int index, GLuint texture, std::string texture_file )
 	check_glstate("Successfully loaded img[" + std::to_string(index) + "] " + texture_file + " to shader", true);
 }
 
+void loadSubTextureArray( int layer, std::string texture_file )
+{
+	// load image
+	t_tex img;
+	img.content = SOIL_load_image(texture_file.c_str(), &img.width, &img.height, 0, SOIL_LOAD_RGBA);
+	if (!img.content) {
+		std::cerr << "failed to load image " << texture_file << " because:" << std::endl << SOIL_last_result() << std::endl;
+		exit(1);
+	}
+
+	if (img.width != 256 || img.height != 256) {
+		std::cerr << texture_file << ": image size not 256x256 but " << img.width << "x" << img.height << std::endl;
+		exit(1);
+	}
+	// Upload pixel data.
+	// The first 0 refers to the mipmap level (level 0, since there's only 1)
+	// The following 2 zeroes refers to the x and y offsets in case you only want to specify a subrectangle.
+	// 256x256 size of rect, 1 = depth of layer
+	glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, img.width, img.height, 1, GL_RGBA, GL_UNSIGNED_BYTE, img.content);
+			
+	// set settings for texture wraping and size modif
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	SOIL_free_image_data(img.content);
+
+	check_glstate("Succesfully loaded " + texture_file + " to subTextureArray[" + std::to_string(layer) + "]", true);
+}
+
 int chunk_pos( int pos )
 {
 	if (CHUNK_SIZE == 16) {

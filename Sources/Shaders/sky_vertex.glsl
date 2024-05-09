@@ -22,21 +22,25 @@ out vec2 TexCoord;
 flat out int Atlas;
 out float zDist;
 
+const float one32th = 0.03125f;
+const float one16th = 0.0625f;
+const float one8th = 0.125f;
+
 void main()
 {
 	int level = position.w & 0xF;
-	gl_Position = proj * view * vec4(position.xy, position.z - (level / 8.0f), 1.0);
+	gl_Position = proj * view * vec4(position.xy, position.z - (level * one8th), 1.0f);
 	Color = color;
-	Atlas = (position.w >> 8) & 3;
+	Atlas = (position.w >> 8) & 0x3;
 	if (Atlas == 3) {
 		Color = vec3(1.0f, 1.0f, 1.0f);
-		TexCoord = vec2((4 + ((position.w >> 10) & 1)) / 16.0f, (11 + ((position.w >> 11) & 1)) / 16.0f);
+		TexCoord = vec2((4 + ((position.w >> 10) & 0x1)) * one16th, (11 + ((position.w >> 11) & 0x1)) * one16th);
 	} else if (Atlas != 0) {
-		int shiftX = position.w >> 10;
-		int shiftY = position.w >> 11;
-		int shiftX2 = position.w >> 12;
-		int shiftY2 = position.w >> 13;
-		TexCoord = vec2((shiftX & 1) + (shiftX2 & 1) * 0.5f, (animFrame + (shiftY & 1) + (shiftY2 & 1) * 0.5f) / 32.0f);
+		int shiftX = (position.w >> 10) & 0x1;
+		int shiftY = (position.w >> 11) & 0x1;
+		int shiftX2 = (position.w >> 12) & 0x1;
+		int shiftY2 = (position.w >> 13) & 0x1;
+		TexCoord = vec2(shiftX + shiftX2 * 0.5f, (animFrame + shiftY + shiftY2 * 0.5f) * one32th);
 	}
 	zDist = gl_Position.z;
 }

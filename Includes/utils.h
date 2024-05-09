@@ -48,6 +48,7 @@ std::vector<std::string> split( std::string &str, char sep );
 GLuint createShaderProgram( std::string vertex, std::string geometry, std::string fragment );
 void check_glstate( std::string str, bool displayDebug );
 void loadTextureShader( int index, GLuint texture, std::string texture_file );
+void loadSubTextureArray( int layer, std::string texture_file );
 int chunk_pos( int pos );
 
 double gradient( double value, double start, double end, double value_start, double value_end );

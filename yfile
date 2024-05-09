@@ -30,15 +30,23 @@ TODOS:
     - biomes
 	- fix light spread problems caused by recurse limitation (when torches are next to each other)
 	- display item name and details upon mouse hover in menus
+	- double chests
 	- fire
+	- lantern
+	- campfire
 	- mobs
+	- signs
+	- ladder
+	- stone wall
+	- button
 	- redstone
 	- bed
 	- enchanting table
+	- stars at night
 	- save entities
 	- entity shadow
-	- entity shader ?
 	- rework clouds
+	- commands /say /me /save /setblock /kill
     - Sound https://www.ambiera.com/irrklang/tutorials.html
 	- upon world generation, place player on ground by using continentalness
 	- water ligth level
@@ -48,10 +56,8 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-	- double chests
 	- bow and arrow
 	- universal use of tps instead of deltatimes
-	- commands /say /me /save /setblock /kill
 
 TODAY:
 	- fix faces open/closed trapdoors not matching
@@ -64,7 +70,6 @@ SHORTTERM memory:
 	\/ - rework Makefile
 	- replace glm with own small lib
 	- rework general code structure (who owns who)
-	- turn menu, chat, text, ui, camera, settings into singletons, then use ::Get() once to get their ptrs
 	\/ - check how to update atlas texture ingame
 	\/ - make menus texts responsive
 
