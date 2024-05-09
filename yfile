@@ -36,6 +36,7 @@ TODOS:
 	- campfire
 	- mobs
 	- signs
+	- item frame
 	- ladder
 	- stone wall
 	- button
@@ -56,10 +57,13 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+	- lever
 	- bow and arrow
 	- universal use of tps instead of deltatimes
 
 TODAY:
+	- modif ligth.cpp to call s_blocks[type]->addMesh(this, _vertices, pos);
+		- change blocks.hpp structures to use more inheritance
 	- fix faces open/closed trapdoors not matching
 	- fix touchy stairs still displaying touchy faces
 	- blocks with oriented light occlusion (ie slabs, stairs)
@@ -299,3 +303,4 @@ Some info:
 	- trapdoors 0x7 << 9 == orientation, 0x1000 == half, 0x4000 == open
 	- fence 0xF << 12 == 'arms'
 	- glass panes 0xF << 12 == 'arms'
+	- lever 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor), 0x1 << 14 == powered

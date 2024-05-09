@@ -9,7 +9,6 @@
 
 # define CHUNK_SIZE 16
 # define TICK 0.05
-const float ONE16TH = 0.0625f;
 # define ONE_SIXTEENTH 1.0f / 16.0f // TODO get rid of those and only use ONE16TH
 # define THREE_SIXTEENTH 3.0f / 16.0f
 # define THIRTEEN_SIXTEENTH 13.0f / 16.0f

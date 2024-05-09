@@ -9,7 +9,7 @@ class FurnaceInstance;
 class ChestInstance;
 class UI;
 
-# define IRECEIPT_SIZE 25
+# define IRECEIPT_SIZE 27
 # define RECEIPT_SIZE 106
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
@@ -38,6 +38,8 @@ const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::CRAFTING_TABLE, 1},
 	{blocks::STONE, blocks::STONE, blocks::STONE, blocks::STONE, blocks::STONE_BRICKS, 4},
 	{blocks::IRON_INGOT, blocks::AIR, blocks::AIR, blocks::FLINT, blocks::FLINT_AND_STEEL, 1},
+	{blocks::STICK, blocks::AIR, blocks::COBBLESTONE, blocks::AIR, blocks::LEVER, 1},
+	{blocks::AIR, blocks::STICK, blocks::AIR, blocks::COBBLESTONE, blocks::LEVER, 1},
 };
 
 const int receipt[RECEIPT_SIZE][11] = {

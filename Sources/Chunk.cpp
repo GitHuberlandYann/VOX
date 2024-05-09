@@ -1007,7 +1007,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			}
 		}
 		addFlame(offset, pos, blocks::TORCH, (block_value >> 9) & 0x7);
-	} else if (type >= blocks::CRAFTING_TABLE && type < blocks::BEDROCK) { // oriented blocks
+	} else if (s_blocks[type]->oriented) {
 		block_value += (_camera->getOrientation() << 9);
 		switch (s_blocks[type]->geometry) {
 			case GEOMETRY::STAIRS_BOTTOM:

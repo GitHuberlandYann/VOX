@@ -176,6 +176,11 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 			if (type == blocks::TORCH) {
 				_lights[offset] &= 0xFF00;
 				light_spread(posX, posY, posZ, false);
+				auto search = _flames.find(offset);
+				if (search != _flames.end()) {
+					delete search->second;
+					_flames.erase(offset);
+				}
 			}
 			// std::cout << "type after: " << s_blocks[level]->name << ". displayed: " << _displayed_faces << std::endl;
 			_vertex_update = true;

@@ -9,6 +9,8 @@
 # include <glm/gtc/type_ptr.hpp>
 # include <string>
 
+const float ONE16TH = 0.0625f;
+
 # define S_BLOCKS_SIZE 128
 
 enum face_dir {
@@ -43,6 +45,12 @@ enum DOOR {
 	OPEN        = 0b100
 };
 
+enum PLACEMENT {
+	WALL,
+	FLOOR,
+	CEILING
+};
+
 enum AXIS {
 	Z,
 	X,
@@ -66,6 +74,7 @@ namespace GEOMETRY {
 		DOOR,
 		TRAPDOOR,
 		CROP,
+		LEVER,
 	};
 };
 
@@ -92,6 +101,7 @@ namespace blocks {
 		COBBLESTONE_STAIRS_TOP,
 		STONE_BRICKS_STAIRS_BOTTOM,
 		STONE_BRICKS_STAIRS_TOP,
+		LEVER,
 		BEDROCK = 24,
 		DIRT,
 		SMOOTH_STONE,
@@ -201,6 +211,7 @@ struct Block {
 		bool hasHitbox = false;
 		bool collisionHitbox_1x1x1 = true;
 		bool collisionHitbox = false;
+		bool oriented = false;
 		bool orientedCollisionHitbox = false;
 		glm::vec3 hitboxCenter = {0, 0, 0};
 		glm::vec3 hitboxHalfSize = {0, 0, 0};
@@ -420,6 +431,7 @@ struct CraftingTable : Block {
 			isFuel = true;
 			fuel_time = 15;
 			blast_resistance = 2.5f;
+			oriented = true;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.5f;
@@ -441,6 +453,7 @@ struct Furnace : Block {
 			name = "FURNACE";
 			mined = blocks::FURNACE;
 			blast_resistance = 3.5f;
+			oriented = true;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
 			hardness = 3.5f;
@@ -465,6 +478,7 @@ struct OakStairsBottom : Block {
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
+			oriented = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
@@ -561,6 +575,7 @@ struct OakStairsTop : Block {
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
+			oriented = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.75f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
@@ -657,6 +672,7 @@ struct OakDoor : Block {
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
+			oriented = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = GEOMETRY::DOOR;
@@ -734,6 +750,7 @@ struct OakTrapdoor : Block {
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
+			oriented = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = GEOMETRY::TRAPDOOR;
@@ -886,6 +903,69 @@ struct StoneBricksStairsTop : OakStairsTop {
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 5;
+		}
+};
+
+struct Lever : Block {
+	public:
+		Lever() {
+			name = "LEVER";
+			mined = blocks::LEVER;
+			blast_resistance = 0.5f;
+			collisionHitbox_1x1x1 = false;
+			hasHitbox = true;
+			collisionHitbox = true;
+			oriented = true;
+			orientedCollisionHitbox = true;
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			geometry = GEOMETRY::LEVER;
+			hardness = 0.5f;
+			transparent = true;
+			item3D = false;
+			textureX = 7;
+			textureY = 10;
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			hitbox[0] = {0.5f, 0.5f, 1.5f * ONE16TH};
+			hitbox[1] = {0,    0,    1.5f * ONE16TH};
+			switch (bitfield & 0x3) {
+				case PLACEMENT::WALL:
+					switch (orientation) {
+						case face_dir::MINUSX:
+							hitbox[0] = {14.5f * ONE16TH, 0.5f,           0.5f};
+							hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
+							break ;
+						case face_dir::PLUSX:
+							hitbox[0] = { 1.5f * ONE16TH, 0.5f,           0.5f};
+							hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
+							break ;
+						case face_dir::MINUSY:
+							hitbox[0] = {0.5f,           14.5f * ONE16TH, 0.5f};
+							hitbox[1] = {3.0f * ONE16TH,  1.5f * ONE16TH, 4.0f * ONE16TH};
+							break ;
+						case face_dir::PLUSY:
+							hitbox[0] = {0.5f,           1.5f * ONE16TH, 0.5f};
+							hitbox[1] = {3.0f * ONE16TH, 1.5f * ONE16TH, 4.0f * ONE16TH};
+							break ;
+					}
+					break ;
+				case PLACEMENT::FLOOR:
+				case PLACEMENT::CEILING:
+					hitbox[0].z = ((bitfield & 0x3) == PLACEMENT::FLOOR) ? 1.5f * ONE16TH : 14.5f * ONE16TH;
+					switch (orientation) {
+						case face_dir::MINUSX:
+						case face_dir::PLUSX:
+							hitbox[1].x = 4.0f * ONE16TH;
+							hitbox[1].y = 3.0F * ONE16TH;
+							break ;
+						case face_dir::MINUSY:
+						case face_dir::PLUSY:
+							hitbox[1].x = 3.0f * ONE16TH;
+							hitbox[1].y = 4.0f * ONE16TH;
+							break ;
+					}
+					break ;
+			}
 		}
 };
 

@@ -259,9 +259,7 @@ void Inventory::setSlot( int value )
     _slot = value;
 	_modif = true;
 	int type = _content[_slot].type;
-	if (type != blocks::AIR) {
-		_ui->inventoryMessage(s_blocks[type]->name);
-	}
+	_ui->inventoryMessage((type != blocks::AIR) ? s_blocks[type]->name : "");
 }
 
 t_item Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )

@@ -2543,6 +2543,105 @@ void Chunk::fill_vertex_array( void )
 						v3 = {spec + XTEX + YTEX, p6};
 						face_vertices(_vertices, v0, v1, v2, v3);
 						break ;
+
+
+
+					case GEOMETRY::LEVER:
+						switch ((block_value >> 12) & 0x3) {
+							case PLACEMENT::WALL:
+								// switch ((block_value >> 9) & 0x7) {
+								// 	case face_dir::MINUSX:
+								// 		hitbox[0] = {14.5f * ONE16TH, 0.5f,           0.5f};
+								// 		hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
+								// 		break ;
+								// 	case face_dir::PLUSX:
+								// 		hitbox[0] = { 1.5f * ONE16TH, 0.5f,           0.5f};
+								// 		hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
+								// 		break ;
+								// 	case face_dir::MINUSY:
+								// 		hitbox[0] = {0.5f,           14.5f * ONE16TH, 0.5f};
+								// 		hitbox[1] = {3.0f * ONE16TH,  1.5f * ONE16TH, 4.0f * ONE16TH};
+								// 		break ;
+								// 	case face_dir::PLUSY:
+								// 		hitbox[0] = {0.5f,           1.5f * ONE16TH, 0.5f};
+								// 		hitbox[1] = {3.0f * ONE16TH, 1.5f * ONE16TH, 4.0f * ONE16TH};
+								// 		break ;
+								// }
+								break ;
+							case PLACEMENT::FLOOR:
+								switch ((block_value >> 9) & 0x7) {
+									case face_dir::MINUSX:
+									case face_dir::PLUSX:
+										pp0 = p0 + glm::vec3( 4.0f * ONE16TH, 5.0f * ONE16TH, -13.0f * ONE16TH);
+										pp1 = p1 + glm::vec3(-4.0f * ONE16TH, 5.0f * ONE16TH, -13.0f * ONE16TH);
+										pp2 = p2 + glm::vec3( 4.0f * ONE16TH, 5.0f * ONE16TH, 0);
+										pp3 = p3 + glm::vec3(-4.0f * ONE16TH, 5.0f * ONE16TH, 0);
+
+										pp4 = p4 + glm::vec3( 4.0f * ONE16TH,-5.0f * ONE16TH, -13.0f * ONE16TH);
+										pp5 = p5 + glm::vec3(-4.0f * ONE16TH,-5.0f * ONE16TH, -13.0f * ONE16TH);
+										pp6 = p6 + glm::vec3( 4.0f * ONE16TH,-5.0f * ONE16TH, 0);
+										pp7 = p7 + glm::vec3(-4.0f * ONE16TH,-5.0f * ONE16TH, 0);
+
+										// drawing lever's base
+										spec = (s_blocks[blocks::COBBLESTONE]->texX() << 4) + (s_blocks[blocks::COBBLESTONE]->texY() << 12) + (0 << 19);
+										spec += (computeLight(row, col, level) << 24);
+										v0 = {spec + 5 + (13 << 8), pp4};
+										v1 = {spec - 5 + XTEX + (13 << 8), pp0};
+										v2 = {spec + 5 + YTEX, pp6};
+										v3 = {spec - 5 + XTEX + YTEX, pp2};
+										face_vertices(_vertices, v0, v1, v2, v3); // front
+										v0 = {spec + 5 + (13 << 8), pp1};
+										v1 = {spec - 5 + XTEX + (13 << 8), pp5};
+										v2 = {spec + 5 + YTEX, pp3};
+										v3 = {spec - 5 + XTEX + YTEX, pp7};
+										face_vertices(_vertices, v0, v1, v2, v3); // back
+										v0 = {spec + 4 + (13 << 8), pp0};
+										v1 = {spec - 4 + XTEX + (13 << 8), pp1};
+										v2 = {spec + 4 + YTEX, pp2};
+										v3 = {spec - 4 + XTEX + YTEX, pp3};
+										face_vertices(_vertices, v0, v1, v2, v3); // left
+										v0 = {spec + 4 + (13 << 8), pp5};
+										v1 = {spec - 4 + XTEX + (13 << 8), pp4};
+										v2 = {spec + 4 + YTEX, pp7};
+										v3 = {spec - 4 + XTEX + YTEX, pp6};
+										face_vertices(_vertices, v0, v1, v2, v3); // right
+										v0 = {spec + 4 + (5 << 8), pp4};
+										v1 = {spec - 4 + (5 << 8) + XTEX, pp5};
+										v2 = {spec + 4 - (5 << 8) + YTEX, pp0};
+										v3 = {spec - 4 - (5 << 8) + YTEX + XTEX, pp1};
+										face_vertices(_vertices, v0, v1, v2, v3); // up
+										break ;
+									case face_dir::MINUSY:
+									case face_dir::PLUSY:
+										pp0 = p0 + glm::vec3( 5.0f * ONE16TH, 4.0f * ONE16TH, -13.0f * ONE16TH); // change this
+										pp1 = p1 + glm::vec3(-5.0f * ONE16TH, 4.0f * ONE16TH, -13.0f * ONE16TH);
+										pp2 = p2 + glm::vec3( 5.0f * ONE16TH, 4.0f * ONE16TH, 0);
+										pp3 = p3 + glm::vec3(-5.0f * ONE16TH, 4.0f * ONE16TH, 0);
+
+										pp4 = p4 + glm::vec3( 5.0f * ONE16TH,-4.0f * ONE16TH, -13.0f * ONE16TH);
+										pp5 = p5 + glm::vec3(-5.0f * ONE16TH,-4.0f * ONE16TH, -13.0f * ONE16TH);
+										pp6 = p6 + glm::vec3( 5.0f * ONE16TH,-4.0f * ONE16TH, 0);
+										pp7 = p7 + glm::vec3(-5.0f * ONE16TH,-4.0f * ONE16TH, 0);
+										break ;
+								}
+								break ;
+							// case PLACEMENT::CEILING:
+							// 	hitbox[0].z = ((bitfield & 0x3) == PLACEMENT::FLOOR) ? 1.5f * ONE16TH : 14.5f * ONE16TH;
+							// 	switch ((block_value >> 9) & 0x7) {
+							// 		case face_dir::MINUSX:
+							// 		case face_dir::PLUSX:
+							// 			hitbox[1].x = 4.0f * ONE16TH;
+							// 			hitbox[1].y = 3.0F * ONE16TH;
+							// 			break ;
+							// 		case face_dir::MINUSY:
+							// 		case face_dir::PLUSY:
+							// 			hitbox[1].x = 3.0f * ONE16TH;
+							// 			hitbox[1].y = 4.0f * ONE16TH;
+							// 			break ;
+							// 	}
+							// 	break ;
+						}
+						break ;
 					}
 				}
 			}

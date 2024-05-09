@@ -3,7 +3,7 @@
 const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new Air(), new GrassBlock(), new OakLog(), new Cactus(), new Farmland(), new DirtPath(), new TNT(), new TBD(),
 	new CraftingTable(), new Furnace(), new OakStairsBottom(), new OakStairsTop(), new OakDoor(), new OakTrapdoor(), new StoneStairsBottom(), new StoneStairsTop(),
-	new SmoothStoneStairsBottom(), new SmoothStoneStairsTop(), new CobbleStoneStairsBottom(), new CobbleStoneStairsTop(), new StoneBricksStairsBottom(), new StoneBricksStairsTop(), new TBD(), new TBD(),
+	new SmoothStoneStairsBottom(), new SmoothStoneStairsTop(), new CobbleStoneStairsBottom(), new CobbleStoneStairsTop(), new StoneBricksStairsBottom(), new StoneBricksStairsTop(), new Lever(), new TBD(),
 	new Bedrock(), new Dirt(), new SmoothStone(), new Stone(), new Cobblestone(), new StoneBrick(), new CrackedStoneBrick(), new Sand(),
 	new Gravel(), new OakLeaves(), new OakPlanks(), new Glass(), new GlassPane(), new TBD(), new TBD(), new TBD(),
 	new CoalOre(), new IronOre(), new DiamondOre(), new CoalBlock(), new IronBlock(), new DiamondBlock(), new TBD(), new TBD(),

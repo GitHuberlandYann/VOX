@@ -170,6 +170,14 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		} else {
 			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
 		}
+	} else if (type == blocks::LEVER) {
+		if (_block_hit.pos.z > _block_hit.prev_pos.z) {
+			type += (PLACEMENT::CEILING << 12);
+		} else if (_block_hit.pos.z < _block_hit.prev_pos.z) {
+			type += (PLACEMENT::FLOOR << 12);
+		} else {
+			type += (PLACEMENT::WALL << 12);
+		}
 	} else if (shape == GEOMETRY::SLAB_BOTTOM || shape == GEOMETRY::STAIRS_BOTTOM) { // TODO get rid of oak_slab_top and oak_stairs_top and use DOOR::UPPER_HALF instead
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
 			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? type : type + 1); // oak_slab_top = oak_slab_bottom + 1
