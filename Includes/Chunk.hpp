@@ -160,9 +160,6 @@ class Chunk
 
 		void light_spread( int posX, int posY, int level, bool skySpread, int recurse = LIGHT_RECURSE );
 		void generate_lights( void );
-		int computeLight( int row, int col, int level );
-		int computeSmoothLight( int basefaceLight, int row, int col, int level, std::array<int, 9> offsets );
-		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
 
 		void updateCrop( int value, int offset );
 		bool watered_farmland( int posX, int posY, int posZ );
@@ -190,6 +187,10 @@ class Chunk
 		int computePosLight( glm::vec3 pos );
 		short getLightLevel( int posX, int posY, int posZ );
 		void waitGenDone( void );
+
+		int computeLight( int row, int col, int level );
+		int computeSmoothLight( int basefaceLight, int row, int col, int level, std::array<int, 9> offsets );
+		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
 
 		void setNeighbour( Chunk *neighbour, face_dir index );
 		void setBackup( std::map<std::pair<int, int>, s_backup> &backups );

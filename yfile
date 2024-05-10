@@ -62,8 +62,6 @@ IN PROGRES:
 	- universal use of tps instead of deltatimes
 
 TODAY:
-	- modif ligth.cpp to call s_blocks[type]->addMesh(this, _vertices, pos);
-		- change blocks.hpp structures to use more inheritance
 	- fix faces open/closed trapdoors not matching
 	- fix touchy stairs still displaying touchy faces
 	- blocks with oriented light occlusion (ie slabs, stairs)

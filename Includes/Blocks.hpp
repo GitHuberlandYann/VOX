@@ -8,6 +8,10 @@
 # include <glm/gtc/matrix_transform.hpp>
 # include <glm/gtc/type_ptr.hpp>
 # include <string>
+# include <vector>
+
+class Chunk;
+typedef struct s_shaderInput t_shaderInput;
 
 const float ONE16TH = 0.0625f;
 
@@ -246,235 +250,72 @@ struct Block {
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
 			(void)hitbox;(void)orientation;(void)corners;
 		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const {
+			(void)chunk;
+			(void)vertices;
+			(void)start;
+			(void)pos;
+			(void)value;
+		}
 		virtual ~Block() {}
 };
 
-struct Air : Block {
+struct Cube : Block {
 	public:
-		Air() {
-			name = "AIR";
+		Cube() {
+			geometry = GEOMETRY::CUBE;
+		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+};
+
+struct Cross : Block {
+	public:
+		Cross() {
 			blast_resistance = 0.0f;
-			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::NONE;
-			transparent = true;
-		}
-};
-
-struct TBD : Block {
-	public:
-		TBD() {
-			name = "TBD";
-		}
-};
-
-struct GrassBlock : Block {
-	public:
-		GrassBlock() {
-			name = "GRASS_BLOCK";
-			mined = blocks::DIRT;
-			blast_resistance = 0.6f;
-			byHand = true;
-			needed_tool = blocks::WOODEN_SHOVEL;
-			hardness = 0.6f;
-			textureY = 1;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)offset;
-			if (dir == face_dir::PLUSZ) {
-				return (1);
-			} else if (dir == face_dir::MINUSZ) {
-				return (4);
-			}
-			return (0);
-		}
-};
-
-struct OakLog : Block {
-	public:
-		OakLog() {
-			name = "OAK_LOG";
-			mined = blocks::OAK_LOG;
-			isFuel = true;
-			fuel_time = 15;
-			isComposant = true;
-			getProduction = blocks::CHARCOAL;
-			blast_resistance = 2.0f;
-			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
-			hardness = 2.0f;
-			textureY = 2;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			switch (dir) {
-				case face_dir::MINUSZ:
-				case face_dir::PLUSZ:
-					return ((offset == AXIS::Z) + 2 * (offset == AXIS::X));
-				case face_dir::MINUSX:
-				case face_dir::PLUSX:
-					return ((offset == AXIS::X) + 2 * (offset == AXIS::Y));
-				case face_dir::MINUSY:
-				case face_dir::PLUSY:
-					return ((offset == AXIS::Y) + 2 * (offset == AXIS::X));
-			}
-			return (0);
-		}
-};
-
-struct Cactus : Block {
-	public:
-		Cactus() {
-			name = "CACTUS";
-			mined = blocks::CACTUS;
-			blast_resistance = 0.4f;
-			collisionHitbox_1x1x1 = false;
-			byHand = true;
-			hardness = 0.4f;
-			transparent = true;
-			textureY = 3;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)offset;
-			if (dir == face_dir::PLUSZ) {
-				return (1);
-			} else if (dir == face_dir::MINUSZ) {
-				return (2);
-			}
-			return (0);
-		}
-};
-
-struct Farmland : Block {
-	public:
-		Farmland() {
-			name = "FARMLAND";
-			mined = blocks::DIRT;
-			blast_resistance = 0.6f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
-			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
-			geometry = GEOMETRY::FARMLAND;
-			byHand = true;
-			needed_tool = blocks::WOODEN_SHOVEL;
-			hardness = 0.6f;
-			textureY = 1;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			if (dir == face_dir::PLUSZ) {
-				return (2 + !offset);
-			}
-			return (4);
-		}
-};
-
-struct DirtPath : Block {
-	public:
-		DirtPath() {
-			name = "DIRT PATH";
-			mined = blocks::DIRT;
-			blast_resistance = 0.65f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
-			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
-			geometry = GEOMETRY::FARMLAND;
-			byHand = true;
-			needed_tool = blocks::WOODEN_SHOVEL;
-			hardness = 0.65f;
-		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)offset;
-			if (dir == face_dir::PLUSZ) {
-				return (1);
-			} else if (dir == face_dir::MINUSZ) {
-				return (4);
-			}
-			return (0);
-		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)offset;
-			if (dir == face_dir::MINUSZ) {
-				return (1);
-			}
-			return (5);
-		}
-};
-
-struct TNT : Block {
-	public:
-		TNT() {
-			name = "TNT";
-			mined = blocks::TNT;
-			blast_resistance = 0.0f;
+			hitboxCenter = {0.5f, 0.5f, 0.3f};
+			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
+			geometry = GEOMETRY::CROSS;
 			byHand = true;
 			hardness = 0.0f;
-			textureY = 6;
+			transparent = true;
+			item3D = false;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)offset;
-			if (dir == face_dir::PLUSZ) {
-				return (1);
-			} else if (dir == face_dir::MINUSZ) {
-				return (2);
-			}
-			return (0);
-		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
-struct CraftingTable : Block {
+struct SlabBottom : Block {
 	public:
-		CraftingTable() {
-			name = "CRAFTING_TABLE";
-			mined = blocks::CRAFTING_TABLE;
-			isFuel = true;
-			fuel_time = 15;
-			blast_resistance = 2.5f;
-			oriented = true;
-			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
-			hardness = 2.5f;
-			textureY = 8;
+		SlabBottom() {
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.25f};
+			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			geometry = GEOMETRY::SLAB_BOTTOM;
+			transparent = true;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
-			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
-				return (1);
-			} else if ((offset & 0x7) == dir) {
-				return (2);
-			}
-			return (0);
-		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
-struct Furnace : Block {
+struct SlabTop : Block {
 	public:
-		Furnace() {
-			name = "FURNACE";
-			mined = blocks::FURNACE;
-			blast_resistance = 3.5f;
-			oriented = true;
-			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
-			hardness = 3.5f;
-			textureY = 9;
+		SlabTop() {
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 0.75f};
+			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
+			geometry = GEOMETRY::SLAB_TOP;
+			transparent = true;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
-			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
-				return (1);
-			} else if ((offset & 0x7) == dir) {
-				return (2 + ((offset >> 4) & 0x1));
-			}
-			return (0);
-		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
-struct OakStairsBottom : Block {
+struct StairsBottom : Block {
 	public:
-		OakStairsBottom() {
-			name = "OAK_STAIRS_BOTTOM";
-			mined = blocks::OAK_STAIRS_BOTTOM;
-			blast_resistance = 3.0f;
+		StairsBottom() {
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
@@ -483,14 +324,7 @@ struct OakStairsBottom : Block {
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
 			geometry = GEOMETRY::STAIRS_BOTTOM;
-			isFuel = true;
-			fuel_time = 15;
-			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
-			hardness = 2.0f;
 			transparent = true;
-			textureX = 4;
-			textureY = 10;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
 			switch (corners) {
@@ -564,14 +398,12 @@ struct OakStairsBottom : Block {
 					break ;
 			}
 		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
-struct OakStairsTop : Block {
+struct StairsTop : Block {
 	public:
-		OakStairsTop() {
-			name = "OAK_STAIRS_TOP";
-			mined = blocks::OAK_STAIRS_BOTTOM;
-			blast_resistance = 3.0f;
+		StairsTop() {
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
@@ -580,14 +412,7 @@ struct OakStairsTop : Block {
 			hitboxCenter = {0.5f, 0.5f, 0.75f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
 			geometry = GEOMETRY::STAIRS_TOP;
-			isFuel = true;
-			fuel_time = 15;
-			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
-			hardness = 2.0f;
 			transparent = true;
-			textureX = 4;
-			textureY = 10;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
 			switch (corners) {
@@ -661,14 +486,57 @@ struct OakStairsTop : Block {
 					break ;
 			}
 		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
-struct OakDoor : Block {
+struct Fence : Block {
 	public:
-		OakDoor() {
-			name = "OAK_DOOR";
-			mined = blocks::OAK_DOOR;
-			blast_resistance = 3.0f;
+		Fence() {
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			orientedCollisionHitbox = true;
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			geometry = GEOMETRY::FENCE;
+			transparent = true;
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			(void)orientation;
+			hitbox[0] = {0.5f, 0.5f, 0.5f};
+			hitbox[1] = {0.125f, 0.125f, 0.5f};
+			switch (bitfield & (FENCE::MX | FENCE::PX)) {
+				case FENCE::MX:
+					hitbox[0].x = 0.375f;
+					hitbox[1].x = 0.375f;
+					break ;
+				case FENCE::PX:
+					hitbox[0].x = 1 - 0.375f;
+					hitbox[1].x = 0.375f;
+					break ;
+				case FENCE::MX | FENCE::PX:
+					hitbox[1].x = 0.5f;
+					break ;
+			}
+			switch (bitfield & (FENCE::MY | FENCE::PY)) {
+				case FENCE::MY:
+					hitbox[0].y = 0.375f;
+					hitbox[1].y = 0.375f;
+					break ;
+				case FENCE::PY:
+					hitbox[0].y = 1 - 0.375f;
+					hitbox[1].y = 0.375f;
+					break ;
+				case FENCE::MY | FENCE::PY:
+					hitbox[1].y = 0.5f;
+					break ;
+			}
+		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+};
+
+struct Door : Block {
+	public:
+		Door() {
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
@@ -676,28 +544,8 @@ struct OakDoor : Block {
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = GEOMETRY::DOOR;
-			isFuel = true;
-			fuel_time = 15;
-			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
-			hardness = 3.0f;
 			transparent = true;
 			item3D = false;
-		}
-		// offset is bool half or 2 if item
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)dir;
-			return ((offset == 2) ? 9 : 0);
-		}
-		virtual int texY( face_dir dir, int offset ) const {
-			switch (dir) {
-				case face_dir::PLUSZ:
-					return (10);
-				case face_dir::MINUSZ:
-					return (11);
-				default:
-					return ((offset == 2) ? 14 : 11 - (offset & DOOR::UPPER_HALF));
-			}
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
 			switch (orientation) {
@@ -739,14 +587,12 @@ struct OakDoor : Block {
 					break ;
 			}
 		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
-struct OakTrapdoor : Block {
+struct Trapdoor : Block {
 	public:
-		OakTrapdoor() {
-			name = "OAK_TRAPDOOR";
-			mined = blocks::OAK_TRAPDOOR;
-			blast_resistance = 3.0f;
+		Trapdoor() {
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
@@ -754,14 +600,7 @@ struct OakTrapdoor : Block {
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = GEOMETRY::TRAPDOOR;
-			isFuel = true;
-			fuel_time = 15;
-			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
-			hardness = 3.0f;
 			transparent = true;
-			textureX = 2;
-			textureY = 11;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
 			if (!(bitfield & DOOR::OPEN)) {
@@ -788,9 +627,322 @@ struct OakTrapdoor : Block {
 				}
 			}
 		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
-struct StoneStairsBottom : OakStairsBottom {
+struct Crop : Block {
+	public:
+		Crop() {
+			blast_resistance = 0.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			hitboxCenter = {0.5f, 0.5f, 1 / 32.0f};
+			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
+			geometry = GEOMETRY::CROP;
+			byHand = true;
+			hardness = 0.0f;
+			transparent = true;
+			item3D = false;
+		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+};
+
+
+// ************************************************************************** //
+//                          actual structures                                 //
+// ************************************************************************** //
+
+struct Air : Block {
+	public:
+		Air() {
+			name = "AIR";
+			blast_resistance = 0.0f;
+			collisionHitbox_1x1x1 = false;
+			geometry = GEOMETRY::NONE;
+			transparent = true;
+		}
+};
+
+struct TBD : Cube {
+	public:
+		TBD() {
+			name = "TBD";
+		}
+};
+
+struct GrassBlock : Cube {
+	public:
+		GrassBlock() {
+			name = "GRASS_BLOCK";
+			mined = blocks::DIRT;
+			blast_resistance = 0.6f;
+			byHand = true;
+			needed_tool = blocks::WOODEN_SHOVEL;
+			hardness = 0.6f;
+			textureY = 1;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			(void)offset;
+			if (dir == face_dir::PLUSZ) {
+				return (1);
+			} else if (dir == face_dir::MINUSZ) {
+				return (4);
+			}
+			return (0);
+		}
+};
+
+struct OakLog : Cube {
+	public:
+		OakLog() {
+			name = "OAK_LOG";
+			mined = blocks::OAK_LOG;
+			isFuel = true;
+			fuel_time = 15;
+			isComposant = true;
+			getProduction = blocks::CHARCOAL;
+			blast_resistance = 2.0f;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 2.0f;
+			textureY = 2;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			switch (dir) {
+				case face_dir::MINUSZ:
+				case face_dir::PLUSZ:
+					return ((offset == AXIS::Z) + 2 * (offset == AXIS::X));
+				case face_dir::MINUSX:
+				case face_dir::PLUSX:
+					return ((offset == AXIS::X) + 2 * (offset == AXIS::Y));
+				case face_dir::MINUSY:
+				case face_dir::PLUSY:
+					return ((offset == AXIS::Y) + 2 * (offset == AXIS::X));
+			}
+			return (0);
+		}
+};
+
+struct Cactus : Cube {
+	public:
+		Cactus() {
+			name = "CACTUS";
+			mined = blocks::CACTUS;
+			blast_resistance = 0.4f;
+			collisionHitbox_1x1x1 = false;
+			byHand = true;
+			hardness = 0.4f;
+			transparent = true;
+			textureY = 3;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			(void)offset;
+			if (dir == face_dir::PLUSZ) {
+				return (1);
+			} else if (dir == face_dir::MINUSZ) {
+				return (2);
+			}
+			return (0);
+		}
+};
+
+struct Farmland : Block {
+	public:
+		Farmland() {
+			name = "FARMLAND";
+			mined = blocks::DIRT;
+			blast_resistance = 0.6f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
+			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
+			geometry = GEOMETRY::FARMLAND;
+			byHand = true;
+			needed_tool = blocks::WOODEN_SHOVEL;
+			hardness = 0.6f;
+			textureY = 1;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			if (dir == face_dir::PLUSZ) {
+				return (2 + !offset);
+			}
+			return (4);
+		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+};
+
+struct DirtPath : Farmland {
+	public:
+		DirtPath() {
+			name = "DIRT PATH";
+			mined = blocks::DIRT;
+			blast_resistance = 0.65f;
+			hardness = 0.65f;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			(void)offset;
+			if (dir == face_dir::PLUSZ) {
+				return (1);
+			} else if (dir == face_dir::MINUSZ) {
+				return (4);
+			}
+			return (0);
+		}
+		virtual int texY(  face_dir dir, int offset ) const {
+			(void)offset;
+			if (dir == face_dir::MINUSZ) {
+				return (1);
+			}
+			return (5);
+		}
+};
+
+struct TNT : Cube {
+	public:
+		TNT() {
+			name = "TNT";
+			mined = blocks::TNT;
+			blast_resistance = 0.0f;
+			byHand = true;
+			hardness = 0.0f;
+			textureY = 6;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			(void)offset;
+			if (dir == face_dir::PLUSZ) {
+				return (1);
+			} else if (dir == face_dir::MINUSZ) {
+				return (2);
+			}
+			return (0);
+		}
+};
+
+struct CraftingTable : Cube {
+	public:
+		CraftingTable() {
+			name = "CRAFTING_TABLE";
+			mined = blocks::CRAFTING_TABLE;
+			isFuel = true;
+			fuel_time = 15;
+			blast_resistance = 2.5f;
+			oriented = true;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 2.5f;
+			textureY = 8;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
+				return (1);
+			} else if ((offset & 0x7) == dir) {
+				return (2);
+			}
+			return (0);
+		}
+};
+
+struct Furnace : Cube {
+	public:
+		Furnace() {
+			name = "FURNACE";
+			mined = blocks::FURNACE;
+			blast_resistance = 3.5f;
+			oriented = true;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 3.5f;
+			textureY = 9;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
+				return (1);
+			} else if ((offset & 0x7) == dir) {
+				return (2 + ((offset >> 4) & 0x1));
+			}
+			return (0);
+		}
+};
+
+struct OakStairsBottom : StairsBottom {
+	public:
+		OakStairsBottom() {
+			name = "OAK_STAIRS_BOTTOM";
+			mined = blocks::OAK_STAIRS_BOTTOM;
+			blast_resistance = 3.0f;
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 2.0f;
+			textureX = 4;
+			textureY = 10;
+		}
+};
+
+struct OakStairsTop : StairsTop {
+	public:
+		OakStairsTop() {
+			name = "OAK_STAIRS_TOP";
+			mined = blocks::OAK_STAIRS_BOTTOM;
+			blast_resistance = 3.0f;
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 2.0f;
+			textureX = 4;
+			textureY = 10;
+		}
+};
+
+struct OakDoor : Door {
+	public:
+		OakDoor() {
+			name = "OAK_DOOR";
+			mined = blocks::OAK_DOOR;
+			blast_resistance = 3.0f;
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 3.0f;
+		}
+		// offset is bool half or 2 if item
+		virtual int texX( face_dir dir, int offset ) const {
+			(void)dir;
+			return ((offset == 2) ? 9 : 0);
+		}
+		virtual int texY( face_dir dir, int offset ) const {
+			switch (dir) {
+				case face_dir::PLUSZ:
+					return (10);
+				case face_dir::MINUSZ:
+					return (11);
+				default:
+					return ((offset == 2) ? 14 : 11 - (offset & DOOR::UPPER_HALF));
+			}
+		}
+};
+
+struct OakTrapdoor : Trapdoor {
+	public:
+		OakTrapdoor() {
+			name = "OAK_TRAPDOOR";
+			mined = blocks::OAK_TRAPDOOR;
+			blast_resistance = 3.0f;
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 3.0f;
+			textureX = 2;
+			textureY = 11;
+		}
+};
+
+struct StoneStairsBottom : StairsBottom {
 	public:
 		StoneStairsBottom() {
 			name = "STONE_STAIRS_BOTTOM";
@@ -806,7 +958,7 @@ struct StoneStairsBottom : OakStairsBottom {
 		}
 };
 
-struct StoneStairsTop : OakStairsTop {
+struct StoneStairsTop : StairsTop {
 	public:
 		StoneStairsTop() {
 			name = "STONE_STAIRS_TOP";
@@ -820,7 +972,7 @@ struct StoneStairsTop : OakStairsTop {
 		}
 };
 
-struct SmoothStoneStairsBottom : OakStairsBottom {
+struct SmoothStoneStairsBottom : StairsBottom {
 	public:
 		SmoothStoneStairsBottom() {
 			name = "SMOOTH_STONE_STAIRS_BOTTOM";
@@ -834,7 +986,7 @@ struct SmoothStoneStairsBottom : OakStairsBottom {
 		}
 };
 
-struct SmoothStoneStairsTop : OakStairsTop {
+struct SmoothStoneStairsTop : StairsTop {
 	public:
 		SmoothStoneStairsTop() {
 			name = "SMOOTH_STONE_STAIRS_TOP";
@@ -848,7 +1000,7 @@ struct SmoothStoneStairsTop : OakStairsTop {
 		}
 };
 
-struct CobbleStoneStairsBottom : OakStairsBottom {
+struct CobbleStoneStairsBottom : StairsBottom {
 	public:
 		CobbleStoneStairsBottom() {
 			name = "COBBLESTONE_STAIRS_BOTTOM";
@@ -864,7 +1016,7 @@ struct CobbleStoneStairsBottom : OakStairsBottom {
 		}
 };
 
-struct CobbleStoneStairsTop : OakStairsTop {
+struct CobbleStoneStairsTop : StairsTop {
 	public:
 		CobbleStoneStairsTop() {
 			name = "COBBLESTONE_STAIRS_TOP";
@@ -878,7 +1030,7 @@ struct CobbleStoneStairsTop : OakStairsTop {
 		}
 };
 
-struct StoneBricksStairsBottom : OakStairsBottom {
+struct StoneBricksStairsBottom : StairsBottom {
 	public:
 		StoneBricksStairsBottom() {
 			name = "STONE_BRICKS_STAIRS_BOTTOM";
@@ -892,7 +1044,7 @@ struct StoneBricksStairsBottom : OakStairsBottom {
 		}
 };
 
-struct StoneBricksStairsTop : OakStairsTop {
+struct StoneBricksStairsTop : StairsTop {
 	public:
 		StoneBricksStairsTop() {
 			name = "STONE_BRICKS_STAIRS_TOP";
@@ -967,9 +1119,10 @@ struct Lever : Block {
 					break ;
 			}
 		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
-struct Bedrock : Block {
+struct Bedrock : Cube {
 	public:
 		Bedrock() {
 			name = "BEDROCK";
@@ -979,7 +1132,7 @@ struct Bedrock : Block {
 		}
 };
 
-struct Dirt : Block {
+struct Dirt : Cube {
 	public:
 		Dirt() {
 			name = "DIRT";
@@ -993,7 +1146,7 @@ struct Dirt : Block {
 		}
 };
 
-struct SmoothStone : Block {
+struct SmoothStone : Cube {
 	public:
 		SmoothStone() {
 			name = "SMOOTH_STONE";
@@ -1007,7 +1160,7 @@ struct SmoothStone : Block {
 		}
 };
 
-struct Stone : Block {
+struct Stone : Cube {
 	public:
 		Stone() {
 			name = "STONE";
@@ -1023,7 +1176,7 @@ struct Stone : Block {
 		}
 };
 
-struct Cobblestone : Block {
+struct Cobblestone : Cube {
 	public:
 		Cobblestone() {
 			name = "COBBLESTONE";
@@ -1039,7 +1192,7 @@ struct Cobblestone : Block {
 		}
 };
 
-struct StoneBrick : Block {
+struct StoneBrick : Cube {
 	public:
 		StoneBrick() {
 			name = "STONE_BRICK";
@@ -1055,7 +1208,7 @@ struct StoneBrick : Block {
 		}
 };
 
-struct CrackedStoneBrick : Block {
+struct CrackedStoneBrick : Cube {
 	public:
 		CrackedStoneBrick() {
 			name = "CRACKED_STONE_BRICK";
@@ -1069,7 +1222,7 @@ struct CrackedStoneBrick : Block {
 		}
 };
 
-struct Sand : Block {
+struct Sand : Cube {
 	public:
 		Sand() {
 			name = "SAND";
@@ -1085,7 +1238,7 @@ struct Sand : Block {
 		}
 };
 
-struct Gravel : Block {
+struct Gravel : Cube {
 	public:
 		Gravel() {
 			name = "GRAVEL";
@@ -1099,7 +1252,7 @@ struct Gravel : Block {
 		}
 };
 
-struct OakLeaves : Block {
+struct OakLeaves : Cube {
 	public:
 		OakLeaves() {
 			name = "OAK_LEAVES";
@@ -1112,7 +1265,7 @@ struct OakLeaves : Block {
 		}
 };
 
-struct OakPlanks : Block {
+struct OakPlanks : Cube {
 	public:
 		OakPlanks() {
 			name = "OAK_PLANKS";
@@ -1200,9 +1353,10 @@ struct GlassPane : Block {
 					break ;
 			}
 		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
-struct CoalOre : Block {
+struct CoalOre : Cube {
 	public:
 		CoalOre() {
 			name = "COAL_ORE";
@@ -1218,7 +1372,7 @@ struct CoalOre : Block {
 		}
 };
 
-struct IronOre : Block {
+struct IronOre : Cube {
 	public:
 		IronOre() {
 			name = "IRON_ORE";
@@ -1235,7 +1389,7 @@ struct IronOre : Block {
 		}
 };
 
-struct DiamondOre : Block {
+struct DiamondOre : Cube {
 	public:
 		DiamondOre() {
 			name = "DIAMOND_ORE";
@@ -1252,7 +1406,7 @@ struct DiamondOre : Block {
 		}
 };
 
-struct CoalBlock : Block {
+struct CoalBlock : Cube {
 	public:
 		CoalBlock() {
 			name = "COAL_BLOCK";
@@ -1268,7 +1422,7 @@ struct CoalBlock : Block {
 		}
 };
 
-struct IronBlock : Block {
+struct IronBlock : Cube {
 	public:
 		IronBlock() {
 			name = "IRON_BLOCK";
@@ -1283,7 +1437,7 @@ struct IronBlock : Block {
 		}
 };
 
-struct DiamondBlock : Block {
+struct DiamondBlock : Cube {
 	public:
 		DiamondBlock() {
 			name = "DIAMOND_BLOCK";
@@ -1298,107 +1452,55 @@ struct DiamondBlock : Block {
 		}
 };
 
-struct OakSlabBottom : Block {
+struct OakSlabBottom : SlabBottom {
 	public:
 		OakSlabBottom() {
 			name = "OAK_SLAB_BOTTOM";
 			mined = blocks::OAK_SLAB_BOTTOM;
 			blast_resistance = 3.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 0.25f};
-			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = GEOMETRY::SLAB_BOTTOM;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.0f;
-			transparent = true;
 			textureX = 4;
 			textureY = 10;
 		}
 };
 
-struct OakSlabTop : Block {
+struct OakSlabTop : SlabTop {
 	public:
 		OakSlabTop() {
 			name = "OAK_SLAB_TOP";
 			mined = blocks::OAK_SLAB_BOTTOM;
 			blast_resistance = 3.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 0.75f};
-			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = GEOMETRY::SLAB_TOP;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.0f;
-			transparent = true;
 			textureX = 4;
 			textureY = 10;
 		}
 };
 
-struct OakFence : Block {
+struct OakFence : Fence {
 	public:
 		OakFence() {
 			name = "OAK_FENCE";
 			mined = blocks::OAK_FENCE;
 			blast_resistance = 3.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
-			geometry = GEOMETRY::FENCE;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
 			hardness = 2.0f;
-			transparent = true;
 			textureX = 4;
 			textureY = 10;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
-			(void)orientation;
-			hitbox[0] = {0.5f, 0.5f, 0.5f};
-			hitbox[1] = {0.125f, 0.125f, 0.5f};
-			switch (bitfield & (FENCE::MX | FENCE::PX)) {
-				case FENCE::MX:
-					hitbox[0].x = 0.375f;
-					hitbox[1].x = 0.375f;
-					break ;
-				case FENCE::PX:
-					hitbox[0].x = 1 - 0.375f;
-					hitbox[1].x = 0.375f;
-					break ;
-				case FENCE::MX | FENCE::PX:
-					hitbox[1].x = 0.5f;
-					break ;
-			}
-			switch (bitfield & (FENCE::MY | FENCE::PY)) {
-				case FENCE::MY:
-					hitbox[0].y = 0.375f;
-					hitbox[1].y = 0.375f;
-					break ;
-				case FENCE::PY:
-					hitbox[0].y = 1 - 0.375f;
-					hitbox[1].y = 0.375f;
-					break ;
-				case FENCE::MY | FENCE::PY:
-					hitbox[1].y = 0.5f;
-					break ;
-			}
-		}
 };
 
-struct StoneSlabBottom : OakSlabBottom {
+struct StoneSlabBottom : SlabBottom {
 	public:
 		StoneSlabBottom() {
 			name = "STONE_SLAB_BOTTOM";
@@ -1414,7 +1516,7 @@ struct StoneSlabBottom : OakSlabBottom {
 		}
 };
 
-struct StoneSlabTop : OakSlabTop {
+struct StoneSlabTop : SlabTop {
 	public:
 		StoneSlabTop() {
 			name = "STONE_SLAB_TOP";
@@ -1428,7 +1530,7 @@ struct StoneSlabTop : OakSlabTop {
 		}
 };
 
-struct SmoothStoneSlabBottom : OakSlabBottom {
+struct SmoothStoneSlabBottom : SlabBottom {
 	public:
 		SmoothStoneSlabBottom() {
 			name = "SMOOTH_STONE_SLAB_BOTTOM";
@@ -1442,7 +1544,7 @@ struct SmoothStoneSlabBottom : OakSlabBottom {
 		}
 };
 
-struct SmoothStoneSlabTop : OakSlabTop {
+struct SmoothStoneSlabTop : SlabTop {
 	public:
 		SmoothStoneSlabTop() {
 			name = "SMOOTH_STONE_SLAB_TOP";
@@ -1456,7 +1558,7 @@ struct SmoothStoneSlabTop : OakSlabTop {
 		}
 };
 
-struct CobbleStoneSlabBottom : OakSlabBottom {
+struct CobbleStoneSlabBottom : SlabBottom {
 	public:
 		CobbleStoneSlabBottom() {
 			name = "COBBLESTONE_SLAB_BOTTOM";
@@ -1472,7 +1574,7 @@ struct CobbleStoneSlabBottom : OakSlabBottom {
 		}
 };
 
-struct CobbleStoneSlabTop : OakSlabTop {
+struct CobbleStoneSlabTop : SlabTop {
 	public:
 		CobbleStoneSlabTop() {
 			name = "COBBLESTONE_SLAB_TOP";
@@ -1486,7 +1588,7 @@ struct CobbleStoneSlabTop : OakSlabTop {
 		}
 };
 
-struct StoneBricksSlabBottom : OakSlabBottom {
+struct StoneBricksSlabBottom : SlabBottom {
 	public:
 		StoneBricksSlabBottom() {
 			name = "STONE_BRICKS_SLAB_BOTTOM";
@@ -1500,7 +1602,7 @@ struct StoneBricksSlabBottom : OakSlabBottom {
 		}
 };
 
-struct StoneBricksSlabTop : OakSlabTop {
+struct StoneBricksSlabTop : SlabTop {
 	public:
 		StoneBricksSlabTop() {
 			name = "STONE_BRICKS_SLAB_TOP";
@@ -1514,23 +1616,7 @@ struct StoneBricksSlabTop : OakSlabTop {
 		}
 };
 
-struct Flower : Block {
-	public:
-		Flower() {
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, 0.3f};
-			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
-			geometry = GEOMETRY::CROSS;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
-		}
-};
-
-struct Poppy : Flower {
+struct Poppy : Cross {
 	public:
 		Poppy() {
 			name = "POPPY";
@@ -1540,7 +1626,7 @@ struct Poppy : Flower {
 		}
 };
 
-struct Dandelion : Flower {
+struct Dandelion : Cross {
 	public:
 		Dandelion() {
 			name = "DANDELION";
@@ -1550,7 +1636,7 @@ struct Dandelion : Flower {
 		}
 };
 
-struct BlueOrchid : Flower {
+struct BlueOrchid : Cross {
 	public:
 		BlueOrchid() {
 			name = "BLUE_ORCHID";
@@ -1560,7 +1646,7 @@ struct BlueOrchid : Flower {
 		}
 };
 
-struct Allium : Flower {
+struct Allium : Cross {
 	public:
 		Allium() {
 			name = "ALLIUM";
@@ -1570,7 +1656,7 @@ struct Allium : Flower {
 		}
 };
 
-struct CornFlower : Flower {
+struct CornFlower : Cross {
 	public:
 		CornFlower() {
 			name = "CORNFLOWER";
@@ -1580,7 +1666,7 @@ struct CornFlower : Flower {
 		}
 };
 
-struct PinkTulip : Flower {
+struct PinkTulip : Cross {
 	public:
 		PinkTulip() {
 			name = "PINK_TULIP";
@@ -1590,7 +1676,7 @@ struct PinkTulip : Flower {
 		}
 };
 
-struct Grass : Flower {
+struct Grass : Cross {
 	public:
 		Grass() {
 			name = "GRASS";
@@ -1601,7 +1687,7 @@ struct Grass : Flower {
 		}
 };
 
-struct SugarCane : Flower {
+struct SugarCane : Cross {
 	public:
 		SugarCane() {
 			name = "SUGAR_CANE";
@@ -1612,7 +1698,7 @@ struct SugarCane : Flower {
 		}
 };
 
-struct DeadBush : Flower {
+struct DeadBush : Cross {
 	public:
 		DeadBush() {
 			name = "DEAD_BUSH";
@@ -1624,7 +1710,7 @@ struct DeadBush : Flower {
 		}
 };
 
-struct OakSapling : Flower {
+struct OakSapling : Cross {
 	public:
 		OakSapling() {
 			name = "OAK_SAPLING";
@@ -1655,6 +1741,7 @@ struct Torch : Block {
 			textureX = 6;
 			textureY = 10;
 		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
 struct Chest : Block {
@@ -1678,145 +1765,99 @@ struct Chest : Block {
 		}
 };
 
-struct WheatCrop : Block {
+struct WheatCrop : Crop {
 	public:
 		WheatCrop() {
 			name = "WHEAT_CROP";
 			mined = blocks::WHEAT_SEEDS;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 1 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
-			geometry = GEOMETRY::CROP;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
-			item3D = false;
 			textureX = 7;
-		}
-		virtual int texY(  face_dir dir, int offset = 0 ) const {
-			(void)dir;
-			return (offset);
+			textureY = 0;
 		}
 };
 
-struct WheatCrop1 : Block {
+struct WheatCrop1 : Crop {
 	public:
 		WheatCrop1() {
 			name = "WHEAT_CROP 1";
 			mined = blocks::WHEAT_SEEDS;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 3 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 3 / 32.0f};
-			geometry = GEOMETRY::CROP;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
+			textureX = 7;
+			textureY = 1;
 		}
 };
 
-struct WheatCrop2 : Block {
+struct WheatCrop2 : Crop {
 	public:
 		WheatCrop2() {
 			name = "WHEAT_CROP 2";
 			mined = blocks::WHEAT_SEEDS;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 5 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 5 / 32.0f};
-			geometry = GEOMETRY::CROP;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
+			textureX = 7;
+			textureY = 2;
 		}
 };
 
-struct WheatCrop3 : Block {
+struct WheatCrop3 : Crop {
 	public:
 		WheatCrop3() {
 			name = "WHEAT_CROP 3";
 			mined = blocks::WHEAT_SEEDS;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 7 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 7 / 32.0f};
-			geometry = GEOMETRY::CROP;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
+			textureX = 7;
+			textureY = 3;
 		}
 };
 
-struct WheatCrop4 : Block {
+struct WheatCrop4 : Crop {
 	public:
 		WheatCrop4() {
 			name = "WHEAT_CROP 4";
 			mined = blocks::WHEAT_SEEDS;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 9 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 9 / 32.0f};
-			geometry = GEOMETRY::CROP;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
+			textureX = 7;
+			textureY = 4;
 		}
 };
 
-struct WheatCrop5 : Block {
+struct WheatCrop5 : Crop {
 	public:
 		WheatCrop5() {
 			name = "WHEAT_CROP 5";
 			mined = blocks::WHEAT_SEEDS;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 11 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 11 / 32.0f};
-			geometry = GEOMETRY::CROP;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
+			textureX = 7;
+			textureY = 5;
 		}
 };
 
-struct WheatCrop6 : Block {
+struct WheatCrop6 : Crop {
 	public:
 		WheatCrop6() {
 			name = "WHEAT_CROP 6";
 			mined = blocks::WHEAT_SEEDS;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 13 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 13 / 32.0f};
-			geometry = GEOMETRY::CROP;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
+			textureX = 7;
+			textureY = 6;
 		}
 };
 
-struct WheatCrop7 : Block {
+struct WheatCrop7 : Crop {
 	public:
 		WheatCrop7() {
 			name = "WHEAT_CROP 7";
 			mined = blocks::WHEAT;
-			blast_resistance = 0.0f;
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 15 / 32.0f};
 			hitboxHalfSize = {0.4f, 0.4f, 15 / 32.0f};
-			geometry = GEOMETRY::CROP;
-			byHand = true;
-			hardness = 0.0f;
-			transparent = true;
+			textureX = 7;
+			textureY = 7;
 		}
 };
 
