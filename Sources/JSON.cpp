@@ -541,6 +541,10 @@ void Menu::loadSettings( void )
 				int particles = std::atoi(&line[13]);
 				Settings::Get()->setBool(SETTINGS::BOOL::PARTICLES, particles);
 				ofs << "particles set to " << ((particles) ? "true" : "false") << std::endl;
+			} else if (!line.compare(0, 16, "\"face_culling\": ")) {
+				int face_culling = std::atoi(&line[16]);
+				Settings::Get()->setBool(SETTINGS::BOOL::FACE_CULLING, face_culling);
+				ofs << "face_culling set to " << _gui_size << std::endl;
 			} else if (!line.compare(0, 13, "\"gui_scale\": ")) {
 				_gui_size = std::atoi(&line[13]) - 1;
 				changeGuiSize();
@@ -578,6 +582,7 @@ void Menu::saveSettings( void )
 					+ ",\n\t\"skybox\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX))
 					+ ",\n\t\"brightness\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS))
 					+ ",\n\t\"particles\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES))
+					+ ",\n\t\"face_culling\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING))
 					+ ",\n\t\"resource_packs\": [";
 	std::vector<std::string> &packs = Settings::Get()->getResourcePacks();
 	bool start = true;

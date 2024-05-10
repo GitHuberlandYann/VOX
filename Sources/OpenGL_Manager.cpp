@@ -105,6 +105,18 @@ void OpenGL_Manager::addBreakingAnim( void )
 	glm::vec3 p5 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z + 1.001f};
 	glm::vec3 p6 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
 	glm::vec3 p7 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
+	// if (s_blocks[_block_hit.value]->hasHitbox) {
+	// 	glm::vec3 hitCenter = s_blocks[_block_hit.value]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.value]->hitboxHalfSize;
+	// 	p0 += glm::vec3(     hitCenter.x - hitHalfSize.x,      hitCenter.y - hitHalfSize.y, -1 + hitCenter.z + hitHalfSize.z);
+	// 	p1 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x,      hitCenter.y - hitHalfSize.y, -1 + hitCenter.z + hitHalfSize.z);
+	// 	p2 += glm::vec3(     hitCenter.x - hitHalfSize.x,      hitCenter.y - hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
+	// 	p3 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x,      hitCenter.y - hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
+
+	// 	p4 += glm::vec3(     hitCenter.x - hitHalfSize.x, -1 + hitCenter.y + hitHalfSize.y, -1 + hitCenter.z + hitHalfSize.z);
+	// 	p5 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x, -1 + hitCenter.y + hitHalfSize.y, -1 + hitCenter.z + hitHalfSize.z);
+	// 	p6 += glm::vec3(     hitCenter.x - hitHalfSize.x, -1 + hitCenter.y + hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
+	// 	p7 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x, -1 + hitCenter.y + hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
+	// }
 
 	int spec = (14 << 4) + ((_block_hit.value == blocks::GLASS && _break_frame == 1) ? 0 : (_break_frame << 12));
 	t_shaderInput v0 = {spec, p4};
@@ -141,8 +153,8 @@ void OpenGL_Manager::addBreakingAnim( void )
 
 void OpenGL_Manager::addLine( glm::vec3 a, glm::vec3 b )
 {
-	_entities.push_back({11, a});
-	_entities.push_back({12 + (1 << 9), b});
+	_entities.push_back({(4 << 4) + 1, a});
+	_entities.push_back({(4 << 4) + 2 + (1 << 17) + (1 << 8) + (1 << 18), b});
 }
 
 void OpenGL_Manager::drawEntities( void )
@@ -151,7 +163,7 @@ void OpenGL_Manager::drawEntities( void )
 	// _hand->update(deltaTime);
 	size_t esize = _entities.size();
 
-	bool hitBox = (_block_hit.value != blocks::AIR) && (_block_hit.value != blocks::CHEST);
+	bool hitBox = false;/*/(_block_hit.value != blocks::AIR) && (_block_hit.value != blocks::CHEST);
 	if (!hitBox) {
 	} else if (s_blocks[_block_hit.value]->hasHitbox) {
 		glm::vec3 hitCenter = s_blocks[_block_hit.value]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.value]->hitboxHalfSize;
@@ -190,7 +202,7 @@ void OpenGL_Manager::drawEntities( void )
 		pos += glm::vec3(0, -1.0002f, 1.0002f);
 		addLine(pos, pos + glm::vec3(0, 0, -1.0002f));
 		addLine(pos, pos + glm::vec3(-1.0002f, 0, 0));
-	}
+	}//*/
 
 	glBindVertexArray(_vaoEntities);
 
@@ -205,10 +217,10 @@ void OpenGL_Manager::drawEntities( void )
 
 	check_glstate("OpenGL_Manager::drawEntities", false);
 
-	glDrawArrays(GL_TRIANGLES, 0, esize);
 	if (hitBox) {
 		glDrawArrays(GL_LINES, esize, 24);
 	}
+	glDrawArrays(GL_TRIANGLES, 0, esize);
 
 	_entities.clear();
 	_entities.reserve(esize);
@@ -468,11 +480,10 @@ size_t OpenGL_Manager::clearParticles( void )
 
 void OpenGL_Manager::main_loop( void )
 {
-	// glEnable(GL_CULL_FACE);
-	// glCullFace(GL_FRONT);
-	// (glIsEnabled(GL_CULL_FACE))
-	// 	? std::cout << "culling enabled" << std::endl
-	// 	: std::cout << "culling disabled" << std::endl;
+	if (Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING)) {
+		glEnable(GL_CULL_FACE);
+	}
+	glCullFace(GL_FRONT);
 
 	// glLineWidth(2);
 	glEnable(GL_LINE_SMOOTH); // anti-aliasing
@@ -593,6 +604,7 @@ void OpenGL_Manager::main_loop( void )
 		if (animUpdate) {
 			update_anim_frame();
 		}
+		glDisable(GL_CULL_FACE);
 		DayCycle::Get()->setCloudsColor(_skyUniColor);
 		if (Settings::Get()->getInt(SETTINGS::INT::CLOUDS) != SETTINGS::OFF) {
 			for (auto& c: _visible_chunks) {
@@ -602,6 +614,9 @@ void OpenGL_Manager::main_loop( void )
 		glUniform3f(_skyUniColor, 0.24705882f, 0.4627451f, 0.89411765f); // water color
 		for (auto&c: _visible_chunks) {
 			c->drawWater(newVaoCounter, waterFaces);
+		}
+		if (Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING)) {
+			glEnable(GL_CULL_FACE);
 		}
 		// b.stamp("display water sky");
 		#endif

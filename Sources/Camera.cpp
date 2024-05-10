@@ -355,13 +355,11 @@ void Camera::moveFly( GLint v, GLint h, GLint z )
 	}
 	_update = true;
 	float speed_frame = _deltaTime * _movement_speed * ((_sprinting) ? 2 : 1);
-	glm::vec3 norm = glm::normalize(glm::vec3(v * _front.x + h * _right.x + z * _up.x,
-												v * _front.y + h * _right.y + z * _up.y,
-												v * _front.z + h * _right.z + z * _up.z));
+	glm::vec3 norm = glm::normalize(glm::vec3(v * _front.x + h * _right.x,
+												v * _front.y + h * _right.y,
+												v * _front.z + h * _right.z + z));
 	_mtx.lock();
-	_position.x += norm.x * speed_frame;
-	_position.y += norm.y * speed_frame;
-	_position.z += norm.z * speed_frame;
+	_position += norm * speed_frame;
 	_mtx.unlock();
 }
 

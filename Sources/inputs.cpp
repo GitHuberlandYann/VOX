@@ -412,23 +412,27 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	_hand_content = _inventory->getCurrentSlot();
 	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_game_mode == SURVIVAL) {
-			_camera->setArmAnimation(true);
-			_break_time += deltaTime;
-			bool can_collect = s_blocks[_block_hit.value]->canCollect(_hand_content);
-			float break_time = getBreakTime(can_collect);
-			if (_block_hit.value != blocks::AIR && _break_time >= break_time) {
-				_break_time = (break_time > 0) ? -0.3f : 0;
-				_break_frame = _outline;
-				handle_add_rm_block(false, can_collect);
-				_camera->updateExhaustion(EXHAUSTION_BREAKING_BLOCK);
-				_inventory->decrementDurabitilty();
+			if (_block_hit.value == blocks::AIR) {
+				_camera->setArmAnimation(INPUT::key_update(INPUT::BREAK));
 			} else {
-				int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
-				if (_break_frame != break_frame) {
-					if (chunk_hit) {
-						chunk_hit->updateBreak({_block_hit.pos, _block_hit.value});
+				_camera->setArmAnimation(true);
+				_break_time += deltaTime;
+				bool can_collect = s_blocks[_block_hit.value]->canCollect(_hand_content);
+				float break_time = getBreakTime(can_collect);
+				if (_break_time >= break_time) {
+					_break_time = (break_time > 0) ? -0.3f : 0;
+					_break_frame = _outline;
+					handle_add_rm_block(false, can_collect);
+					_camera->updateExhaustion(EXHAUSTION_BREAKING_BLOCK);
+					_inventory->decrementDurabitilty();
+				} else {
+					int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
+					if (_break_frame != break_frame) {
+						if (chunk_hit) {
+							chunk_hit->updateBreak({_block_hit.pos, _block_hit.value});
+						}
+						_break_frame = break_frame;
 					}
-					_break_frame = break_frame;
 				}
 			}
 		} else if (INPUT::key_update(INPUT::BREAK)) {

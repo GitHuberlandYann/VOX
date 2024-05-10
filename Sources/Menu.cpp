@@ -327,6 +327,10 @@ MENU::RET Menu::video_menu( void )
 			Settings::Get()->setBool(SETTINGS::BOOL::SKYBOX, !Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX));
 		} else if (_selection == 8) { // Particles
 			Settings::Get()->setBool(SETTINGS::BOOL::PARTICLES, !Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES));
+		} else if (_selection == 9) { // Face Culling
+			bool culling = !Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING);
+			Settings::Get()->setBool(SETTINGS::BOOL::FACE_CULLING, culling);
+			// (culling) ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
 		} else if (_selection == 11) { // Done
 			_state = (_state == MENU::VIDEO_SETTINGS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
 			reset_values();
@@ -364,6 +368,7 @@ MENU::RET Menu::video_menu( void )
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, clouds[Settings::Get()->getInt(SETTINGS::INT::CLOUDS)]);
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Gui scale " + std::to_string(_gui_size));
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Brightness " + std::to_string(static_cast<int>(_brightness_gradient * 100)));
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Face Culling ") + ((Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING)) ? "ON" : "OFF"));
 	if (_drop_down_menu) {
 		for (int index = 0; index < Settings::Get()->getInt(SETTINGS::INT::AVAILABLE_RES); ++index) {
 			_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - (65 - 18 * index) * _gui_size, 200 * _gui_size, 18 * _gui_size, 7 * _gui_size, true, std::to_string(MENU::resolutions[index][0]) + "x" + std::to_string(MENU::resolutions[index][1]));
@@ -711,7 +716,7 @@ void Menu::setup_array_buffer_video( void )
     addQuads(1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 5) ? 111 : 91, 200, 20); // Gui scale
     addQuads(1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // brightness
     addQuads(1, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_brightness_gradient, 0, 1, 0, 190)) * _gui_size, WIN_HEIGHT / 2 + 6 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 7) ? 111 : 91, 200, 20); // brightness Slider
-    addQuads(1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // tbd
+    addQuads(1, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 9) ? 111 : 91, 200, 20); // Face Culling
 
     addQuads(1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Fullscreen
     addQuads(1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20); // Skybox
@@ -1371,6 +1376,8 @@ void Menu::processMouseMovement( float posX, float posY )
 			_selection = 7;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 8;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 9;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 11;
 		} else {

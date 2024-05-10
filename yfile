@@ -41,6 +41,7 @@ TODOS:
 	- stone wall
 	- button
 	- redstone
+	- have Menu/UI::add_item_value use s_blocks[type]->addItem() instead
 	- bed
 	- enchanting table
 	- stars at night

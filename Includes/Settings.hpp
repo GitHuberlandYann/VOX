@@ -15,6 +15,7 @@ namespace SETTINGS {
 		FULLSCREEN,
 		SKYBOX,
 		PARTICLES,
+		FACE_CULLING,
 		NBR_BOOL
 	};
 

@@ -171,6 +171,17 @@ void Cross::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	v2 = {spec + YTEX, p3};
 	v3 = {spec + XTEX + YTEX, p6};
 	face_vertices(vertices, v0, v1, v2, v3);
+	// also draw other face to still see them with face culling on
+	v0 = {spec + XTEX, p5};
+	v1 = {spec, p0};
+	v2 = {spec + XTEX + YTEX, p7};
+	v3 = {spec + YTEX, p2};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + XTEX, p4};
+	v1 = {spec, p1};
+	v2 = {spec + XTEX + YTEX, p6};
+	v3 = {spec + YTEX, p3};
+	face_vertices(vertices, v0, v1, v2, v3);
 }
 
 void Farmland::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
@@ -1131,58 +1142,58 @@ void StairsTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 		v3 = {spec + (shade << 22) + XTEX + YTEX, p1};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	// up of first step
-	spec = baseSpec + (0 << 19);
+	// 'down' of first step
+	spec = baseSpec + (5 << 19);
 	faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
 	shade = 0;
 	spec += (faceLight << 24);
 	switch (corners & (CORNERS::MP | CORNERS::PP)) {
 		case CORNERS::PP:
-			v0 = {spec + (shade << 22), p4 + glm::vec3(0, 0, -0.5f)};
-			v1 = {spec - (1 << 4) + 8 + (shade << 22) + XTEX, p5 + glm::vec3(-0.5f, 0, -0.5f)};
-			v2 = {spec - (1 << 12) + (8 << 8) + (shade << 22) + YTEX, p0 + glm::vec3(0, 0.5f, -0.5f)};
-			v3 = {spec - (1 << 4) + 8 - (1 << 12) + (8 << 8) + (shade << 22) + XTEX + YTEX, p1 + glm::vec3(-0.5f, 0.5f, -0.5f)};
+			v0 = {spec + (shade << 22), p2 + glm::vec3(0, 0.5f, 0.5f)};
+			v1 = {spec - (1 << 4) + 8 + (shade << 22) + XTEX, p3 + glm::vec3(-0.5f, 0.5f, 0.5f)};
+			v2 = {spec - (1 << 12) + (8 << 8) + (shade << 22) + YTEX, p6 + glm::vec3(0, 0, 0.5f)};
+			v3 = {spec - (1 << 4) + 8 - (1 << 12) + (8 << 8) + (shade << 22) + XTEX + YTEX, p7 + glm::vec3(-0.5f, 0, 0.5f)};
 			face_vertices(vertices, v0, v1, v2, v3);
 			break ;
 		case CORNERS::MP:
-			v0 = {spec + 8 + (shade << 22), p4 + glm::vec3(0.5f, 0, -0.5f)};
-			v1 = {spec + (shade << 22) + XTEX, p5 + glm::vec3(0, 0, -0.5f)};
-			v2 = {spec + 8 - (1 << 12) + (8 << 8) + (shade << 22) + YTEX, p0 + glm::vec3(0.5f, 0.5f, -0.5f)};
-			v3 = {spec - (1 << 12) + (8 << 8) + (shade << 22) + XTEX + YTEX, p1 + glm::vec3(0, 0.5f, -0.5f)};
+			v0 = {spec + 8 + (shade << 22), p2 + glm::vec3(0.5f, 0.5f, 0.5f)};
+			v1 = {spec + (shade << 22) + XTEX, p3 + glm::vec3(0, 0.5f, 0.5f)};
+			v2 = {spec + 8 - (1 << 12) + (8 << 8) + (shade << 22) + YTEX, p6 + glm::vec3(0.5f, 0, 0.5f)};
+			v3 = {spec - (1 << 12) + (8 << 8) + (shade << 22) + XTEX + YTEX, p7 + glm::vec3(0, 0, 0.5f)};
 			face_vertices(vertices, v0, v1, v2, v3);
 			break ;
 		case CORNERS::MP | CORNERS::PP:
 			break ;
 		default:
-			v0 = {spec + (shade << 22), p4 + glm::vec3(0, 0, -0.5f)};
-			v1 = {spec + (shade << 22) + XTEX, p5 + glm::vec3(0, 0, -0.5f)};
-			v2 = {spec - (1 << 12) + (8 << 8) + (shade << 22) + YTEX, p0 + glm::vec3(0, 0.5f, -0.5f)};
-			v3 = {spec - (1 << 12) + (8 << 8) + (shade << 22) + XTEX + YTEX, p1 + glm::vec3(0, 0.5f, -0.5f)};
+			v0 = {spec + (shade << 22), p2 + glm::vec3(0, 0.5f, 0.5f)};
+			v1 = {spec + (shade << 22) + XTEX, p3 + glm::vec3(0, 0.5f, 0.5f)};
+			v2 = {spec - (1 << 12) + (8 << 8) + (shade << 22) + YTEX, p6 + glm::vec3(0, 0, 0.5f)};
+			v3 = {spec - (1 << 12) + (8 << 8) + (shade << 22) + XTEX + YTEX, p7 + glm::vec3(0, 0, 0.5f)};
 			face_vertices(vertices, v0, v1, v2, v3);
 			break ;
 	}
 	switch (corners & (CORNERS::MM | CORNERS::PM)) {
 		case CORNERS::PM:
-			v0 = {spec + (8 << 8) + (shade << 22), p4 + glm::vec3(0, -0.5f, -0.5f)};
-			v1 = {spec - (1 << 4) + 8 + (8 << 8) + (shade << 22) + XTEX, p5 + glm::vec3(-0.5f, -0.5f, -0.5f)};
-			v2 = {spec + (shade << 22) + YTEX, p0 + glm::vec3(0, 0, -0.5f)};
-			v3 = {spec - (1 << 4) + 8 + (shade << 22) + XTEX + YTEX, p1 + glm::vec3(-0.5f, 0, -0.5f)};
+			v0 = {spec + (8 << 8) + (shade << 22), p2 + glm::vec3(0, 0, 0.5f)};
+			v1 = {spec - (1 << 4) + 8 + (8 << 8) + (shade << 22) + XTEX, p3 + glm::vec3(-0.5f, 0, 0.5f)};
+			v2 = {spec + (shade << 22) + YTEX, p6 + glm::vec3(0, -0.5f, 0.5f)};
+			v3 = {spec - (1 << 4) + 8 + (shade << 22) + XTEX + YTEX, p7 + glm::vec3(-0.5f, -0.5f, 0.5f)};
 			face_vertices(vertices, v0, v1, v2, v3);
 			break ;
 		case CORNERS::MM:
-			v0 = {spec + 8 + (8 << 8) + (shade << 22), p4 + glm::vec3(0.5f, -0.5f, -0.5f)};
-			v1 = {spec + (8 << 8) + (shade << 22) + XTEX, p5 + glm::vec3(0, -0.5f, -0.5f)};
-			v2 = {spec + 8 + (shade << 22) + YTEX, p0 + glm::vec3(0.5f, 0, -0.5f)};
-			v3 = {spec + (shade << 22) + XTEX + YTEX, p1 + glm::vec3(0, 0, -0.5f)};
+			v0 = {spec + 8 + (8 << 8) + (shade << 22), p2 + glm::vec3(0.5f, 0, 0.5f)};
+			v1 = {spec + (8 << 8) + (shade << 22) + XTEX, p3 + glm::vec3(0, 0, 0.5f)};
+			v2 = {spec + 8 + (shade << 22) + YTEX, p6 + glm::vec3(0.5f, -0.5f, 0.5f)};
+			v3 = {spec + (shade << 22) + XTEX + YTEX, p7 + glm::vec3(0, -0.5f, 0.5f)};
 			face_vertices(vertices, v0, v1, v2, v3);
 			break ;
 		case CORNERS::MM | CORNERS::PM:
 			break;
 		default:
-			v0 = {spec + (8 << 8) + (shade << 22), p4 + glm::vec3(0, -0.5f, -0.5f)};
-			v1 = {spec + (8 << 8) + (shade << 22) + XTEX, p5 + glm::vec3(0, -0.5f, -0.5f)};
-			v2 = {spec + (shade << 22) + YTEX, p0 + glm::vec3(0, 0, -0.5f)};
-			v3 = {spec + (shade << 22) + XTEX + YTEX, p1 + glm::vec3(0, 0, -0.5f)};
+			v0 = {spec + (8 << 8) + (shade << 22), p2 + glm::vec3(0, 0, 0.5f)};
+			v1 = {spec + (8 << 8) + (shade << 22) + XTEX, p3 + glm::vec3(0, 0, 0.5f)};
+			v2 = {spec + (shade << 22) + YTEX, p6 + glm::vec3(0, -0.5f, 0.5f)};
+			v3 = {spec + (shade << 22) + XTEX + YTEX, p7 + glm::vec3(0, -0.5f, 0.5f)};
 			face_vertices(vertices, v0, v1, v2, v3);
 			break ;
 	}
