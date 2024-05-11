@@ -1008,7 +1008,9 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		}
 		addFlame(offset, pos, blocks::TORCH, (block_value >> 9) & 0x7);
 	} else if (s_blocks[type]->oriented) {
-		block_value += (_camera->getOrientation() << 9);
+		if (type != blocks::LEVER || ((block_value >> 12) & 0x3) != PLACEMENT::WALL) {
+			block_value += (_camera->getOrientation() << 9);
+		}
 		switch (s_blocks[type]->geometry) {
 			case GEOMETRY::STAIRS_BOTTOM:
 			case GEOMETRY::STAIRS_TOP:
@@ -1518,23 +1520,28 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			_entities.push_back(new Entity(this, _inventory, {pos.x + _startX, pos.y + _startY, pos.z}, {0.2f, 0.2f, 0.4f}, true, false, {type, 1, {0, 0}}));
 			break ;
 		case Modif::USE:
-			if (type == blocks::OAK_DOOR) {
-				int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
-				int value = _blocks[offset];
+			int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
+			int value = _blocks[offset];
+			switch (type) {
+			case blocks::OAK_DOOR:
 				value ^= (DOOR::OPEN << 12);
 				_blocks[offset] = value;
 				_added[offset] = value;
 				offset += ((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1;
 				value ^= (DOOR::UPPER_HALF << 12);
-				_blocks[offset] = value;
-				_added[offset] = value;
-			} else if (type == blocks::OAK_TRAPDOOR) {
-				int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
-				int value = _blocks[offset];
+				break ;
+			case blocks::OAK_TRAPDOOR:
 				value ^= (DOOR::OPEN << 12);
-				_blocks[offset] = value;
-				_added[offset] = value;
+				break ;
+			case blocks::LEVER:
+				value ^= (1 << 14);
+				break ;
+			default:
+				std::cerr << "Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & 0xFF]->name << std::endl;
+				return ;
 			}
+			_blocks[offset] = value;
+			_added[offset] = value;
 			break ;
 	}
 	if (type == blocks::WATER || type == blocks::BUCKET) {

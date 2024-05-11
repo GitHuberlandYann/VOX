@@ -58,7 +58,6 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-	- lever
 	- bow and arrow
 	- universal use of tps instead of deltatimes
 
@@ -107,6 +106,7 @@ DONE:
 	- stairs
 	- doors
 	- trapdoors
+	- lever
 	- fences
     - items on ground after break
 	- item number color/placement/size in ingame menus

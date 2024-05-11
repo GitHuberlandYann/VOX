@@ -131,7 +131,8 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
 		}
 		return ;
-	} else if (_block_hit.value == blocks::OAK_DOOR || _block_hit.value == blocks::OAK_TRAPDOOR) {
+	} else if (_block_hit.value == blocks::OAK_DOOR || _block_hit.value == blocks::OAK_TRAPDOOR
+			|| _block_hit.value == blocks::LEVER) {
 		if (current_chunk_ptr) {
 			current_chunk_ptr->handleHit(false, _block_hit.value, _block_hit.pos, Modif::USE);
 		}
@@ -171,12 +172,20 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
 		}
 	} else if (type == blocks::LEVER) {
+		if (s_blocks[_block_hit.value]->geometry != GEOMETRY::CUBE) { // TODO chnge this
+			return ;
+		}
 		if (_block_hit.pos.z > _block_hit.prev_pos.z) {
 			type += (PLACEMENT::CEILING << 12);
 		} else if (_block_hit.pos.z < _block_hit.prev_pos.z) {
 			type += (PLACEMENT::FLOOR << 12);
 		} else {
 			type += (PLACEMENT::WALL << 12);
+			if (_block_hit.pos.x != _block_hit.prev_pos.x) {
+				type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::MINUSX : face_dir::PLUSX) << 9);
+			} else {
+				type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::MINUSY : face_dir::PLUSY) << 9);
+			}
 		}
 	} else if (shape == GEOMETRY::SLAB_BOTTOM || shape == GEOMETRY::STAIRS_BOTTOM) { // TODO get rid of oak_slab_top and oak_stairs_top and use DOOR::UPPER_HALF instead
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {

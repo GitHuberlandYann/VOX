@@ -2575,25 +2575,25 @@ void Crop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 	glm::vec3 p7 = {start.x + pos.x + 1, start.y + pos.y + 1, pos.z - ONE16TH};
 
 	int spec = (textureX << 4) + (textureY << 12) + (0 << 19) + (chunk->computeLight(pos.x, pos.y, pos.z) << 24);
-	t_shaderInput v0 = {spec, {p4.x + THREE_SIXTEENTH, p4.y, p4.z}};
-	t_shaderInput v1 = {spec + XTEX, {p0.x + THREE_SIXTEENTH, p0.y, p0.z}};
-	t_shaderInput v2 = {spec + YTEX, {p6.x + THREE_SIXTEENTH, p6.y, p6.z}};
-	t_shaderInput v3 = {spec + XTEX + YTEX, {p2.x + THREE_SIXTEENTH, p2.y, p2.z}};
+	t_shaderInput v0 = {spec, {p4.x + 3.0f * ONE16TH, p4.y, p4.z}};
+	t_shaderInput v1 = {spec + XTEX, {p0.x + 3.0f * ONE16TH, p0.y, p0.z}};
+	t_shaderInput v2 = {spec + YTEX, {p6.x + 3.0f * ONE16TH, p6.y, p6.z}};
+	t_shaderInput v3 = {spec + XTEX + YTEX, {p2.x + 3.0f * ONE16TH, p2.y, p2.z}};
 	face_vertices(vertices, v0, v1, v2, v3); // -x
-	v0 = {spec + XTEX, {p0.x + THIRTEEN_SIXTEENTH, p0.y, p0.z}};
-	v1 = {spec, {p4.x + THIRTEEN_SIXTEENTH, p4.y, p4.z}};
-	v2 = {spec + XTEX + YTEX, {p2.x + THIRTEEN_SIXTEENTH, p2.y, p2.z}};
-	v3 = {spec + YTEX, {p6.x + THIRTEEN_SIXTEENTH, p6.y, p6.z}};
+	v0 = {spec + XTEX, {p0.x + 13.0f * ONE16TH, p0.y, p0.z}};
+	v1 = {spec, {p4.x + 13.0f * ONE16TH, p4.y, p4.z}};
+	v2 = {spec + XTEX + YTEX, {p2.x + 13.0f * ONE16TH, p2.y, p2.z}};
+	v3 = {spec + YTEX, {p6.x + 13.0f * ONE16TH, p6.y, p6.z}};
 	face_vertices(vertices, v0, v1, v2, v3); // +x
-	v0 = {spec, {p0.x, p0.y + THREE_SIXTEENTH, p0.z}};
-	v1 = {spec + XTEX, {p1.x, p1.y + THREE_SIXTEENTH, p1.z}};
-	v2 = {spec + YTEX, {p2.x, p2.y + THREE_SIXTEENTH, p2.z}};
-	v3 = {spec + XTEX + YTEX, {p3.x, p3.y + THREE_SIXTEENTH, p3.z}};
+	v0 = {spec, {p0.x, p0.y + 3.0f * ONE16TH, p0.z}};
+	v1 = {spec + XTEX, {p1.x, p1.y + 3.0f * ONE16TH, p1.z}};
+	v2 = {spec + YTEX, {p2.x, p2.y + 3.0f * ONE16TH, p2.z}};
+	v3 = {spec + XTEX + YTEX, {p3.x, p3.y + 3.0f * ONE16TH, p3.z}};
 	face_vertices(vertices, v0, v1, v2, v3); // -y
-	v0 = {spec + XTEX, {p1.x, p1.y + THIRTEEN_SIXTEENTH, p1.z}};
-	v1 = {spec, {p0.x, p0.y + THIRTEEN_SIXTEENTH, p0.z}};
-	v2 = {spec + XTEX + YTEX, {p3.x, p3.y + THIRTEEN_SIXTEENTH, p3.z}};
-	v3 = {spec + YTEX, {p2.x, p2.y + THIRTEEN_SIXTEENTH, p2.z}};
+	v0 = {spec + XTEX, {p1.x, p1.y + 13.0f * ONE16TH, p1.z}};
+	v1 = {spec, {p0.x, p0.y + 13.0f * ONE16TH, p0.z}};
+	v2 = {spec + XTEX + YTEX, {p3.x, p3.y + 13.0f * ONE16TH, p3.z}};
+	v3 = {spec + YTEX, {p2.x, p2.y + 13.0f * ONE16TH, p2.z}};
 	face_vertices(vertices, v0, v1, v2, v3); // +y
 }
 
@@ -2609,101 +2609,239 @@ void Lever::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
-	glm::vec3 pp0, pp1, pp2, pp3, pp4, pp5, pp6, pp7;
-	int spec;
+	int spec, x_texMX, x_texPX, x_texMY, x_texPY, y_texMX, y_texPX, y_texMY, y_texPY, z_texMX, z_texPX, z_texMY,  z_texPY, ztop, zbot;
 	t_shaderInput v0, v1, v2, v3;
-	switch ((value >> 12) & 0x3) {
+	int placement = (value >> 12) & 0x3;
+	int orientation = (value >> 9) & 0x7;
+	switch (placement) {
 		case PLACEMENT::WALL:
-			// switch ((value >> 9) & 0x7) {
-			// 	case face_dir::MINUSX:
-			// 		hitbox[0] = {14.5f * ONE16TH, 0.5f,           0.5f};
-			// 		hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
-			// 		break ;
-			// 	case face_dir::PLUSX:
-			// 		hitbox[0] = { 1.5f * ONE16TH, 0.5f,           0.5f};
-			// 		hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
-			// 		break ;
-			// 	case face_dir::MINUSY:
-			// 		hitbox[0] = {0.5f,           14.5f * ONE16TH, 0.5f};
-			// 		hitbox[1] = {3.0f * ONE16TH,  1.5f * ONE16TH, 4.0f * ONE16TH};
-			// 		break ;
-			// 	case face_dir::PLUSY:
-			// 		hitbox[0] = {0.5f,           1.5f * ONE16TH, 0.5f};
-			// 		hitbox[1] = {3.0f * ONE16TH, 1.5f * ONE16TH, 4.0f * ONE16TH};
-			// 		break ;
-			// }
-			break ;
-		case PLACEMENT::FLOOR:
-			switch ((value >> 9) & 0x7) {
+			switch (orientation) {
 				case face_dir::MINUSX:
+					p0 += glm::vec3( 13.0f * ONE16TH,  5.0f * ONE16TH, -4.0f * ONE16TH);
+					p1 += glm::vec3( 0,                5.0f * ONE16TH, -4.0f * ONE16TH);
+					p2 += glm::vec3( 13.0f * ONE16TH,  5.0f * ONE16TH,  4.0f * ONE16TH);
+					p3 += glm::vec3( 0,                5.0f * ONE16TH,  4.0f * ONE16TH);
+
+					p4 += glm::vec3( 13.0f * ONE16TH, -5.0f * ONE16TH, -4.0f * ONE16TH);
+					p5 += glm::vec3( 0,               -5.0f * ONE16TH, -4.0f * ONE16TH);
+					p6 += glm::vec3( 13.0f * ONE16TH, -5.0f * ONE16TH,  4.0f * ONE16TH);
+					p7 += glm::vec3( 0,               -5.0f * ONE16TH,  4.0f * ONE16TH);
+
+					x_texMX = 5; x_texPX = 5;  x_texMY = 4; x_texPY = 4;
+					y_texMX = 0; y_texPX = 13; y_texMY = 4; y_texPY = 4;
+					z_texMX = 13; z_texPX = 0;  z_texMY = 5;  z_texPY = 5;
+					break ;
 				case face_dir::PLUSX:
-					pp0 = p0 + glm::vec3( 4.0f * ONE16TH, 5.0f * ONE16TH, -13.0f * ONE16TH);
-					pp1 = p1 + glm::vec3(-4.0f * ONE16TH, 5.0f * ONE16TH, -13.0f * ONE16TH);
-					pp2 = p2 + glm::vec3( 4.0f * ONE16TH, 5.0f * ONE16TH, 0);
-					pp3 = p3 + glm::vec3(-4.0f * ONE16TH, 5.0f * ONE16TH, 0);
+					p0 += glm::vec3( 0,               5.0f * ONE16TH, -4.0f * ONE16TH);
+					p1 += glm::vec3(-13.0f * ONE16TH, 5.0f * ONE16TH, -4.0f * ONE16TH);
+					p2 += glm::vec3( 0,               5.0f * ONE16TH,  4.0f * ONE16TH);
+					p3 += glm::vec3(-13.0f * ONE16TH, 5.0f * ONE16TH,  4.0f * ONE16TH);
 
-					pp4 = p4 + glm::vec3( 4.0f * ONE16TH,-5.0f * ONE16TH, -13.0f * ONE16TH);
-					pp5 = p5 + glm::vec3(-4.0f * ONE16TH,-5.0f * ONE16TH, -13.0f * ONE16TH);
-					pp6 = p6 + glm::vec3( 4.0f * ONE16TH,-5.0f * ONE16TH, 0);
-					pp7 = p7 + glm::vec3(-4.0f * ONE16TH,-5.0f * ONE16TH, 0);
+					p4 += glm::vec3( 0,              -5.0f * ONE16TH, -4.0f * ONE16TH);
+					p5 += glm::vec3(-13.0f * ONE16TH,-5.0f * ONE16TH, -4.0f * ONE16TH);
+					p6 += glm::vec3( 0,              -5.0f * ONE16TH,  4.0f * ONE16TH);
+					p7 += glm::vec3(-13.0f * ONE16TH,-5.0f * ONE16TH,  4.0f * ONE16TH);
 
-					// drawing lever's base
-					spec = (s_blocks[blocks::COBBLESTONE]->texX() << 4) + (s_blocks[blocks::COBBLESTONE]->texY() << 12) + (0 << 19);
-					spec += (chunk->computeLight(pos.x, pos.y, pos.z) << 24);
-					v0 = {spec + 5 + (13 << 8), pp4};
-					v1 = {spec - 5 + XTEX + (13 << 8), pp0};
-					v2 = {spec + 5 + YTEX, pp6};
-					v3 = {spec - 5 + XTEX + YTEX, pp2};
-					face_vertices(vertices, v0, v1, v2, v3); // front
-					v0 = {spec + 5 + (13 << 8), pp1};
-					v1 = {spec - 5 + XTEX + (13 << 8), pp5};
-					v2 = {spec + 5 + YTEX, pp3};
-					v3 = {spec - 5 + XTEX + YTEX, pp7};
-					face_vertices(vertices, v0, v1, v2, v3); // back
-					v0 = {spec + 4 + (13 << 8), pp0};
-					v1 = {spec - 4 + XTEX + (13 << 8), pp1};
-					v2 = {spec + 4 + YTEX, pp2};
-					v3 = {spec - 4 + XTEX + YTEX, pp3};
-					face_vertices(vertices, v0, v1, v2, v3); // left
-					v0 = {spec + 4 + (13 << 8), pp5};
-					v1 = {spec - 4 + XTEX + (13 << 8), pp4};
-					v2 = {spec + 4 + YTEX, pp7};
-					v3 = {spec - 4 + XTEX + YTEX, pp6};
-					face_vertices(vertices, v0, v1, v2, v3); // right
-					v0 = {spec + 4 + (5 << 8), pp4};
-					v1 = {spec - 4 + (5 << 8) + XTEX, pp5};
-					v2 = {spec + 4 - (5 << 8) + YTEX, pp0};
-					v3 = {spec - 4 - (5 << 8) + YTEX + XTEX, pp1};
-					face_vertices(vertices, v0, v1, v2, v3); // up
+					x_texMX = 5; x_texPX = 5;  x_texMY = 4; x_texPY = 4;
+					y_texMX = 0; y_texPX = 13; y_texMY = 4; y_texPY = 4;
+					z_texMX = 0; z_texPX = 13;  z_texMY = 5;  z_texPY = 5;
 					break ;
 				case face_dir::MINUSY:
-				case face_dir::PLUSY:
-					pp0 = p0 + glm::vec3( 5.0f * ONE16TH, 4.0f * ONE16TH, -13.0f * ONE16TH); // change this
-					pp1 = p1 + glm::vec3(-5.0f * ONE16TH, 4.0f * ONE16TH, -13.0f * ONE16TH);
-					pp2 = p2 + glm::vec3( 5.0f * ONE16TH, 4.0f * ONE16TH, 0);
-					pp3 = p3 + glm::vec3(-5.0f * ONE16TH, 4.0f * ONE16TH, 0);
+					p0 += glm::vec3( 5.0f * ONE16TH, 13.0f * ONE16TH, -4.0f * ONE16TH);
+					p1 += glm::vec3(-5.0f * ONE16TH, 13.0f * ONE16TH, -4.0f * ONE16TH);
+					p2 += glm::vec3( 5.0f * ONE16TH, 13.0f * ONE16TH,  4.0f * ONE16TH);
+					p3 += glm::vec3(-5.0f * ONE16TH, 13.0f * ONE16TH,  4.0f * ONE16TH);
 
-					pp4 = p4 + glm::vec3( 5.0f * ONE16TH,-4.0f * ONE16TH, -13.0f * ONE16TH);
-					pp5 = p5 + glm::vec3(-5.0f * ONE16TH,-4.0f * ONE16TH, -13.0f * ONE16TH);
-					pp6 = p6 + glm::vec3( 5.0f * ONE16TH,-4.0f * ONE16TH, 0);
-					pp7 = p7 + glm::vec3(-5.0f * ONE16TH,-4.0f * ONE16TH, 0);
+					p4 += glm::vec3( 5.0f * ONE16TH, 0,               -4.0f * ONE16TH);
+					p5 += glm::vec3(-5.0f * ONE16TH, 0,               -4.0f * ONE16TH);
+					p6 += glm::vec3( 5.0f * ONE16TH, 0,                4.0f * ONE16TH);
+					p7 += glm::vec3(-5.0f * ONE16TH, 0,                4.0f * ONE16TH);
+
+					x_texMX = 0; x_texPX = 13; x_texMY = 4; x_texPY = 4;
+					y_texMX = 5; y_texPX = 5;  y_texMY = 4; y_texPY = 4;
+					z_texMX = 5; z_texPX = 5;  z_texMY = 13;  z_texPY = 0;
+					break ;
+				case face_dir::PLUSY:
+					p0 += glm::vec3( 5.0f * ONE16TH, 0,               -4.0f * ONE16TH);
+					p1 += glm::vec3(-5.0f * ONE16TH, 0,               -4.0f * ONE16TH);
+					p2 += glm::vec3( 5.0f * ONE16TH, 0,                4.0f * ONE16TH);
+					p3 += glm::vec3(-5.0f * ONE16TH, 0,                4.0f * ONE16TH);
+
+					p4 += glm::vec3( 5.0f * ONE16TH, -13.0f * ONE16TH, -4.0f * ONE16TH);
+					p5 += glm::vec3(-5.0f * ONE16TH, -13.0f * ONE16TH, -4.0f * ONE16TH);
+					p6 += glm::vec3( 5.0f * ONE16TH, -13.0f * ONE16TH,  4.0f * ONE16TH);
+					p7 += glm::vec3(-5.0f * ONE16TH, -13.0f * ONE16TH,  4.0f * ONE16TH);
+
+					x_texMX = 0; x_texPX = 13; x_texMY = 4; x_texPY = 4;
+					y_texMX = 5; y_texPX = 5;  y_texMY = 4; y_texPY = 4;
+					z_texMX = 5; z_texPX = 5;  z_texMY = 0;  z_texPY = 13;
 					break ;
 			}
 			break ;
-		// case PLACEMENT::CEILING:
-		// 	hitbox[0].z = ((bitfield & 0x3) == PLACEMENT::FLOOR) ? 1.5f * ONE16TH : 14.5f * ONE16TH;
-		// 	switch ((value >> 9) & 0x7) {
-		// 		case face_dir::MINUSX:
-		// 		case face_dir::PLUSX:
-		// 			hitbox[1].x = 4.0f * ONE16TH;
-		// 			hitbox[1].y = 3.0F * ONE16TH;
-		// 			break ;
-		// 		case face_dir::MINUSY:
-		// 		case face_dir::PLUSY:
-		// 			hitbox[1].x = 3.0f * ONE16TH;
-		// 			hitbox[1].y = 4.0f * ONE16TH;
-		// 			break ;
-		// 	}
-		// 	break ;
+		case PLACEMENT::FLOOR:
+		case PLACEMENT::CEILING:
+			ztop = (placement == PLACEMENT::FLOOR) ? 13 : 0;
+			zbot = (placement == PLACEMENT::FLOOR) ? 0 : 13;
+			switch (orientation) {
+				case face_dir::MINUSX:
+				case face_dir::PLUSX:
+					p0 += glm::vec3( 4.0f * ONE16TH, 5.0f * ONE16TH, -ztop * ONE16TH);
+					p1 += glm::vec3(-4.0f * ONE16TH, 5.0f * ONE16TH, -ztop * ONE16TH);
+					p2 += glm::vec3( 4.0f * ONE16TH, 5.0f * ONE16TH,  zbot * ONE16TH);
+					p3 += glm::vec3(-4.0f * ONE16TH, 5.0f * ONE16TH,  zbot * ONE16TH);
+
+					p4 += glm::vec3( 4.0f * ONE16TH,-5.0f * ONE16TH, -ztop * ONE16TH);
+					p5 += glm::vec3(-4.0f * ONE16TH,-5.0f * ONE16TH, -ztop * ONE16TH);
+					p6 += glm::vec3( 4.0f * ONE16TH,-5.0f * ONE16TH,  zbot * ONE16TH);
+					p7 += glm::vec3(-4.0f * ONE16TH,-5.0f * ONE16TH,  zbot * ONE16TH);
+
+					x_texMX = 5; x_texPX = 5; x_texMY = ztop; x_texPY = zbot;
+					y_texMX = 4; y_texPX = 4; y_texMY = ztop; y_texPY = zbot;
+					z_texMX = 4; z_texPX = 4; z_texMY = 5;  z_texPY = 5;
+					break ;
+				case face_dir::MINUSY:
+				case face_dir::PLUSY:
+					p0 += glm::vec3( 5.0f * ONE16TH, 4.0f * ONE16TH, -ztop * ONE16TH);
+					p1 += glm::vec3(-5.0f * ONE16TH, 4.0f * ONE16TH, -ztop * ONE16TH);
+					p2 += glm::vec3( 5.0f * ONE16TH, 4.0f * ONE16TH,  zbot * ONE16TH);
+					p3 += glm::vec3(-5.0f * ONE16TH, 4.0f * ONE16TH,  zbot * ONE16TH);
+
+					p4 += glm::vec3( 5.0f * ONE16TH,-4.0f * ONE16TH, -ztop * ONE16TH);
+					p5 += glm::vec3(-5.0f * ONE16TH,-4.0f * ONE16TH, -ztop * ONE16TH);
+					p6 += glm::vec3( 5.0f * ONE16TH,-4.0f * ONE16TH,  zbot * ONE16TH);
+					p7 += glm::vec3(-5.0f * ONE16TH,-4.0f * ONE16TH,  zbot * ONE16TH);
+
+					x_texMX = 4; x_texPX = 4; x_texMY = ztop; x_texPY = zbot;
+					y_texMX = 5; y_texPX = 5; y_texMY = ztop; y_texPY = zbot;
+					z_texMX = 4; z_texPX = 4; z_texMY = 5;  z_texPY = 5;
+					break ;
+			}
+			break ;
 	}
+	// drawing lever's base
+	spec = (s_blocks[blocks::COBBLESTONE]->texX() << 4) + (s_blocks[blocks::COBBLESTONE]->texY() << 12) + (0 << 19);
+	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
+	spec += (faceLight << 24);
+	if (placement != PLACEMENT::WALL || orientation != face_dir::PLUSX) {
+		v0 = {spec + x_texMX + (x_texMY << 8), p4};
+		v1 = {spec - x_texPX + XTEX + (x_texMY << 8), p0};
+		v2 = {spec + x_texMX - (x_texPY << 8) + YTEX, p6};
+		v3 = {spec - x_texPX + XTEX - (x_texPY << 8) + YTEX, p2};
+		face_vertices(vertices, v0, v1, v2, v3); // -x
+	}
+	if (placement != PLACEMENT::WALL || orientation != face_dir::MINUSX) {
+		v0 = {spec + x_texMX + (x_texMY << 8), p1};
+		v1 = {spec - x_texPX + XTEX + (x_texMY << 8), p5};
+		v2 = {spec + x_texMX - (x_texPY << 8) + YTEX, p3};
+		v3 = {spec - x_texPX + XTEX - (x_texPY << 8) + YTEX, p7};
+		face_vertices(vertices, v0, v1, v2, v3); // +x
+	}
+	if (placement != PLACEMENT::WALL || orientation != face_dir::PLUSY) {
+		v0 = {spec + y_texMX + (y_texMY << 8), p0};
+		v1 = {spec - y_texPX + XTEX + (y_texMY << 8), p1};
+		v2 = {spec + y_texMX - (y_texPY << 8) + YTEX, p2};
+		v3 = {spec - y_texPX + XTEX - (y_texPY << 8) + YTEX, p3};
+		face_vertices(vertices, v0, v1, v2, v3); // -y
+	}
+	if (placement != PLACEMENT::WALL || orientation != face_dir::MINUSY) {
+		v0 = {spec + y_texMX + (y_texMY << 8), p5};
+		v1 = {spec - y_texPX + XTEX + (y_texMY << 8), p4};
+		v2 = {spec + y_texMX - (y_texPY << 8) + YTEX, p7};
+		v3 = {spec - y_texPX + XTEX - (y_texPY << 8) + YTEX, p6};
+		face_vertices(vertices, v0, v1, v2, v3); // +y
+	}
+	if (placement != PLACEMENT::CEILING) {
+		v0 = {spec + z_texMX + (z_texMY << 8), p4};
+		v1 = {spec - z_texPX + (z_texMY << 8) + XTEX, p5};
+		v2 = {spec + z_texMX - (z_texPY << 8) + YTEX, p0};
+		v3 = {spec - z_texPX - (z_texPY << 8) + YTEX + XTEX, p1};
+		face_vertices(vertices, v0, v1, v2, v3); // +z
+	}
+	if (placement != PLACEMENT::FLOOR) {
+		v0 = {spec + z_texMX + (z_texMY << 8), p2};
+		v1 = {spec - z_texPX + (z_texMY << 8) + XTEX, p3};
+		v2 = {spec + z_texMX - (z_texPY << 8) + YTEX, p6};
+		v3 = {spec - z_texPX - (z_texPY << 8) + YTEX + XTEX, p7};
+		face_vertices(vertices, v0, v1, v2, v3); // -z
+	}
+	// it's lever time
+	glm::vec3 top, right, front;
+	bool powered = (value >> 14) & 0x1;
+	switch (placement) {
+	case PLACEMENT::WALL:
+		switch (orientation) {
+			case face_dir::MINUSX:
+				top = glm::vec3(-1, 0, (powered) ? -1 : 1);
+				break ;
+			case face_dir::PLUSX:
+				top = glm::vec3( 1, 0, (powered) ? -1 : 1);
+				break ;
+			case face_dir::MINUSY:
+				top = glm::vec3(0, -1, (powered) ? -1 : 1);
+				break ;
+			case face_dir::PLUSY:
+				top = glm::vec3(0,  1, (powered) ? -1 : 1);
+				break ;
+		}
+		break ;
+	case PLACEMENT::FLOOR:
+	case PLACEMENT::CEILING:
+		switch (orientation) {
+			case face_dir::MINUSX:
+				top = glm::vec3((powered) ? -1 : 1, 0, (placement == PLACEMENT::FLOOR) ? 1 : -1);
+				break ;
+			case face_dir::PLUSX:
+				top = glm::vec3((powered) ? 1 : -1, 0, (placement == PLACEMENT::FLOOR) ? 1 : -1);
+				break ;
+			case face_dir::MINUSY:
+				top = glm::vec3(0, (powered) ? -1 : 1, (placement == PLACEMENT::FLOOR) ? 1 : -1);
+				break ;
+			case face_dir::PLUSY:
+				top = glm::vec3(0, (powered) ? 1 : -1, (placement == PLACEMENT::FLOOR) ? 1 : -1);
+				break ;
+		}
+		break ;
+	}
+	top   = glm::normalize(top);
+	right = glm::normalize(glm::cross(top, glm::vec3(0, 0, 1)));
+	front = glm::normalize(glm::cross(top, right));
+	glm::vec3 baseCenter = (p0 + p1 + p2 + p3 + p4 + p5 + p6 + p7) / 8.0f;
+
+	p0 = baseCenter - right * ONE16TH - front * ONE16TH + top * 10.0f * ONE16TH;
+	p1 = baseCenter + right * ONE16TH - front * ONE16TH + top * 10.0f * ONE16TH;
+	p2 = baseCenter - right * ONE16TH - front * ONE16TH;
+	p3 = baseCenter + right * ONE16TH - front * ONE16TH;
+
+	p4 = baseCenter - right * ONE16TH + front * ONE16TH + top * 10.0f * ONE16TH;
+	p5 = baseCenter + right * ONE16TH + front * ONE16TH + top * 10.0f * ONE16TH;
+	p6 = baseCenter - right * ONE16TH + front * ONE16TH;
+	p7 = baseCenter + right * ONE16TH + front * ONE16TH;
+
+	spec = (textureX << 4) + (textureY << 12);
+	spec += (faceLight << 24);
+	v0 = {spec + 7 + (6 << 8), p4};
+	v1 = {spec - 7 + XTEX + (6 << 8), p0};
+	v2 = {spec + 7 + YTEX, p6};
+	v3 = {spec - 7 + XTEX + YTEX, p2};
+	face_vertices(vertices, v0, v1, v2, v3); // -x
+	v0 = {spec + 7 + (6 << 8), p1};
+	v1 = {spec - 7 + XTEX + (6 << 8), p5};
+	v2 = {spec + 7 + YTEX, p3};
+	v3 = {spec - 7 + XTEX + YTEX, p7};
+	face_vertices(vertices, v0, v1, v2, v3); // +x
+	v0 = {spec + 7 + (6 << 8), p0};
+	v1 = {spec - 7 + XTEX + (6 << 8), p1};
+	v2 = {spec + 7 + YTEX, p2};
+	v3 = {spec - 7 + XTEX + YTEX, p3};
+	face_vertices(vertices, v0, v1, v2, v3); // -y
+	v0 = {spec + 7 + (6 << 8), p5};
+	v1 = {spec - 7 + XTEX + (6 << 8), p4};
+	v2 = {spec + 7 + YTEX, p7};
+	v3 = {spec - 7 + XTEX + YTEX, p6};
+	face_vertices(vertices, v0, v1, v2, v3); // +y
+	v0 = {spec + 7 + (6 << 8), p4};
+	v1 = {spec - 7 + (6 << 8) + XTEX, p5};
+	v2 = {spec + 7 + (8 << 8) + (1 << 18), p0};
+	v3 = {spec - 7 + (8 << 8) + (1 << 18) + XTEX, p1};
+	face_vertices(vertices, v0, v1, v2, v3); // +z
 }

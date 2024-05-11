@@ -9,10 +9,6 @@
 
 # define CHUNK_SIZE 16
 # define TICK 0.05
-# define ONE_SIXTEENTH 1.0f / 16.0f // TODO get rid of those and only use ONE16TH
-# define THREE_SIXTEENTH 3.0f / 16.0f
-# define THIRTEEN_SIXTEENTH 13.0f / 16.0f
-# define FIFTEEN_SIXTEENTH 15.0f / 16.0f
 
 extern int WIN_WIDTH;
 extern int WIN_HEIGHT;
