@@ -40,7 +40,6 @@ TODOS:
 	- ladder
 	- stone wall
 	- button
-	- redstone
 	- have Menu/UI::add_item_value use s_blocks[type]->addItem() instead
 	- bed
 	- enchanting table
@@ -58,10 +57,12 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
+	- redstone
 	- bow and arrow
 	- universal use of tps instead of deltatimes
 
 TODAY:
+	- add light diff on levers faces
 	- fix faces open/closed trapdoors not matching
 	- fix touchy stairs still displaying touchy faces
 	- blocks with oriented light occlusion (ie slabs, stairs)
@@ -302,4 +303,7 @@ Some info:
 	- trapdoors 0x7 << 9 == orientation, 0x1000 == half, 0x4000 == open
 	- fence 0xF << 12 == 'arms'
 	- glass panes 0xF << 12 == 'arms'
-	- lever 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor), 0x1 << 14 == powered
+	- lever 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor)
+
+	- powered blocks: (1 << 16)
+		doors, trapdoors, lever, redstone lamp

@@ -5,8 +5,8 @@ const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new CraftingTable(), new Furnace(), new OakStairsBottom(), new OakStairsTop(), new OakDoor(), new OakTrapdoor(), new StoneStairsBottom(), new StoneStairsTop(),
 	new SmoothStoneStairsBottom(), new SmoothStoneStairsTop(), new CobbleStoneStairsBottom(), new CobbleStoneStairsTop(), new StoneBricksStairsBottom(), new StoneBricksStairsTop(), new Lever(), new TBD(),
 	new Bedrock(), new Dirt(), new SmoothStone(), new Stone(), new Cobblestone(), new StoneBrick(), new CrackedStoneBrick(), new Sand(),
-	new Gravel(), new OakLeaves(), new OakPlanks(), new Glass(), new GlassPane(), new TBD(), new TBD(), new TBD(),
-	new CoalOre(), new IronOre(), new DiamondOre(), new CoalBlock(), new IronBlock(), new DiamondBlock(), new TBD(), new TBD(),
+	new Gravel(), new OakLeaves(), new OakPlanks(), new Glass(), new GlassPane(), new RedstoneLamp(), new TBD(), new TBD(),
+	new CoalOre(), new IronOre(), new DiamondOre(), new CoalBlock(), new IronBlock(), new DiamondBlock(), new RedstoneOre(), new RedstoneBlock(),
 	new OakSlabBottom(), new OakSlabTop(), new OakFence(), new StoneSlabBottom(), new StoneSlabTop(), new SmoothStoneSlabBottom(), new SmoothStoneSlabTop(), new CobbleStoneSlabBottom(),
 	new CobbleStoneSlabTop(), new StoneBricksSlabBottom(), new StoneBricksSlabTop(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(),
 	new Poppy(), new Dandelion(), new BlueOrchid(), new Allium(), new CornFlower(), new PinkTulip(), new Grass(), new SugarCane(),
@@ -40,6 +40,8 @@ void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 		offset = orientation + (litFurnace << 4);
 	} else if ((value & 0xFF) == blocks::OAK_LOG) {
 		offset = (value >> 9) & 0x3;
+	} else if (mined == blocks::REDSTONE_LAMP) { // TODO change this so offset given to texX and texY is just 'value'
+		offset = !!(value & REDSTONE::POWERED);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
 		spec = (this->texX(face_dir::MINUSX, offset) << 4) + (this->texY(face_dir::MINUSX, offset) << 12) + (3 << 19);
@@ -1368,9 +1370,10 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 	int xtex_l, xtex_r, spec, faceLight, shade = 0;
 	t_shaderInput v0, v1, v2, v3;
 	int bitfield = value >> 12;
+	bool open = !!(bitfield & DOOR::OPEN) ^ ((value >> REDSTONE::POWERED_OFFSET) & 0x1);
 	switch ((value >> 9) & 0x7) {
 		case face_dir::MINUSX:
-			if (!(bitfield & DOOR::OPEN)) {
+			if (!open) {
 				orientation = face_dir::MINUSX;
 				xtex_l = (bitfield & DOOR::RIGHT_HINGE) ? 0 : XTEX;
 				xtex_r = (bitfield & DOOR::RIGHT_HINGE) ? XTEX : 0;
@@ -1385,7 +1388,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 			}
 			break ;
 		case face_dir::PLUSX:
-			if (!(bitfield & DOOR::OPEN)) {
+			if (!open) {
 				orientation = face_dir::PLUSX;
 				xtex_l = (bitfield & DOOR::RIGHT_HINGE) ? XTEX : 0;
 				xtex_r = (bitfield & DOOR::RIGHT_HINGE) ? 0 : XTEX;
@@ -1400,7 +1403,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 			}
 			break ;
 		case face_dir::MINUSY:
-			if (!(bitfield & DOOR::OPEN)) {
+			if (!open) {
 				orientation = face_dir::MINUSY;
 				xtex_l = (bitfield & DOOR::RIGHT_HINGE) ? 0 : XTEX;
 				xtex_r = (bitfield & DOOR::RIGHT_HINGE) ? XTEX : 0;
@@ -1415,7 +1418,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 			}
 			break ;
 		case face_dir::PLUSY:
-			if (!(bitfield & DOOR::OPEN)) {
+			if (!open) {
 				orientation = face_dir::PLUSY;
 				xtex_l = (bitfield & DOOR::RIGHT_HINGE) ? XTEX : 0;
 				xtex_r = (bitfield & DOOR::RIGHT_HINGE) ? 0 : XTEX;
@@ -1719,7 +1722,8 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	int baseSpec = (textureX << 4) + (textureY << 12);
 	int spec, faceLight;
 	t_shaderInput v0, v1, v2, v3;
-	if (!(bitfield & DOOR::OPEN)) {
+	bool open = !!(bitfield & DOOR::OPEN) ^ ((value >> REDSTONE::POWERED_OFFSET) & 0x1);
+	if (!open) {
 		if (!(bitfield & DOOR::UPPER_HALF)) {
 			p0.z -= 0.8125f;
 			p1.z -= 0.8125f;
@@ -2766,7 +2770,7 @@ void Lever::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	}
 	// it's lever time
 	glm::vec3 top, right, front;
-	bool powered = (value >> 14) & 0x1;
+	bool powered = (value >> REDSTONE::POWERED_OFFSET) & 0x1;
 	switch (placement) {
 	case PLACEMENT::WALL:
 		switch (orientation) {

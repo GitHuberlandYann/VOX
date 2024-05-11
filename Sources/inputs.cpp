@@ -75,7 +75,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 				return (res);
 			} else if (target->orientedCollisionHitbox) {
 				glm::vec3 hitbox[2];
-				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7, (value >> 12) & 0xF);
+				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7, value >> 12);
 				if (line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
 					chunk_hit = chunk;
 					res.pos = i;

@@ -126,17 +126,20 @@ class Chunk
 		std::thread _thread;
 		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 
+		// utils
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		void collisionWHitbox( t_collision &res, const Block *target, int value, glm::vec3 pos, float width,
 			float height, int bX, int bY, int bZ );
 		GLint face_count( int type, int row, int col, int level );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves, bool isNotGlass );
-	
+
+		// fluids
 		int exposed_water_faces( int row, int col, int level );
 		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );
 		bool endFlow( std::set<int> *newFluids, int &value, int posX, int posY, int posZ );
 		bool addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
-	
+
+		// world gen
 		// int get_block_type_cave( int row, int col, int level, int ground_level,
 		// 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 		// 	bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
@@ -147,7 +150,8 @@ class Chunk
 		void generate_blocks( void );
 		void resetDisplayedFaces( void );
 		void generate_sky( void );
-	
+
+		// player-related block update
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
@@ -158,9 +162,14 @@ class Chunk
 		void add_block( bool useInventory, glm::ivec3 pos, int block_value, int previous );
 		void replace_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 
+		// lights
 		void light_spread( int posX, int posY, int level, bool skySpread, int recurse = LIGHT_RECURSE );
 		void generate_lights( void );
 
+		// redstone
+		void flickLever( glm::ivec3 pos, bool state );
+
+		// block update (20/sec)
 		void updateCrop( int value, int offset );
 		bool watered_farmland( int posX, int posY, int posZ );
 		void updateFarmland( int value, int offset );
@@ -169,7 +178,8 @@ class Chunk
 		void decayLeaves( int offset );
 		bool spaceForTree( int posX, int posY, int posZ );
 		void growTree( int value, int offset );
-	
+
+		// array buffer
         void fill_vertex_array( void );
         void setup_array_buffer( void );
 		void setup_sky_array_buffer( void );

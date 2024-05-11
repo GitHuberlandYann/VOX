@@ -61,6 +61,11 @@ enum AXIS {
 	Y
 };
 
+namespace REDSTONE {
+	const int POWERED_OFFSET = 16;
+	const int POWERED = (1 << POWERED_OFFSET);
+};
+
 namespace GEOMETRY {
 	enum {
 		NONE,          // air, water
@@ -119,12 +124,15 @@ namespace blocks {
 		OAK_PLANKS,
 		GLASS,
 		GLASS_PANE,
+		REDSTONE_LAMP,
 		COAL_ORE = 40,
 		IRON_ORE,
 		DIAMOND_ORE,
 		COAL_BLOCK,
 		IRON_BLOCK,
 		DIAMOND_BLOCK,
+		REDSTONE_ORE,
+		REDSTONE_BLOCK,
 		OAK_SLAB_BOTTOM = 48,
 		OAK_SLAB_TOP,
 		OAK_FENCE,
@@ -548,9 +556,10 @@ struct Door : Block {
 			item3D = false;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			bool open = !!(bitfield & DOOR::OPEN) ^ !!((bitfield << 12) & REDSTONE::POWERED);
 			switch (orientation) {
 				case face_dir::MINUSX:
-					if (!(bitfield & DOOR::OPEN)) {
+					if (!open) {
 						hitbox[0] = {0.90625f, 0.5f, 0.5f};
 						hitbox[1] = {0.09375f, 0.5f, 0.5f};
 					} else {
@@ -559,7 +568,7 @@ struct Door : Block {
 					}
 					break ;
 				case face_dir::PLUSX:
-					if (!(bitfield & DOOR::OPEN)) {
+					if (!open) {
 						hitbox[0] = {0.09375f, 0.5f, 0.5f};
 						hitbox[1] = {0.09375f, 0.5f, 0.5f};
 					} else {
@@ -568,7 +577,7 @@ struct Door : Block {
 					}
 					break ;
 				case face_dir::MINUSY:
-					if (!(bitfield & DOOR::OPEN)) {
+					if (!open) {
 						hitbox[0] = {0.5f, 0.90625f, 0.5f};
 						hitbox[1] = {0.5f, 0.09375f, 0.5f};
 					} else {
@@ -577,7 +586,7 @@ struct Door : Block {
 					}
 					break ;
 				case face_dir::PLUSY:
-					if (!(bitfield & DOOR::OPEN)) {
+					if (!open) {
 						hitbox[0] = {0.5f, 0.09375f, 0.5f};
 						hitbox[1] = {0.5f, 0.09375f, 0.5f};
 					} else {
@@ -603,7 +612,8 @@ struct Trapdoor : Block {
 			transparent = true;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
-			if (!(bitfield & DOOR::OPEN)) {
+			bool open = !!(bitfield & DOOR::OPEN) ^ !!((bitfield << 12) & REDSTONE::POWERED);
+			if (!open) {
 				hitbox[0] = {0.5f, 0.5f, (bitfield & DOOR::UPPER_HALF) ? 0.90625f : 0.09375f};
 				hitbox[1] = {0.5f, 0.5f, 0.09375f};
 			} else {
@@ -1071,6 +1081,7 @@ struct Lever : Block {
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = GEOMETRY::LEVER;
+			byHand = true;
 			hardness = 0.5f;
 			transparent = true;
 			item3D = false;
@@ -1356,6 +1367,24 @@ struct GlassPane : Block {
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
+struct RedstoneLamp : Cube {
+	public:
+		RedstoneLamp() {
+			name = "REDSTONE_LAMP";
+			mined = blocks::REDSTONE_LAMP;
+			isFuel = true;
+			fuel_time = 15;
+			blast_resistance = 0.3f;
+			byHand = true;
+			hardness = 0.3f;
+			textureX = 5;
+		}
+		virtual int texY( face_dir dir, int offset ) const {
+			(void)dir;
+			return (8 + (offset == 1));
+		}
+};
+
 struct CoalOre : Cube {
 	public:
 		CoalOre() {
@@ -1449,6 +1478,35 @@ struct DiamondBlock : Cube {
 			hardness = 5.0f;
 			textureX = 5;
 			textureY = 5;
+		}
+};
+
+struct RedstoneOre : Cube {
+	public:
+		RedstoneOre() {
+			name = "REDSTONE_ORE";
+			mined = blocks::REDSTONE_ORE; // TODO change this to redstone dust
+			blast_resistance = 3.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_material_level = 2; // min iron to collect
+			hardness = 3.0f;
+			textureX = 5;
+			textureY = 6;
+		}
+};
+
+struct RedstoneBlock : Cube {
+	public:
+		RedstoneBlock() {
+			name = "REDSTONE_BLOCK";
+			mined = blocks::REDSTONE_BLOCK;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 5.0f;
+			textureX = 5;
+			textureY = 7;
 		}
 };
 

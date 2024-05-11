@@ -1534,7 +1534,8 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 				value ^= (DOOR::OPEN << 12);
 				break ;
 			case blocks::LEVER:
-				value ^= (1 << 14);
+				value ^= REDSTONE::POWERED;
+				flickLever(pos, (value >> REDSTONE::POWERED_OFFSET) & 0x1);
 				break ;
 			default:
 				std::cerr << "Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & 0xFF]->name << std::endl;
@@ -1944,7 +1945,7 @@ void Chunk::collisionWHitbox( t_collision &res, const Block *target, int value, 
 	}
 	if (target->orientedCollisionHitbox) {
 		glm::vec3 hitbox[2];
-		target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7, (value >> 12) & 0xF);
+		target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7, value >> 12);
 		if (cube_cube_intersection(pos, {width, width, height},
 			{bX + hitbox[0].x + _startX, bY + hitbox[0].y + _startY, bZ + hitbox[0].z},
 			hitbox[1])) {
