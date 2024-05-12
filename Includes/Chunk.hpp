@@ -48,9 +48,9 @@ enum Modif {
 	USE
 };
 
-const GLint adj_blocks[6][3] = {
+const std::array<glm::ivec3, 6> adj_blocks = {{
 	{0, -1, 0}, {0, 1, 0}, {-1, 0, 0}, {1, 0, 0}, {0, 0, -1}, {0, 0, 1}
-};
+}};
 
 const GLint oak_normal[61][3] = {
 	{-2, 2, -2}, {-1, 2, -2}, {0, 2, -2}, {1, 2, -2}, {2, 2, -2},
@@ -167,6 +167,8 @@ class Chunk
 		void generate_lights( void );
 
 		// redstone
+		bool getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, bool weak );
+		void weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state );
 		void flickLever( glm::ivec3 pos, int value, bool state );
 
 		// block update (20/sec)

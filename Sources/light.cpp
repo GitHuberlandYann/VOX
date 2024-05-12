@@ -26,10 +26,10 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 	if (!(level & 0xF0)) { // not a source block, we check if level should change
 		short maxLevel = 0;
 		for (int index = 0; index < 6; index++) {
-			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-			if (posZ + delta[2] < 0 || posZ + delta[2] > 255) {
+			const glm::ivec3 delta = adj_blocks[index];
+			if (posZ + delta.z < 0 || posZ + delta.z > 255) {
 			} else {
-				short adj = getLightLevel(posX + delta[0], posY + delta[1], posZ + delta[2]) >> shift;
+				short adj = getLightLevel(posX + delta.x, posY + delta.y, posZ + delta.z) >> shift;
 				maxLevel = maxs(maxLevel, adj & 0xF);
 				if (skySpread && index == face_dir::PLUSZ && (adj & 0xF0)) {
 					// TODO if _blocks[offset].. is not water/leaves
@@ -58,11 +58,11 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 
 	// spread in all 6 directions
 	for (int index = 0; index < 6; index++) {
-		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
+		const glm::ivec3 delta = adj_blocks[index];
 		if (skySpread && index == face_dir::MINUSZ && level == 0xFF) {
-			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0xF0, skySpread, recurse - 1);
+			light_try_spread(posX + delta.x, posY + delta.y, posZ + delta.z, 0xF0, skySpread, recurse - 1);
 		} else {
-			light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], level, skySpread, recurse - 1);
+			light_try_spread(posX + delta.x, posY + delta.y, posZ + delta.z, level, skySpread, recurse - 1);
 		}
 	}
 }

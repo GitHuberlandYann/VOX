@@ -292,6 +292,7 @@ Some info:
 	- all
 		- 0xFF  type
 		- 0x100 NotVisible
+		- 0x10000 powered (1 << 16)
 	- Furnace 0x7 << 9 == orientation, 0x1000 == furnace ON/OFF
 	- table craft 0x7 << 9 == orientation
 	- torch 0x7 << 9 == orientation

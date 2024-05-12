@@ -62,6 +62,8 @@ enum AXIS {
 };
 
 namespace REDSTONE {
+	const bool ON = true;
+	const bool OFF = false;
 	// activated means it receives signal, powered means it also transmits signal
 	const int ACTIVATED_OFFSET = 9;
 	const int ACTIVATED = (1 << ACTIVATED_OFFSET);
@@ -240,6 +242,7 @@ struct Block {
 		int durability = 0;
 		float hardness = -1;
 		bool transparent = false;
+		bool redstoneComponant = false;
 		bool item3D = true;
 		int textureX = 1;
 		int textureY = 15;
@@ -556,6 +559,7 @@ struct Door : Block {
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = GEOMETRY::DOOR;
 			transparent = true;
+			redstoneComponant = true;
 			item3D = false;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
@@ -613,6 +617,7 @@ struct Trapdoor : Block {
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = GEOMETRY::TRAPDOOR;
 			transparent = true;
+			redstoneComponant = true;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
 			bool open = !!(bitfield & DOOR::OPEN) ^ !!((bitfield << 12) & REDSTONE::POWERED);
@@ -819,6 +824,7 @@ struct TNT : Cube {
 			blast_resistance = 0.0f;
 			byHand = true;
 			hardness = 0.0f;
+			redstoneComponant = true;
 			textureY = 6;
 		}
 		virtual int texX( face_dir dir, int offset ) const {
@@ -1381,6 +1387,7 @@ struct RedstoneLamp : Cube {
 			blast_resistance = 0.3f;
 			byHand = true;
 			hardness = 0.3f;
+			redstoneComponant = true;
 			textureX = 5;
 		}
 		virtual int texY( face_dir dir, int offset ) const {

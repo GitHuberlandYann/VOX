@@ -91,11 +91,11 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 	if (value < blocks::WATER) {
 		// std::cout << "water turned into " << s_blocks[value]->name << std::endl;
 		for (int index = 0; index < 6; index++) {
-			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-			int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2], true) & 0xFF;
+			const glm::ivec3 delta = adj_blocks[index];
+			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z, true) & 0xFF;
 			if (adj >= blocks::WATER) {
 				// std::cout << "updating neighbour" << std::endl;
-				insertFluidAt(newFluids, posX + delta[0], posY + delta[1], posZ + delta[2]);
+				insertFluidAt(newFluids, posX + delta.x, posY + delta.y, posZ + delta.z);
 			}
 		}
 		return (true);
@@ -106,10 +106,10 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 		bool stop = true, onGround = false;
 		int sourceCount = 0;
 		for (int index = 0; index < 6; index++) {
-			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-			int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2], true) & 0xFF;
+			const glm::ivec3 delta = adj_blocks[index];
+			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z, true) & 0xFF;
 			if (index != face_dir::MINUSZ) { // if not block underneath
-			// std::cout << posX + delta[0] << ", " << posY + delta[1] << ", " << posZ + delta[2] << " is " << s_blocks[adj]->name << std::endl;
+			// std::cout << posX + delta.x << ", " << posY + delta.y << ", " << posZ + delta.z << " is " << s_blocks[adj]->name << std::endl;
 				if (adj >= blocks::WATER) {
 					if (index == face_dir::PLUSZ) { // flow from above
 						if (value > blocks::WATER1) {
@@ -142,10 +142,10 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 			_removed.insert(offset);
 			// _water_count -= exposed_water_faces(posX, posY, posZ);
 			for (int index = 0; index < 6; index++) {
-				const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-				int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2], true) & 0xFF;
+				const glm::ivec3 delta = adj_blocks[index];
+				int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z, true) & 0xFF;
 				if (adj > blocks::WATER) {
-					insertFluidAt(newFluids, posX + delta[0], posY + delta[1], posZ + delta[2]);
+					insertFluidAt(newFluids, posX + delta.x, posY + delta.y, posZ + delta.z);
 				}
 			}
 			return (true);

@@ -106,9 +106,9 @@ void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int & blob_
 		if (dir == 6) {
 			dir = 0;
 		}
-		const GLint delta[3] = {adj_blocks[dir][0], adj_blocks[dir][1], adj_blocks[dir][2]};
+		const glm::ivec3 delta = adj_blocks[dir];
 		++dir;
-		gen_ore_blob(ore_type, row + delta[0], col + delta[1], level + delta[2], blob_size, dir);
+		gen_ore_blob(ore_type, row + delta.x, col + delta.y, level + delta.z, blob_size, dir);
 	}
 }
 
@@ -649,10 +649,10 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		light_spread(pos.x, pos.y, pos.z, true); // spread sky light
 		light_spread(pos.x, pos.y, pos.z, false); // spread block light
 		for (int index = 0; index < 6; index++) {
-			const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-			if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+			const glm::ivec3 delta = adj_blocks[index];
+			if (pos.x + delta.x < 0 || pos.x + delta.x >= CHUNK_SIZE || pos.y + delta.y < 0 || pos.y + delta.y >= CHUNK_SIZE || pos.z + delta.z < 0 || pos.z + delta.z > 255) {
 			} else {
-				int adj_offset = ((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2];
+				int adj_offset = ((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z;
 				int adj = _blocks[adj_offset];
 				if (adj & blocks::NOTVISIBLE) {
 					_blocks[adj_offset] = adj - blocks::NOTVISIBLE;
@@ -661,25 +661,25 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 					_fluids.insert(adj_offset);
 				} else if ((adj & 0xFF) == blocks::TORCH && ((adj >> 9) & 0x7) == opposite_dir(index)) {
 					std::cout << "rm adj torch" << std::endl;
-					remove_block(useInventory, {pos.x + delta[0], pos.y + delta[1], pos.z + delta[2]});
+					remove_block(useInventory, {pos.x + delta.x, pos.y + delta.y, pos.z + delta.z});
 				}
 				if ((adj & 0xFF) == blocks::OAK_FENCE || (adj & 0xFF) == blocks::GLASS_PANE) {
 					switch (index) {
 						case face_dir::MINUSX:
-							_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::PX << 12);
-							_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::PX << 12);
+							_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] ^= (FENCE::PX << 12);
+							_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] ^= (FENCE::PX << 12);
 							break ;
 						case face_dir::PLUSX:
-							_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::MX << 12);
-							_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::MX << 12);
+							_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] ^= (FENCE::MX << 12);
+							_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] ^= (FENCE::MX << 12);
 							break ;
 						case face_dir::MINUSY:
-							_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::PY << 12);
-							_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::PY << 12);
+							_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] ^= (FENCE::PY << 12);
+							_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] ^= (FENCE::PY << 12);
 							break ;
 						case face_dir::PLUSY:
-							_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::MY << 12);
-							_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] ^= (FENCE::MY << 12);
+							_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] ^= (FENCE::MY << 12);
+							_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] ^= (FENCE::MY << 12);
 							break ;
 					}
 				}
@@ -1081,40 +1081,40 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		_lights[offset] = 0; // rm light if solid block added
 	}
 	for (int index = 0; index < 6; index++) {
-		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+		const glm::ivec3 delta = adj_blocks[index];
+		if (pos.x + delta.x < 0 || pos.x + delta.x >= CHUNK_SIZE || pos.y + delta.y < 0 || pos.y + delta.y >= CHUNK_SIZE || pos.z + delta.z < 0 || pos.z + delta.z > 255) {
 
 		} else {
-			GLint adj = _blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] & 0xFF;
+			GLint adj = _blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] & 0xFF;
 			if (air_flower(adj, false, true, false)) {
 				_displayed_faces -= !visible_face(adj, type,  opposite_dir(index));
 			} else {
 				if (index != face_dir::PLUSZ) {
-					light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 1, true, LIGHT_RECURSE); // spread sky light, but not upwards duh
+					light_try_spread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, 1, true, LIGHT_RECURSE); // spread sky light, but not upwards duh
 				}
-				light_try_spread(pos.x + delta[0], pos.y + delta[1], pos.z + delta[2], 1, false, LIGHT_RECURSE);
+				light_try_spread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, 1, false, LIGHT_RECURSE);
 			}
-			if (adj > blocks::AIR && adj < blocks::WATER && !face_count(adj, pos.x + delta[0], pos.y + delta[1], pos.z + delta[2])) {
+			if (adj > blocks::AIR && adj < blocks::WATER && !face_count(adj, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z)) {
 				// was exposed before, but isn't anymore
-				_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] += blocks::NOTVISIBLE;
+				_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] += blocks::NOTVISIBLE;
 			}
 			if ((adj & 0xFF) == blocks::OAK_FENCE || (adj & 0xFF) == blocks::GLASS_PANE) {
 				switch (index) {
 					case face_dir::MINUSX:
-						_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::PX << 12);
-						_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::PX << 12);
+						_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::PX << 12);
+						_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::PX << 12);
 						break ;
 					case face_dir::PLUSX:
-						_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::MX << 12);
-						_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::MX << 12);
+						_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::MX << 12);
+						_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::MX << 12);
 						break ;
 					case face_dir::MINUSY:
-						_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::PY << 12);
-						_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::PY << 12);
+						_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::PY << 12);
+						_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::PY << 12);
 						break ;
 					case face_dir::PLUSY:
-						_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::MY << 12);
-						_added[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] |= (FENCE::MY << 12);
+						_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::MY << 12);
+						_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::MY << 12);
 						break ;
 				}
 			}
@@ -1140,13 +1140,13 @@ void Chunk::replace_block( bool useInventory, glm::ivec3 pos, int type, int prev
 	light_spread(pos.x, pos.y, pos.z, true);
 	_light_update = false;
 	for (int index = 0; index < 6; index++) {
-		const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-		if (pos.x + delta[0] < 0 || pos.x + delta[0] >= CHUNK_SIZE || pos.y + delta[1] < 0 || pos.y + delta[1] >= CHUNK_SIZE || pos.z + delta[2] < 0 || pos.z + delta[2] > 255) {
+		const glm::ivec3 delta = adj_blocks[index];
+		if (pos.x + delta.x < 0 || pos.x + delta.x >= CHUNK_SIZE || pos.y + delta.y < 0 || pos.y + delta.y >= CHUNK_SIZE || pos.z + delta.z < 0 || pos.z + delta.z > 255) {
 		} else {
-			GLint adj = _blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]];
+			GLint adj = _blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z];
 			if (visible_face(adj, type, opposite_dir(index))) {
 				if (adj & blocks::NOTVISIBLE) {
-					_blocks[((((pos.x + delta[0]) << CHUNK_SHIFT) + pos.y + delta[1]) << WORLD_SHIFT) + pos.z + delta[2]] = adj - blocks::NOTVISIBLE;
+					_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] = adj - blocks::NOTVISIBLE;
 				}
 			}
 		}
@@ -1833,8 +1833,9 @@ void Chunk::updateBreak( glm::ivec4 block_hit )
 		std::cout << "ERROR block hit out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 		return ;
 	}
-	for (int i = 0; i < 6; ++i) {
-		_particles.push_back(new Particle(this, {block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][0] + 0.55f * adj_blocks[i][0], block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][1] + 0.55f * adj_blocks[i][1], block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !adj_blocks[i][2] + 0.55f * adj_blocks[i][2]}, PARTICLES::BREAKING, 0, block_hit.w));
+	for (int index = 0; index < 6; ++index) {
+		const glm::ivec3 delta = adj_blocks[index];
+		_particles.push_back(new Particle(this, {block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.x + 0.55f * delta.x, block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.y + 0.55f * delta.y, block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.z + 0.55f * delta.z}, PARTICLES::BREAKING, 0, block_hit.w));
 	}
 }
 
@@ -2153,8 +2154,8 @@ void Chunk::updateFurnaces( double currentTime )
 			} else {
 				_lights[fur.first] = 0;
 				for (int index = 0; index < 6; index++) {
-					const GLint delta[3] = {adj_blocks[index][0], adj_blocks[index][1], adj_blocks[index][2]};
-					light_try_spread(posX + delta[0], posY + delta[1], posZ + delta[2], 0, false, LIGHT_RECURSE);
+					const glm::ivec3 delta = adj_blocks[index];
+					light_try_spread(posX + delta.x, posY + delta.y, posZ + delta.z, 0, false, LIGHT_RECURSE);
 				}
 			}
 			_light_update = true;

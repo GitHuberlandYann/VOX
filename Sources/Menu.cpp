@@ -1424,6 +1424,7 @@ void Menu::processMouseMovement( float posX, float posY )
 				} else {
 					change = _active_resource_packs[_selection - 4 - rp_size];
 					_active_resource_packs.erase(_active_resource_packs.begin() + (_selection - 4 - rp_size));
+					_change_to_apply = true;
 				}
 				if (cursor_selection == 3 + rp_size) {
 					_resource_packs.push_back(change);
