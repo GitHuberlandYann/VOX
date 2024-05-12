@@ -544,7 +544,11 @@ void Menu::loadSettings( void )
 			} else if (!line.compare(0, 16, "\"face_culling\": ")) {
 				int face_culling = std::atoi(&line[16]);
 				Settings::Get()->setBool(SETTINGS::BOOL::FACE_CULLING, face_culling);
-				ofs << "face_culling set to " << _gui_size << std::endl;
+				ofs << "face_culling set to " << face_culling << std::endl;
+			} else if (!line.compare(0, 19, "\"smooth_lighting\": ")) {
+				int smooth_lighting = std::atoi(&line[19]);
+				Settings::Get()->setBool(SETTINGS::BOOL::SMOOTH_LIGHTING, smooth_lighting);
+				ofs << "smooth_lighting set to " << smooth_lighting << std::endl;
 			} else if (!line.compare(0, 13, "\"gui_scale\": ")) {
 				_gui_size = std::atoi(&line[13]) - 1;
 				changeGuiSize();
@@ -583,6 +587,7 @@ void Menu::saveSettings( void )
 					+ ",\n\t\"brightness\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS))
 					+ ",\n\t\"particles\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES))
 					+ ",\n\t\"face_culling\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING))
+					+ ",\n\t\"smooth_lighting\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::SMOOTH_LIGHTING))
 					+ ",\n\t\"resource_packs\": [";
 	std::vector<std::string> &packs = Settings::Get()->getResourcePacks();
 	bool start = true;
@@ -661,6 +666,62 @@ bool Settings::loadResourcePacks( void )
 					if (end == std::string::npos) throw UnclosedBracketException();
 					_strings[SETTINGS::STRING::WATER_FLOW] = line.substr(15, end - 15);
 					check_set[SETTINGS::STRING::WATER_FLOW] = true;
+				} else if (!line.compare(0, 24, "\"MAIN_FRAGMENT_SHADER\": ")) {
+					size_t end = line.find('\"', 25);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::MAIN_FRAGMENT_SHADER] = line.substr(25, end - 25);
+				} else if (!line.compare(0, 22, "\"MAIN_VERTEX_SHADER\": ")) {
+					size_t end = line.find('\"', 23);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::MAIN_VERTEX_SHADER] = line.substr(23, end - 23);
+				} else if (!line.compare(0, 24, "\"ITEM_FRAGMENT_SHADER\": ")) {
+					size_t end = line.find('\"', 25);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::ITEM_FRAGMENT_SHADER] = line.substr(25, end - 25);
+				} else if (!line.compare(0, 22, "\"ITEM_VERTEX_SHADER\": ")) {
+					size_t end = line.find('\"', 23);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::ITEM_VERTEX_SHADER] = line.substr(23, end - 23);
+				} else if (!line.compare(0, 28, "\"PARTICLE_FRAGMENT_SHADER\": ")) {
+					size_t end = line.find('\"', 29);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::PARTICLE_FRAGMENT_SHADER] = line.substr(29, end - 29);
+				} else if (!line.compare(0, 26, "\"PARTICLE_VERTEX_SHADER\": ")) {
+					size_t end = line.find('\"', 27);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::PARTICLE_VERTEX_SHADER] = line.substr(27, end - 27);
+				} else if (!line.compare(0, 23, "\"SKY_FRAGMENT_SHADER\": ")) {
+					size_t end = line.find('\"', 24);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::SKY_FRAGMENT_SHADER] = line.substr(24, end - 24);
+				} else if (!line.compare(0, 21, "\"SKY_VERTEX_SHADER\": ")) {
+					size_t end = line.find('\"', 22);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::SKY_VERTEX_SHADER] = line.substr(22, end - 22);
+				} else if (!line.compare(0, 26, "\"SKYBOX_FRAGMENT_SHADER\": ")) {
+					size_t end = line.find('\"', 27);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::SKYBOX_FRAGMENT_SHADER] = line.substr(27, end - 27);
+				} else if (!line.compare(0, 24, "\"SKYBOX_VERTEX_SHADER\": ")) {
+					size_t end = line.find('\"', 25);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::SKYBOX_VERTEX_SHADER] = line.substr(25, end - 25);
+				} else if (!line.compare(0, 24, "\"TEXT_FRAGMENT_SHADER\": ")) {
+					size_t end = line.find('\"', 25);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::TEXT_FRAGMENT_SHADER] = line.substr(25, end - 25);
+				} else if (!line.compare(0, 22, "\"TEXT_VERTEX_SHADER\": ")) {
+					size_t end = line.find('\"', 23);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::TEXT_VERTEX_SHADER] = line.substr(23, end - 23);
+				} else if (!line.compare(0, 22, "\"UI_FRAGMENT_SHADER\": ")) {
+					size_t end = line.find('\"', 23);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::UI_FRAGMENT_SHADER] = line.substr(23, end - 23);
+				} else if (!line.compare(0, 20, "\"UI_VERTEX_SHADER\": ")) {
+					size_t end = line.find('\"', 21);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[SETTINGS::STRING::UI_VERTEX_SHADER] = line.substr(21, end - 21);
 				}
 			}
 		}

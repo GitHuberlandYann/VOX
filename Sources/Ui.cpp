@@ -2,7 +2,9 @@
 #include "Ui.hpp"
 #include "Settings.hpp"
 
-UI::UI( Inventory & inventory, Camera &camera ) : _textures(NULL), _gui_size(4), _nb_items(0), _movement(false), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
+UI::UI( Inventory & inventory, Camera &camera )
+	: _shaderProgram(0), _itemShaderProgram(0), _textures(NULL), _gui_size(4), _nb_items(0),
+	_movement(false), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
 {
 	_text = new Text();
 	_chat = new Chat(_text);
@@ -393,7 +395,11 @@ void UI::setup_shader( void )
 	_text->setup_shader();
 
 	// setup item shader program
-	_itemShaderProgram = createShaderProgram("item_vertex", "", "item_fragment");
+	if (_itemShaderProgram) {
+		glDeleteProgram(_itemShaderProgram);
+	}
+	_itemShaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::ITEM_VERTEX_SHADER), "",
+										Settings::Get()->getString(SETTINGS::STRING::ITEM_FRAGMENT_SHADER));
 
 	glBindFragDataLocation(_itemShaderProgram, 0, "outColor");
 
@@ -409,7 +415,11 @@ void UI::setup_shader( void )
 	check_glstate("Item_Shader program successfully created\n", true);
 
 	// then setup ui shader program
-	_shaderProgram = createShaderProgram("ui_vertex", "", "ui_fragment");
+	if (_shaderProgram) {
+		glDeleteProgram(_shaderProgram);
+	}
+	_shaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::UI_VERTEX_SHADER), "",
+										Settings::Get()->getString(SETTINGS::STRING::UI_FRAGMENT_SHADER));
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 

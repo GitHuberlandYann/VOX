@@ -7,5 +7,6 @@
 	"brightness": 0.057494,
 	"particles": 1,
 	"face_culling": 1,
+	"smooth_lighting": 1,
 	"resource_packs": ["default.json"]
 }

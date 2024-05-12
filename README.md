@@ -86,7 +86,7 @@ Not implemented yet, as I am mainly working on this project on WSL, which [does 
 escape             - open pause menu, close any open menu
 backspace          - exit program
 
-WSAD               - player movement
+WASD               - player movement
 left_control       - run
 left_shift         - sneak
 space              - jump
@@ -101,6 +101,7 @@ O                  - toggle block highlight
 F1                 - display/hide hotbar
 F2                 - save screenshot under .ppm file format
 F3                 - toggle debug screen
+F3 + G             - toggle chunk borders
 F5                 - change camera placement
 
 left_click         - break block, pick block in inventory, navigate through menus

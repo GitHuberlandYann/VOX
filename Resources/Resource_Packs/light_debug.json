@@ -1,0 +1,4 @@
+{
+	"MAIN_FRAGMENT_SHADER": "Resources/Shaders/block_light_fragment.glsl",
+	"MAIN_VERTEX_SHADER": "Resources/Shaders/block_light_vertex.glsl"
+}

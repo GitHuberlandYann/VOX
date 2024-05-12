@@ -1,11 +1,12 @@
 #include "Skybox.hpp"
 #include "DayCycle.hpp"
+#include "Settings.hpp"
 
 namespace SHADERS {
 	const int POSATTRIB = 0;
 };
 
-Skybox::Skybox( void )
+Skybox::Skybox( void ) : _shaderProgram(0)
 {
 
 }
@@ -30,7 +31,11 @@ Skybox::~Skybox( void )
 
 void Skybox::create_shader( void )
 {
-	_shaderProgram = createShaderProgram("skybox_vertex", "", "skybox_fragment");
+	if (_shaderProgram) {
+		glDeleteProgram(_shaderProgram);
+	}
+	_shaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::SKYBOX_VERTEX_SHADER), "",
+										Settings::Get()->getString(SETTINGS::STRING::SKYBOX_FRAGMENT_SHADER));
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 

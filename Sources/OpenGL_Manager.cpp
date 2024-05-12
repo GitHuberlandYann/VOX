@@ -5,8 +5,8 @@
 void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
-	: _window(NULL), _textures({NULL}),
-		_fill(FILL),
+	: _window(NULL), _shaderProgram(0), _skyShaderProgram(0), _particleShaderProgram(0),
+		_textures({NULL}), _fill(FILL),
 		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
 		_threadUpdate(false), _threadStop(false),
 		_break_time(0), _eat_timer(0), _bow_timer(0), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0})
@@ -153,8 +153,11 @@ void OpenGL_Manager::addBreakingAnim( void )
 
 void OpenGL_Manager::addLine( glm::vec3 a, glm::vec3 b )
 {
-	_entities.push_back({(4 << 4) + 1, a});
-	_entities.push_back({(4 << 4) + 2 + (1 << 17) + (1 << 8) + (1 << 18), b});
+	// _entities.push_back({(4 << 4) + 1, a}); // black line
+	// _entities.push_back({(4 << 4) + 2 + (1 << 17) + (1 << 8) + (1 << 18), b});
+	int spec = (6 << 12) + (0xFF << 24);
+	_entities.push_back({spec, a}); // red line
+	_entities.push_back({spec + 1 + (1 << 17) + (1 << 8) + (1 << 18), b});
 }
 
 void OpenGL_Manager::drawEntities( void )
@@ -204,10 +207,30 @@ void OpenGL_Manager::drawEntities( void )
 		addLine(pos, pos + glm::vec3(-1.0002f, 0, 0));
 	}//*/
 
+	bool borders = false;
+	if (Settings::Get()->getBool(SETTINGS::BOOL::VISIBLE_CHUNK_BORDER)) {
+		borders = true;
+		for (int i = 0; i < 13; i += 4) {
+			addLine(glm::vec3(_current_chunk.x + i,  _current_chunk.y,      0), glm::vec3(_current_chunk.x + i,  _current_chunk.y,      256));
+			addLine(glm::vec3(_current_chunk.x + 16, _current_chunk.y + i,  0), glm::vec3(_current_chunk.x + 16, _current_chunk.y + i,  256));
+			addLine(glm::vec3(_current_chunk.x + i,  _current_chunk.y + 16, 0), glm::vec3(_current_chunk.x + i,  _current_chunk.y + 16, 256));
+			addLine(glm::vec3(_current_chunk.x,      _current_chunk.y + i,  0), glm::vec3(_current_chunk.x,      _current_chunk.y + i, 256));
+		}
+		int eye = _camera->getEyePos().z;
+		eye &= 0xF8;
+		for (int i = 0; i < 13; i += 4) {
+			addLine(glm::vec3(_current_chunk.x,      _current_chunk.y,      eye + i), glm::vec3(_current_chunk.x + 16, _current_chunk.y,      eye + i));
+			addLine(glm::vec3(_current_chunk.x + 16, _current_chunk.y,      eye + i), glm::vec3(_current_chunk.x + 16, _current_chunk.y + 16, eye + i));
+			addLine(glm::vec3(_current_chunk.x + 16, _current_chunk.y + 16, eye + i), glm::vec3(_current_chunk.x,      _current_chunk.y + 16, eye + i));
+			addLine(glm::vec3(_current_chunk.x,      _current_chunk.y + 16, eye + i), glm::vec3(_current_chunk.x,      _current_chunk.y,      eye + i));
+		}
+	}
+
 	glBindVertexArray(_vaoEntities);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vboEntities);
-	glBufferData(GL_ARRAY_BUFFER, ((hitBox) ? esize + 24 : esize) * 4 * sizeof(GLint), &(_entities[0].spec), GL_STATIC_DRAW);
+	size_t bufSize = esize + ((hitBox) ? 24 : 0) + ((borders) ? 64 : 0);
+	glBufferData(GL_ARRAY_BUFFER, bufSize * 4 * sizeof(GLint), &(_entities[0].spec), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(SPECATTRIB);
 	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
@@ -221,6 +244,9 @@ void OpenGL_Manager::drawEntities( void )
 		glDrawArrays(GL_LINES, esize, 24);
 	}
 	glDrawArrays(GL_TRIANGLES, 0, esize);
+	if (borders) {
+		glDrawArrays(GL_LINES, esize + ((hitBox) ? 24 : 0), 64);
+	}
 
 	_entities.clear();
 	_entities.reserve(esize);
@@ -309,7 +335,16 @@ void OpenGL_Manager::setup_window( void )
 	glewExperimental = GL_TRUE;
 	glewInit();
 
+	Settings::Get()->loadResourcePacks();
+
 	check_glstate("Window successfully created", true);
+
+	glGenVertexArrays(1, &_vaoEntities);
+	glGenBuffers(1, &_vboEntities);
+	check_glstate("VAO and VBO for entities", false);
+	glGenVertexArrays(1, &_vaoParticles);
+	glGenBuffers(1, &_vboParticles);
+	check_glstate("VAO and VBO for particles", false);
 }
 
 void OpenGL_Manager::initWorld( void )
@@ -325,7 +360,11 @@ void OpenGL_Manager::create_shaders( void )
 	_menu->setShaderProgram(_ui->getShaderProgram());
 
 	// then setup the sky/water shader
-	_skyShaderProgram = createShaderProgram("sky_vertex", "", "sky_fragment");
+	if (_skyShaderProgram) {
+		glDeleteProgram(_skyShaderProgram);
+	}
+	_skyShaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::SKY_VERTEX_SHADER), "",
+										Settings::Get()->getString(SETTINGS::STRING::SKY_FRAGMENT_SHADER));
 
 	glBindFragDataLocation(_skyShaderProgram, 0, "outColor");
 
@@ -337,7 +376,11 @@ void OpenGL_Manager::create_shaders( void )
 	check_glstate("skyShader program successfully created", true);
 
 	// then setup particles shader
-	_particleShaderProgram = createShaderProgram("particle_vertex", "", "particle_fragment");
+	if (_particleShaderProgram) {
+		glDeleteProgram(_particleShaderProgram);
+	}
+	_particleShaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::PARTICLE_VERTEX_SHADER), "",
+										Settings::Get()->getString(SETTINGS::STRING::PARTICLE_FRAGMENT_SHADER));
 
 	glBindFragDataLocation(_particleShaderProgram, 0, "outColor");
 
@@ -353,7 +396,11 @@ void OpenGL_Manager::create_shaders( void )
 	_skybox->create_shader();
 	
 	// then setup the main shader
-	_shaderProgram = createShaderProgram("vertex", "", "fragment");
+	if (_shaderProgram) {
+		glDeleteProgram(_shaderProgram);
+	}
+	_shaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::MAIN_VERTEX_SHADER), "",
+										Settings::Get()->getString(SETTINGS::STRING::MAIN_FRAGMENT_SHADER));
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
@@ -402,20 +449,10 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	_skyUniAnim = glGetUniformLocation(_skyShaderProgram, "animFrame");
 
 	check_glstate("\nCommunication with shader program successfully established", true);
-
-	glGenVertexArrays(1, &_vaoEntities);
-	glGenBuffers(1, &_vboEntities);
-	check_glstate("VAO and VBO for entities", false);
-	glGenVertexArrays(1, &_vaoParticles);
-	glGenBuffers(1, &_vboParticles);
-	check_glstate("VAO and VBO for particles", false);
 }
 
 void OpenGL_Manager::load_texture( void )
 {
-	if (Settings::Get()->loadResourcePacks()) {
-		return ; // missing field in resource packs, abort load
-	}
 	_ui->load_texture();
 
 	if (_textures[0]) {
@@ -724,7 +761,11 @@ void OpenGL_Manager::main_loop( void )
 					glUniform1f(_uniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
 					break ;
 				case (MENU::RET::APPLY_RESOURCE_PACKS):
-					load_texture();
+					if (!Settings::Get()->loadResourcePacks()) { // if missing field in resource packs, we don't load
+						create_shaders();
+						setup_communication_shaders();
+						load_texture();
+					}
 					break ;
 				default:
 					break ;

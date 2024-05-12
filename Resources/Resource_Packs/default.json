@@ -6,5 +6,20 @@
 	"PARTICLE_ATLAS": "Resources/Textures/particleAtlas.png",
 	"MODEL_ATLAS": "Resources/Textures/modelAtlas.png",
 	"WATER_STILL": "Resources/Textures/waterStill.png",
-	"WATER_FLOW": "Resources/Textures/waterFlow.png"
+	"WATER_FLOW": "Resources/Textures/waterFlow.png",
+
+	"MAIN_FRAGMENT_SHADER": "Sources/Shaders/fragment.glsl",
+	"MAIN_VERTEX_SHADER": "Sources/Shaders/vertex.glsl",
+	"ITEM_FRAGMENT_SHADER": "Sources/Shaders/item_fragment.glsl",
+	"ITEM_VERTEX_SHADER": "Sources/Shaders/item_vertex.glsl",
+	"PARTICLE_FRAGMENT_SHADER": "Sources/Shaders/particle_fragment.glsl",
+	"PARTICLE_VERTEX_SHADER": "Sources/Shaders/particle_vertex.glsl",
+	"SKY_FRAGMENT_SHADER": "Sources/Shaders/sky_fragment.glsl",
+	"SKY_VERTEX_SHADER": "Sources/Shaders/sky_vertex.glsl",
+	"SKYBOX_FRAGMENT_SHADER": "Sources/Shaders/skybox_fragment.glsl",
+	"SKYBOX_VERTEX_SHADER": "Sources/Shaders/skybox_vertex.glsl",
+	"TEXT_FRAGMENT_SHADER": "Sources/Shaders/text_fragment.glsl",
+	"TEXT_VERTEX_SHADER": "Sources/Shaders/text_vertex.glsl",
+	"UI_FRAGMENT_SHADER": "Sources/Shaders/ui_fragment.glsl",
+	"UI_VERTEX_SHADER": "Sources/Shaders/ui_vertex.glsl"
 }

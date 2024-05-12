@@ -62,6 +62,9 @@ enum AXIS {
 };
 
 namespace REDSTONE {
+	// activated means it receives signal, powered means it also transmits signal
+	const int ACTIVATED_OFFSET = 9;
+	const int ACTIVATED = (1 << ACTIVATED_OFFSET);
 	const int POWERED_OFFSET = 16;
 	const int POWERED = (1 << POWERED_OFFSET);
 };
@@ -1372,6 +1375,7 @@ struct RedstoneLamp : Cube {
 		RedstoneLamp() {
 			name = "REDSTONE_LAMP";
 			mined = blocks::REDSTONE_LAMP;
+			light_level = 15;
 			isFuel = true;
 			fuel_time = 15;
 			blast_resistance = 0.3f;

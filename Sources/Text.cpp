@@ -2,7 +2,7 @@
 #include "Text.hpp"
 #include "Settings.hpp"
 
-Text::Text( void ) : _textures(NULL)
+Text::Text( void ) : _shaderProgram(0), _textures(NULL)
 {
 }
 
@@ -42,8 +42,11 @@ void Text::addQuads( int spec, int posX, int posY, int width, int height, int co
 
 void Text::setup_shader( void )
 {
-	_shaderProgram = createShaderProgram("text_vertex", "", "text_fragment");
-
+	if (_shaderProgram) {
+		glDeleteProgram(_shaderProgram);
+	}
+	_shaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::TEXT_VERTEX_SHADER), "",
+										Settings::Get()->getString(SETTINGS::STRING::TEXT_FRAGMENT_SHADER));
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
 	glBindAttribLocation(_shaderProgram, TEXT::SPECATTRIB, "specifications");

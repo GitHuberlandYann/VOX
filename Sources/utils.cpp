@@ -94,7 +94,7 @@ static void compile_shader( GLuint ptrShader, std::string name )
 
 GLuint createShaderProgram( std::string vertex, std::string geometry, std::string fragment )
 {
-	std::string vertex_shader_data = get_file_content("Sources/Shaders/" + vertex + ".glsl");
+	std::string vertex_shader_data = get_file_content(vertex);
 	char *vertexSource = &vertex_shader_data[0];
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -103,7 +103,7 @@ GLuint createShaderProgram( std::string vertex, std::string geometry, std::strin
 
 	GLuint geometryShader;
 	if (geometry[0]) {
-		std::string geometry_shader_data = get_file_content("Sources/Shaders/" + geometry + ".glsl");
+		std::string geometry_shader_data = get_file_content(geometry);
 		char *geometrySource = &geometry_shader_data[0];
 
 		geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
@@ -111,7 +111,7 @@ GLuint createShaderProgram( std::string vertex, std::string geometry, std::strin
 		compile_shader(geometryShader, geometry);
 	}
 
-	std::string fragment_shader_data = get_file_content("Sources/Shaders/" + fragment + ".glsl");
+	std::string fragment_shader_data = get_file_content(fragment);
 	char *fragmentSource = &fragment_shader_data[0];
 
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);

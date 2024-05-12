@@ -167,7 +167,7 @@ class Chunk
 		void generate_lights( void );
 
 		// redstone
-		void flickLever( glm::ivec3 pos, bool state );
+		void flickLever( glm::ivec3 pos, int value, bool state );
 
 		// block update (20/sec)
 		void updateCrop( int value, int offset );

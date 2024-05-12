@@ -1,4 +1,5 @@
 #include "Chunk.hpp"
+#include "Settings.hpp"
 #include "utils.h"
 
 // ************************************************************************** //
@@ -9,7 +10,7 @@
 // posX, posY are in [0; CHUNK_SIZE[
 void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recurse )
 {
-	if (!recurse) {
+	if (skySpread && !recurse) { // TODO check if stackoverflow possible when torches put in a loooong row, spoiler alert: it probably is
 		return ;
 	}
 	// if (skySpread && _startX == 256 && _startY == 320) {
@@ -39,6 +40,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 			}
 		}
 		if ((maxLevel && maxLevel - 1 != level) || (!maxLevel && level)) {
+			if (!skySpread && level >= maxLevel - 1) maxLevel = 1;
 			level = maxs(0, maxLevel - 1);
 			_lights[offset] = (saveLight & (0xFF << (8 - shift))) + (level << shift);
 			_light_update = true;
@@ -113,9 +115,9 @@ int Chunk::computeLight( int row, int col, int level )
 // used to have a smooth lighting from one block to another
 int Chunk::computeSmoothLight( int faceLight, int row, int col, int level, std::array<int, 9> offsets )
 {
-	#if 0
-	(void)row;(void)col;(void)level;(void)offsets;return(faceLight);
-	#endif
+	if (!Settings::Get()->getBool(SETTINGS::BOOL::SMOOTH_LIGHTING)) {
+		return (faceLight);
+	}
 	short light = getLightLevel(row + offsets[0], col + offsets[1], level + offsets[2]);
 	faceLight = maxs(faceLight & 0xF, light & 0xF) + (maxs((faceLight >> 4) & 0xF, (light >> 8) & 0xF) << 4);
 	light = getLightLevel(row + offsets[3], col + offsets[4], level + offsets[5]);

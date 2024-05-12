@@ -304,6 +304,7 @@ Some info:
 	- fence 0xF << 12 == 'arms'
 	- glass panes 0xF << 12 == 'arms'
 	- lever 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor)
+	- redstone lamp 1 << 9 lit
 
 	- powered blocks: (1 << 16)
 		doors, trapdoors, lever, redstone lamp

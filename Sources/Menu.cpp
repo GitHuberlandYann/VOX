@@ -331,6 +331,9 @@ MENU::RET Menu::video_menu( void )
 			bool culling = !Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING);
 			Settings::Get()->setBool(SETTINGS::BOOL::FACE_CULLING, culling);
 			// (culling) ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+		} else if (_selection == 10) { // Smooth Lighting
+			bool smooth = !Settings::Get()->getBool(SETTINGS::BOOL::SMOOTH_LIGHTING);
+			Settings::Get()->setBool(SETTINGS::BOOL::SMOOTH_LIGHTING, smooth);
 		} else if (_selection == 11) { // Done
 			_state = (_state == MENU::VIDEO_SETTINGS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
 			reset_values();
@@ -377,6 +380,7 @@ MENU::RET Menu::video_menu( void )
 		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("FullScreen ") + ((Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN)) ? "ON" : "OFF"));
 		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Skybox ") + ((Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX)) ? "ON" : "OFF"));
 		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Particles ") + ((Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES)) ? "ON" : "OFF"));
+		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Smooth Lighting ") + ((Settings::Get()->getBool(SETTINGS::BOOL::SMOOTH_LIGHTING)) ? "ON" : "OFF"));
 	}
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
 	return ((_moving_slider && _state == MENU::VIDEO_SETTINGS)
@@ -721,7 +725,7 @@ void Menu::setup_array_buffer_video( void )
     addQuads(1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Fullscreen
     addQuads(1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20); // Skybox
     addQuads(1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 8) ? 111 : 91, 200, 20); // Particles
-    addQuads(1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // tbd
+    addQuads(1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 10) ? 111 : 91, 200, 20); // Smooth Lighting
 
     addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 11) ? 111 : 91, 200, 20); // Done
 
@@ -1378,6 +1382,8 @@ void Menu::processMouseMovement( float posX, float posY )
 			_selection = 8;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 9;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 10;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 11;
 		} else {

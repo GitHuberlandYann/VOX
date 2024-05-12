@@ -389,7 +389,11 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 	// toggle game mode
 	if (INPUT::key_down(INPUT::GAMEMODE) && INPUT::key_update(INPUT::GAMEMODE)) {
-		setGamemode(!_game_mode);
+		if (INPUT::key_down(INPUT::DEBUG)) {
+			Settings::Get()->setBool(SETTINGS::BOOL::VISIBLE_CHUNK_BORDER, !Settings::Get()->getBool(SETTINGS::BOOL::VISIBLE_CHUNK_BORDER));
+		} else {
+			setGamemode(!_game_mode);
+		}
 	}
 	// toggle F5 mode
 	if (INPUT::key_down(INPUT::CAMERA) && INPUT::key_update(INPUT::CAMERA)) {

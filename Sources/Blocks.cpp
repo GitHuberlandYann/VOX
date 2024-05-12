@@ -41,7 +41,7 @@ void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 	} else if ((value & 0xFF) == blocks::OAK_LOG) {
 		offset = (value >> 9) & 0x3;
 	} else if (mined == blocks::REDSTONE_LAMP) { // TODO change this so offset given to texX and texY is just 'value'
-		offset = !!(value & REDSTONE::POWERED);
+		offset = (value >> REDSTONE::ACTIVATED_OFFSET) & 0x1;
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
 		spec = (this->texX(face_dir::MINUSX, offset) << 4) + (this->texY(face_dir::MINUSX, offset) << 12) + (3 << 19);

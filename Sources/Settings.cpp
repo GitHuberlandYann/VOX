@@ -8,6 +8,8 @@ Settings::Settings( void )
 	_bools[SETTINGS::BOOL::SKYBOX] = true;
 	_bools[SETTINGS::BOOL::PARTICLES] = true;
 	_bools[SETTINGS::BOOL::FACE_CULLING] = false;
+	_bools[SETTINGS::BOOL::VISIBLE_CHUNK_BORDER] = false;
+	_bools[SETTINGS::BOOL::SMOOTH_LIGHTING] = true;
 
 	_ints[SETTINGS::INT::RENDER_DIST] = RENDER_DISTANCE;
 	_ints[SETTINGS::CLOUDS] = SETTINGS::FANCY;

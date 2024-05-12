@@ -622,15 +622,20 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	if (type == blocks::GLASS) { // TODO check neighbours and spread water
 		return ;
 	} else if (type > blocks::AIR && type < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
-		if (type == blocks::TORCH) {
+		if (s_blocks[type]->light_level) {
 			std::cout << "rm light" << std::endl;
-			delete _flames[offset];
-			_flames.erase(offset);
+			if (type == blocks::TORCH) {
+				delete _flames[offset];
+				_flames.erase(offset);
+			}
 			_lights[offset] &= 0xFF00;
 			light_spread(pos.x, pos.y, pos.z, false); // spread block light
+			_light_update = false;
 			std::cout << "over" << std::endl;
 		} else if (type == blocks::OAK_LEAVES) {
 			_lights[offset] &= 0xFF;
+		} else if (type == blocks::LEVER) {
+			flickLever(pos, blocks::AIR, false);
 		}
 	} else if (type == blocks::WATER) { // use bucket on water source
 		// std::cout << "bucket on water" << std::endl;
@@ -1535,7 +1540,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 				break ;
 			case blocks::LEVER:
 				value ^= REDSTONE::POWERED;
-				flickLever(pos, (value >> REDSTONE::POWERED_OFFSET) & 0x1);
+				flickLever(pos, value, (value >> REDSTONE::POWERED_OFFSET) & 0x1);
 				break ;
 			default:
 				std::cerr << "Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & 0xFF]->name << std::endl;
