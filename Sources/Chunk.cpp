@@ -1103,7 +1103,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		return ;
 	}
 	if (!s_blocks[type]->transparent && type != blocks::REDSTONE_LAMP) {
-		int powered = getRedstoneState(pos, {0, 0, 0}, false, false);
+		int powered = getRedstoneState(pos, {0, 0, 0}, type == blocks::REDSTONE_BLOCK, false);
 		if (powered) {
 			block_value |= REDSTONE::POWERED;
 			_blocks[offset] = block_value;

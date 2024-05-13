@@ -72,6 +72,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 				chunk_hit = chunk;
 				res.pos = i;
 				res.value = type;
+				// _ui->chatMessage(s_blocks[type]->name + ((value & REDSTONE::POWERED) ? " block hit is powered" : " block hit is not powered"));
 				return (res);
 			} else if (target->orientedCollisionHitbox) {
 				glm::vec3 hitbox[2];

@@ -147,32 +147,30 @@ void Chunk::weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state )
 		if (delta == except) continue ;
 
 		int adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
-		if (s_blocks[adj & 0xFF]->redstoneComponant) {
-			switch (adj & 0xFF) {
-				case blocks::REDSTONE_LAMP:
-					if (state && !(adj & REDSTONE::ACTIVATED)) {
-						std::cout << "\tactivate redstone lamp at " << pos.x + delta.x << ", " << pos.y + delta.y << ", " << pos.z + delta.z << std::endl;
-						// turn lamp on instantly
-						short level = getLightLevel(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z) & 0xFF00;
-						level += s_blocks[blocks::REDSTONE_LAMP]->light_level + (s_blocks[blocks::REDSTONE_LAMP]->light_level << 4);
-						setLightLevel(level, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
-						startLightSpread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, false);
-						setBlockAt(adj | REDSTONE::ACTIVATED, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
-					} else if (!state && (adj & REDSTONE::ACTIVATED)) {
-						// add lamp to tick delay machine
-						std::cout << "\tschedule redstone lamp at " << pos.x + delta.x << ", " << pos.y + delta.y << ", " << pos.z + delta.z << std::endl;
-						_redstone_schedule.push_back({pos + delta, 2 * REDSTONE::TICK});
-					}
-					break ;
-				case blocks::REDSTONE_TORCH:
-					_redstone_schedule.push_back({pos + delta, REDSTONE::TICK});
-					break ;
-				case blocks::TNT:
-					if (state == REDSTONE::ON) {
-						handleHit(false, blocks::TNT, pos + delta + glm::ivec3(_startX, _startY, 0), Modif::LITNT);
-					}
-					break ;
-			}
+		switch (adj & 0xFF) {
+			case blocks::REDSTONE_LAMP:
+				if (state && !(adj & REDSTONE::ACTIVATED)) {
+					// std::cout << "\tactivate redstone lamp at " << pos.x + delta.x << ", " << pos.y + delta.y << ", " << pos.z + delta.z << std::endl;
+					// turn lamp on instantly
+					short level = getLightLevel(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z) & 0xFF00;
+					level += s_blocks[blocks::REDSTONE_LAMP]->light_level + (s_blocks[blocks::REDSTONE_LAMP]->light_level << 4);
+					setLightLevel(level, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+					startLightSpread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, false);
+					setBlockAt(adj | REDSTONE::ACTIVATED, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+				} else if (!state && (adj & REDSTONE::ACTIVATED)) {
+					// add lamp to tick delay machine
+					// std::cout << "\tschedule redstone lamp at " << pos.x + delta.x << ", " << pos.y + delta.y << ", " << pos.z + delta.z << std::endl;
+					_redstone_schedule.push_back({pos + delta, 2 * REDSTONE::TICK});
+				}
+				break ;
+			case blocks::REDSTONE_TORCH:
+				_redstone_schedule.push_back({pos + delta, REDSTONE::TICK});
+				break ;
+			case blocks::TNT:
+				if (state == REDSTONE::ON) {
+					handleHit(false, blocks::TNT, pos + delta + glm::ivec3(_startX, _startY, 0), Modif::LITNT);
+				}
+				break ;
 		}
 	}
 }
@@ -213,7 +211,7 @@ void Chunk::flickLever( glm::ivec3 pos, int value, bool state )
 // std::cout << "flick lever " << state << std::endl;
 	// if target block is !transparent, we 'strongly' power it, it in turns weakly powers its adjacent redstone componants
 	int target_value = getBlockAt(pos.x + target.x, pos.y + target.y, pos.z + target.z, true);
-	if (!s_blocks[target_value & 0xFF]->transparent) {
+	if (!s_blocks[target_value & 0xFF]->transparent && (target_value & 0xFF) != blocks::REDSTONE_BLOCK) {
 		bool target_state = getRedstoneState(pos + target, -target, state, false);
 		(target_state) ? target_value |= REDSTONE::POWERED : target_value &= (INT_MAX - REDSTONE::POWERED);
 		// (target_state) ? std::cout << "\tpower block at " << pos.x + target.x << ", " << pos.y + target.y << ", " << pos.z + target.z << std::endl
@@ -239,33 +237,35 @@ void Chunk::updateRedstoneTorch( glm::ivec3 pos, int value )
 	if ((actual_value & 0xFF) != blocks::REDSTONE_TORCH) {
 		state = true; // if state on, torch off
 	} else {
-		state = getRedstoneState(pos - glm::ivec3(0, 0, 1), {0, 0, 1}, false, false);
-		if (state && !(value & REDSTONE::POWERED)) {
-			setBlockAt(value | REDSTONE::POWERED, pos.x, pos.y, pos.z, true);
+		glm::ivec3 target = getAttachedDir(actual_value);
+		state = getBlockAt(pos.x + target.x, pos.y + target.y, pos.z + target.z, true) & REDSTONE::POWERED; // might want to add && !s_blocks[]->transparent
+		if (state && !(actual_value & REDSTONE::POWERED)) {
+			setBlockAt(actual_value | REDSTONE::POWERED, pos.x, pos.y, pos.z, true);
 			short level = getLightLevel(pos.x, pos.y, pos.z) + 7 + (7 << 4);
 			setLightLevel(level, pos.x, pos.y, pos.z, true);
 			startLightSpread(pos.x, pos.y, pos.z, false);
-		} else if (!state && (value & REDSTONE::POWERED)) {
+		} else if (!state && (actual_value & REDSTONE::POWERED)) {
 			short level = getLightLevel(pos.x, pos.y, pos.z) & 0xFF00;
 			setLightLevel(level, pos.x, pos.y, pos.z, true);
 			startLightSpread(pos.x, pos.y, pos.z, false);
-			setBlockAt(value & (INT_MAX - REDSTONE::POWERED), pos.x, pos.y, pos.z, true);
+			setBlockAt(actual_value & (INT_MAX - REDSTONE::POWERED), pos.x, pos.y, pos.z, true);
 		}
 	}
 
-std::cout << "addRedstoneTorch " << state << std::endl;
+// std::cout << "addRedstoneTorch " << state << std::endl;
 	// if above block is !transparent, we 'strongly' power it, it in turns weakly powers its adjacent redstone componants
 	int above_value = getBlockAt(pos.x, pos.y, pos.z + 1, true);
-	if (!s_blocks[above_value & 0xFF]->transparent) {
-		(!state || getRedstoneState(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, false, false)) ? above_value |= REDSTONE::POWERED : above_value &= (INT_MAX - REDSTONE::POWERED);
+	if (!s_blocks[above_value & 0xFF]->transparent && (above_value & 0xFF) != blocks::REDSTONE_BLOCK) {
+		int above_state = getRedstoneState(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, !state, false);
+		(above_state) ? above_value |= REDSTONE::POWERED : above_value &= (INT_MAX - REDSTONE::POWERED);
 		setBlockAt(above_value, pos.x, pos.y, pos.z + 1, true);
-		weaklyPower(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, !state);
+		weaklyPower(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, above_state);
 	}
 
 	// also, adjacent redstone componants are weakly powered
 	glm::ivec3 attachement = getAttachedDir(value);
 	weaklyPower(pos, attachement, !state);
-std::cout << "END addRestone " << state << std::endl;
+// std::cout << "END addRestone " << state << std::endl;
 }
 
 /**
@@ -288,7 +288,7 @@ void Chunk::updateRedstone( void )
 
 			switch (value & 0xFF) {
 				case blocks::REDSTONE_LAMP: // only scheduled to be turned off
-					std::cout << "update redstone lamp at " << red.pos.x << ", " << red.pos.y << ", " << red.pos.z << std::endl;
+					// std::cout << "update redstone lamp at " << red.pos.x << ", " << red.pos.y << ", " << red.pos.z << std::endl;
 					state = getRedstoneState(red.pos, {0, 0, 0}, false, true);
 					if (!state && (value & REDSTONE::ACTIVATED)) { // turn it off
 						short level = getLightLevel(red.pos.x, red.pos.y, red.pos.z) & 0xFF0F;
