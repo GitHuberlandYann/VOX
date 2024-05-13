@@ -176,9 +176,11 @@ class Chunk
 		// redstone
 		glm::ivec3 getAttachedDir( int value );
 		bool getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, bool weak );
+		int getRedstoneStrength( glm::ivec3 pos );
 		void weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state );
 		void flickLever( glm::ivec3 pos, int value, bool state );
 		void updateRedstoneTorch( glm::ivec3 pos, int value );
+		void updateRedstoneDust( glm::ivec3 pos );
 
 		// block update (20/sec)
 		void updateCrop( int value, int offset );

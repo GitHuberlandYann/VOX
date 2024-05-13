@@ -637,6 +637,8 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			_lights[offset] &= 0xFF;
 		} else if (type == blocks::LEVER) {
 			flickLever(pos, value, false);
+		} else if (type == blocks::REDSTONE_DUST) {
+			updateRedstoneDust(pos);
 		} else if (value & REDSTONE::POWERED) { // we remove a powered block
 			weaklyPower(pos, {0, 0, 0}, REDSTONE::OFF);
 		}
@@ -972,6 +974,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	int type = block_value & 0xFF;
+	int shape = s_blocks[type]->geometry;
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		int type_under = (_blocks[offset - 1] & 0xFF);
 		if (type_under == blocks::AIR) {
@@ -982,12 +985,11 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			return ;
 		}
 	}
-	if (type == blocks::CHEST) { // chests treated like flowers, but can be placed anywhere
-	} else if (type == blocks::WATER) { // we place water
+	if (type == blocks::WATER) { // we place water
 		if (previous < blocks::WATER) {
 			_hasWater = true;
 		}
-	} else if (type == blocks::TORCH || type == blocks::REDSTONE_TORCH) {
+	} else if (shape == GEOMETRY::TORCH) {
 		// check if orientation possible (wall available to hang from)
 		// if not, check if block underneath and change orientation
 		// else abort mission
@@ -1021,7 +1023,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		if (type != blocks::LEVER || ((block_value >> 12) & 0x3) != PLACEMENT::WALL) {
 			block_value += (_camera->getOrientation() << 9);
 		}
-		switch (s_blocks[type]->geometry) {
+		switch (shape) {
 			case GEOMETRY::STAIRS_BOTTOM:
 			case GEOMETRY::STAIRS_TOP:
 				handle_stair_corners(pos, block_value);
@@ -1038,7 +1040,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		}
 	} else if (type == blocks::OAK_FENCE || type == blocks::GLASS_PANE) {
 		handle_fence_placement(pos, block_value);
-	} else if (type >= blocks::POPPY && pos.z > 0) {
+	} else if ((shape == GEOMETRY::CROSS || shape == GEOMETRY::CROP) && pos.z > 0) {
 		if (previous >= blocks::WATER) {
 			return ;
 		}
@@ -1081,6 +1083,8 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		std::cout << "over" << std::endl;
 	} else if (type == blocks::GLASS) {
 		_hasWater = true; // glass considered as invis block
+	} else if (type == blocks::REDSTONE_DUST) {
+		updateRedstoneDust(pos);
 	} else if (s_blocks[type]->redstoneComponant) {
 		int active = getRedstoneState(pos, {0, 0, 0}, false, true);
 		if (active) {

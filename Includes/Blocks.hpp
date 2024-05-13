@@ -70,6 +70,10 @@ namespace REDSTONE {
 	const int ACTIVATED = (1 << ACTIVATED_OFFSET);
 	const int POWERED_OFFSET = 16;
 	const int POWERED = (1 << POWERED_OFFSET);
+	const int WEAKLY_POWERED_OFFSET = 17;
+	const int WEAKLY_POWERED = (1 << WEAKLY_POWERED_OFFSET);
+	const int STRENGTH_OFFSET = 20;
+	const int STRENGTH = (0xF << STRENGTH_OFFSET);
 };
 
 namespace GEOMETRY {
@@ -90,6 +94,7 @@ namespace GEOMETRY {
 		TRAPDOOR,
 		CROP,
 		LEVER,
+		DUST,
 	};
 };
 
@@ -162,6 +167,7 @@ namespace blocks {
 		OAK_SAPLING,
 		TORCH,
 		REDSTONE_TORCH,
+		REDSTONE_DUST,
 		CHEST = 79,
 		WHEAT_CROP = 80,
 		WHEAT_CROP1,
@@ -1498,7 +1504,9 @@ struct RedstoneOre : Cube {
 	public:
 		RedstoneOre() {
 			name = "REDSTONE_ORE";
-			mined = blocks::REDSTONE_ORE; // TODO change this to redstone dust
+			mined = blocks::REDSTONE_DUST; // TODO 4 or 5
+			isComposant = true;
+			getProduction = blocks::REDSTONE_DUST;
 			blast_resistance = 3.0f;
 			byHand = false;
 			needed_tool = blocks::WOODEN_PICKAXE;
@@ -1829,6 +1837,35 @@ struct RedstoneTorch : Torch {
 			if (offset == 2) return (11);
 			return (11 + offset);
 		}
+};
+
+struct RedstoneDust : Block {
+	public:
+		RedstoneDust() {
+			name = "REDSTONE_DUST";
+			mined = blocks::REDSTONE_DUST;
+			blast_resistance = 0.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			hitboxCenter = {0.5f, 0.5f, ONE16TH};
+			hitboxHalfSize = {0.2f, 0.2f, ONE16TH};
+			geometry = GEOMETRY::DUST;
+			byHand = true;
+			hardness = 0.0f;
+			transparent = true;
+			item3D = false;
+		}
+		virtual int texX( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
+			(void)dir;
+			if (offset == 2) return (7);
+			return (6 - offset);
+		}
+		virtual int texY( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
+			(void)dir;
+			if (offset == 2) return (8);
+			return (12);
+		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
 struct Chest : Block {

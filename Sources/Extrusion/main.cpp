@@ -23,9 +23,9 @@ int main( int ac, char **av )
 	int yStart = std::atoi(av[2]);
 
 	t_tex img;
-	img.content = SOIL_load_image("Resources/blockAtlas.png", &img.width, &img.height, 0, SOIL_LOAD_RGBA);
+	img.content = SOIL_load_image("Resources/Textures/blockAtlas.png", &img.width, &img.height, 0, SOIL_LOAD_RGBA);
 	if (!img.content) {
-		std::cerr << "failed to load image " << "Resources/blockAtlas.png" << " because:" << std::endl << SOIL_last_result() << std::endl;
+		std::cerr << "failed to load image " << "Resources/Textures/blockAtlas.png" << " because:" << std::endl << SOIL_last_result() << std::endl;
 		exit(1);
 	}
 	if (xStart + TEXSIZE > img.width || yStart + TEXSIZE > img.height) {

@@ -89,14 +89,11 @@ glm::ivec3 Chunk::getAttachedDir( int value )
 
 /**
  * @brief check adj blocks to return whether block at given pos is currently powered.
- * to future me: no you can't just stock info in its data_value because one block can be
- * powered from several sources at the same time, so when you turn off one of the sources,
- * it can still be powered afterwards
  * @param pos block to get state of
  * @param except this given dir is not checked
- * @param state this is state of given dir, if on, no need to check further
+ * @param state this is state of 'exept' dir, if on, no need to check further
  * @param weak true if a weakly powered state is accepted
- * @return true if given pos is ((weak) ? WEAKLY : STRONGLY | WEAKLY) powered
+ * @return if given pos is ((weak) ? WEAKLY : STRONGLY | WEAKLY) powered
 */
 bool Chunk::getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, bool weak )
 {
@@ -124,14 +121,49 @@ bool Chunk::getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, boo
 					return !(adj & REDSTONE::POWERED);
 				}
 				break ;
-			default:
-				if (weak && (adj & REDSTONE::POWERED)) {
+			case blocks::REDSTONE_DUST:
+				return (weak && (adj & REDSTONE::STRENGTH));
+			default: // redstone block behaves like default
+				if (weak && (adj & (REDSTONE::POWERED | REDSTONE::WEAKLY_POWERED))) {
 					return (REDSTONE::ON);
 				}
 				break ;
 		}
 	}
 	return (REDSTONE::OFF);
+}
+
+/**
+ * @brief same as getRedstoneState, but returns signal level [0:15] received by block at 'pos'
+ * and doesn't distinguish between strong or weak signal
+ * @param pos block to get signal strength of
+ * @return signal level received by block at 'pos'
+*/
+int Chunk::getRedstoneStrength( glm::ivec3 pos )
+{
+	int res = REDSTONE::OFF;
+	for (int index = 0; index < 6; ++index) {
+		const glm::ivec3 delta = adj_blocks[index];
+		int adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+		switch (adj & 0xFF) {
+			case blocks::REDSTONE_TORCH:
+				if (!(adj & REDSTONE::POWERED)) {
+					return (0xF);
+				}
+				break ;
+			case blocks::REDSTONE_DUST:
+				if (((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) > res + 1) {
+					res = ((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) - 1;
+				}
+				break ;
+			default: // lever and redstone block behave like default
+				if (adj & REDSTONE::POWERED) {
+					return (0xF);
+				}
+				break ;
+		}
+	}
+	return (res);
 }
 
 /**
@@ -166,6 +198,9 @@ void Chunk::weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state )
 			case blocks::REDSTONE_TORCH:
 				_redstone_schedule.push_back({pos + delta, REDSTONE::TICK});
 				break ;
+			case blocks::REDSTONE_DUST:
+				updateRedstoneDust(pos + delta);
+				break ;
 			case blocks::TNT:
 				if (state == REDSTONE::ON) {
 					handleHit(false, blocks::TNT, pos + delta + glm::ivec3(_startX, _startY, 0), Modif::LITNT);
@@ -176,11 +211,6 @@ void Chunk::weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state )
 }
 
 
-	// for (int dx = -1; dx <= 1; ++dx) {
-	// 	for (int dy = -1; dy <= 1; ++dy) {
-	// 		for (int dz = -1; dz <= 1; ++dz) {
-	// 			if (!dx && !dy && !dz) continue ;
-	// 			int block_value = getBlockAt(pos.x + dx, pos.y + dy, pos.z + dz, true);
 	// 			switch (s_blocks[block_value & 0xFF]->geometry) {
 	// 				case GEOMETRY::TRAPDOOR:
 	// 					(state) ? setBlockAt(block_value | REDSTONE::POWERED, pos.x + dx, pos.y + dy, pos.z + dz, true)
@@ -195,9 +225,7 @@ void Chunk::weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state )
 	// 							: setBlockAt(block_value ^ (1 << REDSTONE::POWERED_OFFSET), pos.x + dx, pos.y + dy, pos.z + dz, true);
 	// 					break ;
 	// 			}
-	// 		}
-	// 	}
-	// }
+
 
 /**
  * @brief updates blocks around lever at 'pos' according to its state
@@ -266,6 +294,47 @@ void Chunk::updateRedstoneTorch( glm::ivec3 pos, int value )
 	glm::ivec3 attachement = getAttachedDir(value);
 	weaklyPower(pos, attachement, !state);
 // std::cout << "END addRestone " << state << std::endl;
+}
+
+/**
+ * @brief updates blocks around redstone dust at 'pos'.
+ * @param pos relative position of redstone torch inside chunk
+*/
+void Chunk::updateRedstoneDust( glm::ivec3 pos )
+{
+	int actual_value = getBlockAt(pos.x, pos.y, pos.z, true), strength;
+	if ((actual_value & 0xFF) != blocks::REDSTONE_DUST) {
+		strength = 0;
+	} else {
+		strength = (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF;
+		int signal_received = getRedstoneStrength(pos);
+		if (signal_received != strength) {
+			strength = signal_received;
+			actual_value &= (INT_MAX - REDSTONE::STRENGTH);
+			setBlockAt(actual_value | (strength << REDSTONE::STRENGTH_OFFSET), pos.x, pos.y, pos.z, true);
+		} else {
+			return ;
+		}
+	}
+
+	// use dust's connection to set/unset connected blocks as WEAKLY_POWERED, which is used by red_torches and red_componants
+	if ((actual_value >> 24) & 0x3) {
+
+	}
+	if ((actual_value >> 26) & 0x3) {
+
+	}
+	if ((actual_value >> 28) & 0x3) {
+
+	}
+	if ((actual_value >> 30) & 0x3) {
+
+	}
+
+// std::cout << "addRestoneDust " << strength << std::endl;
+	// adjacent redstone componants are weakly powered
+	weaklyPower(pos, {0, 0, 0}, strength);
+// std::cout << "END addRestoneDust " << strength << std::endl;
 }
 
 /**

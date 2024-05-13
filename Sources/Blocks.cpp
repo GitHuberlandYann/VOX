@@ -10,7 +10,7 @@ const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new OakSlabBottom(), new OakSlabTop(), new OakFence(), new StoneSlabBottom(), new StoneSlabTop(), new SmoothStoneSlabBottom(), new SmoothStoneSlabTop(), new CobbleStoneSlabBottom(),
 	new CobbleStoneSlabTop(), new StoneBricksSlabBottom(), new StoneBricksSlabTop(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(),
 	new Poppy(), new Dandelion(), new BlueOrchid(), new Allium(), new CornFlower(), new PinkTulip(), new Grass(), new SugarCane(),
-	new DeadBush(), new OakSapling(), new Torch(), new RedstoneTorch(), new TBD(), new TBD(), new TBD(), new Chest(),
+	new DeadBush(), new OakSapling(), new Torch(), new RedstoneTorch(), new RedstoneDust(), new TBD(), new TBD(), new Chest(),
 	new WheatCrop(), new WheatCrop1(), new WheatCrop2(), new WheatCrop3(), new WheatCrop4(), new WheatCrop5(), new WheatCrop6(), new WheatCrop7(),
 	new Water(), new Water1(), new Water2(), new Water3(), new Water4(), new Water5(), new Water6(), new Water7(),
 	new Stick(), new WoodenShovel(), new StoneShovel(), new IronShovel(), new DiamondShovel(), new WoodenAxe(), new StoneAxe(), new IronAxe(),
@@ -2847,5 +2847,30 @@ void Lever::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	v1 = {spec - 7 + (6 << 8) + XTEX, p5};
 	v2 = {spec + 7 + (8 << 8) + (1 << 18), p0};
 	v3 = {spec - 7 + (8 << 8) + (1 << 18) + XTEX, p1};
+	face_vertices(vertices, v0, v1, v2, v3); // +z
+}
+
+void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+{
+	(void)chunk;
+	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0.001f);
+	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0.001f);
+	// glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
+	// glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
+
+	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0.001f);
+	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0.001f);
+	// glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
+	// glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
+
+	int spec = (texX(face_dir::MINUSX, 0) << 4) + (texY() << 12);
+	// (void)value; int color = pos.x;
+	int color = (value >> REDSTONE::STRENGTH_OFFSET) & 0xF;
+	spec += (color << 24);
+
+	t_shaderInput v0 = {spec, p4};
+	t_shaderInput v1 = {spec + XTEX, p5};
+	t_shaderInput v2 = {spec + YTEX, p0};
+	t_shaderInput v3 = {spec + XTEX + YTEX, p1};
 	face_vertices(vertices, v0, v1, v2, v3); // +z
 }

@@ -62,6 +62,7 @@ IN PROGRES:
 	- universal use of tps instead of deltatimes
 
 TODAY:
+	- redstone dust
 	- add light diff on levers faces
 	- fix faces open/closed trapdoors not matching
 	- fix touchy stairs still displaying touchy faces
@@ -294,7 +295,8 @@ Some info:
 	- all
 		- 0xFF  type
 		- 0x100 NotVisible
-		- 0x10000 powered (1 << 16)
+		- 0x10000 strongly powered (1 << 16)
+		- 0x20000 weakly   powered (1 << 17) (by redtone dust)
 	- Furnace 0x7 << 9 == orientation, 0x1000 == furnace ON/OFF
 	- table craft 0x7 << 9 == orientation
 	- torch 0x7 << 9 == orientation
@@ -308,6 +310,7 @@ Some info:
 	- glass panes 0xF << 12 == 'arms'
 	- lever 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor)
 	- redstone lamp 1 << 9 lit
+	- redstone dust 0xF << 20 strength 0xFF << 24 'arms'
 
 	- powered blocks: (1 << 16)
 		doors, trapdoors, lever, redstone lamp

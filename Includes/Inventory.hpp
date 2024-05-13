@@ -9,8 +9,8 @@ class FurnaceInstance;
 class ChestInstance;
 class UI;
 
-# define IRECEIPT_SIZE 27
-# define RECEIPT_SIZE 106
+# define IRECEIPT_SIZE 29
+# define RECEIPT_SIZE 122
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
@@ -35,6 +35,8 @@ const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::COAL, blocks::AIR, blocks::STICK, blocks::TORCH, 4},
 	{blocks::CHARCOAL, blocks::AIR, blocks::STICK, blocks::AIR, blocks::TORCH, 4},
 	{blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::STICK, blocks::TORCH, 4},
+	{blocks::REDSTONE_DUST, blocks::AIR, blocks::STICK, blocks::AIR, blocks::REDSTONE_TORCH, 4},
+	{blocks::AIR, blocks::REDSTONE_DUST, blocks::AIR, blocks::STICK, blocks::REDSTONE_TORCH, 4},
 	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::CRAFTING_TABLE, 1},
 	{blocks::STONE, blocks::STONE, blocks::STONE, blocks::STONE, blocks::STONE_BRICKS, 4},
 	{blocks::IRON_INGOT, blocks::AIR, blocks::AIR, blocks::FLINT, blocks::FLINT_AND_STEEL, 1},
@@ -66,6 +68,13 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::AIR, blocks::AIR, blocks::COAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
 	{blocks::AIR, blocks::COAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
 	{blocks::COAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::TORCH, 4},
+
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, blocks::AIR, blocks::AIR, blocks::STICK, blocks::REDSTONE_TORCH, 4},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::REDSTONE_TORCH, 4},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::REDSTONE_TORCH, 4},
+	{blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_TORCH, 4},
+	{blocks::AIR, blocks::REDSTONE_DUST, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_TORCH, 4},
+	{blocks::REDSTONE_DUST, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_TORCH, 4},
 
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::TORCH, 4},
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::TORCH, 4},
@@ -162,6 +171,16 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::AIR, blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
 	{blocks::AIR, blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
 	{blocks::DIAMOND_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::DIAMOND, 9},
+	{blocks::REDSTONE_DUST, blocks::REDSTONE_DUST, blocks::REDSTONE_DUST, blocks::REDSTONE_DUST, blocks::REDSTONE_DUST, blocks::REDSTONE_DUST, blocks::REDSTONE_DUST, blocks::REDSTONE_DUST, blocks::REDSTONE_DUST, blocks::REDSTONE_BLOCK, 1},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_BLOCK, blocks::REDSTONE_DUST, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_BLOCK, blocks::AIR, blocks::REDSTONE_DUST, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_BLOCK, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, 9},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, 9},
+	{blocks::AIR, blocks::AIR, blocks::REDSTONE_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, 9},
+	{blocks::AIR, blocks::REDSTONE_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, 9},
+	{blocks::REDSTONE_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, 9},
 };
 
 typedef struct s_item {

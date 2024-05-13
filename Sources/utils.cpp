@@ -348,6 +348,7 @@ bool visible_face( int value, int next, face_dir dir )
 		case GEOMETRY::TRAPDOOR:
 		case GEOMETRY::CROP:
 		case GEOMETRY::LEVER:
+		case GEOMETRY::DUST:
 			return (true);
 		case GEOMETRY::GLASS:
 		case GEOMETRY::GLASS_PANE:
