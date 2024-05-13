@@ -10,7 +10,7 @@ const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new OakSlabBottom(), new OakSlabTop(), new OakFence(), new StoneSlabBottom(), new StoneSlabTop(), new SmoothStoneSlabBottom(), new SmoothStoneSlabTop(), new CobbleStoneSlabBottom(),
 	new CobbleStoneSlabTop(), new StoneBricksSlabBottom(), new StoneBricksSlabTop(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(),
 	new Poppy(), new Dandelion(), new BlueOrchid(), new Allium(), new CornFlower(), new PinkTulip(), new Grass(), new SugarCane(),
-	new DeadBush(), new OakSapling(), new Torch(), new TBD(), new TBD(), new TBD(), new TBD(), new Chest(),
+	new DeadBush(), new OakSapling(), new Torch(), new RedstoneTorch(), new TBD(), new TBD(), new TBD(), new Chest(),
 	new WheatCrop(), new WheatCrop1(), new WheatCrop2(), new WheatCrop3(), new WheatCrop4(), new WheatCrop5(), new WheatCrop6(), new WheatCrop7(),
 	new Water(), new Water1(), new Water2(), new Water3(), new Water4(), new Water5(), new Water6(), new Water7(),
 	new Stick(), new WoodenShovel(), new StoneShovel(), new IronShovel(), new DiamondShovel(), new WoodenAxe(), new StoneAxe(), new IronAxe(),
@@ -484,7 +484,7 @@ void Torch::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
-	int spec = (textureX << 4) + (textureY << 12) + (0 << 19) + (15 << 24);
+	int spec = (textureX << 4) + (texY(face_dir::MINUSX, !!(value & REDSTONE::POWERED)) << 12) + (0 << 19) + (15 << 24);
 	switch ((value >> 9) & 0x7) { // orientation
 		case face_dir::MINUSZ: // default
 			p0 += glm::vec3( 7.0f * ONE16TH,  7.0f * ONE16TH, -6.0f * ONE16TH);

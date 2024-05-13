@@ -178,6 +178,7 @@ class Chunk
 		bool getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, bool weak );
 		void weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state );
 		void flickLever( glm::ivec3 pos, int value, bool state );
+		void updateRedstoneTorch( glm::ivec3 pos, int value );
 
 		// block update (20/sec)
 		void updateCrop( int value, int offset );

@@ -161,6 +161,7 @@ namespace blocks {
 		DEAD_BUSH,
 		OAK_SAPLING,
 		TORCH,
+		REDSTONE_TORCH,
 		CHEST = 79,
 		WHEAT_CROP = 80,
 		WHEAT_CROP1,
@@ -1812,6 +1813,22 @@ struct Torch : Block {
 			textureY = 10;
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+};
+
+struct RedstoneTorch : Torch {
+	public:
+		RedstoneTorch() {
+			name = "REDSTONE_TORCH";
+			mined = blocks::REDSTONE_TORCH;
+			light_level = 7;
+			textureX = 7;
+			textureY = 11;
+		}
+		virtual int texY( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
+			(void)dir;
+			if (offset == 2) return (11);
+			return (11 + offset);
+		}
 };
 
 struct Chest : Block {

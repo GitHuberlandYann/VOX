@@ -108,6 +108,8 @@ DONE:
 	- doors
 	- trapdoors
 	- lever
+	- redstone lamp
+	- redstone torch
 	- fences
     - items on ground after break
 	- item number color/placement/size in ingame menus

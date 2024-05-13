@@ -173,13 +173,15 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 		if (!air_flower(type, false, false, true) && type != blocks::AIR) { // replace flower with water
 			// std::cout << _startX << ", " << _startY << " type before: " << s_blocks[type]->name << ". displayed: " << _displayed_faces << std::endl;
 			entity_block(posX, posY, posZ, type); // drop item(s)
-			if (type == blocks::TORCH) {
+			if (type == blocks::TORCH || type == blocks::REDSTONE_TORCH) {
 				_lights[offset] &= 0xFF00;
 				light_spread(posX, posY, posZ, false);
-				auto search = _flames.find(offset);
-				if (search != _flames.end()) {
-					delete search->second;
-					_flames.erase(offset);
+				if (type == blocks::TORCH) {
+					auto search = _flames.find(offset);
+					if (search != _flames.end()) {
+						delete search->second;
+						_flames.erase(offset);
+					}
 				}
 			}
 			// std::cout << "type after: " << s_blocks[level]->name << ". displayed: " << _displayed_faces << std::endl;

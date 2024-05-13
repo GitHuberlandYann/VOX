@@ -163,7 +163,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	} else if (type == blocks::AIR || type >= blocks::STICK) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
-	} else if (type == blocks::TORCH) {
+	} else if (type == blocks::TORCH || type == blocks::REDSTONE_TORCH) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
 			type += (face_dir::MINUSZ << 9);
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {

@@ -620,12 +620,14 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	_blocks[offset] = blocks::AIR;
 	if (type == blocks::GLASS) { // TODO check neighbours and spread water
 		return ;
-	} else if (type > blocks::AIR && type < blocks::WATER) { // if invisible block gets deleted, same amount of displayed_blocks
+	} else if (type > blocks::AIR && type < blocks::WATER) {
 		if (s_blocks[type]->light_level) {
 			std::cout << "rm light" << std::endl;
 			if (type == blocks::TORCH) {
 				delete _flames[offset];
 				_flames.erase(offset);
+			} else if (type == blocks::REDSTONE_TORCH) {
+				updateRedstoneTorch(pos, value);
 			}
 			_lights[offset] &= 0xFF00;
 			light_spread(pos.x, pos.y, pos.z, false); // spread block light
@@ -634,7 +636,9 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		} else if (type == blocks::OAK_LEAVES) {
 			_lights[offset] &= 0xFF;
 		} else if (type == blocks::LEVER) {
-			flickLever(pos, blocks::AIR, false);
+			flickLever(pos, value, false);
+		} else if (value & REDSTONE::POWERED) { // we remove a powered block
+			weaklyPower(pos, {0, 0, 0}, REDSTONE::OFF);
 		}
 	} else if (type == blocks::WATER) { // use bucket on water source
 		// std::cout << "bucket on water" << std::endl;
@@ -658,7 +662,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 				} else if (air_flower(adj, false, false, false)) {
 				} else if (index != face_dir::MINUSZ && (adj & 0xFF) >= blocks::WATER) { // if water under, it is not updated
 					_fluids.insert(adj_offset);
-				} else if ((adj & 0xFF) == blocks::TORCH && ((adj >> 9) & 0x7) == opposite_dir(index)) {
+				} else if (((adj & 0xFF) == blocks::TORCH || (adj & 0xFF) == blocks::REDSTONE_TORCH) && ((adj >> 9) & 0x7) == opposite_dir(index)) {
 					std::cout << "rm adj torch" << std::endl;
 					remove_block(useInventory, {pos.x + delta.x, pos.y + delta.y, pos.z + delta.z});
 				}
@@ -686,7 +690,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		}
 	}
 	handle_border_block(pos, air_flower(value, true, false, true), false); // if block at border of chunk gets deleted, we update neighbours. doing it after light spread
-	if (type_above != blocks::TORCH && type_above != blocks::CHEST && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS
+	if (type_above != blocks::TORCH && type_above != blocks::REDSTONE_TORCH && type_above != blocks::CHEST && ((type_above >= blocks::POPPY && type_above < blocks::WATER) || type_above == blocks::CACTUS
 		|| (type_above == blocks::OAK_DOOR && type != blocks::OAK_DOOR))) { // del flower if block underneath deleted
 		(type_above == blocks::GRASS)
 			? remove_block(false, {pos.x, pos.y, pos.z + 1}) // if grass above breaked block, don't collect it
@@ -983,7 +987,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		if (previous < blocks::WATER) {
 			_hasWater = true;
 		}
-	} else if (type == blocks::TORCH) {
+	} else if (type == blocks::TORCH || type == blocks::REDSTONE_TORCH) {
 		// check if orientation possible (wall available to hang from)
 		// if not, check if block underneath and change orientation
 		// else abort mission
@@ -1003,14 +1007,16 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			break;
 		}
 		if (neighbourShape != GEOMETRY::CUBE) {
-			block_value = blocks::TORCH + (face_dir::MINUSZ << 9);
+			block_value = type + (face_dir::MINUSZ << 9);
 			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1, false) & 0xFF]->geometry;
 			if (!(neighbourShape == GEOMETRY::CUBE || neighbourShape == GEOMETRY::SLAB_TOP
 				|| neighbourShape == GEOMETRY::STAIRS_TOP || neighbourShape == GEOMETRY::FENCE)) {
 				return ;
 			}
 		}
-		addFlame(offset, pos, blocks::TORCH, (block_value >> 9) & 0x7);
+		if (type == blocks::TORCH) {
+			addFlame(offset, pos, blocks::TORCH, (block_value >> 9) & 0x7);
+		}
 	} else if (s_blocks[type]->oriented) {
 		if (type != blocks::LEVER || ((block_value >> 12) & 0x3) != PLACEMENT::WALL) {
 			block_value += (_camera->getOrientation() << 9);
@@ -1062,7 +1068,10 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		_chests.emplace(offset, new ChestInstance(this, {pos.x + _startX, pos.y + _startY, pos.z}, _camera->getOrientation()));
 	} else if (type == blocks::FURNACE) {
 		_furnaces.emplace(offset, new FurnaceInstance());
-	} else if (type == blocks::TORCH) {
+	} else if (type == blocks::TORCH || type == blocks::REDSTONE_TORCH) {
+		if (type == blocks::REDSTONE_TORCH) {
+			updateRedstoneTorch(pos, block_value);
+		}
 		std::cout << "add light" << std::endl;
 		_lights[offset] &= 0xFF00;
 		_lights[offset] += s_blocks[type]->light_level + (s_blocks[type]->light_level << 4);
@@ -1094,6 +1103,13 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		return ;
 	}
 	if (!s_blocks[type]->transparent && type != blocks::REDSTONE_LAMP) {
+		int powered = getRedstoneState(pos, {0, 0, 0}, false, false);
+		if (powered) {
+			block_value |= REDSTONE::POWERED;
+			_blocks[offset] = block_value;
+			_added[offset] = block_value;
+			weaklyPower(pos, {0, 0, 0}, REDSTONE::ON);
+		}
 		_lights[offset] = 0; // rm light if solid block added
 	}
 	for (int index = 0; index < 6; index++) {
@@ -1478,6 +1494,7 @@ void Chunk::checkFillVertices( void )
 						continue ;
 					}
 				case blocks::TORCH:
+				case blocks::REDSTONE_TORCH:
 					int level = a.first & (WORLD_HEIGHT - 1);
 					int col = ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 					int row = ((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
@@ -1902,7 +1919,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 		}
 	} else {
 		// std::cout << "update border, value is " << s_blocks[value & 0xFF]->name << ", origin " << origin << ", orientation " << ((value >> 9) & 0x7) << std::endl;
-		if ((value & 0xFF) == blocks::TORCH && ((value >> 9) & 0x7) == origin) {
+		if (((value & 0xFF) == blocks::TORCH || (value & 0xFF) == blocks::REDSTONE_TORCH) && ((value >> 9) & 0x7) == origin) {
 			remove_block(true, {posX, posY, level}); // TODO handle useInventory instead of setting it to true by default
 		}
 		if (value & blocks::NOTVISIBLE) {
