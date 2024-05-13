@@ -135,12 +135,10 @@ void Chunk::weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state )
 					if (state && !(adj & REDSTONE::ACTIVATED)) {
 						std::cout << "\tactivate redstone lamp at " << pos.x + delta.x << ", " << pos.y + delta.y << ", " << pos.z + delta.z << std::endl;
 						// turn lamp on instantly
-						// TODO handle chunk border!!!!! perhaps with getLightLevel and new? setLightLevel and light_spread_butCheckIfInGoodChunkInSomeWay
-						int offset = ((((pos.x + delta.x) << CHUNK_SHIFT) + (pos.y + delta.y)) << WORLD_SHIFT) + pos.z + delta.z;
-						_lights[offset] &= 0xFF00;
-						_lights[offset] += s_blocks[blocks::REDSTONE_LAMP]->light_level + (s_blocks[blocks::REDSTONE_LAMP]->light_level << 4);
-						light_spread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, false);
-						_light_update = false;
+						short level = getLightLevel(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z) & 0xFF00;
+						level += s_blocks[blocks::REDSTONE_LAMP]->light_level + (s_blocks[blocks::REDSTONE_LAMP]->light_level << 4);
+						setLightLevel(level, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+						startLightSpread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, false);
 						setBlockAt(adj | REDSTONE::ACTIVATED, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
 					} else if (!state && (adj & REDSTONE::ACTIVATED)) {
 						// add lamp to tick delay machine
@@ -246,11 +244,9 @@ void Chunk::updateRedstone( void )
 					std::cout << "update redstone lamp at " << red.pos.x << ", " << red.pos.y << ", " << red.pos.z << std::endl;
 					state = getRedstoneState(red.pos, {0, 0, 0}, false, true);
 					if (!state && (value & REDSTONE::ACTIVATED)) { // turn it off
-						// TODO handle chunk border!!!!! perhaps with getLightLevel and new? setLightLevel and light_spread_butCheckIfInGoodChunkInSomeWay
-						int offset = ((((red.pos.x) << CHUNK_SHIFT) + (red.pos.y)) << WORLD_SHIFT) + red.pos.z;
-						_lights[offset] &= 0xFF0F;
-						light_spread(red.pos.x, red.pos.y, red.pos.z, false);
-						_light_update = false;
+						short level = getLightLevel(red.pos.x, red.pos.y, red.pos.z) & 0xFF0F;
+						setLightLevel(level, red.pos.x, red.pos.y, red.pos.z, true);
+						startLightSpread(red.pos.x, red.pos.y, red.pos.z, false);
 						setBlockAt(value & (INT_MAX - REDSTONE::ACTIVATED), red.pos.x, red.pos.y, red.pos.z, true);
 					}
 					break ;

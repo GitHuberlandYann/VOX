@@ -170,7 +170,7 @@ class Chunk
 		void replace_block( bool useInventory, glm::ivec3 pos, int type, int previous );
 
 		// lights
-		void light_spread( int posX, int posY, int level, bool skySpread, int recurse = LIGHT_RECURSE );
+		void light_spread( int posX, int posY, int posZ, bool skySpread, int recurse = LIGHT_RECURSE );
 		void generate_lights( void );
 
 		// redstone
@@ -206,6 +206,8 @@ class Chunk
 		GLint getCamLightLevel( glm::ivec3 location );
 		int computePosLight( glm::vec3 pos );
 		short getLightLevel( int posX, int posY, int posZ );
+		void setLightLevel( short level, int posX, int posY, int posZ, bool askNeighbours );
+		void startLightSpread( int posX, int posY, int posZ, bool skySpread );
 		void waitGenDone( void );
 
 		int computeLight( int row, int col, int level );

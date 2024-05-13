@@ -205,6 +205,66 @@ short Chunk::getLightLevel( int posX, int posY, int posZ )
 	return (0xF00);
 }
 
+void Chunk::setLightLevel( short level, int posX, int posY, int posZ, bool askNeighbours )
+{
+	if (!_lights || posZ < 0 || posZ >= WORLD_HEIGHT) {
+		return ;
+	}
+	if (posX < 0) {
+		if (askNeighbours && _neighbours[face_dir::MINUSX]) {
+			_neighbours[face_dir::MINUSX]->setLightLevel(level, posX + CHUNK_SIZE, posY, posZ, true);
+			return ;
+		}
+	} else if (posX >= CHUNK_SIZE) {
+		if (askNeighbours && _neighbours[face_dir::PLUSX]) {
+			_neighbours[face_dir::PLUSX]->setLightLevel(level, posX - CHUNK_SIZE, posY, posZ, true);
+			return ;
+		}
+	} else if (posY < 0) {
+		if (askNeighbours && _neighbours[face_dir::MINUSY]) {
+			_neighbours[face_dir::MINUSY]->setLightLevel(level, posX, posY + CHUNK_SIZE, posZ, true);
+			return ;
+		}
+	} else if (posY >= CHUNK_SIZE) {
+		if (askNeighbours && _neighbours[face_dir::PLUSY]) {
+			_neighbours[face_dir::PLUSY]->setLightLevel(level, posX, posY - CHUNK_SIZE, posZ, true);
+			return ;
+		}
+	} else {
+		_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] = level;
+	}
+}
+
+void Chunk::startLightSpread( int posX, int posY, int posZ, bool skySpread )
+{
+	if (!_lights || posZ < 0 || posZ >= WORLD_HEIGHT) {
+		return ;
+	}
+	if (posX < 0) {
+		if (_neighbours[face_dir::MINUSX]) {
+			_neighbours[face_dir::MINUSX]->startLightSpread(posX + CHUNK_SIZE, posY, posZ, skySpread);
+			return ;
+		}
+	} else if (posX >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSX]) {
+			_neighbours[face_dir::PLUSX]->startLightSpread(posX - CHUNK_SIZE, posY, posZ, skySpread);
+			return ;
+		}
+	} else if (posY < 0) {
+		if (_neighbours[face_dir::MINUSY]) {
+			_neighbours[face_dir::MINUSY]->startLightSpread(posX, posY + CHUNK_SIZE, posZ, skySpread);
+			return ;
+		}
+	} else if (posY >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSY]) {
+			_neighbours[face_dir::PLUSY]->startLightSpread(posX, posY - CHUNK_SIZE, posZ, skySpread);
+			return ;
+		}
+	} else {
+		light_spread(posX, posY, posZ, skySpread);
+	}
+}
+
 void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool skySpread, int recurse )
 {
 	if (posZ < 0 || posZ > 255) {
