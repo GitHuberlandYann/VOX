@@ -64,6 +64,7 @@ enum AXIS {
 namespace REDSTONE {
 	const bool ON = true;
 	const bool OFF = false;
+	const int TICK = 2;
 	// activated means it receives signal, powered means it also transmits signal
 	const int ACTIVATED_OFFSET = 9;
 	const int ACTIVATED = (1 << ACTIVATED_OFFSET);

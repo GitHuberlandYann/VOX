@@ -605,13 +605,14 @@ void OpenGL_Manager::main_loop( void )
 		for (auto& c: _visible_chunks) {
 			c->drawArray(newVaoCounter, faceCounter);
 			if (!gamePaused) {
-				if (fluidUpdate) {
-					c->updateFluids();
-					c->updateScheduledBlocks();
-				}
 				if (tickUpdate) {
+					c->updateRedstone(); // scheduled ticks
 					c->updateFurnaces(currentTime);
-					c->tickUpdate();
+					if (fluidUpdate) {
+						c->updateScheduledBlocks();
+						c->updateFluids(); // fluid tick
+					}
+					c->tickUpdate(); // random ticks
 				}
 				c->updateEntities(_entities, _particles, deltaTime);
 				if (Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES)) {

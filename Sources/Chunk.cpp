@@ -5,8 +5,7 @@ extern std::mutex mtx_backup;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Chunk::Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::list<Chunk *> *chunks )
-	: _isVisible(true), _vaoSet(false),
-	_waterVaoSet(false), _waterVaoVIP(false),
+	: _vaoSet(false), _waterVaoSet(false), _waterVaoVIP(false),
 	_skyVaoSet(false), _skyVaoVIP(false), _genDone(false), _light_update(false), _vertex_update(false),
 	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
@@ -1073,11 +1072,28 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		std::cout << "over" << std::endl;
 	} else if (type == blocks::GLASS) {
 		_hasWater = true; // glass considered as invis block
+	} else if (s_blocks[type]->redstoneComponant) {
+		int active = getRedstoneState(pos, {0, 0, 0}, false, true);
+		if (active) {
+			block_value |= REDSTONE::ACTIVATED;
+			int powered = getRedstoneState(pos, {0, 0, 0}, false, false);
+			if (powered) {
+				block_value |= REDSTONE::POWERED;
+			}
+			_blocks[offset] = block_value;
+			_added[offset] = block_value;
+			if (type == blocks::REDSTONE_LAMP) {
+				_lights[offset] &= 0xFF00;
+				_lights[offset] += s_blocks[blocks::REDSTONE_LAMP]->light_level + (s_blocks[blocks::REDSTONE_LAMP]->light_level << 4);
+				light_spread(pos.x, pos.y, pos.z, false);
+				_light_update = false;
+			}
+		}
 	}
 	if (!air_flower(type, true, true, false)) {
 		return ;
 	}
-	if (!s_blocks[type]->transparent) {
+	if (!s_blocks[type]->transparent && type != blocks::REDSTONE_LAMP) {
 		_lights[offset] = 0; // rm light if solid block added
 	}
 	for (int index = 0; index < 6; index++) {
@@ -1087,7 +1103,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		} else {
 			GLint adj = _blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] & 0xFF;
 			if (air_flower(adj, false, true, false)) {
-				_displayed_faces -= !visible_face(adj, type,  opposite_dir(index));
+				// _displayed_faces -= !visible_face(adj, type,  opposite_dir(index));
 			} else {
 				if (index != face_dir::PLUSZ) {
 					light_try_spread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, 1, true, LIGHT_RECURSE); // spread sky light, but not upwards duh
@@ -1096,7 +1112,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			}
 			if (adj > blocks::AIR && adj < blocks::WATER && !face_count(adj, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z)) {
 				// was exposed before, but isn't anymore
-				_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] += blocks::NOTVISIBLE;
+				_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= blocks::NOTVISIBLE;
 			}
 			if ((adj & 0xFF) == blocks::OAK_FENCE || (adj & 0xFF) == blocks::GLASS_PANE) {
 				switch (index) {
@@ -1456,13 +1472,19 @@ void Chunk::checkFillVertices( void )
 	if (cnt > _nb_neighbours) {
 		if (cnt == 4) {
 			for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
-				if ((a.second & 0xFF) == blocks::TORCH) {
+				switch (a.second & 0xFF) {
+				case blocks::REDSTONE_LAMP:
+					if (!(a.second & REDSTONE::ACTIVATED)) {
+						continue ;
+					}
+				case blocks::TORCH:
 					int level = a.first & (WORLD_HEIGHT - 1);
 					int col = ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 					int row = ((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
 					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
-					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] += 14 + (14 << 4); // 0xF0 = light source. & 0xF = light level
+					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] += s_blocks[a.second & 0xFF]->light_level + (s_blocks[a.second & 0xFF]->light_level << 4); // 0xF0 = light source. & 0xF = light level
 					light_spread(row, col, level, false);
+					break ;
 				}
 			}
 			// this time spread sky_light underground
@@ -1685,16 +1707,6 @@ int Chunk::manhattanDist( int posX, int posY )
 	int distX = (_startX > posX) ? _startX - posX : posX - _startX;
 	int distY = (_startY > posY) ? _startY - posY : posY - _startY;
 	return (distX + distY);
-}
-
-void Chunk::show( void )
-{
-	_isVisible = true;
-}
-
-void Chunk::hide( void )
-{
-	_isVisible = false;
 }
 
 bool Chunk::isInChunk( int posX, int posY )

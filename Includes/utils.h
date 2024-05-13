@@ -8,7 +8,7 @@
 # include "Blocks.hpp"
 
 # define CHUNK_SIZE 16
-# define TICK 0.05
+const double TICK = 0.05f;
 
 extern int WIN_WIDTH;
 extern int WIN_HEIGHT;

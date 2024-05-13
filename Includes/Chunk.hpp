@@ -91,6 +91,12 @@ typedef struct s_shaderInput {
 	glm::vec3 pos = {0, 0, 0};
 }				t_shaderInput;
 
+typedef struct s_redstone {
+	glm::ivec3 pos = {0, 0, 0}; // offset of block inside chunk
+	int ticks = 0;              // size of delay
+	// what happens if schedule redstone tick, then piston moves block, and now the thing being ticked is not what was expected?
+}				t_redstoneTick;
+
 struct s_backup { // TODO add fluids and entities to backups
 	std::map<int, int> added;
 	std::set<int> removed;
@@ -102,7 +108,7 @@ class Chunk
 {
     private:
         GLuint _vao, _vbo, _waterVao, _waterVbo, _skyVao, _skyVbo;
-        bool _isVisible, _vaoSet, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
+        bool _vaoSet, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
 		std::atomic_bool _genDone, _light_update, _vertex_update, _vaoReset, _vaoVIP, _waterVaoReset, _skyVaoReset, _sortedOnce;
         GLint _startX, _startY, _nb_neighbours;
 		unsigned _seed;
@@ -118,6 +124,7 @@ class Chunk
 		std::map<int,int> _added;
 		std::set<int> _removed, _fluids;
 		std::vector<int> _scheduled_to_fall;
+		std::vector<t_redstoneTick> _redstone_schedule;
 		std::map<int, ChestInstance*> _chests;
 		std::map<int, FurnaceInstance*> _furnaces;
 		std::vector<Entity*> _entities;
@@ -167,6 +174,7 @@ class Chunk
 		void generate_lights( void );
 
 		// redstone
+		glm::ivec3 getAttachedDir( int value );
 		bool getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, bool weak );
 		void weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state );
 		void flickLever( glm::ivec3 pos, int value, bool state );
@@ -225,8 +233,6 @@ class Chunk
 	
 		bool inPerimeter( int posX, int posY, GLint render_dist );
 		int manhattanDist( int posX, int posY );
-        void show( void );
-		void hide( void );
         bool isInChunk( int posX, int posY );
 
 		int isHit( glm::ivec3 pos );
@@ -245,6 +251,10 @@ class Chunk
 
 		int isLoaded( GLint &counter );
         void drawArray( GLint & counter, GLint &face_counter );
+		void drawSky( GLint & counter, GLint &face_counter );
+		void drawWater( GLint & counter, GLint &face_counter );
+
+		void updateRedstone( void );
 		void updateFurnaces( double currentTime );
 		void updateFluids( void );
 		void tickUpdate( void );
@@ -253,8 +263,7 @@ class Chunk
 		size_t clearEntities( void );
 		void updateParticles( std::vector<t_shaderInput> &arr, double deltaTime );
 		size_t clearParticles( void );
-		void drawSky( GLint & counter, GLint &face_counter );
-		void drawWater( GLint & counter, GLint &face_counter );
+
 		std::string getAddsRmsString( void );
 };
 

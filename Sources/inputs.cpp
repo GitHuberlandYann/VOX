@@ -274,10 +274,7 @@ void OpenGL_Manager::update_visible_chunks( void )
 	mtx_perimeter.lock();
 	for (auto& peri: _perimeter_chunks) {
 		if (_camera->chunkInFront(_current_chunk, peri->getStartX(), peri->getStartY())) {
-			peri->show();
 			newvis_chunks.push_back(peri);
-		} else {
-			peri->hide();
 		}
 	}
 	mtx_perimeter.unlock();

@@ -65,12 +65,12 @@ void Skybox::setup_communication_shaders( void )
 	const glm::vec3 p7 = { 1.0f,  1.0f, -1.0f};
 
 	const std::array<glm::vec3, 36> vertices = {
-		p4, p0, p6,   p0, p2, p6, // minux
-		p1, p5, p3,   p5, p7, p3, // plux
-		p0, p1, p2,   p1, p3, p2, // minusy
-		p5, p4, p7,   p4, p6, p7, // plusy
-		p2, p3, p6,   p3, p7, p6, // minusz
-		p4, p5, p0,   p5, p1, p0, // plusz
+		p0, p4, p2,   p4, p6, p2, // minux
+		p5, p1, p7,   p1, p3, p7, // plux
+		p1, p0, p3,   p0, p2, p3, // minusy
+		p4, p5, p6,   p5, p7, p6, // plusy
+		p3, p2, p7,   p2, p6, p7, // minusz
+		p5, p4, p1,   p4, p0, p1, // plusz
 	};
 
 	glGenVertexArrays(1, &_vao);
