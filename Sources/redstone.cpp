@@ -387,6 +387,8 @@ void Chunk::updateRedstoneDust( glm::ivec3 pos )
 	int actual_value = getBlockAt(pos.x, pos.y, pos.z, true), strength;
 	if ((actual_value & 0xFF) != blocks::REDSTONE_DUST) {
 		strength = 0;
+		actual_value |= (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MX) | (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PX)
+				| (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MY) | (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PY);
 	} else {
 		strength = (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF;
 		int signal_received = getRedstoneStrength(pos);

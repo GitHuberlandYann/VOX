@@ -243,6 +243,7 @@ struct Block {
 		int getProduction = blocks::AIR;
 		float blast_resistance = FLT_MAX;
 		bool hasHitbox = false;
+		bool hasOrientedHitbox = false;
 		bool collisionHitbox_1x1x1 = true;
 		bool collisionHitbox = false;
 		bool oriented = false;
@@ -348,6 +349,7 @@ struct StairsBottom : Block {
 	public:
 		StairsBottom() {
 			hasHitbox = true;
+			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
 			oriented = true;
@@ -436,6 +438,7 @@ struct StairsTop : Block {
 	public:
 		StairsTop() {
 			hasHitbox = true;
+			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
 			oriented = true;
@@ -524,6 +527,7 @@ struct Fence : Block {
 	public:
 		Fence() {
 			hasHitbox = true;
+			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
 			orientedCollisionHitbox = true;
@@ -569,6 +573,7 @@ struct Door : Block {
 	public:
 		Door() {
 			hasHitbox = true;
+			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
 			oriented = true;
@@ -627,6 +632,7 @@ struct Trapdoor : Block {
 	public:
 		Trapdoor() {
 			hasHitbox = true;
+			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
 			oriented = true;
@@ -1102,6 +1108,7 @@ struct Lever : Block {
 			blast_resistance = 0.5f;
 			collisionHitbox_1x1x1 = false;
 			hasHitbox = true;
+			hasOrientedHitbox = true;
 			collisionHitbox = true;
 			oriented = true;
 			orientedCollisionHitbox = true;
@@ -1337,6 +1344,7 @@ struct GlassPane : Block {
 			name = "GLASS_PANE";
 			blast_resistance = 0.3f;
 			hasHitbox = true;
+			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
 			orientedCollisionHitbox = true;
@@ -1817,9 +1825,8 @@ struct Torch : Block {
 			mined = blocks::TORCH;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
+			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, 5 / 16.0f};
-			hitboxHalfSize = {1 / 16.0f, 1 / 16.0f, 5 / 16.0f};
 			geometry = GEOMETRY::TORCH;
 			light_level = 14;
 			byHand = true;
@@ -1828,6 +1835,31 @@ struct Torch : Block {
 			item3D = false;
 			textureX = 6;
 			textureY = 10;
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			(void)bitfield;
+			switch (orientation) {
+				case face_dir::MINUSX:
+					hitbox[0] = {2 * ONE16TH, 0.5f, 8 * ONE16TH};
+					hitbox[1] = {2 * ONE16TH, ONE16TH, 5 * ONE16TH};
+					break ;
+				case face_dir::PLUSX:
+					hitbox[0] = {14 * ONE16TH, 0.5f, 8 * ONE16TH};
+					hitbox[1] = {2 * ONE16TH, ONE16TH, 5 * ONE16TH};
+					break ;
+				case face_dir::MINUSY:
+					hitbox[0] = {0.5f, 2 * ONE16TH, 8 * ONE16TH};
+					hitbox[1] = {ONE16TH, 2 * ONE16TH, 5 * ONE16TH};
+					break ;
+				case face_dir::PLUSY:
+					hitbox[0] = {0.5f, 14 * ONE16TH, 8 * ONE16TH};
+					hitbox[1] = {ONE16TH, 2 * ONE16TH, 5 * ONE16TH};
+					break ;
+				default:
+					hitbox[0] = {0.5f, 0.5f, 5 * ONE16TH};
+					hitbox[1] = {ONE16TH, ONE16TH, 5 * ONE16TH};
+					break ;
+			}
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
