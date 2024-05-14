@@ -639,8 +639,10 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			flickLever(pos, value, false);
 		} else if (type == blocks::REDSTONE_DUST) {
 			updateRedstoneDust(pos);
-		} else if (value & REDSTONE::POWERED) { // we remove a powered block
-			weaklyPower(pos, {0, 0, 0}, REDSTONE::OFF);
+		} else if (value & REDSTONE::POWERED) { // we remove a strongly powered block
+			weaklyPower(pos, {0, 0, 0}, REDSTONE::OFF, false);
+		} else if (value & REDSTONE::WEAKDY_POWERED) { // we remove a weakdy powered block
+			weaklyPower(pos, {0, 0, 0}, REDSTONE::OFF, true);
 		}
 	} else if (type == blocks::WATER) { // use bucket on water source
 		// std::cout << "bucket on water" << std::endl;
@@ -1051,6 +1053,13 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY) || s_blocks[type_below]->hasHitbox) {
 			return ;
 		}
+	} else if (shape == GEOMETRY::DUST) {
+		int shape_below = s_blocks[_blocks[offset - 1] & 0xFF]->geometry;
+		if (shape_below != GEOMETRY::CUBE && shape_below != GEOMETRY::SLAB_TOP && shape_below != GEOMETRY::STAIRS_TOP) {
+			return ;
+		}
+		_blocks[offset] = block_value; // place it down temporarily to be used in connectRedstoneDust
+		connectRedstoneDust(pos, block_value, true);
 	} else if (previous >= blocks::WATER) { // replace water block with something else
 		_fluids.insert(offset);
 	}
@@ -1086,10 +1095,10 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 	} else if (type == blocks::REDSTONE_DUST) {
 		updateRedstoneDust(pos);
 	} else if (s_blocks[type]->redstoneComponant) {
-		int active = getRedstoneState(pos, {0, 0, 0}, false, true);
+		int active = getRedstoneState(pos, {0, 0, 0}, REDSTONE::OFF, true);
 		if (active) {
 			block_value |= REDSTONE::ACTIVATED;
-			int powered = getRedstoneState(pos, {0, 0, 0}, false, false);
+			int powered = getRedstoneState(pos, {0, 0, 0}, REDSTONE::OFF, false);
 			if (powered) {
 				block_value |= REDSTONE::POWERED;
 			}
@@ -1107,13 +1116,21 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		return ;
 	}
 	if (!s_blocks[type]->transparent && type != blocks::REDSTONE_LAMP) {
-		int powered = getRedstoneState(pos, {0, 0, 0}, type == blocks::REDSTONE_BLOCK, false);
-		if (powered) {
+		if (type == blocks::REDSTONE_BLOCK) {
 			block_value |= REDSTONE::POWERED;
 			_blocks[offset] = block_value;
 			_added[offset] = block_value;
-			weaklyPower(pos, {0, 0, 0}, REDSTONE::ON);
+			weaklyPower(pos, {0, 0, 0}, REDSTONE::ON, false);
+		} else {
+			stronglyPower(pos, {0, 0, 0}, REDSTONE::OFF);
 		}
+		// int powered = getRedstoneState(pos, {0, 0, 0}, type == blocks::REDSTONE_BLOCK, false);
+		// if (powered) {
+		// 	block_value |= REDSTONE::POWERED;
+		// 	_blocks[offset] = block_value;
+		// 	_added[offset] = block_value;
+		// 	weaklyPower(pos, {0, 0, 0}, REDSTONE::ON, false);
+		// }
 		_lights[offset] = 0; // rm light if solid block added
 	}
 	for (int index = 0; index < 6; index++) {
@@ -1499,6 +1516,9 @@ void Chunk::checkFillVertices( void )
 					}
 				case blocks::TORCH:
 				case blocks::REDSTONE_TORCH:
+					if ((a.second & 0xFF) == blocks::REDSTONE_TORCH && (a.second & REDSTONE::POWERED)) {
+						break ; // red torch is turned off
+					}
 					int level = a.first & (WORLD_HEIGHT - 1);
 					int col = ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 					int row = ((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
@@ -1583,6 +1603,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 				break ;
 			case blocks::LEVER:
 				value ^= REDSTONE::POWERED;
+				_blocks[offset] = value; // used by adj dust
 				flickLever(pos, value, (value >> REDSTONE::POWERED_OFFSET) & 0x1);
 				break ;
 			default:

@@ -26,6 +26,9 @@
 *.a
 *.lib
 
+# vscode
+.vscode
+
 # Libs
 Libs/glew-2.2.0
 

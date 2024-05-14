@@ -70,10 +70,19 @@ namespace REDSTONE {
 	const int ACTIVATED = (1 << ACTIVATED_OFFSET);
 	const int POWERED_OFFSET = 16;
 	const int POWERED = (1 << POWERED_OFFSET);
-	const int WEAKLY_POWERED_OFFSET = 17;
-	const int WEAKLY_POWERED = (1 << WEAKLY_POWERED_OFFSET);
+	const int WEAKDY_POWERED_OFFSET = 17;
+	const int WEAKDY_POWERED = (1 << WEAKDY_POWERED_OFFSET);
 	const int STRENGTH_OFFSET = 20;
 	const int STRENGTH = (0xF << STRENGTH_OFFSET);
+
+	const int NONE = 0;
+	const int SIDE = 1;
+	const int UP   = 2;
+	const int DUST_CONNECT = 0x3;
+	const int DUST_MY = 24;
+	const int DUST_PY = 26;
+	const int DUST_MX = 28;
+	const int DUST_PX = 30;
 };
 
 namespace GEOMETRY {

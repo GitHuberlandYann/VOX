@@ -2853,24 +2853,64 @@ void Lever::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
 {
 	(void)chunk;
-	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0.001f);
-	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0.001f);
+	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0.002f);
+	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0.002f);
 	// glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
 	// glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
 
-	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0.001f);
-	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0.001f);
+	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0.002f);
+	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0.002f);
 	// glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
 	// glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
-	int spec = (texX(face_dir::MINUSX, 0) << 4) + (texY() << 12);
+	int spec = (texX() << 4) + (texY() << 12); // dust dot texture
+	t_shaderInput v0, v1, v2, v3;
 	// (void)value; int color = pos.x;
 	int color = (value >> REDSTONE::STRENGTH_OFFSET) & 0xF;
 	spec += (color << 24);
 
-	t_shaderInput v0 = {spec, p4};
-	t_shaderInput v1 = {spec + XTEX, p5};
-	t_shaderInput v2 = {spec + YTEX, p0};
-	t_shaderInput v3 = {spec + XTEX + YTEX, p1};
-	face_vertices(vertices, v0, v1, v2, v3); // +z
+
+	int mx = (value >> REDSTONE::DUST_MX) & REDSTONE::DUST_CONNECT;
+	int px = (value >> REDSTONE::DUST_PX) & REDSTONE::DUST_CONNECT;
+	int my = (value >> REDSTONE::DUST_MY) & REDSTONE::DUST_CONNECT;
+	int py = (value >> REDSTONE::DUST_PY) & REDSTONE::DUST_CONNECT;
+
+	if ((mx && (my || py)) || (px && (my || py)) // display central dot if at least 2 perpendicular dir are on
+		|| !(mx | py | my | py)) { // or if no dir is on
+		v0 = {spec, p4};
+		v1 = {spec + XTEX, p5};
+		v2 = {spec + YTEX, p0};
+		v3 = {spec + XTEX + YTEX, p1};
+		face_vertices(vertices, v0, v1, v2, v3); // +z
+	}
+
+	spec -= (1 << 4); // dust line texture
+	if (mx) {
+		v0 = {spec + XTEX, p4};
+		v1 = {spec + XTEX + YTEX - (8 << 8), p5 + glm::vec3(-0.5f, 0, 0)};
+		v2 = {spec, p0};
+		v3 = {spec + YTEX - (8 << 8), p1 + glm::vec3(-0.5f, 0, 0)};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (px) {
+		v0 = {spec + (8 << 8) + XTEX, p4 + glm::vec3(0.5f, 0, 0)};
+		v1 = {spec + XTEX + YTEX, p5};
+		v2 = {spec + (8 << 8), p0 + glm::vec3(0.5f, 0, 0)};
+		v3 = {spec + YTEX, p1};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (my) {
+		v0 = {spec + YTEX - (8 << 8), p4 + glm::vec3(0, -0.5f, 0)};
+		v1 = {spec + XTEX + YTEX - (8 << 8), p5 + glm::vec3(0, -0.5f, 0)};
+		v2 = {spec, p0};
+		v3 = {spec + XTEX, p1};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (py) {
+		v0 = {spec + YTEX, p4};
+		v1 = {spec + XTEX + YTEX, p5};
+		v2 = {spec + (8 << 8), p0 + glm::vec3(0, 0.5f, 0)};
+		v3 = {spec + XTEX + (8 << 8), p1 + glm::vec3(0, 0.5f, 0)};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
 }
