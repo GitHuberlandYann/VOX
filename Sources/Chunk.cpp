@@ -442,7 +442,7 @@ void Chunk::resetDisplayedFaces( void )
 				int offset = (((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level;
 				GLint value = _blocks[offset], type = value & 0xFF;
 				bool restore = false;
-				if (value & blocks::NOTVISIBLE && (!row || !col || row == CHUNK_SIZE - 1 || col == CHUNK_SIZE - 1)) {
+				if ((value & blocks::NOTVISIBLE) && (!row || !col || row == CHUNK_SIZE - 1 || col == CHUNK_SIZE - 1)) {
 					value -= blocks::NOTVISIBLE;
 					restore = true;
 				}
@@ -663,6 +663,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 				int adj = _blocks[adj_offset];
 				if (adj & blocks::NOTVISIBLE) {
 					_blocks[adj_offset] = adj - blocks::NOTVISIBLE;
+					_added[adj_offset] = adj - blocks::NOTVISIBLE;
 				} else if (air_flower(adj, false, false, false)) {
 				} else if (index != face_dir::MINUSZ && (adj & 0xFF) >= blocks::WATER) { // if water under, it is not updated
 					_fluids.insert(adj_offset);
@@ -1022,7 +1023,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			addFlame(offset, pos, blocks::TORCH, (block_value >> 9) & 0x7);
 		}
 	} else if (s_blocks[type]->oriented) {
-		if (type != blocks::LEVER || ((block_value >> 12) & 0x3) != PLACEMENT::WALL) {
+		if ((type != blocks::LEVER && shape != GEOMETRY::BUTTON) || ((block_value >> 12) & 0x3) != PLACEMENT::WALL) {
 			block_value += (_camera->getOrientation() << 9);
 		}
 		switch (shape) {
@@ -1044,7 +1045,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 					return ;
 				}
 				block_value ^= (1 << 9); // inverse dir (0->1, 1->0, 2->3, 3->2)
-				// updateRepeater(pos);
+				// initRepeater(pos);
 				break ;
 		}
 	} else if (type == blocks::OAK_FENCE || type == blocks::GLASS_PANE) {
@@ -1607,6 +1608,14 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			case blocks::REPEATER: // add 1 tick delay, mod it by 4
 				value = (value & (-1 - (0x3 << REDSTONE::REPEAT_TICKS))) + (((((value >> REDSTONE::REPEAT_TICKS) & 0x3) + 1) & 0x3) << REDSTONE::REPEAT_TICKS);
 				break ;
+			case blocks::STONE_BUTTON:
+			case blocks::OAK_BUTTON:
+				value |= REDSTONE::POWERED;
+				_blocks[offset] = value; // used by adj dust
+				stronglyPower(pos + getAttachedDir(value), -getAttachedDir(value), REDSTONE::ON);
+				weaklyPower(pos, {0, 0, 0}, REDSTONE::ON, false);
+				_redstone_schedule.push_back({pos, ((type == blocks::STONE_BUTTON) ? 10 : 15) * REDSTONE::TICK});
+				break ;
 			default:
 				std::cerr << "Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & 0xFF]->name << std::endl;
 				return ;
@@ -1950,6 +1959,7 @@ void Chunk::update_border( int posX, int posY, int level, int type, bool adding,
 		}
 		if (value & blocks::NOTVISIBLE) {
 			_blocks[offset] -= blocks::NOTVISIBLE;
+			_added[offset] -= blocks::NOTVISIBLE;
 		}
 		if ((value & 0xFF) >= blocks::WATER) {
 			_hasWater = true;

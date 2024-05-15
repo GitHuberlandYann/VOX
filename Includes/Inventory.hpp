@@ -9,7 +9,7 @@ class FurnaceInstance;
 class ChestInstance;
 class UI;
 
-# define IRECEIPT_SIZE 29
+# define IRECEIPT_SIZE 37
 # define RECEIPT_SIZE 123
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
@@ -42,6 +42,14 @@ const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::IRON_INGOT, blocks::AIR, blocks::AIR, blocks::FLINT, blocks::FLINT_AND_STEEL, 1},
 	{blocks::STICK, blocks::AIR, blocks::COBBLESTONE, blocks::AIR, blocks::LEVER, 1},
 	{blocks::AIR, blocks::STICK, blocks::AIR, blocks::COBBLESTONE, blocks::LEVER, 1},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::STONE, blocks::STONE_BUTTON, 1},
+	{blocks::AIR, blocks::AIR, blocks::STONE, blocks::AIR, blocks::STONE_BUTTON, 1},
+	{blocks::AIR, blocks::STONE, blocks::AIR, blocks::AIR, blocks::STONE_BUTTON, 1},
+	{blocks::STONE, blocks::AIR, blocks::AIR, blocks::AIR, blocks::STONE_BUTTON, 1},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_BUTTON, 1},
+	{blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_BUTTON, 1},
+	{blocks::AIR, blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::OAK_BUTTON, 1},
+	{blocks::OAK_PLANKS, blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_BUTTON, 1},
 };
 
 const int receipt[RECEIPT_SIZE][11] = {

@@ -114,6 +114,7 @@ namespace GEOMETRY {
 		LEVER,
 		DUST,
 		REPEATER,
+		BUTTON,
 	};
 };
 
@@ -155,6 +156,8 @@ namespace blocks {
 		GLASS,
 		GLASS_PANE,
 		REDSTONE_LAMP,
+		STONE_BUTTON,
+		OAK_BUTTON,
 		COAL_ORE = 40,
 		IRON_ORE,
 		DIAMOND_ORE,
@@ -695,6 +698,65 @@ struct Crop : Block {
 			hardness = 0.0f;
 			transparent = true;
 			item3D = false;
+		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+};
+
+struct Button : Block {
+	public:
+		Button() {
+			collisionHitbox_1x1x1 = false;
+			hasHitbox = true;
+			hasOrientedHitbox = true;
+			collisionHitbox = true;
+			oriented = true;
+			orientedCollisionHitbox = true;
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			geometry = GEOMETRY::BUTTON;
+			transparent = true;
+			item3D = false;
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			hitbox[0] = {0.5f, 0.5f, 1.5f * ONE16TH};
+			hitbox[1] = {0,    0,    1.5f * ONE16TH};
+			switch (bitfield & 0x3) {
+				case PLACEMENT::WALL:
+					switch (orientation) {
+						case face_dir::MINUSX:
+							hitbox[0] = {14.5f * ONE16TH, 0.5f,           0.5f};
+							hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
+							break ;
+						case face_dir::PLUSX:
+							hitbox[0] = { 1.5f * ONE16TH, 0.5f,           0.5f};
+							hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
+							break ;
+						case face_dir::MINUSY:
+							hitbox[0] = {0.5f,           14.5f * ONE16TH, 0.5f};
+							hitbox[1] = {3.0f * ONE16TH,  1.5f * ONE16TH, 4.0f * ONE16TH};
+							break ;
+						case face_dir::PLUSY:
+							hitbox[0] = {0.5f,           1.5f * ONE16TH, 0.5f};
+							hitbox[1] = {3.0f * ONE16TH, 1.5f * ONE16TH, 4.0f * ONE16TH};
+							break ;
+					}
+					break ;
+				case PLACEMENT::FLOOR:
+				case PLACEMENT::CEILING:
+					hitbox[0].z = ((bitfield & 0x3) == PLACEMENT::FLOOR) ? 1.5f * ONE16TH : 14.5f * ONE16TH;
+					switch (orientation) {
+						case face_dir::MINUSX:
+						case face_dir::PLUSX:
+							hitbox[1].x = 4.0f * ONE16TH;
+							hitbox[1].y = 3.0F * ONE16TH;
+							break ;
+						case face_dir::MINUSY:
+						case face_dir::PLUSY:
+							hitbox[1].x = 3.0f * ONE16TH;
+							hitbox[1].y = 4.0f * ONE16TH;
+							break ;
+					}
+					break ;
+			}
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
@@ -1429,6 +1491,34 @@ struct RedstoneLamp : Cube {
 		virtual int texY( face_dir dir, int offset ) const {
 			(void)dir;
 			return (8 + (offset == 1));
+		}
+};
+
+struct StoneButton : Button {
+	public:
+		StoneButton() {
+			name = "STONE_BUTTON";
+			mined = blocks::STONE_BUTTON;
+			blast_resistance = 6.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			textureX = 4;
+			textureY = 3;
+		}
+};
+
+struct OakButton : Button {
+	public:
+		OakButton() {
+			name = "OAK_BUTTON";
+			mined = blocks::OAK_BUTTON;
+			blast_resistance = 0.5f;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 0.5f;
+			textureX = 4;
+			textureY = 10;
 		}
 };
 

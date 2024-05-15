@@ -57,6 +57,8 @@ glm::ivec3 Chunk::getAttachedDir( int value )
 	int placement = (value >> 12) & 0x3;
 	switch (value & 0xFF) {
 		case blocks::LEVER:
+		case blocks::STONE_BUTTON:
+		case blocks::OAK_BUTTON:
 			switch (placement) {
 				case PLACEMENT::CEILING:
 					target = glm::ivec3(0, 0, 1);
@@ -183,6 +185,12 @@ bool Chunk::getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, boo
 					|| (delta.y == -1 && (adj & (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PY)))
 					|| delta.z == 1
 					)) { // red dust gives signal only to its connected blocks and to the block below
+					return (REDSTONE::ON);
+				}
+				break ;
+			case blocks::STONE_BUTTON:
+			case blocks::OAK_BUTTON:
+				if (adj & REDSTONE::POWERED) {
 					return (REDSTONE::ON);
 				}
 				break ;
@@ -528,6 +536,13 @@ void Chunk::updateRedstone( void )
 					break ;
 				case blocks::REDSTONE_TORCH:
 					updateRedstoneTorch(red.pos, value);
+					break ;
+				case blocks::STONE_BUTTON:
+				case blocks::OAK_BUTTON:
+					front = getAttachedDir(value);
+					setBlockAt(value & (-1 - REDSTONE::POWERED), red.pos.x, red.pos.y, red.pos.z, true);
+					stronglyPower(red.pos + front, -front, REDSTONE::OFF);
+					weaklyPower(red.pos, {0, 0, 0}, REDSTONE::OFF, false);
 					break ;
 				default:
 					std::cout << "Chunk::updateRedstone updated: " << s_blocks[value & 0xFF]->name << std::endl;

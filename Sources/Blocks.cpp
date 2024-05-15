@@ -5,7 +5,7 @@ const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new CraftingTable(), new Furnace(), new OakStairsBottom(), new OakStairsTop(), new OakDoor(), new OakTrapdoor(), new StoneStairsBottom(), new StoneStairsTop(),
 	new SmoothStoneStairsBottom(), new SmoothStoneStairsTop(), new CobbleStoneStairsBottom(), new CobbleStoneStairsTop(), new StoneBricksStairsBottom(), new StoneBricksStairsTop(), new Lever(), new TBD(),
 	new Bedrock(), new Dirt(), new SmoothStone(), new Stone(), new Cobblestone(), new StoneBrick(), new CrackedStoneBrick(), new Sand(),
-	new Gravel(), new OakLeaves(), new OakPlanks(), new Glass(), new GlassPane(), new RedstoneLamp(), new TBD(), new TBD(),
+	new Gravel(), new OakLeaves(), new OakPlanks(), new Glass(), new GlassPane(), new RedstoneLamp(), new StoneButton(), new OakButton(),
 	new CoalOre(), new IronOre(), new DiamondOre(), new CoalBlock(), new IronBlock(), new DiamondBlock(), new RedstoneOre(), new RedstoneBlock(),
 	new OakSlabBottom(), new OakSlabTop(), new OakFence(), new StoneSlabBottom(), new StoneSlabTop(), new SmoothStoneSlabBottom(), new SmoothStoneSlabTop(), new CobbleStoneSlabBottom(),
 	new CobbleStoneSlabTop(), new StoneBricksSlabBottom(), new StoneBricksSlabTop(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(),
@@ -2848,6 +2848,176 @@ void Lever::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	v2 = {spec + 7 + (8 << 8) + (1 << 18), p0};
 	v3 = {spec - 7 + (8 << 8) + (1 << 18) + XTEX, p1};
 	face_vertices(vertices, v0, v1, v2, v3); // +z
+}
+
+void Button::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+{
+	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
+	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
+	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
+	glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
+
+	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 1);
+	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 1);
+	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
+	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
+
+	int spec, x_texMX, x_texPX, x_texMY, x_texPY, y_texMX, y_texPX, y_texMY, y_texPY, z_texMX, z_texPX, z_texMY,  z_texPY, ztop, zbot;
+	t_shaderInput v0, v1, v2, v3;
+	int placement = (value >> 12) & 0x3;
+	int orientation = (value >> 9) & 0x7;
+	float delta = (value & REDSTONE::POWERED) ? 15.0f : 14.0f;
+	switch (placement) {
+		case PLACEMENT::WALL:
+			switch (orientation) {
+				case face_dir::MINUSX:
+					p0 += glm::vec3( delta * ONE16TH,  5.0f * ONE16TH, -6.0f * ONE16TH);
+					p1 += glm::vec3( 0,                5.0f * ONE16TH, -6.0f * ONE16TH);
+					p2 += glm::vec3( delta * ONE16TH,  5.0f * ONE16TH,  6.0f * ONE16TH);
+					p3 += glm::vec3( 0,                5.0f * ONE16TH,  6.0f * ONE16TH);
+
+					p4 += glm::vec3( delta * ONE16TH, -5.0f * ONE16TH, -6.0f * ONE16TH);
+					p5 += glm::vec3( 0,               -5.0f * ONE16TH, -6.0f * ONE16TH);
+					p6 += glm::vec3( delta * ONE16TH, -5.0f * ONE16TH,  6.0f * ONE16TH);
+					p7 += glm::vec3( 0,               -5.0f * ONE16TH,  6.0f * ONE16TH);
+
+					x_texMX = 5; x_texPX = 5;  x_texMY = 6; x_texPY = 6;
+					y_texMX = 0; y_texPX = delta; y_texMY = 6; y_texPY = 6;
+					z_texMX = delta; z_texPX = 0;  z_texMY = 5;  z_texPY = 5;
+					break ;
+				case face_dir::PLUSX:
+					p0 += glm::vec3( 0,               5.0f * ONE16TH, -6.0f * ONE16TH);
+					p1 += glm::vec3(-delta * ONE16TH, 5.0f * ONE16TH, -6.0f * ONE16TH);
+					p2 += glm::vec3( 0,               5.0f * ONE16TH,  6.0f * ONE16TH);
+					p3 += glm::vec3(-delta * ONE16TH, 5.0f * ONE16TH,  6.0f * ONE16TH);
+
+					p4 += glm::vec3( 0,              -5.0f * ONE16TH, -6.0f * ONE16TH);
+					p5 += glm::vec3(-delta * ONE16TH,-5.0f * ONE16TH, -6.0f * ONE16TH);
+					p6 += glm::vec3( 0,              -5.0f * ONE16TH,  6.0f * ONE16TH);
+					p7 += glm::vec3(-delta * ONE16TH,-5.0f * ONE16TH,  6.0f * ONE16TH);
+
+					x_texMX = 5; x_texPX = 5;  x_texMY = 6; x_texPY = 6;
+					y_texMX = 0; y_texPX = delta; y_texMY = 6; y_texPY = 6;
+					z_texMX = 0; z_texPX = delta;  z_texMY = 5;  z_texPY = 5;
+					break ;
+				case face_dir::MINUSY:
+					p0 += glm::vec3( 5.0f * ONE16TH, delta * ONE16TH, -6.0f * ONE16TH);
+					p1 += glm::vec3(-5.0f * ONE16TH, delta * ONE16TH, -6.0f * ONE16TH);
+					p2 += glm::vec3( 5.0f * ONE16TH, delta * ONE16TH,  6.0f * ONE16TH);
+					p3 += glm::vec3(-5.0f * ONE16TH, delta * ONE16TH,  6.0f * ONE16TH);
+
+					p4 += glm::vec3( 5.0f * ONE16TH, 0,               -6.0f * ONE16TH);
+					p5 += glm::vec3(-5.0f * ONE16TH, 0,               -6.0f * ONE16TH);
+					p6 += glm::vec3( 5.0f * ONE16TH, 0,                6.0f * ONE16TH);
+					p7 += glm::vec3(-5.0f * ONE16TH, 0,                6.0f * ONE16TH);
+
+					x_texMX = 0; x_texPX = delta; x_texMY = 6; x_texPY = 6;
+					y_texMX = 5; y_texPX = 5;  y_texMY = 6; y_texPY = 6;
+					z_texMX = 5; z_texPX = 5;  z_texMY = delta;  z_texPY = 0;
+					break ;
+				case face_dir::PLUSY:
+					p0 += glm::vec3( 5.0f * ONE16TH, 0,               -6.0f * ONE16TH);
+					p1 += glm::vec3(-5.0f * ONE16TH, 0,               -6.0f * ONE16TH);
+					p2 += glm::vec3( 5.0f * ONE16TH, 0,                6.0f * ONE16TH);
+					p3 += glm::vec3(-5.0f * ONE16TH, 0,                6.0f * ONE16TH);
+
+					p4 += glm::vec3( 5.0f * ONE16TH, -delta * ONE16TH, -6.0f * ONE16TH);
+					p5 += glm::vec3(-5.0f * ONE16TH, -delta * ONE16TH, -6.0f * ONE16TH);
+					p6 += glm::vec3( 5.0f * ONE16TH, -delta * ONE16TH,  6.0f * ONE16TH);
+					p7 += glm::vec3(-5.0f * ONE16TH, -delta * ONE16TH,  6.0f * ONE16TH);
+
+					x_texMX = 0; x_texPX = delta; x_texMY = 6; x_texPY = 6;
+					y_texMX = 5; y_texPX = 5;  y_texMY = 6; y_texPY = 6;
+					z_texMX = 5; z_texPX = 5;  z_texMY = 0;  z_texPY = delta;
+					break ;
+			}
+			break ;
+		case PLACEMENT::FLOOR:
+		case PLACEMENT::CEILING:
+			ztop = (placement == PLACEMENT::FLOOR) ? delta : 0;
+			zbot = (placement == PLACEMENT::FLOOR) ? 0 : delta;
+			switch (orientation) {
+				case face_dir::MINUSY:
+				case face_dir::PLUSY:
+					p0 += glm::vec3( 5.0f * ONE16TH, 6.0f * ONE16TH, -ztop * ONE16TH);
+					p1 += glm::vec3(-5.0f * ONE16TH, 6.0f * ONE16TH, -ztop * ONE16TH);
+					p2 += glm::vec3( 5.0f * ONE16TH, 6.0f * ONE16TH,  zbot * ONE16TH);
+					p3 += glm::vec3(-5.0f * ONE16TH, 6.0f * ONE16TH,  zbot * ONE16TH);
+
+					p4 += glm::vec3( 5.0f * ONE16TH,-6.0f * ONE16TH, -ztop * ONE16TH);
+					p5 += glm::vec3(-5.0f * ONE16TH,-6.0f * ONE16TH, -ztop * ONE16TH);
+					p6 += glm::vec3( 5.0f * ONE16TH,-6.0f * ONE16TH,  zbot * ONE16TH);
+					p7 += glm::vec3(-5.0f * ONE16TH,-6.0f * ONE16TH,  zbot * ONE16TH);
+
+					x_texMX = 6; x_texPX = 6; x_texMY = ztop; x_texPY = zbot;
+					y_texMX = 5; y_texPX = 5; y_texMY = ztop; y_texPY = zbot;
+					z_texMX = 5; z_texPX = 5; z_texMY = 6;  z_texPY = 6;
+					break ;
+				case face_dir::MINUSX:
+				case face_dir::PLUSX:
+					p0 += glm::vec3( 6.0f * ONE16TH, 5.0f * ONE16TH, -ztop * ONE16TH);
+					p1 += glm::vec3(-6.0f * ONE16TH, 5.0f * ONE16TH, -ztop * ONE16TH);
+					p2 += glm::vec3( 6.0f * ONE16TH, 5.0f * ONE16TH,  zbot * ONE16TH);
+					p3 += glm::vec3(-6.0f * ONE16TH, 5.0f * ONE16TH,  zbot * ONE16TH);
+
+					p4 += glm::vec3( 6.0f * ONE16TH,-5.0f * ONE16TH, -ztop * ONE16TH);
+					p5 += glm::vec3(-6.0f * ONE16TH,-5.0f * ONE16TH, -ztop * ONE16TH);
+					p6 += glm::vec3( 6.0f * ONE16TH,-5.0f * ONE16TH,  zbot * ONE16TH);
+					p7 += glm::vec3(-6.0f * ONE16TH,-5.0f * ONE16TH,  zbot * ONE16TH);
+
+					x_texMX = 5; x_texPX = 5; x_texMY = ztop; x_texPY = zbot;
+					y_texMX = 6; y_texPX = 6; y_texMY = ztop; y_texPY = zbot;
+					z_texMX = 5; z_texPX = 5; z_texMY = 6;  z_texPY = 6;
+					break ;
+			}
+			break ;
+	}
+	// drawing lever's base
+	spec = (textureX << 4) + (textureY << 12) + (0 << 19);
+	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
+	spec += (faceLight << 24);
+	if (placement != PLACEMENT::WALL || orientation != face_dir::PLUSX) {
+		v0 = {spec + x_texMX + (x_texMY << 8), p4};
+		v1 = {spec - x_texPX + XTEX + (x_texMY << 8), p0};
+		v2 = {spec + x_texMX - (x_texPY << 8) + YTEX, p6};
+		v3 = {spec - x_texPX + XTEX - (x_texPY << 8) + YTEX, p2};
+		face_vertices(vertices, v0, v1, v2, v3); // -x
+	}
+	if (placement != PLACEMENT::WALL || orientation != face_dir::MINUSX) {
+		v0 = {spec + x_texMX + (x_texMY << 8), p1};
+		v1 = {spec - x_texPX + XTEX + (x_texMY << 8), p5};
+		v2 = {spec + x_texMX - (x_texPY << 8) + YTEX, p3};
+		v3 = {spec - x_texPX + XTEX - (x_texPY << 8) + YTEX, p7};
+		face_vertices(vertices, v0, v1, v2, v3); // +x
+	}
+	if (placement != PLACEMENT::WALL || orientation != face_dir::PLUSY) {
+		v0 = {spec + y_texMX + (y_texMY << 8), p0};
+		v1 = {spec - y_texPX + XTEX + (y_texMY << 8), p1};
+		v2 = {spec + y_texMX - (y_texPY << 8) + YTEX, p2};
+		v3 = {spec - y_texPX + XTEX - (y_texPY << 8) + YTEX, p3};
+		face_vertices(vertices, v0, v1, v2, v3); // -y
+	}
+	if (placement != PLACEMENT::WALL || orientation != face_dir::MINUSY) {
+		v0 = {spec + y_texMX + (y_texMY << 8), p5};
+		v1 = {spec - y_texPX + XTEX + (y_texMY << 8), p4};
+		v2 = {spec + y_texMX - (y_texPY << 8) + YTEX, p7};
+		v3 = {spec - y_texPX + XTEX - (y_texPY << 8) + YTEX, p6};
+		face_vertices(vertices, v0, v1, v2, v3); // +y
+	}
+	if (placement != PLACEMENT::CEILING) {
+		v0 = {spec + z_texMX + (z_texMY << 8), p4};
+		v1 = {spec - z_texPX + (z_texMY << 8) + XTEX, p5};
+		v2 = {spec + z_texMX - (z_texPY << 8) + YTEX, p0};
+		v3 = {spec - z_texPX - (z_texPY << 8) + YTEX + XTEX, p1};
+		face_vertices(vertices, v0, v1, v2, v3); // +z
+	}
+	if (placement != PLACEMENT::FLOOR) {
+		v0 = {spec + z_texMX + (z_texMY << 8), p2};
+		v1 = {spec - z_texPX + (z_texMY << 8) + XTEX, p3};
+		v2 = {spec + z_texMX - (z_texPY << 8) + YTEX, p6};
+		v3 = {spec - z_texPX - (z_texPY << 8) + YTEX + XTEX, p7};
+		face_vertices(vertices, v0, v1, v2, v3); // -z
+	}
 }
 
 void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const

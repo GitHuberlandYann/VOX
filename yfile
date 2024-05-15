@@ -39,7 +39,6 @@ TODOS:
 	- item frame
 	- ladder
 	- stone wall
-	- button
 	- have Menu/UI::add_item_value use s_blocks[type]->addItem() instead
 	- bed
 	- enchanting table
@@ -62,7 +61,6 @@ IN PROGRES:
 	- universal use of tps instead of deltatimes
 
 TODAY:
-	- redstone dust
 	- add light diff on levers faces
 	- fix faces open/closed trapdoors not matching
 	- fix touchy stairs still displaying touchy faces
@@ -108,9 +106,12 @@ DONE:
 	- stairs
 	- doors
 	- trapdoors
+	- button
 	- lever
 	- redstone lamp
 	- redstone torch
+	- redstone dust
+	- repeater
 	- fences
     - items on ground after break
 	- item number color/placement/size in ingame menus
@@ -309,9 +310,10 @@ Some info:
 	- fence 0xF << 12 == 'arms'
 	- glass panes 0xF << 12 == 'arms'
 	- lever 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor)
+	- button 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor)
 	- redstone lamp 1 << 9 lit
 	- redstone dust 0xF << 20 strength 0xFF << 24 'arms'
 	- repeater 0x7 << 9 orientation, 0x3 << 12 delay, 1 << 15 locked, 1 << 16 lit
 
 	- powered blocks: (1 << 16)
-		doors, trapdoors, lever, redstone lamp, repeater
+		doors, trapdoors, lever, button, redstone lamp, repeater

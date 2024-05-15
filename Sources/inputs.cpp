@@ -137,6 +137,8 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		case blocks::OAK_TRAPDOOR:
 		case blocks::LEVER:
 		case blocks::REPEATER:
+		case blocks::STONE_BUTTON:
+		case blocks::OAK_BUTTON:
 			if (current_chunk_ptr) {
 				current_chunk_ptr->handleHit(false, _block_hit.value, _block_hit.pos, Modif::USE);
 			}
@@ -175,7 +177,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		} else {
 			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
 		}
-	} else if (type == blocks::LEVER) {
+	} else if (type == blocks::LEVER || shape == GEOMETRY::BUTTON) {
 		if (s_blocks[_block_hit.value]->geometry != GEOMETRY::CUBE) { // TODO chnge this
 			return ;
 		}

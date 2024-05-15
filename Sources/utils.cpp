@@ -349,6 +349,7 @@ bool visible_face( int value, int next, face_dir dir )
 		case GEOMETRY::CROP:
 		case GEOMETRY::LEVER:
 		case GEOMETRY::DUST:
+		case GEOMETRY::BUTTON:
 			return (true);
 		case GEOMETRY::REPEATER:
 			return (dir != face_dir::PLUSZ && valueShape != GEOMETRY::REPEATER);
