@@ -94,6 +94,7 @@ typedef struct s_shaderInput {
 typedef struct s_redstone {
 	glm::ivec3 pos = {0, 0, 0}; // offset of block inside chunk
 	int ticks = 0;              // size of delay
+	bool state = REDSTONE::OFF;
 	// what happens if schedule redstone tick, then piston moves block, and now the thing being ticked is not what was expected?
 }				t_redstoneTick;
 
