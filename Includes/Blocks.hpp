@@ -84,6 +84,13 @@ namespace REDSTONE {
 	const int DUST_MX = 28;
 	const int DUST_PX = 30;
 
+	const int REPEAT_TICKS = 12;
+	const int REPEAT_TICK1 = 0;
+	const int REPEAT_TICK2 = 1;
+	const int REPEAT_TICK3 = 2;
+	const int REPEAT_TICK4 = 3;
+	const int REPEAT_LOCK = (1 << 15);
+
 	const int ALL_BITS = -1;
 };
 
@@ -1924,6 +1931,7 @@ struct Repeater : Block {
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, ONE16TH};
 			hitboxHalfSize = {0.5f, 0.5f, ONE16TH};
+			oriented = true;
 			geometry = GEOMETRY::REPEATER;
 			byHand = true;
 			hardness = 0.0f;

@@ -396,7 +396,7 @@ void Chunk::updateRedstoneTorch( glm::ivec3 pos, int value )
 void Chunk::updateRedstoneDust( glm::ivec3 pos )
 {
 	int actual_value = getBlockAt(pos.x, pos.y, pos.z, true), strength;
-std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z << " connect: " << (actual_value >> REDSTONE::DUST_MY) << std::endl;
+// std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z << " connect: " << (actual_value >> REDSTONE::DUST_MY) << std::endl;
 	if ((actual_value & 0xFF) != blocks::REDSTONE_DUST) {
 		strength = 0;
 		actual_value |= (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MX) | (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PX)
@@ -414,7 +414,7 @@ std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z 
 		}
 	}
 
-std::cout << "\tupdateRestoneDust strength " << strength << ", connect: " << (actual_value >> REDSTONE::DUST_MY) << std::endl;
+// std::cout << "\tupdateRestoneDust strength " << strength << ", connect: " << (actual_value >> REDSTONE::DUST_MY) << std::endl;
 	// use dust's connection to set/unset connected blocks as WEAKLY_POWERED, which is used by red_torches and red_componants
 	if ((actual_value >> REDSTONE::DUST_MX) & REDSTONE::DUST_UP) {
 		weaklyPowerTarget(pos + glm::ivec3(-1, 0, 1), {1, 0, -1}, strength, false);
@@ -502,7 +502,7 @@ void Chunk::updateRedstone( void )
 */
 void Chunk::connectRedstoneDust( glm::ivec3 pos, int &value, bool placed )
 {
-	std::cout << "connectRedstoneDust" << std::endl;
+	// std::cout << "connectRedstoneDust" << std::endl;
 	value &= 0xFFFFFF;
 	int connect_mx = 0, connect_px = 0, connect_my = 0, connect_py = 0;
 	int value_mx = getBlockAt(pos.x - 1, pos.y, pos.z, true), tmx = (value_mx & 0xFF);

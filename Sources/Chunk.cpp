@@ -1039,6 +1039,13 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 					_added[offset + 1] = block_value | (DOOR::UPPER_HALF << 12);
 				}
 				break ;
+			case GEOMETRY::REPEATER:
+				if (s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1, false) & 0xFF]->transparent) {
+					return ;
+				}
+				block_value ^= (1 << 9); // inverse dir (0->1, 1->0, 2->3, 3->2)
+				// updateRepeater(pos);
+				break ;
 		}
 	} else if (type == blocks::OAK_FENCE || type == blocks::GLASS_PANE) {
 		handle_fence_placement(pos, block_value);
@@ -1124,57 +1131,44 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		} else {
 			stronglyPower(pos, {0, 0, 0}, REDSTONE::OFF);
 		}
-		// int powered = getRedstoneState(pos, {0, 0, 0}, type == blocks::REDSTONE_BLOCK, false);
-		// if (powered) {
-		// 	block_value |= REDSTONE::POWERED;
-		// 	_blocks[offset] = block_value;
-		// 	_added[offset] = block_value;
-		// 	weaklyPower(pos, {0, 0, 0}, REDSTONE::ON, false);
-		// }
 		_lights[offset] = 0; // rm light if solid block added
 	}
 	for (int index = 0; index < 6; index++) {
 		const glm::ivec3 delta = adj_blocks[index];
-		if (pos.x + delta.x < 0 || pos.x + delta.x >= CHUNK_SIZE || pos.y + delta.y < 0 || pos.y + delta.y >= CHUNK_SIZE || pos.z + delta.z < 0 || pos.z + delta.z > 255) {
-
-		} else {
-			GLint adj = _blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] & 0xFF;
-			if (air_flower(adj, false, true, false)) {
-				// _displayed_faces -= !visible_face(adj, type,  opposite_dir(index));
-			} else {
-				if (index != face_dir::PLUSZ) {
-					light_try_spread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, 1, true, LIGHT_RECURSE); // spread sky light, but not upwards duh
-				}
-				light_try_spread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, 1, false, LIGHT_RECURSE);
+		if (pos.z + delta.z < 0 || pos.z + delta.z > 255) {
+			continue ;
+		}
+		GLint adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+		if (s_blocks[adj & 0xFF]->transparent) { // update light status around placed block
+			if (index != face_dir::PLUSZ) {
+				light_try_spread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, 1, true, LIGHT_RECURSE); // spread sky light, but not upwards duh
 			}
-			if (adj > blocks::AIR && adj < blocks::WATER && !face_count(adj, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z)) {
-				// was exposed before, but isn't anymore
-				_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= blocks::NOTVISIBLE;
-			}
-			if ((adj & 0xFF) == blocks::OAK_FENCE || (adj & 0xFF) == blocks::GLASS_PANE) {
-				switch (index) {
-					case face_dir::MINUSX:
-						_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::PX << 12);
-						_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::PX << 12);
-						break ;
-					case face_dir::PLUSX:
-						_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::MX << 12);
-						_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::MX << 12);
-						break ;
-					case face_dir::MINUSY:
-						_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::PY << 12);
-						_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::PY << 12);
-						break ;
-					case face_dir::PLUSY:
-						_blocks[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::MY << 12);
-						_added[((((pos.x + delta.x) << CHUNK_SHIFT) + pos.y + delta.y) << WORLD_SHIFT) + pos.z + delta.z] |= (FENCE::MY << 12);
-						break ;
-				}
+			light_try_spread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, 1, false, LIGHT_RECURSE);
+		} else if (!face_count(adj & 0xFF, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z)) {
+			// was exposed before, but isn't anymore
+			setBlockAt(adj | blocks::NOTVISIBLE, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+		}
+		if ((adj & 0xFF) == blocks::OAK_FENCE || (adj & 0xFF) == blocks::GLASS_PANE) {
+			switch (index) {
+				case face_dir::MINUSX:
+					setBlockAt(adj | (FENCE::PX << 12), pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+					break ;
+				case face_dir::PLUSX:
+					setBlockAt(adj | (FENCE::MX << 12), pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+					break ;
+				case face_dir::MINUSY:
+					setBlockAt(adj | (FENCE::PY << 12), pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+					break ;
+				case face_dir::PLUSY:
+					setBlockAt(adj | (FENCE::MY << 12), pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+					break ;
 			}
 		}
+		if ((adj & 0xFF) == blocks::REDSTONE_DUST && delta.z == -1) {
+			connectRedstoneDust(pos + delta, adj, false);
+			setBlockAt(adj, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+		}
 	}
-	handle_border_block(pos, air_flower(type, false, false, true), true); // if block at border of chunk gets added, we update neighbours, after light spread
-		// std::cout << "nb displayed blocks after: " << _displayed_blocks << std::endl;
 }
 
 void Chunk::replace_block( bool useInventory, glm::ivec3 pos, int type, int previous )
@@ -1590,6 +1584,10 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 		case Modif::USE:
 			int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 			int value = _blocks[offset];
+			if ((value & 0xFF) != type) {
+				std::cerr << "Chunk::regeneration type diff " << s_blocks[value & 0xFF]->name << " vs " << s_blocks[type]->name << std::endl;
+				return ;
+			}
 			switch (type) {
 			case blocks::OAK_DOOR:
 				value ^= (DOOR::OPEN << 12);
@@ -1605,6 +1603,9 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 				value ^= REDSTONE::POWERED;
 				_blocks[offset] = value; // used by adj dust
 				flickLever(pos, value, (value >> REDSTONE::POWERED_OFFSET) & 0x1);
+				break ;
+			case blocks::REPEATER: // add 1 tick delay, mod it by 4
+				value = (value & (-1 - (0x3 << REDSTONE::REPEAT_TICKS))) + (((((value >> REDSTONE::REPEAT_TICKS) & 0x3) + 1) & 0x3) << REDSTONE::REPEAT_TICKS);
 				break ;
 			default:
 				std::cerr << "Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & 0xFF]->name << std::endl;

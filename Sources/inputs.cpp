@@ -109,35 +109,38 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	// from now on adding = true
-	if (_block_hit.value == blocks::CRAFTING_TABLE) {
-		_paused = true;
-		_menu->setState(MENU::CRAFTING);
-		return ;
-	} else if (_block_hit.value == blocks::CHEST) {
-		if (air_flower(chunk_hit->getBlockAt(_block_hit.pos.x - chunk_hit->getStartX(), _block_hit.pos.y - chunk_hit->getStartY(), _block_hit.pos.z + 1, true), true, false, false)) {
+	switch (_block_hit.value) {
+		case blocks::CRAFTING_TABLE:
+			_paused = true;
+			_menu->setState(MENU::CRAFTING);
 			return ;
-		}
-		chunk_hit->openChest(_block_hit.pos);
-		_paused = true;
-		_menu->setState(MENU::CHEST);
-		_menu->setChestInstance(chunk_hit->getChestInstance(_block_hit.pos));
-		return ;
-	} else if (_block_hit.value == blocks::FURNACE) {
-		_paused = true;
-		_menu->setState(MENU::FURNACE);
-		_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit.pos));
-		return ;
-	} else if (_block_hit.value == blocks::TNT && _hand_content == blocks::FLINT_AND_STEEL) {
-		if (current_chunk_ptr) {
-			current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
-		}
-		return ;
-	} else if (_block_hit.value == blocks::OAK_DOOR || _block_hit.value == blocks::OAK_TRAPDOOR
-			|| _block_hit.value == blocks::LEVER) {
-		if (current_chunk_ptr) {
-			current_chunk_ptr->handleHit(false, _block_hit.value, _block_hit.pos, Modif::USE);
-		}
-		return ;
+		case blocks::CHEST:
+			if (air_flower(chunk_hit->getBlockAt(_block_hit.pos.x - chunk_hit->getStartX(), _block_hit.pos.y - chunk_hit->getStartY(), _block_hit.pos.z + 1, true), true, false, false)) {
+				return ;
+			}
+			chunk_hit->openChest(_block_hit.pos);
+			_paused = true;
+			_menu->setState(MENU::CHEST);
+			_menu->setChestInstance(chunk_hit->getChestInstance(_block_hit.pos));
+			return ;
+		case blocks::FURNACE:
+			_paused = true;
+			_menu->setState(MENU::FURNACE);
+			_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit.pos));
+			return ;
+		case blocks::TNT:
+			if (_hand_content == blocks::FLINT_AND_STEEL && current_chunk_ptr) {
+				current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
+			}
+			return ;
+		case blocks::OAK_DOOR:
+		case blocks::OAK_TRAPDOOR:
+		case blocks::LEVER:
+		case blocks::REPEATER:
+			if (current_chunk_ptr) {
+				current_chunk_ptr->handleHit(false, _block_hit.value, _block_hit.pos, Modif::USE);
+			}
+			return ;
 	}
 	int type = _hand_content;
 	int shape = s_blocks[type]->geometry;

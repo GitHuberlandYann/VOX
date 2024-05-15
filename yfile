@@ -311,6 +311,7 @@ Some info:
 	- lever 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor)
 	- redstone lamp 1 << 9 lit
 	- redstone dust 0xF << 20 strength 0xFF << 24 'arms'
+	- repeater 0x7 << 9 orientation, 0x3 << 12 delay, 1 << 15 locked, 1 << 16 lit
 
 	- powered blocks: (1 << 16)
-		doors, trapdoors, lever, redstone lamp
+		doors, trapdoors, lever, redstone lamp, repeater
