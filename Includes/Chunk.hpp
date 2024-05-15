@@ -177,7 +177,7 @@ class Chunk
 		glm::ivec3 getAttachedDir( int value );
 		bool getWeakdyState( glm::ivec3 pos, glm::ivec3 except, bool state );
 		bool getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, bool weak );
-		int getRedstoneStrength( glm::ivec3 pos );
+		int getDustStrength( glm::ivec3 pos );
 		void stronglyPower( glm::ivec3 pos, glm::ivec3 except, bool state );
 		void weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bool weakdy );
 		void weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state, bool weakdy );

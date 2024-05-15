@@ -118,10 +118,10 @@ bool Chunk::getWeakdyState( glm::ivec3 pos, glm::ivec3 except, bool state )
 		int adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
 		// std::cout << "\tchecking " << s_blocks[adj & 0xFF]->name << " at " << pos.x + delta.x << ", " << pos.y + delta.y << ", " << pos.z + delta.z << std::endl;	
 		if ((adj & 0xFF) == blocks::REDSTONE_DUST && (adj & REDSTONE::STRENGTH)
-				&& ((delta.x == 1 && (adj & (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MX)))
-				|| (delta.x == -1 && (adj & (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PX)))
-				|| (delta.y == 1 && (adj & (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MY)))
-				|| (delta.y == -1 && (adj & (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PY)))
+				&& ((delta.x == 1 && (adj & (REDSTONE::DUST_SIDE << REDSTONE::DUST_MX)))
+				|| (delta.x == -1 && (adj & (REDSTONE::DUST_SIDE << REDSTONE::DUST_PX)))
+				|| (delta.y == 1 && (adj & (REDSTONE::DUST_SIDE << REDSTONE::DUST_MY)))
+				|| (delta.y == -1 && (adj & (REDSTONE::DUST_SIDE << REDSTONE::DUST_PY)))
 				|| delta.z == 1
 				)) { // red dust gives signal only to its connected blocks
 			return (REDSTONE::ON);
@@ -185,12 +185,12 @@ bool Chunk::getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, boo
 }
 
 /**
- * @brief same as getRedstoneState, but returns signal level [0:15] received by block at 'pos'
+ * @brief same as getRedstoneState, but returns signal level [0:15] received by dust at 'pos'
  * and doesn't distinguish between strong or weak signal, ignores weakdy signal, only called by red dust
- * @param pos block to get signal strength of
+ * @param pos dust to get signal strength of
  * @return signal level received by dust at 'pos'
 */
-int Chunk::getRedstoneStrength( glm::ivec3 pos )
+int Chunk::getDustStrength( glm::ivec3 pos )
 {
 	int res = REDSTONE::OFF;
 	for (int index = 0; index < 6; ++index) {
@@ -213,6 +213,17 @@ int Chunk::getRedstoneStrength( glm::ivec3 pos )
 				}
 				break ;
 		}
+		if (s_blocks[adj & 0xFF]->transparent) {
+			adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z - 1, true);
+			if ((adj & 0xFF) == blocks::REDSTONE_DUST && (((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) > res + 1)) {
+				res = ((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) - 1;
+			}
+		} else {
+			adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z + 1, true);
+			if ((adj & 0xFF) == blocks::REDSTONE_DUST && (((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) > res + 1)) {
+				res = ((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) - 1;
+			}
+		}
 	}
 	return (res);
 }
@@ -230,9 +241,9 @@ void Chunk::stronglyPower( glm::ivec3 pos, glm::ivec3 source, bool state )
 	if (!s_blocks[value & 0xFF]->transparent && (value & 0xFF) != blocks::REDSTONE_BLOCK) {
 		bool strongly_powered = getRedstoneState(pos, source, state, false);
 		// std::cout << "\tactual state is " << strongly_powered << std::endl;
-		(strongly_powered) ? value |= REDSTONE::POWERED : value &= (INT_MAX - REDSTONE::POWERED);
+		(strongly_powered) ? value |= REDSTONE::POWERED : value &= (REDSTONE::ALL_BITS - REDSTONE::POWERED);
 		bool weakdy_powered = getWeakdyState(pos, {0, 0, 0}, state);
-		(weakdy_powered) ? value |= REDSTONE::WEAKDY_POWERED : value &= (INT_MAX - REDSTONE::WEAKDY_POWERED);
+		(weakdy_powered) ? value |= REDSTONE::WEAKDY_POWERED : value &= (REDSTONE::ALL_BITS - REDSTONE::WEAKDY_POWERED);
 		setBlockAt(value, pos.x, pos.y, pos.z, true);
 		if (strongly_powered) {
 			weaklyPower(pos, source, REDSTONE::ON, false);
@@ -361,7 +372,7 @@ void Chunk::updateRedstoneTorch( glm::ivec3 pos, int value )
 			setLightLevel(level, pos.x, pos.y, pos.z, true);
 			startLightSpread(pos.x, pos.y, pos.z, false);
 		} else if (!state && (actual_value & REDSTONE::POWERED)) {
-			setBlockAt(actual_value & (INT_MAX - REDSTONE::POWERED), pos.x, pos.y, pos.z, true);
+			setBlockAt(actual_value & (REDSTONE::ALL_BITS - REDSTONE::POWERED), pos.x, pos.y, pos.z, true);
 			short level = getLightLevel(pos.x, pos.y, pos.z) + 7 + (7 << 4);
 			setLightLevel(level, pos.x, pos.y, pos.z, true);
 			startLightSpread(pos.x, pos.y, pos.z, false);
@@ -385,47 +396,57 @@ void Chunk::updateRedstoneTorch( glm::ivec3 pos, int value )
 void Chunk::updateRedstoneDust( glm::ivec3 pos )
 {
 	int actual_value = getBlockAt(pos.x, pos.y, pos.z, true), strength;
+std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z << " connect: " << (actual_value >> REDSTONE::DUST_MY) << std::endl;
 	if ((actual_value & 0xFF) != blocks::REDSTONE_DUST) {
 		strength = 0;
 		actual_value |= (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MX) | (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PX)
 				| (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MY) | (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PY);
 	} else {
 		strength = (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF;
-		int signal_received = getRedstoneStrength(pos);
+		int signal_received = getDustStrength(pos);
 		// std::cout << "\tupdateRedstoneDust strength " << strength << " vs signal " << signal_received << std::endl;
 		if (signal_received != strength) {
 			strength = signal_received;
-			actual_value &= (INT_MAX - REDSTONE::STRENGTH);
+			actual_value &= (REDSTONE::ALL_BITS - REDSTONE::STRENGTH);
 			setBlockAt(actual_value | (strength << REDSTONE::STRENGTH_OFFSET), pos.x, pos.y, pos.z, true);
 		} else {
 			return ;
 		}
 	}
 
-// std::cout << "addRestoneDust " << strength << std::endl;
+std::cout << "\tupdateRestoneDust strength " << strength << ", connect: " << (actual_value >> REDSTONE::DUST_MY) << std::endl;
 	// use dust's connection to set/unset connected blocks as WEAKLY_POWERED, which is used by red_torches and red_componants
-	if ((actual_value >> REDSTONE::DUST_MX) & REDSTONE::DUST_CONNECT) {
+	if ((actual_value >> REDSTONE::DUST_MX) & REDSTONE::DUST_UP) {
+		weaklyPowerTarget(pos + glm::ivec3(-1, 0, 1), {1, 0, -1}, strength, false);
+	}
+	if ((actual_value >> REDSTONE::DUST_MX) & REDSTONE::DUST_SIDE) {
 		stronglyPower(pos + glm::ivec3(-1, 0, 0), {1, 0, 0}, REDSTONE::OFF);
 		weaklyPowerTarget(pos + glm::ivec3(-1, 0, 0), {1, 0, 0}, strength, false);
 	}
-	if ((actual_value >> REDSTONE::DUST_PX) & REDSTONE::DUST_CONNECT) {
+	if ((actual_value >> REDSTONE::DUST_PX) & REDSTONE::DUST_UP) {
+		weaklyPowerTarget(pos + glm::ivec3(1, 0, 1), {-1, 0, -1}, strength, false);
+	}
+	if ((actual_value >> REDSTONE::DUST_PX) & REDSTONE::DUST_SIDE) {
 		stronglyPower(pos + glm::ivec3(1, 0, 0), {-1, 0, 0}, REDSTONE::OFF);
 		weaklyPowerTarget(pos + glm::ivec3(1, 0, 0), {-1, 0, 0}, strength, false);
 	}
-	if ((actual_value >> REDSTONE::DUST_MY) & REDSTONE::DUST_CONNECT) {
+	if ((actual_value >> REDSTONE::DUST_MY) & REDSTONE::DUST_UP) {
+		weaklyPowerTarget(pos + glm::ivec3(0, -1, 1), {0, 1, -1}, strength, false);
+	}
+	if ((actual_value >> REDSTONE::DUST_MY) & REDSTONE::DUST_SIDE) {
 		stronglyPower(pos + glm::ivec3(0, -1, 0), {0, 1, 0}, REDSTONE::OFF);
 		weaklyPowerTarget(pos + glm::ivec3(0, -1, 0), {0, 1, 0}, strength, false);
 	}
-	if ((actual_value >> REDSTONE::DUST_PY) & REDSTONE::DUST_CONNECT) {
+	if ((actual_value >> REDSTONE::DUST_PY) & REDSTONE::DUST_UP) {
+		weaklyPowerTarget(pos + glm::ivec3(0, 1, 1), {0, -1, -1}, strength, false);
+	}
+	if ((actual_value >> REDSTONE::DUST_PY) & REDSTONE::DUST_SIDE) {
 		stronglyPower(pos + glm::ivec3(0, 1, 0), {0, -1, 0}, REDSTONE::OFF);
 		weaklyPowerTarget(pos + glm::ivec3(0, 1, 0), {0, -1, 0}, strength, false);
 	}
 	stronglyPower(pos + glm::ivec3(0, 0, -1), {0, 0, 1}, REDSTONE::OFF);
 	weaklyPowerTarget(pos + glm::ivec3(0, 0, -1), {0, 0, 1}, strength, false);
-// std::cout << "END addRestoneDust " << strength << std::endl;
-
-	// adjacent redstone componants are weakly powered
-	// weaklyPower(pos, {0, 0, 0}, strength, false);
+// std::cout << "END updateRestoneDust " << strength << std::endl;
 }
 
 /**
@@ -454,7 +475,7 @@ void Chunk::updateRedstone( void )
 						short level = getLightLevel(red.pos.x, red.pos.y, red.pos.z) & 0xFF0F;
 						setLightLevel(level, red.pos.x, red.pos.y, red.pos.z, true);
 						startLightSpread(red.pos.x, red.pos.y, red.pos.z, false);
-						setBlockAt(value & (INT_MAX - REDSTONE::ACTIVATED), red.pos.x, red.pos.y, red.pos.z, true);
+						setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED), red.pos.x, red.pos.y, red.pos.z, true);
 					}
 					break ;
 				case blocks::REDSTONE_TORCH:
@@ -481,66 +502,139 @@ void Chunk::updateRedstone( void )
 */
 void Chunk::connectRedstoneDust( glm::ivec3 pos, int &value, bool placed )
 {
+	std::cout << "connectRedstoneDust" << std::endl;
 	value &= 0xFFFFFF;
-	bool side_mx = false, side_px = false, side_my = false, side_py = false;
+	int connect_mx = 0, connect_px = 0, connect_my = 0, connect_py = 0;
 	int value_mx = getBlockAt(pos.x - 1, pos.y, pos.z, true), tmx = (value_mx & 0xFF);
 	if (tmx == blocks::LEVER || tmx == blocks::REDSTONE_DUST || tmx == blocks::REDSTONE_TORCH) {
-		side_mx = true;
-		if (placed && tmx == blocks::REDSTONE_DUST && !(value_mx & (REDSTONE::SIDE << REDSTONE::DUST_PX))) { // adj dust not linked towards new dust
+		connect_mx |= REDSTONE::DUST_SIDE;
+		if (placed && tmx == blocks::REDSTONE_DUST && !(value_mx & (REDSTONE::DUST_SIDE << REDSTONE::DUST_PX))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(-1, 0, 0), value_mx, false);
 			setBlockAt(value_mx, pos.x - 1, pos.y, pos.z, true);
+		}
+	} else if (s_blocks[tmx]->transparent) {
+		value_mx = getBlockAt(pos.x - 1, pos.y, pos.z - 1, true);
+		if ((value_mx & 0xFF) == blocks::REDSTONE_DUST) {
+			connect_mx |= REDSTONE::DUST_SIDE;
+			if (placed) {
+				connectRedstoneDust(pos + glm::ivec3(-1, 0, -1), value_mx, false);
+				setBlockAt(value_mx, pos.x - 1, pos.y, pos.z - 1, true);
+			}
+		}
+	} else if (s_blocks[getBlockAt(pos.x, pos.y, pos.z + 1, true) & 0xFF]->transparent) {
+		value_mx = getBlockAt(pos.x - 1, pos.y, pos.z + 1, true);
+		if ((value_mx & 0xFF) == blocks::REDSTONE_DUST) {
+			connect_mx |= REDSTONE::DUST_UP;
+			if (placed) {
+				connectRedstoneDust(pos + glm::ivec3(-1, 0, 1), value_mx, false);
+				setBlockAt(value_mx, pos.x - 1, pos.y, pos.z + 1, true);
+			}
 		}
 	}
 
 	int value_px = getBlockAt(pos.x + 1, pos.y, pos.z, true), tpx = (value_px & 0xFF);
 	if (tpx == blocks::LEVER || tpx == blocks::REDSTONE_DUST || tpx == blocks::REDSTONE_TORCH) {
-		side_px = true;
-		if (placed && tpx == blocks::REDSTONE_DUST && !(value_px & (REDSTONE::SIDE << REDSTONE::DUST_MX))) { // adj dust not linked towards new dust
+		connect_px |= REDSTONE::DUST_SIDE;
+		if (placed && tpx == blocks::REDSTONE_DUST && !(value_px & (REDSTONE::DUST_SIDE << REDSTONE::DUST_MX))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(1, 0, 0), value_px, false);
 			setBlockAt(value_px, pos.x + 1, pos.y, pos.z, true);
+		}
+	} else if (s_blocks[tpx]->transparent) {
+		value_px = getBlockAt(pos.x + 1, pos.y, pos.z - 1, true);
+		if ((value_px & 0xFF) == blocks::REDSTONE_DUST) {
+			connect_px |= REDSTONE::DUST_SIDE;
+			if (placed) {
+				connectRedstoneDust(pos + glm::ivec3(1, 0, -1), value_px, false);
+				setBlockAt(value_px, pos.x + 1, pos.y, pos.z - 1, true);
+			}
+		}
+	} else if (s_blocks[getBlockAt(pos.x, pos.y, pos.z + 1, true) & 0xFF]->transparent) {
+		value_px = getBlockAt(pos.x + 1, pos.y, pos.z + 1, true);
+		if ((value_px & 0xFF) == blocks::REDSTONE_DUST) {
+			connect_px |= REDSTONE::DUST_UP;
+			if (placed) {
+				connectRedstoneDust(pos + glm::ivec3(1, 0, 1), value_px, false);
+				setBlockAt(value_px, pos.x + 1, pos.y, pos.z + 1, true);
+			}
 		}
 	}
 
 	int value_my = getBlockAt(pos.x, pos.y - 1, pos.z, true), tmy = (value_my & 0xFF);
 	if (tmy == blocks::LEVER || tmy == blocks::REDSTONE_DUST || tmy == blocks::REDSTONE_TORCH) {
-		side_my = true;
-		if (placed && tmy == blocks::REDSTONE_DUST && !(value_my & (REDSTONE::SIDE << REDSTONE::DUST_PY))) { // adj dust not linked towards new dust
+		connect_my |= REDSTONE::DUST_SIDE;
+		if (placed && tmy == blocks::REDSTONE_DUST && !(value_my & (REDSTONE::DUST_SIDE << REDSTONE::DUST_PY))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(0, -1, 0), value_my, false);
 			setBlockAt(value_my, pos.x, pos.y - 1, pos.z, true);
+		}
+	} else if (s_blocks[tmy]->transparent) {
+		value_my = getBlockAt(pos.x, pos.y - 1, pos.z - 1, true);
+		if ((value_my & 0xFF) == blocks::REDSTONE_DUST) {
+			connect_my |= REDSTONE::DUST_SIDE;
+			if (placed) {
+				connectRedstoneDust(pos + glm::ivec3(0, -1, -1), value_my, false);
+				setBlockAt(value_my, pos.x, pos.y - 1, pos.z - 1, true);
+			}
+		}
+	} else if (s_blocks[getBlockAt(pos.x, pos.y, pos.z + 1, true) & 0xFF]->transparent) {
+		value_my = getBlockAt(pos.x, pos.y - 1, pos.z + 1, true);
+		if ((value_my & 0xFF) == blocks::REDSTONE_DUST) {
+			connect_my |= REDSTONE::DUST_UP;
+			if (placed) {
+				connectRedstoneDust(pos + glm::ivec3(0, -1, 1), value_my, false);
+				setBlockAt(value_my, pos.x, pos.y - 1, pos.z + 1, true);
+			}
 		}
 	}
 
 	int value_py = getBlockAt(pos.x, pos.y + 1, pos.z, true), tpy = (value_py & 0xFF);
 	if (tpy == blocks::LEVER || tpy == blocks::REDSTONE_DUST || tpy == blocks::REDSTONE_TORCH) {
-		side_py = true;
-		if (placed && tpy == blocks::REDSTONE_DUST && !(value_py & (REDSTONE::SIDE << REDSTONE::DUST_MY))) { // adj dust not linked towards new dust
+		connect_py |= REDSTONE::DUST_SIDE;
+		if (placed && tpy == blocks::REDSTONE_DUST && !(value_py & (REDSTONE::DUST_SIDE << REDSTONE::DUST_MY))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(0, 1, 0), value_py, false);
 			setBlockAt(value_py, pos.x, pos.y + 1, pos.z, true);
 		}
+	} else if (s_blocks[tpy]->transparent) {
+		value_py = getBlockAt(pos.x, pos.y + 1, pos.z - 1, true);
+		if ((value_py & 0xFF) == blocks::REDSTONE_DUST) {
+			connect_py |= REDSTONE::DUST_SIDE;
+			if (placed) {
+				connectRedstoneDust(pos + glm::ivec3(0, 1, -1), value_py, false);
+				setBlockAt(value_py, pos.x, pos.y + 1, pos.z - 1, true);
+			}
+		}
+	} else if (s_blocks[getBlockAt(pos.x, pos.y, pos.z + 1, true) & 0xFF]->transparent) {
+		value_py = getBlockAt(pos.x, pos.y + 1, pos.z + 1, true);
+		if ((value_py & 0xFF) == blocks::REDSTONE_DUST) {
+			connect_py |= REDSTONE::DUST_UP;
+			if (placed) {
+				connectRedstoneDust(pos + glm::ivec3(0, 1, 1), value_py, false);
+				setBlockAt(value_py, pos.x, pos.y + 1, pos.z + 1, true);
+			}
+		}
 	}
 
-	if (side_mx) {
-		value |= (REDSTONE::SIDE << REDSTONE::DUST_MX);
-		if (!side_my && !side_py) {
-			value |= (REDSTONE::SIDE << REDSTONE::DUST_PX);
+	if (connect_mx) {
+		value |= (connect_mx << REDSTONE::DUST_MX);
+		if (!(connect_my | connect_py | connect_px)) {
+			value |= (REDSTONE::DUST_SIDE << REDSTONE::DUST_PX);
 		}
 	}
-	if (side_px) {
-		value |= (REDSTONE::SIDE << REDSTONE::DUST_PX);
-		if (!side_my && !side_py) {
-			value |= (REDSTONE::SIDE << REDSTONE::DUST_MX);
+	if (connect_px) {
+		value |= (connect_px << REDSTONE::DUST_PX);
+		if (!(connect_my | connect_py | connect_mx)) {
+			value |= (REDSTONE::DUST_SIDE << REDSTONE::DUST_MX);
 		}
 	}
-	if (side_my) {
-		value |= (REDSTONE::SIDE << REDSTONE::DUST_MY);
-		if (!side_mx && !side_px) {
-			value |= (REDSTONE::SIDE << REDSTONE::DUST_PY);
+	if (connect_my) {
+		value |= (connect_my << REDSTONE::DUST_MY);
+		if (!(connect_mx | connect_px | connect_py)) {
+			value |= (REDSTONE::DUST_SIDE << REDSTONE::DUST_PY);
 		}
 	}
-	if (side_py) {
-		value |= (REDSTONE::SIDE << REDSTONE::DUST_PY);
-		if (!side_mx && !side_px) {
-			value |= (REDSTONE::SIDE << REDSTONE::DUST_MY);
+	if (connect_py) {
+		value |= (connect_py << REDSTONE::DUST_PY);
+		if (!(connect_mx | connect_px | connect_my)) {
+			value |= (REDSTONE::DUST_SIDE << REDSTONE::DUST_MY);
 		}
 	}
 }

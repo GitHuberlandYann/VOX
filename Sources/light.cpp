@@ -22,8 +22,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 	short saveLight = _lights[offset];
 	short level = ((saveLight >> shift) & 0xFF);
 	// std::cout << "light_spread, level is " << (int)level << std::endl;
-	// TODO once diff light sources exist with diff light_level, rework this condition
-	if (!(level & 0xF0)) { // not a source block, we check if level should change
+	if ((level & 0xF0) < 0xF0) { // not a source block or source block with light level < 15, we check if level should change
 		short maxLevel = 0;
 		for (int index = 0; index < 6; index++) {
 			const glm::ivec3 delta = adj_blocks[index];
@@ -41,7 +40,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 		}
 		if ((maxLevel && maxLevel - 1 != level) || (!maxLevel && level)) {
 			if (!skySpread && level >= maxLevel - 1) maxLevel = 1;
-			level = maxs(0, maxLevel - 1);
+			level = (level & 0xF0) + maxs((level & 0xF0) >> 4, maxLevel - 1);
 			_lights[offset] = (saveLight & (0xFF << (8 - shift))) + (level << shift);
 			_light_update = true;
 		} else {

@@ -2891,6 +2891,13 @@ void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		v2 = {spec, p0};
 		v3 = {spec + YTEX - (8 << 8), p1 + glm::vec3(-0.5f, 0, 0)};
 		face_vertices(vertices, v0, v1, v2, v3);
+		if (mx & REDSTONE::DUST_UP) {
+			v0 = {spec, p0 + glm::vec3(0.002f, 0, 1)};
+			v1 = {spec + XTEX, p4 + glm::vec3(0.002f, 0, 1)};
+			v2 = {spec + YTEX, p0 + glm::vec3(0.002f, 0, 0)};
+			v3 = {spec + XTEX + YTEX, p4 + glm::vec3(0.002f, 0, 0)};
+			face_vertices(vertices, v0, v1, v2, v3);
+		}
 	}
 	if (px) {
 		v0 = {spec + (8 << 8) + XTEX, p4 + glm::vec3(0.5f, 0, 0)};
@@ -2898,6 +2905,13 @@ void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		v2 = {spec + (8 << 8), p0 + glm::vec3(0.5f, 0, 0)};
 		v3 = {spec + YTEX, p1};
 		face_vertices(vertices, v0, v1, v2, v3);
+		if (px & REDSTONE::DUST_UP) {
+			v0 = {spec, p5 + glm::vec3(-0.002f, 0, 1)};
+			v1 = {spec + XTEX, p1 + glm::vec3(-0.002f, 0, 1)};
+			v2 = {spec + YTEX, p5 + glm::vec3(-0.002f, 0, 0)};
+			v3 = {spec + XTEX + YTEX, p1 + glm::vec3(-0.002f, 0, 0)};
+			face_vertices(vertices, v0, v1, v2, v3);
+		}
 	}
 	if (my) {
 		v0 = {spec + YTEX - (8 << 8), p4 + glm::vec3(0, -0.5f, 0)};
@@ -2905,6 +2919,13 @@ void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		v2 = {spec, p0};
 		v3 = {spec + XTEX, p1};
 		face_vertices(vertices, v0, v1, v2, v3);
+		if (my & REDSTONE::DUST_UP) {
+			v0 = {spec, p1 + glm::vec3(0, 0.002f, 1)};
+			v1 = {spec + XTEX, p0 + glm::vec3(0, 0.002f, 1)};
+			v2 = {spec + YTEX, p1 + glm::vec3(0, 0.002f, 0)};
+			v3 = {spec + XTEX + YTEX, p0 + glm::vec3(0, 0.002f, 0)};
+			face_vertices(vertices, v0, v1, v2, v3);
+		}
 	}
 	if (py) {
 		v0 = {spec + YTEX, p4};
@@ -2912,5 +2933,12 @@ void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		v2 = {spec + (8 << 8), p0 + glm::vec3(0, 0.5f, 0)};
 		v3 = {spec + XTEX + (8 << 8), p1 + glm::vec3(0, 0.5f, 0)};
 		face_vertices(vertices, v0, v1, v2, v3);
+		if (py & REDSTONE::DUST_UP) {
+			v0 = {spec, p4 + glm::vec3(0, -0.002f, 1)};
+			v1 = {spec + XTEX, p5 + glm::vec3(0, -0.002f, 1)};
+			v2 = {spec + YTEX, p4 + glm::vec3(0, -0.002f, 0)};
+			v3 = {spec + XTEX + YTEX, p5 + glm::vec3(0, -0.002f, 0)};
+			face_vertices(vertices, v0, v1, v2, v3);
+		}
 	}
 }
