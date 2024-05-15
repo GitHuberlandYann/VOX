@@ -350,6 +350,8 @@ bool visible_face( int value, int next, face_dir dir )
 		case GEOMETRY::LEVER:
 		case GEOMETRY::DUST:
 			return (true);
+		case GEOMETRY::REPEATER:
+			return (dir != face_dir::PLUSZ && valueShape != GEOMETRY::REPEATER);
 		case GEOMETRY::GLASS:
 		case GEOMETRY::GLASS_PANE:
 			return (valueShape != nextShape);

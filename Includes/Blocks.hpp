@@ -106,6 +106,7 @@ namespace GEOMETRY {
 		CROP,
 		LEVER,
 		DUST,
+		REPEATER,
 	};
 };
 
@@ -179,6 +180,7 @@ namespace blocks {
 		TORCH,
 		REDSTONE_TORCH,
 		REDSTONE_DUST,
+		REPEATER,
 		CHEST = 79,
 		WHEAT_CROP = 80,
 		WHEAT_CROP1,
@@ -1907,6 +1909,32 @@ struct RedstoneDust : Block {
 			(void)dir;
 			if (offset == 2) return (8);
 			return (12);
+		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+};
+
+struct Repeater : Block {
+	public:
+		Repeater() {
+			name = "REPEATER";
+			mined = blocks::REPEATER;
+			blast_resistance = 0.0f;
+			hasHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			collisionHitbox = true;
+			hitboxCenter = {0.5f, 0.5f, ONE16TH};
+			hitboxHalfSize = {0.5f, 0.5f, ONE16TH};
+			geometry = GEOMETRY::REPEATER;
+			byHand = true;
+			hardness = 0.0f;
+			transparent = true;
+			item3D = false;
+			textureY = 13;
+		}
+		virtual int texX( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
+			(void)dir;
+			if (offset == 2) return (7);
+			return (6 - offset);
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };

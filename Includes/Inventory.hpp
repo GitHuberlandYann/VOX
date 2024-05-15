@@ -10,7 +10,7 @@ class ChestInstance;
 class UI;
 
 # define IRECEIPT_SIZE 29
-# define RECEIPT_SIZE 122
+# define RECEIPT_SIZE 123
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
@@ -75,6 +75,7 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_TORCH, 4},
 	{blocks::AIR, blocks::REDSTONE_DUST, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_TORCH, 4},
 	{blocks::REDSTONE_DUST, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_TORCH, 4},
+	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_TORCH, blocks::REDSTONE_DUST, blocks::REDSTONE_TORCH, blocks::STONE, blocks::STONE, blocks::STONE, blocks::REPEATER, 1},
 
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::TORCH, 4},
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::CHARCOAL, blocks::AIR, blocks::AIR, blocks::STICK, blocks::AIR, blocks::TORCH, 4},
