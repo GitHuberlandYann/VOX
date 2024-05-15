@@ -275,11 +275,18 @@ void Chunk::stronglyPower( glm::ivec3 pos, glm::ivec3 source, bool state )
 		setBlockAt(value, pos.x, pos.y, pos.z, true);
 		if (strongly_powered) {
 			weaklyPower(pos, source, REDSTONE::ON, false);
+		} else if (weakdy_powered) {
+			weaklyPower(pos, source, REDSTONE::ON, true);
+			for (int index = 0; index < 6; ++index) { // still power off adj redstone dusts
+				const glm::ivec3 delta = adj_blocks[index];
+				if (delta == source) continue ;
+				int adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+				if ((adj & 0xFF) == blocks::REDSTONE_DUST) {
+					updateRedstoneDust(pos + delta);
+				}
+			}
 		} else {
 			weaklyPower(pos, source, REDSTONE::OFF, false);
-			if (weakdy_powered) {
-				weaklyPower(pos, source, REDSTONE::ON, true);
-			}
 		}
 	}
 }
@@ -307,17 +314,18 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 			} else if (!state && (adj & REDSTONE::ACTIVATED)) {
 				// add lamp to tick delay machine
 				// std::cout << "\tschedule redstone lamp at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-				_redstone_schedule.push_back({pos, 2 * REDSTONE::TICK});
+				scheduleRedstoneTick({pos, 2 * REDSTONE::TICK});
 			}
 			break ;
 		case blocks::REPEATER:
 			if (source == -adj_blocks[(adj >> 9) & 0x7]) { // signal comes from behind repeater
-				_redstone_schedule.push_back({pos, REDSTONE::TICK * (((adj >> REDSTONE::REPEAT_TICKS) & 0x3) + 1), state});
+				// std::cout << "scheduling repeater from " << source.x << ", " << source.y << ", " << source.z << std::endl;
+				scheduleRedstoneTick({pos, REDSTONE::TICK * (((adj >> REDSTONE::REPEAT_TICKS) & 0x3) + 1), state});
 			}
 			break ;
 		case blocks::REDSTONE_TORCH:
 			if (getAttachedDir(adj) == source) {
-				_redstone_schedule.push_back({pos, REDSTONE::TICK});
+				scheduleRedstoneTick({pos, REDSTONE::TICK});
 			}
 			break ;
 		case blocks::REDSTONE_DUST:
@@ -439,10 +447,20 @@ void Chunk::updateRedstoneDust( glm::ivec3 pos )
 		int signal_received = getDustStrength(pos);
 		// std::cout << "\tupdateRedstoneDust strength " << strength << " vs signal " << signal_received << std::endl;
 		if (signal_received != strength) {
-			strength = signal_received;
+			strength = (strength > signal_received) ? 0 : signal_received; // shortcut recursion by cutting signal
 			actual_value &= (REDSTONE::ALL_BITS - REDSTONE::STRENGTH);
 			setBlockAt(actual_value | (strength << REDSTONE::STRENGTH_OFFSET), pos.x, pos.y, pos.z, true);
 		} else {
+			// std::cout << "END updateRestoneDust " << strength << std::endl;
+			if (strength > 1) { // because of shortcut above, we need to restart recurse if adj dust still powered
+				for (int index = 0; index < 6; ++index) {
+					const glm::ivec3 delta = adj_blocks[index];
+					int adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+					if ((adj & 0xFF) == blocks::REDSTONE_DUST && !((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF)) {
+						updateRedstoneDust(pos + delta);
+					}
+				}
+			}
 			return ;
 		}
 	}
@@ -501,6 +519,7 @@ void Chunk::updateRedstone( void )
 		if (--redRef.ticks == 0) {
 			t_redstoneTick red = redRef;
 			int value = getBlockAt(red.pos.x, red.pos.y, red.pos.z, true);
+			// std::cout << "[" << DayCycle::Get()->getTicks() << "] " << _startX << " " << _startY << " schedule " << s_blocks[value & 0xFF]->name << " at " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << ": " << red.state << std::endl;
 
 			switch (value & 0xFF) {
 				case blocks::REDSTONE_LAMP: // only scheduled to be turned off
@@ -552,6 +571,45 @@ void Chunk::updateRedstone( void )
 			_redstone_schedule.erase(_redstone_schedule.begin() + (index - delCount));
 			++delCount;
 		}
+	}
+}
+
+/**
+ * @brief push_back redstone schedule in appropriate chunk
+ * @param red schedule to be pushed
+*/
+void Chunk::scheduleRedstoneTick( t_redstoneTick red )
+{
+	if (red.pos.z < 0 || red.pos.z >= WORLD_HEIGHT) {
+		return ;
+	}
+	if (red.pos.x < 0) {
+		if (_neighbours[face_dir::MINUSX]) {
+			red.pos.x += CHUNK_SIZE;
+			_neighbours[face_dir::MINUSX]->scheduleRedstoneTick(red);
+			return ;
+		}
+	} else if (red.pos.x >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSX]) {
+			red.pos.x -= CHUNK_SIZE;
+			_neighbours[face_dir::PLUSX]->scheduleRedstoneTick(red);
+			return ;
+		}
+	} else if (red.pos.y < 0) {
+		if (_neighbours[face_dir::MINUSY]) {
+			red.pos.y += CHUNK_SIZE;
+			_neighbours[face_dir::MINUSY]->scheduleRedstoneTick(red);
+			return ;
+		}
+	} else if (red.pos.y >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSY]) {
+			red.pos.y -= CHUNK_SIZE;
+			_neighbours[face_dir::PLUSY]->scheduleRedstoneTick(red);
+			return ;
+		}
+	} else {
+		// std::cout << "new schedule [" << DayCycle::Get()->getTicks() << "] " << _startX << " " << _startY << " pos " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << " ticks: " << red.ticks << " state " << red.state << std::endl;
+		_redstone_schedule.push_back(red);
 	}
 }
 

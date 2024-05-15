@@ -265,6 +265,7 @@ class Chunk
 		void drawWater( GLint & counter, GLint &face_counter );
 
 		void updateRedstone( void );
+		void scheduleRedstoneTick( t_redstoneTick red );
 		void updateFurnaces( double currentTime );
 		void updateFluids( void );
 		void tickUpdate( void );
