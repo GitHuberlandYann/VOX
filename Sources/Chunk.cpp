@@ -1041,7 +1041,8 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 				}
 				break ;
 			case GEOMETRY::REPEATER:
-				if (s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1, false) & 0xFF]->transparent) {
+				previous = getBlockAt(pos.x, pos.y, pos.z - 1, false);
+				if (s_blocks[previous & 0xFF]->transparent && (previous & 0xFF) != blocks::GLASS) {
 					return ;
 				}
 				block_value ^= (1 << 9); // inverse dir (0->1, 1->0, 2->3, 3->2)

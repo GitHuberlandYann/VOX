@@ -213,6 +213,7 @@ bool Chunk::getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, boo
 */
 int Chunk::getDustStrength( glm::ivec3 pos )
 {
+	bool solidAbove = !s_blocks[getBlockAt(pos.x, pos.y, pos.z + 1, true) & 0xFF]->transparent;
 	int res = REDSTONE::OFF;
 	for (int index = 0; index < 6; ++index) {
 		const glm::ivec3 delta = adj_blocks[index];
@@ -248,6 +249,9 @@ int Chunk::getDustStrength( glm::ivec3 pos )
 				res = ((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) - 1;
 			}
 		} else {
+			if (solidAbove) {
+				continue ;
+			}
 			adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z + 1, true);
 			if ((adj & 0xFF) == blocks::REDSTONE_DUST && (((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) > res + 1)) {
 				res = ((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) - 1;
@@ -453,7 +457,7 @@ void Chunk::updateRedstoneTorch( glm::ivec3 pos, int value )
 */
 void Chunk::updateRedstoneDust( glm::ivec3 pos )
 {
-	int actual_value = getBlockAt(pos.x, pos.y, pos.z, true), strength;
+	int actual_value = getBlockAt(pos.x, pos.y, pos.z, true), strength, signal_received = 0;
 // std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z << " connect: " << (actual_value >> REDSTONE::DUST_MY) << std::endl;
 	if ((actual_value & 0xFF) != blocks::REDSTONE_DUST) {
 		strength = 0;
@@ -461,7 +465,7 @@ void Chunk::updateRedstoneDust( glm::ivec3 pos )
 				| (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MY) | (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PY);
 	} else {
 		strength = (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF;
-		int signal_received = getDustStrength(pos);
+		signal_received = getDustStrength(pos);
 		// std::cout << "\tupdateRedstoneDust strength " << strength << " vs signal " << signal_received << std::endl;
 		if (signal_received != strength) {
 			strength = (strength > signal_received) ? 0 : signal_received; // shortcut recursion by cutting signal
@@ -515,6 +519,13 @@ void Chunk::updateRedstoneDust( glm::ivec3 pos )
 	stronglyPower(pos + glm::ivec3(0, 0, -1), {0, 0, 1}, REDSTONE::OFF);
 	weaklyPowerTarget(pos + glm::ivec3(0, 0, -1), {0, 0, 1}, strength, false);
 // std::cout << "END updateRestoneDust " << strength << " at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
+
+	if (!strength && signal_received) { // turn dust back on if needed despite of the shortcut
+		if (getDustStrength(pos)) {
+			updateRedstoneDust(pos); // praydge infinite recurse
+		}
+
+	}
 }
 
 /**
