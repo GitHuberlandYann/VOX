@@ -1063,7 +1063,8 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		}
 	} else if (shape == GEOMETRY::DUST) {
 		int shape_below = s_blocks[_blocks[offset - 1] & 0xFF]->geometry;
-		if (shape_below != GEOMETRY::CUBE && shape_below != GEOMETRY::SLAB_TOP && shape_below != GEOMETRY::STAIRS_TOP) {
+		if (!(shape_below == GEOMETRY::CUBE || shape_below == GEOMETRY::SLAB_TOP
+			|| shape_below == GEOMETRY::STAIRS_TOP || shape_below == GEOMETRY::GLASS)) {
 			return ;
 		}
 		_blocks[offset] = block_value; // place it down temporarily to be used in connectRedstoneDust
@@ -1610,6 +1611,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 				break ;
 			case blocks::STONE_BUTTON:
 			case blocks::OAK_BUTTON:
+				std::cout << "button pressed" << std::endl;
 				value |= REDSTONE::POWERED;
 				_blocks[offset] = value; // used by adj dust
 				stronglyPower(pos + getAttachedDir(value), -getAttachedDir(value), REDSTONE::ON);
