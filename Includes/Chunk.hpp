@@ -185,6 +185,7 @@ class Chunk
 		void flickLever( glm::ivec3 pos, int value, bool state );
 		void updateRedstoneTorch( glm::ivec3 pos, int value );
 		void updateRedstoneDust( glm::ivec3 pos );
+		void initRepeater( glm::ivec3 pos, int value );
 		void connectRedstoneDust( glm::ivec3 pos, int &value, bool placed );
 
 		// block update (20/sec)

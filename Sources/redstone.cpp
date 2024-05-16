@@ -300,7 +300,7 @@ void Chunk::stronglyPower( glm::ivec3 pos, glm::ivec3 source, bool state )
 */
 void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bool weakdy )
 {
-	int adj = getBlockAt(pos.x, pos.y, pos.z, true);
+	int adj = getBlockAt(pos.x, pos.y, pos.z, true), src;
 	switch (adj & 0xFF) {
 		case blocks::REDSTONE_LAMP:
 			if (state && !(adj & REDSTONE::ACTIVATED)) {
@@ -321,6 +321,18 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 			if (source == -adj_blocks[(adj >> 9) & 0x7]) { // signal comes from behind repeater
 				// std::cout << "scheduling repeater from " << source.x << ", " << source.y << ", " << source.z << std::endl;
 				scheduleRedstoneTick({pos, REDSTONE::TICK * (((adj >> REDSTONE::REPEAT_TICKS) & 0x3) + 1), state});
+			} else if (!source.x == !!adj_blocks[(adj >> 9) & 0x7].x && !source.y == !!adj_blocks[(adj >> 9) & 0x7].y) { // signal comes from side
+				// we check if it comes from repeater and (un)lock the repeater
+				src = getBlockAt(pos.x + source.x, pos.y + source.y, pos.z + source.z, true);
+				if ((src & 0xFF) == blocks::REPEATER && source == -adj_blocks[(src >> 9) & 0x7]) {
+					if ((src & REDSTONE::POWERED) && !(adj & REDSTONE::REPEAT_LOCK)) { // if not locked but should be, we lock it
+						setBlockAt(adj | REDSTONE::REPEAT_LOCK, pos.x, pos.y, pos.z, true);
+					} else if (!(src & REDSTONE::POWERED) && (adj & REDSTONE::REPEAT_LOCK)) { // if locked but shouldn't be, we unlock it
+						adj &= (REDSTONE::ALL_BITS - REDSTONE::REPEAT_LOCK);
+						initRepeater(pos, adj);
+						setBlockAt(adj, pos.x, pos.y, pos.z, true);
+					}
+				}
 			}
 			break ;
 		case blocks::REDSTONE_TORCH:
@@ -501,6 +513,40 @@ void Chunk::updateRedstoneDust( glm::ivec3 pos )
 }
 
 /**
+ * @brief set or reset repeater's state.
+ * called when placing a repeater or when unlocking a repeater
+ * @param pos relative pos of repeater in chunk
+ * @param value data_value of initialized repeater
+*/
+void Chunk::initRepeater( glm::ivec3 pos, int value )
+{
+	const glm::ivec3 delta = -adj_blocks[(value >> 9) & 0x7];
+	int src = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
+	bool state = REDSTONE::OFF;
+	switch (src & 0xFF) {
+		case blocks::REDSTONE_DUST:
+			state = (src & REDSTONE::STRENGTH);
+			break ;
+		case blocks::REDSTONE_TORCH:
+			state = !(src & REDSTONE::POWERED);
+			break ;
+		case blocks::REPEATER:
+			if (delta == -adj_blocks[(src >> 9) & 0x7]) {
+				state = (src & REDSTONE::POWERED);
+			}
+			break ;
+		default:
+			state = (src & (REDSTONE::POWERED | REDSTONE::WEAKDY_POWERED));
+			break ;
+	}
+	if (state && !(value & REDSTONE::POWERED)) {
+		scheduleRedstoneTick({pos, REDSTONE::TICK * (((value >> REDSTONE::REPEAT_TICKS) & 0x3) + 1), REDSTONE::ON});
+	} else if (!state && (value & REDSTONE::POWERED)) {
+		scheduleRedstoneTick({pos, REDSTONE::TICK * (((value >> REDSTONE::REPEAT_TICKS) & 0x3) + 1), REDSTONE::OFF});
+	}
+}
+
+/**
  * @brief loop through _redstone_schedule and reduce ticks by 1,
  * if ticks reach 0, scheduled redstone componant is updated
 */
@@ -533,11 +579,14 @@ void Chunk::updateRedstone( void )
 					}
 					break ;
 				case blocks::REPEATER:
+					if (value & REDSTONE::REPEAT_LOCK) { // repeater is locked, we don't update it
+						break ;
+					}
 					front = adj_blocks[(value >> 9) & 0x7];
 					if (red.state) {
 						for (auto &schedule : _redstone_schedule) { // loop through schedule, if repeater scheduled to turn off, extend its delay
 							if (schedule.pos == red.pos && schedule.state == REDSTONE::OFF) {
-								schedule.ticks = ((value >> REDSTONE::REPEAT_TICKS) & 0x3) * REDSTONE::TICK + 1;
+								schedule.ticks = ((value >> REDSTONE::REPEAT_TICKS) & 0x3) * REDSTONE::TICK; // + 1;
 							}
 						}
 						if (!(value & REDSTONE::POWERED)) { // turn repeater on

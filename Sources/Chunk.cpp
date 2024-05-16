@@ -1045,7 +1045,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 					return ;
 				}
 				block_value ^= (1 << 9); // inverse dir (0->1, 1->0, 2->3, 3->2)
-				// initRepeater(pos);
+				initRepeater(pos, block_value);
 				break ;
 		}
 	} else if (type == blocks::OAK_FENCE || type == blocks::GLASS_PANE) {
