@@ -1616,7 +1616,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 				_blocks[offset] = value; // used by adj dust
 				stronglyPower(pos + getAttachedDir(value), -getAttachedDir(value), REDSTONE::ON);
 				weaklyPower(pos, {0, 0, 0}, REDSTONE::ON, false);
-				scheduleRedstoneTick({pos, ((type == blocks::STONE_BUTTON) ? 10 : 15) * REDSTONE::TICK});
+				scheduleRedstoneTick({pos, ((type == blocks::STONE_BUTTON) ? 2 : 15) * REDSTONE::TICK});
 				break ;
 			default:
 				std::cerr << "Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & 0xFF]->name << std::endl;

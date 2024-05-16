@@ -710,7 +710,7 @@ struct Button : Block {
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = GEOMETRY::BUTTON;
 			transparent = true;
-			item3D = false;
+			item3D = true;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
 			hitbox[0] = {0.5f, 0.5f, 1.5f * ONE16TH};

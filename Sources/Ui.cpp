@@ -194,6 +194,31 @@ void UI::add_inventory_elem( int index )
 		v3 = {spec + 15 + (15 << 8), x + 13 * _gui_size, y + 15 * _gui_size * 281.25f / 362.5f};
 		addFace(v0, v1, v2, v3, false);
 		return ;
+	} else if (shape == GEOMETRY::BUTTON) {
+		x += 13 * 122.0f / 362.5f; 
+		y += 15 * 122.0f / 362.5f; 
+		// top face
+		int spec = (15 << 24) + (s_blocks[type]->texX() << 4) + (s_blocks[type]->texY() << 12);
+		glm::ivec3 v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
+		glm::ivec3 v1 = {spec + (1 << 4), x + 6.5f * _gui_size, y};
+		glm::ivec3 v2 = {spec + (1 << 12), x + 13 * _gui_size * 40.5125f / 362.5f, y + 15 * _gui_size * 121.7125f / 362.5f};
+		glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + 13 * _gui_size * 203.0125f / 362.5f, y + 15 * _gui_size * 40.5125f / 362.5f};
+		addFace(v0, v1, v2, v3, false);
+		// left face
+		spec -= (5 << 24);
+		v0 = {spec, x, y + 15 * _gui_size * 81.25f / 362.5f};
+		v1 = {spec + (1 << 4), x + 13 * _gui_size * 40.5125f / 362.5f, y + 15 * _gui_size * 121.7125f / 362.5f};
+		v2 = {spec + (1 << 12), x, y + 15 * _gui_size * 206.7125f / 362.5f};
+		v3 = {spec + (1 << 4) + (1 << 12), x + 13 * _gui_size * 40.5125f / 362.5f, y + 15 * _gui_size * 247.225f / 362.5f};
+		addFace(v0, v1, v2, v3, false);
+		// right face
+		spec -= (3 << 24);
+		v0 = {spec, x + 13 * _gui_size * 40.5125f / 362.5f, y + 15 * _gui_size * 121.7125f / 362.5f};
+		v1 = {spec + (1 << 4), x + 13 * _gui_size * 203.0125f / 362.5f, y + 15 * _gui_size * 40.5125f / 362.5f};
+		v2 = {spec + (1 << 12), x + 13 * _gui_size * 40.5125f / 362.5f, y + 15 * _gui_size * 246.7125f / 362.5f};
+		v3 = {spec + (1 << 4) + (1 << 12), x + 13 * _gui_size * 203.0125f / 362.5f, y + 15 * _gui_size * 165.5125f / 362.5f};
+		addFace(v0, v1, v2, v3, false);
+		return ;
 	}
 	int yTop = (shape == GEOMETRY::SLAB_BOTTOM) ? y + 15 * _gui_size * 100.0f / 362.5f
 											: (shape == GEOMETRY::TRAPDOOR) ? y + 15 * _gui_size * 162.5f / 362.5f : y;
