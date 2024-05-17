@@ -219,6 +219,7 @@ namespace blocks {
 		DIAMOND_PICKAXE,
 		BOW,
 		ARROW,
+		WORLDEDIT_WAND,
 		COAL = 112,
 		CHARCOAL,
 		IRON_INGOT,
@@ -2420,6 +2421,16 @@ struct Arrow : Block {
 			item3D = false;
 			textureX = 8;
 			textureY = 14;
+		}
+};
+
+struct WorldEditWand : Block {
+	public:
+		WorldEditWand() {
+			name = "WORLDEDIT_WAND";
+			item3D = false;
+			textureX = 8;
+			textureY = 5;
 		}
 };
 

@@ -237,6 +237,7 @@ class Chunk
 		ChestInstance *getChestInstance( glm::ivec3 pos );
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
 		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours );
+		void setBlockAtAbsolute( int value, int posX, int posY, int posZ, bool askNeighbours );
 		void setBlockAt( int value, int posX, int posY, int posZ, bool askNeighbours );
 		void turnDirtToGrass( int posX, int posY, int posZ );
 

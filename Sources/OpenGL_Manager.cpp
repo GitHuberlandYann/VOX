@@ -1,6 +1,7 @@
 #include "OpenGL_Manager.hpp"
 #include "callbacks.hpp"
 #include "Settings.hpp"
+#include "WorldEdit.hpp"
 // #include "Benchmark.hpp"
 void thread_chunk_update( OpenGL_Manager *render );
 
@@ -20,6 +21,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_ui->getChatPtr()->setOGLManPtr(this);
 	_menu = new Menu(*_inventory, _ui);
 	_skybox = new Skybox();
+	WorldEdit::Get()->setPtrs(this, _inventory, _ui->getChatPtr());
 
 	startThread();
 }
@@ -45,6 +47,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 
 	set_cursor_position_callback(NULL, NULL);
 	set_scroll_callback(NULL);
+	WorldEdit::Get()->setPtrs();
 	delete _camera;
 	delete _inventory;
 	delete _ui;
@@ -83,6 +86,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 
 	DayCycle::Destroy();
 	Settings::Destroy();
+	WorldEdit::Destroy();
 	check_glstate("openGL_Manager destructed", true);
 }
 

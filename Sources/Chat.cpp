@@ -1,6 +1,7 @@
 #include "Chat.hpp"
 #include "OpenGL_Manager.hpp"
 #include "PerlinNoise.hpp"
+#include "WorldEdit.hpp"
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Chat::Chat( Text *text ) : _histo_cursor(0), _oglMan(NULL), _text(text)
@@ -22,27 +23,27 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 {
 	if (argc == 1) {
 		chatMessage("List of commands:");
-		for (int i = 0; i < NBR_CMDS; ++i) {
-			chatMessage("\t" + commands[i]);
+		for (int i = 0; i < CHAT::NBR_CMDS; ++i) {
+			chatMessage("\t" + CHAT::commands[i]);
 		}
 		chatMessage("Try /help <command> to see what they do.");
 	} else if (argc == 2) {
-		for (int index = 0; index < NBR_CMDS; ++index) {
-			if (!commands[index].compare(1, commands[index].size(), argv[1])) {
+		for (int index = 0; index < CHAT::NBR_CMDS; ++index) {
+			if (!CHAT::commands[index].compare(1, CHAT::commands[index].size(), argv[1])) {
 				switch (index) {
-					case cmds::HELP:
+					case CHAT::cmds::HELP:
 						chatMessage("/help help");
 						chatMessage("\t/help");
 						chatMessage("\t\tLists all commands.");
 						chatMessage("\t/help <command>");
 						chatMessage("\t\tShows usages for one command.");
 						break ;
-					case cmds::SEED:
+					case CHAT::cmds::SEED:
 						chatMessage("/help seed");
 						chatMessage("\t/seed");
 						chatMessage("\t\tDisplays the world seed.");
 						break ;
-					case cmds::GAMEMODE:
+					case CHAT::cmds::GAMEMODE:
 						chatMessage("/help gamemode");
 						chatMessage("\t/gamemode");
 						chatMessage("\t\tDisplays current gamemode.");
@@ -54,7 +55,7 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t\t\tadventure for Adventure mode");
 						chatMessage("\t\t\tspectator for Spectator mode");
 						break ;
-					case cmds::TIME:
+					case CHAT::cmds::TIME:
 						chatMessage("/help time");
 						chatMessage("\tChanges or queries the world's game time.");
 						chatMessage("\t/time add <time>");
@@ -67,7 +68,7 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\ttime set <time>");
 						chatMessage("\t\tSets the internal daytime.");
 						break ;
-					case cmds::CLEAR:
+					case CHAT::cmds::CLEAR:
 						chatMessage("/help clear");
 						chatMessage("\t/clear");
 						chatMessage("\t\tClears chat history.");
@@ -78,8 +79,8 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t/clear p");
 						chatMessage("\t\tClears all particles.");
 						break ;
-					case cmds::TP:
-					case cmds::TELEPORT:
+					case CHAT::cmds::TP:
+					case CHAT::cmds::TELEPORT:
 						chatMessage("/help teleport");
 						chatMessage("\t/teleport <location>");
 						chatMessage("\t\tTeleports the executor to a certain position.");
@@ -88,8 +89,8 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t/teleport -");
 						chatMessage("\t\tTeleports the executor to the last point he tped from.");
 						break ;
-					case cmds::SP:
-					case cmds::SPAWNPOINT:
+					case CHAT::cmds::SP:
+					case CHAT::cmds::SPAWNPOINT:
 						chatMessage("/help spawnpoint");
 						chatMessage("\t/spawnpoint");
 						chatMessage("\t\tSets your spawn point to your current location.");
@@ -316,10 +317,10 @@ std::string Chat::getHistoMsg( bool up )
 	if (_histo_cursor == 0 || _histo_cursor == static_cast<int>(_historic.size() + 1)) {
 		return ("");
 	}
-	return (_historic[_historic.size() - _histo_cursor]);
+	return (_historic[_historic.size() - _histo_cursor].str);
 }
 
-void Chat::chatMessage( std::string str )
+void Chat::chatMessage( std::string str, int color )
 {
 	size_t pxl_width = 0, offset, font_size = 12, limit = CHAT_BOX_WIDTH - CHAT_BOX_X - 2 * CHAT_BOX_OFFSET;
 	int start = 0, end = 0;
@@ -337,7 +338,7 @@ void Chat::chatMessage( std::string str )
 			offset = font_size;
 		}
 		if (pxl_width + offset > limit) {
-			_current.push_back({str.substr(start, end), 10});
+			_current.push_back({{str.substr(start, end), color}, 10});
 			pxl_width = offset;
 			start = end;
 		} else {
@@ -346,58 +347,71 @@ void Chat::chatMessage( std::string str )
 		}
 	}
 	if (pxl_width) {
-		_current.push_back({str.substr(start), 10});
+		_current.push_back({{str.substr(start), color}, 10});
 	}
 }
 
-void Chat::sendMessage( std::string str )
+/**
+* @brief write message in chatBox, in future, also send msg to other players.
+* first parse message and execute command if found
+* @param str message to send
+* @return true if command found, in which case chat Menu closes
+*/
+bool Chat::sendMessage( std::string str )
 {
 	_histo_cursor = 0;
 	str = trim_spaces(str);
-	if (!str[0]) return ;
-	if (!_historic.size() || str != _historic.back()) {
-		_historic.push_back(str); // used to handle arrow action (ie command history)
+	if (!str[0]) return (false);
+	if (!_historic.size() || str != _historic.back().str) {
+		_historic.push_back({str, TEXT::WHITE}); // used to handle arrow action (ie command history)
 	}
 	if (str[0] == '/') {
 		std::vector<std::string> parstr = split(str, ' ');
-		for (int index = 0; index < NBR_CMDS; ++index) {
-			if (!commands[index].compare(parstr[0])) {
-				switch (index) {
-					case cmds::HELP:
-						handle_help(parstr.size(), parstr);
-						break ;
-					case cmds::SEED:
-						chatMessage("World seed is " + std::to_string(perlin_seed));
-						break ;
-					case cmds::GAMEMODE:
-						handle_gamemode(parstr.size(), parstr);
-						break ;
-					case cmds::TIME:
-						handle_time(parstr.size(), parstr);
-						break ;
-					case cmds::CLEAR:
-						handle_clear(parstr.size(), parstr);
-						break ;
-					case cmds::TP:
-					case cmds::TELEPORT:
-						handle_teleport(parstr.size(), parstr);
-						break ;
-					case cmds::SP:
-					case cmds::SPAWNPOINT:
-						handle_spawnpoint(parstr.size(), parstr);
-						break ;
-					default:
-						chatMessage("Command recognised but behavior not coded yet.");
+		if (str[1] == '/') {
+			if (!WorldEdit::Get()->parseCommand(parstr)) {
+				return (true);
+			}
+		} else {
+			for (int index = 0; index < CHAT::NBR_CMDS; ++index) {
+				if (!CHAT::commands[index].compare(parstr[0])) {
+					switch (index) {
+						case CHAT::cmds::HELP:
+							handle_help(parstr.size(), parstr);
+							break ;
+						case CHAT::cmds::SEED:
+							chatMessage("World seed is " + std::to_string(perlin_seed));
+							break ;
+						case CHAT::cmds::GAMEMODE:
+							handle_gamemode(parstr.size(), parstr);
+							break ;
+						case CHAT::cmds::TIME:
+							handle_time(parstr.size(), parstr);
+							break ;
+						case CHAT::cmds::CLEAR:
+							handle_clear(parstr.size(), parstr);
+							break ;
+						case CHAT::cmds::TP:
+						case CHAT::cmds::TELEPORT:
+							handle_teleport(parstr.size(), parstr);
+							break ;
+						case CHAT::cmds::SP:
+						case CHAT::cmds::SPAWNPOINT:
+							handle_spawnpoint(parstr.size(), parstr);
+							break ;
+						default:
+							chatMessage("Command recognised but behavior not coded yet.");
+					}
+					return (true);
 				}
-				return ;
 			}
 		}
 		chatMessage("Unknown or incomplete command: " + parstr[0]);
 		chatMessage("try /help to see list of allowed commands");
-		return ;
+		return (false);
 	}
 	chatMessage("You: " + str);
 	// TODO limit command_history and past_messages' lengths
+	return (true);
 }
 
 void Chat::blitMessages( float deltaTime )
@@ -405,7 +419,7 @@ void Chat::blitMessages( float deltaTime )
 	int size = _current.size(), index = 0;
 
 	for (auto m = _current.begin(); m != _current.end();) {
-		_text->addText(36, WIN_HEIGHT - 68 - 18 * (size - index), 12, TEXT::WHITE, m->first);
+		_text->addText(36, WIN_HEIGHT - 68 - 18 * (size - index), 12, m->first.color, m->first.str);
 		m->second -= deltaTime;
 		if (m->second < 0) {
 			_past.push_back(m->first);
@@ -422,7 +436,8 @@ void Chat::blitPastMessages( void )
 {
 	int nbr_past = maxi(0, mini(10, _past.size() + _current.size()) - _current.size());
 	for (int index = 0; index < nbr_past; ++index) {
-		_text->addText(36, WIN_HEIGHT - 68 - 18 * (mini(10, _past.size() + _current.size()) - index), 12, TEXT::WHITE, _past[_past.size() - nbr_past + index]);
+		t_msg msg = _past[_past.size() - nbr_past + index];
+		_text->addText(36, WIN_HEIGHT - 68 - 18 * (mini(10, _past.size() + _current.size()) - index), 12, msg.color, msg.str);
 	}
 }
 

@@ -5,6 +5,8 @@ namespace TEXT
 {
 	const int WHITE = 0xFFFFFFFF;
 	const int BLACK = 0xFF000000;
+	const int GREEN = 0xFF00FF00;
+	const int RED = 0xFFFF0000;
 
 	enum {
 		SPECATTRIB,

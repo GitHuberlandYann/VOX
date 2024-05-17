@@ -546,8 +546,13 @@ MENU::RET Menu::chat_menu( bool animUpdate )
 		return (MENU::RET::BACK_TO_GAME);
 	}
 	if (INPUT::key_down(INPUT::ENTER) && INPUT::key_update(INPUT::ENTER)) {
-		_chat->sendMessage(INPUT::getCurrentMessage());
+		bool cmd = _chat->sendMessage(INPUT::getCurrentMessage());
 		INPUT::resetMessage();
+		if (cmd) {
+			glfwSetCharCallback(_window, NULL);
+			_chat->resetHistoCursor();
+			return (MENU::RET::BACK_TO_GAME);
+		}
 	}
 	if (INPUT::key_down(INPUT::DELETE) && INPUT::key_update(INPUT::DELETE)) {
 		INPUT::rmLetter();

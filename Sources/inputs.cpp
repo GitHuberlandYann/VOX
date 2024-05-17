@@ -2,10 +2,16 @@
 #include "callbacks.hpp"
 #include "utils.h"
 #include "Settings.hpp"
+#include "WorldEdit.hpp"
 #include <iostream>
 
 Chunk *current_chunk_ptr = NULL;
 Chunk *chunk_hit = NULL;
+
+Chunk *OpenGL_Manager::getCurrentChunkPtr( void )
+{
+	return (current_chunk_ptr);
+}
 
 void OpenGL_Manager::resetInputsPtrs( void )
 {
@@ -97,6 +103,8 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	if (!adding) {
 		if (_block_hit.value == blocks::AIR) {
 			return ;
+		} else if (_hand_content == blocks::WORLDEDIT_WAND) {
+			return (WorldEdit::Get()->setSelectionStart(_block_hit.pos));
 		}
 		if (chunk_hit) {
 			chunk_hit->handleHit(collect, 0, _block_hit.pos, Modif::REMOVE);
@@ -132,7 +140,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			if (_hand_content == blocks::FLINT_AND_STEEL && current_chunk_ptr) {
 				current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
 			}
-			return ;
+			break ;
 		case blocks::OAK_DOOR:
 		case blocks::OAK_TRAPDOOR:
 		case blocks::LEVER:
@@ -168,6 +176,9 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		type = blocks::WHEAT_CROP;
 	} else if (type == blocks::AIR || type >= blocks::STICK) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
+		if (type == blocks::WORLDEDIT_WAND) {
+			return (WorldEdit::Get()->setSelectionEnd(_block_hit.pos));
+		}
 		return ;
 	} else if (type == blocks::TORCH || type == blocks::REDSTONE_TORCH) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {

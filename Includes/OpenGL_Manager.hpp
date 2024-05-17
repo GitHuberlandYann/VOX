@@ -83,6 +83,8 @@ class OpenGL_Manager
 		OpenGL_Manager( void );
 		~OpenGL_Manager( void );
 
+		Chunk *getCurrentChunkPtr( void );
+
 		void setup_window( void );
 		void initWorld( void );
 		void create_shaders( void );

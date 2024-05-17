@@ -1433,6 +1433,14 @@ GLint Chunk::getBlockAt( int posX, int posY, int posZ, bool askNeighbours )
 	return (res);
 }
 
+/**
+ * @brief calls Chunk::setBlockAt after substracting _startX and _startY from posX and posY.
+ */
+void Chunk::setBlockAtAbsolute( int value, int posX, int posY, int posZ, bool askNeighbours )
+{
+	setBlockAt(value, posX - _startX, posY - _startY, posZ, askNeighbours);
+}
+
 void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool askNeighbours )
 {
 	if (!_blocks || posZ < 0 || posZ >= WORLD_HEIGHT || !(value & 0xFF)) {

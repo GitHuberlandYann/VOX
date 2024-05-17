@@ -9,9 +9,8 @@ class OpenGL_Manager;
 # define CHAT_BOX_WIDTH 700
 # define CHAT_BOX_OFFSET 6
 
-# define NBR_CMDS 9
-namespace cmds {
-	enum {
+namespace CHAT {
+	enum cmds {
 		HELP,
 		SEED,
 		GAMEMODE,
@@ -22,8 +21,9 @@ namespace cmds {
 		SP,
 		SPAWNPOINT
 	};
+	const int NBR_CMDS = 9;
+	const std::array<std::string, NBR_CMDS> commands = {"/help", "/seed", "/gamemode", "/time", "/clear", "/tp", "/teleport", "/sp", "/spawnpoint"};
 }
-const std::array<std::string, NBR_CMDS> commands = {"/help", "/seed", "/gamemode", "/time", "/clear", "/tp", "/teleport", "/sp", "/spawnpoint"};
 
 # define NBR_ARG_TIME 4
 namespace args_time {
@@ -36,14 +36,19 @@ namespace args_time {
 }
 const std::array<std::string, NBR_ARG_TIME> timeSetArgs = {"day", "night", "noon", "midnight"};
 
+typedef struct s_msg {
+	std::string str;
+	int color = TEXT::WHITE;
+}				t_msg;
+
 class Chat
 {
 	private:
 		int _histo_cursor;
 		OpenGL_Manager *_oglMan;
 		Text *_text;
-		std::vector<std::pair<std::string, float>> _current;
-		std::vector<std::string> _past, _historic;
+		std::vector<std::pair<t_msg, float>> _current;
+		std::vector<t_msg> _past, _historic;
 
 		void handle_help( int argc, std::vector<std::string> &argv );
 		void handle_gamemode( int argc, std::vector<std::string> &argv );
@@ -63,8 +68,8 @@ class Chat
 		void resetHistoCursor( void );
 		std::string getHistoMsg( bool up );
 
-		void chatMessage( std::string str );
-		void sendMessage( std::string str );
+		void chatMessage( std::string str, int color = TEXT::WHITE );
+		bool sendMessage( std::string str );
 		void blitMessages( float deltaTime );
 		void blitPastMessages( void );
 		int computeHeight( void );
