@@ -30,7 +30,7 @@ class WorldEdit
 		bool _running, _absoluteClipboard;
 		glm::ivec3 _selectStart, _selectEnd;
 		glm::ivec3 _clipStart, _clipEnd;
-		std::vector<int> _clibboard;
+		std::vector<int> _clipboard;
 		OpenGL_Manager *_openGL_Manager;
 		Inventory *_inventory;
 		Chat *_chat;
@@ -38,10 +38,10 @@ class WorldEdit
 		WorldEdit( void );
 		~WorldEdit( void );
 
-		void handleCmdSet( void );
+		void handleCmdSet( int value );
 		void handleCmdCopy( void );
-		void handleCmdPaste( void );
-		// void handleCmdMove( void );
+		void handleCmdPaste( bool notAirBlocks );
+		void handleCmdMove( std::vector<std::string> &argv );
 		// void handleCmdStack( void );
 
 	public:

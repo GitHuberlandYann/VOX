@@ -85,7 +85,7 @@ void WorldEdit::setSelectionEnd( glm::ivec3 pos )
  * will later accept arg to set blocks to specific value
  * will later accept -a to not set air blocks
 */
-void WorldEdit::handleCmdSet( void )
+void WorldEdit::handleCmdSet( int value )
 {
 	Chunk * chunk = _openGL_Manager->getCurrentChunkPtr();
 	if (!chunk) {
@@ -95,11 +95,11 @@ void WorldEdit::handleCmdSet( void )
 	glm::ivec3 start = {(_selectStart.x < _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y < _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z < _selectEnd.z) ? _selectStart.z : _selectEnd.z};
 	glm::ivec3 end = {(_selectStart.x > _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y > _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z > _selectEnd.z) ? _selectStart.z : _selectEnd.z};
 
-	_chat->chatMessage("Settings [" + std::to_string(start.x) + ", " + std::to_string(start.y) + ", " + std::to_string(start.z) + "] to [" + std::to_string(end.x) + ", " + std::to_string(end.y) + ", " + std::to_string(end.z) + "] to stone.");
+	_chat->chatMessage("Settings [" + std::to_string(start.x) + ", " + std::to_string(start.y) + ", " + std::to_string(start.z) + "] to [" + std::to_string(end.x) + ", " + std::to_string(end.y) + ", " + std::to_string(end.z) + "] to " + s_blocks[value]->name);
 	for (int posX = start.x; posX <= end.x; ++posX) {
 		for (int posY = start.y; posY <= end.y; ++posY) {
 			for (int posZ = start.z; posZ <= end.z; ++posZ) {
-				chunk->setBlockAtAbsolute(blocks::STONE, posX, posY, posZ, true);
+				chunk->setBlockAtAbsolute(value, posX, posY, posZ, true);
 			}
 		}
 	}
@@ -139,7 +139,7 @@ void WorldEdit::handleCmdCopy( void )
  * @brief pasting content of clipboard to world
  * will later accept -a to not set air blocks
 */
-void WorldEdit::handleCmdPaste( void )
+void WorldEdit::handleCmdPaste( bool notAirBlocks )
 {
 	if (!_clipboard.size()) {
 		_chat->chatMessage("Clipboard is empty.", TEXT::RED);
@@ -152,7 +152,7 @@ void WorldEdit::handleCmdPaste( void )
 	}
 
 	glm::ivec3 start = _clipStart;
-	glm::ivec3 end = _clipEnd
+	glm::ivec3 end = _clipEnd;
 	// add player pos to clipStart and End to have absolute position of paste area
 	if (_absoluteClipboard) {
 		glm::ivec3 pos = _openGL_Manager->_camera->getPos();
@@ -166,10 +166,46 @@ void WorldEdit::handleCmdPaste( void )
 		for (int posY = start.y; posY <= end.y; ++posY) {
 			for (int posZ = start.z; posZ <= end.z; ++posZ) {
 				int value = _clipboard[index++];
+				if (notAirBlocks && value == blocks::AIR) {
+					continue ;
+				}
 				chunk->setBlockAtAbsolute(value, posX, posY, posZ, true);
 			}
 		}
 	}
+}
+
+/**
+ * @brief move selection [n] blocks towards cam direction
+ * if -a is specified, air blocks are not moved
+*/
+void WorldEdit::handleCmdMove( std::vector<std::string> &argv )
+{
+	int argc = argv.size();
+	if (argc < 2 || argc > 3 || (argc == 3 && argv[2] != "-a")) {
+		_chat->chatMessage("Wrong usage of WorldEdit command //move <distance> [-a]", TEXT::RED);
+		return ;
+	}
+
+	int distance = 0;
+	for (int i = (argv[1][0] == '-'); argv[1][i]; ++i) {
+		if (!std::isdigit(argv[1][i])) {
+			_chat->chatMessage("Wrong usage of WorldEdit command //move <distance> [-a]", TEXT::RED);
+			return ;
+		}
+		distance = distance * 10 + argv[1][i] - '0';
+	}
+	if (!distance) {
+		_chat->chatMessage("Wrong usage of WorldEdit command //move <distance> [-a]", TEXT::RED);
+		return ;
+	}
+
+	const glm::ivec3 dir = ((argv[1][0] == '-') ? 1 : -1) * adj_blocks[_openGL_Manager->_camera->getOrientation()];
+	handleCmdCopy();
+	handleCmdSet(blocks::AIR);
+	_clipStart += distance * dir;
+	_clipEnd += distance * dir;
+	handleCmdPaste(argc == 3);
 }
 
 // ************************************************************************** //
@@ -210,7 +246,7 @@ bool WorldEdit::parseCommand( std::vector<std::string> &argv )
 			}
 			switch (index) {
 				case WEDIT::cmds::SET:
-					handleCmdSet();
+					handleCmdSet(blocks::STONE);
 					break ;
 				case WEDIT::cmds::COPY:
 					handleCmdCopy();
@@ -220,9 +256,10 @@ bool WorldEdit::parseCommand( std::vector<std::string> &argv )
 					// handleCmdSet(blocks::AIR);
 					break ;
 				case WEDIT::cmds::PASTE:
-					handleCmdPaste();
+					handleCmdPaste(false);
 					break ;
 				case WEDIT::cmds::MOVE:
+					handleCmdMove(argv);
 					break ;
 				case WEDIT::cmds::STACK:
 					break ;

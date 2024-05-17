@@ -1406,9 +1406,9 @@ FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
 /**
  * @brief calls Chunk::getBlockAt after substracting _startX and _startY from posX and posY.
  */
-GLint Chunk::getBlockAtAbsolute( int value, int posX, int posY, int posZ, bool askNeighbours )
+GLint Chunk::getBlockAtAbsolute( int posX, int posY, int posZ, bool askNeighbours )
 {
-	return (getBlockAt(value, posX - _startX, posY - _startY, posZ, askNeighbours));
+	return (getBlockAt(posX - _startX, posY - _startY, posZ, askNeighbours));
 }
 
 GLint Chunk::getBlockAt( int posX, int posY, int posZ, bool askNeighbours )
@@ -1451,7 +1451,7 @@ void Chunk::setBlockAtAbsolute( int value, int posX, int posY, int posZ, bool as
 
 void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool askNeighbours )
 {
-	if (!_blocks || posZ < 0 || posZ >= WORLD_HEIGHT || !(value & 0xFF)) {
+	if (!_blocks || posZ < 0 || posZ >= WORLD_HEIGHT) {
 		return ;
 	}
 	if (posX < 0) {
@@ -1473,8 +1473,13 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool askNeighbo
 	} else {
 		int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
 		_blocks[offset] = value;
-		_added[offset] = value;
-		_removed.erase(offset);
+		if (value) {
+			_added[offset] = value;
+			_removed.erase(offset);
+		} else {
+			_added.erase(offset);
+			_removed.insert(offset);
+		}
 		_vertex_update = true;
 	}
 }
