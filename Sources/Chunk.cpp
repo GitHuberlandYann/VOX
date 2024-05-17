@@ -1631,6 +1631,9 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			case blocks::REPEATER: // add 1 tick delay, mod it by 4
 				value = (value & (-1 - (0x3 << REDSTONE::REPEAT_TICKS))) + (((((value >> REDSTONE::REPEAT_TICKS) & 0x3) + 1) & 0x3) << REDSTONE::REPEAT_TICKS);
 				break ;
+			case blocks::COMPARATOR: // switch mode between compare and substract
+				value ^= REDSTONE::COMPARATOR_MODE;
+				break ;
 			case blocks::STONE_BUTTON:
 			case blocks::OAK_BUTTON:
 				std::cout << "button pressed" << std::endl;

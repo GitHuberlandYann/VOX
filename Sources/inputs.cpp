@@ -145,6 +145,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		case blocks::OAK_TRAPDOOR:
 		case blocks::LEVER:
 		case blocks::REPEATER:
+		case blocks::COMPARATOR:
 		case blocks::STONE_BUTTON:
 		case blocks::OAK_BUTTON:
 			if (current_chunk_ptr) {

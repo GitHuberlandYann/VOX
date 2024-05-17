@@ -10,7 +10,7 @@ const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new OakSlabBottom(), new OakSlabTop(), new OakFence(), new StoneSlabBottom(), new StoneSlabTop(), new SmoothStoneSlabBottom(), new SmoothStoneSlabTop(), new CobbleStoneSlabBottom(),
 	new CobbleStoneSlabTop(), new StoneBricksSlabBottom(), new StoneBricksSlabTop(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(),
 	new Poppy(), new Dandelion(), new BlueOrchid(), new Allium(), new CornFlower(), new PinkTulip(), new Grass(), new SugarCane(),
-	new DeadBush(), new OakSapling(), new Torch(), new RedstoneTorch(), new RedstoneDust(), new Repeater(), new TBD(), new Chest(),
+	new DeadBush(), new OakSapling(), new Torch(), new RedstoneTorch(), new RedstoneDust(), new Repeater(), new Comparator(), new Chest(),
 	new WheatCrop(), new WheatCrop1(), new WheatCrop2(), new WheatCrop3(), new WheatCrop4(), new WheatCrop5(), new WheatCrop6(), new WheatCrop7(),
 	new Water(), new Water1(), new Water2(), new Water3(), new Water4(), new Water5(), new Water6(), new Water7(),
 	new Stick(), new WoodenShovel(), new StoneShovel(), new IronShovel(), new DiamondShovel(), new WoodenAxe(), new StoneAxe(), new IronAxe(),
@@ -3294,4 +3294,186 @@ void Repeater::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 		v3 = {spec + XTEX - 2 + YTEX - (7 << 8), p5};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
+}
+
+void Comparator::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+{
+	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
+	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
+	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
+	glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
+
+	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 1);
+	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 1);
+	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
+	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
+
+	t_shaderInput v0, v1, v2, v3;
+	int baseSpec = (s_blocks[blocks::SMOOTH_STONE]->texX() << 4) + (s_blocks[blocks::SMOOTH_STONE]->texY() << 12);
+	int spec, faceLight;
+	// draw base
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+		spec = baseSpec + (3 << 19) + (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
+		v0 = {spec + (14 << 8), p4 + glm::vec3(0, 0, -14 * ONE16TH)};
+		v1 = {spec + XTEX + (14 << 8), p0 + glm::vec3(0, 0, -14 * ONE16TH)};
+		v2 = {spec + YTEX, p6};
+		v3 = {spec + XTEX + YTEX, p2};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+		spec = baseSpec + (4 << 19) + (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
+		v0 = {spec + (14 << 8), p1 + glm::vec3(0, 0, -14 * ONE16TH)};
+		v1 = {spec + XTEX + (14 << 8), p5 + glm::vec3(0, 0, -14 * ONE16TH)};
+		v2 = {spec + YTEX, p3};
+		v3 = {spec + XTEX + YTEX, p7};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+		spec = baseSpec + (1 << 19) + (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
+		v0 = {spec + (14 << 8), p0 + glm::vec3(0, 0, -14 * ONE16TH)};
+		v1 = {spec + XTEX + (14 << 8), p1 + glm::vec3(0, 0, -14 * ONE16TH)};
+		v2 = {spec + YTEX, p2};
+		v3 = {spec + XTEX + YTEX, p3};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+		spec = baseSpec + (2 << 19) + (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
+		v0 = {spec + (14 << 8), p5 + glm::vec3(0, 0, -14 * ONE16TH)};
+		v1 = {spec + XTEX + (14 << 8), p4 + glm::vec3(0, 0, -14 * ONE16TH)};
+		v2 = {spec + YTEX, p7};
+		v3 = {spec + XTEX + YTEX, p6};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	// draw top
+	faceLight = (chunk->computeLight(pos.x, pos.y, pos.z) << 24);
+	spec = (this->texX(face_dir::MINUSX, !!(value & REDSTONE::POWERED)) << 4) + (textureY << 12) + faceLight;
+	glm::vec3 right, front;
+	switch ((value >> 9) & 0x7) {
+		case (face_dir::MINUSX):
+			right = glm::vec3(0, 1, 0);
+			front = glm::vec3(-1, 0, 0);
+			break ;
+		case (face_dir::PLUSX):
+			right = glm::vec3(0, -1, 0);
+			front = glm::vec3(1, 0, 0);
+			break ;
+		case (face_dir::MINUSY):
+			right = glm::vec3(-1, 0, 0);
+			front = glm::vec3(0, -1, 0);
+			break ;
+		case (face_dir::PLUSY):
+			right = glm::vec3(1, 0, 0);
+			front = glm::vec3(0, 1, 0);
+			break ;
+	}
+	glm::vec3 topLeft = p4 + glm::vec3(0.5f, -0.5f, -14 * ONE16TH) - right * 0.5f + front * 0.5f;
+	v0 = {spec, topLeft};
+	v1 = {spec + XTEX, topLeft + right};
+	v2 = {spec + YTEX, topLeft - front};
+	v3 = {spec + XTEX + YTEX, topLeft + right - front};
+	face_vertices(vertices, v0, v1, v2, v3);
+	// draw back torches
+	spec = (s_blocks[blocks::REDSTONE_TORCH]->texX() << 4) + (s_blocks[blocks::REDSTONE_TORCH]->texY(face_dir::MINUSX, !(value & REDSTONE::POWERED)) << 12);
+	spec += faceLight;
+	// back left
+	p2 = topLeft + right * 4.0f * ONE16TH - front * 11.0f * ONE16TH;
+	p3 = topLeft + right * 6.0f * ONE16TH - front * 11.0f * ONE16TH;
+	p6 = topLeft + right * 4.0f * ONE16TH - front * 13.0f * ONE16TH;
+	p7 = topLeft + right * 6.0f * ONE16TH - front * 13.0f * ONE16TH;
+	topLeft.z += 6.0f * ONE16TH;
+	p0 = topLeft + right * 4.0f * ONE16TH - front * 11.0f * ONE16TH;
+	p1 = topLeft + right * 6.0f * ONE16TH - front * 11.0f * ONE16TH;
+	p4 = topLeft + right * 4.0f * ONE16TH - front * 13.0f * ONE16TH;
+	p5 = topLeft + right * 6.0f * ONE16TH - front * 13.0f * ONE16TH;
+	v0 = {spec + 6 + (5 << 8), p1 + right * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p0 - right * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p3 + right * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p2 - right * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 6 + (5 << 8), p4 - right * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p5 + right * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p6 - right * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p7 + right * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 6 + (5 << 8), p0 + front * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p4 - front * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p2 + front * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p6 - front * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 6 + (5 << 8), p5 - front * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p1 + front * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p7 - front * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p3 + front * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 7 + (6 << 8), p0 + glm::vec3(0, 0, -ONE16TH)};
+	v1 = {spec + XTEX - 7 + (6 << 8), p1 + glm::vec3(0, 0, -ONE16TH)};
+	v2 = {spec + 7 + YTEX - (8 << 8), p4 + glm::vec3(0, 0, -ONE16TH)};
+	v3 = {spec + XTEX - 7 + YTEX - (8 << 8), p5 + glm::vec3(0, 0, -ONE16TH)};
+	face_vertices(vertices, v0, v1, v2, v3);
+	// back right
+	p0 += right * 6.0f * ONE16TH; p1 += right * 6.0f * ONE16TH; p2 += right * 6.0f * ONE16TH; p3 += right * 6.0f * ONE16TH;
+	p4 += right * 6.0f * ONE16TH; p5 += right * 6.0f * ONE16TH; p6 += right * 6.0f * ONE16TH; p7 += right * 6.0f * ONE16TH;
+	v0 = {spec + 6 + (5 << 8), p1 + right * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p0 - right * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p3 + right * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p2 - right * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 6 + (5 << 8), p4 - right * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p5 + right * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p6 - right * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p7 + right * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 6 + (5 << 8), p0 + front * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p4 - front * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p2 + front * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p6 - front * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 6 + (5 << 8), p5 - front * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p1 + front * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p7 - front * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p3 + front * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 7 + (6 << 8), p0 + glm::vec3(0, 0, -ONE16TH)};
+	v1 = {spec + XTEX - 7 + (6 << 8), p1 + glm::vec3(0, 0, -ONE16TH)};
+	v2 = {spec + 7 + YTEX - (8 << 8), p4 + glm::vec3(0, 0, -ONE16TH)};
+	v3 = {spec + XTEX - 7 + YTEX - (8 << 8), p5 + glm::vec3(0, 0, -ONE16TH)};
+	face_vertices(vertices, v0, v1, v2, v3);
+	// draw front torch
+	spec = (s_blocks[blocks::REDSTONE_TORCH]->texX() << 4) + (s_blocks[blocks::REDSTONE_TORCH]->texY(face_dir::MINUSX, !(value & REDSTONE::COMPARATOR_MODE)) << 12);
+	spec += faceLight;
+	float delta = (((value & REDSTONE::COMPARATOR_MODE) == REDSTONE::COMPARE) ? 3.0f : 2.0f) * ONE16TH;
+	const glm::vec3 up = {0, 0, 1};
+	p0 += front * 9.0f * ONE16TH - right * 3.0f * ONE16TH - up * delta;
+	p1 += front * 9.0f * ONE16TH - right * 3.0f * ONE16TH - up * delta;
+	p2 += front * 9.0f * ONE16TH - right * 3.0f * ONE16TH - up * delta;
+	p3 += front * 9.0f * ONE16TH - right * 3.0f * ONE16TH - up * delta;
+	p4 += front * 9.0f * ONE16TH - right * 3.0f * ONE16TH - up * delta;
+	p5 += front * 9.0f * ONE16TH - right * 3.0f * ONE16TH - up * delta;
+	p6 += front * 9.0f * ONE16TH - right * 3.0f * ONE16TH - up * delta;
+	p7 += front * 9.0f * ONE16TH - right * 3.0f * ONE16TH - up * delta;
+	v0 = {spec + 6 + (5 << 8), p1 + right * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p0 - right * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p3 + right * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p2 - right * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 6 + (5 << 8), p4 - right * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p5 + right * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p6 - right * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p7 + right * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 6 + (5 << 8), p0 + front * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p4 - front * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p2 + front * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p6 - front * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 6 + (5 << 8), p5 - front * ONE16TH};
+	v1 = {spec + XTEX - 6 + (5 << 8), p1 + front * ONE16TH};
+	v2 = {spec + 6 + YTEX - (5 << 8), p7 - front * ONE16TH};
+	v3 = {spec + XTEX - 6 + YTEX - (5 << 8), p3 + front * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec + 7 + (6 << 8), p0 + glm::vec3(0, 0, -ONE16TH)};
+	v1 = {spec + XTEX - 7 + (6 << 8), p1 + glm::vec3(0, 0, -ONE16TH)};
+	v2 = {spec + 7 + YTEX - (8 << 8), p4 + glm::vec3(0, 0, -ONE16TH)};
+	v3 = {spec + XTEX - 7 + YTEX - (8 << 8), p5 + glm::vec3(0, 0, -ONE16TH)};
+	face_vertices(vertices, v0, v1, v2, v3);
 }
