@@ -1403,6 +1403,14 @@ FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
 	return (NULL);
 }
 
+/**
+ * @brief calls Chunk::getBlockAt after substracting _startX and _startY from posX and posY.
+ */
+GLint Chunk::getBlockAtAbsolute( int value, int posX, int posY, int posZ, bool askNeighbours )
+{
+	return (getBlockAt(value, posX - _startX, posY - _startY, posZ, askNeighbours));
+}
+
 GLint Chunk::getBlockAt( int posX, int posY, int posZ, bool askNeighbours )
 {
 	if (!_blocks || posZ < 0) {

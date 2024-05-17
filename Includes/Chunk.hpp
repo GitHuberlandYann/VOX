@@ -236,6 +236,7 @@ class Chunk
 		void openChest( glm::ivec3 pos );
 		ChestInstance *getChestInstance( glm::ivec3 pos );
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
+		GLint getBlockAtAbsolute( int posX, int posY, int posZ, bool askNeighbours );
 		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours );
 		void setBlockAtAbsolute( int value, int posX, int posY, int posZ, bool askNeighbours );
 		void setBlockAt( int value, int posX, int posY, int posZ, bool askNeighbours );

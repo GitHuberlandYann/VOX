@@ -57,6 +57,9 @@ void WorldEdit::setPtrs( OpenGL_Manager * openGL_Manager, Inventory * inventory,
 void WorldEdit::setSelectionStart( glm::ivec3 pos )
 {
 	_selectStart = pos;
+	_clipEnd = _clipEnd - _clipStart + pos;
+	_clipStart = pos;
+	_absoluteClipboard = false;
 	_chat->chatMessage("Selection Start set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z), TEXT::GREEN);
 }
 
@@ -67,6 +70,9 @@ void WorldEdit::setSelectionStart( glm::ivec3 pos )
 void WorldEdit::setSelectionEnd( glm::ivec3 pos )
 {
 	_selectEnd = pos;
+	_clipStart = _clipStart - _clipEnd + pos;
+	_clipEnd = pos;
+	_absoluteClipboard = false;
 	_chat->chatMessage("Selection End set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z), TEXT::RED);
 }
 
@@ -99,6 +105,73 @@ void WorldEdit::handleCmdSet( void )
 	}
 }
 
+/**
+ * @brief copy blocks from selectStart to selectEnd to clipboard
+*/
+void WorldEdit::handleCmdCopy( void )
+{
+	Chunk * chunk = _openGL_Manager->getCurrentChunkPtr();
+	if (!chunk) {
+		return ;
+	}
+
+	_clipStart = {(_selectStart.x < _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y < _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z < _selectEnd.z) ? _selectStart.z : _selectEnd.z};
+	_clipEnd = {(_selectStart.x > _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y > _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z > _selectEnd.z) ? _selectStart.z : _selectEnd.z};
+
+	_chat->chatMessage("Copying [" + std::to_string(_clipStart.x) + ", " + std::to_string(_clipStart.y) + ", " + std::to_string(_clipStart.z) + "] to [" + std::to_string(_clipEnd.x) + ", " + std::to_string(_clipEnd.y) + ", " + std::to_string(_clipEnd.z) + "] to clipboard.");
+	_clipboard.clear();
+	for (int posX = _clipStart.x; posX <= _clipEnd.x; ++posX) {
+		for (int posY = _clipStart.y; posY <= _clipEnd.y; ++posY) {
+			for (int posZ = _clipStart.z; posZ <= _clipEnd.z; ++posZ) {
+				int value = chunk->getBlockAtAbsolute(posX, posY, posZ, true);
+				_clipboard.push_back(value);
+			}
+		}
+	}
+	// rm player pos from clipStart and End to have relative position of clipped area in memory
+	glm::ivec3 pos = _openGL_Manager->_camera->getPos();
+	_clipStart -= pos;
+	_clipEnd -= pos;
+	_absoluteClipboard = true;
+}
+
+/**
+ * @brief pasting content of clipboard to world
+ * will later accept -a to not set air blocks
+*/
+void WorldEdit::handleCmdPaste( void )
+{
+	if (!_clipboard.size()) {
+		_chat->chatMessage("Clipboard is empty.", TEXT::RED);
+		return ;
+	}
+
+	Chunk * chunk = _openGL_Manager->getCurrentChunkPtr();
+	if (!chunk) {
+		return ;
+	}
+
+	glm::ivec3 start = _clipStart;
+	glm::ivec3 end = _clipEnd
+	// add player pos to clipStart and End to have absolute position of paste area
+	if (_absoluteClipboard) {
+		glm::ivec3 pos = _openGL_Manager->_camera->getPos();
+		start += pos;
+		end += pos;
+	}
+
+	_chat->chatMessage("Pasting clipboard [" + std::to_string(start.x) + ", " + std::to_string(start.y) + ", " + std::to_string(start.z) + "] to [" + std::to_string(end.x) + ", " + std::to_string(end.y) + ", " + std::to_string(end.z) + "]");
+	int index = 0;
+	for (int posX = start.x; posX <= end.x; ++posX) {
+		for (int posY = start.y; posY <= end.y; ++posY) {
+			for (int posZ = start.z; posZ <= end.z; ++posZ) {
+				int value = _clipboard[index++];
+				chunk->setBlockAtAbsolute(value, posX, posY, posZ, true);
+			}
+		}
+	}
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -122,9 +195,9 @@ bool WorldEdit::parseCommand( std::vector<std::string> &argv )
 				_selectStart.z = 1000;
 				_selectEnd.z = 1000;
 				_running = true;
-				_chat->chatMessage("***************************************", TEXT::GREEN);
-				_chat->chatMessage("* Welcome to WorldEdit! *", TEXT::GREEN);
-				_chat->chatMessage("***************************************", TEXT::GREEN);
+				_chat->chatMessage("******************************************", TEXT::GREEN);
+				_chat->chatMessage("* Welcome to WorldEdit!\t*", TEXT::GREEN);
+				_chat->chatMessage("******************************************", TEXT::GREEN);
 				return (false);
 			} else if (!_running) {
 				return (true);
@@ -140,8 +213,14 @@ bool WorldEdit::parseCommand( std::vector<std::string> &argv )
 					handleCmdSet();
 					break ;
 				case WEDIT::cmds::COPY:
+					handleCmdCopy();
+					break ;
+				case WEDIT::cmds::CUT:
+					// handleCmdCopy();
+					// handleCmdSet(blocks::AIR);
 					break ;
 				case WEDIT::cmds::PASTE:
+					handleCmdPaste();
 					break ;
 				case WEDIT::cmds::MOVE:
 					break ;

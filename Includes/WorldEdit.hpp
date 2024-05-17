@@ -12,12 +12,13 @@ namespace WEDIT {
 		WAND,
 		SET,
 		COPY,
+		CUT,
 		PASTE,
 		MOVE,
 		STACK,
 		NBR_CMDS
 	};
-	const std::array<std::string, cmds::NBR_CMDS> commands = {"//wand", "//set", "//copy", "//paste", "//move", "//stack"};
+	const std::array<std::string, cmds::NBR_CMDS> commands = {"//wand", "//set", "//copy", "//cut", "//paste", "//move", "//stack"};
 };
 
 class WorldEdit
@@ -26,9 +27,10 @@ class WorldEdit
 		static WorldEdit *_worldEditInstance;
 		static std::mutex _mtx;
 
-		bool _running;
+		bool _running, _absoluteClipboard;
 		glm::ivec3 _selectStart, _selectEnd;
-		// std::vector<> _clibboard;
+		glm::ivec3 _clipStart, _clipEnd;
+		std::vector<int> _clibboard;
 		OpenGL_Manager *_openGL_Manager;
 		Inventory *_inventory;
 		Chat *_chat;
@@ -37,6 +39,10 @@ class WorldEdit
 		~WorldEdit( void );
 
 		void handleCmdSet( void );
+		void handleCmdCopy( void );
+		void handleCmdPaste( void );
+		// void handleCmdMove( void );
+		// void handleCmdStack( void );
 
 	public:
 		WorldEdit( WorldEdit &other ) = delete;
