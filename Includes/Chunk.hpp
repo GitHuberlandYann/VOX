@@ -94,7 +94,7 @@ typedef struct s_shaderInput {
 typedef struct s_redstone {
 	glm::ivec3 pos = {0, 0, 0}; // offset of block inside chunk
 	int ticks = 0;              // size of delay
-	bool state = REDSTONE::OFF;
+	int state = REDSTONE::OFF;
 	// what happens if schedule redstone tick, then piston moves block, and now the thing being ticked is not what was expected?
 }				t_redstoneTick;
 
@@ -184,6 +184,7 @@ class Chunk
 		// redstone
 		glm::ivec3 getAttachedDir( int value );
 		bool getWeakdyState( glm::ivec3 pos, glm::ivec3 except, bool state );
+		int getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side );
 		bool getRedstoneState( glm::ivec3 pos, glm::ivec3 except, bool state, bool weak );
 		int getDustStrength( glm::ivec3 pos );
 		void stronglyPower( glm::ivec3 pos, glm::ivec3 except, bool state );
@@ -193,6 +194,7 @@ class Chunk
 		void updateRedstoneTorch( glm::ivec3 pos, int value );
 		void updateRedstoneDust( glm::ivec3 pos );
 		void initRepeater( glm::ivec3 pos, int &value );
+		void updateComparator( glm::ivec3 pos, int value );
 		void connectRedstoneDust( glm::ivec3 pos, int &value, bool placed );
 
 		// block update (20/sec)
