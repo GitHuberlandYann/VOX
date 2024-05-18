@@ -18,6 +18,7 @@ namespace MENU
 		MAIN_VIDEO_SETTINGS,
 		MAIN_RESOURCE_PACKS,
 		WORLD_SELECT,
+		WORLD_CREATE,
 		LOAD,
 		DEATH,
 		PAUSE,
@@ -37,6 +38,7 @@ namespace MENU
 		NO_CHANGE,
 		BACK_TO_GAME,
 		WORLD_SELECTED,
+		WORLD_CREATED,
 		SAVE_AND_QUIT,
 		PLAY_DEFAULT,
 		RESPAWN_PLAYER,
@@ -66,7 +68,7 @@ class Menu
 		GLuint _shaderProgram;
         GLint _gui_size, _nb_points, _state, _selection, _selected_world;
 		t_item _selected_block;
-		bool _vaoSet, _textBar, _moving_slider, _change_to_apply, _drop_down_menu;
+		bool _vaoSet, _textBar, _input_world, _input_seed, _moving_slider, _change_to_apply, _drop_down_menu;
 		float _fov_gradient, _render_gradient, _brightness_gradient;
 		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs;
 		std::vector<int> _selection_list;
@@ -84,7 +86,8 @@ class Menu
 		void reset_values( void );
 		MENU::RET main_menu( void );
 		MENU::RET world_select_menu( void );
-		MENU::RET loading_screen( void );
+		MENU::RET world_create_menu( bool animUpdate );
+		MENU::RET loading_screen_menu( void );
 		MENU::RET death_menu( void );
 		MENU::RET pause_menu( void );
 		MENU::RET options_menu( void );
@@ -97,6 +100,7 @@ class Menu
 		void addQuads( int atlas, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
         void setup_array_buffer_main( void );
         void setup_array_buffer_select( void );
+        void setup_array_buffer_create( void );
 		void setup_array_buffer_load( int completion );
 		void setup_array_buffer_death( void );
         void setup_array_buffer_pause( void );

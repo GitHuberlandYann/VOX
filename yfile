@@ -170,15 +170,19 @@ DONE:
 	- centralize settings and save/load them in file
 	- resource packs
 	- main menu
+	- world selection menu
+	- world creation menu
     - load menu
 	- pause menu
 	- options menu
 	- video settings menu
+	- resource packs menu
     - inventory menu
     - crafting menu
 	- chest menu
 	- furnace menu
 	- chat menu
+	- death menu
 
 
 Controls (QWERTY):

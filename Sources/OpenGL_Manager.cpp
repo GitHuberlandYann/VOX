@@ -733,6 +733,11 @@ void OpenGL_Manager::main_loop( void )
 					loadWorld("Worlds/" + _world_name);
 					initWorld();
 					break ;
+				case (MENU::RET::WORLD_CREATED): // create new world, go into loading mode
+					_world_name = _menu->getWorldFile();
+					DayCycle::Get()->addTicks(0); // used to forceReset sky color
+					initWorld();
+					break ;
 				case (MENU::RET::PLAY_DEFAULT): // skip world selection and play with default seed of 123456
 					DayCycle::Get()->addTicks(0); // used to forceReset sky color
 					initWorld();

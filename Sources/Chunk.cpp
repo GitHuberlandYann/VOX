@@ -1,5 +1,6 @@
 #include "Camera.hpp"
 #include "random.hpp"
+#include "Settings.hpp"
 
 extern std::mutex mtx_backup;
 extern siv::PerlinNoise::seed_type perlin_seed;
@@ -288,6 +289,33 @@ int Chunk::surfaceLevel( int row, int col, siv::PerlinNoise perlin )
 	double erosion = glm::abs(perlin.octave2D_01((_startX - 1000 + row) / 1000.0f, (_startY - 1000 + col) / 1000.0f, 7) - 0.5);
 	return (gradient(erosion, 0, 0.05, SEA_LEVEL - 6, SEA_LEVEL + offset));
 	// return (SEA_LEVEL + offset);
+}
+
+/**
+ * @brief fills _blocks array with Setttings->getInt(flat_world_block) up to z level 10, rest is air
+*/
+void Chunk::generate_flat_world( void )
+{
+	int value = Settings::Get()->getInt(SETTINGS::INT::FLAT_WORLD_BLOCK);
+	int surface_level = 10;
+	for (int row = 0; row < CHUNK_SIZE; row++) {
+		for (int col = 0; col < CHUNK_SIZE; col++) {
+			for (int level = 0; level < WORLD_HEIGHT; level++) {
+				_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (level > surface_level) ? blocks::AIR
+						: (level == 0) ? blocks::BEDROCK : value;
+			}
+		}
+	}
+
+	for (auto r: _removed) {
+		_blocks[r] = blocks::AIR;
+	}
+	for (auto a: _added) {
+		_blocks[a.first] = a.second;
+		if ((a.second & 0xFF) == blocks::TORCH) {
+			addFlame(a.first, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (a.first & (WORLD_HEIGHT - 1))}, blocks::TORCH, (a.second >> 9) & 0x7);
+		}
+	}
 }
 
 void Chunk::generate_blocks( void )
@@ -1493,7 +1521,11 @@ void Chunk::generation( void )
 {
 	// Bench b;
 	_blocks = new GLint[ALLOC_SIZE];
-	generate_blocks();
+	if (Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD)) {
+		generate_flat_world();
+	} else {
+		generate_blocks();
+	}
 	// b.stamp("blocks");
 	_lights = new short[ALLOC_SIZE];
 	generate_lights();

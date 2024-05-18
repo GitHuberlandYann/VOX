@@ -162,6 +162,7 @@ class Chunk
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
 		int surfaceLevel( int row, int col, siv::PerlinNoise perlin );
+		void generate_flat_world( void );
 		void generate_blocks( void );
 		void resetDisplayedFaces( void );
 		void generate_sky( void );

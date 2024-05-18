@@ -18,6 +18,7 @@ namespace SETTINGS {
 		FACE_CULLING,
 		VISIBLE_CHUNK_BORDER,
 		SMOOTH_LIGHTING,
+		FLAT_WORLD,
 		NBR_BOOL
 	};
 
@@ -27,6 +28,7 @@ namespace SETTINGS {
 		MONITOR_WIDTH,
 		MONITOR_HEIGHT,
 		AVAILABLE_RES,
+		FLAT_WORLD_BLOCK,
 		NBR_INT
 	};
 
@@ -71,6 +73,7 @@ namespace SETTINGS {
 		FAST,
 		OFF,
 	};
+	const std::array<int, 5> fw_types = {blocks::SAND, blocks::GRASS_BLOCK, blocks::WATER, blocks::STONE, blocks::OAK_LOG};
 };
 
 class Settings

@@ -31,6 +31,7 @@ void OpenGL_Manager::saveWorld( void )
 		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
 		+ ",\n\t\"f5_mode\": " + ((_ui->_hideUI) ? "true" : "false")
 		+ ",\n\t\"outline\": " + ((_outline) ? "true" : "false")
+		+ ",\n\t\"flat_world\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::FLAT_WORLD_BLOCK))
 		+ DayCycle::Get()->saveString()
 		+ _camera->saveString()
 		+ _inventory->saveString()
@@ -224,7 +225,12 @@ void OpenGL_Manager::loadWorld( std::string file )
 				ofs << "f5 mode set to " << _ui->_hideUI << std::endl;
 			} else if (!line.compare(0, 11, "\"outline\": ")) {
 				_outline = line.substr(11, 4) == "true";
-				ofs << "outline set to " << _outline << std::endl;
+			} else if (!line.compare(0, 14, "\"flat_world\": ")) {
+				int value = std::atoi(&line[14]);
+				value = (value >= 0 && value < S_BLOCKS_SIZE) ? value : blocks::AIR;
+				Settings::Get()->setInt(SETTINGS::INT::FLAT_WORLD_BLOCK, value);
+				Settings::Get()->setBool(SETTINGS::BOOL::FLAT_WORLD, value != blocks::AIR);
+				ofs << "flat_world_block set to " << s_blocks[value]->name << std::endl;
 			} else if (!line.compare(0, 12, "\"dayCycle\": ")) {
 				DayCycle::Get()->loadWorld(ofs, line);
 			} else if (!line.compare(0, 10, "\"camera\": ")) {

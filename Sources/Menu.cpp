@@ -43,6 +43,11 @@ void Menu::reset_values( void )
 	_worlds.clear();
 	_resource_packs.clear();
 	_selection_list.clear();
+	if (_input_world || _input_seed) {
+		glfwSetCharCallback(_window, NULL);
+		_input_world = false;
+		_input_seed = false;
+	}
 	_moving_slider = false;
 	_change_to_apply = false;
 	_drop_down_menu = false;
@@ -109,12 +114,10 @@ MENU::RET Menu::world_select_menu( void )
 			_state = MENU::LOAD;
 			reset_values();
 			return (MENU::RET::WORLD_SELECTED);
-		} else if (_selection == 4) { // new random seed
-			const auto p1 = std::chrono::system_clock::now(); // works without #include <chrono> #include <ctime> ?
-			perlin_seed = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
-			_state = MENU::LOAD;
+		} else if (_selection == 4) { // create new world
+			_state = MENU::WORLD_CREATE;
 			reset_values();
-			return (MENU::RET::PLAY_DEFAULT);
+			return (world_create_menu(false));
 		} else if (_selection == 6) { // cancel, go back to main menu
 			_state = MENU::MAIN;
 			reset_values();
@@ -145,7 +148,112 @@ MENU::RET Menu::world_select_menu( void )
 	return (MENU::RET::NO_CHANGE);
 }
 
-MENU::RET Menu::loading_screen( void )
+/**
+ * @brief Menu used for world creation, used to input world name, world seed, world type (flat or not)
+ * @return status used by OpengGL_Manager - NO_CHANGE or WORLD_SELECTED
+*/
+MENU::RET Menu::world_create_menu( bool animUpdate )
+{
+	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
+		_state = MENU::WORLD_SELECT;
+		reset_values();
+		return (world_select_menu());
+	}
+	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
+		if ((_selection != 1 && _input_world) || (_selection != 2 && _input_seed)) {
+			_input_world = false;
+			_input_seed = false;
+			glfwSetCharCallback(_window, NULL);
+		}
+		if (_selection == 1 && !_input_world) { // change name
+			glfwSetCharCallback(_window, INPUT::character_callback);
+			INPUT::setCurrentMessage(_world_file);
+			_input_world = true;
+		} else if (_selection == 2 && !_input_seed) { // change seed
+			glfwSetCharCallback(_window, INPUT::character_callback);
+			INPUT::setCurrentMessage(std::to_string(perlin_seed));
+			_input_seed = true;
+		} else if (_selection == 3) { // toggle world type
+			Settings::Get()->setBool(SETTINGS::BOOL::FLAT_WORLD, !Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD));
+		} else if (_selection == 4) { // toggle flat world block
+			int current = Settings::Get()->getInt(SETTINGS::INT::FLAT_WORLD_BLOCK);
+			int i = 0;
+			for (; i < 5; ++i) {
+				if (current == SETTINGS::fw_types[i]) {
+					break ;
+				}
+			}
+			i = (i + 1) % 5;
+			Settings::Get()->setInt(SETTINGS::INT::FLAT_WORLD_BLOCK, SETTINGS::fw_types[i]);
+		} else if (_selection == 5) { // confirm, go to load menu
+			if (!perlin_seed) {
+				const auto p1 = std::chrono::system_clock::now(); // works without #include <chrono> #include <ctime> ?
+				perlin_seed = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
+			}
+			_world_file += ".json";
+			_state = MENU::LOAD;
+			reset_values();
+			return (MENU::RET::WORLD_CREATED);
+		} else if (_selection == 6) { // cancel, go back to wold select menu
+			_state = MENU::WORLD_SELECT;
+			reset_values();
+			return (world_select_menu());
+		}
+	}
+	if (INPUT::key_down(INPUT::DELETE) && INPUT::key_update(INPUT::DELETE)) {
+		INPUT::rmLetter();
+	}
+	if (INPUT::key_down(INPUT::LOOK_RIGHT) && INPUT::key_update(INPUT::LOOK_RIGHT)) {
+		INPUT::moveCursor(true, INPUT::key_down(INPUT::RUN));
+	}
+	if (INPUT::key_down(INPUT::LOOK_LEFT) && INPUT::key_update(INPUT::LOOK_LEFT)) {
+		INPUT::moveCursor(false, INPUT::key_down(INPUT::RUN));
+	}
+
+	setup_array_buffer_create();
+	glUseProgram(_shaderProgram);
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+
+	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, "Create New World");
+
+	_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 77 * _gui_size, 6 * _gui_size, TEXT::WHITE, "World Name");
+	if (_input_world) {
+		_world_file = INPUT::getCurrentMessage();
+		if (animUpdate) { _textBar = !_textBar; }
+		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, INPUT::getCurrentInputStr((_textBar) ? '|' : '.')); // World Name
+	} else {
+		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, _world_file); // World Name
+	}
+	_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 32 * _gui_size, 6 * _gui_size, TEXT::WHITE, "World Seed (leave empty for random seed)");
+	if (_input_seed) {
+		std::string input = INPUT::getCurrentMessage();
+		for (int i = 0; input[i]; ++i) {
+			if (!std::isdigit(input[i])) {
+				input = input.substr(0, i);
+				INPUT::setCurrentMessage(input);
+				break ;
+			}
+		}
+		perlin_seed = std::atoi(input.c_str());
+		if (animUpdate) { _textBar = !_textBar; }
+		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, INPUT::getCurrentInputStr((_textBar) ? '|' : '.')); // Seed
+	} else {
+		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, (perlin_seed) ? std::to_string(perlin_seed) : ""); // Seed
+	}
+    bool flat = Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD);
+	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, (flat) ? "Flat World" : "Normal World"); // World Type
+	if (flat) {
+		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, s_blocks[Settings::Get()->getInt(SETTINGS::INT::FLAT_WORLD_BLOCK)]->name); // Flat World Block
+	}
+
+	_text->addCenteredText(WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Create New World");
+	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Cancel");
+
+	return (MENU::RET::NO_CHANGE);
+}
+
+MENU::RET Menu::loading_screen_menu( void )
 {
 	GLint current_size = 0, newVaoCounter = 0;
 	for (auto& c : _chunks) {
@@ -623,6 +731,24 @@ void Menu::setup_array_buffer_select( void )
 	for (int index = 0; index < static_cast<int>(static_cast<int>(_worlds.size())) && index < 8; index++) {
 		addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, (30 + 20 * index) * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71 + 20 * (_selected_world - 1 == index), 200, 20); // world #index
 	}
+
+	setup_shader();
+}
+
+/**
+ * @brief sets up array buffer for Create New World menu
+*/
+void Menu::setup_array_buffer_create( void )
+{
+    addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_input_world) ? 195 : 71, 200, 20); // World Name
+    addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_input_seed) ? 195 : 71, 200, 20); // Seed
+    addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 3) ? 111 : 91, 200, 20); // World Type
+	if (Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD)) {
+		addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20); // Flat World Block
+	}
+
+	addQuads(1, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_world_file == "") ? 71 : (_selection == 5) ? 111 : 91, 200, 20); // Create New World
+	addQuads(1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20); // Cancel
 
 	setup_shader();
 }
@@ -1342,6 +1468,23 @@ void Menu::processMouseMovement( float posX, float posY )
 			}
 		}
 		break ;
+	case MENU::WORLD_CREATE:
+		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 1;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 2;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 3;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = (Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD)) ? 4 : 0;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size)) {
+			_selection = (_world_file == "") ? 0 : 5;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size)) {
+			_selection = 6;
+		} else {
+			_selection = 0;
+		}
+		break ;
 	case MENU::DEATH:
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 5 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
@@ -1636,7 +1779,7 @@ std::string Menu::getWorldFile( void )
 
 MENU::RET Menu::run( bool animUpdate )
 {
-	if (_state != MENU::CHAT && INPUT::key_down(INPUT::QUIT_PROGRAM)) {
+	if (INPUT::key_down(INPUT::QUIT_PROGRAM) && _state != MENU::CHAT && !_input_world && !_input_seed) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return (MENU::RET::QUIT);
 	}
@@ -1646,8 +1789,10 @@ MENU::RET Menu::run( bool animUpdate )
 			return (main_menu());
 		case MENU::WORLD_SELECT:
 			return (world_select_menu());
+		case MENU::WORLD_CREATE:
+			return (world_create_menu(animUpdate));
 		case MENU::LOAD:
-			return (loading_screen());
+			return (loading_screen_menu());
 		case MENU::DEATH:
 			return (death_menu());
 		case MENU::PAUSE:
