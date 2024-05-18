@@ -302,6 +302,7 @@ Some info:
 		- 0x100 NotVisible
 		- 0x10000 strongly powered (1 << 16)
 		- 0x20000 weakdy   powered (1 << 17) (typo on purpose, meaning by redtone dust)
+		- 0xF << 20 signal strength
 	- Furnace 0x7 << 9 == orientation, 0x1000 == furnace ON/OFF
 	- table craft 0x7 << 9 == orientation
 	- torch 0x7 << 9 == orientation

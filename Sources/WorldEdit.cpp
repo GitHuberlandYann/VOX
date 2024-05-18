@@ -91,6 +91,9 @@ void WorldEdit::handleCmdSet( int value )
 	if (!chunk) {
 		return ;
 	}
+	if (value && (value >= blocks::STICK || s_blocks[value]->transparent)) {
+		value = blocks::STONE;
+	}
 
 	glm::ivec3 start = {(_selectStart.x < _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y < _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z < _selectEnd.z) ? _selectStart.z : _selectEnd.z};
 	glm::ivec3 end = {(_selectStart.x > _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y > _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z > _selectEnd.z) ? _selectStart.z : _selectEnd.z};
@@ -246,7 +249,7 @@ bool WorldEdit::parseCommand( std::vector<std::string> &argv )
 			}
 			switch (index) {
 				case WEDIT::cmds::SET:
-					handleCmdSet(blocks::STONE);
+					handleCmdSet(_inventory->getSlotBlock(_inventory->getSlotNum()).type);
 					break ;
 				case WEDIT::cmds::COPY:
 					handleCmdCopy();

@@ -307,13 +307,23 @@ void Chunk::generate_flat_world( void )
 		}
 	}
 
-	for (auto r: _removed) {
-		_blocks[r] = blocks::AIR;
+	for (auto it = _removed.begin(); it != _removed.end();) {
+		if (_blocks[*it] == blocks::AIR) {
+			it = _removed.erase(it);
+		} else {
+			_blocks[*it] = blocks::AIR;
+			++it;
+		}
 	}
-	for (auto a: _added) {
-		_blocks[a.first] = a.second;
-		if ((a.second & 0xFF) == blocks::TORCH) {
-			addFlame(a.first, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (a.first & (WORLD_HEIGHT - 1))}, blocks::TORCH, (a.second >> 9) & 0x7);
+	for (auto it = _added.begin(); it != _added.end();) {
+		if (_blocks[it->first] == it->second) {
+			it = _added.erase(it);
+		} else {
+			_blocks[it->first] = it->second;
+			if ((it->second & 0xFF) == blocks::TORCH) {
+				addFlame(it->first, {((it->first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((it->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (it->first & (WORLD_HEIGHT - 1))}, blocks::TORCH, (it->second >> 9) & 0x7);
+			}
+			++it;
 		}
 	}
 }
@@ -1133,10 +1143,10 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 	} else if (type == blocks::REDSTONE_DUST) {
 		updateRedstoneDust(pos);
 	} else if (s_blocks[type]->redstoneComponant) {
-		int active = getRedstoneState(pos, {0, 0, 0}, REDSTONE::OFF, true);
+		int active = getRedstoneStrength(pos, {0, 0, 0}, REDSTONE::OFF, true);
 		if (active) {
 			block_value |= REDSTONE::ACTIVATED;
-			int powered = getRedstoneState(pos, {0, 0, 0}, REDSTONE::OFF, false);
+			int powered = getRedstoneStrength(pos, {0, 0, 0}, REDSTONE::OFF, false);
 			if (powered) {
 				block_value |= REDSTONE::POWERED;
 			}
@@ -1671,7 +1681,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 				std::cout << "button pressed" << std::endl;
 				value |= REDSTONE::POWERED;
 				_blocks[offset] = value; // used by adj dust
-				stronglyPower(pos + getAttachedDir(value), -getAttachedDir(value), REDSTONE::ON);
+				stronglyPower(pos + getAttachedDir(value), -getAttachedDir(value), 0xF);
 				weaklyPower(pos, {0, 0, 0}, REDSTONE::ON, false);
 				scheduleRedstoneTick({pos, ((type == blocks::STONE_BUTTON) ? 2 : 15) * REDSTONE::TICK});
 				break ;
