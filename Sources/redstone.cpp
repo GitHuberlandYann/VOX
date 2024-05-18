@@ -666,20 +666,22 @@ void Chunk::updateComparator( glm::ivec3 pos, int value )
 	bool mode = value & REDSTONE::COMPARATOR_MODE;
 	int output = (mode == REDSTONE::COMPARE) ? rear * (left <= rear && right <= rear)
 											: glm::max(0, rear - glm::max(left, right));
-	// std::cout << "updateComparator mode " << mode << ": rear " << rear << ", left " << left << ", right " << right << " -> ouput " << output << " vs " << ((value >> REDSTONE::STRENGTH_OFFSET) & 0xF) << std::endl;
+	std::cout << "updateComparator mode " << mode << ": rear " << rear << ", left " << left << ", right " << right << " -> ouput " << output << " vs " << ((value >> REDSTONE::STRENGTH_OFFSET) & 0xF) << std::endl;
 	if (output != ((value >> REDSTONE::STRENGTH_OFFSET) & 0xF)) {
 		return scheduleRedstoneTick({pos, REDSTONE::TICK, output});
 	}
 	// no change in ouput, we still check for scheduled update, in which case we cancel it
-	int index = 0;
-	for (auto &sched : _redstone_schedule[SCHEDULE::REPEAT_ON]) {
-		if (sched.pos == pos && sched.ticks == REDSTONE::TICK) {
-			std::cout << "abort previous comparator schedule " << sched.state << "." << std::endl;
-			_redstone_schedule[SCHEDULE::REPEAT_ON].erase(_redstone_schedule[SCHEDULE::REPEAT_ON].begin() + index);
-			return ;
-		}
-		++index;
-	}
+	abortComparatorScheduleTick(pos);
+	// int index = 0;
+	// for (auto &sched : _redstone_schedule[SCHEDULE::REPEAT_ON]) {
+	// 	std::cout << "checking " << sched.pos.x << ", " << sched.pos.y << ", " << sched.pos.z << " ticks " << sched.ticks << std::endl;
+	// 	if (sched.pos == pos && sched.ticks == REDSTONE::TICK) {
+	// 		std::cout << "abort previous comparator schedule " << sched.state << "." << std::endl;
+	// 		_redstone_schedule[SCHEDULE::REPEAT_ON].erase(_redstone_schedule[SCHEDULE::REPEAT_ON].begin() + index);
+	// 		return ;
+	// 	}
+	// 	++index;
+	// }
 }
 
 /**
@@ -844,6 +846,54 @@ void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 			}
 		}
 		_redstone_schedule[priority].push_back(red);
+	}
+}
+
+/**
+ * @brief look if comparator at given pos has already been scheduled this tick
+ * in which case we abort it
+ * @param pos relative pos of comparator
+*/
+void Chunk::abortComparatorScheduleTick( glm::ivec3 pos )
+{
+	if (pos.z < 0 || pos.z >= WORLD_HEIGHT) {
+		return ;
+	}
+	if (pos.x < 0) {
+		if (_neighbours[face_dir::MINUSX]) {
+			pos.x += CHUNK_SIZE;
+			_neighbours[face_dir::MINUSX]->abortComparatorScheduleTick(pos);
+			return ;
+		}
+	} else if (pos.x >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSX]) {
+			pos.x -= CHUNK_SIZE;
+			_neighbours[face_dir::PLUSX]->abortComparatorScheduleTick(pos);
+			return ;
+		}
+	} else if (pos.y < 0) {
+		if (_neighbours[face_dir::MINUSY]) {
+			pos.y += CHUNK_SIZE;
+			_neighbours[face_dir::MINUSY]->abortComparatorScheduleTick(pos);
+			return ;
+		}
+	} else if (pos.y >= CHUNK_SIZE) {
+		if (_neighbours[face_dir::PLUSY]) {
+			pos.y -= CHUNK_SIZE;
+			_neighbours[face_dir::PLUSY]->abortComparatorScheduleTick(pos);
+			return ;
+		}
+	} else {
+		int index = 0;
+		for (auto &sched : _redstone_schedule[SCHEDULE::REPEAT_ON]) {
+			// std::cout << "abortComparatorScheduleTick checking " << sched.pos.x << ", " << sched.pos.y << ", " << sched.pos.z << " ticks " << sched.ticks << std::endl;
+			if (sched.pos == pos && sched.ticks == REDSTONE::TICK) {
+				// std::cout << "abort previous comparator schedule " << sched.state << "." << std::endl;
+				_redstone_schedule[SCHEDULE::REPEAT_ON].erase(_redstone_schedule[SCHEDULE::REPEAT_ON].begin() + index);
+				return ;
+			}
+			++index;
+		}
 	}
 }
 

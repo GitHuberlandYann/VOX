@@ -279,6 +279,7 @@ class Chunk
 
 		void updateRedstone( void );
 		void scheduleRedstoneTick( t_redstoneTick red );
+		void abortComparatorScheduleTick( glm::ivec3 pos );
 		void updateFurnaces( double currentTime );
 		void updateFluids( void );
 		void tickUpdate( void );
