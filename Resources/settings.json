@@ -1,9 +1,9 @@
 {
 	"fov": 70.250305,
 	"render_distance": 10,
-	"clouds": 0,
+	"clouds": 2,
 	"gui_scale": 3,
-	"skybox": 1,
+	"skybox": 0,
 	"brightness": 0.057494,
 	"particles": 1,
 	"face_culling": 1,
