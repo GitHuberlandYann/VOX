@@ -415,7 +415,7 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 			if (source.z || source == adj_blocks[(adj >> 9) & 0x7]) { // signal update come from up/down, front -> we discard
 				break ;
 			}
-			updateComparator(pos, adj);
+			updateComparator(pos, adj, false);
 			break ;
 		case blocks::REDSTONE_TORCH:
 			if (getAttachedDir(adj) == source) {
@@ -655,35 +655,41 @@ void Chunk::initRepeater( glm::ivec3 pos, int &value )
  * @brief compute output of comparator and schedule to update it if diff from current output
  * @param pos relative pos of comparator in chunk
  * @param value current data_value of comparator
+ * @param scheduledUpdate if true, fun is called from updateRedstone, and we actually apply change if needed
+ * else we schedule tick if needed
 */
-void Chunk::updateComparator( glm::ivec3 pos, int value )
+void Chunk::updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate )
 {
-	glm::ivec3 front = adj_blocks[(value >> 9) & 0x7];
+	const glm::ivec3 front = adj_blocks[(value >> 9) & 0x7];
 	int rear = getRedstoneSignalTarget(pos - front, front, false);
-	front.x = !front.x;
-	front.y = !front.y;
-	int left = getRedstoneSignalTarget(pos + front, -front, true);
-	int right = getRedstoneSignalTarget(pos - front, front, true);
+	const glm::ivec3 side = {!front.x, !front.y, front.z};
+	int left = getRedstoneSignalTarget(pos + side, -side, true);
+	int right = getRedstoneSignalTarget(pos - side, side, true);
 
 	bool mode = value & REDSTONE::COMPARATOR_MODE;
 	int output = (mode == REDSTONE::COMPARE) ? rear * (left <= rear && right <= rear)
 											: glm::max(0, rear - glm::max(left, right));
 	std::cout << "updateComparator mode " << mode << ": rear " << rear << ", left " << left << ", right " << right << " -> ouput " << output << " vs " << ((value >> REDSTONE::STRENGTH_OFFSET) & 0xF) << std::endl;
-	if (output != ((value >> REDSTONE::STRENGTH_OFFSET) & 0xF)) {
-		return scheduleRedstoneTick({pos, REDSTONE::TICK, output});
+	
+	if (!scheduledUpdate) {
+		if (output != ((value >> REDSTONE::STRENGTH_OFFSET) & 0xF)) {
+			return scheduleRedstoneTick({pos, REDSTONE::TICK, output});
+		}
+		// no change in ouput, we still check for scheduled update, in which case we cancel it
+		abortComparatorScheduleTick(pos);
+	} else if (output != ((value >> REDSTONE::STRENGTH_OFFSET) & 0xF)) {
+		if (output) {
+			value &= (REDSTONE::ALL_BITS - REDSTONE::STRENGTH);
+			value |= (output << REDSTONE::STRENGTH_OFFSET);
+			setBlockAt(value | (REDSTONE::POWERED), pos.x, pos.y, pos.z, true);
+			stronglyPower(pos + front, -front, output);
+			weaklyPowerTarget(pos + front, -front, REDSTONE::ON, false);
+		} else {
+			setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::POWERED - REDSTONE::STRENGTH), pos.x, pos.y, pos.z, true);
+			stronglyPower(pos + front, -front, REDSTONE::OFF);
+			weaklyPowerTarget(pos + front, -front, REDSTONE::OFF, false);
+		}
 	}
-	// no change in ouput, we still check for scheduled update, in which case we cancel it
-	abortComparatorScheduleTick(pos);
-	// int index = 0;
-	// for (auto &sched : _redstone_schedule[SCHEDULE::REPEAT_ON]) {
-	// 	std::cout << "checking " << sched.pos.x << ", " << sched.pos.y << ", " << sched.pos.z << " ticks " << sched.ticks << std::endl;
-	// 	if (sched.pos == pos && sched.ticks == REDSTONE::TICK) {
-	// 		std::cout << "abort previous comparator schedule " << sched.state << "." << std::endl;
-	// 		_redstone_schedule[SCHEDULE::REPEAT_ON].erase(_redstone_schedule[SCHEDULE::REPEAT_ON].begin() + index);
-	// 		return ;
-	// 	}
-	// 	++index;
-	// }
 }
 
 /**
@@ -692,8 +698,8 @@ void Chunk::updateComparator( glm::ivec3 pos, int value )
 */
 void Chunk::updateRedstone( void )
 {
-	std::array<size_t, 4> sizes = {_redstone_schedule[SCHEDULE::REPEAT_DIODE].size(), _redstone_schedule[SCHEDULE::REPEAT_OFF].size(), _redstone_schedule[SCHEDULE::REPEAT_ON].size(), _redstone_schedule[SCHEDULE::OTHER].size()};
-	for (int schedIndex = 0; schedIndex < 4; ++schedIndex) {
+	std::array<size_t, SCHEDULE::SIZE> sizes = {_redstone_schedule[SCHEDULE::REPEAT_DIODE].size(), _redstone_schedule[SCHEDULE::REPEAT_OFF].size(), _redstone_schedule[SCHEDULE::REPEAT_ON].size(), _redstone_schedule[SCHEDULE::COMPARATOR].size(), _redstone_schedule[SCHEDULE::OTHER].size()};
+	for (int schedIndex = 0; schedIndex < SCHEDULE::SIZE; ++schedIndex) {
 		if (!sizes[schedIndex]) {
 			continue ;
 		}
@@ -747,18 +753,19 @@ void Chunk::updateRedstone( void )
 						}
 						break ;
 					case blocks::COMPARATOR:
-						front = adj_blocks[(value >> 9) & 0x7];
-						if (red.state) {
-							value &= (REDSTONE::ALL_BITS - REDSTONE::STRENGTH);
-							value |= (red.state << REDSTONE::STRENGTH_OFFSET);
-							setBlockAt(value | (REDSTONE::POWERED), red.pos.x, red.pos.y, red.pos.z, true);
-							stronglyPower(red.pos + front, -front, red.state);
-							weaklyPowerTarget(red.pos + front, -front, REDSTONE::ON, false);
-						} else {
-							setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::POWERED - REDSTONE::STRENGTH), red.pos.x, red.pos.y, red.pos.z, true);
-							stronglyPower(red.pos + front, -front, REDSTONE::OFF);
-							weaklyPowerTarget(red.pos + front, -front, REDSTONE::OFF, false);
-						}
+						updateComparator(red.pos, value, true);
+						// front = adj_blocks[(value >> 9) & 0x7];
+						// if (red.state) {
+						// 	value &= (REDSTONE::ALL_BITS - REDSTONE::STRENGTH);
+						// 	value |= (red.state << REDSTONE::STRENGTH_OFFSET);
+						// 	setBlockAt(value | (REDSTONE::POWERED), red.pos.x, red.pos.y, red.pos.z, true);
+						// 	stronglyPower(red.pos + front, -front, red.state);
+						// 	weaklyPowerTarget(red.pos + front, -front, REDSTONE::ON, false);
+						// } else {
+						// 	setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::POWERED - REDSTONE::STRENGTH), red.pos.x, red.pos.y, red.pos.z, true);
+						// 	stronglyPower(red.pos + front, -front, REDSTONE::OFF);
+						// 	weaklyPowerTarget(red.pos + front, -front, REDSTONE::OFF, false);
+						// }
 						break ;
 					case blocks::REDSTONE_TORCH:
 						updateRedstoneTorch(red.pos, value);
@@ -766,7 +773,7 @@ void Chunk::updateRedstone( void )
 					case blocks::STONE_BUTTON:
 					case blocks::OAK_BUTTON:
 						front = getAttachedDir(value);
-						setBlockAt(value & (-1 - REDSTONE::POWERED), red.pos.x, red.pos.y, red.pos.z, true);
+						setBlockAt(value & (-1 - REDSTONE::POWERED - REDSTONE::STRENGTH), red.pos.x, red.pos.y, red.pos.z, true);
 						stronglyPower(red.pos + front, -front, REDSTONE::OFF);
 						weaklyPower(red.pos, {0, 0, 0}, REDSTONE::OFF, false);
 						break ;
@@ -823,17 +830,17 @@ void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 			int front_value = getBlockAt(red.pos.x + front.x, red.pos.y + front.y, red.pos.z + front.z, true);
 			priority = ((front_value & 0xFF) == blocks::REPEATER || (front_value & 0xFF) == blocks::COMPARATOR) ? SCHEDULE::REPEAT_DIODE
 						: (red.state) ? SCHEDULE::REPEAT_ON : SCHEDULE::REPEAT_OFF;
-			// int other = (priority ^ 0x3);
-			// for (size_t index = 0; index < _redstone_schedule[other].size(); ++index) {
-			// 	t_redstoneTick sched = _redstone_schedule[other][index];
-			// 	if (sched.pos == red.pos && sched.ticks == red.ticks) {
-			// 		std::cout << "abort previous instruction of priority (" << (-3 + other) << ") " << sched.state << std::endl;
-			// 		_redstone_schedule[other].erase(_redstone_schedule[other].begin() + index);
-			// 		break ;
-			// 	}
-			// }
+			int other = (priority ^ 0x3);
+			for (size_t index = 0; index < _redstone_schedule[other].size(); ++index) {
+				t_redstoneTick sched = _redstone_schedule[other][index];
+				if (sched.pos == red.pos && sched.ticks == red.ticks) {
+					std::cout << "[next new schedule:] abort previous instruction of priority (" << (-3 + other) << ") " << sched.state << std::endl;
+					_redstone_schedule[other].erase(_redstone_schedule[other].begin() + index);
+					break ;
+				}
+			}
 		} else if ((target & 0xFF) == blocks::COMPARATOR) {
-			priority = SCHEDULE::REPEAT_ON; // comparator always has priority -1
+			priority = SCHEDULE::COMPARATOR; // comparator always has priority -1 (but I do -0.5f instead to prioretize repeaters)
 		}
 		std::cout << "new schedule " << s_blocks[target & 0xFF]->name << " (" << (-3 + priority) << ") [" << DayCycle::Get()->getTicks() << "] " << _startX << " " << _startY << " pos " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << " ticks: " << red.ticks << " state " << red.state << std::endl;
 		for (auto &sched : _redstone_schedule[priority]) {

@@ -4,6 +4,7 @@
 	"debug_mode": false,
 	"f5_mode": false,
 	"outline": true,
+	"flat_world": 0,
 	"dayCycle": {"day": 5, "ticks": 7838},
 	"camera": {
 		"pos": {"x": -32.601727, "y": 85.354095, "z": 120.638847},

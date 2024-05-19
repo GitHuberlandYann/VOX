@@ -102,7 +102,9 @@ namespace SCHEDULE {
 	const int REPEAT_DIODE = 0; // priority == -3 if repeater outputs in back or side of other diode
 	const int REPEAT_OFF = 1; // priority == -2 if repeater turns off
 	const int REPEAT_ON = 2; // priority == -1 if repeater turns on
-	const int OTHER = 3; // priority == 0 for rest of redstone schedule
+	const int COMPARATOR = 3; // priority == -0.5 for comparator update
+	const int OTHER = 4; // priority == 0 for rest of redstone schedule
+	const int SIZE = 5;
 };
 
 struct s_backup { // TODO add fluids and entities to backups
@@ -132,7 +134,7 @@ class Chunk
 		std::map<int,int> _added;
 		std::set<int> _removed, _fluids;
 		std::vector<int> _scheduled_to_fall;
-		std::array<std::vector<t_redstoneTick>, 4> _redstone_schedule;
+		std::array<std::vector<t_redstoneTick>, SCHEDULE::SIZE> _redstone_schedule;
 		std::map<int, ChestInstance*> _chests;
 		std::map<int, FurnaceInstance*> _furnaces;
 		std::vector<Entity*> _entities;
@@ -195,7 +197,7 @@ class Chunk
 		void updateRedstoneTorch( glm::ivec3 pos, int value );
 		void updateRedstoneDust( glm::ivec3 pos );
 		void initRepeater( glm::ivec3 pos, int &value );
-		void updateComparator( glm::ivec3 pos, int value );
+		void updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate );
 		void connectRedstoneDust( glm::ivec3 pos, int &value, bool placed );
 
 		// block update (20/sec)
