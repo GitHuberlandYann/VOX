@@ -174,15 +174,17 @@ int Chunk::getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side
 				return ((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF);
 			}
 			break ;
+		case blocks::REDSTONE_TORCH:
+				if (!side && !(adj & REDSTONE::POWERED)) {
+					return (0xF);
+				}
+				break ;
 		case blocks::REDSTONE_DUST:
 			return ((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF);
 		case blocks::REDSTONE_BLOCK:
 			return (0xF);
 		default:
-			if (side) {
-				return (REDSTONE::OFF);
-			}
-			if (adj & (REDSTONE::POWERED | REDSTONE::WEAKDY_POWERED)) {
+			if (!side && (adj & (REDSTONE::POWERED | REDSTONE::WEAKDY_POWERED))) {
 				return (0xF);
 			}
 	}
