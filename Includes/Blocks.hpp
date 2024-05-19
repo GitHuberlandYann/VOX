@@ -127,6 +127,7 @@ namespace blocks {
 		FARMLAND,
 		DIRT_PATH,
 		TNT,
+		TARGET,
 		CRAFTING_TABLE = 8,
 		FURNACE,
 		OAK_STAIRS_BOTTOM,
@@ -933,6 +934,23 @@ struct TNT : Cube {
 				return (2);
 			}
 			return (0);
+		}
+};
+
+struct Target : Cube {
+	public:
+		Target() {
+			name = "TARGET";
+			mined = blocks::TARGET;
+			blast_resistance = 0.5f;
+			byHand = true;
+			needed_tool = blocks::WOODEN_HOE;
+			hardness = 0.5f;
+			textureY = 7;
+		}
+		virtual int texX( face_dir dir, int offset ) const {
+			(void)offset;
+			return (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ);
 		}
 };
 

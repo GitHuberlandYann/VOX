@@ -1,7 +1,7 @@
 #include "Chunk.hpp"
 
 const Block *s_blocks[S_BLOCKS_SIZE] = {
-	new Air(), new GrassBlock(), new OakLog(), new Cactus(), new Farmland(), new DirtPath(), new TNT(), new TBD(),
+	new Air(), new GrassBlock(), new OakLog(), new Cactus(), new Farmland(), new DirtPath(), new TNT(), new Target(),
 	new CraftingTable(), new Furnace(), new OakStairsBottom(), new OakStairsTop(), new OakDoor(), new OakTrapdoor(), new StoneStairsBottom(), new StoneStairsTop(),
 	new SmoothStoneStairsBottom(), new SmoothStoneStairsTop(), new CobbleStoneStairsBottom(), new CobbleStoneStairsTop(), new StoneBricksStairsBottom(), new StoneBricksStairsTop(), new Lever(), new TBD(),
 	new Bedrock(), new Dirt(), new SmoothStone(), new Stone(), new Cobblestone(), new StoneBrick(), new CrackedStoneBrick(), new Sand(),

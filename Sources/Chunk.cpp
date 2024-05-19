@@ -495,6 +495,9 @@ void Chunk::resetDisplayedFaces( void )
 							// std::cout << "count is " << count << std::endl;
 							if (restore) {
 								_blocks[offset] = value;
+							} else if (value & blocks::NOTVISIBLE) {
+								_blocks[offset] = value - blocks::NOTVISIBLE;
+								_added[offset] = value - blocks::NOTVISIBLE;
 							}
 						} else if (type > blocks::AIR) { // hide block
 							_blocks[offset] = value + blocks::NOTVISIBLE;
@@ -1205,7 +1208,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 					break ;
 			}
 		}
-		if ((adj & 0xFF) == blocks::REDSTONE_DUST && delta.z == -1) {
+		if ((adj & 0xFF) == blocks::REDSTONE_DUST && (delta.z == -1 || type == blocks::TARGET)) {
 			connectRedstoneDust(pos + delta, adj, false);
 			setBlockAt(adj, pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, true);
 		}
