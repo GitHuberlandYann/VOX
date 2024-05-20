@@ -198,6 +198,9 @@ class Chunk
 		void updateRedstoneDust( glm::ivec3 pos );
 		void initRepeater( glm::ivec3 pos, int &value, bool init );
 		void updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate );
+		int pistonExtendCount( glm::ivec3 pos, int value );
+		void extendPiston( glm::ivec3 pos, int value, int count );
+		void retractPiston( glm::ivec3 pos, int value );
 		void connectRedstoneDust( glm::ivec3 pos, int &value, bool placed );
 
 		// block update (20/sec)
@@ -280,6 +283,7 @@ class Chunk
 		void drawWater( GLint & counter, GLint &face_counter );
 
 		void updateRedstone( void );
+		void updatePiston( glm::ivec3 pos, int value, bool state );
 		void scheduleRedstoneTick( t_redstoneTick red );
 		void abortComparatorScheduleTick( glm::ivec3 pos );
 		void updateFurnaces( double currentTime );

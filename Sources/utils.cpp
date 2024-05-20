@@ -349,6 +349,7 @@ bool visible_face( int value, int next, face_dir dir )
 		case GEOMETRY::CROP:
 		case GEOMETRY::LEVER:
 		case GEOMETRY::DUST:
+		case GEOMETRY::PISTON: // might want to change this..
 		case GEOMETRY::BUTTON:
 			return (true);
 		case GEOMETRY::REPEATER:

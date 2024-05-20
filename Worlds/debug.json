@@ -5,7 +5,7 @@
 	"f5_mode": false,
 	"outline": true,
 	"flat_world": 0,
-	"dayCycle": {"day": 23, "ticks": 1200},
+	"dayCycle": {"day": 23, "ticks": 1345},
 	"camera": {
 		"pos": {"x": -149.465179, "y": 25.086433, "z": 151.830826},
 		"spawnpoint": {"x": 1.000000, "y": -2.000000, "z": 166.000000},

@@ -66,7 +66,7 @@ namespace REDSTONE {
 	const bool OFF = false;
 	const int TICK = 2;
 	// activated means it receives signal, powered means it also transmits signal
-	const int ACTIVATED_OFFSET = 9;
+	const int ACTIVATED_OFFSET = 18;
 	const int ACTIVATED = (1 << ACTIVATED_OFFSET);
 	const int POWERED_OFFSET = 16;
 	const int POWERED = (1 << POWERED_OFFSET);
@@ -182,6 +182,7 @@ namespace blocks {
 		PISTON,
 		STICKY_PISTON,
 		PISTON_HEAD,
+		MOVING_PISTON,
 		POPPY = 64,
 		DANDELION,
 		BLUE_ORCHID,
@@ -1851,11 +1852,12 @@ struct Piston : Block {
 			oriented = true;
 			textureY = 13;
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
-			if (dir == offset) {
-				return (3 + (mined == blocks::STICKY_PISTON));
+		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+			int orientation = (value >> 9) & 0x7;
+			if (dir == orientation) {
+				return ((value & REDSTONE::ACTIVATED) ? 2 : 3 + (mined == blocks::STICKY_PISTON));
 			}
-			if (dir == opposite_dir(offset)) {
+			if (dir == opposite_dir(orientation)) {
 				return (1);
 			}
 			return (0);
@@ -1886,6 +1888,14 @@ struct PistonHead : Block {
 			textureY = 5;
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+};
+
+struct MovingPiston : Block {
+	public:
+		MovingPiston() {
+			name = "PISTON_HEAD";
+			geometry = GEOMETRY::PISTON;
+		}
 };
 
 struct Poppy : Cross {

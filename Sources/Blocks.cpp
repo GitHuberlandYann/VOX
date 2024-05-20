@@ -8,7 +8,7 @@ const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new Gravel(), new OakLeaves(), new OakPlanks(), new Glass(), new GlassPane(), new RedstoneLamp(), new StoneButton(), new OakButton(),
 	new CoalOre(), new IronOre(), new DiamondOre(), new CoalBlock(), new IronBlock(), new DiamondBlock(), new RedstoneOre(), new RedstoneBlock(),
 	new OakSlabBottom(), new OakSlabTop(), new OakFence(), new StoneSlabBottom(), new StoneSlabTop(), new SmoothStoneSlabBottom(), new SmoothStoneSlabTop(), new CobbleStoneSlabBottom(),
-	new CobbleStoneSlabTop(), new StoneBricksSlabBottom(), new StoneBricksSlabTop(), new Piston(), new StickyPiston(), new PistonHead(), new TBD(), new TBD(),
+	new CobbleStoneSlabTop(), new StoneBricksSlabBottom(), new StoneBricksSlabTop(), new Piston(), new StickyPiston(), new PistonHead(), new MovingPiston(), new TBD(),
 	new Poppy(), new Dandelion(), new BlueOrchid(), new Allium(), new CornFlower(), new PinkTulip(), new Grass(), new SugarCane(),
 	new DeadBush(), new OakSapling(), new Torch(), new RedstoneTorch(), new RedstoneDust(), new Repeater(), new Comparator(), new Chest(),
 	new WheatCrop(), new WheatCrop1(), new WheatCrop2(), new WheatCrop3(), new WheatCrop4(), new WheatCrop5(), new WheatCrop6(), new WheatCrop7(),
@@ -3480,357 +3480,236 @@ void Comparator::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 
 void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
 {
-	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
-	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
-	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
-	glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
+	float dxm = 0, dxp = 1, dym = 0, dyp = 1, dzm = 0, dzp = 1;
+	int orientation = ((value >> 9) & 0x7), tyo = 0, ttyo;
+	if (value & REDSTONE::ACTIVATED) {
+		tyo = (4 << 8);
+		switch (orientation) {
+			case face_dir::MINUSX:
+				dxm = 0.25f;
+				break ;
+			case face_dir::PLUSX:
+				dxp = 0.75f;
+				break ;
+			case face_dir::MINUSY:
+				dym = 0.25f;
+				break ;
+			case face_dir::PLUSY:
+				dyp = 0.75f;
+				break ;
+			case face_dir::MINUSZ:
+				dzm = 0.25f;
+				break ;
+			case face_dir::PLUSZ:
+				dzp = 0.75f;
+				break ;
+		}
+	}
+	glm::vec3 p0 = glm::vec3(start.x + pos.x + dxm, start.y + pos.y + dym, pos.z + dzp);
+	glm::vec3 p1 = glm::vec3(start.x + pos.x + dxp, start.y + pos.y + dym, pos.z + dzp);
+	glm::vec3 p2 = glm::vec3(start.x + pos.x + dxm, start.y + pos.y + dym, pos.z + dzm);
+	glm::vec3 p3 = glm::vec3(start.x + pos.x + dxp, start.y + pos.y + dym, pos.z + dzm);
 
-	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 1);
-	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 1);
-	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
-	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
+	glm::vec3 p4 = glm::vec3(start.x + pos.x + dxm, start.y + pos.y + dyp, pos.z + dzp);
+	glm::vec3 p5 = glm::vec3(start.x + pos.x + dxp, start.y + pos.y + dyp, pos.z + dzp);
+	glm::vec3 p6 = glm::vec3(start.x + pos.x + dxm, start.y + pos.y + dyp, pos.z + dzm);
+	glm::vec3 p7 = glm::vec3(start.x + pos.x + dxp, start.y + pos.y + dyp, pos.z + dzm);
 
 	t_shaderInput v0, v1, v2, v3;
 	int spec;
-	int orientation = (value >> 9) & 0x7;
 
-	switch (orientation) {
-		case (face_dir::MINUSX):
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
-				spec = (this->texX(face_dir::MINUSX, orientation) << 4) + (this->texY(face_dir::MINUSX, orientation) << 12) + (3 << 19);
-				spec += (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
-				v0 = {spec, p4};
-				v1 = {spec + XTEX, p0};
-				v2 = {spec + YTEX, p6};
-				v3 = {spec + XTEX + YTEX, p2};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
-				spec = (this->texX(face_dir::PLUSX, orientation) << 4) + (this->texY(face_dir::PLUSX, orientation) << 12) + (4 << 19);
-				spec += (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
-				v0 = {spec, p1};
-				v1 = {spec + XTEX, p5};
-				v2 = {spec + YTEX, p3};
-				v3 = {spec + XTEX + YTEX, p7};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
-				spec = (this->texX(face_dir::MINUSY, orientation) << 4) + (this->texY(face_dir::MINUSY, orientation) << 12) + (1 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
-				v0 = {spec, p2};
-				v1 = {spec + XTEX, p0};
-				v2 = {spec + YTEX, p3};
-				v3 = {spec + XTEX + YTEX, p1};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
-				spec = (this->texX(face_dir::PLUSY, orientation) << 4) + (this->texY(face_dir::PLUSY, orientation) << 12) + (2 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
-				v0 = {spec, p4};
-				v1 = {spec + XTEX, p6};
-				v2 = {spec + YTEX, p5};
-				v3 = {spec + XTEX + YTEX, p7};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
-				spec = (this->texX(face_dir::PLUSZ, orientation) << 4) + (this->texY(face_dir::PLUSZ, orientation) << 12);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z + 1) << 24);
-				v0 = {spec, p0};
-				v1 = {spec + XTEX, p4};
-				v2 = {spec + YTEX, p1};
-				v3 = {spec + XTEX + YTEX, p5};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
-				spec = (this->texX(face_dir::MINUSZ, orientation) << 4) + (this->texY(face_dir::MINUSZ, orientation) << 12) + (5 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z - 1) << 24);
-				v0 = {spec, p6};
-				v1 = {spec + XTEX, p2};
-				v2 = {spec + YTEX, p7};
-				v3 = {spec + XTEX + YTEX, p3};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			break ;
-		case (face_dir::PLUSX):
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
-				spec = (this->texX(face_dir::MINUSX, orientation) << 4) + (this->texY(face_dir::MINUSX, orientation) << 12) + (3 << 19);
-				spec += (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
-				v0 = {spec, p4};
-				v1 = {spec + XTEX, p0};
-				v2 = {spec + YTEX, p6};
-				v3 = {spec + XTEX + YTEX, p2};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
-				spec = (this->texX(face_dir::PLUSX, orientation) << 4) + (this->texY(face_dir::PLUSX, orientation) << 12) + (4 << 19);
-				spec += (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
-				v0 = {spec, p1};
-				v1 = {spec + XTEX, p5};
-				v2 = {spec + YTEX, p3};
-				v3 = {spec + XTEX + YTEX, p7};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
-				spec = (this->texX(face_dir::MINUSY, orientation) << 4) + (this->texY(face_dir::MINUSY, orientation) << 12) + (1 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
-				v0 = {spec, p1};
-				v1 = {spec + XTEX, p3};
-				v2 = {spec + YTEX, p0};
-				v3 = {spec + XTEX + YTEX, p2};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
-				spec = (this->texX(face_dir::PLUSY, orientation) << 4) + (this->texY(face_dir::PLUSY, orientation) << 12) + (2 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
-				v0 = {spec, p7};
-				v1 = {spec + XTEX, p5};
-				v2 = {spec + YTEX, p6};
-				v3 = {spec + XTEX + YTEX, p4};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
-				spec = (this->texX(face_dir::PLUSZ, orientation) << 4) + (this->texY(face_dir::PLUSZ, orientation) << 12);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z + 1) << 24);
-				v0 = {spec, p5};
-				v1 = {spec + XTEX, p1};
-				v2 = {spec + YTEX, p4};
-				v3 = {spec + XTEX + YTEX, p0};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
-				spec = (this->texX(face_dir::MINUSZ, orientation) << 4) + (this->texY(face_dir::MINUSZ, orientation) << 12) + (5 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z - 1) << 24);
-				v0 = {spec, p3};
-				v1 = {spec + XTEX, p7};
-				v2 = {spec + YTEX, p2};
-				v3 = {spec + XTEX + YTEX, p6};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			break ;
-		case (face_dir::MINUSY):
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
-				spec = (this->texX(face_dir::MINUSX, orientation) << 4) + (this->texY(face_dir::MINUSX, orientation) << 12) + (3 << 19);
-				spec += (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
-				v0 = {spec, p0};
-				v1 = {spec + XTEX, p2};
-				v2 = {spec + YTEX, p4};
-				v3 = {spec + XTEX + YTEX, p6};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
-				spec = (this->texX(face_dir::PLUSX, orientation) << 4) + (this->texY(face_dir::PLUSX, orientation) << 12) + (4 << 19);
-				spec += (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
-				v0 = {spec, p3};
-				v1 = {spec + XTEX, p1};
-				v2 = {spec + YTEX, p7};
-				v3 = {spec + XTEX + YTEX, p5};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
-				spec = (this->texX(face_dir::MINUSY, orientation) << 4) + (this->texY(face_dir::MINUSY, orientation) << 12) + (1 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
-				v0 = {spec, p0};
-				v1 = {spec + XTEX, p1};
-				v2 = {spec + YTEX, p2};
-				v3 = {spec + XTEX + YTEX, p3};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
-				spec = (this->texX(face_dir::PLUSY, orientation) << 4) + (this->texY(face_dir::PLUSY, orientation) << 12) + (2 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
-				v0 = {spec, p5};
-				v1 = {spec + XTEX, p4};
-				v2 = {spec + YTEX, p7};
-				v3 = {spec + XTEX + YTEX, p6};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
-				spec = (this->texX(face_dir::PLUSZ, orientation) << 4) + (this->texY(face_dir::PLUSZ, orientation) << 12);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z + 1) << 24);
-				v0 = {spec, p1};
-				v1 = {spec + XTEX, p0};
-				v2 = {spec + YTEX, p5};
-				v3 = {spec + XTEX + YTEX, p4};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
-				spec = (this->texX(face_dir::MINUSZ, orientation) << 4) + (this->texY(face_dir::MINUSZ, orientation) << 12) + (5 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z - 1) << 24);
-				v0 = {spec, p2};
-				v1 = {spec + XTEX, p3};
-				v2 = {spec + YTEX, p6};
-				v3 = {spec + XTEX + YTEX, p7};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			break ;
-		case (face_dir::PLUSY):
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
-				spec = (this->texX(face_dir::MINUSX, orientation) << 4) + (this->texY(face_dir::MINUSX, orientation) << 12) + (3 << 19);
-				spec += (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
-				v0 = {spec, p6};
-				v1 = {spec + XTEX, p4};
-				v2 = {spec + YTEX, p2};
-				v3 = {spec + XTEX + YTEX, p0};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
-				spec = (this->texX(face_dir::PLUSX, orientation) << 4) + (this->texY(face_dir::PLUSX, orientation) << 12) + (4 << 19);
-				spec += (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
-				v0 = {spec, p5};
-				v1 = {spec + XTEX, p7};
-				v2 = {spec + YTEX, p1};
-				v3 = {spec + XTEX + YTEX, p3};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
-				spec = (this->texX(face_dir::MINUSY, orientation) << 4) + (this->texY(face_dir::MINUSY, orientation) << 12) + (1 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
-				v0 = {spec, p0};
-				v1 = {spec + XTEX, p1};
-				v2 = {spec + YTEX, p2};
-				v3 = {spec + XTEX + YTEX, p3};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
-				spec = (this->texX(face_dir::PLUSY, orientation) << 4) + (this->texY(face_dir::PLUSY, orientation) << 12) + (2 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
-				v0 = {spec, p5};
-				v1 = {spec + XTEX, p4};
-				v2 = {spec + YTEX, p7};
-				v3 = {spec + XTEX + YTEX, p6};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
-				spec = (this->texX(face_dir::PLUSZ, orientation) << 4) + (this->texY(face_dir::PLUSZ, orientation) << 12);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z + 1) << 24);
-				v0 = {spec, p4};
-				v1 = {spec + XTEX, p5};
-				v2 = {spec + YTEX, p0};
-				v3 = {spec + XTEX + YTEX, p1};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
-				spec = (this->texX(face_dir::MINUSZ, orientation) << 4) + (this->texY(face_dir::MINUSZ, orientation) << 12) + (5 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z - 1) << 24);
-				v0 = {spec, p7};
-				v1 = {spec + XTEX, p6};
-				v2 = {spec + YTEX, p3};
-				v3 = {spec + XTEX + YTEX, p2};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			break ;
-		case (face_dir::MINUSZ):
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
-				spec = (this->texX(face_dir::MINUSX, orientation) << 4) + (this->texY(face_dir::MINUSX, orientation) << 12) + (3 << 19);
-				spec += (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
-				v0 = {spec, p2};
-				v1 = {spec + XTEX, p6};
-				v2 = {spec + YTEX, p0};
-				v3 = {spec + XTEX + YTEX, p4};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
-				spec = (this->texX(face_dir::PLUSX, orientation) << 4) + (this->texY(face_dir::PLUSX, orientation) << 12) + (4 << 19);
-				spec += (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
-				v0 = {spec, p7};
-				v1 = {spec + XTEX, p3};
-				v2 = {spec + YTEX, p5};
-				v3 = {spec + XTEX + YTEX, p1};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
-				spec = (this->texX(face_dir::MINUSY, orientation) << 4) + (this->texY(face_dir::MINUSY, orientation) << 12) + (1 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
-				v0 = {spec, p3};
-				v1 = {spec + XTEX, p2};
-				v2 = {spec + YTEX, p1};
-				v3 = {spec + XTEX + YTEX, p0};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
-				spec = (this->texX(face_dir::PLUSY, orientation) << 4) + (this->texY(face_dir::PLUSY, orientation) << 12) + (2 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
-				v0 = {spec, p6};
-				v1 = {spec + XTEX, p7};
-				v2 = {spec + YTEX, p4};
-				v3 = {spec + XTEX + YTEX, p5};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
-				spec = (this->texX(face_dir::PLUSZ, orientation) << 4) + (this->texY(face_dir::PLUSZ, orientation) << 12);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z + 1) << 24);
-				v0 = {spec, p4};
-				v1 = {spec + XTEX, p5};
-				v2 = {spec + YTEX, p0};
-				v3 = {spec + XTEX + YTEX, p1};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
-				spec = (this->texX(face_dir::MINUSZ, orientation) << 4) + (this->texY(face_dir::MINUSZ, orientation) << 12) + (5 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z - 1) << 24);
-				v0 = {spec, p2};
-				v1 = {spec + XTEX, p3};
-				v2 = {spec + YTEX, p6};
-				v3 = {spec + XTEX + YTEX, p7};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			break ;
-		case (face_dir::PLUSZ):
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
-				spec = (this->texX(face_dir::MINUSX, orientation) << 4) + (this->texY(face_dir::MINUSX, orientation) << 12) + (3 << 19);
-				spec += (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
-				v0 = {spec, p4};
-				v1 = {spec + XTEX, p0};
-				v2 = {spec + YTEX, p6};
-				v3 = {spec + XTEX + YTEX, p2};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
-				spec = (this->texX(face_dir::PLUSX, orientation) << 4) + (this->texY(face_dir::PLUSX, orientation) << 12) + (4 << 19);
-				spec += (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
-				v0 = {spec, p1};
-				v1 = {spec + XTEX, p5};
-				v2 = {spec + YTEX, p3};
-				v3 = {spec + XTEX + YTEX, p7};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
-				spec = (this->texX(face_dir::MINUSY, orientation) << 4) + (this->texY(face_dir::MINUSY, orientation) << 12) + (1 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
-				v0 = {spec, p0};
-				v1 = {spec + XTEX, p1};
-				v2 = {spec + YTEX, p2};
-				v3 = {spec + XTEX + YTEX, p3};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
-				spec = (this->texX(face_dir::PLUSY, orientation) << 4) + (this->texY(face_dir::PLUSY, orientation) << 12) + (2 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
-				v0 = {spec, p5};
-				v1 = {spec + XTEX, p4};
-				v2 = {spec + YTEX, p7};
-				v3 = {spec + XTEX + YTEX, p6};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
-				spec = (this->texX(face_dir::PLUSZ, orientation) << 4) + (this->texY(face_dir::PLUSZ, orientation) << 12);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z + 1) << 24);
-				v0 = {spec, p4};
-				v1 = {spec + XTEX, p5};
-				v2 = {spec + YTEX, p0};
-				v3 = {spec + XTEX + YTEX, p1};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
-				spec = (this->texX(face_dir::MINUSZ, orientation) << 4) + (this->texY(face_dir::MINUSZ, orientation) << 12) + (5 << 19);
-				spec += (chunk->computeLight(pos.x, pos.y, pos.z - 1) << 24);
-				v0 = {spec, p2};
-				v1 = {spec + XTEX, p3};
-				v2 = {spec + YTEX, p6};
-				v3 = {spec + XTEX + YTEX, p7};
-				face_vertices(vertices, v0, v1, v2, v3);
-			}
-			break ;
+	glm::vec3 pp0, pp1, pp2, pp3;
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+		ttyo = tyo;
+		switch (orientation) {
+			case (face_dir::MINUSX):
+				pp0 = p4; pp1 = p0; pp2 = p6; pp3 = p2;
+				ttyo = 0;
+				break ;
+			case (face_dir::PLUSX):
+				pp0 = p4; pp1 = p0; pp2 = p6; pp3 = p2;
+				ttyo = 0;
+				break ;
+			case (face_dir::MINUSY):
+				pp0 = p0; pp1 = p2; pp2 = p4; pp3 = p6;
+				break ;
+			case (face_dir::PLUSY):
+				pp0 = p6; pp1 = p4; pp2 = p2; pp3 = p0;
+				break ;
+			case (face_dir::MINUSZ):
+				pp0 = p2; pp1 = p6; pp2 = p0; pp3 = p4;
+				break ;
+			case (face_dir::PLUSZ):
+				pp0 = p4; pp1 = p0; pp2 = p6; pp3 = p2;
+				break ;
+		}
+		spec = (this->texX(face_dir::MINUSX, value) << 4) + (this->texY(face_dir::MINUSX, value) << 12) + (3 << 19);
+		spec += (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
+		v0 = {spec + ttyo, pp0};
+		v1 = {spec + XTEX + ttyo, pp1};
+		v2 = {spec + YTEX, pp2};
+		v3 = {spec + XTEX + YTEX, pp3};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+		ttyo = tyo;
+		switch (orientation) {
+			case (face_dir::MINUSX):
+				pp0 = p1; pp1 = p5; pp2 = p3; pp3 = p7;
+				ttyo = 0;
+				break ;
+			case (face_dir::PLUSX):
+				pp0 = p1; pp1 = p5; pp2 = p3; pp3 = p7;
+				ttyo = 0;
+				break ;
+			case (face_dir::MINUSY):
+				pp0 = p3; pp1 = p1; pp2 = p7; pp3 = p5;
+				break ;
+			case (face_dir::PLUSY):
+				pp0 = p5; pp1 = p7; pp2 = p1; pp3 = p3;
+				break ;
+			case (face_dir::MINUSZ):
+				pp0 = p7; pp1 = p3; pp2 = p5; pp3 = p1;
+				break ;
+			case (face_dir::PLUSZ):
+				pp0 = p1; pp1 = p5; pp2 = p3; pp3 = p7;
+				break ;
+		}
+		spec = (this->texX(face_dir::PLUSX, value) << 4) + (this->texY(face_dir::PLUSX, value) << 12) + (4 << 19);
+		spec += (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
+		v0 = {spec + ttyo, pp0};
+		v1 = {spec + XTEX + ttyo, pp1};
+		v2 = {spec + YTEX, pp2};
+		v3 = {spec + XTEX + YTEX, pp3};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+		ttyo = tyo;
+		switch (orientation) {
+			case (face_dir::MINUSX):
+				pp0 = p2; pp1 = p0; pp2 = p3; pp3 = p1;
+				break ;
+			case (face_dir::PLUSX):
+				pp0 = p1; pp1 = p3; pp2 = p0; pp3 = p2;
+				break ;
+			case (face_dir::MINUSY):
+				pp0 = p0; pp1 = p1; pp2 = p2; pp3 = p3;
+				ttyo = 0;
+				break ;
+			case (face_dir::PLUSY):
+				pp0 = p0; pp1 = p1; pp2 = p2; pp3 = p3;
+				ttyo = 0;
+				break ;
+			case (face_dir::MINUSZ):
+				pp0 = p3; pp1 = p2; pp2 = p1; pp3 = p0;
+				break ;
+			case (face_dir::PLUSZ):
+				pp0 = p0; pp1 = p1; pp2 = p2; pp3 = p3;
+				break ;
+		}
+		spec = (this->texX(face_dir::MINUSY, value) << 4) + (this->texY(face_dir::MINUSY, value) << 12) + (1 << 19);
+		spec += (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
+		v0 = {spec + ttyo, pp0};
+		v1 = {spec + XTEX + ttyo, pp1};
+		v2 = {spec + YTEX, pp2};
+		v3 = {spec + XTEX + YTEX, pp3};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+		ttyo = tyo;
+		switch (orientation) {
+			case (face_dir::MINUSX):
+				pp0 = p4; pp1 = p6; pp2 = p5; pp3 = p7;
+				break ;
+			case (face_dir::PLUSX):
+				pp0 = p7; pp1 = p5; pp2 = p6; pp3 = p4;
+				break ;
+			case (face_dir::MINUSY):
+				pp0 = p5; pp1 = p4; pp2 = p7; pp3 = p6;
+				ttyo = 0;
+				break ;
+			case (face_dir::PLUSY):
+				pp0 = p5; pp1 = p4; pp2 = p7; pp3 = p6;
+				ttyo = 0;
+				break ;
+			case (face_dir::MINUSZ):
+				pp0 = p6; pp1 = p7; pp2 = p4; pp3 = p5;
+				break ;
+			case (face_dir::PLUSZ):
+				pp0 = p5; pp1 = p4; pp2 = p7; pp3 = p6;
+				break ;
+		}
+		spec = (this->texX(face_dir::PLUSY, value) << 4) + (this->texY(face_dir::PLUSY, value) << 12) + (2 << 19);
+		spec += (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
+		v0 = {spec + ttyo, pp0};
+		v1 = {spec + XTEX + ttyo, pp1};
+		v2 = {spec + YTEX, pp2};
+		v3 = {spec + XTEX + YTEX, pp3};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+		ttyo = tyo;
+		switch (orientation) {
+			case (face_dir::MINUSX):
+				pp0 = p0; pp1 = p4; pp2 = p1; pp3 = p5;
+				break ;
+			case (face_dir::PLUSX):
+				pp0 = p5; pp1 = p1; pp2 = p4; pp3 = p0;
+				break ;
+			case (face_dir::MINUSY):
+				pp0 = p1; pp1 = p0; pp2 = p5; pp3 = p4;
+				break ;
+			case (face_dir::PLUSY):
+				pp0 = p4; pp1 = p5; pp2 = p0; pp3 = p1;
+				break ;
+			case (face_dir::MINUSZ):
+				pp0 = p4; pp1 = p5; pp2 = p0; pp3 = p1;
+				ttyo = 0;
+				break ;
+			case (face_dir::PLUSZ):
+				pp0 = p4; pp1 = p5; pp2 = p0; pp3 = p1;
+				ttyo = 0;
+				break ;
+		}
+		spec = (this->texX(face_dir::PLUSZ, value) << 4) + (this->texY(face_dir::PLUSZ, value) << 12);
+		spec += (chunk->computeLight(pos.x, pos.y, pos.z + 1) << 24);
+		v0 = {spec + ttyo, pp0};
+		v1 = {spec + XTEX + ttyo, pp1};
+		v2 = {spec + YTEX, pp2};
+		v3 = {spec + XTEX + YTEX, pp3};
+		face_vertices(vertices, v0, v1, v2, v3);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+		ttyo = tyo;
+		switch (orientation) {
+			case (face_dir::MINUSX):
+				pp0 = p6; pp1 = p2; pp2 = p7; pp3 = p3;
+				break ;
+			case (face_dir::PLUSX):
+				pp0 = p3; pp1 = p7; pp2 = p2; pp3 = p6;
+				break ;
+			case (face_dir::MINUSY):
+				pp0 = p2; pp1 = p3; pp2 = p6; pp3 = p7;
+				break ;
+			case (face_dir::PLUSY):
+				pp0 = p7; pp1 = p6; pp2 = p3; pp3 = p2;
+				break ;
+			case (face_dir::MINUSZ):
+				pp0 = p2; pp1 = p3; pp2 = p6; pp3 = p7;
+				ttyo = 0;
+				break ;
+			case (face_dir::PLUSZ):
+				pp0 = p2; pp1 = p3; pp2 = p6; pp3 = p7;
+				ttyo = 0;
+				break ;
+		}
+		spec = (this->texX(face_dir::MINUSZ, value) << 4) + (this->texY(face_dir::MINUSZ, value) << 12) + (5 << 19);
+		spec += (chunk->computeLight(pos.x, pos.y, pos.z - 1) << 24);
+		v0 = {spec + ttyo, pp0};
+		v1 = {spec + XTEX + ttyo, pp1};
+		v2 = {spec + YTEX, pp2};
+		v3 = {spec + XTEX + YTEX, pp3};
+		face_vertices(vertices, v0, v1, v2, v3);
 	}
 }
 

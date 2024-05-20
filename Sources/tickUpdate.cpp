@@ -289,7 +289,7 @@ void Chunk::updateScheduledBlocks( void )
 		int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 		int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
 		handleHit(false, type, {posX + _startX, posY + _startY, posZ}, Modif::REMOVE);
-		_entities.push_back(new Entity(this, _inventory, {posX + _startX, posY + _startY, posZ}, {0, 0, 0}, true, false, {type, 1, {0, 0}}));
+		_entities.push_back(new FallingBlockEntity(this, {posX + _startX, posY + _startY, posZ}, {type, 1, {0, 0}}));
 		_scheduled_to_fall.erase(_scheduled_to_fall.begin());
 	}
 }

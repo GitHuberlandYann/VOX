@@ -41,6 +41,10 @@ TODOS:
 	- stone wall
 	- have Menu/UI::add_item_value use s_blocks[type]->addItem() instead
 	- bed
+	- add light diff on levers faces
+	- fix faces open/closed trapdoors not matching
+	- fix touchy stairs still displaying touchy faces
+	- blocks with oriented light occlusion (ie slabs, stairs)
 	- enchanting table
 	- stars at night
 	- save entities
@@ -61,10 +65,8 @@ IN PROGRES:
 	- universal use of tps instead of deltatimes
 
 TODAY:
-	- add light diff on levers faces
-	- fix faces open/closed trapdoors not matching
-	- fix touchy stairs still displaying touchy faces
-	- blocks with oriented light occlusion (ie slabs, stairs)
+	- PISTONS
+	- fix fallingBlockEntity falling on torch
 
 SHORTTERM memory:
 	\/ - work on cleanAtlas
