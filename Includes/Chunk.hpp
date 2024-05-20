@@ -187,7 +187,7 @@ class Chunk
 		// redstone
 		glm::ivec3 getAttachedDir( int value );
 		bool getWeakdyState( glm::ivec3 pos, glm::ivec3 except, bool state );
-		int getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side );
+		int getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side, bool repeater );
 		int getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bool weak );
 		int getDustStrength( glm::ivec3 pos );
 		void stronglyPower( glm::ivec3 pos, glm::ivec3 except, int state );
@@ -196,7 +196,7 @@ class Chunk
 		void flickLever( glm::ivec3 pos, int value, bool state );
 		void updateRedstoneTorch( glm::ivec3 pos, int value );
 		void updateRedstoneDust( glm::ivec3 pos );
-		void initRepeater( glm::ivec3 pos, int &value );
+		void initRepeater( glm::ivec3 pos, int &value, bool init );
 		void updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate );
 		void connectRedstoneDust( glm::ivec3 pos, int &value, bool placed );
 
