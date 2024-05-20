@@ -115,6 +115,7 @@ namespace GEOMETRY {
 		DUST,
 		REPEATER,
 		BUTTON,
+		PISTON,
 	};
 };
 
@@ -178,6 +179,9 @@ namespace blocks {
 		COBBLESTONE_SLAB_TOP,
 		STONE_BRICKS_SLAB_BOTTOM,
 		STONE_BRICKS_SLAB_TOP,
+		PISTON,
+		STICKY_PISTON,
+		PISTON_HEAD,
 		POPPY = 64,
 		DANDELION,
 		BLUE_ORCHID,
@@ -1831,6 +1835,57 @@ struct StoneBricksSlabTop : SlabTop {
 			textureX = 4;
 			textureY = 5;
 		}
+};
+face_dir opposite_dir( int dir );
+struct Piston : Block {
+	public:
+		Piston() {
+			name = "PISTON";
+			mined = blocks::PISTON;
+			blast_resistance = 0.5f;
+			geometry = GEOMETRY::PISTON;
+			byHand = true;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			transparent = true;
+			oriented = true;
+			textureY = 13;
+		}
+		virtual int texX( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
+			if (dir == offset) {
+				return (3 + (mined == blocks::STICKY_PISTON));
+			}
+			if (dir == opposite_dir(offset)) {
+				return (1);
+			}
+			return (0);
+		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+};
+
+struct StickyPiston : Piston {
+	public:
+		StickyPiston() {
+			name = "STICKY_PISTON";
+			mined = blocks::STICKY_PISTON;
+		}
+};
+
+struct PistonHead : Block {
+	public:
+		PistonHead() {
+			name = "PISTON_HEAD";
+			blast_resistance = 0.5f;
+			geometry = GEOMETRY::CROSS;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 1.5f;
+			transparent = true;
+			oriented = true;
+			textureX = 4;
+			textureY = 5;
+		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
 };
 
 struct Poppy : Cross {

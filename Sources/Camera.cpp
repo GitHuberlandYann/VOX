@@ -152,6 +152,23 @@ int Camera::getOrientation( void ) // if change this, then change face_dir in Ch
 	return (_front.y < 0);
 }
 
+/**
+ * @brief same as ::getOrientation, but also return PLUSZ/MINUSZ
+*/
+int Camera::getOrientation6( void )
+{
+	if (glm::abs(_front.x) > glm::abs(_front.y)) {
+		if (glm::abs(_front.z) > glm::abs(_front.x)) {
+			return ((_front.z < 0) ? face_dir::PLUSZ : face_dir::MINUSZ);
+		}
+		return ((_front.x < 0) ? face_dir::PLUSX : face_dir::MINUSX);
+	}
+	if (glm::abs(_front.z) > glm::abs(_front.y)) {
+		return ((_front.z < 0) ? face_dir::PLUSZ : face_dir::MINUSZ);
+	}
+	return ((_front.y < 0) ? face_dir::PLUSY : face_dir::MINUSY);
+}
+
 glm::vec3 Camera::getPos( void )
 {
 	_mtx.lock();

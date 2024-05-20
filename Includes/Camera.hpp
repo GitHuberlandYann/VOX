@@ -86,6 +86,7 @@ class Camera
 		bool chunkInFront( glm::ivec2 current_chunk, int posX, int posY );
 
 		int getOrientation( void );
+		int getOrientation6( void );
 		glm::vec3 getPos( void );
 		glm::vec3 getEyePos( void );
 		glm::vec3 getCamPos( void );

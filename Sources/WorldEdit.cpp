@@ -238,8 +238,8 @@ bool WorldEdit::parseCommand( std::vector<std::string> &argv )
 				_chat->chatMessage("* Welcome to WorldEdit!\t*", TEXT::GREEN);
 				_chat->chatMessage("******************************************", TEXT::GREEN);
 				return (false);
-			} else if (!_running) {
-				return (true);
+			// } else if (!_running) {
+			// 	return (true);
 			} else if (_selectStart.z == 1000) {
 				_chat->chatMessage("Selection start not set.", TEXT::RED);
 				return (false);

@@ -1063,6 +1063,8 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		if (type == blocks::TORCH) {
 			addFlame(offset, pos, blocks::TORCH, (block_value >> 9) & 0x7);
 		}
+	} else if (shape == GEOMETRY::PISTON) {
+		block_value += (_camera->getOrientation6() << 9);
 	} else if (s_blocks[type]->oriented) {
 		if ((type != blocks::LEVER && shape != GEOMETRY::BUTTON) || ((block_value >> 12) & 0x3) != PLACEMENT::WALL) {
 			block_value += (_camera->getOrientation() << 9);

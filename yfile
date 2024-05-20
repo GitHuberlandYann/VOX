@@ -297,11 +297,12 @@ Some info:
 
 
 - _blocks
-	- all
+	- all - reserved bits:
 		- 0xFF  type
 		- 0x100 NotVisible
 		- 0x10000 strongly powered (1 << 16)
 		- 0x20000 weakdy   powered (1 << 17) (typo on purpose, meaning by redtone dust)
+		- 0x40000 activated (1 << 18) - redstone componants
 		- 0xF << 20 signal strength
 	- Furnace 0x7 << 9 == orientation, 0x1000 == furnace ON/OFF
 	- table craft 0x7 << 9 == orientation
@@ -316,10 +317,11 @@ Some info:
 	- glass panes 0xF << 12 == 'arms'
 	- lever 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor)
 	- button 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor)
-	- redstone lamp 1 << 9 lit
+	- redstone lamp 1 << 18 lit
 	- redstone dust 0xF << 20 strength 0xFF << 24 'arms'
 	- repeater 0x7 << 9 orientation, 0x3 << 12 delay, 1 << 15 locked, 1 << 16 lit
 	- comparator 0x7 << 9 orientation, 1 << 12 mode, 0xF << 20 strength
+	- piston 0x7 << 9 orientation, 1 << 18 activated
 
 	- powered blocks: (1 << 16)
 		doors, trapdoors, lever, button, redstone lamp, repeater
