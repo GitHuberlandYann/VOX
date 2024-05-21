@@ -170,6 +170,7 @@ class Chunk
 		void generate_sky( void );
 
 		// player-related block update
+		void regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
@@ -252,7 +253,6 @@ class Chunk
 
 		void generation( void );
 		void checkFillVertices( void );
-		void regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void generate_chunk( void );
 		void dropEntity( glm::vec3 dir, t_item item );
 		void addParticle( Particle *particle );
