@@ -7,7 +7,7 @@ extern std::mutex mtx;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Menu::Menu( Inventory & inventory, UI *ui ) : _gui_size(3), _state(MENU::MAIN), _selection(0), _selected_world(0), _vaoSet(false),
-	_textBar(true), _change_to_apply(false),
+	_textBar(true), _input_world(false), _input_seed(false), _change_to_apply(false),
 	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _chest(NULL), _furnace(NULL)
 {
 	_world_file = "";

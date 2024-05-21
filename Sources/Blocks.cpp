@@ -3711,15 +3711,68 @@ void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::i
 		v3 = {spec + XTEX + YTEX, pp3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
+	glm::vec3 right, front, up;
+	switch ((value >> 9) & 0x7) {
+		case (face_dir::MINUSX):
+			right = glm::vec3( 0, 1, 0);
+			front = glm::vec3(-1, 0, 0);
+			up    = glm::vec3( 0, 0, 1);
+			break ;
+		case (face_dir::PLUSX):
+			right = glm::vec3(0, -1, 0);
+			front = glm::vec3(1,  0, 0);
+			up    = glm::vec3(0,  0, 1);
+			break ;
+		case (face_dir::MINUSY):
+			right = glm::vec3(-1,  0, 0);
+			front = glm::vec3( 0, -1, 0);
+			up    = glm::vec3( 0,  0, 1);
+			break ;
+		case (face_dir::PLUSY):
+			right = glm::vec3(1, 0, 0);
+			front = glm::vec3(0, 1, 0);
+			up    = glm::vec3(0, 0, 1);
+			break ;
+		case (face_dir::MINUSZ):
+			right = glm::vec3(1, 0, 0);
+			front = glm::vec3(0, 0, -1);
+			up    = glm::vec3(0, 1, 0);
+			break ;
+		case (face_dir::PLUSZ):
+			right = glm::vec3(1,  0, 0);
+			front = glm::vec3(0,  0, 1);
+			up    = glm::vec3(0, -1, 0);
+			break ;
+	}
+	spec &= 0xFFFF0000;
+	spec += (this->texX(face_dir::MINUSX, face_dir::MINUSY) << 4) + (this->texY(face_dir::MINUSX, face_dir::MINUSY) << 12);
+	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front + up) * 0.5f;
+	// piston bar
+	v0 = {spec, topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
+	v1 = {spec - 12 + XTEX, topLeft + right * 6.0f * ONE16TH - up * 6.0f * ONE16TH};
+	v2 = {spec + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
+	v3 = {spec - 12 + XTEX + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - up * 6.0f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec, topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
+	v1 = {spec - 12 + XTEX, topLeft + right * 10.0f * ONE16TH - up * 6.0f * ONE16TH};
+	v2 = {spec + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
+	v3 = {spec - 12 + XTEX + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - up * 10.0f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec, topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
+	v1 = {spec - 12 + XTEX, topLeft + right * 10.0f * ONE16TH - up * 10.0f * ONE16TH};
+	v2 = {spec + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
+	v3 = {spec - 12 + XTEX + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - up * 10.0f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec, topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
+	v1 = {spec - 12 + XTEX, topLeft + right * 6.0f * ONE16TH - up * 10.0f * ONE16TH};
+	v2 = {spec + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
+	v3 = {spec - 12 + XTEX + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - up * 6.0f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
 }
 
 void PistonHead::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	(void)chunk;
-	(void)vertices;
-	(void)start;
-	(void)pos;
-	(void)value;
 
 	glm::vec3 right, front, up;
 	switch ((value >> 9) & 0x7) {
@@ -3755,7 +3808,7 @@ void PistonHead::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 			break ;
 	}
 	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front + up) * 0.5f;
-	int piston = blocks::PISTON; // TODO add ternary for sticky_pistons
+	int piston = (value & REDSTONE::STICKY) ? blocks::STICKY_PISTON : blocks::PISTON;
 	// front face
 	int spec = (s_blocks[piston]->texX(face_dir::MINUSX, face_dir::MINUSX << 9) << 4) + (s_blocks[piston]->texY(face_dir::MINUSX, face_dir::MINUSX << 9) << 12) + (0xF << 24);
 	t_shaderInput v0 = {spec, topLeft + right};
@@ -3795,24 +3848,24 @@ void PistonHead::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft - up - front * 0.25f};
 	face_vertices(vertices, v0, v1, v2, v3);
 	// piston bar
-	v0 = {spec, topLeft + right * 6.0f * ONE16TH - front * 1.25f - up * 6.0f * ONE16TH};
+	v0 = {spec + 4, topLeft + right * 6.0f * ONE16TH - front * 1.0f - up * 6.0f * ONE16TH};
 	v1 = {spec + XTEX, topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
-	v2 = {spec + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 1.25f - up * 6.0f * ONE16TH};
+	v2 = {spec + 4 + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 1.0f - up * 6.0f * ONE16TH};
 	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
 	face_vertices(vertices, v0, v1, v2, v3);
-	v0 = {spec, topLeft + right * 10.0f * ONE16TH - front * 1.25f - up * 6.0f * ONE16TH};
+	v0 = {spec + 4, topLeft + right * 10.0f * ONE16TH - front * 1.0f - up * 6.0f * ONE16TH};
 	v1 = {spec + XTEX, topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
-	v2 = {spec + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 1.25f - up * 10.0f * ONE16TH};
+	v2 = {spec + 4 + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 1.0f - up * 10.0f * ONE16TH};
 	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
 	face_vertices(vertices, v0, v1, v2, v3);
-	v0 = {spec, topLeft + right * 10.0f * ONE16TH - front * 1.25f - up * 10.0f * ONE16TH};
+	v0 = {spec + 4, topLeft + right * 10.0f * ONE16TH - front * 1.0f - up * 10.0f * ONE16TH};
 	v1 = {spec + XTEX, topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
-	v2 = {spec + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 1.25f - up * 10.0f * ONE16TH};
+	v2 = {spec + 4 + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 1.0f - up * 10.0f * ONE16TH};
 	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
 	face_vertices(vertices, v0, v1, v2, v3);
-	v0 = {spec, topLeft + right * 6.0f * ONE16TH - front * 1.25f - up * 10.0f * ONE16TH};
+	v0 = {spec + 4, topLeft + right * 6.0f * ONE16TH - front * 1.0f - up * 10.0f * ONE16TH};
 	v1 = {spec + XTEX, topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
-	v2 = {spec + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 1.25f - up * 6.0f * ONE16TH};
+	v2 = {spec + 4 + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 1.0f - up * 6.0f * ONE16TH};
 	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
 	face_vertices(vertices, v0, v1, v2, v3);
 }

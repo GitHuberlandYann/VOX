@@ -557,7 +557,7 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	(void)camPos;
 	_lifeTime += deltaTime;
 
-	float percent = glm::max(1.0, _lifeTime / (TICK * 2));
+	float percent = glm::min(1.0, _lifeTime / (TICK * 2));
 	s_blocks[_item.type & 0xFF]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, _pos + _dir * percent, _item.type);
 
     if (_lifeTime > TICK * 2) {
@@ -567,6 +567,9 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 			if (_retraction) {
 				_chunk->setBlockAt(blocks::AIR, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, true);
+			}
+			if ((_item.type & 0xFF) == blocks::PISTON || (_item.type & 0xFF) == blocks::STICKY_PISTON) {
+				_chunk->updatePiston(_endPos, _item.type);
 			}
 		} else {
 			int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z, true);

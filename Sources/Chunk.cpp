@@ -1107,7 +1107,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		}
 	} else if (shape == GEOMETRY::DUST) {
 		int shape_below = s_blocks[_blocks[offset - 1] & 0xFF]->geometry;
-		if (!(shape_below == GEOMETRY::CUBE || shape_below == GEOMETRY::SLAB_TOP
+		if (!(shape_below == GEOMETRY::CUBE || shape_below == GEOMETRY::SLAB_TOP || shape_below == GEOMETRY::PISTON
 			|| shape_below == GEOMETRY::STAIRS_TOP || shape_below == GEOMETRY::GLASS)) {
 			return ;
 		}

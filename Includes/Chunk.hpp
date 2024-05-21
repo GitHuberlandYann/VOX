@@ -283,7 +283,7 @@ class Chunk
 		void drawWater( GLint & counter, GLint &face_counter );
 
 		void updateRedstone( void );
-		void updatePiston( glm::ivec3 pos, int value, bool state );
+		void updatePiston( glm::ivec3 pos, int value );
 		void scheduleRedstoneTick( t_redstoneTick red );
 		void abortComparatorScheduleTick( glm::ivec3 pos );
 		void updateFurnaces( double currentTime );

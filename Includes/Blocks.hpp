@@ -91,6 +91,9 @@ namespace REDSTONE {
 	const int COMPARE = 0;
 	const int SUBSTRACT = 1;
 
+	const int STICKY_OFFSET = 12;
+	const int STICKY = (1 << STICKY_OFFSET);
+
 	const int ALL_BITS = -1;
 };
 
