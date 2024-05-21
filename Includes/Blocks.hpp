@@ -304,7 +304,7 @@ struct Block {
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
 			(void)hitbox;(void)orientation;(void)corners;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const {
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const {
 			(void)chunk;
 			(void)vertices;
 			(void)start;
@@ -319,7 +319,7 @@ struct Cube : Block {
 		Cube() {
 			geometry = GEOMETRY::CUBE;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Cross : Block {
@@ -336,7 +336,7 @@ struct Cross : Block {
 			transparent = true;
 			item3D = false;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct SlabBottom : Block {
@@ -350,7 +350,7 @@ struct SlabBottom : Block {
 			geometry = GEOMETRY::SLAB_BOTTOM;
 			transparent = true;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct SlabTop : Block {
@@ -364,7 +364,7 @@ struct SlabTop : Block {
 			geometry = GEOMETRY::SLAB_TOP;
 			transparent = true;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct StairsBottom : Block {
@@ -453,7 +453,7 @@ struct StairsBottom : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct StairsTop : Block {
@@ -542,7 +542,7 @@ struct StairsTop : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Fence : Block {
@@ -588,7 +588,7 @@ struct Fence : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Door : Block {
@@ -647,7 +647,7 @@ struct Door : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Trapdoor : Block {
@@ -690,7 +690,7 @@ struct Trapdoor : Block {
 				}
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Crop : Block {
@@ -707,7 +707,7 @@ struct Crop : Block {
 			transparent = true;
 			item3D = false;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Button : Block {
@@ -766,7 +766,7 @@ struct Button : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 
@@ -891,7 +891,7 @@ struct Farmland : Block {
 			}
 			return (4);
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct DirtPath : Farmland {
@@ -1261,7 +1261,7 @@ struct Lever : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Bedrock : Cube {
@@ -1496,7 +1496,7 @@ struct GlassPane : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct RedstoneLamp : Cube {
@@ -1862,7 +1862,7 @@ struct Piston : Block {
 			}
 			return (0);
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct StickyPiston : Piston {
@@ -1887,13 +1887,13 @@ struct PistonHead : Block {
 			textureX = 4;
 			textureY = 5;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct MovingPiston : Block {
 	public:
 		MovingPiston() {
-			name = "PISTON_HEAD";
+			name = "MOVING_PISTON";
 			geometry = GEOMETRY::PISTON;
 		}
 };
@@ -2047,7 +2047,7 @@ struct Torch : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct RedstoneTorch : Torch {
@@ -2092,7 +2092,7 @@ struct RedstoneDust : Block {
 			if (offset == 2) return (8);
 			return (12);
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Repeater : Block {
@@ -2119,7 +2119,7 @@ struct Repeater : Block {
 			if (offset == 2) return (7);
 			return (6 - offset);
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Comparator : Block {
@@ -2146,7 +2146,7 @@ struct Comparator : Block {
 			if (offset == 2) return (7);
 			return (6 - offset);
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const;
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Chest : Block {

@@ -31,8 +31,8 @@ ArrowEntity::ArrowEntity( Chunk *chunk, glm::vec3 position, glm::vec3 dir )
 
 }
 
-MovingPistonEntity::MovingPistonEntity( Chunk *chunk, glm::ivec3 position, glm::ivec3 dir, bool piston_head, int value )
-	: Entity(chunk, NULL, position, dir, false, {value, 1}), _piston_head(piston_head), _endPos(position + dir)
+MovingPistonEntity::MovingPistonEntity( Chunk *chunk, glm::ivec3 source, glm::ivec3 position, glm::ivec3 dir, bool piston_head, bool retraction, int value )
+	: Entity(chunk, NULL, position, dir, false, {value, 1}), _piston_head(piston_head), _retraction(retraction), _source(source), _endPos(position + dir)
 {
 
 }
@@ -83,6 +83,21 @@ void ArrowEntity::getBlasted( glm::vec3 pos, float blast_radius )
 	}
 	_dir += (_pos - pos) * blast_radius;
 }
+
+bool Entity::pistonedBy( glm::ivec3 pos )
+{
+	(void)pos;
+	return (false);
+}
+bool MovingPistonEntity::pistonedBy( glm::ivec3 pos )
+{
+	if (pos == _source) { // force place block at posEnd
+		_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
+		return (true);
+	}
+	return (false);
+}
+
 
 /**
  * @brief update entity's position and push_back arr with new pos
@@ -541,16 +556,26 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	(void)partArr;
 	(void)camPos;
 	_lifeTime += deltaTime;
+
+	float percent = glm::max(1.0, _lifeTime / (TICK * 2));
+	s_blocks[_item.type & 0xFF]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, _pos + _dir * percent, _item.type);
+
     if (_lifeTime > TICK * 2) {
 		// finish extension, turn back to block
+		std::cout << "MovingPistonEntity finished movement to " << _endPos.x << ", " << _endPos.y << ", " << _endPos.z << std::endl;
 		if (!_piston_head) {
 			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
+			if (_retraction) {
+				_chunk->setBlockAt(blocks::AIR, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, true);
+			}
+		} else {
+			int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z, true);
+			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & 0xFF]->name << std::endl;
+			if ((front_value & 0xFF) == blocks::MOVING_PISTON) {
+				_chunk->setBlockAt(blocks::AIR, _pos.x, _pos.y, _pos.z, true);
+			}
 		}
         return (true);
     }
-
-	(void)arr;
-	// float percent = _lifeTime / (TICK * 2);
-	// s_blocks[_item.type & 0xFF]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, pos + dir * percent, TODO SOMETHING ABOUT THIS PROBLEM, _item.value);
 	return (false);
 }

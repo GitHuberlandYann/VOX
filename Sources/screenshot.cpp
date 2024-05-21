@@ -17,7 +17,7 @@ void OpenGL_Manager::screenshot( void )
 	// glReadPixels(0, 0, SHOT_WIDTH, SHOT_HEIGHT, GL_BGR, GL_UNSIGNED_BYTE, pixels); // gives cool effect
 
 	try {
-		std::string file = _world_name.substr(0, _world_name.size() - 5) + "_" + DayCycle::Get()->getTime() + ".ppm";
+		std::string file = "Resources/Screenshots/" + _world_name.substr(0, _world_name.size() - 5) + "_" + DayCycle::Get()->getTime() + ".ppm";
 		std::ofstream ofs(file, std::ofstream::out | std::ofstream::trunc);
 		ofs << "P3\n" << SHOT_WIDTH << ' ' << SHOT_HEIGHT << "\n255\n";
 		for (int row = SHOT_HEIGHT - 1; row >= 0; --row) {

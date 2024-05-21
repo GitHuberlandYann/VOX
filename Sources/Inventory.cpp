@@ -504,6 +504,8 @@ void Inventory::replaceSlot( int type, bool creative )
 	int shape = s_blocks[type]->geometry;
 	if (shape == GEOMETRY::SLAB_TOP || shape == GEOMETRY::STAIRS_TOP) {
 		--type;
+	} else if (type == blocks::PISTON_HEAD || type == blocks::MOVING_PISTON) {
+		return ;
 	}
 	_modif = true;
 	if (creative) {

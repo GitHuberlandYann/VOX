@@ -19,7 +19,7 @@ const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new IronHoe(), new DiamondHoe(), new WheatSeeds(), new Wheat(), new Bread(), new Apple(), new Flint(), new FlintAndSteel()
 };
 
-void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -147,7 +147,7 @@ void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 	}
 }
 
-void Cross::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Cross::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	(void)value;
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
@@ -186,7 +186,7 @@ void Cross::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	face_vertices(vertices, v0, v1, v2, v3);
 }
 
-void Farmland::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Farmland::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1 - ONE16TH);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1 - ONE16TH);
@@ -305,7 +305,7 @@ void Farmland::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	}
 }
 
-void SlabBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void SlabBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0.5f);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0.5f);
@@ -388,7 +388,7 @@ void SlabBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 	}
 }
 
-void SlabTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void SlabTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -471,7 +471,7 @@ void SlabTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::
 	face_vertices(vertices, v0, v1, v2, v3);
 }
 
-void Torch::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Torch::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	(void)chunk;
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
@@ -576,7 +576,7 @@ void Torch::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	}
 }
 
-void StairsBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void StairsBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -965,7 +965,7 @@ void StairsBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 	}
 }
 
-void StairsTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void StairsTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -1354,7 +1354,7 @@ void StairsTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 	}
 }
 
-void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -1705,7 +1705,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 	}
 }
 
-void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -2113,7 +2113,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	}
 }
 
-void Fence::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Fence::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -2385,7 +2385,7 @@ void Fence::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	}
 }
 
-void GlassPane::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void GlassPane::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	// TODO move this to sky_vertex
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
@@ -2565,7 +2565,7 @@ void GlassPane::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 	}
 }
 
-void Crop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Crop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	(void)value;
 	glm::vec3 p0 = {start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1 - ONE16TH};
@@ -2601,7 +2601,7 @@ void Crop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 	face_vertices(vertices, v0, v1, v2, v3); // +y
 }
 
-void Lever::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Lever::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -2850,7 +2850,7 @@ void Lever::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	face_vertices(vertices, v0, v1, v2, v3); // +z
 }
 
-void Button::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Button::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -3020,7 +3020,7 @@ void Button::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::i
 	}
 }
 
-void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	(void)chunk;
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0.002f);
@@ -3113,7 +3113,7 @@ void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 	}
 }
 
-void Repeater::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Repeater::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -3296,7 +3296,7 @@ void Repeater::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	}
 }
 
-void Comparator::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Comparator::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
@@ -3478,7 +3478,7 @@ void Comparator::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 	face_vertices(vertices, v0, v1, v2, v3);
 }
 
-void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	float dxm = 0, dxp = 1, dym = 0, dyp = 1, dzm = 0, dzp = 1;
 	int orientation = ((value >> 9) & 0x7), tyo = 0, ttyo;
@@ -3713,11 +3713,106 @@ void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::i
 	}
 }
 
-void PistonHead::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::ivec3 pos, int value ) const
+void PistonHead::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	(void)chunk;
 	(void)vertices;
 	(void)start;
 	(void)pos;
 	(void)value;
+
+	glm::vec3 right, front, up;
+	switch ((value >> 9) & 0x7) {
+		case (face_dir::MINUSX):
+			right = glm::vec3( 0, 1, 0);
+			front = glm::vec3(-1, 0, 0);
+			up    = glm::vec3( 0, 0, 1);
+			break ;
+		case (face_dir::PLUSX):
+			right = glm::vec3(0, -1, 0);
+			front = glm::vec3(1,  0, 0);
+			up    = glm::vec3(0,  0, 1);
+			break ;
+		case (face_dir::MINUSY):
+			right = glm::vec3(-1,  0, 0);
+			front = glm::vec3( 0, -1, 0);
+			up    = glm::vec3( 0,  0, 1);
+			break ;
+		case (face_dir::PLUSY):
+			right = glm::vec3(1, 0, 0);
+			front = glm::vec3(0, 1, 0);
+			up    = glm::vec3(0, 0, 1);
+			break ;
+		case (face_dir::MINUSZ):
+			right = glm::vec3(1, 0, 0);
+			front = glm::vec3(0, 0, -1);
+			up    = glm::vec3(0, 1, 0);
+			break ;
+		case (face_dir::PLUSZ):
+			right = glm::vec3(1,  0, 0);
+			front = glm::vec3(0,  0, 1);
+			up    = glm::vec3(0, -1, 0);
+			break ;
+	}
+	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front + up) * 0.5f;
+	int piston = blocks::PISTON; // TODO add ternary for sticky_pistons
+	// front face
+	int spec = (s_blocks[piston]->texX(face_dir::MINUSX, face_dir::MINUSX << 9) << 4) + (s_blocks[piston]->texY(face_dir::MINUSX, face_dir::MINUSX << 9) << 12) + (0xF << 24);
+	t_shaderInput v0 = {spec, topLeft + right};
+	t_shaderInput v1 = {spec + XTEX, topLeft};
+	t_shaderInput v2 = {spec + YTEX, topLeft + right - up};
+	t_shaderInput v3 = {spec + XTEX + YTEX, topLeft - up};
+	face_vertices(vertices, v0, v1, v2, v3);
+	// back of front volume
+	if (piston == blocks::STICKY_PISTON) {
+		spec = (s_blocks[blocks::PISTON]->texX(face_dir::MINUSX, face_dir::MINUSX << 9) << 4) + (s_blocks[blocks::PISTON]->texY(face_dir::MINUSX, face_dir::MINUSX << 9) << 12) + (0xF << 24);
+	}
+	v0 = {spec, topLeft - front * 0.25f};
+	v1 = {spec + XTEX, topLeft + right - front * 0.25f};
+	v2 = {spec + YTEX, topLeft - up - front * 0.25f};
+	v3 = {spec + XTEX + YTEX, topLeft + right - up - front * 0.25f};
+	face_vertices(vertices, v0, v1, v2, v3);
+	// side faces
+	spec = (s_blocks[piston]->texX(face_dir::MINUSY, face_dir::MINUSX << 9) << 4) + (s_blocks[piston]->texY(face_dir::MINUSY, face_dir::MINUSX << 9) << 12) + (0xF << 24);
+	v0 = {spec, topLeft};
+	v1 = {spec + XTEX, topLeft + right};
+	v2 = {spec + YTEX - (12 << 8), topLeft - front * 0.25f};
+	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right - front * 0.25f};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec, topLeft - up};
+	v1 = {spec + XTEX, topLeft};
+	v2 = {spec + YTEX - (12 << 8), topLeft - up - front * 0.25f};
+	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft - front * 0.25f};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec, topLeft + right};
+	v1 = {spec + XTEX, topLeft + right - up};
+	v2 = {spec + YTEX - (12 << 8), topLeft + right - front * 0.25f};
+	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right - up - front * 0.25f};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec, topLeft + right - up};
+	v1 = {spec + XTEX, topLeft - up};
+	v2 = {spec + YTEX - (12 << 8), topLeft + right - up - front * 0.25f};
+	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft - up - front * 0.25f};
+	face_vertices(vertices, v0, v1, v2, v3);
+	// piston bar
+	v0 = {spec, topLeft + right * 6.0f * ONE16TH - front * 1.25f - up * 6.0f * ONE16TH};
+	v1 = {spec + XTEX, topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
+	v2 = {spec + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 1.25f - up * 6.0f * ONE16TH};
+	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec, topLeft + right * 10.0f * ONE16TH - front * 1.25f - up * 6.0f * ONE16TH};
+	v1 = {spec + XTEX, topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
+	v2 = {spec + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 1.25f - up * 10.0f * ONE16TH};
+	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec, topLeft + right * 10.0f * ONE16TH - front * 1.25f - up * 10.0f * ONE16TH};
+	v1 = {spec + XTEX, topLeft + right * 10.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
+	v2 = {spec + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 1.25f - up * 10.0f * ONE16TH};
+	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	v0 = {spec, topLeft + right * 6.0f * ONE16TH - front * 1.25f - up * 10.0f * ONE16TH};
+	v1 = {spec + XTEX, topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 10.0f * ONE16TH};
+	v2 = {spec + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 1.25f - up * 6.0f * ONE16TH};
+	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
 }
