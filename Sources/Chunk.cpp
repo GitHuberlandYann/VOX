@@ -163,7 +163,7 @@ void Chunk::resetDisplayedFaces( void )
 								_added[offset] = value - blocks::NOTVISIBLE;
 							}
 						} else if (type > blocks::AIR) { // hide block
-							_blocks[offset] = value + blocks::NOTVISIBLE;
+							_blocks[offset] = value | blocks::NOTVISIBLE;
 						}
 					}
 				}

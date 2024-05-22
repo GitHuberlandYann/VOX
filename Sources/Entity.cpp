@@ -1,5 +1,6 @@
 #include "Chunk.hpp"
 #include "random.hpp"
+#include "DayCycle.hpp"
 
 Entity::Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool thrown, t_item item )
     : _thrown(thrown), _item(item), _lifeTime(0), _pos(position), _dir(dir), _chunk(chunk), _inventory(inventory)
@@ -32,7 +33,8 @@ ArrowEntity::ArrowEntity( Chunk *chunk, glm::vec3 position, glm::vec3 dir )
 }
 
 MovingPistonEntity::MovingPistonEntity( Chunk *chunk, glm::ivec3 source, glm::ivec3 position, glm::ivec3 dir, bool piston_head, bool retraction, int value )
-	: Entity(chunk, NULL, position, dir, false, {value, 1}), _piston_head(piston_head), _retraction(retraction), _source(source), _endPos(position + dir)
+	: Entity(chunk, NULL, position, dir, false, {value, 1}), _piston_head(piston_head), _retraction(retraction),
+	_tickStart(DayCycle::Get()->getTicks()), _source(source), _endPos(position + dir)
 {
 
 }
@@ -556,13 +558,15 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	(void)partArr;
 	(void)camPos;
 	_lifeTime += deltaTime;
+	int lifeLimit = (_retraction) ? 2 : 3;
 
-	float percent = glm::min(1.0, _lifeTime / (TICK * 2));
+	float percent = glm::min(1.0, _lifeTime / (TICK * lifeLimit));
 	s_blocks[_item.type & 0xFF]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, _pos + _dir * percent, _item.type);
 
-    if (_lifeTime > TICK * 2) {
+	int currentTick = DayCycle::Get()->getTicks();
+    if (currentTick - _tickStart == lifeLimit) {
 		// finish extension, turn back to block
-		std::cout << "MovingPistonEntity finished movement to " << _endPos.x << ", " << _endPos.y << ", " << _endPos.z << std::endl;
+		std::cout << "MovingPistonEntity finished movement [" << _tickStart << "] -> [" << currentTick << "] to " << _endPos.x << ", " << _endPos.y << ", " << _endPos.z << std::endl;
 		if (!_piston_head) {
 			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 			if (_retraction) {
@@ -572,10 +576,11 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 				_chunk->updatePiston(_endPos, _item.type);
 			}
 		} else {
+			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::STICKY_PISTON : blocks::PISTON) | (_item.type & (0x7 << 9)), _endPos, false);
 			int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z);
 			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & 0xFF]->name << std::endl;
 			if ((front_value & 0xFF) == blocks::MOVING_PISTON) {
-				_chunk->setBlockAt(blocks::AIR, _pos.x, _pos.y, _pos.z, false);
+				_chunk->setBlockAt(blocks::AIR, _pos.x, _pos.y, _pos.z, true);
 			}
 		}
         return (true);

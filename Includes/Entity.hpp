@@ -64,6 +64,7 @@ class MovingPistonEntity : public Entity
 {
 	private:
 		bool _piston_head, _retraction;
+		int _tickStart;
 		glm::ivec3 _source, _endPos;
 	
 	public:

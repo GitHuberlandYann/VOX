@@ -554,7 +554,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 {
 	int type = (value & 0xFF), prev_type = (previous & 0xFF);
-	std::cout << "UPDATE_BLOCK at " << pos.x << ", " << pos.y << ", " << pos.z << ". " << s_blocks[prev_type]->name << " -> " << s_blocks[type]->name << std::endl;
+	std::cout << "UPDATE_BLOCK at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << ". " << s_blocks[prev_type]->name << " -> " << s_blocks[type]->name << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
 		int type_under = (_blocks[offset - 1] & 0xFF);
@@ -585,7 +585,10 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		weaklyPower(pos, {0, 0, 0}, REDSTONE::OFF, true);
 	}
 	stronglyPower(pos, {0, 0, 0}, REDSTONE::OFF);
-	if (s_blocks[type]->redstoneComponant) {
+	if (type == blocks::REDSTONE_BLOCK) {
+		setBlockAt(value | REDSTONE::POWERED, pos, false);
+		weaklyPower(pos, {0, 0, 0}, REDSTONE::ON, false);
+	} else if (s_blocks[type]->redstoneComponant) {
 		int active = getRedstoneStrength(pos, {0, 0, 0}, REDSTONE::OFF, true);
 		if (active) {
 			value |= REDSTONE::ACTIVATED;
@@ -593,8 +596,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 			if (powered) {
 				value |= REDSTONE::POWERED;
 			}
-			_blocks[offset] = value;
-			_added[offset] = value;
+			setBlockAt(value, pos, false);
 			if (type == blocks::REDSTONE_LAMP) {
 				_lights[offset] &= 0xFF00;
 				_lights[offset] += s_blocks[blocks::REDSTONE_LAMP]->light_level + (s_blocks[blocks::REDSTONE_LAMP]->light_level << 4);
@@ -817,27 +819,35 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 			_neighbours[face_dir::PLUSY]->update_adj_block(pos, dir, source);
 		}
 	} else {
-		int value = getBlockAt(pos);
-		// update block's visibility
-		bool visible = face_count(value & 0xFF, pos);
-		if (visible && (value & blocks::NOTVISIBLE)) {
-			setBlockAt(value ^ blocks::NOTVISIBLE, pos, false);
-		} else if (!visible && !(value & blocks::NOTVISIBLE)) {
-			setBlockAt(value | blocks::NOTVISIBLE, pos, false);
-		}
+		_vertex_update = true;
+		int value = getBlockAt(pos), type = (value & 0xFF);
 
 		bool transparent = s_blocks[source]->transparent;
 
 		// update light status around placed block
-		if (transparent || (value & 0xFF) == blocks::MOVING_PISTON) { 
+		if (transparent || type == blocks::MOVING_PISTON) { 
 			if (dir != face_dir::PLUSZ) {
 				light_try_spread(pos.x, pos.y, pos.z, 1, true, LIGHT_RECURSE); // spread sky light, but not upwards duh
 			}
 			light_try_spread(pos.x, pos.y, pos.z, 1, false, LIGHT_RECURSE);
 		}
 
+		if (type == blocks::AIR) {
+			return ;
+		}
+
+		// update block's visibility
+		bool visible = face_count(type, pos);
+		if (visible && (value & blocks::NOTVISIBLE)) {
+			value ^= blocks::NOTVISIBLE;
+			setBlockAt(value, pos, false);
+		} else if (!visible && !(value & blocks::NOTVISIBLE)) {
+			value |= blocks::NOTVISIBLE;
+			setBlockAt(value, pos, false);
+		}
+
 		// update fence status
-		if (((value & 0xFF) == blocks::OAK_FENCE || (value & 0xFF) == blocks::GLASS_PANE) && (!transparent || source == (value & 0xFF))) {
+		if ((type == blocks::OAK_FENCE || type == blocks::GLASS_PANE) && (!transparent || source == type)) {
 			switch (dir) {
 				case face_dir::MINUSX:
 					setBlockAt(value | (FENCE::PX << 12), pos, false);
@@ -859,8 +869,8 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		if (attachement != glm::ivec3(0, 0, 0)) {
 			int base = getBlockAt(pos + attachement);
 			if (base == blocks::AIR) {
-				if (s_blocks[value & 0xFF]->byHand) {
-					entity_block(pos.x, pos.y, pos.z, value & 0xFF);
+				if (s_blocks[type]->byHand) {
+					entity_block(pos.x, pos.y, pos.z, type);
 				}
 				setBlockAt(blocks::AIR, pos, true);
 				return ;
@@ -868,7 +878,7 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		}
 
 		// disconnect adj dust if solid block placed above
-		if ((value & 0xFF) == blocks::REDSTONE_DUST && (source == blocks::REPEATER || source == blocks::COMPARATOR
+		if (type == blocks::REDSTONE_DUST && (source == blocks::REPEATER || source == blocks::COMPARATOR
 			|| source == blocks::PISTON || source == blocks::STICKY_PISTON
 			|| source == blocks::TARGET || (!transparent && dir == face_dir::MINUSZ))) {
 			connectRedstoneDust(pos, value, false);
@@ -876,7 +886,6 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		}
 
 		update_block(pos, value, value);
-		_vertex_update = true;
 	}
 }
 

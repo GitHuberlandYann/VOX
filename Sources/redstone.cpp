@@ -36,10 +36,12 @@
 	- left and right can only come from dust, repeater, comparator, and redstone block
 
  - piston:
-	- no delay to start movement, movement takes 2 ticks
+	- no delay to start movement
+	- 3 game ticks to extend, 2 game ticks to retract
 	- can't move more than 12 other blocks
 	- also checks above on the side for power source
 	- piston head and moved blocks are entities until end of movement
+	- if sticky piston retracts before finishing to push, doesn't retract block it pushed
 
  - lever:
 	- stronly powers block it is placed on, weakly powers ajd blocks
@@ -452,6 +454,9 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 			break ;
 		case blocks::PISTON:
 		case blocks::STICKY_PISTON:
+			if (source == adj_blocks[(adj >> 9) & 0x7]) {
+				break ;
+			}
 			updatePiston(pos, adj);
 			break ;
 		case blocks::REDSTONE_TORCH:
@@ -572,7 +577,7 @@ void Chunk::updateRedstoneTorch( glm::ivec3 pos, int value )
 void Chunk::updateRedstoneDust( glm::ivec3 pos )
 {
 	int actual_value = getBlockAt(pos.x, pos.y, pos.z), strength, signal_received = 0;
-std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z << " connect: " << (actual_value >> REDSTONE::DUST_MY) << std::endl;
+// std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z << " connect: " << (actual_value >> REDSTONE::DUST_MY) << std::endl;
 	if ((actual_value & 0xFF) != blocks::REDSTONE_DUST) {
 		strength = 0;
 		actual_value |= (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MX) | (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PX)
@@ -806,30 +811,30 @@ void Chunk::extendPiston( glm::ivec3 pos, int value, int count )
 void Chunk::retractPiston( glm::ivec3 pos, int value )
 {
 	const glm::ivec3 front = adj_blocks[(value >> 9) & 0x7];
-	(void)pos;
-	(void)value;
 	int front_value = getBlockAt(pos.x + front.x, pos.y + front.y, pos.z + front.z);
+	size_t delCount = 0;
 	if ((front_value & 0xFF) == blocks::MOVING_PISTON) { // force finish extension
 		size_t eSize = _entities.size();
-		for (size_t index = 0, delCount = 0; index < eSize; ++index) {
+		for (size_t index = 0; index < eSize; ++index) {
 			Entity *entity = _entities[index - delCount];
 			if (entity->pistonedBy(pos)) { // if true, pistonedBy places back the moving blocks
+				std::cout << "FORCE FINISH EXTENSION" << std::endl;
 				delete entity;
 				_entities.erase(_entities.begin() + index - delCount);
 				++delCount;
 			}
 		}
 	}
-	if ((value & 0xFF) == blocks::STICKY_PISTON) {
+	if ((value & 0xFF) == blocks::STICKY_PISTON && delCount < 2) { // retract block only if had time to finish push or didn't push block in the first place
 		int front2_value = getBlockAt(pos.x + front.x * 2, pos.y + front.y * 2, pos.z + front.z * 2);
 		if ((!s_blocks[front2_value & 0xFF]->transparent && (front2_value & 0xFF) != blocks::MOVING_PISTON)
 			|| (((front2_value & 0xFF) == blocks::PISTON || (front2_value & 0xFF) == blocks::STICKY_PISTON) && !(front2_value & REDSTONE::ACTIVATED))) {
-			setBlockAt(blocks::MOVING_PISTON, pos.x + front.x * 2, pos.y + front.y * 2, pos.z + front.z * 2, true);
+			setBlockAt(blocks::MOVING_PISTON, pos + front * 2, true);
 			_entities.push_back(new MovingPistonEntity(this, pos, pos + front * 2, -front, false, true, front2_value));
 		}
 	}
-	setBlockAt(blocks::MOVING_PISTON, pos.x + front.x, pos.y + front.y, pos.z + front.z, true);
-	_entities.push_back(new MovingPistonEntity(this, pos, pos + front, -front, true, true, blocks::PISTON_HEAD | (value & (0x7 << 9))));
+	setBlockAt(blocks::MOVING_PISTON, pos + front, true);
+	_entities.push_back(new MovingPistonEntity(this, pos, pos + front, -front, true, true, blocks::PISTON_HEAD | (value & (0x7 << 9))| (((value & 0xFF) == blocks::STICKY_PISTON) ? REDSTONE::STICKY : 0)));
 }
 
 /**
@@ -869,6 +874,9 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 
 	const glm::ivec3 front = adj_blocks[(value >> 9) & 0x7];
 	bool powered = getRedstoneStrength(pos, front, REDSTONE::OFF, true);
+	if (!powered && front.z != 1) {
+		powered = getRedstoneStrength(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, REDSTONE::OFF, true);
+	} // TODO pison can be powered through their extended head
 	std::cout << "piston update " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << " powered: " << powered << std::endl;
 	if (powered && !(value & REDSTONE::ACTIVATED)) {
 		// check if extension possible
@@ -965,6 +973,7 @@ void Chunk::updateRedstone( void )
 						std::cout << "Chunk::updateRedstone updated: " << s_blocks[value & 0xFF]->name << std::endl;
 						break ;
 				}
+				std::cout << "\t\t" << s_blocks[value & 0xFF]->name << " schedule over." << std::endl;
 
 				_redstone_schedule[schedIndex].erase(_redstone_schedule[schedIndex].begin() + (index - delCount));
 				++delCount;

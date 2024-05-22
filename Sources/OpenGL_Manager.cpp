@@ -314,7 +314,7 @@ void OpenGL_Manager::setup_window( void )
 	const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 	WIN_WIDTH = mode->width;
 	WIN_HEIGHT = mode->height;
-	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << std::endl;
+	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << ", refresh rate is " << mode->refreshRate << std::endl;
 
 	// (Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN))
 	// 	? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr)
