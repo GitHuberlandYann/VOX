@@ -91,6 +91,14 @@ Chunk::~Chunk( void )
 //                                Private                                     //
 // ************************************************************************** //
 
+/**
+ * @brief fun overload of face_count to use glm::ivec3 instead of 3 int args
+*/
+GLint Chunk::face_count( int type, glm::ivec3 pos )
+{
+	return (face_count(type, pos.x, pos.y, pos.z));
+}
+
 GLint Chunk::face_count( int type, int row, int col, int level )
 {
 	type &= 0xFF;
@@ -104,21 +112,21 @@ GLint Chunk::face_count( int type, int row, int col, int level )
 	if (type >= blocks::POPPY) {
 		return (2 << (type >= blocks::TORCH));
 	}
-	GLint res = visible_face(type, getBlockAt(row - 1, col, level, true), face_dir::MINUSX)
-				+ visible_face(type, getBlockAt(row + 1, col, level, true), face_dir::PLUSX)
-				+ visible_face(type, getBlockAt(row, col - 1, level, true), face_dir::MINUSY)
-				+ visible_face(type, getBlockAt(row, col + 1, level, true), face_dir::PLUSY);
+	GLint res = visible_face(type, getBlockAt(row - 1, col, level), face_dir::MINUSX)
+				+ visible_face(type, getBlockAt(row + 1, col, level), face_dir::PLUSX)
+				+ visible_face(type, getBlockAt(row, col - 1, level), face_dir::MINUSY)
+				+ visible_face(type, getBlockAt(row, col + 1, level), face_dir::PLUSY);
 	switch (level) {
 		case 0:
-			res += visible_face(type, getBlockAt(row, col, level + 1, true), face_dir::PLUSZ);
+			res += visible_face(type, getBlockAt(row, col, level + 1), face_dir::PLUSZ);
 			break ;
 		case 255:
-			res += visible_face(type, getBlockAt(row, col, level - 1, true), face_dir::MINUSZ);
+			res += visible_face(type, getBlockAt(row, col, level - 1), face_dir::MINUSZ);
 			res += 1;
 			break ;
 		default:
-			res += visible_face(type, getBlockAt(row, col, level - 1, true), face_dir::MINUSZ);
-			res += visible_face(type, getBlockAt(row, col, level + 1, true), face_dir::PLUSZ);
+			res += visible_face(type, getBlockAt(row, col, level - 1), face_dir::MINUSZ);
+			res += visible_face(type, getBlockAt(row, col, level + 1), face_dir::PLUSZ);
 	}
 	if (type == blocks::OAK_STAIRS_BOTTOM || type == blocks::OAK_STAIRS_TOP) {
 		res += 2; // +3 if corner stair, but np so far
@@ -616,7 +624,7 @@ void Chunk::explosion( glm::vec3 pos, int power )
 					std::vector<glm::ivec3> vt = voxel_traversal(pos, end);
 					intensity += 0.75f;
 					for (auto &p : vt) {
-						int type = getBlockAt(p.x - _startX, p.y - _startY, p.z, true) & 0xFF;
+						int type = getBlockAt(p.x - _startX, p.y - _startY, p.z) & 0xFF;
 						intensity -= 0.75f + s_blocks[type]->blast_resistance;
 						if (intensity < 0) {
 							break ;

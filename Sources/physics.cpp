@@ -57,7 +57,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	int minY = glm::floor(pos.y - width - _startY);
 	int maxY = glm::floor(pos.y + width - _startY);
 	int top  = glm::floor(pos.z + height);
-	int value = getBlockAt(minX, minY, top, true);
+	int value = getBlockAt(minX, minY, top);
 	const Block *target = s_blocks[value & 0xFF];
 	if (target->collisionHitbox_1x1x1) {
 		return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
@@ -65,7 +65,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 		collisionWHitbox(res, target, value, pos, width, originalHeight, minX, minY, top);
 	}
 	if (minX != maxX) {
-		value = getBlockAt(maxX, minY, top, true);
+		value = getBlockAt(maxX, minY, top);
 		target = s_blocks[value & 0xFF];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
@@ -74,7 +74,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 		}
 	}
 	if (minY != maxY) {
-		value = getBlockAt(minX, maxY, top, true);
+		value = getBlockAt(minX, maxY, top);
 		target = s_blocks[value & 0xFF];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
@@ -83,7 +83,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 		}
 	}
 	if (minX != maxX && minY != maxY) {
-		value = getBlockAt(maxX, maxY, top, true);
+		value = getBlockAt(maxX, maxY, top);
 		target = s_blocks[value & 0xFF];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
@@ -120,24 +120,24 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 bool Chunk::collisionBoxWater( glm::vec3 pos, float width, float height )
 {
 	glm::ivec3 top0 = {glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height)};
-	if ((getBlockAt(top0.x, top0.y, top0.z, true) & 0xFF) >= blocks::WATER) {
+	if ((getBlockAt(top0.x, top0.y, top0.z) & 0xFF) >= blocks::WATER) {
 		return (true);
 	}
 	glm::ivec3 top1 = {glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height)};
 	if (top1 != top0) {
-		if ((getBlockAt(top1.x, top1.y, top1.z, true) & 0xFF) >= blocks::WATER) {
+		if ((getBlockAt(top1.x, top1.y, top1.z) & 0xFF) >= blocks::WATER) {
 			return (true);
 		}
 	}
 	glm::ivec3 top2 = {glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height)};
 	if (top2 != top0) {
-		if ((getBlockAt(top2.x, top2.y, top2.z, true) & 0xFF) >= blocks::WATER) {
+		if ((getBlockAt(top2.x, top2.y, top2.z) & 0xFF) >= blocks::WATER) {
 			return (true);
 		}
 	}
 	glm::ivec3 top3 = {glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height)};
 	if (top3 != top0) {
-		if ((getBlockAt(top3.x, top3.y, top3.z, true) & 0xFF) >= blocks::WATER) {
+		if ((getBlockAt(top3.x, top3.y, top3.z) & 0xFF) >= blocks::WATER) {
 			return (true);
 		}
 	}

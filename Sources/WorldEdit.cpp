@@ -102,7 +102,7 @@ void WorldEdit::handleCmdSet( int value )
 	for (int posX = start.x; posX <= end.x; ++posX) {
 		for (int posY = start.y; posY <= end.y; ++posY) {
 			for (int posZ = start.z; posZ <= end.z; ++posZ) {
-				chunk->setBlockAtAbsolute(value, posX, posY, posZ, true);
+				chunk->setBlockAtAbsolute(value, posX, posY, posZ, false);
 			}
 		}
 	}
@@ -126,7 +126,7 @@ void WorldEdit::handleCmdCopy( void )
 	for (int posX = _clipStart.x; posX <= _clipEnd.x; ++posX) {
 		for (int posY = _clipStart.y; posY <= _clipEnd.y; ++posY) {
 			for (int posZ = _clipStart.z; posZ <= _clipEnd.z; ++posZ) {
-				int value = chunk->getBlockAtAbsolute(posX, posY, posZ, true);
+				int value = chunk->getBlockAtAbsolute(posX, posY, posZ);
 				_clipboard.push_back(value);
 			}
 		}
@@ -172,7 +172,7 @@ void WorldEdit::handleCmdPaste( bool notAirBlocks )
 				if (notAirBlocks && value == blocks::AIR) {
 					continue ;
 				}
-				chunk->setBlockAtAbsolute(value, posX, posY, posZ, true);
+				chunk->setBlockAtAbsolute(value, posX, posY, posZ, false);
 			}
 		}
 	}

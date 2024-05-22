@@ -94,7 +94,7 @@ void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
     v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
-	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1), true), false, false, false)) {
+	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1)), false, false, false)) {
 		spec = (2 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
 		v0 = {spec + 1, p2};
 		v1 = {spec - 1 + XTEX, p3};
@@ -289,7 +289,7 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
     v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
-	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1), true), false, false, false)) {
+	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1)), false, false, false)) {
 		spec = (2 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
 		v0 = {spec + 1, p2};
 		v1 = {spec - 1 + XTEX, p3};
@@ -489,7 +489,7 @@ void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
     v3 = {spec - 1 + XTEX + (1 << 18) + (14 << 8), p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 // -z
-	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1), true), false, false, false)) {
+	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1)), false, false, false)) {
 		spec = (2 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
 		v0 = {spec + 1, p2};
 		v1 = {spec - 1 + XTEX, p3};

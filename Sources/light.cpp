@@ -130,12 +130,12 @@ int Chunk::computeSmoothLight( int faceLight, int row, int col, int level, std::
 int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets )
 {
 	// (void)row;(void)col;(void)level;(void)offsets;return (0);
-	// return (!!air_flower(getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2], true), true, true, false)
-	// 		+ !!air_flower(getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5], true), true, true, false)
-	// 		+ !!air_flower(getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8], true), true, true, false));
-	return (!s_blocks[getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2], true) & 0xFF]->transparent
-			+ !s_blocks[getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5], true) & 0xFF]->transparent
-			+ !s_blocks[getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8], true) & 0xFF]->transparent);
+	// return (!!air_flower(getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]), true, true, false)
+	// 		+ !!air_flower(getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]), true, true, false)
+	// 		+ !!air_flower(getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]), true, true, false));
+	return (!s_blocks[getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]) & 0xFF]->transparent
+			+ !s_blocks[getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]) & 0xFF]->transparent
+			+ !s_blocks[getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]) & 0xFF]->transparent);
 }
 
 void Chunk::fill_vertex_array( void )

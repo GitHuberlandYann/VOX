@@ -61,23 +61,23 @@ std::array<int, 4> Chunk::water_heights( int value, int above, int row, int col,
 		res = {0, 0, 0, 0};
 		return (res);
 	}
-	std::array<int, 9> quads = {getBlockAt(row - 1, col - 1, level, true) & 0xFF,
-								getBlockAt(row - 1, col, level, true) & 0xFF,
-								getBlockAt(row - 1, col + 1, level, true) & 0xFF,
-								getBlockAt(row, col - 1, level, true) & 0xFF,
+	std::array<int, 9> quads = {getBlockAt(row - 1, col - 1, level) & 0xFF,
+								getBlockAt(row - 1, col, level) & 0xFF,
+								getBlockAt(row - 1, col + 1, level) & 0xFF,
+								getBlockAt(row, col - 1, level) & 0xFF,
 								value & 0xFF,
-								getBlockAt(row, col + 1, level, true) & 0xFF,
-								getBlockAt(row + 1, col - 1, level, true) & 0xFF,
-								getBlockAt(row + 1, col, level, true) & 0xFF,
-								getBlockAt(row + 1, col + 1, level, true)};
-	std::array<int, 8> quadsup = {getBlockAt(row - 1, col - 1, level + 1, true) & 0xFF,
-								getBlockAt(row - 1, col, level + 1, true) & 0xFF,
-								getBlockAt(row - 1, col + 1, level + 1, true) & 0xFF,
-								getBlockAt(row, col - 1, level + 1, true) & 0xFF,
-								getBlockAt(row, col + 1, level + 1, true) & 0xFF,
-								getBlockAt(row + 1, col - 1, level + 1, true) & 0xFF,
-								getBlockAt(row + 1, col, level + 1, true) & 0xFF,
-								getBlockAt(row + 1, col + 1, level + 1, true) & 0xFF};
+								getBlockAt(row, col + 1, level) & 0xFF,
+								getBlockAt(row + 1, col - 1, level) & 0xFF,
+								getBlockAt(row + 1, col, level) & 0xFF,
+								getBlockAt(row + 1, col + 1, level)};
+	std::array<int, 8> quadsup = {getBlockAt(row - 1, col - 1, level + 1) & 0xFF,
+								getBlockAt(row - 1, col, level + 1) & 0xFF,
+								getBlockAt(row - 1, col + 1, level + 1) & 0xFF,
+								getBlockAt(row, col - 1, level + 1) & 0xFF,
+								getBlockAt(row, col + 1, level + 1) & 0xFF,
+								getBlockAt(row + 1, col - 1, level + 1) & 0xFF,
+								getBlockAt(row + 1, col, level + 1) & 0xFF,
+								getBlockAt(row + 1, col + 1, level + 1) & 0xFF};
 
 	res[0] = max_water_level(quads[0], quads[1], quads[3], quads[4], quadsup[0], quadsup[1], quadsup[3]);
 	res[1] = max_water_level(quads[1], quads[2], quads[4], quads[5], quadsup[1], quadsup[2], quadsup[4]);
@@ -92,7 +92,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 		// std::cout << "water turned into " << s_blocks[value]->name << std::endl;
 		for (int index = 0; index < 6; index++) {
 			const glm::ivec3 delta = adj_blocks[index];
-			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z, true) & 0xFF;
+			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z) & 0xFF;
 			if (adj >= blocks::WATER) {
 				// std::cout << "updating neighbour" << std::endl;
 				insertFluidAt(newFluids, posX + delta.x, posY + delta.y, posZ + delta.z);
@@ -107,7 +107,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 		int sourceCount = 0;
 		for (int index = 0; index < 6; index++) {
 			const glm::ivec3 delta = adj_blocks[index];
-			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z, true) & 0xFF;
+			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z) & 0xFF;
 			if (index != face_dir::MINUSZ) { // if not block underneath
 			// std::cout << posX + delta.x << ", " << posY + delta.y << ", " << posZ + delta.z << " is " << s_blocks[adj]->name << std::endl;
 				if (adj >= blocks::WATER) {
@@ -143,7 +143,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 			// _water_count -= exposed_water_faces(posX, posY, posZ);
 			for (int index = 0; index < 6; index++) {
 				const glm::ivec3 delta = adj_blocks[index];
-				int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z, true) & 0xFF;
+				int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z) & 0xFF;
 				if (adj > blocks::WATER) {
 					insertFluidAt(newFluids, posX + delta.x, posY + delta.y, posZ + delta.z);
 				}
@@ -237,16 +237,16 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 					if (!air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], false, false, true)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level)), {pX, pY, level, 1, 1, 0, 0, 0, 0, 0, 1}});
 					}
-					if (!air_flower(getBlockAt(row - 1, col, level, true), false, false, true)) {
+					if (!air_flower(getBlockAt(row - 1, col, level), false, false, true)) {
 						order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, level + 0.5f)), {pX, pY + 1, level + 1, 0, -1, -1, heights[1], heights[0], 0, 0, 1}});
 					}
-					if (!air_flower(getBlockAt(row + 1, col, level, true), false, false, true)) {
+					if (!air_flower(getBlockAt(row + 1, col, level), false, false, true)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, level + 0.5f)), {pX + 1, pY, level + 1, 0, 1, -1, heights[2], heights[3], 0, 0, 1}});
 					}
-					if (!air_flower(getBlockAt(row, col - 1, level, true), false, false, true)) {
+					if (!air_flower(getBlockAt(row, col - 1, level), false, false, true)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, level + 0.5f)), {pX, pY, level + 1, 1, 0, -1, heights[0], heights[2], 0, 0, 1}});
 					}
-					if (!air_flower(getBlockAt(row, col + 1, level, true), false, false, true)) {
+					if (!air_flower(getBlockAt(row, col + 1, level), false, false, true)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, level + 0.5f)), {pX + 1, pY + 1, level + 1, -1, 0, -1, heights[3], heights[1], 0, 0, 1}});
 					}
 				} else if (type == blocks::GLASS) {
@@ -259,16 +259,16 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 					if (!air_flower(_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level - 1], false, false, false)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level)), {pX, pY, level, 1, 1, 0, 0, 0, 0, 0, 0}});
 					}
-					if (!air_flower(getBlockAt(row - 1, col, level, true), false, false, false)) {
+					if (!air_flower(getBlockAt(row - 1, col, level), false, false, false)) {
 						order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, level + 0.5f)), {pX, pY + 1, level + 1, 0, -1, -1, heights[1], heights[0], 0, 0, 0}});
 					}
-					if (!air_flower(getBlockAt(row + 1, col, level, true), false, false, false)) {
+					if (!air_flower(getBlockAt(row + 1, col, level), false, false, false)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, level + 0.5f)), {pX + 1, pY, level + 1, 0, 1, -1, heights[2], heights[3], 0, 0, 0}});
 					}
-					if (!air_flower(getBlockAt(row, col - 1, level, true), false, false, false)) {
+					if (!air_flower(getBlockAt(row, col - 1, level), false, false, false)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, level + 0.5f)), {pX, pY, level + 1, 1, 0, -1, heights[0], heights[2], 0, 0, 0}});
 					}
-					if (!air_flower(getBlockAt(row, col + 1, level, true), false, false, false)) {
+					if (!air_flower(getBlockAt(row, col + 1, level), false, false, false)) {
 						order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, level + 0.5f)), {pX + 1, pY + 1, level + 1, -1, 0, -1, heights[3], heights[1], 0, 0, 0}});
 					}
 				}

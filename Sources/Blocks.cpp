@@ -43,7 +43,7 @@ void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 	} else if (mined == blocks::REDSTONE_LAMP) { // TODO change this so offset given to texX and texY is just 'value'
 		offset = (value >> REDSTONE::ACTIVATED_OFFSET) & 0x1;
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 		spec = (this->texX(face_dir::MINUSX, offset) << 4) + (this->texY(face_dir::MINUSX, offset) << 12) + (3 << 19);
 		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
@@ -60,7 +60,7 @@ void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 		v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p2};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 		spec = (this->texX(face_dir::PLUSX, offset) << 4) + (this->texY(face_dir::PLUSX, offset) << 12) + (4 << 19);
 		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
@@ -77,7 +77,7 @@ void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 		v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p7};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 		spec = (this->texX(face_dir::MINUSY, offset) << 4) + (this->texY(face_dir::MINUSY, offset) << 12) + (1 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
@@ -94,7 +94,7 @@ void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 		v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 		spec = (this->texX(face_dir::PLUSY, offset) << 4) + (this->texY(face_dir::PLUSY, offset) << 12) + (2 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
@@ -111,7 +111,7 @@ void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 		v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p6};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 		spec = (this->texX(face_dir::PLUSZ, offset) << 4) + (this->texY(face_dir::PLUSZ, offset) << 12);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
@@ -128,7 +128,7 @@ void Cube::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 		v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p1};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 		spec = (this->texX(face_dir::MINUSZ, offset) << 4) + (this->texY(face_dir::MINUSZ, offset) << 12) + (5 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
@@ -201,7 +201,7 @@ void Farmland::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	t_shaderInput v0, v1, v2, v3;
 	int spec, faceLight, cornerLight, shade;
 	int offset = (value & blocks::WET_FARMLAND);
-	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 		spec = (this->texX(face_dir::MINUSX, offset) << 4) + (this->texY(face_dir::MINUSX, offset) << 12) + (3 << 19);
 		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
@@ -218,7 +218,7 @@ void Farmland::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 		v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p2};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 		spec = (this->texX(face_dir::PLUSX, offset) << 4) + (this->texY(face_dir::PLUSX, offset) << 12) + (4 << 19);
 		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
@@ -235,7 +235,7 @@ void Farmland::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 		v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p7};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 		spec = (this->texX(face_dir::MINUSY, offset) << 4) + (this->texY(face_dir::MINUSY, offset) << 12) + (1 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
@@ -252,7 +252,7 @@ void Farmland::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 		v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 		spec = (this->texX(face_dir::PLUSY, offset) << 4) + (this->texY(face_dir::PLUSY, offset) << 12) + (2 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
@@ -269,7 +269,7 @@ void Farmland::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 		v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p6};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 		spec = (this->texX(face_dir::PLUSZ, offset) << 4) + (this->texY(face_dir::PLUSZ, offset) << 12);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
@@ -286,7 +286,7 @@ void Farmland::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 		v3 = {spec + (cornerLight << 24) + (shade << 22) + XTEX + YTEX, p1};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 		spec = (this->texX(face_dir::MINUSZ, offset) << 4) + (this->texY(face_dir::MINUSZ, offset) << 12) + (5 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
@@ -320,7 +320,7 @@ void SlabBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 	t_shaderInput v0, v1, v2, v3;
 	int spec, faceLight, shade;
 	int baseSpec = (textureX << 4) + (textureY << 12);
-	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 		spec = baseSpec + (3 << 19);
 		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 		shade = 0;//computeShade(pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
@@ -331,7 +331,7 @@ void SlabBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 		v3 = {spec + (shade << 22) + XTEX + YTEX, p2};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 		spec = baseSpec + (4 << 19);
 		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 		shade = 0;//computeShade(pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
@@ -342,7 +342,7 @@ void SlabBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 		v3 = {spec + (shade << 22) + XTEX + YTEX, p7};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 		spec = baseSpec + (1 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 		shade = 0;//computeShade(pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
@@ -353,7 +353,7 @@ void SlabBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 		v3 = {spec + (shade << 22) + XTEX + YTEX, p3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 		spec = baseSpec + (2 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 		shade = 0;//computeShade(pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
@@ -375,7 +375,7 @@ void SlabBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 	v2 = {spec + (shade << 22) + YTEX, p0};
 	v3 = {spec + (shade << 22) + XTEX + YTEX, p1};
 	face_vertices(vertices, v0, v1, v2, v3);
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 		spec = baseSpec + (5 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 		shade = 0;//computeShade(pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
@@ -403,7 +403,7 @@ void SlabTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::
 	t_shaderInput v0, v1, v2, v3;
 	int spec, faceLight, shade;
 	int baseSpec = (textureX << 4) + (textureY << 12);
-	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 		spec = baseSpec + (3 << 19);
 		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 		shade = 0;//computeShade(pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
@@ -414,7 +414,7 @@ void SlabTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::
 		v3 = {spec - (8 << 8) + (shade << 22) + XTEX + YTEX, p2};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 		spec = baseSpec + (4 << 19);
 		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 		shade = 0;//computeShade(pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
@@ -425,7 +425,7 @@ void SlabTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::
 		v3 = {spec - (8 << 8) + (shade << 22) + XTEX + YTEX, p7};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 		spec = baseSpec + (1 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 		shade = 0;//computeShade(pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
@@ -436,7 +436,7 @@ void SlabTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::
 		v3 = {spec - (8 << 8) + (shade << 22) + XTEX + YTEX, p3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 		spec = baseSpec + (2 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 		shade = 0;//computeShade(pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
@@ -447,7 +447,7 @@ void SlabTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::
 		v3 = {spec - (8 << 8) + (shade << 22) + XTEX + YTEX, p6};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 		spec = baseSpec + (0 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 		shade = 0;//computeShade(pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
@@ -592,7 +592,7 @@ void StairsBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 	int baseSpec = (textureX << 4) + (textureY << 12);
 	int spec, faceLight, shade;
 	t_shaderInput v0, v1, v2, v3;
-	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 		spec = baseSpec + (3 << 19);
 		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 		shade = 0;
@@ -630,7 +630,7 @@ void StairsBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		}
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 		spec = baseSpec + (4 << 19);
 		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 		shade = 0;
@@ -668,7 +668,7 @@ void StairsBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		}
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 		spec = baseSpec + (1 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 		shade = 0;
@@ -706,7 +706,7 @@ void StairsBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		}
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 		spec = baseSpec + (2 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 		shade = 0;
@@ -744,7 +744,7 @@ void StairsBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		}
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 		spec = baseSpec + (0 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 		shade = 0;
@@ -952,7 +952,7 @@ void StairsBottom::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 			break ;
 	}
 	face_vertices(vertices, v0, v1, v2, v3);
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 		spec = baseSpec + (5 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 		shade = 0;
@@ -981,7 +981,7 @@ void StairsTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 	int baseSpec = (textureX << 4) + (textureY << 12);
 	int spec, faceLight, shade;
 	t_shaderInput v0, v1, v2, v3;
-	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 		spec = baseSpec + (3 << 19);
 		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 		shade = 0;
@@ -1019,7 +1019,7 @@ void StairsTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 		}
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 		spec = baseSpec + (4 << 19);
 		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 		shade = 0;
@@ -1057,7 +1057,7 @@ void StairsTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 		}
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 		spec = baseSpec + (1 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 		shade = 0;
@@ -1095,7 +1095,7 @@ void StairsTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 		}
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 		spec = baseSpec + (2 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 		shade = 0;
@@ -1133,7 +1133,7 @@ void StairsTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 		}
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 		spec = baseSpec + (0 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 		shade = 0;
@@ -1300,7 +1300,7 @@ void StairsTop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 			break ;
 	}
 	face_vertices(vertices, v0, v1, v2, v3);
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 		spec = baseSpec + (5 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 		shade = 0;
@@ -1448,7 +1448,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 			v2 = {spec + (shade << 22) + xtex_r + YTEX, p6};
 			v3 = {spec + (shade << 22) + xtex_l + YTEX, p2};
 			face_vertices(vertices, v0, v1, v2, v3);
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 				spec = (this->texX(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 12) + (4 << 19);
 				faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 				spec += (faceLight << 24);
@@ -1458,7 +1458,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) + xtex_r + YTEX, p7};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 				spec = (this->texX(face_dir::MINUSY, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::MINUSY, bitfield & DOOR::UPPER_HALF) << 12) + (1 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 				spec += (faceLight << 24);
@@ -1468,7 +1468,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) + 3 + (1 << 17) + YTEX, p3};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 				spec = (this->texX(face_dir::PLUSY, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::PLUSY, bitfield & DOOR::UPPER_HALF) << 12) + (2 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 				spec += (faceLight << 24);
@@ -1478,7 +1478,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) + 3 + (1 << 17) + YTEX, p6};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if ((bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+			if ((bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 				spec = (this->texX(face_dir::PLUSZ) << 4) + (this->texY(face_dir::PLUSZ) << 12) + (0 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 				shade = 0;
@@ -1489,7 +1489,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) - (1 << 12) + (3 << 8) + XTEX + YTEX, p5};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (!(bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+			if (!(bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 				spec = (this->texX(face_dir::MINUSZ, face_dir::MINUSZ) << 4) + (this->texY(face_dir::MINUSZ, face_dir::MINUSZ) << 12) + (5 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 				shade = 0;
@@ -1506,7 +1506,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 			p3.x -= 0.8125f;
 			p5.x -= 0.8125f;
 			p7.x -= 0.8125f;
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 				spec = (this->texX(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 12) + (3 << 19);
 				faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 				shade = 0;
@@ -1525,7 +1525,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 			v2 = {spec + (shade << 22) + xtex_l + YTEX, p3};
 			v3 = {spec + (shade << 22) + xtex_r + YTEX, p7};
 			face_vertices(vertices, v0, v1, v2, v3);
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 				spec = (this->texX(face_dir::MINUSY, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::MINUSY, bitfield & DOOR::UPPER_HALF) << 12) + (1 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 				spec += (faceLight << 24);
@@ -1535,7 +1535,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) + 3 + (1 << 17) + YTEX, p3};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 				spec = (this->texX(face_dir::PLUSY, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::PLUSY, bitfield & DOOR::UPPER_HALF) << 12) + (2 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 				spec += (faceLight << 24);
@@ -1545,7 +1545,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) + 3 + (1 << 17) + YTEX, p6};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if ((bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+			if ((bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 				spec = (this->texX(face_dir::PLUSZ) << 4) + (this->texY(face_dir::PLUSZ) << 12) + (0 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 				shade = 0;
@@ -1556,7 +1556,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) - (1 << 12) + (3 << 8) + XTEX + YTEX, p5};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (!(bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+			if (!(bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 				spec = (this->texX(face_dir::MINUSZ, face_dir::MINUSZ) << 4) + (this->texY(face_dir::MINUSZ, face_dir::MINUSZ) << 12) + (5 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 				shade = 0;
@@ -1573,7 +1573,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 			p1.y += 0.8125f;
 			p2.y += 0.8125f;
 			p3.y += 0.8125f;
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 				spec = (this->texX(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 12) + (3 << 19);
 				faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 				shade = 0;
@@ -1584,7 +1584,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) + 3 + (1 << 17) + YTEX, p2};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 				spec = (this->texX(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 12) + (4 << 19);
 				faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 				spec += (faceLight << 24);
@@ -1602,7 +1602,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 			v2 = {spec + (shade << 22) + xtex_r + YTEX, p2};
 			v3 = {spec + (shade << 22) + xtex_l + YTEX, p3};
 			face_vertices(vertices, v0, v1, v2, v3);
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 				spec = (this->texX(face_dir::PLUSY, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::PLUSY, bitfield & DOOR::UPPER_HALF) << 12) + (2 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 				spec += (faceLight << 24);
@@ -1612,7 +1612,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) + xtex_r + YTEX, p6};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if ((bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+			if ((bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 				spec = (this->texX(face_dir::PLUSZ) << 4) + (this->texY(face_dir::PLUSZ) << 12) + (0 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 				shade = 0;
@@ -1623,7 +1623,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) - (1 << 12) + (3 << 8) + XTEX + YTEX, p4};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (!(bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+			if (!(bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 				spec = (this->texX(face_dir::MINUSZ, face_dir::MINUSZ) << 4) + (this->texY(face_dir::MINUSZ, face_dir::MINUSZ) << 12) + (5 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 				shade = 0;
@@ -1640,7 +1640,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 			p5.y -= 0.8125f;
 			p6.y -= 0.8125f;
 			p7.y -= 0.8125f;
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 				spec = (this->texX(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::MINUSX, bitfield & DOOR::UPPER_HALF) << 12) + (3 << 19);
 				faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 				shade = 0;
@@ -1651,7 +1651,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) + 3 + (1 << 17) + YTEX, p2};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 				spec = (this->texX(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::PLUSX, bitfield & DOOR::UPPER_HALF) << 12) + (4 << 19);
 				faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 				spec += (faceLight << 24);
@@ -1661,7 +1661,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) + 3 + (1 << 17) + YTEX, p7};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 				spec = (this->texX(face_dir::MINUSY, bitfield & DOOR::UPPER_HALF) << 4) + (this->texY(face_dir::MINUSY, bitfield & DOOR::UPPER_HALF) << 12) + (1 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 				spec += (faceLight << 24);
@@ -1679,7 +1679,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 			v2 = {spec + (shade << 22) + xtex_l + YTEX, p7};
 			v3 = {spec + (shade << 22) + xtex_r + YTEX, p6};
 			face_vertices(vertices, v0, v1, v2, v3);
-			if ((bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+			if ((bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 				spec = (this->texX(face_dir::PLUSZ) << 4) + (this->texY(face_dir::PLUSZ) << 12) + (0 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 				shade = 0;
@@ -1690,7 +1690,7 @@ void Door::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 				v3 = {spec + (shade << 22) - (1 << 12) + (3 << 8) + XTEX + YTEX, p4};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (!(bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+			if (!(bitfield & DOOR::UPPER_HALF) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 				spec = (this->texX(face_dir::MINUSZ, face_dir::MINUSZ) << 4) + (this->texY(face_dir::MINUSZ, face_dir::MINUSZ) << 12) + (5 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 				shade = 0;
@@ -1729,7 +1729,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 			p1.z -= 0.8125f;
 			p4.z -= 0.8125f;
 			p5.z -= 0.8125f;
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 				spec = baseSpec + (3 << 19);
 				faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 				spec += (faceLight << 24);
@@ -1739,7 +1739,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v3 = {spec - (1 << 12) + (3 << 8) + (shade << 22) + XTEX + YTEX, p2};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 				spec = baseSpec + (4 << 19);
 				faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 				spec += (faceLight << 24);
@@ -1749,7 +1749,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v3 = {spec - (1 << 12) + (3 << 8) + (shade << 22) + XTEX + YTEX, p7};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 				spec = baseSpec + (1 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 				spec += (faceLight << 24);
@@ -1759,7 +1759,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v3 = {spec - (1 << 12) + (3 << 8) + (shade << 22) + XTEX + YTEX, p3};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 				spec = baseSpec + (2 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 				spec += (faceLight << 24);
@@ -1777,7 +1777,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 			v2 = {spec + (shade << 22) + YTEX, p0};
 			v3 = {spec + (shade << 22) + XTEX + YTEX, p1};
 			face_vertices(vertices, v0, v1, v2, v3);
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 				spec = baseSpec + (5 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 				spec += (faceLight << 24);
@@ -1792,7 +1792,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 			p3.z += 0.8125f;
 			p6.z += 0.8125f;
 			p7.z += 0.8125f;
-			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 				spec = baseSpec + (3 << 19);
 				faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 				spec += (faceLight << 24);
@@ -1802,7 +1802,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v3 = {spec + (shade << 22) + XTEX, p2};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 				spec = baseSpec + (4 << 19);
 				faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 				spec += (faceLight << 24);
@@ -1812,7 +1812,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v3 = {spec + (shade << 22) + XTEX, p7};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 				spec = baseSpec + (1 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 				spec += (faceLight << 24);
@@ -1822,7 +1822,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v3 = {spec + (shade << 22) + XTEX, p3};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 				spec = baseSpec + (2 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 				spec += (faceLight << 24);
@@ -1832,7 +1832,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v3 = {spec + (shade << 22) + XTEX, p6};
 				face_vertices(vertices, v0, v1, v2, v3);
 			}
-			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 				spec = baseSpec + (0 << 19);
 				faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 				spec += (faceLight << 24);
@@ -1866,7 +1866,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v2 = {spec + (shade << 22) + YTEX, p6};
 				v3 = {spec + (shade << 22) + XTEX + YTEX, p2};
 				face_vertices(vertices, v0, v1, v2, v3);
-				if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 					spec = baseSpec + (4 << 19);
 					faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 					spec += (faceLight << 24);
@@ -1876,7 +1876,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec + (shade << 22) + XTEX + YTEX, p7};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 					spec = baseSpec + (1 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 					spec += (faceLight << 24);
@@ -1886,7 +1886,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec + (shade << 22), p1};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 					spec = baseSpec + (2 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 					spec += (faceLight << 24);
@@ -1896,7 +1896,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec - (1 << 12) + (3 << 8) + (shade << 22) + XTEX + YTEX, p4};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 					spec = baseSpec + (0 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 					spec += (faceLight << 24);
@@ -1906,7 +1906,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec + (shade << 22), p5};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 					spec = baseSpec + (5 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 					spec += (faceLight << 24);
@@ -1922,7 +1922,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				p3 -= glm::vec3(0.8125f, 0, 0);
 				p5 -= glm::vec3(0.8125f, 0, 0);
 				p7 -= glm::vec3(0.8125f, 0, 0);
-				if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 					spec = baseSpec + (3 << 19);
 					faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 					spec += (faceLight << 24);
@@ -1940,7 +1940,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v2 = {spec + (shade << 22) + YTEX, p3};
 				v3 = {spec + (shade << 22) + XTEX + YTEX, p7};
 				face_vertices(vertices, v0, v1, v2, v3);
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 					spec = baseSpec + (1 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 					spec += (faceLight << 24);
@@ -1950,7 +1950,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec - (1 << 12) + (3 << 8) + (shade << 22) + XTEX + YTEX, p1};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 					spec = baseSpec + (2 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 					spec += (faceLight << 24);
@@ -1960,7 +1960,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec + (shade << 22), p4};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 					spec = baseSpec + (0 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 					spec += (faceLight << 24);
@@ -1970,7 +1970,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec - (1 << 12) + (3 << 8) + (shade << 22) + XTEX + YTEX, p5};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 					spec = baseSpec + (5 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 					spec += (faceLight << 24);
@@ -1986,7 +1986,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				p1 += glm::vec3(0, 0.8125f, 0);
 				p2 += glm::vec3(0, 0.8125f, 0);
 				p3 += glm::vec3(0, 0.8125f, 0);
-				if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 					spec = baseSpec + (3 << 19);
 					faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 					spec += (faceLight << 24);
@@ -1996,7 +1996,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec - (1 << 12) + (3 << 8) + (shade << 22) + XTEX + YTEX, p0};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 					spec = baseSpec + (4 << 19);
 					faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 					spec += (faceLight << 24);
@@ -2014,7 +2014,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v2 = {spec + (shade << 22) + YTEX, p2};
 				v3 = {spec + (shade << 22) + XTEX + YTEX, p3};
 				face_vertices(vertices, v0, v1, v2, v3);
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 					spec = baseSpec + (2 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 					spec += (faceLight << 24);
@@ -2024,7 +2024,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec + (shade << 22) + XTEX + YTEX, p6};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 					spec = baseSpec + (0 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 					spec += (faceLight << 24);
@@ -2034,7 +2034,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec - (1 << 12) + (3 << 8) + (shade << 22) + XTEX + YTEX, p1};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 					spec = baseSpec + (5 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 					spec += (faceLight << 24);
@@ -2050,7 +2050,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				p5 -= glm::vec3(0, 0.8125f, 0);
 				p6 -= glm::vec3(0, 0.8125f, 0);
 				p7 -= glm::vec3(0, 0.8125f, 0);
-				if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 					spec = baseSpec + (3 << 19);
 					faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 					spec += (faceLight << 24);
@@ -2060,7 +2060,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec + (shade << 22), p0};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 					spec = baseSpec + (4 << 19);
 					faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 					spec += (faceLight << 24);
@@ -2070,7 +2070,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec - (1 << 12) + (3 << 8) + (shade << 22) + XTEX + YTEX, p5};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 					spec = baseSpec + (1 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 					spec += (faceLight << 24);
@@ -2088,7 +2088,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 				v2 = {spec + (shade << 22) + YTEX, p7};
 				v3 = {spec + (shade << 22) + XTEX + YTEX, p6};
 				face_vertices(vertices, v0, v1, v2, v3);
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 					spec = baseSpec + (0 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 					spec += (faceLight << 24);
@@ -2098,7 +2098,7 @@ void Trapdoor::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 					v3 = {spec + (shade << 22), p1};
 					face_vertices(vertices, v0, v1, v2, v3);
 				}
-				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 					spec = baseSpec + (5 << 19);
 					faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 					spec += (faceLight << 24);
@@ -2165,7 +2165,7 @@ void Fence::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 	v2 = {spec + 6 + (shade << 22) + YTEX, pp7};
 	v3 = {spec - 6 + (shade << 22) + XTEX + YTEX, pp6};
 	face_vertices(vertices, v0, v1, v2, v3);
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 		spec = baseSpec + (0 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 		spec += (faceLight << 24);
@@ -2175,7 +2175,7 @@ void Fence::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::iv
 		v3 = {spec - 6 - (6 << 8) + (shade << 22) + XTEX + YTEX, pp1};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 		spec = baseSpec + (5 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 		spec += (faceLight << 24);
@@ -2495,7 +2495,7 @@ void GlassPane::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 		v3 = {spec + (shade << 22) + XTEX + YTEX, p6 - glm::vec3(0, 0.4375f, 0)};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 		spec = baseSpec + (0 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 		spec += (faceLight << 24);
@@ -2529,7 +2529,7 @@ void GlassPane::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm
 			face_vertices(vertices, v0, v1, v2, v3);
 		}
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 		spec = baseSpec + (5 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 		spec += (faceLight << 24);
@@ -3129,7 +3129,7 @@ void Repeater::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	int baseSpec = (s_blocks[blocks::SMOOTH_STONE]->texX() << 4) + (s_blocks[blocks::SMOOTH_STONE]->texY() << 12);
 	int spec, faceLight;
 	// draw base
-	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 		spec = baseSpec + (3 << 19) + (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
 		v0 = {spec + (14 << 8), p4 + glm::vec3(0, 0, -14 * ONE16TH)};
 		v1 = {spec + XTEX + (14 << 8), p0 + glm::vec3(0, 0, -14 * ONE16TH)};
@@ -3137,7 +3137,7 @@ void Repeater::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 		v3 = {spec + XTEX + YTEX, p2};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 		spec = baseSpec + (4 << 19) + (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
 		v0 = {spec + (14 << 8), p1 + glm::vec3(0, 0, -14 * ONE16TH)};
 		v1 = {spec + XTEX + (14 << 8), p5 + glm::vec3(0, 0, -14 * ONE16TH)};
@@ -3145,7 +3145,7 @@ void Repeater::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 		v3 = {spec + XTEX + YTEX, p7};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 		spec = baseSpec + (1 << 19) + (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
 		v0 = {spec + (14 << 8), p0 + glm::vec3(0, 0, -14 * ONE16TH)};
 		v1 = {spec + XTEX + (14 << 8), p1 + glm::vec3(0, 0, -14 * ONE16TH)};
@@ -3153,7 +3153,7 @@ void Repeater::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 		v3 = {spec + XTEX + YTEX, p3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 		spec = baseSpec + (2 << 19) + (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
 		v0 = {spec + (14 << 8), p5 + glm::vec3(0, 0, -14 * ONE16TH)};
 		v1 = {spec + XTEX + (14 << 8), p4 + glm::vec3(0, 0, -14 * ONE16TH)};
@@ -3312,7 +3312,7 @@ void Comparator::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 	int baseSpec = (s_blocks[blocks::SMOOTH_STONE]->texX() << 4) + (s_blocks[blocks::SMOOTH_STONE]->texY() << 12);
 	int spec, faceLight;
 	// draw base
-	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 		spec = baseSpec + (3 << 19) + (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
 		v0 = {spec + (14 << 8), p4 + glm::vec3(0, 0, -14 * ONE16TH)};
 		v1 = {spec + XTEX + (14 << 8), p0 + glm::vec3(0, 0, -14 * ONE16TH)};
@@ -3320,7 +3320,7 @@ void Comparator::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 		v3 = {spec + XTEX + YTEX, p2};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 		spec = baseSpec + (4 << 19) + (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
 		v0 = {spec + (14 << 8), p1 + glm::vec3(0, 0, -14 * ONE16TH)};
 		v1 = {spec + XTEX + (14 << 8), p5 + glm::vec3(0, 0, -14 * ONE16TH)};
@@ -3328,7 +3328,7 @@ void Comparator::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 		v3 = {spec + XTEX + YTEX, p7};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 		spec = baseSpec + (1 << 19) + (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
 		v0 = {spec + (14 << 8), p0 + glm::vec3(0, 0, -14 * ONE16TH)};
 		v1 = {spec + XTEX + (14 << 8), p1 + glm::vec3(0, 0, -14 * ONE16TH)};
@@ -3336,7 +3336,7 @@ void Comparator::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 		v3 = {spec + XTEX + YTEX, p3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 		spec = baseSpec + (2 << 19) + (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
 		v0 = {spec + (14 << 8), p5 + glm::vec3(0, 0, -14 * ONE16TH)};
 		v1 = {spec + XTEX + (14 << 8), p4 + glm::vec3(0, 0, -14 * ONE16TH)};
@@ -3519,7 +3519,7 @@ void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::i
 	int spec;
 
 	glm::vec3 pp0, pp1, pp2, pp3;
-	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z, true), face_dir::MINUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 		ttyo = tyo;
 		switch (orientation) {
 			case (face_dir::MINUSX):
@@ -3551,7 +3551,7 @@ void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::i
 		v3 = {spec + XTEX + YTEX, pp3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z, true), face_dir::PLUSX)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 		ttyo = tyo;
 		switch (orientation) {
 			case (face_dir::MINUSX):
@@ -3583,7 +3583,7 @@ void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::i
 		v3 = {spec + XTEX + YTEX, pp3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z, true), face_dir::MINUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 		ttyo = tyo;
 		switch (orientation) {
 			case (face_dir::MINUSX):
@@ -3615,7 +3615,7 @@ void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::i
 		v3 = {spec + XTEX + YTEX, pp3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z, true), face_dir::PLUSY)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 		ttyo = tyo;
 		switch (orientation) {
 			case (face_dir::MINUSX):
@@ -3647,7 +3647,7 @@ void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::i
 		v3 = {spec + XTEX + YTEX, pp3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1, true), face_dir::PLUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::PLUSZ)) {
 		ttyo = tyo;
 		switch (orientation) {
 			case (face_dir::MINUSX):
@@ -3679,7 +3679,7 @@ void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::i
 		v3 = {spec + XTEX + YTEX, pp3};
 		face_vertices(vertices, v0, v1, v2, v3);
 	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1, true), face_dir::MINUSZ)) {
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::MINUSZ)) {
 		ttyo = tyo;
 		switch (orientation) {
 			case (face_dir::MINUSX):

@@ -147,6 +147,7 @@ class Chunk
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		void collisionWHitbox( t_collision &res, const Block *target, int value, glm::vec3 pos, float width,
 			float height, int bX, int bY, int bZ );
+		GLint face_count( int type, glm::ivec3 pos );
 		GLint face_count( int type, int row, int col, int level );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves, bool isNotGlass );
 
@@ -179,7 +180,9 @@ class Chunk
 		void handle_fence_placement( glm::ivec3 pos, int &type );
 		void addFlame( int offset, glm::vec3 pos, int source, int orientation );
 		void add_block( bool useInventory, glm::ivec3 pos, int block_value, int previous );
-		void replace_block( bool useInventory, glm::ivec3 pos, int type, int previous );
+		void replace_block( bool useInventory, glm::ivec3 pos, int type );
+		void use_block( glm::ivec3 pos, int type );
+		void update_block( glm::ivec3 pos, int previous, int value );
 
 		// lights
 		void light_spread( int posX, int posY, int posZ, bool skySpread, int recurse = LIGHT_RECURSE );
@@ -245,10 +248,13 @@ class Chunk
 		void openChest( glm::ivec3 pos );
 		ChestInstance *getChestInstance( glm::ivec3 pos );
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
-		GLint getBlockAtAbsolute( int posX, int posY, int posZ, bool askNeighbours );
-		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours );
-		void setBlockAtAbsolute( int value, int posX, int posY, int posZ, bool askNeighbours );
-		void setBlockAt( int value, int posX, int posY, int posZ, bool askNeighbours );
+		GLint getBlockAtAbsolute( int posX, int posY, int posZ );
+		GLint getBlockAt( glm::ivec3 pos, bool askNeighbours = true );
+		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours = true );
+		void setBlockAtAbsolute( int value, int posX, int posY, int posZ, bool update );
+		void setBlockAt( int value, glm::ivec3 pos, bool update );
+		void setBlockAt( int value, int posX, int posY, int posZ, bool update );
+		void update_adj_block( glm::ivec3 pos, int dir, int source );
 		void turnDirtToGrass( int posX, int posY, int posZ );
 
 		void generation( void );

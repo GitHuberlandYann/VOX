@@ -113,21 +113,21 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	// if item in block, push it out of block.
 	// first try on the sides, then push it upwards
 	// std::cout << "pos inside chunk " << _chunk_pos.x << ", " << _chunk_pos.y << ": " << _pos.x - _chunk_pos.x << ", " << _pos.y - _chunk_pos.y << ", " << _pos.z << std::endl;
-	if (air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
+	if (air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
 		_pos.z += 3 * deltaTime;
 		_dir = {0, 0, 1};
 	} else {
-		if (_dir.x && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
+		if (_dir.x && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
 			_pos.x += _dir.x * deltaTime;
 		} else {
 			_dir.x = 0;
 		}
-		if (_dir.y && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
+		if (_dir.y && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
 			_pos.y += _dir.y * deltaTime;
 		} else {
 			_dir.y = 0;
 		}
-		if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime), true), false, false, false)) {
+		if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime)), false, false, false)) {
 			_pos.z += _dir.z * deltaTime;
 			_dir.z -= 0.1f;
 		} else {
@@ -315,7 +315,7 @@ bool FallingBlockEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	// std::cout << "FALLING BLOCK UPDATE" << std::endl;
 	_dir.z -= 0.1f;
 	_pos.z += _dir.z * deltaTime;
-	int type = (_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true) & 0xFF);
+	int type = (_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & 0xFF);
 	if (type != blocks::AIR && type < blocks::WATER) {
 		// std::cout << "youston, we touched ground" << std::endl;
 		if (type >= blocks::POPPY) { // 'drops' as entity, but is already entity, so update state is enough
@@ -411,17 +411,17 @@ bool TNTEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderIn
 		}
 	}
 
-	if (_dir.x && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
+	if (_dir.x && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
 		_pos.x += _dir.x * deltaTime;
 	} else {
 		_dir.x = 0;
 	}
-	if (_dir.y && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
+	if (_dir.y && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
 		_pos.y += _dir.y * deltaTime;
 	} else {
 		_dir.y = 0;
 	}
-	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime), true), false, false, false)) {
+	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime)), false, false, false)) {
 		_pos.z += _dir.z * deltaTime;
 		_dir.z -= 0.1f;
 	} else {
@@ -494,7 +494,7 @@ bool ArrowEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shader
         return (true);
     }
 
-	if (air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z), true), false, false, false)) {
+	if (air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
 		_stuck = true;
 		// arrow explosion for fun
 		_chunk->explosion(_pos - _dir * 0.25f, 10);
@@ -566,16 +566,16 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 		if (!_piston_head) {
 			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 			if (_retraction) {
-				_chunk->setBlockAt(blocks::AIR, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, true);
+				_chunk->setBlockAt(blocks::AIR, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
 			}
 			if ((_item.type & 0xFF) == blocks::PISTON || (_item.type & 0xFF) == blocks::STICKY_PISTON) {
 				_chunk->updatePiston(_endPos, _item.type);
 			}
 		} else {
-			int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z, true);
+			int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z);
 			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & 0xFF]->name << std::endl;
 			if ((front_value & 0xFF) == blocks::MOVING_PISTON) {
-				_chunk->setBlockAt(blocks::AIR, _pos.x, _pos.y, _pos.z, true);
+				_chunk->setBlockAt(blocks::AIR, _pos.x, _pos.y, _pos.z, false);
 			}
 		}
         return (true);

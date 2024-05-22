@@ -27,10 +27,10 @@ void Chunk::updateCrop( int value, int offset )
 		}
 		return ;
 	}
-	float points = (getBlockAt(posX, posY, posZ - 1, false) & blocks::WET_FARMLAND) ? 4 : 2;
+	float points = (getBlockAt(posX, posY, posZ - 1) & blocks::WET_FARMLAND) ? 4 : 2;
 	for (int index = 0; index < 8; ++index) {
 		const int delta[2] = {neighbour8[index][0], neighbour8[index][1]};
-		int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ - 1, true);
+		int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ - 1);
 		if ((adj & 0xFF) == blocks::FARMLAND) {
 			points += (adj & blocks::WET_FARMLAND) ? 0.75f : 0.25f;
 		}
@@ -52,7 +52,7 @@ bool Chunk::watered_farmland( int posX, int posY, int posZ )
 	for (int row = posX - 4; row <= posX + 4; row++) {
 		for (int col = posY - 4; col <= posY + 4; col++) {
 			for (int level = posZ; level <= posZ + 1; level++) {
-				if ((getBlockAt(row, col, level, true) & 0xFF) >= blocks::WATER) {
+				if ((getBlockAt(row, col, level) & 0xFF) >= blocks::WATER) {
 					return (true);
 				}
 			}
@@ -69,7 +69,7 @@ void Chunk::updateFarmland( int value, int offset )
 	bool hydrated = watered_farmland(posX, posY, posZ);
 	if (!hydrated) {
 		int wetness = (value >> 10) & 0x7;
-		int type_above = getBlockAt(posX, posY, posZ + 1, false) & 0xFF;
+		int type_above = getBlockAt(posX, posY, posZ + 1) & 0xFF;
 		if (wetness == 1) {
 			_blocks[offset] = value & 0xFF;
 			_added[offset] = value & 0xFF;
@@ -82,7 +82,7 @@ void Chunk::updateFarmland( int value, int offset )
 			return ;
 		} else if (type_above < blocks::WHEAT_CROP || type_above > blocks::WHEAT_CROP7) {
 			// std::cout << "updateFarmland replace_block " << _startX << ", " << _startY << std::endl;
-			replace_block(false, {posX, posY, posZ}, blocks::DIRT, blocks::FARMLAND);
+			setBlockAt(blocks::DIRT, {posX, posY, posZ}, true);
 			_vertex_update = true;
 			return ;
 		}
@@ -128,9 +128,9 @@ void Chunk::spreadGrassblock( int offset )
 	for (int i = 0; i < 4; i++) {
 		int selected = Random::rangedNumber(_seed, 0, 3 * 3 * 5 - 1);
 		const int delta[3] = {neighbour45[selected][0], neighbour45[selected][1], neighbour45[selected][2]};
-		int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2], true);
+		int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2]);
 		if ((adj & 0xFF) == blocks::DIRT && !(adj & blocks::NOTVISIBLE)) {
-			int above_adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2] + 1, true) & 0xFF;
+			int above_adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2] + 1) & 0xFF;
 			if (s_blocks[above_adj]->transparent && above_adj < blocks::WATER) {
 				turnDirtToGrass(posX + delta[0], posY + delta[1], posZ + delta[2]);
 			}
@@ -143,7 +143,7 @@ bool Chunk::findLog( int posX, int posY, int posZ, int level )
 	if (--level < 0) {
 		return (false);
 	}
-	int type = getBlockAt(posX, posY, posZ, true) & 0xFF;
+	int type = getBlockAt(posX, posY, posZ) & 0xFF;
 	if (type == blocks::OAK_LOG) {
 		return (true);
 	} else if (type != blocks::OAK_LEAVES) {
@@ -178,7 +178,7 @@ bool Chunk::spaceForTree( int posX, int posY, int posZ )
 	for (int row = -1; row < 2; row++) {
 		for (int col = -1; col < 2; col++) {
 			for (int level = 1; level < 6; level++) {
-				int type = getBlockAt(posX + row, posY + col, posZ + level, true) & 0xFF;
+				int type = getBlockAt(posX + row, posY + col, posZ + level) & 0xFF;
 				if (air_flower(type, true, false, true) && type != blocks::GRASS_BLOCK && type != blocks::DIRT) {
 					return (false);
 				}
