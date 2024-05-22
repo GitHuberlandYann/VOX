@@ -19,7 +19,7 @@ class DayCycle
 		static std::mutex _mtx;
 
 		double _gameTime;
-		int _ticks, _day, _hour, _minute, _internal_light, _time_multiplier;
+		int _ticks, _gameTicks, _day, _hour, _minute, _internal_light, _time_multiplier;
 		bool _forceReset;
 		GLuint _shaderProgram, _particleShaderProgram;
 		GLint _uniInternalLight, _uniPartInternalLight;
@@ -40,6 +40,7 @@ class DayCycle
 		void setCloudsColor( GLint uniform_location );
 		void tickUpdate( void );
 		int getTicks( void );
+		int getGameTicks( void );
 		void setTicks( int ticks );
 		void addTicks( int ticks );
 		void updateTimeMultiplier( GLint mul );

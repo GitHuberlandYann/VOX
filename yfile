@@ -60,12 +60,10 @@ TODOS:
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
 
 IN PROGRES:
-	- redstone
 	- bow and arrow
 	- universal use of tps instead of deltatimes
 
 TODAY:
-	- PISTONS
 	- fix fallingBlockEntity falling on torch
 
 SHORTTERM memory:
@@ -110,10 +108,12 @@ DONE:
 	- trapdoors
 	- button
 	- lever
+	- redstone
 	- redstone lamp
 	- redstone torch
 	- redstone dust
 	- repeater
+	- pistons
 	- fences
     - items on ground after break
 	- item number color/placement/size in ingame menus

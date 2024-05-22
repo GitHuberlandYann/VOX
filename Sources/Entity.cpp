@@ -34,7 +34,7 @@ ArrowEntity::ArrowEntity( Chunk *chunk, glm::vec3 position, glm::vec3 dir )
 
 MovingPistonEntity::MovingPistonEntity( Chunk *chunk, glm::ivec3 source, glm::ivec3 position, glm::ivec3 dir, bool piston_head, bool retraction, int value )
 	: Entity(chunk, NULL, position, dir, false, {value, 1}), _piston_head(piston_head), _retraction(retraction),
-	_tickStart(DayCycle::Get()->getTicks()), _source(source), _endPos(position + dir)
+	_tickStart(DayCycle::Get()->getGameTicks()), _source(source), _endPos(position + dir)
 {
 
 }
@@ -563,10 +563,10 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	float percent = glm::min(1.0, _lifeTime / (TICK * lifeLimit));
 	s_blocks[_item.type & 0xFF]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, _pos + _dir * percent, _item.type);
 
-	int currentTick = DayCycle::Get()->getTicks();
+	int currentTick = DayCycle::Get()->getGameTicks();
     if (currentTick - _tickStart == lifeLimit) {
 		// finish extension, turn back to block
-		std::cout << "MovingPistonEntity finished movement [" << _tickStart << "] -> [" << currentTick << "] to " << _endPos.x << ", " << _endPos.y << ", " << _endPos.z << std::endl;
+		std::cout << "MovingPistonEntity finished movement [" << _tickStart << "] -> [" << currentTick << "] to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
 		if (!_piston_head) {
 			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 			if (_retraction) {

@@ -479,6 +479,15 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 			}
 			break ;
 	}
+	if (weakdy) {
+		return ;
+	}
+	// quasi-connectivity
+	int below = getBlockAt(pos.x, pos.y, pos.z - 1, true);
+	if ((below & 0xFF) == blocks::PISTON || (below & 0xFF) == blocks::STICKY_PISTON) {
+		std::cout << "\t\tquasi-connectivity at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z - 1 << std::endl;
+		updatePiston(pos + glm::ivec3(0, 0, -1), below);
+	}
 }
 
 /**
@@ -790,7 +799,7 @@ void Chunk::extendPiston( glm::ivec3 pos, int value, int count )
 	const glm::ivec3 front = adj_blocks[(value >> 9) & 0x7];
 	std::cout << "extend piston, front is " << front.x << ", " << front.y << ", " << front.z << std::endl;
 
-	for (int i = 0; i < count; ++i) {
+	for (int i = count - 1; i >= 0; --i) {
 		int adj = getBlockAt(pos.x + front.x * (i + 1), pos.y + front.y * (i + 1), pos.z + front.z * (i + 1));
 		// creates moving entity for the blocks being pushed
 		std::cout << s_blocks[adj & 0xFF]->name << " turned into entity at " << pos.x + front.x * (i + 1) << ", " << pos.y + front.y * (i + 1) << ", " << pos.z + front.z * (i + 1) << std::endl;
@@ -840,9 +849,8 @@ void Chunk::retractPiston( glm::ivec3 pos, int value )
 /**
  * @brief update piston at given pos, if it is activated, count blocks it pushes and if > 12 abort.
  * calls neighbours to always use the correct _entities vector
+ * @param pos relative pos of piston being updated
  * @param value data_value of piston being updated
- * @param state true if being activated, in which case we try to push it, else we check if piston
- * still powered and if not we retract it 
 */
 void Chunk::updatePiston( glm::ivec3 pos, int value )
 {
@@ -905,7 +913,7 @@ void Chunk::updateRedstone( void )
 		if (!sizes[schedIndex]) {
 			continue ;
 		}
-		// std::cout << "[" << DayCycle::Get()->getTicks() << "] --ticks on updateRedstone priority " << (-3 + schedIndex) << std::endl;
+		// std::cout << "[" << DayCycle::Get()->getGameTicks() << "] --ticks on updateRedstone priority " << (-3 + schedIndex) << std::endl;
 
 		size_t delCount = 0;
 		int state;
@@ -915,7 +923,7 @@ void Chunk::updateRedstone( void )
 			if (--redRef.ticks == 0) {
 				t_redstoneTick red = redRef;
 				int value = getBlockAt(red.pos.x, red.pos.y, red.pos.z);
-				std::cout << "(" << (-3 + schedIndex) <<  ") [" << DayCycle::Get()->getTicks() << "] " << _startX << " " << _startY << " schedule " << s_blocks[value & 0xFF]->name << " at " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << ": " << (red.state & 0xF) << std::endl;
+				std::cout << "(" << (-3 + schedIndex) <<  ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " schedule " << s_blocks[value & 0xFF]->name << " at " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << ": " << (red.state & 0xF) << std::endl;
 
 				switch (value & 0xFF) {
 					case blocks::REDSTONE_LAMP: // only scheduled to be turned off
@@ -1040,7 +1048,7 @@ void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 		} else if ((target & 0xFF) == blocks::COMPARATOR) {
 			priority = SCHEDULE::COMPARATOR; // comparator always has priority -1 (but I do -0.5f instead to prioretize repeaters)
 		}
-		std::cout << "new schedule " << s_blocks[target & 0xFF]->name << " (" << (-3 + priority) << ") [" << DayCycle::Get()->getTicks() << "] " << _startX << " " << _startY << " pos " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << " ticks: " << red.ticks << " state " << (red.state & 0xF) << ((red.state & REDSTONE::REPEAT_LOCK) ? " lock" : "") << std::endl;
+		std::cout << "new schedule " << s_blocks[target & 0xFF]->name << " (" << (-3 + priority) << ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " pos " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << " ticks: " << red.ticks << " state " << (red.state & 0xF) << ((red.state & REDSTONE::REPEAT_LOCK) ? " lock" : "") << std::endl;
 		for (auto &sched : _redstone_schedule[priority]) {
 			if (sched.pos == red.pos && sched.ticks == red.ticks) {
 				if (sched.state == red.state) {

@@ -841,28 +841,18 @@ void Chunk::updateEntities( std::vector<t_shaderInput> &arr,  std::vector<t_shad
 	// 			on merge, item timer set to longest of 2
 	// 			double for loop, use bool given as parameter to do this once per second at most
 
-	// following code not working with tnt explosion, because reallocation on _entities.push_back and iterators are invalidated -> erase(e) causes segfault
-	// for (auto e = _entities.begin(); e != _entities.end();) {
-	// 	std::cout << "debug 0, enti size " << _entities.size() << std::endl;
-	// 	if (e->update(arr, _camera->getPos(), deltaTime)) {
-	// 	std::cout << "debug 1, enti size " << _entities.size() << std::endl;
-	// 		e = _entities.erase(e);
-	// 	} else {
-	// 		++e;
-	// 	}
-	// }
-
 	glm::vec3 camPos;
-	size_t size = _entities.size();
-	if (!size) {
+	size_t eSize = _entities.size();
+	if (!eSize) {
 		goto CHESTS;
 	}
 
 	camPos = _camera->getPos();
-	for (int index = size - 1; index >= 0; --index) {
-		if (_entities[index]->update(arr, partArr, camPos, deltaTime)) {
-			delete _entities[index];
-			_entities.erase(_entities.begin() + index);
+	for (size_t index = 0, delCount = 0; index < eSize; ++index) {
+		if (_entities[index - delCount]->update(arr, partArr, camPos, deltaTime)) {
+			delete _entities[index - delCount];
+			_entities.erase(_entities.begin() + index - delCount);
+			++delCount;
 		}
 	}
 
