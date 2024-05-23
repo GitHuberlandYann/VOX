@@ -22,7 +22,7 @@ class Entity
 
 		void setLifetime( double lifetime );
 		virtual void getBlasted( glm::vec3 pos, float blast_radius );
-		virtual bool pistonedBy( glm::ivec3 pos );
+		virtual int pistonedBy( glm::ivec3 pos );
 		virtual bool update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime );
 };
 
@@ -70,7 +70,7 @@ class MovingPistonEntity : public Entity
 	public:
 		MovingPistonEntity( Chunk *chunk, glm::ivec3 source, glm::ivec3 position, glm::ivec3 dir, bool piston_head, bool retraction, int value );
 
-		virtual bool pistonedBy( glm::ivec3 pos );
+		virtual int pistonedBy( glm::ivec3 pos );
 		virtual bool update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime );
 };
 

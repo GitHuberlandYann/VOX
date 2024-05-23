@@ -769,17 +769,22 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 				if ((adj & 0xFF) == blocks::MOVING_PISTON) {
 					if (!count) { // we check if extend called before own retraction finished
 						size_t eSize = _entities.size(), delCount = 0;
+						int res = 0;
 						for (size_t index = 0; index < eSize; ++index) {
 							Entity *entity = _entities[index - delCount];
-							if (entity->pistonedBy(pos)) { // if true, pistonedBy places back the moving blocks
+							int status = entity->pistonedBy(pos);
+							if (status) { // if true, pistonedBy places back the moving blocks
 								std::cout << "FORCE FINISH RETRACTION" << std::endl;
 								delete entity;
 								_entities.erase(_entities.begin() + index - delCount);
 								++delCount;
+								if (status == REDSTONE::PISTON::CANCEL_RETRACTION) {
+									res = status;
+								}
 							}
 						}
 						if (delCount > 0) {
-							return (delCount - 1);
+							return ((res) ? res : delCount - 1);
 						}
 					}
 					return (13);
@@ -900,6 +905,7 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 	bool powered = getRedstoneStrength(pos, front, REDSTONE::OFF, true);
 	if (!powered && front.z != 1) {
 		powered = getRedstoneStrength(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, REDSTONE::OFF, true);
+		// if (powered) std::cout << "\tbtw, piston on next line powered by block above" << std::endl;
 	} // TODO pison can be powered through their extended head
 	std::cout << "piston update " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << " [" << DayCycle::Get()->getGameTicks() << "] powered: " << powered << std::endl;
 	if (powered && !(value & REDSTONE::ACTIVATED)) {
@@ -907,13 +913,13 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 		int count = pistonExtendCount(pos, value);
 	std::cout << "count is " << count << std::endl;
 		if (count <= 12) {
-			setBlockAt(value | REDSTONE::ACTIVATED, pos.x, pos.y, pos.z, false);
+			setBlockAt(value | REDSTONE::ACTIVATED, pos, false);
 			extendPiston(pos, value, count);
 		} else if (count == REDSTONE::PISTON::CANCEL_RETRACTION) { // 0 tick update between retraction and extension -> we don't retract
-			setBlockAt(value | REDSTONE::ACTIVATED, pos.x, pos.y, pos.z, false);
+			setBlockAt(value | REDSTONE::ACTIVATED, pos, false);
 		}
 	} else if (!powered && (value & REDSTONE::ACTIVATED)) {
-		setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED), pos.x, pos.y, pos.z, false);
+		setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED), pos, false);
 		retractPiston(pos, value);
 	} else {
 		std::cout << "\t.. no change" << std::endl;

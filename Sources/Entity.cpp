@@ -86,18 +86,24 @@ void ArrowEntity::getBlasted( glm::vec3 pos, float blast_radius )
 	_dir += (_pos - pos) * blast_radius;
 }
 
-bool Entity::pistonedBy( glm::ivec3 pos )
+int Entity::pistonedBy( glm::ivec3 pos )
 {
 	(void)pos;
 	return (false);
 }
-bool MovingPistonEntity::pistonedBy( glm::ivec3 pos )
+int MovingPistonEntity::pistonedBy( glm::ivec3 pos )
 {
 	if (pos == _source) { // force place block at posEnd
 		// _chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
-		std::cout << "MovingPistonEntity forcefinish movement [" << _tickStart << "] -> [" << DayCycle::Get()->getGameTicks() << "] to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
+		int currentTick = DayCycle::Get()->getGameTicks();
+		std::cout << "MovingPistonEntity forcefinish movement [" << _tickStart << "] -> [" << currentTick << "] to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
+		if (currentTick == _tickStart && _retraction) {
+			std::cout << "\ttrap card activated->REDSTONE::PISTON::CANCEL_RETRACTION" << std::endl;
+			_chunk->setBlockAt(_item.type,  _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
+			return (REDSTONE::PISTON::CANCEL_RETRACTION);
+		}
 		if (!_piston_head) {
-			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
+			_chunk->setBlockAt(_item.type, _endPos, true);
 			if (_retraction) {
 				_chunk->setBlockAt(blocks::AIR, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
 			}
@@ -106,10 +112,10 @@ bool MovingPistonEntity::pistonedBy( glm::ivec3 pos )
 			}
 		} else {
 			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::STICKY_PISTON : blocks::PISTON) | (_item.type & (0x7 << 9)), _endPos, false);
-			int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z);
+			int front_value = _chunk->getBlockAt(_pos);
 			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & 0xFF]->name << std::endl;
 			if ((front_value & 0xFF) == blocks::MOVING_PISTON) {
-				_chunk->setBlockAt(blocks::AIR, _pos.x, _pos.y, _pos.z, true);
+				_chunk->setBlockAt(blocks::AIR, _pos, true);
 			}
 		}
 		return (true);
