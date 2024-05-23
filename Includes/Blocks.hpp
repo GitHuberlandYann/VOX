@@ -101,6 +101,9 @@ namespace REDSTONE {
 	namespace PISTON {
 		const int STICKY_OFFSET = 12;
 		const int STICKY = (1 << STICKY_OFFSET);
+		const int MOVING = (1 << 19);
+		const int RETRACTING = (1 << 28); // flag given to blocks::MOVING_PISTON to set their transparency -> transparent when retracting, solid when extending
+		const int FORCE_RETRACTION = 13; // used by Chunk::pistonExtendCount
 		const int CANCEL_RETRACTION = 42; // random nbr above 12, used by Chunk::pistonExtendCount
 	};
 
@@ -323,6 +326,10 @@ struct Block {
 			(void)start;
 			(void)pos;
 			(void)value;
+		}
+		virtual bool isTransparent( int value ) const {
+			(void)value;
+			return (transparent);
 		}
 		virtual ~Block() {}
 };
@@ -1908,6 +1915,9 @@ struct MovingPiston : Block {
 		MovingPiston() {
 			name = "MOVING_PISTON";
 			geometry = GEOMETRY::PISTON;
+		}
+		virtual bool isTransparent( int value ) const {
+			return (value & REDSTONE::PISTON::RETRACTING);
 		}
 };
 

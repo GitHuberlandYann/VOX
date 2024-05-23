@@ -102,6 +102,7 @@ F1                 - display/hide hotbar
 F2                 - save screenshot under .ppm file format
 F3                 - toggle debug screen
 F3 + G             - toggle chunk borders
+F3 + I             - display targeted block's info in chat
 F5                 - change camera placement
 
 left_click         - break block, pick block in inventory, navigate through menus

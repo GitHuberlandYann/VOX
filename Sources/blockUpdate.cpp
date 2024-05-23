@@ -295,7 +295,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 				break ;
 			case GEOMETRY::REPEATER:
 				previous = getBlockAt(pos.x, pos.y, pos.z - 1);
-				if (s_blocks[previous & 0xFF]->transparent && (previous & 0xFF) != blocks::GLASS) {
+				if (s_blocks[previous & 0xFF]->isTransparent(previous) && (previous & 0xFF) != blocks::GLASS) {
 					return ;
 				}
 				block_value ^= (1 << 9); // inverse dir (0->1, 1->0, 2->3, 3->2)
@@ -375,7 +375,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 	if (!air_flower(type, true, true, false)) {
 		return ;
 	}
-	if (!s_blocks[type]->transparent && type != blocks::REDSTONE_LAMP) {
+	if (!s_blocks[type]->isTransparent(value) && type != blocks::REDSTONE_LAMP) {
 		if (type == blocks::REDSTONE_BLOCK) {
 			block_value |= REDSTONE::POWERED;
 			_blocks[offset] = block_value;
@@ -392,7 +392,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			continue ;
 		}
 		GLint adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z);
-		if (s_blocks[adj & 0xFF]->transparent) { // update light status around placed block
+		if (s_blocks[adj & 0xFF]->isTransparent(adj)) { // update light status around placed block
 			if (index != face_dir::PLUSZ) {
 				light_try_spread(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z, 1, true, LIGHT_RECURSE); // spread sky light, but not upwards duh
 			}
@@ -660,7 +660,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		}
 	}
 
-	if (!s_blocks[type]->transparent) {
+	if (!s_blocks[type]->isTransparent(value)) {
 		_lights[offset] = 0; // rm light if solid block added
 	}
 
@@ -826,7 +826,7 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		_vertex_update = true;
 		int value = getBlockAt(pos), type = (value & 0xFF);
 
-		bool transparent = s_blocks[source]->transparent;
+		bool transparent = s_blocks[source]->isTransparent(source);
 
 		// update light status around placed block
 		if (transparent || type == blocks::MOVING_PISTON) { 

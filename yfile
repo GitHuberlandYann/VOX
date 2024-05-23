@@ -323,7 +323,8 @@ Some info:
 	- redstone dust 0xF << 20 strength 0xFF << 24 'arms'
 	- repeater 0x7 << 9 orientation, 0x3 << 12 delay, 1 << 15 locked, 1 << 16 lit
 	- comparator 0x7 << 9 orientation, 1 << 12 mode, 0xF << 20 strength
-	- piston 0x7 << 9 orientation, 1 << 18 activated
+	- piston 0x7 << 9 orientation, 1 << 18 activated, 1 << 19 inMovement
+	- moving_piston 1 << 28 retracting
 
 	- powered blocks: (1 << 16)
 		doors, trapdoors, lever, button, redstone lamp, repeater

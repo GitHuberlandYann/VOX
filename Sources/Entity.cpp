@@ -33,10 +33,10 @@ ArrowEntity::ArrowEntity( Chunk *chunk, glm::vec3 position, glm::vec3 dir )
 }
 
 MovingPistonEntity::MovingPistonEntity( Chunk *chunk, glm::ivec3 source, glm::ivec3 position, glm::ivec3 dir, bool piston_head, bool retraction, int value )
-	: Entity(chunk, NULL, position, dir, false, {value, 1}), _piston_head(piston_head), _retraction(retraction),
+	: Entity(chunk, NULL, position, dir, false, {value, 1}), _piston_head(piston_head), _retraction(retraction), _softKill(false),
 	_tickStart(DayCycle::Get()->getGameTicks()), _source(source), _endPos(position + dir)
 {
-
+	// std::cout << "MovingPistonEntity init movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] from " << _chunk->getStartX() + _pos.x << ", " << _chunk->getStartY() + _pos.y << ", " << _pos.z << " to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
 }
 
 // ************************************************************************** //
@@ -86,25 +86,27 @@ void ArrowEntity::getBlasted( glm::vec3 pos, float blast_radius )
 	_dir += (_pos - pos) * blast_radius;
 }
 
-int Entity::pistonedBy( glm::ivec3 pos )
+int Entity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
 {
-	(void)pos;
+	(void)pos;(void)target;
 	return (false);
 }
-int MovingPistonEntity::pistonedBy( glm::ivec3 pos )
+int MovingPistonEntity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
 {
+	std::cout << "pistonedBy " << _chunk->getStartX() + pos.x << ", " << _chunk->getStartY() + pos.y << ", " << pos.z << ((_retraction) ? " retraction" : " extension") << " [" << _tickStart << "] from " << _chunk->getStartX() + _pos.x << ", " << _chunk->getStartY() + _pos.y << ", " << _pos.z << " to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
 	if (pos == _source) { // force place block at posEnd
+		_softKill = true;
 		// _chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 		int currentTick = DayCycle::Get()->getGameTicks();
-		std::cout << "MovingPistonEntity forcefinish movement [" << _tickStart << "] -> [" << currentTick << "] to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
+		std::cout << "MovingPistonEntity forcefinish movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
 		if (currentTick == _tickStart && _retraction) {
 			std::cout << "\ttrap card activated->REDSTONE::PISTON::CANCEL_RETRACTION" << std::endl;
 			_chunk->setBlockAt(_item.type,  _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
 			return (REDSTONE::PISTON::CANCEL_RETRACTION);
 		}
 		if (!_piston_head) {
-			_chunk->setBlockAt(_item.type, _endPos, true);
-			if (_retraction) {
+			_chunk->setBlockAt(_item.type, _endPos, false); // might want to add bool arg to this function, set it to false in (void)FORCE FINISH RETRACTION and to true in FORCE FINISH RETRACTION
+			if (_retraction) { // TODO check if this still necessary
 				_chunk->setBlockAt(blocks::AIR, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
 			}
 			if ((_item.type & 0xFF) == blocks::PISTON || (_item.type & 0xFF) == blocks::STICKY_PISTON) {
@@ -114,11 +116,14 @@ int MovingPistonEntity::pistonedBy( glm::ivec3 pos )
 			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::STICKY_PISTON : blocks::PISTON) | (_item.type & (0x7 << 9)), _endPos, false);
 			int front_value = _chunk->getBlockAt(_pos);
 			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & 0xFF]->name << std::endl;
-			if ((front_value & 0xFF) == blocks::MOVING_PISTON) {
-				_chunk->setBlockAt(blocks::AIR, _pos, true);
-			}
+			// if ((front_value & 0xFF) == blocks::MOVING_PISTON) {
+			// 	_chunk->setBlockAt(blocks::AIR, _pos, true);
+			// }
+			_chunk->setBlockAt(_chunk->getBlockAt(_source) & (REDSTONE::ALL_BITS - REDSTONE::PISTON::MOVING), _source, false);
 		}
 		return (true);
+	} else if (target == glm::ivec3(_endPos)) {
+		return (REDSTONE::PISTON::FORCE_RETRACTION);
 	}
 	return (false);
 }
@@ -578,6 +583,12 @@ bool ArrowEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shader
 
 bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime )
 {
+	if (_softKill) {
+		// _entities vector can be updated by pistons while looping through it from Chunk::updateEntities,
+		// so we do this to ensure no segfault because Chunk::updateEntities is the only one calling _entities.erase()
+		return (true);
+	}
+
 	(void)partArr;
 	(void)camPos;
 	_lifeTime += deltaTime;
@@ -589,7 +600,7 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	int currentTick = DayCycle::Get()->getGameTicks();
     if (currentTick - _tickStart == lifeLimit) {
 		// finish extension, turn back to block
-		std::cout << "MovingPistonEntity finished movement [" << _tickStart << "] -> [" << currentTick << "] to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
+		std::cout << "MovingPistonEntity finished movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] from " << _chunk->getStartX() + _pos.x << ", " << _chunk->getStartY() + _pos.y << ", " << _pos.z << " to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
 		if (!_piston_head) {
 			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 			if (_retraction) {
@@ -602,9 +613,13 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::STICKY_PISTON : blocks::PISTON) | (_item.type & (0x7 << 9)), _endPos, false);
 			int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z);
 			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & 0xFF]->name << std::endl;
-			if ((front_value & 0xFF) == blocks::MOVING_PISTON) {
-				_chunk->setBlockAt(blocks::AIR, _pos.x, _pos.y, _pos.z, true);
-			}
+			// if ((front_value & 0xFF) == blocks::MOVING_PISTON) {
+			// 	_chunk->setBlockAt(blocks::AIR, _pos.x, _pos.y, _pos.z, true);
+			// }
+			std::cout << "source is " << _chunk->getStartX() + _source.x << ", " << _chunk->getStartY() + _source.y << ", " << _source.z << std::endl;
+			int piston_value = _chunk->getBlockAt(_source);
+			_chunk->setBlockAt(piston_value & (REDSTONE::ALL_BITS - REDSTONE::PISTON::MOVING), _source, false);
+			_chunk->updatePiston(_source, piston_value);
 		}
         return (true);
     }

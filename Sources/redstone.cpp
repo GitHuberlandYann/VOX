@@ -239,7 +239,10 @@ int Chunk::getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bo
 		if (delta == except) continue ;
 
 		int adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z);
-		// std::cout << "\tchecking " << s_blocks[adj & 0xFF]->name << " at " << pos.x + delta.x << ", " << pos.y + delta.y << ", " << pos.z + delta.z << std::endl;	
+		// std::cout << "\tchecking " << s_blocks[adj & 0xFF]->name << " {" << state << "}at " << _startX + pos.x + delta.x << ", " << _startY + pos.y + delta.y << ", " << pos.z + delta.z << std::endl;	
+		// if ((adj & 0xFF) == blocks::MOVING_PISTON) {
+		// 	std::cout << "\t\t" << ((adj & REDSTONE::POWERED) ? "powered" : "") << ((adj & REDSTONE::WEAKDY_POWERED) ? "weakdy powered" : "") << " currently " << ((adj & REDSTONE::PISTON::RETRACTING) ? "retracting" : "extending") << ((s_blocks[adj & 0xFF]->isTransparent(adj)) ? " transparent" : " not transparent") << std::endl;
+		// }
 		switch (adj & 0xFF) {
 			case blocks::LEVER:
 				if (adj & REDSTONE::POWERED) {
@@ -299,7 +302,8 @@ int Chunk::getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bo
 */
 int Chunk::getDustStrength( glm::ivec3 pos )
 {
-	bool solidAbove = !s_blocks[getBlockAt(pos.x, pos.y, pos.z + 1) & 0xFF]->transparent;
+	int valueAbove = getBlockAt(pos.x, pos.y, pos.z + 1);
+	bool solidAbove = !s_blocks[valueAbove & 0xFF]->isTransparent(valueAbove);
 	int res = REDSTONE::OFF;
 	for (int index = 0; index < 6; ++index) {
 		const glm::ivec3 delta = adj_blocks[index];
@@ -341,7 +345,7 @@ int Chunk::getDustStrength( glm::ivec3 pos )
 		if (delta.z) {
 			continue ;
 		} 
-		if (s_blocks[adj & 0xFF]->transparent) {
+		if (s_blocks[adj & 0xFF]->isTransparent(adj)) {
 			adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z - 1);
 			if ((adj & 0xFF) == blocks::REDSTONE_DUST && (((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) > res + 1)) {
 				res = ((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) - 1;
@@ -369,7 +373,7 @@ void Chunk::stronglyPower( glm::ivec3 pos, glm::ivec3 source, int state )
 {
 	int value = getBlockAt(pos.x, pos.y, pos.z);
 	// std::cout << "strongly power block " << s_blocks[value & 0xFF]->name << " at " << pos.x << ", " << pos.y << ", " << pos.z << ": " << state << std::endl;
-	if (!s_blocks[value & 0xFF]->transparent && (value & 0xFF) != blocks::REDSTONE_BLOCK) {
+	if (!s_blocks[value & 0xFF]->isTransparent(value) && (value & 0xFF) != blocks::REDSTONE_BLOCK) {
 		int strongly_powered = getRedstoneStrength(pos, source, state, false);
 		// std::cout << "\tactual state is " << strongly_powered << std::endl;
 		value &= (REDSTONE::ALL_BITS - REDSTONE::POWERED - REDSTONE::STRENGTH);
@@ -454,9 +458,9 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 			break ;
 		case blocks::PISTON:
 		case blocks::STICKY_PISTON:
-			if (source == adj_blocks[(adj >> 9) & 0x7]) {
-				break ;
-			}
+			// if (source == adj_blocks[(adj >> 9) & 0x7]) {
+			// 	break ;
+			// }
 			updatePiston(pos, adj);
 			break ;
 		case blocks::REDSTONE_TORCH:
@@ -533,6 +537,7 @@ void Chunk::weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state, bool wea
 void Chunk::flickLever( glm::ivec3 pos, int value, bool state )
 {
 std::cout << "flick lever " << state << std::endl;
+	// DayCycle::Get()->setTicks(0); // for debuging purposes
 	// strongly power block the lever is attached to
 	glm::ivec3 target = getAttachedDir(value);
 	stronglyPower(pos + target, -target, (state) ? 0xF : REDSTONE::OFF);
@@ -764,22 +769,46 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 			case GEOMETRY::LEVER:
 			case GEOMETRY::DUST:
 			case GEOMETRY::REPEATER:
+				if (value & REDSTONE::PISTON::MOVING) { // did not finish retraction
+					size_t eSize = _entities.size(), delCount = 0;
+					int res = 0;
+					for (size_t index = 0; index < eSize; ++index) {
+						Entity *entity = _entities[index];
+						int status = entity->pistonedBy(pos, pos + front);
+						if (status == REDSTONE::PISTON::FORCE_RETRACTION) { // another piston pushed a block in front of this one before it finished retracting
+							std::cout << "(void)FORCE FINISH RETRACTION BY OTHER PISTON" << std::endl;
+							res = 13;
+							++delCount;
+						} else if (status) { // if true, pistonedBy places back the moving blocks, _softKill set to true
+							std::cout << "(void)FORCE FINISH RETRACTION" << std::endl;
+							++delCount;
+							if (status == REDSTONE::PISTON::CANCEL_RETRACTION) {
+								res = (res == 13) ? 13 : status;
+							}
+						}
+					}
+					if (delCount > 0) {
+						return ((res) ? res : delCount - 1);
+					}
+				}
 				return (count);
 			case GEOMETRY::PISTON: // can't move extended piston nor blocks being moved
 				if ((adj & 0xFF) == blocks::MOVING_PISTON) {
-					if (!count) { // we check if extend called before own retraction finished
+					if (!count && (adj & REDSTONE::PISTON::RETRACTING)) { // we check if extend called before own retraction finished
 						size_t eSize = _entities.size(), delCount = 0;
 						int res = 0;
 						for (size_t index = 0; index < eSize; ++index) {
-							Entity *entity = _entities[index - delCount];
-							int status = entity->pistonedBy(pos);
-							if (status) { // if true, pistonedBy places back the moving blocks
+							Entity *entity = _entities[index];
+							int status = entity->pistonedBy(pos, pos + front);
+							if (status == REDSTONE::PISTON::FORCE_RETRACTION) { // another piston pushed a block in front of this one before it finished retracting
+								std::cout << "FORCE FINISH RETRACTION BY OTHER PISTON" << std::endl;
+								res = 13;
+								++delCount;
+							} else if (status) { // if true, pistonedBy places back the moving blocks, _softKill set to true
 								std::cout << "FORCE FINISH RETRACTION" << std::endl;
-								delete entity;
-								_entities.erase(_entities.begin() + index - delCount);
 								++delCount;
 								if (status == REDSTONE::PISTON::CANCEL_RETRACTION) {
-									res = status;
+									res = (res == 13) ? 13 : status;
 								}
 							}
 						}
@@ -789,7 +818,7 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 					}
 					return (13);
 				}
-				if (adj & REDSTONE::ACTIVATED) {
+				if (adj & REDSTONE::PISTON::MOVING) {
 					return (13);
 				}
 				break ;
@@ -846,11 +875,9 @@ void Chunk::retractPiston( glm::ivec3 pos, int value )
 	if ((front_value & 0xFF) == blocks::MOVING_PISTON) { // force finish extension
 		size_t eSize = _entities.size();
 		for (size_t index = 0; index < eSize; ++index) {
-			Entity *entity = _entities[index - delCount];
-			if (entity->pistonedBy(pos)) { // if true, pistonedBy places back the moving blocks
+			Entity *entity = _entities[index];
+			if (entity->pistonedBy(pos, {0, 0, -1000})) { // if true, pistonedBy places back the moving blocks, _softKill set to true
 				std::cout << "FORCE FINISH EXTENSION" << std::endl;
-				delete entity;
-				_entities.erase(_entities.begin() + index - delCount);
 				++delCount;
 			}
 		}
@@ -858,12 +885,16 @@ void Chunk::retractPiston( glm::ivec3 pos, int value )
 	if ((value & 0xFF) == blocks::STICKY_PISTON && delCount < 2) { // retract block only if had time to finish push or didn't push block in the first place
 		int front2_value = getBlockAt(pos.x + front.x * 2, pos.y + front.y * 2, pos.z + front.z * 2);
 		if ((!s_blocks[front2_value & 0xFF]->transparent && (front2_value & 0xFF) != blocks::MOVING_PISTON)
-			|| (((front2_value & 0xFF) == blocks::PISTON || (front2_value & 0xFF) == blocks::STICKY_PISTON) && !(front2_value & REDSTONE::ACTIVATED))) {
-			setBlockAt(blocks::MOVING_PISTON, pos + front * 2, true);
+			|| (((front2_value & 0xFF) == blocks::PISTON || (front2_value & 0xFF) == blocks::STICKY_PISTON) && !(front2_value & REDSTONE::PISTON::MOVING))) {
+			setBlockAt(blocks::AIR, pos + front * 2, true);
+			setBlockAt(blocks::MOVING_PISTON | REDSTONE::PISTON::RETRACTING, pos + front, true);
 			_entities.push_back(new MovingPistonEntity(this, pos, pos + front * 2, -front, false, true, front2_value));
+		} else {
+			setBlockAt(blocks::AIR, pos + front, true);
 		}
+	} else {
+		setBlockAt(blocks::AIR, pos + front, true);
 	}
-	setBlockAt(blocks::MOVING_PISTON, pos + front, true);
 	_entities.push_back(new MovingPistonEntity(this, pos, pos + front, -front, true, true, blocks::PISTON_HEAD | (value & (0x7 << 9))| (((value & 0xFF) == blocks::STICKY_PISTON) ? REDSTONE::PISTON::STICKY : 0)));
 }
 
@@ -913,13 +944,13 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 		int count = pistonExtendCount(pos, value);
 	std::cout << "count is " << count << std::endl;
 		if (count <= 12) {
-			setBlockAt(value | REDSTONE::ACTIVATED, pos, false);
+			setBlockAt(value | REDSTONE::ACTIVATED | REDSTONE::PISTON::MOVING, pos, false);
 			extendPiston(pos, value, count);
 		} else if (count == REDSTONE::PISTON::CANCEL_RETRACTION) { // 0 tick update between retraction and extension -> we don't retract
-			setBlockAt(value | REDSTONE::ACTIVATED, pos, false);
+			setBlockAt(value | REDSTONE::ACTIVATED | REDSTONE::PISTON::MOVING, pos, false);
 		}
 	} else if (!powered && (value & REDSTONE::ACTIVATED)) {
-		setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED), pos, false);
+		setBlockAt((value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED)) | REDSTONE::PISTON::MOVING, pos, false);
 		retractPiston(pos, value);
 	} else {
 		std::cout << "\t.. no change" << std::endl;

@@ -54,7 +54,7 @@ class OpenGL_Manager
 		void chunk_update( void );
 		float getBreakTime( bool canHarvest );
 		void user_inputs( float deltaTime, bool rayCast );
-		t_hit get_block_hit( void );
+		t_hit get_block_hit( bool debug_info );
 		void handle_add_rm_block( bool adding, bool collect );
 		void update_cam_view( void );
 		void update_cam_perspective( void );

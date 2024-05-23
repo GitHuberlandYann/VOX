@@ -3482,7 +3482,7 @@ void Piston::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::i
 {
 	float dxm = 0, dxp = 1, dym = 0, dyp = 1, dzm = 0, dzp = 1;
 	int orientation = ((value >> 9) & 0x7), tyo = 0, ttyo;
-	if (value & REDSTONE::ACTIVATED) {
+	if (value & REDSTONE::PISTON::MOVING) {
 		tyo = (4 << 8);
 		switch (orientation) {
 			case face_dir::MINUSX:

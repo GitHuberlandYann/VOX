@@ -21,7 +21,7 @@ void OpenGL_Manager::resetInputsPtrs( void )
 	_visible_chunks.clear();
 }
 
-t_hit OpenGL_Manager::get_block_hit( void )
+t_hit OpenGL_Manager::get_block_hit( bool debug_info )
 {
 	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0};
 	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? CHUNK_SIZE : REACH);
@@ -77,7 +77,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 			if (!target->hasHitbox || line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + target->hitboxCenter, target->hitboxHalfSize)) {
 				chunk_hit = chunk;
 				res.pos = i;
-				res.value = type;
+				res.value = (debug_info) ? value : type;
 				// _ui->chatMessage(s_blocks[type]->name + ((value & REDSTONE::POWERED) ? " block hit is powered" : " block hit is not powered"));
 				return (res);
 			} else if (target->hasOrientedHitbox) {
@@ -86,7 +86,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 				if (line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
 					chunk_hit = chunk;
 					res.pos = i;
-					res.value = type;
+					res.value = (debug_info) ? value : type;
 					return (res);
 				}
 
@@ -410,6 +410,21 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			setGamemode(!_game_mode);
 		}
 	}
+	// toggle F3 + I == display full info about block hit
+	if (INPUT::key_down(INPUT::INFO) && INPUT::key_update(INPUT::INFO) && INPUT::key_down(INPUT::DEBUG)) {
+		t_hit bHit = get_block_hit(true);
+		_ui->chatMessage("*******************");
+		_ui->chatMessage("Info about " + s_blocks[bHit.value & 0xFF]->name + " at " + std::to_string(bHit.pos.x) + ", " + std::to_string(bHit.pos.y) + ", " + std::to_string(bHit.pos.z));
+		_ui->chatMessage(std::string("visible: ") + ((bHit.value & blocks::NOTVISIBLE) ? "FALSE" : "TRUE"));
+		_ui->chatMessage(std::string("orientation: ") + std::to_string((bHit.value >> 9) & 0x7));
+		_ui->chatMessage(std::string("transparent: ") + ((s_blocks[bHit.value & 0xFF]->isTransparent(bHit.value)) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("powered: ") + ((bHit.value & REDSTONE::POWERED) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("weakdy powered: ") + ((bHit.value & REDSTONE::WEAKDY_POWERED) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("activated: ") + ((bHit.value & REDSTONE::ACTIVATED) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("strength: ") + std::to_string((bHit.value >> REDSTONE::STRENGTH_OFFSET) & 0x7));
+		_ui->chatMessage(std::string("moving piston: ") + ((bHit.value & REDSTONE::PISTON::MOVING) ? "TRUE" : "FALSE"));
+		_ui->chatMessage("*******************");
+	}
 	// toggle F5 mode
 	if (INPUT::key_down(INPUT::CAMERA) && INPUT::key_update(INPUT::CAMERA)) {
 		_camera->changeCamPlacement();
@@ -590,7 +605,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		}
 
 		// Chunk *save_chunk = chunk_hit;
-		t_hit block_hit = get_block_hit();
+		t_hit block_hit = get_block_hit(false);
 		if (_block_hit.pos != block_hit.pos) {
 			_break_time = 0;
 			_break_frame = _outline;
