@@ -464,10 +464,11 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 		flickLever(pos, value, (value >> REDSTONE::POWERED_OFFSET) & 0x1);
 		break ;
 	case blocks::REPEATER: // add 1 tick delay, mod it by 4
-		value = (value & (REDSTONE::ALL_BITS - (0x3 << REDSTONE::REPEAT_TICKS))) | (((((value >> REDSTONE::REPEAT_TICKS) & 0x3) + 1) & 0x3) << REDSTONE::REPEAT_TICKS);
+		value = (value & (REDSTONE::ALL_BITS - (0x3 << REDSTONE::REPEATER::TICKS_OFFSET)))
+				| (((((value >> REDSTONE::REPEATER::TICKS_OFFSET) & 0x3) + 1) & 0x3) << REDSTONE::REPEATER::TICKS_OFFSET);
 		break ;
 	case blocks::COMPARATOR: // switch mode between compare and substract
-		value ^= REDSTONE::COMPARATOR_MODE;
+		value ^= REDSTONE::COMPARATOR::MODE;
 		updateComparator(pos, value, false);
 		break ;
 	case blocks::STONE_BUTTON:
@@ -575,6 +576,9 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 
 	// cut recursion here
 	if (prev_type == type) {
+		// if (type == blocks::PISTON || type == blocks::STICKY_PISTON) {
+		// 	updatePiston(pos, value);
+		// }
 		return ;
 	}
 

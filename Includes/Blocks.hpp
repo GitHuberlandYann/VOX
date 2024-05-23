@@ -65,6 +65,7 @@ namespace REDSTONE {
 	const bool ON = true;
 	const bool OFF = false;
 	const int TICK = 2;
+
 	// activated means it receives signal, powered means it also transmits signal
 	const int ACTIVATED_OFFSET = 18;
 	const int ACTIVATED = (1 << ACTIVATED_OFFSET);
@@ -75,24 +76,33 @@ namespace REDSTONE {
 	const int STRENGTH_OFFSET = 20;
 	const int STRENGTH = (0xF << STRENGTH_OFFSET);
 
-	const int DUST_CONNECT = 0x3;
-	const int DUST_NONE = 0;
-	const int DUST_SIDE = 1;
-	const int DUST_UP   = 2;
-	const int DUST_MY = 24;
-	const int DUST_PY = 26;
-	const int DUST_MX = 28;
-	const int DUST_PX = 30;
+	namespace DUST {
+		const int CONNECT = 0x3;
+		const int NONE = 0;
+		const int SIDE = 1;
+		const int UP   = 2;
+		const int MY = 24;
+		const int PY = 26;
+		const int MX = 28;
+		const int PX = 30;
+	};
 
-	const int REPEAT_TICKS = 12;
-	const int REPEAT_LOCK = (1 << 15);
+	namespace REPEATER {
+		const int TICKS_OFFSET = 12;
+		const int LOCK = (1 << 15);
+	}
 
-	const int COMPARATOR_MODE = (1 << 12);
-	const int COMPARE = 0;
-	const int SUBSTRACT = 1;
+	namespace COMPARATOR {
+		const int MODE = (1 << 12);
+		const int COMPARE = 0;
+		const int SUBSTRACT = 1;
+	};
 
-	const int STICKY_OFFSET = 12;
-	const int STICKY = (1 << STICKY_OFFSET);
+	namespace PISTON {
+		const int STICKY_OFFSET = 12;
+		const int STICKY = (1 << STICKY_OFFSET);
+		const int CANCEL_RETRACTION = 42; // random nbr above 12, used by Chunk::pistonExtendCount
+	};
 
 	const int ALL_BITS = -1;
 };

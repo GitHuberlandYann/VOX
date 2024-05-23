@@ -166,10 +166,10 @@ bool Chunk::getWeakdyState( glm::ivec3 pos, glm::ivec3 except, bool state )
 		int adj = getBlockAt(pos.x + delta.x, pos.y + delta.y, pos.z + delta.z);
 		// std::cout << "\tchecking " << s_blocks[adj & 0xFF]->name << " at " << pos.x + delta.x << ", " << pos.y + delta.y << ", " << pos.z + delta.z << std::endl;	
 		if ((adj & 0xFF) == blocks::REDSTONE_DUST && (adj & REDSTONE::STRENGTH)
-				&& ((delta.x == 1 && (adj & (REDSTONE::DUST_SIDE << REDSTONE::DUST_MX)))
-				|| (delta.x == -1 && (adj & (REDSTONE::DUST_SIDE << REDSTONE::DUST_PX)))
-				|| (delta.y == 1 && (adj & (REDSTONE::DUST_SIDE << REDSTONE::DUST_MY)))
-				|| (delta.y == -1 && (adj & (REDSTONE::DUST_SIDE << REDSTONE::DUST_PY)))
+				&& ((delta.x == 1 && (adj & (REDSTONE::DUST::SIDE << REDSTONE::DUST::MX)))
+				|| (delta.x == -1 && (adj & (REDSTONE::DUST::SIDE << REDSTONE::DUST::PX)))
+				|| (delta.y == 1 && (adj & (REDSTONE::DUST::SIDE << REDSTONE::DUST::MY)))
+				|| (delta.y == -1 && (adj & (REDSTONE::DUST::SIDE << REDSTONE::DUST::PY)))
 				|| delta.z == 1
 				)) { // red dust gives signal only to its connected blocks
 			return (REDSTONE::ON);
@@ -265,10 +265,10 @@ int Chunk::getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bo
 				break ;
 			case blocks::REDSTONE_DUST:
 				if (weak && (adj & REDSTONE::STRENGTH)
-					&& ((delta.x == 1 && (adj & (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MX)))
-					|| (delta.x == -1 && (adj & (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PX)))
-					|| (delta.y == 1 && (adj & (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MY)))
-					|| (delta.y == -1 && (adj & (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PY)))
+					&& ((delta.x == 1 && (adj & (REDSTONE::DUST::CONNECT << REDSTONE::DUST::MX)))
+					|| (delta.x == -1 && (adj & (REDSTONE::DUST::CONNECT << REDSTONE::DUST::PX)))
+					|| (delta.y == 1 && (adj & (REDSTONE::DUST::CONNECT << REDSTONE::DUST::MY)))
+					|| (delta.y == -1 && (adj & (REDSTONE::DUST::CONNECT << REDSTONE::DUST::PY)))
 					|| delta.z == 1
 					)) { // red dust gives signal only to its connected blocks and to the block below
 					return (REDSTONE::ON);
@@ -431,15 +431,15 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 		case blocks::REPEATER:
 			if (source == -adj_blocks[(adj >> 9) & 0x7]) { // signal comes from behind repeater
 				// std::cout << "scheduling repeater from " << source.x << ", " << source.y << ", " << source.z << std::endl;
-				scheduleRedstoneTick({pos, REDSTONE::TICK * (((adj >> REDSTONE::REPEAT_TICKS) & 0x3) + 1), state});
+				scheduleRedstoneTick({pos, REDSTONE::TICK * (((adj >> REDSTONE::REPEATER::TICKS_OFFSET) & 0x3) + 1), state});
 			} else if (!source.x == !!adj_blocks[(adj >> 9) & 0x7].x && !source.y == !!adj_blocks[(adj >> 9) & 0x7].y) { // signal comes from side
 				// we check if it comes from repeater and (un)lock the repeater
 				src = getBlockAt(pos.x + source.x, pos.y + source.y, pos.z + source.z);
 				if (((src & 0xFF) == blocks::REPEATER || (src & 0xFF) == blocks::COMPARATOR) && source == -adj_blocks[(src >> 9) & 0x7]) {
-					if ((src & REDSTONE::POWERED) && !(adj & REDSTONE::REPEAT_LOCK)) { // if not locked but should be, we lock it
-						setBlockAt(adj | REDSTONE::REPEAT_LOCK, pos.x, pos.y, pos.z, false);
-					} else if (!(src & REDSTONE::POWERED) && (adj & REDSTONE::REPEAT_LOCK)) { // if locked but shouldn't be, we unlock it
-						adj &= (REDSTONE::ALL_BITS - REDSTONE::REPEAT_LOCK);
+					if ((src & REDSTONE::POWERED) && !(adj & REDSTONE::REPEATER::LOCK)) { // if not locked but should be, we lock it
+						setBlockAt(adj | REDSTONE::REPEATER::LOCK, pos.x, pos.y, pos.z, false);
+					} else if (!(src & REDSTONE::POWERED) && (adj & REDSTONE::REPEATER::LOCK)) { // if locked but shouldn't be, we unlock it
+						adj &= (REDSTONE::ALL_BITS - REDSTONE::REPEATER::LOCK);
 						initRepeater(pos, adj, false);
 						setBlockAt(adj, pos.x, pos.y, pos.z, false);
 					}
@@ -586,11 +586,11 @@ void Chunk::updateRedstoneTorch( glm::ivec3 pos, int value )
 void Chunk::updateRedstoneDust( glm::ivec3 pos )
 {
 	int actual_value = getBlockAt(pos.x, pos.y, pos.z), strength, signal_received = 0;
-// std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z << " connect: " << (actual_value >> REDSTONE::DUST_MY) << std::endl;
+// std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z << " connect: " << (actual_value >> REDSTONE::DUST::MY) << std::endl;
 	if ((actual_value & 0xFF) != blocks::REDSTONE_DUST) {
 		strength = 0;
-		actual_value |= (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MX) | (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PX)
-				| (REDSTONE::DUST_CONNECT << REDSTONE::DUST_MY) | (REDSTONE::DUST_CONNECT << REDSTONE::DUST_PY);
+		actual_value |= (REDSTONE::DUST::CONNECT << REDSTONE::DUST::MX) | (REDSTONE::DUST::CONNECT << REDSTONE::DUST::PX)
+				| (REDSTONE::DUST::CONNECT << REDSTONE::DUST::MY) | (REDSTONE::DUST::CONNECT << REDSTONE::DUST::PY);
 	} else {
 		strength = (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF;
 		signal_received = getDustStrength(pos);
@@ -617,38 +617,38 @@ void Chunk::updateRedstoneDust( glm::ivec3 pos )
 
 // std::cout << "\tupdateRestoneDust strength " << strength << ", at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
 	// use dust's connection to set/unset connected blocks as WEAKLY_POWERED, which is used by red_torches and red_componants
-	if ((actual_value >> REDSTONE::DUST_MX) & REDSTONE::DUST_UP) {
+	if ((actual_value >> REDSTONE::DUST::MX) & REDSTONE::DUST::UP) {
 		weaklyPowerTarget(pos + glm::ivec3(-1, 0, 1), {1, 0, -1}, (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF, false);
 		actual_value = getBlockAt(pos.x, pos.y, pos.z);
 	}
-	if ((actual_value >> REDSTONE::DUST_MX) & REDSTONE::DUST_SIDE) {
+	if ((actual_value >> REDSTONE::DUST::MX) & REDSTONE::DUST::SIDE) {
 		stronglyPower(pos + glm::ivec3(-1, 0, 0), {1, 0, 0}, REDSTONE::OFF);
 		weaklyPowerTarget(pos + glm::ivec3(-1, 0, 0), {1, 0, 0}, (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF, false);
 		actual_value = getBlockAt(pos.x, pos.y, pos.z);
 	}
-	if ((actual_value >> REDSTONE::DUST_PX) & REDSTONE::DUST_UP) {
+	if ((actual_value >> REDSTONE::DUST::PX) & REDSTONE::DUST::UP) {
 		weaklyPowerTarget(pos + glm::ivec3(1, 0, 1), {-1, 0, -1}, (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF, false);
 		actual_value = getBlockAt(pos.x, pos.y, pos.z);
 	}
-	if ((actual_value >> REDSTONE::DUST_PX) & REDSTONE::DUST_SIDE) {
+	if ((actual_value >> REDSTONE::DUST::PX) & REDSTONE::DUST::SIDE) {
 		stronglyPower(pos + glm::ivec3(1, 0, 0), {-1, 0, 0}, REDSTONE::OFF);
 		weaklyPowerTarget(pos + glm::ivec3(1, 0, 0), {-1, 0, 0}, (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF, false);
 		actual_value = getBlockAt(pos.x, pos.y, pos.z);
 	}
-	if ((actual_value >> REDSTONE::DUST_MY) & REDSTONE::DUST_UP) {
+	if ((actual_value >> REDSTONE::DUST::MY) & REDSTONE::DUST::UP) {
 		weaklyPowerTarget(pos + glm::ivec3(0, -1, 1), {0, 1, -1}, (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF, false);
 		actual_value = getBlockAt(pos.x, pos.y, pos.z);
 	}
-	if ((actual_value >> REDSTONE::DUST_MY) & REDSTONE::DUST_SIDE) {
+	if ((actual_value >> REDSTONE::DUST::MY) & REDSTONE::DUST::SIDE) {
 		stronglyPower(pos + glm::ivec3(0, -1, 0), {0, 1, 0}, REDSTONE::OFF);
 		weaklyPowerTarget(pos + glm::ivec3(0, -1, 0), {0, 1, 0}, (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF, false);
 		actual_value = getBlockAt(pos.x, pos.y, pos.z);
 	}
-	if ((actual_value >> REDSTONE::DUST_PY) & REDSTONE::DUST_UP) {
+	if ((actual_value >> REDSTONE::DUST::PY) & REDSTONE::DUST::UP) {
 		weaklyPowerTarget(pos + glm::ivec3(0, 1, 1), {0, -1, -1}, (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF, false);
 		actual_value = getBlockAt(pos.x, pos.y, pos.z);
 	}
-	if ((actual_value >> REDSTONE::DUST_PY) & REDSTONE::DUST_SIDE) {
+	if ((actual_value >> REDSTONE::DUST::PY) & REDSTONE::DUST::SIDE) {
 		stronglyPower(pos + glm::ivec3(0, 1, 0), {0, -1, 0}, REDSTONE::OFF);
 		weaklyPowerTarget(pos + glm::ivec3(0, 1, 0), {0, -1, 0}, (actual_value >> REDSTONE::STRENGTH_OFFSET) & 0xF, false);
 		actual_value = getBlockAt(pos.x, pos.y, pos.z);
@@ -682,15 +682,15 @@ void Chunk::initRepeater( glm::ivec3 pos, int &value, bool init )
 	int right = getRedstoneSignalTarget(pos - side, side, true, true);
 	bool lock = left | right;
 	if (lock) {
-		value |= REDSTONE::REPEAT_LOCK;
+		value |= REDSTONE::REPEATER::LOCK;
 	} else {
-		if (value & REDSTONE::REPEAT_LOCK) { value &= (REDSTONE::ALL_BITS - REDSTONE::REPEAT_LOCK); }
+		if (value & REDSTONE::REPEATER::LOCK) { value &= (REDSTONE::ALL_BITS - REDSTONE::REPEATER::LOCK); }
 		if (rear && !(value & REDSTONE::POWERED)) {
 			// std::cout << "initRepeater ON" << std::endl;
-			scheduleRedstoneTick({pos, REDSTONE::TICK * (((value >> REDSTONE::REPEAT_TICKS) & 0x3) + 1), (init) ? REDSTONE::ON : REDSTONE::ON | REDSTONE::REPEAT_LOCK});
+			scheduleRedstoneTick({pos, REDSTONE::TICK * (((value >> REDSTONE::REPEATER::TICKS_OFFSET) & 0x3) + 1), (init) ? REDSTONE::ON : REDSTONE::ON | REDSTONE::REPEATER::LOCK});
 		} else if (!rear && (value & REDSTONE::POWERED)) {
 			// std::cout << "initRepeater OFF" << std::endl;
-			scheduleRedstoneTick({pos, REDSTONE::TICK * (((value >> REDSTONE::REPEAT_TICKS) & 0x3) + 1), (init) ? REDSTONE::OFF : REDSTONE::OFF | REDSTONE::REPEAT_LOCK});
+			scheduleRedstoneTick({pos, REDSTONE::TICK * (((value >> REDSTONE::REPEATER::TICKS_OFFSET) & 0x3) + 1), (init) ? REDSTONE::OFF : REDSTONE::OFF | REDSTONE::REPEATER::LOCK});
 		}
 	}
 }
@@ -710,8 +710,8 @@ void Chunk::updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate )
 	int left = getRedstoneSignalTarget(pos + side, -side, true, false);
 	int right = getRedstoneSignalTarget(pos - side, side, true, false);
 
-	bool mode = value & REDSTONE::COMPARATOR_MODE;
-	int output = (mode == REDSTONE::COMPARE) ? rear * (left <= rear && right <= rear)
+	bool mode = value & REDSTONE::COMPARATOR::MODE;
+	int output = (mode == REDSTONE::COMPARATOR::COMPARE) ? rear * (left <= rear && right <= rear)
 											: glm::max(0, rear - glm::max(left, right));
 	std::cout << "updateComparator mode " << mode << ": rear " << rear << ", left " << left << ", right " << right << " -> ouput " << output << " vs " << ((value >> REDSTONE::STRENGTH_OFFSET) & 0xF) << std::endl;
 	
@@ -766,7 +766,22 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 			case GEOMETRY::REPEATER:
 				return (count);
 			case GEOMETRY::PISTON: // can't move extended piston nor blocks being moved
-				 if ((adj & 0xFF) == blocks::MOVING_PISTON) {
+				if ((adj & 0xFF) == blocks::MOVING_PISTON) {
+					if (!count) { // we check if extend called before own retraction finished
+						size_t eSize = _entities.size(), delCount = 0;
+						for (size_t index = 0; index < eSize; ++index) {
+							Entity *entity = _entities[index - delCount];
+							if (entity->pistonedBy(pos)) { // if true, pistonedBy places back the moving blocks
+								std::cout << "FORCE FINISH RETRACTION" << std::endl;
+								delete entity;
+								_entities.erase(_entities.begin() + index - delCount);
+								++delCount;
+							}
+						}
+						if (delCount > 0) {
+							return (delCount - 1);
+						}
+					}
 					return (13);
 				}
 				if (adj & REDSTONE::ACTIVATED) {
@@ -800,16 +815,17 @@ void Chunk::extendPiston( glm::ivec3 pos, int value, int count )
 	std::cout << "extend piston, front is " << front.x << ", " << front.y << ", " << front.z << std::endl;
 
 	for (int i = count - 1; i >= 0; --i) {
-		int adj = getBlockAt(pos.x + front.x * (i + 1), pos.y + front.y * (i + 1), pos.z + front.z * (i + 1));
+		int adj = getBlockAt(pos + front * (i + 1));
 		// creates moving entity for the blocks being pushed
 		std::cout << s_blocks[adj & 0xFF]->name << " turned into entity at " << pos.x + front.x * (i + 1) << ", " << pos.y + front.y * (i + 1) << ", " << pos.z + front.z * (i + 1) << std::endl;
 		_entities.push_back(new MovingPistonEntity(this, pos, pos + front * (i + 1), front, false, false, adj));
-		setBlockAt(blocks::MOVING_PISTON, pos.x + front.x * (i + 1), pos.y + front.y * (i + 1), pos.z + front.z * (i + 1), true);
+		setBlockAt(blocks::MOVING_PISTON, pos + front * (i + 2), true);
 		// TODO block update neighbours
 	}
 	// this one is for the piston head
 	std::cout << "piston head at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
-	_entities.push_back(new MovingPistonEntity(this, pos, pos, front, false, false, blocks::PISTON_HEAD | (value & (0x7 << 9)) | (((value & 0xFF) == blocks::STICKY_PISTON) ? REDSTONE::STICKY : 0)));
+	_entities.push_back(new MovingPistonEntity(this, pos, pos, front, false, false, blocks::PISTON_HEAD | (value & (0x7 << 9)) | (((value & 0xFF) == blocks::STICKY_PISTON) ? REDSTONE::PISTON::STICKY : 0)));
+	setBlockAt(blocks::MOVING_PISTON, pos + front, true);
 }
 
 /**
@@ -843,7 +859,7 @@ void Chunk::retractPiston( glm::ivec3 pos, int value )
 		}
 	}
 	setBlockAt(blocks::MOVING_PISTON, pos + front, true);
-	_entities.push_back(new MovingPistonEntity(this, pos, pos + front, -front, true, true, blocks::PISTON_HEAD | (value & (0x7 << 9))| (((value & 0xFF) == blocks::STICKY_PISTON) ? REDSTONE::STICKY : 0)));
+	_entities.push_back(new MovingPistonEntity(this, pos, pos + front, -front, true, true, blocks::PISTON_HEAD | (value & (0x7 << 9))| (((value & 0xFF) == blocks::STICKY_PISTON) ? REDSTONE::PISTON::STICKY : 0)));
 }
 
 /**
@@ -885,7 +901,7 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 	if (!powered && front.z != 1) {
 		powered = getRedstoneStrength(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, REDSTONE::OFF, true);
 	} // TODO pison can be powered through their extended head
-	std::cout << "piston update " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << " powered: " << powered << std::endl;
+	std::cout << "piston update " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << " [" << DayCycle::Get()->getGameTicks() << "] powered: " << powered << std::endl;
 	if (powered && !(value & REDSTONE::ACTIVATED)) {
 		// check if extension possible
 		int count = pistonExtendCount(pos, value);
@@ -893,6 +909,8 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 		if (count <= 12) {
 			setBlockAt(value | REDSTONE::ACTIVATED, pos.x, pos.y, pos.z, false);
 			extendPiston(pos, value, count);
+		} else if (count == REDSTONE::PISTON::CANCEL_RETRACTION) { // 0 tick update between retraction and extension -> we don't retract
+			setBlockAt(value | REDSTONE::ACTIVATED, pos.x, pos.y, pos.z, false);
 		}
 	} else if (!powered && (value & REDSTONE::ACTIVATED)) {
 		setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED), pos.x, pos.y, pos.z, false);
@@ -937,7 +955,7 @@ void Chunk::updateRedstone( void )
 						}
 						break ;
 					case blocks::REPEATER:
-						if (value & REDSTONE::REPEAT_LOCK) { // repeater is locked, we don't update it
+						if (value & REDSTONE::REPEATER::LOCK) { // repeater is locked, we don't update it
 							// std::cout << "repeater is locked." << std::endl;
 							break ;
 						}
@@ -947,8 +965,8 @@ void Chunk::updateRedstone( void )
 							for (auto &schedule : _redstone_schedule[(schedIndex == SCHEDULE::REPEAT_ON) ? SCHEDULE::REPEAT_OFF : SCHEDULE::REPEAT_DIODE]) {
 								// loop through schedule, if repeater scheduled to turn off, extend its delay
 								if (schedule.pos == red.pos && schedule.state == REDSTONE::OFF) {
-									// std::cout << "extending delay of scheduled repeater to " << (((value >> REDSTONE::REPEAT_TICKS) & 0x3) + 1) * REDSTONE::TICK << std::endl;
-									schedule.ticks = (((value >> REDSTONE::REPEAT_TICKS) & 0x3) + 1) * REDSTONE::TICK;
+									// std::cout << "extending delay of scheduled repeater to " << (((value >> REDSTONE::REPEATER::TICKS_OFFSET) & 0x3) + 1) * REDSTONE::TICK << std::endl;
+									schedule.ticks = (((value >> REDSTONE::REPEATER::TICKS_OFFSET) & 0x3) + 1) * REDSTONE::TICK;
 								}
 							}
 							if (!(value & REDSTONE::POWERED)) { // turn repeater on
@@ -1035,7 +1053,7 @@ void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 			for (size_t index = 0; index < _redstone_schedule[other].size(); ++index) {
 				t_redstoneTick sched = _redstone_schedule[other][index];
 				if (sched.pos == red.pos && sched.ticks == red.ticks) {
-					if (sched.state & REDSTONE::REPEAT_LOCK) {
+					if (sched.state & REDSTONE::REPEATER::LOCK) {
 						std::cout << "abort because lock/unlock schedule this frame." << std::endl;
 						return ;
 					} else {
@@ -1048,7 +1066,7 @@ void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 		} else if ((target & 0xFF) == blocks::COMPARATOR) {
 			priority = SCHEDULE::COMPARATOR; // comparator always has priority -1 (but I do -0.5f instead to prioretize repeaters)
 		}
-		std::cout << "new schedule " << s_blocks[target & 0xFF]->name << " (" << (-3 + priority) << ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " pos " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << " ticks: " << red.ticks << " state " << (red.state & 0xF) << ((red.state & REDSTONE::REPEAT_LOCK) ? " lock" : "") << std::endl;
+		std::cout << "new schedule " << s_blocks[target & 0xFF]->name << " (" << (-3 + priority) << ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " pos " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << " ticks: " << red.ticks << " state " << (red.state & 0xF) << ((red.state & REDSTONE::REPEATER::LOCK) ? " lock" : "") << std::endl;
 		for (auto &sched : _redstone_schedule[priority]) {
 			if (sched.pos == red.pos && sched.ticks == red.ticks) {
 				if (sched.state == red.state) {
@@ -1128,15 +1146,15 @@ void Chunk::connectRedstoneDust( glm::ivec3 pos, int &value, bool placed )
 	int value_mx = getBlockAt(pos.x - 1, pos.y, pos.z), tmx = (value_mx & 0xFF);
 	if (tmx == blocks::LEVER || tmx == blocks::REDSTONE_DUST || tmx == blocks::REDSTONE_TORCH || tmx == blocks::TARGET || tmx == blocks::PISTON || tmx == blocks::STICKY_PISTON
 		|| tmx == blocks::COMPARATOR || (tmx == blocks::REPEATER && ((value_mx >> 10) & 0x1))) {
-		connect_mx |= REDSTONE::DUST_SIDE;
-		if (placed && tmx == blocks::REDSTONE_DUST && !(value_mx & (REDSTONE::DUST_SIDE << REDSTONE::DUST_PX))) { // adj dust not linked towards new dust
+		connect_mx |= REDSTONE::DUST::SIDE;
+		if (placed && tmx == blocks::REDSTONE_DUST && !(value_mx & (REDSTONE::DUST::SIDE << REDSTONE::DUST::PX))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(-1, 0, 0), value_mx, false);
 			setBlockAt(value_mx, pos.x - 1, pos.y, pos.z, false);
 		}
 	} else if (s_blocks[tmx]->transparent) {
 		value_mx = getBlockAt(pos.x - 1, pos.y, pos.z - 1);
 		if ((value_mx & 0xFF) == blocks::REDSTONE_DUST) {
-			connect_mx |= REDSTONE::DUST_SIDE;
+			connect_mx |= REDSTONE::DUST::SIDE;
 			if (placed) {
 				connectRedstoneDust(pos + glm::ivec3(-1, 0, -1), value_mx, false);
 				setBlockAt(value_mx, pos.x - 1, pos.y, pos.z - 1, false);
@@ -1150,7 +1168,7 @@ GLASS_MX:
 		if (s_blocks[getBlockAt(pos.x, pos.y, pos.z + 1) & 0xFF]->transparent) {
 			value_mx = getBlockAt(pos.x - 1, pos.y, pos.z + 1);
 			if ((value_mx & 0xFF) == blocks::REDSTONE_DUST) {
-				connect_mx |= REDSTONE::DUST_UP;
+				connect_mx |= REDSTONE::DUST::UP;
 				if (placed) {
 					connectRedstoneDust(pos + glm::ivec3(-1, 0, 1), value_mx, false);
 					setBlockAt(value_mx, pos.x - 1, pos.y, pos.z + 1, false);
@@ -1162,15 +1180,15 @@ GLASS_MX:
 	int value_px = getBlockAt(pos.x + 1, pos.y, pos.z), tpx = (value_px & 0xFF);
 	if (tpx == blocks::LEVER || tpx == blocks::REDSTONE_DUST || tpx == blocks::REDSTONE_TORCH || tpx == blocks::TARGET || tpx == blocks::PISTON || tpx == blocks::STICKY_PISTON
 		|| tpx == blocks::COMPARATOR || (tpx == blocks::REPEATER && ((value_px >> 10) & 0x1))) {
-		connect_px |= REDSTONE::DUST_SIDE;
-		if (placed && tpx == blocks::REDSTONE_DUST && !(value_px & (REDSTONE::DUST_SIDE << REDSTONE::DUST_MX))) { // adj dust not linked towards new dust
+		connect_px |= REDSTONE::DUST::SIDE;
+		if (placed && tpx == blocks::REDSTONE_DUST && !(value_px & (REDSTONE::DUST::SIDE << REDSTONE::DUST::MX))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(1, 0, 0), value_px, false);
 			setBlockAt(value_px, pos.x + 1, pos.y, pos.z, false);
 		}
 	} else if (s_blocks[tpx]->transparent) {
 		value_px = getBlockAt(pos.x + 1, pos.y, pos.z - 1);
 		if ((value_px & 0xFF) == blocks::REDSTONE_DUST) {
-			connect_px |= REDSTONE::DUST_SIDE;
+			connect_px |= REDSTONE::DUST::SIDE;
 			if (placed) {
 				connectRedstoneDust(pos + glm::ivec3(1, 0, -1), value_px, false);
 				setBlockAt(value_px, pos.x + 1, pos.y, pos.z - 1, false);
@@ -1184,7 +1202,7 @@ GLASS_PX:
 		if (s_blocks[getBlockAt(pos.x, pos.y, pos.z + 1) & 0xFF]->transparent) {
 			value_px = getBlockAt(pos.x + 1, pos.y, pos.z + 1);
 			if ((value_px & 0xFF) == blocks::REDSTONE_DUST) {
-				connect_px |= REDSTONE::DUST_UP;
+				connect_px |= REDSTONE::DUST::UP;
 				if (placed) {
 					connectRedstoneDust(pos + glm::ivec3(1, 0, 1), value_px, false);
 					setBlockAt(value_px, pos.x + 1, pos.y, pos.z + 1, false);
@@ -1196,15 +1214,15 @@ GLASS_PX:
 	int value_my = getBlockAt(pos.x, pos.y - 1, pos.z), tmy = (value_my & 0xFF);
 	if (tmy == blocks::LEVER || tmy == blocks::REDSTONE_DUST || tmy == blocks::REDSTONE_TORCH || tmy == blocks::TARGET || tmy == blocks::PISTON || tmy == blocks::STICKY_PISTON
 		|| tmy == blocks::COMPARATOR || (tmy == blocks::REPEATER && !((value_my >> 10) & 0x1))) {
-		connect_my |= REDSTONE::DUST_SIDE;
-		if (placed && tmy == blocks::REDSTONE_DUST && !(value_my & (REDSTONE::DUST_SIDE << REDSTONE::DUST_PY))) { // adj dust not linked towards new dust
+		connect_my |= REDSTONE::DUST::SIDE;
+		if (placed && tmy == blocks::REDSTONE_DUST && !(value_my & (REDSTONE::DUST::SIDE << REDSTONE::DUST::PY))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(0, -1, 0), value_my, false);
 			setBlockAt(value_my, pos.x, pos.y - 1, pos.z, false);
 		}
 	} else if (s_blocks[tmy]->transparent) {
 		value_my = getBlockAt(pos.x, pos.y - 1, pos.z - 1);
 		if ((value_my & 0xFF) == blocks::REDSTONE_DUST) {
-			connect_my |= REDSTONE::DUST_SIDE;
+			connect_my |= REDSTONE::DUST::SIDE;
 			if (placed) {
 				connectRedstoneDust(pos + glm::ivec3(0, -1, -1), value_my, false);
 				setBlockAt(value_my, pos.x, pos.y - 1, pos.z - 1, false);
@@ -1218,7 +1236,7 @@ GLASS_MY:
 		if (s_blocks[getBlockAt(pos.x, pos.y, pos.z + 1) & 0xFF]->transparent) {
 			value_my = getBlockAt(pos.x, pos.y - 1, pos.z + 1);
 			if ((value_my & 0xFF) == blocks::REDSTONE_DUST) {
-				connect_my |= REDSTONE::DUST_UP;
+				connect_my |= REDSTONE::DUST::UP;
 				if (placed) {
 					connectRedstoneDust(pos + glm::ivec3(0, -1, 1), value_my, false);
 					setBlockAt(value_my, pos.x, pos.y - 1, pos.z + 1, false);
@@ -1230,15 +1248,15 @@ GLASS_MY:
 	int value_py = getBlockAt(pos.x, pos.y + 1, pos.z), tpy = (value_py & 0xFF);
 	if (tpy == blocks::LEVER || tpy == blocks::REDSTONE_DUST || tpy == blocks::REDSTONE_TORCH || tpy == blocks::TARGET || tpy == blocks::PISTON || tpy == blocks::STICKY_PISTON
 		|| tpy == blocks::COMPARATOR || (tpy == blocks::REPEATER && !((value_py >> 10) & 0x1))) {
-		connect_py |= REDSTONE::DUST_SIDE;
-		if (placed && tpy == blocks::REDSTONE_DUST && !(value_py & (REDSTONE::DUST_SIDE << REDSTONE::DUST_MY))) { // adj dust not linked towards new dust
+		connect_py |= REDSTONE::DUST::SIDE;
+		if (placed && tpy == blocks::REDSTONE_DUST && !(value_py & (REDSTONE::DUST::SIDE << REDSTONE::DUST::MY))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(0, 1, 0), value_py, false);
 			setBlockAt(value_py, pos.x, pos.y + 1, pos.z, false);
 		}
 	} else if (s_blocks[tpy]->transparent) {
 		value_py = getBlockAt(pos.x, pos.y + 1, pos.z - 1);
 		if ((value_py & 0xFF) == blocks::REDSTONE_DUST) {
-			connect_py |= REDSTONE::DUST_SIDE;
+			connect_py |= REDSTONE::DUST::SIDE;
 			if (placed) {
 				connectRedstoneDust(pos + glm::ivec3(0, 1, -1), value_py, false);
 				setBlockAt(value_py, pos.x, pos.y + 1, pos.z - 1, false);
@@ -1252,7 +1270,7 @@ GLASS_PY:
 		if (s_blocks[getBlockAt(pos.x, pos.y, pos.z + 1) & 0xFF]->transparent) {
 			value_py = getBlockAt(pos.x, pos.y + 1, pos.z + 1);
 			if ((value_py & 0xFF) == blocks::REDSTONE_DUST) {
-				connect_py |= REDSTONE::DUST_UP;
+				connect_py |= REDSTONE::DUST::UP;
 				if (placed) {
 					connectRedstoneDust(pos + glm::ivec3(0, 1, 1), value_py, false);
 					setBlockAt(value_py, pos.x, pos.y + 1, pos.z + 1, false);
@@ -1262,27 +1280,27 @@ GLASS_PY:
 	}
 
 	if (connect_mx) {
-		value |= (connect_mx << REDSTONE::DUST_MX);
+		value |= (connect_mx << REDSTONE::DUST::MX);
 		if (!(connect_my | connect_py | connect_px)) {
-			value |= (REDSTONE::DUST_SIDE << REDSTONE::DUST_PX);
+			value |= (REDSTONE::DUST::SIDE << REDSTONE::DUST::PX);
 		}
 	}
 	if (connect_px) {
-		value |= (connect_px << REDSTONE::DUST_PX);
+		value |= (connect_px << REDSTONE::DUST::PX);
 		if (!(connect_my | connect_py | connect_mx)) {
-			value |= (REDSTONE::DUST_SIDE << REDSTONE::DUST_MX);
+			value |= (REDSTONE::DUST::SIDE << REDSTONE::DUST::MX);
 		}
 	}
 	if (connect_my) {
-		value |= (connect_my << REDSTONE::DUST_MY);
+		value |= (connect_my << REDSTONE::DUST::MY);
 		if (!(connect_mx | connect_px | connect_py)) {
-			value |= (REDSTONE::DUST_SIDE << REDSTONE::DUST_PY);
+			value |= (REDSTONE::DUST::SIDE << REDSTONE::DUST::PY);
 		}
 	}
 	if (connect_py) {
-		value |= (connect_py << REDSTONE::DUST_PY);
+		value |= (connect_py << REDSTONE::DUST::PY);
 		if (!(connect_mx | connect_px | connect_my)) {
-			value |= (REDSTONE::DUST_SIDE << REDSTONE::DUST_MY);
+			value |= (REDSTONE::DUST::SIDE << REDSTONE::DUST::MY);
 		}
 	}
 }

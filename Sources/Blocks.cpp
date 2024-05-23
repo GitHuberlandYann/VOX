@@ -3040,10 +3040,10 @@ void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 	spec += (color << 24);
 
 
-	int mx = (value >> REDSTONE::DUST_MX) & REDSTONE::DUST_CONNECT;
-	int px = (value >> REDSTONE::DUST_PX) & REDSTONE::DUST_CONNECT;
-	int my = (value >> REDSTONE::DUST_MY) & REDSTONE::DUST_CONNECT;
-	int py = (value >> REDSTONE::DUST_PY) & REDSTONE::DUST_CONNECT;
+	int mx = (value >> REDSTONE::DUST::MX) & REDSTONE::DUST::CONNECT;
+	int px = (value >> REDSTONE::DUST::PX) & REDSTONE::DUST::CONNECT;
+	int my = (value >> REDSTONE::DUST::MY) & REDSTONE::DUST::CONNECT;
+	int py = (value >> REDSTONE::DUST::PY) & REDSTONE::DUST::CONNECT;
 
 	if ((mx && (my || py)) || (px && (my || py)) // display central dot if at least 2 perpendicular dir are on
 		|| !(mx | py | my | py)) { // or if no dir is on
@@ -3061,7 +3061,7 @@ void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		v2 = {spec, p0};
 		v3 = {spec + YTEX - (8 << 8), p1 + glm::vec3(-0.5f, 0, 0)};
 		face_vertices(vertices, v0, v1, v2, v3);
-		if (mx & REDSTONE::DUST_UP) {
+		if (mx & REDSTONE::DUST::UP) {
 			v0 = {spec, p0 + glm::vec3(0.002f, 0, 1)};
 			v1 = {spec + XTEX, p4 + glm::vec3(0.002f, 0, 1)};
 			v2 = {spec + YTEX, p0 + glm::vec3(0.002f, 0, 0)};
@@ -3075,7 +3075,7 @@ void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		v2 = {spec + (8 << 8), p0 + glm::vec3(0.5f, 0, 0)};
 		v3 = {spec + YTEX, p1};
 		face_vertices(vertices, v0, v1, v2, v3);
-		if (px & REDSTONE::DUST_UP) {
+		if (px & REDSTONE::DUST::UP) {
 			v0 = {spec, p5 + glm::vec3(-0.002f, 0, 1)};
 			v1 = {spec + XTEX, p1 + glm::vec3(-0.002f, 0, 1)};
 			v2 = {spec + YTEX, p5 + glm::vec3(-0.002f, 0, 0)};
@@ -3089,7 +3089,7 @@ void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		v2 = {spec + XTEX, p0};
 		v3 = {spec, p1};
 		face_vertices(vertices, v0, v1, v2, v3);
-		if (my & REDSTONE::DUST_UP) {
+		if (my & REDSTONE::DUST::UP) {
 			v0 = {spec, p1 + glm::vec3(0, 0.002f, 1)};
 			v1 = {spec + XTEX, p0 + glm::vec3(0, 0.002f, 1)};
 			v2 = {spec + YTEX, p1 + glm::vec3(0, 0.002f, 0)};
@@ -3103,7 +3103,7 @@ void RedstoneDust::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, 
 		v2 = {spec + XTEX + (8 << 8), p0 + glm::vec3(0, 0.5f, 0)};
 		v3 = {spec + (8 << 8), p1 + glm::vec3(0, 0.5f, 0)};
 		face_vertices(vertices, v0, v1, v2, v3);
-		if (py & REDSTONE::DUST_UP) {
+		if (py & REDSTONE::DUST::UP) {
 			v0 = {spec, p4 + glm::vec3(0, -0.002f, 1)};
 			v1 = {spec + XTEX, p5 + glm::vec3(0, -0.002f, 1)};
 			v2 = {spec + YTEX, p4 + glm::vec3(0, -0.002f, 0)};
@@ -3227,10 +3227,10 @@ void Repeater::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	v3 = {spec + XTEX - 7 + YTEX - (8 << 8), p5 + glm::vec3(0, 0, -ONE16TH)};
 	face_vertices(vertices, v0, v1, v2, v3);
 	// draw back torch or lock bar
-	float delta = 4.0f + 2.0f * ((value >> REDSTONE::REPEAT_TICKS) & 0x3);
+	float delta = 4.0f + 2.0f * ((value >> REDSTONE::REPEATER::TICKS_OFFSET) & 0x3);
 	p0 -= front * delta * ONE16TH; p1 -= front * delta * ONE16TH; p2 -= front * delta * ONE16TH; p3 -= front * delta * ONE16TH;
 	p4 -= front * delta * ONE16TH; p5 -= front * delta * ONE16TH; p6 -= front * delta * ONE16TH; p7 -= front * delta * ONE16TH;
-	if (!(value & REDSTONE::REPEAT_LOCK)) { // back torch
+	if (!(value & REDSTONE::REPEATER::LOCK)) { // back torch
 		v0 = {spec + 6 + (5 << 8), p1 + right * ONE16TH};
 		v1 = {spec + XTEX - 6 + (5 << 8), p0 - right * ONE16TH};
 		v2 = {spec + 6 + YTEX - (5 << 8), p3 + right * ONE16TH};
@@ -3439,9 +3439,9 @@ void Comparator::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 	v3 = {spec + XTEX - 7 + YTEX - (8 << 8), p5 + glm::vec3(0, 0, -ONE16TH)};
 	face_vertices(vertices, v0, v1, v2, v3);
 	// draw front torch
-	spec = (s_blocks[blocks::REDSTONE_TORCH]->texX() << 4) + (s_blocks[blocks::REDSTONE_TORCH]->texY(face_dir::MINUSX, !(value & REDSTONE::COMPARATOR_MODE)) << 12);
+	spec = (s_blocks[blocks::REDSTONE_TORCH]->texX() << 4) + (s_blocks[blocks::REDSTONE_TORCH]->texY(face_dir::MINUSX, !(value & REDSTONE::COMPARATOR::MODE)) << 12);
 	spec += faceLight;
-	float delta = (((value & REDSTONE::COMPARATOR_MODE) == REDSTONE::COMPARE) ? 3.0f : 2.0f) * ONE16TH;
+	float delta = (((value & REDSTONE::COMPARATOR::MODE) == REDSTONE::COMPARATOR::COMPARE) ? 3.0f : 2.0f) * ONE16TH;
 	const glm::vec3 up = {0, 0, 1};
 	p0 += front * 9.0f * ONE16TH - right * 3.0f * ONE16TH - up * delta;
 	p1 += front * 9.0f * ONE16TH - right * 3.0f * ONE16TH - up * delta;
@@ -3808,7 +3808,7 @@ void PistonHead::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 			break ;
 	}
 	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front + up) * 0.5f;
-	int piston = (value & REDSTONE::STICKY) ? blocks::STICKY_PISTON : blocks::PISTON;
+	int piston = (value & REDSTONE::PISTON::STICKY) ? blocks::STICKY_PISTON : blocks::PISTON;
 	// front face
 	int spec = (s_blocks[piston]->texX(face_dir::MINUSX, face_dir::MINUSX << 9) << 4) + (s_blocks[piston]->texY(face_dir::MINUSX, face_dir::MINUSX << 9) << 12) + (0xF << 24);
 	t_shaderInput v0 = {spec, topLeft + right};

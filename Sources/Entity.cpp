@@ -94,7 +94,24 @@ bool Entity::pistonedBy( glm::ivec3 pos )
 bool MovingPistonEntity::pistonedBy( glm::ivec3 pos )
 {
 	if (pos == _source) { // force place block at posEnd
-		_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
+		// _chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
+		std::cout << "MovingPistonEntity forcefinish movement [" << _tickStart << "] -> [" << DayCycle::Get()->getGameTicks() << "] to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
+		if (!_piston_head) {
+			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
+			if (_retraction) {
+				_chunk->setBlockAt(blocks::AIR, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
+			}
+			if ((_item.type & 0xFF) == blocks::PISTON || (_item.type & 0xFF) == blocks::STICKY_PISTON) {
+				_chunk->updatePiston(_endPos, _item.type);
+			}
+		} else {
+			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::STICKY_PISTON : blocks::PISTON) | (_item.type & (0x7 << 9)), _endPos, false);
+			int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z);
+			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & 0xFF]->name << std::endl;
+			if ((front_value & 0xFF) == blocks::MOVING_PISTON) {
+				_chunk->setBlockAt(blocks::AIR, _pos.x, _pos.y, _pos.z, true);
+			}
+		}
 		return (true);
 	}
 	return (false);
