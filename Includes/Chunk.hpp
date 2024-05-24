@@ -190,7 +190,7 @@ class Chunk
 
 		// redstone
 		glm::ivec3 getAttachedDir( int value );
-		bool getWeakdyState( glm::ivec3 pos, glm::ivec3 except, bool state );
+		int getWeakdyState( glm::ivec3 pos, glm::ivec3 except );
 		int getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side, bool repeater );
 		int getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bool weak );
 		int getDustStrength( glm::ivec3 pos );

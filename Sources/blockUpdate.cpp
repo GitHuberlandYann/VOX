@@ -884,7 +884,7 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		// disconnect adj dust if solid block placed above
 		if (type == blocks::REDSTONE_DUST && (source == blocks::REPEATER || source == blocks::COMPARATOR
 			|| source == blocks::PISTON || source == blocks::STICKY_PISTON
-			|| source == blocks::TARGET || (!transparent && dir == face_dir::MINUSZ))) {
+			|| source == blocks::TARGET || (dir == face_dir::MINUSZ))) {
 			connectRedstoneDust(pos, value, false);
 			setBlockAt(value, pos, false);
 		}

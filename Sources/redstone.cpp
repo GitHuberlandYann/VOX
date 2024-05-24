@@ -150,15 +150,11 @@ glm::ivec3 Chunk::getAttachedDir( int value )
  * @brief check adj blocks to return whether block at given pos is currently weakdy powered.
  * @param pos block to get state of
  * @param except this given dir is not checked
- * @param state this is state of 'exept' dir, if on, no need to check further
- * @return if given pos is WEAKDY powered (i.e. by dust connected to it or above it)
+ * @return strength received by adj dust
 */
-bool Chunk::getWeakdyState( glm::ivec3 pos, glm::ivec3 except, bool state )
+int Chunk::getWeakdyState( glm::ivec3 pos, glm::ivec3 except )
 {
-	if (state == REDSTONE::ON) {
-		return (state);
-	}
-
+	int res = REDSTONE::OFF;
 	for (int index = 0; index < 6; ++index) {
 		const glm::ivec3 delta = adj_blocks[index];
 		if (index == face_dir::MINUSZ || delta == except) continue ; // we don't check below
@@ -172,10 +168,12 @@ bool Chunk::getWeakdyState( glm::ivec3 pos, glm::ivec3 except, bool state )
 				|| (delta.y == -1 && (adj & (REDSTONE::DUST::SIDE << REDSTONE::DUST::PY)))
 				|| delta.z == 1
 				)) { // red dust gives signal only to its connected blocks
-			return (REDSTONE::ON);
+			if (((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF) > res) {
+				res = ((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF);
+			}
 		}
 	}
-	return (REDSTONE::OFF);
+	return (res);
 }
 
 /**
@@ -207,13 +205,18 @@ int Chunk::getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side
 					return (0xF);
 				}
 				break ;
+		case blocks::LEVER:
+			if (!side && (adj & REDSTONE::POWERED)) {
+				return (0xF);
+			}
+			break ;
 		case blocks::REDSTONE_DUST:
 			return ((repeater & side) ? 0 : (adj >> REDSTONE::STRENGTH_OFFSET) & 0xF);
 		case blocks::REDSTONE_BLOCK:
 			return ((repeater & side) ? 0 : 0xF);
 		default:
 			if (!side && (adj & (REDSTONE::POWERED | REDSTONE::WEAKDY_POWERED))) {
-				return (0xF);
+				return ((adj >>REDSTONE::STRENGTH_OFFSET) & 0xF);
 			}
 	}
 	return (REDSTONE::OFF);
@@ -376,10 +379,11 @@ void Chunk::stronglyPower( glm::ivec3 pos, glm::ivec3 source, int state )
 	if (!s_blocks[value & 0xFF]->isTransparent(value) && (value & 0xFF) != blocks::REDSTONE_BLOCK) {
 		int strongly_powered = getRedstoneStrength(pos, source, state, false);
 		// std::cout << "\tactual state is " << strongly_powered << std::endl;
-		value &= (REDSTONE::ALL_BITS - REDSTONE::POWERED - REDSTONE::STRENGTH);
-		if (strongly_powered) { value |= REDSTONE::POWERED | (strongly_powered << REDSTONE::STRENGTH_OFFSET); }
-		bool weakdy_powered = getWeakdyState(pos, {0, 0, 0}, state);
-		(weakdy_powered) ? value |= REDSTONE::WEAKDY_POWERED : value &= (REDSTONE::ALL_BITS - REDSTONE::WEAKDY_POWERED);
+		value &= (REDSTONE::ALL_BITS - REDSTONE::POWERED - REDSTONE::WEAKDY_POWERED - REDSTONE::STRENGTH);
+		if (strongly_powered) { value |= REDSTONE::POWERED; }
+		int weakdy_powered = getWeakdyState(pos, {0, 0, 0});
+		if (weakdy_powered)   { value |= REDSTONE::WEAKDY_POWERED; }
+		value |= (glm::max(strongly_powered, weakdy_powered) << REDSTONE::STRENGTH_OFFSET);
 		setBlockAt(value, pos.x, pos.y, pos.z, false);
 		if (strongly_powered) {
 			weaklyPower(pos, source, REDSTONE::ON, false);
@@ -997,8 +1001,8 @@ void Chunk::updateRedstone( void )
 							break ;
 						}
 						front = adj_blocks[(value >> 9) & 0x7];
-						red.state &= 0xF; // get rid of info 'scheduled tick caused by lock/unlock'
-						if (red.state) {
+						state = red.state & 0xF;  // get rid of info 'scheduled tick caused by lock/unlock'
+						if (state) {
 							for (auto &schedule : _redstone_schedule[(schedIndex == SCHEDULE::REPEAT_ON) ? SCHEDULE::REPEAT_OFF : SCHEDULE::REPEAT_DIODE]) {
 								// loop through schedule, if repeater scheduled to turn off, extend its delay
 								if (schedule.pos == red.pos && schedule.state == REDSTONE::OFF) {
@@ -1008,15 +1012,19 @@ void Chunk::updateRedstone( void )
 							}
 							if (!(value & REDSTONE::POWERED)) { // turn repeater on
 								// std::cout << "repeater on" << std::endl;
-								setBlockAt(value | REDSTONE::POWERED, red.pos.x, red.pos.y, red.pos.z, false);
+								value |= REDSTONE::POWERED;
+								setBlockAt(value, red.pos.x, red.pos.y, red.pos.z, false);
 								stronglyPower(red.pos + front, -front, 0xF);
 								weaklyPowerTarget(red.pos + front, -front, REDSTONE::ON, false);
+								if (red.state & REDSTONE::REPEATER::LOCK) { initRepeater(red.pos, value, true); }
 							}
-						} else if (!red.state && (value & REDSTONE::POWERED)) { // turn repeater off
+						} else if (value & REDSTONE::POWERED) { // turn repeater off
 							// std::cout << "repeater off" << std::endl;
-							setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::POWERED), red.pos.x, red.pos.y, red.pos.z, false);
+							value &= (REDSTONE::ALL_BITS - REDSTONE::POWERED);
+							setBlockAt(value, red.pos.x, red.pos.y, red.pos.z, false);
 							stronglyPower(red.pos + front, -front, REDSTONE::OFF);
 							weaklyPowerTarget(red.pos + front, -front, REDSTONE::OFF, false);
+							if (red.state & REDSTONE::REPEATER::LOCK) { initRepeater(red.pos, value, true); }
 						}
 						break ;
 					case blocks::COMPARATOR:

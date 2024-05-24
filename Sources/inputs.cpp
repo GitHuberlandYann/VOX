@@ -421,7 +421,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_ui->chatMessage(std::string("powered: ") + ((bHit.value & REDSTONE::POWERED) ? "TRUE" : "FALSE"));
 		_ui->chatMessage(std::string("weakdy powered: ") + ((bHit.value & REDSTONE::WEAKDY_POWERED) ? "TRUE" : "FALSE"));
 		_ui->chatMessage(std::string("activated: ") + ((bHit.value & REDSTONE::ACTIVATED) ? "TRUE" : "FALSE"));
-		_ui->chatMessage(std::string("strength: ") + std::to_string((bHit.value >> REDSTONE::STRENGTH_OFFSET) & 0x7));
+		_ui->chatMessage(std::string("strength: ") + std::to_string((bHit.value >> REDSTONE::STRENGTH_OFFSET) & 0xF));
 		_ui->chatMessage(std::string("moving piston: ") + ((bHit.value & REDSTONE::PISTON::MOVING) ? "TRUE" : "FALSE"));
 		_ui->chatMessage("*******************");
 	}

@@ -203,7 +203,7 @@ void WorldEdit::handleCmdMove( std::vector<std::string> &argv )
 		return ;
 	}
 
-	const glm::ivec3 dir = ((argv[1][0] == '-') ? 1 : -1) * adj_blocks[_openGL_Manager->_camera->getOrientation()];
+	const glm::ivec3 dir = ((argv[1][0] == '-') ? 1 : -1) * adj_blocks[_openGL_Manager->_camera->getOrientation6()];
 	handleCmdCopy();
 	handleCmdSet(blocks::AIR);
 	_clipStart += distance * dir;
