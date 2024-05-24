@@ -160,6 +160,7 @@ namespace blocks {
 		STONE_BRICKS_STAIRS_BOTTOM,
 		STONE_BRICKS_STAIRS_TOP,
 		LEVER,
+		OAK_SIGN,
 		BEDROCK = 24,
 		DIRT,
 		SMOOTH_STONE,
@@ -1282,6 +1283,48 @@ struct Lever : Block {
 			}
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+};
+
+struct OakSign : Block {
+	public:
+		OakSign() {
+			name = "OAK_SIGN";
+			mined = blocks::OAK_SIGN;
+			blast_resistance = 1.0f;
+			collisionHitbox_1x1x1 = false;
+			hasHitbox = true;
+			hasOrientedHitbox = true;
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			geometry = GEOMETRY::NONE;
+			byHand = true;
+			needed_tool = blocks::WOODEN_AXE;
+			hardness = 1.0f;
+			transparent = true;
+			item3D = false;
+			textureX = 1;
+			textureY = 11;
+		}
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			(void)bitfield;
+			switch (orientation) {
+				case face_dir::MINUSX:
+					hitbox[0] = {1.75f * ONE16TH, 0.5f, 0.5f};
+					hitbox[1] = {1.75f * ONE16TH, 0.5f, 0.25f};
+					break ;
+				case face_dir::PLUSX:
+					hitbox[0] = {14.25f * ONE16TH, 0.5f, 0.5f};
+					hitbox[1] = {1.75f * ONE16TH, 0.5f, 0.25f};
+					break ;
+				case face_dir::MINUSY:
+					hitbox[0] = {0.5f, 1.75f * ONE16TH, 0.5f};
+					hitbox[1] = {0.5f, 1.75f * ONE16TH, 0.25f};
+					break ;
+				case face_dir::PLUSY:
+					hitbox[0] = {0.5f, 14.25f * ONE16TH, 0.5f};
+					hitbox[1] = {0.5f, 1.75f * ONE16TH, 0.25f};
+					break ;
+			}
+		}
 };
 
 struct Bedrock : Cube {

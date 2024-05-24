@@ -172,7 +172,6 @@ class Chunk
 
 		// player-related block update
 		void regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif );
-		void handle_border_block( glm::ivec3 pos, int type, bool adding );
 		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
 		void handle_stair_corners( glm::ivec3 pos, int &type );
@@ -278,7 +277,6 @@ class Chunk
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread, int recurse );
 		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
 		void insertFluidAt( std::set<int> *newFluids, int posX, int posY, int posZ );
-		void update_border( int posX, int posY, int level, int type, bool adding, int origin );
 		t_collision collisionBox( glm::vec3 pos, float width, float height, float originalHeight );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( void );

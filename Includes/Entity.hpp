@@ -74,4 +74,15 @@ class MovingPistonEntity : public Entity
 		virtual bool update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime );
 };
 
+class signEntity : public Entity
+{
+	private:
+		std::array<std::string, 4> _lines;
+	
+	public:
+		signEntity( Chunk *chunk, glm::ivec3 position,  int value, std::array<std::string, 4> lines );
+
+		virtual bool update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime );
+};
+
 #endif

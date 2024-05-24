@@ -189,6 +189,14 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		} else {
 			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
 		}
+	} else if (type == blocks::OAK_SIGN) {
+		if (_block_hit.pos.x != _block_hit.prev_pos.x) {
+			type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::PLUSX : face_dir::MINUSX) << 9);
+		} else if (_block_hit.pos.y != _block_hit.prev_pos.y) {
+			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
+		} else {
+			return ;
+		}
 	} else if (type == blocks::LEVER || shape == GEOMETRY::BUTTON) {
 		if (s_blocks[_block_hit.value]->geometry != GEOMETRY::CUBE) { // TODO chnge this
 			return ;

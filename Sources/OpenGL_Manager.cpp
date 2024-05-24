@@ -777,6 +777,9 @@ void OpenGL_Manager::main_loop( void )
 						load_texture();
 					}
 					break ;
+				case MENU::RET::SIGN_DONE:
+				case MENU::RET::SIGN_DONE_NO_ENTRY:
+					break ;
 				default:
 					break ;
 			}

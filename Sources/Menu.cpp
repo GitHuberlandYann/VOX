@@ -691,6 +691,58 @@ MENU::RET Menu::chat_menu( bool animUpdate )
 	return (MENU::RET::NO_CHANGE);
 }
 
+MENU::RET Menu::sign_menu( bool animUpdate )
+{
+	if (_selection == 1 && INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) { // Done
+		glfwSetCharCallback(_window, NULL);
+		INPUT::resetMessage();
+		reset_values();
+		return (MENU::RET::SIGN_DONE);
+	}
+	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
+		glfwSetCharCallback(_window, NULL);
+		INPUT::resetMessage();
+		reset_values();
+		return (MENU::RET::SIGN_DONE_NO_ENTRY);
+	}
+	if (INPUT::key_down(INPUT::ENTER) && INPUT::key_update(INPUT::ENTER)) {
+		std::string line = INPUT::getCurrentMessage();
+		_sign_content.push_back(line);
+		INPUT::resetMessage();
+	}
+	if (INPUT::key_down(INPUT::DELETE) && INPUT::key_update(INPUT::DELETE)) {
+		INPUT::rmLetter();
+	}
+	// if (INPUT::key_down(INPUT::LOOK_UP) && INPUT::key_update(INPUT::LOOK_UP)) {
+	// 	INPUT::setCurrentMessage(_chat->getHistoMsg(true));
+	// }
+	// if (INPUT::key_down(INPUT::LOOK_DOWN) && INPUT::key_update(INPUT::LOOK_DOWN)) {
+	// 	INPUT::setCurrentMessage(_chat->getHistoMsg(false));
+	// }
+	if (INPUT::key_down(INPUT::LOOK_RIGHT) && INPUT::key_update(INPUT::LOOK_RIGHT)) {
+		INPUT::moveCursor(true, INPUT::key_down(INPUT::RUN));
+	}
+	if (INPUT::key_down(INPUT::LOOK_LEFT) && INPUT::key_update(INPUT::LOOK_LEFT)) {
+		INPUT::moveCursor(false, INPUT::key_down(INPUT::RUN));
+	}
+
+	setup_array_buffer_sign();
+	glUseProgram(_shaderProgram);
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+
+	size_t index = 0;
+	for (; index < _sign_content.size(); ++index) {
+		_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT - 48 + index * 30, 0, 0, 7 * _gui_size, false, _sign_content[index]);
+	}
+	if (animUpdate) {
+		_textBar = !_textBar;
+	}
+	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT - 48 + index * 30, 0, 0, 7 * _gui_size, false, INPUT::getCurrentInputStr((_textBar) ? '|' : '.'));
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
+	return (MENU::RET::NO_CHANGE);
+}
+
 void Menu::addQuads( int atlas, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight )
 {
 	--texWidth;--texHeight;
@@ -911,6 +963,15 @@ void Menu::setup_array_buffer_chat( void )
 	int nbr = _chat->computeHeight();
     addQuads(1, CHAT_BOX_X, WIN_HEIGHT - 48 - 8 - 18 * (nbr + 1), CHAT_BOX_WIDTH, 4 + 18 * nbr, 3, 29, 1, 1); // occult chat box
     addQuads(1, CHAT_BOX_X, WIN_HEIGHT - 48 - 18, CHAT_BOX_WIDTH, 20, 3, 29, 1, 1); // occult input box
+
+	setup_shader();
+}
+
+void Menu::setup_array_buffer_sign( void )
+{
+	addQuads(1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1); // occult window
+
+	addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // Done
 
 	setup_shader();
 }
@@ -1636,6 +1697,12 @@ void Menu::processMouseMovement( float posX, float posY )
 			_selection = 0;
 		}
 		break ;
+	case MENU::SIGN:
+		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 1;
+		}
+		_selection = 0;
+		break ;
 	default:
 		for (int index = 0; index < 9; index++) {
 			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * index * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 + 59 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
@@ -1777,9 +1844,16 @@ std::string Menu::getWorldFile( void )
 	return (_world_file);
 }
 
+std::vector<std::string> Menu::getSignContent( void )
+{
+	std::vector<std::string> res = _sign_content;
+	_sign_content.clear();
+	return (res);
+}
+
 MENU::RET Menu::run( bool animUpdate )
 {
-	if (INPUT::key_down(INPUT::QUIT_PROGRAM) && _state != MENU::CHAT && !_input_world && !_input_seed) {
+	if (INPUT::key_down(INPUT::QUIT_PROGRAM) && _state != MENU::CHAT && _state != MENU::SIGN && !_input_world && !_input_seed) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return (MENU::RET::QUIT);
 	}
@@ -1816,6 +1890,8 @@ MENU::RET Menu::run( bool animUpdate )
 			return (ingame_menu());
 		case MENU::CHAT:
 			return (chat_menu(animUpdate));
+		case MENU::SIGN:
+			return (sign_menu(animUpdate));
 		default:
 			return (MENU::RET::BACK_TO_GAME);
 	}

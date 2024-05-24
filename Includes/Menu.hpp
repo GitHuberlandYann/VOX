@@ -31,6 +31,7 @@ namespace MENU
 		FURNACE,
 		CHAT,
 		COMMAND,
+		SIGN,
 	};
 
 	enum RET {
@@ -47,6 +48,8 @@ namespace MENU
 		RENDER_DIST_UPDATE,
 		BRIGHTNESS_UPDATE,
 		APPLY_RESOURCE_PACKS,
+		SIGN_DONE,
+		SIGN_DONE_NO_ENTRY,
 	};
 
 	const int resolutions_size = 7;
@@ -70,7 +73,7 @@ class Menu
 		t_item _selected_block;
 		bool _vaoSet, _textBar, _input_world, _input_seed, _moving_slider, _change_to_apply, _drop_down_menu;
 		float _fov_gradient, _render_gradient, _brightness_gradient;
-		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs;
+		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs, _sign_content;
 		std::vector<int> _selection_list;
 		std::vector<std::array<int, 3>> _vertices;
 		std::string _world_file;
@@ -96,6 +99,7 @@ class Menu
 		MENU::RET ingame_inputs( void );
 		MENU::RET ingame_menu( void );
 		MENU::RET chat_menu( bool animUpdate );
+		MENU::RET sign_menu( bool animUpdate );
 
 		void addQuads( int atlas, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
         void setup_array_buffer_main( void );
@@ -108,6 +112,7 @@ class Menu
         void setup_array_buffer_video( void );
         void setup_array_buffer_resource_packs( void );
         void setup_array_buffer_chat( void );
+        void setup_array_buffer_sign( void );
 
 		void occult_selection( void );
 		void display_item_value( int x, int y, int amount );
@@ -145,6 +150,7 @@ class Menu
 		int getState( void );
 		void changeGuiSize( void );
 		std::string getWorldFile( void );
+		std::vector<std::string> getSignContent( void );
 		MENU::RET run( bool animUpdate );
 
 		std::string getInfoString( void );

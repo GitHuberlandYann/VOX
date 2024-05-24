@@ -109,6 +109,7 @@ glm::ivec3 Chunk::getAttachedDir( int value )
 			break ;
 		case blocks::TORCH:
 		case blocks::REDSTONE_TORCH:
+		case blocks::OAK_SIGN:
 			switch (orientation) {
 				case face_dir::MINUSX:
 					target = glm::ivec3(-1, 0, 0);

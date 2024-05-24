@@ -10,7 +10,7 @@ class ChestInstance;
 class UI;
 
 # define IRECEIPT_SIZE 37
-# define RECEIPT_SIZE 123
+# define RECEIPT_SIZE 124
 
 const int ireceipt[IRECEIPT_SIZE][6] = {
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_LOG, blocks::OAK_PLANKS, 4},
@@ -109,6 +109,7 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::COBBLESTONE, blocks::AIR, blocks::AIR, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::AIR, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE, blocks::COBBLESTONE_STAIRS_BOTTOM, 4},
 	{blocks::STONE_BRICKS, blocks::AIR, blocks::AIR, blocks::STONE_BRICKS, blocks::STONE_BRICKS, blocks::AIR, blocks::STONE_BRICKS, blocks::STONE_BRICKS, blocks::STONE_BRICKS, blocks::STONE_BRICKS_STAIRS_BOTTOM, 4},
 
+	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::STICK, blocks::AIR, blocks::OAK_SIGN, 3},
 	{blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_DOOR, 3},
 	{blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_DOOR, 3},
 	{blocks::AIR, blocks::AIR, blocks::AIR, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_PLANKS, blocks::OAK_TRAPDOOR, 2},

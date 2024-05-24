@@ -172,23 +172,6 @@ void Chunk::resetDisplayedFaces( void )
 	}
 }
 
-void Chunk::handle_border_block( glm::ivec3 pos, int type, bool adding )
-{
-	if (type == blocks::AIR) {
-		return ;
-	}
-	if (!pos.x && _neighbours[face_dir::MINUSX]) {
-		_neighbours[face_dir::MINUSX]->update_border(CHUNK_SIZE - 1, pos.y, pos.z, type, adding, face_dir::PLUSX);
-	} else if (pos.x == CHUNK_SIZE - 1 && _neighbours[face_dir::PLUSX]) {
-		_neighbours[face_dir::PLUSX]->update_border(0, pos.y, pos.z, type, adding, face_dir::MINUSX);
-	}
-	if (!pos.y && _neighbours[face_dir::MINUSY]) {
-		_neighbours[face_dir::MINUSY]->update_border(pos.x, CHUNK_SIZE - 1, pos.z, type, adding, face_dir::PLUSY);
-	} else if (pos.y == CHUNK_SIZE - 1 && _neighbours[face_dir::PLUSY]) {
-		_neighbours[face_dir::PLUSY]->update_border(pos.x, 0, pos.z, type, adding, face_dir::MINUSY);
-	}
-}
-
 // works as long as sizeof(int) == sizeof(float)
 // we output 1 int and 3 floats to shader
 void Chunk::setup_array_buffer( void )
@@ -669,103 +652,6 @@ void Chunk::updateBreak( glm::ivec4 block_hit )
 		const glm::ivec3 delta = adj_blocks[index];
 		_particles.push_back(new Particle(this, {block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.x + 0.55f * delta.x, block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.y + 0.55f * delta.y, block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.z + 0.55f * delta.z}, PARTICLES::BREAKING, 0, block_hit.w));
 	}
-}
-
-// called by neighbour chunk if block change at border
-// posX and posY in [0; CHUNK_SIZE + 1] === _blocks compatible
-void Chunk::update_border( int posX, int posY, int level, int type, bool adding, int origin )
-{
-	// std::cout << "got into update border of chunk " << _startX << ", " << _startY << ": " << _displayed_faces << std::endl;
-	// std::cout << "args: " << posX << ", " << posY << ", " << level << ": " << ((adding) ? "add" : "rm") << " " << s_blocks[type]->name << " | real pos is " << _startX + posX << ", " << _startY + posY << std::endl;
-	if (!(!posX || !posY || posX == CHUNK_SIZE - 1 || posY == CHUNK_SIZE - 1)) {
-		std::cout << "ERROR update_border not border block " << posX << ", " << posY << std::endl;
-		return ;
-	}
-	// if (_thread.joinable()) {
-	// 	_thread.join();
-	// }
-	int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + level;
-	int value = _blocks[offset];
-	if (adding) {
-		// if (_blocks[offset] && _blocks[offset] < blocks::WATER) {
-		// 	std::cout << "\033[31mADDING IS REMOVING BLOCK\033[0m " << s_blocks[_blocks[offset]].name << std::endl;
-		// }
-		if (type >= blocks::WATER) {
-			return ;
-		}
-		if ((value & 0xFF) == blocks::OAK_FENCE || (value & 0xFF) == blocks::GLASS_PANE) {
-			switch (origin) {
-				case face_dir::MINUSX:
-					_blocks[offset] |= (FENCE::MX << 12);
-					_added[offset] |= (FENCE::MX << 12);
-					break ;
-				case face_dir::PLUSX:
-					_blocks[offset] |= (FENCE::PX << 12);
-					_added[offset] |= (FENCE::PX << 12);
-					break ;
-				case face_dir::MINUSY:
-					_blocks[offset] |= (FENCE::MY << 12);
-					_added[offset] |= (FENCE::MY << 12);
-					break ;
-				case face_dir::PLUSY:
-					_blocks[offset] |= (FENCE::PY << 12);
-					_added[offset] |= (FENCE::PY << 12);
-					break ;
-			}
-		}
-		if (!air_flower(type, true, true, false) || !air_flower(value, false, false, false)) {
-			// std::cout << "took jump" << std::endl;
-			goto FILL; // this is only to update face shading TODO only update concerned faces
-		}
-		if (!face_count(value, posX, posY, level)) { // block no more visible
-			_blocks[offset] += blocks::NOTVISIBLE;
-		}
-	} else {
-		// std::cout << "update border, value is " << s_blocks[value & 0xFF]->name << ", origin " << origin << ", orientation " << ((value >> 9) & 0x7) << std::endl;
-		if (((value & 0xFF) == blocks::TORCH || (value & 0xFF) == blocks::REDSTONE_TORCH) && ((value >> 9) & 0x7) == origin) {
-			remove_block(true, {posX, posY, level}); // TODO handle useInventory instead of setting it to true by default
-		}
-		if (value & blocks::NOTVISIBLE) {
-			_blocks[offset] -= blocks::NOTVISIBLE;
-			_added[offset] -= blocks::NOTVISIBLE;
-		}
-		if ((value & 0xFF) >= blocks::WATER) {
-			_hasWater = true;
-			_fluids.insert(offset);
-		}
-		if ((value & 0xFF) == blocks::OAK_FENCE || (value & 0xFF) == blocks::GLASS_PANE) {
-			switch (origin) {
-				case face_dir::MINUSX:
-					_blocks[offset] ^= (FENCE::MX << 12);
-					_added[offset] ^= (FENCE::MX << 12);
-					break ;
-				case face_dir::PLUSX:
-					_blocks[offset] ^= (FENCE::PX << 12);
-					_added[offset] ^= (FENCE::PX << 12);
-					break ;
-				case face_dir::MINUSY:
-					_blocks[offset] ^= (FENCE::MY << 12);
-					_added[offset] ^= (FENCE::MY << 12);
-					break ;
-				case face_dir::PLUSY:
-					_blocks[offset] ^= (FENCE::PY << 12);
-					_added[offset] ^= (FENCE::PY << 12);
-					break ;
-			}
-		}
-		if (type >= blocks::WATER) {
-			return ;
-		}
-		if (!air_flower(value, false, false, false)) {
-			goto FILL;
-		}
-		// std::cout << s_blocks[_blocks[offset] & 0xFF]->name << " next " << s_blocks[type]->name << std::endl;
-	}
-	// std::cout << "got here" << std::endl;
-	// std::cout << "update border displayed " << _displayed_faces << " at " << _startX << ", " << _startY << std::endl;
-	FILL:
-	// fill_vertex_array();
-	_vertex_update = true;
 }
 
 int Chunk::isLoaded( GLint &counter )
