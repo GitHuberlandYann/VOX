@@ -53,6 +53,12 @@ int mini( int a, int b );
 char maxc( char a, char b );
 short maxs( short a, short b );
 
+namespace Utils {
+	namespace Text {
+		int textWidth( int font_size, std::string str, int limit = -1 );
+	};
+};
+
 std::string doubleDigits( int nb );
 
 int air_flower( int value, bool air_leaves, bool air_glass, bool air_water );

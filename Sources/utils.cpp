@@ -30,6 +30,7 @@ std::string get_file_content( std::string file_name )
 std::string	trim_spaces( std::string str )
 {
 	int index = 0;
+	bool inQuotes = false;
 	std::string new_string;
 	while (str[index] == ' ' || str[index] == '\t')
 		++index;
@@ -39,7 +40,10 @@ std::string	trim_spaces( std::string str )
 			new_string += ' ';
 		else
 			new_string += str[index];
-		if (str[index] == ' ' || str[index] == '\t')
+		if (str[index] == '\"' && (!index || str[index - 1] != '\\')) {
+			inQuotes = !inQuotes;
+		}
+		if (!inQuotes && (str[index] == ' ' || str[index] == '\t'))
 		{
 			while (str[index] == ' ' || str[index] == '\t')
 				++index;
@@ -321,7 +325,7 @@ bool visible_face( int value, int next, face_dir dir )
 
 	switch (valueShape) {
 		case GEOMETRY::NONE:
-			return (false);
+			return (value == blocks::OAK_SIGN);
 		case GEOMETRY::SLAB_BOTTOM:
 		case GEOMETRY::FARMLAND:
 			if (dir == face_dir::PLUSZ) {

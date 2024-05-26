@@ -49,7 +49,6 @@ namespace MENU
 		BRIGHTNESS_UPDATE,
 		APPLY_RESOURCE_PACKS,
 		SIGN_DONE,
-		SIGN_DONE_NO_ENTRY,
 	};
 
 	const int resolutions_size = 7;
@@ -64,6 +63,11 @@ namespace MENU
 	}};
 }
 
+typedef struct s_sign_info {
+	glm::ivec3 pos = {0, 0, 0};
+	std::vector<std::string> content;
+}				t_sign_info;
+
 class Menu
 {
 	private:
@@ -74,6 +78,7 @@ class Menu
 		bool _vaoSet, _textBar, _input_world, _input_seed, _moving_slider, _change_to_apply, _drop_down_menu;
 		float _fov_gradient, _render_gradient, _brightness_gradient;
 		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs, _sign_content;
+		glm::ivec3 _sign_pos;
 		std::vector<int> _selection_list;
 		std::vector<std::array<int, 3>> _vertices;
 		std::string _world_file;
@@ -146,11 +151,12 @@ class Menu
 		void setChunks( std::list<Chunk *> &chunks );
 		void setChestInstance( ChestInstance *chest );
 		void setFurnaceInstance( FurnaceInstance *furnace );
+		void setSignPos( glm::ivec3 pos );
 		void setState( int state );
 		int getState( void );
 		void changeGuiSize( void );
 		std::string getWorldFile( void );
-		std::vector<std::string> getSignContent( void );
+		t_sign_info getSignContent( void );
 		MENU::RET run( bool animUpdate );
 
 		std::string getInfoString( void );

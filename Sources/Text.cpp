@@ -86,7 +86,7 @@ void Text::updateWinSize( void )
 	glUniform1i(glGetUniformLocation(_shaderProgram, "win_height"), WIN_HEIGHT);
 }
 
-int Text::textWidth( int font_size, std::string str, int limit )
+int Utils::Text::textWidth( int font_size, std::string str, int limit )
 {
 	int res = 0;
 	for (size_t i = 0, charLine = 0; str[i]; ++i, ++charLine) {
@@ -153,11 +153,11 @@ void Text::addText( int posX, int posY, int font_size, int color, std::string st
 		} else {
 			addQuads(c, posX, posY, font_size, font_size, color);
 			if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') {
-				posX += font_size * 0.5;
+				posX += font_size * 0.5f;
 			} else if (c == 'I' || c == '[' || c == ']' || c == '"' || c == '*') {
-				posX += font_size * 0.6;	
+				posX += font_size * 0.6f;	
 			} else if (c == 'l' || c == 't' || c == '(' || c == ')' || c == '<' || c == '>' || c == '{' || c == '}') {
-				posX += font_size * 0.7;
+				posX += font_size * 0.7f;
 			} else {
 				posX += font_size;
 			}
@@ -168,7 +168,7 @@ void Text::addText( int posX, int posY, int font_size, int color, std::string st
 
 void Text::addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, std::string str )
 {
-	int text_width = textWidth(font_size, str);
+	int text_width = Utils::Text::textWidth(font_size, str);
 	if (shadow) {
 		int offset = font_size / 8;
 		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, TEXT::BLACK, str);

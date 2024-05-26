@@ -695,22 +695,29 @@ MENU::RET Menu::sign_menu( bool animUpdate )
 {
 	if (_selection == 1 && INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) { // Done
 		glfwSetCharCallback(_window, NULL);
+		std::string line = INPUT::getCurrentMessage();
+		_sign_content.push_back(line);
 		INPUT::resetMessage();
 		reset_values();
-		return (MENU::RET::SIGN_DONE);
+		return ((_sign_content.size() > 0) ? MENU::RET::SIGN_DONE : MENU::RET::BACK_TO_GAME);
 	}
 	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
 		glfwSetCharCallback(_window, NULL);
 		INPUT::resetMessage();
 		reset_values();
-		return (MENU::RET::SIGN_DONE_NO_ENTRY);
+		return (MENU::RET::BACK_TO_GAME);
 	}
 	if (INPUT::key_down(INPUT::ENTER) && INPUT::key_update(INPUT::ENTER)) {
-		std::string line = INPUT::getCurrentMessage();
-		_sign_content.push_back(line);
-		INPUT::resetMessage();
+		if (_sign_content.size() < 3) {
+			std::string line = INPUT::getCurrentMessage();
+			_sign_content.push_back(line);
+			INPUT::resetMessage();
+		} 
 	}
 	if (INPUT::key_down(INPUT::DELETE) && INPUT::key_update(INPUT::DELETE)) {
+		INPUT::rmLetter();
+	}
+	if (Utils::Text::textWidth(7, INPUT::getCurrentMessage()) > 90) {
 		INPUT::rmLetter();
 	}
 	// if (INPUT::key_down(INPUT::LOOK_UP) && INPUT::key_update(INPUT::LOOK_UP)) {
@@ -731,14 +738,15 @@ MENU::RET Menu::sign_menu( bool animUpdate )
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
 
+	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, "Edit Sign Message");
 	size_t index = 0;
 	for (; index < _sign_content.size(); ++index) {
-		_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT - 48 + index * 30, 0, 0, 7 * _gui_size, false, _sign_content[index]);
+		_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2 - 50 * _gui_size + index * 10 * _gui_size, 0, 0, 7 * _gui_size, false, _sign_content[index]);
 	}
 	if (animUpdate) {
 		_textBar = !_textBar;
 	}
-	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT - 48 + index * 30, 0, 0, 7 * _gui_size, false, INPUT::getCurrentInputStr((_textBar) ? '|' : '.'));
+	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2 - 50 * _gui_size + index * 10 * _gui_size, 0, 0, 7 * _gui_size, false, INPUT::getCurrentInputStr((_textBar) ? '|' : '.'));
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
 	return (MENU::RET::NO_CHANGE);
 }
@@ -971,6 +979,8 @@ void Menu::setup_array_buffer_sign( void )
 {
 	addQuads(1, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1); // occult window
 
+    addQuads(0, WIN_WIDTH / 2 - 50 * _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size, 100 * _gui_size, 50 * _gui_size, 2, 226, 24, 12); // sign main body
+    addQuads(0, WIN_WIDTH / 2 - 4.1666f * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 8.333f * _gui_size, 50 * _gui_size, 6, 32, 2, 12); // sign post
 	addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // Done
 
 	setup_shader();
@@ -1700,6 +1710,7 @@ void Menu::processMouseMovement( float posX, float posY )
 	case MENU::SIGN:
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
+			return ;
 		}
 		_selection = 0;
 		break ;
@@ -1805,6 +1816,11 @@ void Menu::setFurnaceInstance( FurnaceInstance *furnace )
 	_furnace = furnace;
 }
 
+void Menu::setSignPos( glm::ivec3 pos )
+{
+	_sign_pos = pos;
+}
+
 void Menu::setState( int state )
 {
 	_state = state;
@@ -1817,7 +1833,7 @@ void Menu::setState( int state )
 	set_cursor_position_callback(NULL, this);
 	set_scroll_callback(NULL);
 
-	if (state == MENU::CHAT) {
+	if (state == MENU::CHAT || state == MENU::SIGN) {
 		glfwSetCharCallback(_window, INPUT::character_callback);
 	} else if (state == MENU::COMMAND) {
 		_state = MENU::CHAT;
@@ -1844,9 +1860,9 @@ std::string Menu::getWorldFile( void )
 	return (_world_file);
 }
 
-std::vector<std::string> Menu::getSignContent( void )
+t_sign_info Menu::getSignContent( void )
 {
-	std::vector<std::string> res = _sign_content;
+	t_sign_info res = {_sign_pos, _sign_content};
 	_sign_content.clear();
 	return (res);
 }

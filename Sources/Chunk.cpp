@@ -1,5 +1,6 @@
 #include "Camera.hpp"
 #include "random.hpp"
+#include "Menu.hpp"
 
 extern std::mutex mtx_backup;
 
@@ -310,8 +311,11 @@ void Chunk::setNeighbour( Chunk *neighbour, face_dir index )
 void Chunk::setBackup( std::map<std::pair<int, int>, s_backup> &backups )
 {
 	if (_added.size() || _removed.size()) {
+		for (auto &sign : _signs) {
+			sign.second->setChunk(NULL);
+		}
 		mtx_backup.lock();
-		backups[std::pair<int, int>(_startX, _startY)] = {_added, _removed, _chests, _furnaces};
+		backups[std::pair<int, int>(_startX, _startY)] = {_added, _removed, _chests, _furnaces, _signs};
 		mtx_backup.unlock();
 	}
 }
@@ -329,6 +333,10 @@ void Chunk::restoreBackup( s_backup &backup )
 		ch.second->setChunk(this, {posX + _startX, posY + _startY, posZ});
 	}
 	_furnaces = backup.furnaces;
+	_signs = backup.signs;
+	for (auto &sign : _signs) {
+		sign.second->setChunk(this);
+	}
 }
 
 void Chunk::openChest( glm::ivec3 pos )
@@ -368,6 +376,21 @@ FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
 		std::cout << fur.first << std::endl;
 	}
 	return (NULL);
+}
+
+/**
+ * @brief find signInstance at given pos and set its content to given content
+ * @param sign {pos, content} used to set content of sign at pos
+*/
+void Chunk::setSignContent( t_sign_info sign )
+{
+	int key = ((((sign.pos.x - _startX) << CHUNK_SHIFT) + sign.pos.y - _startY) << WORLD_SHIFT) + sign.pos.z;;
+	auto search = _signs.find(key);
+	if (search == _signs.end()) {
+		std::cout << "Chunk::setSignContent [" << _startX << ", " << _startY << "]failed to find sign at pos " << sign.pos.x << ", " << sign.pos.y << ", " << sign.pos.z << std::endl;
+		return ;
+	}
+	search->second->setContent(sign.content);
 }
 
 // fill_vertices uses light emited by neighbours, so had to make sure they are loaded before we fill our own vertices in
@@ -745,6 +768,10 @@ void Chunk::updateEntities( std::vector<t_shaderInput> &arr,  std::vector<t_shad
 	CHESTS:
 	for (auto &c : _chests) {
 		c.second->update(arr, deltaTime);
+	}
+
+	for (auto &s : _signs) {
+		s.second->displayText(partArr);
 	}
 }
 

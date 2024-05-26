@@ -71,9 +71,9 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 					_entities.push_back(new Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, *item));
 				}
 			}
+			delete _chests[offset]; // TODO what happens if chest explodes while we use it ? prob heap use after free in Menu.cpp
+			_chests.erase(offset);
 		}
-		delete _chests[offset]; // TODO what happens if chest explodes while we use it ? prob heap use after free in Menu.cpp
-		_chests.erase(offset);
 	} else if (type == blocks::FURNACE) {
 		auto search = _furnaces.find(offset); // drop furnace's items
 		if (search != _furnaces.end()) {
@@ -89,9 +89,15 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			if (items.amount) {
 				_entities.push_back(new Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-4, 5)), 1.0f}, false, items));
 			}
+			delete _furnaces[offset];
+			_furnaces.erase(offset);
 		}
-		delete _furnaces[offset];
-		_furnaces.erase(offset);
+	} else if (type == blocks::OAK_SIGN) {
+		auto search = _signs.find(offset);
+		if (search != _signs.end()) {
+			delete _signs[offset];
+			_signs.erase(offset);
+		}
 	} else if (type == blocks::OAK_DOOR) {
 		// break other part of door
 		_blocks[offset + (((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1)] = blocks::AIR;
@@ -428,6 +434,8 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		_chests.emplace(offset, new ChestInstance(this, {pos.x + _startX, pos.y + _startY, pos.z}, _camera->getOrientation()));
 	} else if (type == blocks::FURNACE) {
 		_furnaces.emplace(offset, new FurnaceInstance());
+	} else if (type == blocks::OAK_SIGN) {
+		_signs.emplace(offset, new SignInstance(this, value, pos));
 	} else if (type == blocks::TORCH || type == blocks::REDSTONE_TORCH) {
 		if (type == blocks::REDSTONE_TORCH) {
 			updateRedstoneTorch(pos, value);
@@ -688,6 +696,14 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 			if (base == blocks::AIR) {
 				if (s_blocks[type]->byHand) {
 					entity_block(pos.x, pos.y, pos.z, type);
+				}
+				if (type == blocks::OAK_SIGN) {
+					int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
+					auto search = _signs.find(offset);
+					if (search != _signs.end()) {
+						delete _signs[offset];
+						_signs.erase(offset);
+					}
 				}
 				setBlockAt(blocks::AIR, pos, true);
 				return ;

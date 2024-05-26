@@ -1325,6 +1325,7 @@ struct OakSign : Block {
 					break ;
 			}
 		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Bedrock : Cube {

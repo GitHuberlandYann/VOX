@@ -3,7 +3,7 @@ OBJS_DIR	= Objs
 SRCS_DIR	= Sources
 
 FILES		= main blockUpdate callbacks fluids inputs item3D light physics player random redstone screenshot threadChunkUpdate tickUpdate utils worldGeneration \
-				Blocks Camera Chat ChestInstance Chunk DayCycle Entity FurnaceInstance Inventory JSON Menu OpenGL_Manager Particle Settings Skybox Text Ui WorldEdit
+				Blocks Camera Chat ChestInstance Chunk DayCycle Entity FurnaceInstance Inventory JSON Menu OpenGL_Manager Particle Settings SignInstance Skybox Text Ui WorldEdit
 
 SRCS		= $(addprefix $(SRCS_DIR)/, $(addsuffix .cpp, $(FILES)))
 OBJS 		= $(addprefix $(OBJS_DIR)/, $(addsuffix .o, $(FILES)))

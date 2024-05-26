@@ -39,16 +39,6 @@ MovingPistonEntity::MovingPistonEntity( Chunk *chunk, glm::ivec3 source, glm::iv
 	// std::cout << "MovingPistonEntity init movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] from " << _chunk->getStartX() + _pos.x << ", " << _chunk->getStartY() + _pos.y << ", " << _pos.z << " to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
 }
 
-signEntity::signEntity( Chunk *chunk, glm::ivec3 position,  int value, std::array<std::string, 4> lines )
-	: Entity(chunk, NULL, position, {0, 0, 0}, false, {value, 1}), _lines(lines)
-{
-	std::cout << "new signEntity, lines are:" << std::endl;
-	for (int i = 0; i < 4; ++i) {
-		std::cout << "\t[" << _lines[i] << "]" << std::endl;
-	}
-}
-
-
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
@@ -633,83 +623,5 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 		}
         return (true);
     }
-	return (false);
-}
-
-bool signEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime )
-{
-	(void)deltaTime;
-	(void)partArr;
-	(void)camPos;
-
-	glm::vec3 right, front, up;
-	switch ((_item.type >> 9) & 0x7) {
-		case (face_dir::MINUSX):
-			right = glm::vec3( 0, 1, 0);
-			front = glm::vec3(-1, 0, 0);
-			up    = glm::vec3( 0, 0, 1);
-			break ;
-		case (face_dir::PLUSX):
-			right = glm::vec3(0, -1, 0);
-			front = glm::vec3(1,  0, 0);
-			up    = glm::vec3(0,  0, 1);
-			break ;
-		case (face_dir::MINUSY):
-			right = glm::vec3(-1,  0, 0);
-			front = glm::vec3( 0, -1, 0);
-			up    = glm::vec3( 0,  0, 1);
-			break ;
-		case (face_dir::PLUSY):
-			right = glm::vec3(1, 0, 0);
-			front = glm::vec3(0, 1, 0);
-			up    = glm::vec3(0, 0, 1);
-			break ;
-		default:
-			std::cout << "ERROR signEntity orientation" << std::endl;
-	}
-	glm::vec3 topLeft = glm::vec3(_chunk->getStartX(), _chunk->getStartY(), 0) + _pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front) * 0.5f + up * 0.25f;
-
-	// front face
-	int spec = 2 + (14 << 12) + (2 << 8) + (0xF << 24);
-	// t_shaderInput v0 = {spec, topLeft + right};
-	// t_shaderInput v1 = {spec + XTEX, topLeft};
-	// t_shaderInput v2 = {spec + YTEX, topLeft + right - up};
-	// t_shaderInput v3 = {spec + XTEX + YTEX, topLeft - up};
-	// face_vertices(vertices, v0, v1, v2, v3);
-	// player side
-	t_shaderInput v0 = {spec,                              topLeft - front * 1.75f * ONE16TH};
-	t_shaderInput v1 = {spec + 8 + XTEX,                   topLeft + right - front * 1.75f * ONE16TH};
-	t_shaderInput v2 = {spec - (6 << 8) + YTEX,            topLeft - up * 0.5f - front * 1.75f * ONE16TH};
-	t_shaderInput v3 = {spec + 8 + XTEX - (6 << 8) + YTEX, topLeft + right - up * 0.5f - front * 1.75f * ONE16TH};
-	face_vertices(arr, v0, v1, v2, v3);
-	// side faces
-	spec = 2 + (14 << 12) + (0xF << 24);
-	// top
-	v0 = {spec,                               topLeft};
-	v1 = {spec + 8 + XTEX,                    topLeft + right};
-	v2 = {spec + YTEX - (14 << 8),            topLeft - front * 1.75f * ONE16TH};
-	v3 = {spec + 8 + XTEX + YTEX - (14 << 8), topLeft + right - front * 1.75f * ONE16TH};
-	face_vertices(arr, v0, v1, v2, v3);
-	// left
-	spec = (14 << 12) + (2 << 8) + (0xF << 24);
-	v0 = {spec,                               topLeft};
-	v1 = {spec - 14 + XTEX,                   topLeft - front * 1.75f * ONE16TH};
-	v2 = {spec + YTEX - (2 << 8),             topLeft - up * 0.5f};
-	v3 = {spec - 14 + XTEX + YTEX - (2 << 8), topLeft - up * 0.5f - front * 1.75f * ONE16TH};
-	face_vertices(arr, v0, v1, v2, v3);
-	// right
-	spec = 2 + (3 << 4) + (14 << 12) + (2 << 8) + (0xF << 24);
-	v0 = {spec,                               topLeft + right - front * 1.75f * ONE16TH};
-	v1 = {spec - 14 + XTEX,                   topLeft + right};
-	v2 = {spec + YTEX - (2 << 8),             topLeft + right - front * 1.75f * ONE16TH - up * 0.5f};
-	v3 = {spec - 14 + XTEX + YTEX - (2 << 8), topLeft + right - up * 0.5f};
-	face_vertices(arr, v0, v1, v2, v3);
-	// bottom
-	spec = 10 + (1 << 4) + (14 << 12) + (0xF << 24);
-	v0 = {spec,                               topLeft - up * 0.5f - front * 1.75f * ONE16TH};
-	v1 = {spec + 8 + XTEX,                    topLeft + right - up * 0.5f - front * 1.75f * ONE16TH};
-	v2 = {spec + YTEX - (14 << 8),            topLeft - up * 0.5f};
-	v3 = {spec + 8 + XTEX + YTEX - (14 << 8), topLeft + right - up * 0.5f};
-	face_vertices(arr, v0, v1, v2, v3);
 	return (false);
 }

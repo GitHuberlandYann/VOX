@@ -3869,3 +3869,79 @@ void PistonHead::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, gl
 	v3 = {spec + XTEX + YTEX - (12 << 8), topLeft + right * 6.0f * ONE16TH - front * 0.25f - up * 6.0f * ONE16TH};
 	face_vertices(vertices, v0, v1, v2, v3);
 }
+
+void OakSign::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
+{
+	(void)chunk;
+	glm::vec3 right, front, up;
+	switch ((value >> 9) & 0x7) {
+		case (face_dir::MINUSX):
+			right = glm::vec3( 0, 1, 0);
+			front = glm::vec3(-1, 0, 0);
+			up    = glm::vec3( 0, 0, 1);
+			break ;
+		case (face_dir::PLUSX):
+			right = glm::vec3(0, -1, 0);
+			front = glm::vec3(1,  0, 0);
+			up    = glm::vec3(0,  0, 1);
+			break ;
+		case (face_dir::MINUSY):
+			right = glm::vec3(-1,  0, 0);
+			front = glm::vec3( 0, -1, 0);
+			up    = glm::vec3( 0,  0, 1);
+			break ;
+		case (face_dir::PLUSY):
+			right = glm::vec3(1, 0, 0);
+			front = glm::vec3(0, 1, 0);
+			up    = glm::vec3(0, 0, 1);
+			break ;
+		default:
+			std::cout << "ERROR oakSign::addMesh orientation" << std::endl;
+			return ;
+	}
+	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front) * 0.5f + up * 0.25f;
+
+	// front face
+	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
+	int spec = 2 + (14 << 12) + (2 << 8) + (faceLight << 24);
+	// t_shaderInput v0 = {spec, topLeft + right};
+	// t_shaderInput v1 = {spec + XTEX, topLeft};
+	// t_shaderInput v2 = {spec + YTEX, topLeft + right - up};
+	// t_shaderInput v3 = {spec + XTEX + YTEX, topLeft - up};
+	// face_vertices(vertices, v0, v1, v2, v3);
+	// player side
+	t_shaderInput v0 = {spec,                              topLeft - front * 1.75f * ONE16TH};
+	t_shaderInput v1 = {spec + 8 + XTEX,                   topLeft + right - front * 1.75f * ONE16TH};
+	t_shaderInput v2 = {spec - (4 << 8) + YTEX,            topLeft - up * 0.5f - front * 1.75f * ONE16TH};
+	t_shaderInput v3 = {spec + 8 + XTEX - (4 << 8) + YTEX, topLeft + right - up * 0.5f - front * 1.75f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	// side faces
+	spec = 2 + (14 << 12) + (faceLight << 24);
+	// top
+	v0 = {spec,                               topLeft};
+	v1 = {spec + 8 + XTEX,                    topLeft + right};
+	v2 = {spec + YTEX - (14 << 8),            topLeft - front * 1.75f * ONE16TH};
+	v3 = {spec + 8 + XTEX + YTEX - (14 << 8), topLeft + right - front * 1.75f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	// left
+	spec = (14 << 12) + (2 << 8) + (faceLight << 24);
+	v0 = {spec,                               topLeft};
+	v1 = {spec - 14 + XTEX,                   topLeft - front * 1.75f * ONE16TH};
+	v2 = {spec + YTEX - (4 << 8),             topLeft - up * 0.5f};
+	v3 = {spec - 14 + XTEX + YTEX - (4 << 8), topLeft - up * 0.5f - front * 1.75f * ONE16TH};
+	face_vertices(vertices, v0, v1, v2, v3);
+	// right
+	spec = 2 + (3 << 4) + (14 << 12) + (2 << 8) + (faceLight << 24);
+	v0 = {spec,                               topLeft + right - front * 1.75f * ONE16TH};
+	v1 = {spec - 14 + XTEX,                   topLeft + right};
+	v2 = {spec + YTEX - (4 << 8),             topLeft + right - front * 1.75f * ONE16TH - up * 0.5f};
+	v3 = {spec - 14 + XTEX + YTEX - (4 << 8), topLeft + right - up * 0.5f};
+	face_vertices(vertices, v0, v1, v2, v3);
+	// bottom
+	spec = 10 + (1 << 4) + (14 << 12) + (faceLight << 24);
+	v0 = {spec,                               topLeft - up * 0.5f - front * 1.75f * ONE16TH};
+	v1 = {spec + 8 + XTEX,                    topLeft + right - up * 0.5f - front * 1.75f * ONE16TH};
+	v2 = {spec + YTEX - (14 << 8),            topLeft - up * 0.5f};
+	v3 = {spec + 8 + XTEX + YTEX - (14 << 8), topLeft + right - up * 0.5f};
+	face_vertices(vertices, v0, v1, v2, v3);
+}

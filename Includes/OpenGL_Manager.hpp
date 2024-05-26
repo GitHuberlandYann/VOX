@@ -45,6 +45,7 @@ class OpenGL_Manager
 		std::thread _thread;
 		std::mutex _mtx;
 		t_hit _block_hit;
+		Chunk *_current_chunk_ptr = NULL, *_chunk_hit = NULL;
 		UI *_ui;
 		Menu *_menu;
 		Skybox *_skybox;

@@ -5,18 +5,15 @@
 #include "WorldEdit.hpp"
 #include <iostream>
 
-Chunk *current_chunk_ptr = NULL;
-Chunk *chunk_hit = NULL;
-
 Chunk *OpenGL_Manager::getCurrentChunkPtr( void )
 {
-	return (current_chunk_ptr);
+	return (_current_chunk_ptr);
 }
 
 void OpenGL_Manager::resetInputsPtrs( void )
 {
-	current_chunk_ptr = NULL;
-	chunk_hit = NULL;
+	_current_chunk_ptr = NULL;
+	_chunk_hit = NULL;
 	_perimeter_chunks.clear();
 	_visible_chunks.clear();
 }
@@ -53,7 +50,7 @@ t_hit OpenGL_Manager::get_block_hit( bool debug_info )
 			}
 		}
 		if (first_loop) {
-			current_chunk_ptr = chunk;
+			_current_chunk_ptr = chunk;
 			_camera->setCurrentChunkPtr(chunk);
 			first_loop = false;
 		}
@@ -75,7 +72,7 @@ t_hit OpenGL_Manager::get_block_hit( bool debug_info )
 			// TODO move hitboxes of torches depending on the wall they hang on
 			const Block *target = s_blocks[type];
 			if (!target->hasHitbox || line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + target->hitboxCenter, target->hitboxHalfSize)) {
-				chunk_hit = chunk;
+				_chunk_hit = chunk;
 				res.pos = i;
 				res.value = (debug_info) ? value : type;
 				// _ui->chatMessage(s_blocks[type]->name + ((value & REDSTONE::POWERED) ? " block hit is powered" : " block hit is not powered"));
@@ -84,7 +81,7 @@ t_hit OpenGL_Manager::get_block_hit( bool debug_info )
 				glm::vec3 hitbox[2];
 				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7, value >> 12);
 				if (line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
-					chunk_hit = chunk;
+					_chunk_hit = chunk;
 					res.pos = i;
 					res.value = (debug_info) ? value : type;
 					return (res);
@@ -106,8 +103,8 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		} else if (_hand_content == blocks::WORLDEDIT_WAND) {
 			return (WorldEdit::Get()->setSelectionStart(_block_hit.pos));
 		}
-		if (chunk_hit) {
-			chunk_hit->handleHit(collect, 0, _block_hit.pos, Modif::REMOVE);
+		if (_chunk_hit) {
+			_chunk_hit->handleHit(collect, 0, _block_hit.pos, Modif::REMOVE);
 			return ;
 		}
 		int posX = chunk_pos(_block_hit.pos.x);
@@ -123,22 +120,22 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			_menu->setState(MENU::CRAFTING);
 			return ;
 		case blocks::CHEST:
-			if (air_flower(chunk_hit->getBlockAt(_block_hit.pos.x - chunk_hit->getStartX(), _block_hit.pos.y - chunk_hit->getStartY(), _block_hit.pos.z + 1), true, false, false)) {
+			if (air_flower(_chunk_hit->getBlockAt(_block_hit.pos.x - _chunk_hit->getStartX(), _block_hit.pos.y - _chunk_hit->getStartY(), _block_hit.pos.z + 1), true, false, false)) {
 				return ;
 			}
-			chunk_hit->openChest(_block_hit.pos);
+			_chunk_hit->openChest(_block_hit.pos);
 			_paused = true;
 			_menu->setState(MENU::CHEST);
-			_menu->setChestInstance(chunk_hit->getChestInstance(_block_hit.pos));
+			_menu->setChestInstance(_chunk_hit->getChestInstance(_block_hit.pos));
 			return ;
 		case blocks::FURNACE:
 			_paused = true;
 			_menu->setState(MENU::FURNACE);
-			_menu->setFurnaceInstance(chunk_hit->getFurnaceInstance(_block_hit.pos));
+			_menu->setFurnaceInstance(_chunk_hit->getFurnaceInstance(_block_hit.pos));
 			return ;
 		case blocks::TNT:
-			if (_hand_content == blocks::FLINT_AND_STEEL && current_chunk_ptr) {
-				current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
+			if (_hand_content == blocks::FLINT_AND_STEEL && _current_chunk_ptr) {
+				_current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
 			}
 			break ;
 		case blocks::OAK_DOOR:
@@ -148,8 +145,8 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		case blocks::COMPARATOR:
 		case blocks::STONE_BUTTON:
 		case blocks::OAK_BUTTON:
-			if (current_chunk_ptr) {
-				current_chunk_ptr->handleHit(false, _block_hit.value, _block_hit.pos, Modif::USE);
+			if (_current_chunk_ptr) {
+				_current_chunk_ptr->handleHit(false, _block_hit.value, _block_hit.pos, Modif::USE);
 			}
 			return ;
 	}
@@ -160,18 +157,18 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		type = blocks::WATER;
 	} else if (type == blocks::BUCKET) { // special case, add but remove water instead
 		if (_block_hit.water_value) {
-			current_chunk_ptr->handleHit(collect, type, _block_hit.water_pos, Modif::REMOVE);
+			_current_chunk_ptr->handleHit(collect, type, _block_hit.water_pos, Modif::REMOVE);
 		}
 		return ;
 	} else if (type >= blocks::WOODEN_HOE && type <= blocks::DIAMOND_HOE
 		&& (_block_hit.value == blocks::DIRT || _block_hit.value == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
 		type = blocks::FARMLAND;
-		chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
+		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
 		return ;
 	} else if (type >= blocks::WOODEN_SHOVEL && type <= blocks::DIAMOND_SHOVEL
 		&& (_block_hit.value == blocks::DIRT || _block_hit.value == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
 		type = blocks::DIRT_PATH;
-		chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
+		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
 		return ;
 	} else if (type == blocks::WHEAT_SEEDS) {
 		type = blocks::WHEAT_CROP;
@@ -197,6 +194,9 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		} else {
 			return ;
 		}
+		_paused = true;
+		_menu->setState(MENU::SIGN);
+		_menu->setSignPos(_block_hit.prev_pos);
 	} else if (type == blocks::LEVER || shape == GEOMETRY::BUTTON) {
 		if (s_blocks[_block_hit.value]->geometry != GEOMETRY::CUBE) { // TODO chnge this
 			return ;
@@ -254,7 +254,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	}
 
 	if (_block_hit.value) { // rm if statement for nice cheat
-		current_chunk_ptr->handleHit(collect, type, _block_hit.prev_pos, Modif::ADD);
+		_current_chunk_ptr->handleHit(collect, type, _block_hit.prev_pos, Modif::ADD);
 	}
 }
 
@@ -479,8 +479,8 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				} else {
 					int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
 					if (_break_frame != break_frame) {
-						if (chunk_hit) {
-							chunk_hit->updateBreak({_block_hit.pos, _block_hit.value});
+						if (_chunk_hit) {
+							_chunk_hit->updateBreak({_block_hit.pos, _block_hit.value});
 						}
 						_break_frame = break_frame;
 					}
@@ -512,21 +512,21 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			_camera->setArmAnimation(true);
 		}
 	} else if (INPUT::key_update(INPUT::USE)) {
-		if (_hand_content == blocks::BOW && _bow_timer && current_chunk_ptr) {
+		if (_hand_content == blocks::BOW && _bow_timer && _current_chunk_ptr) {
 			// TODO rm arrow from inventory (once implemented)
 			_inventory->decrementDurabitilty();
-			current_chunk_ptr->shootArrow(_bow_timer);
+			_current_chunk_ptr->shootArrow(_bow_timer);
 		}
 		_eat_timer = 0;
 		_bow_timer = 0;
 	}
 	// drop item
 	if (INPUT::key_down(INPUT::DROP)) {
-		if (current_chunk_ptr) {
+		if (_current_chunk_ptr) {
 			t_item details = _inventory->removeBlock(true);
 			if (details.type != blocks::AIR) {
 				mtx.lock();
-				current_chunk_ptr->dropEntity(_camera->getDir(), details);
+				_current_chunk_ptr->dropEntity(_camera->getDir(), details);
 				mtx.unlock();
 			}
 		}
@@ -583,36 +583,36 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	// we update the current chunk before we update cam view, because we check in current chunk for collision
 	// update block hit
 	if (rayCast) {
-		if (_game_mode == SURVIVAL && current_chunk_ptr) { // on first frame -> no current_chunk_ptr
+		if (_game_mode == SURVIVAL && _current_chunk_ptr) { // on first frame -> no _current_chunk_ptr
 			_camera->setSneak(key_cam_zdown);
 			_camera->setJump(key_cam_zup && INPUT::key_update(INPUT::JUMP));
 			_camera->moveHuman(Z_AXIS, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement
 			glm::vec3 originalPos = _camera->getPos();
 			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h, 0); // move on X_AXIS
 			float hitBoxHeight = _camera->getHitBox();
-			t_collision coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight);
+			t_collision coll = _current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight);
 			if (coll.type != COLLISION::NONE) {
 				// _ui->chatMessage("xcoll " + std::to_string(coll.type) + ", " + std::to_string(coll.minZ) + " ~ " + std::to_string(coll.maxZ) + " h " + std::to_string(hitBoxHeight));
 				if (!_camera->customObstacle(coll.minZ, coll.maxZ)
-					|| current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
+					|| _current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
 					_camera->unmoveHuman(originalPos); // if collision after movement, undo movement + setRun(false)
 				}
 			}
 			originalPos = _camera->getPos();
 			_camera->moveHuman(Y_AXIS, key_cam_v, key_cam_h, 0); // move on Y_AXIS
-			coll = current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight);
+			coll = _current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight);
 			if (coll.type != COLLISION::NONE) {
 				if (!_camera->customObstacle(coll.minZ, coll.maxZ)
-					|| current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
+					|| _current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
 					_camera->unmoveHuman(originalPos);
 				}
 			}
-			current_chunk_ptr->applyGravity(); // move on Z_AXIS
-			_camera->setWaterStatus(false, current_chunk_ptr->collisionBoxWater(_camera->getPos(), 0.3f, 0));
-			_camera->setWaterStatus(true, current_chunk_ptr->collisionBoxWater(_camera->getEyePos(), 0.05f, 0));
+			_current_chunk_ptr->applyGravity(); // move on Z_AXIS
+			_camera->setWaterStatus(false, _current_chunk_ptr->collisionBoxWater(_camera->getPos(), 0.3f, 0));
+			_camera->setWaterStatus(true, _current_chunk_ptr->collisionBoxWater(_camera->getEyePos(), 0.05f, 0));
 		}
 
-		// Chunk *save_chunk = chunk_hit;
+		// Chunk *save_chunk = _chunk_hit;
 		t_hit block_hit = get_block_hit(false);
 		if (_block_hit.pos != block_hit.pos) {
 			_break_time = 0;
@@ -620,8 +620,8 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		}
 		_block_hit = block_hit;
 
-		if (!_camera->_health_points && current_chunk_ptr) { // dead
-			_inventory->spillInventory(current_chunk_ptr);
+		if (!_camera->_health_points && _current_chunk_ptr) { // dead
+			_inventory->spillInventory(_current_chunk_ptr);
 			_paused = true;
 			_menu->setState(MENU::DEATH);
 			return ;
@@ -631,9 +631,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	glm::ivec3 current_block = {glm::floor(camPos.x), glm::floor(camPos.y), glm::floor(camPos.z)};
 	if (current_block != _camera->_current_block) {
 		_camera->_current_block = current_block;
-		if (current_chunk_ptr) {
-			current_chunk_ptr->sort_sky(camPos, true);
-			current_chunk_ptr->sort_water(camPos, true);
+		if (_current_chunk_ptr) {
+			_current_chunk_ptr->sort_sky(camPos, true);
+			_current_chunk_ptr->sort_water(camPos, true);
 		}
 	}
 

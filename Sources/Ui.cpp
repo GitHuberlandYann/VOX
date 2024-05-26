@@ -529,7 +529,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 {
 	if (_inventoryMessage.timer > 0) {
 		_inventoryMessage.timer -= deltaTime;
-		_text->addText((WIN_WIDTH - _text->textWidth(_gui_size * 3, _inventoryMessage.str)) / 2, WIN_HEIGHT - (35 * _gui_size) * 2, _gui_size * 3, TEXT::WHITE, _inventoryMessage.str);
+		_text->addText((WIN_WIDTH - Utils::Text::textWidth(_gui_size * 3, _inventoryMessage.str)) / 2, WIN_HEIGHT - (35 * _gui_size) * 2, _gui_size * 3, TEXT::WHITE, _inventoryMessage.str);
 	}
 	_chat->blitMessages(deltaTime);
 	_text->addText(12, 24, _gui_size * 3, TEXT::WHITE, str);

@@ -165,6 +165,33 @@ std::string OpenGL_Manager::saveBackupString( void )
 				delete fur.second;
 			}
 		}
+		if (bup.second.signs.size()) {
+			res += "],\n\t\t\"signs\": [";
+			bool fstart = true;
+			for (auto& sign: bup.second.signs) {
+				if (!fstart) {
+					res += ", ";
+				}
+				fstart = false;
+				res += "{\"pos\": " + std::to_string(sign.first) + ", \"value\": " + std::to_string(sign.second->getValue()) + ", \"content\": [";
+				bool lstart = true;
+				for (int i = 0; i < 4; ++i) {
+					std::string line = sign.second->getContent(i);
+					if (!lstart) {
+						res += ", ";
+					}
+					lstart = false;
+					res += std::to_string(line.size()) + ", \"";
+					for (char c : line) {
+						if (c == '"') res += "\\\"";
+						else res += c;
+					}
+					res += "\"";
+				}
+				res += "]}";
+				delete sign.second;
+			}
+		}
 		res += "]}";
 	}
 	_backups.clear();
@@ -480,6 +507,41 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						ofs << "one more furnace at " << fkey << std::endl;
 						for (; line[index] && line[index] != '{'; index++);
 						--index;
+					}
+				} else if (!line.compare(0, 9, "\"signs\": ")) {
+					index = 9;
+					while (line[index + 1] == '{') {
+						int skey = std::atoi(&line[index + 9]);
+						for (index = index + 9; line[index] && line[index] != ':'; index++);
+						int value = std::atoi(&line[index + 2]);
+						for (index = index + 2; line[index] && line[index] != '['; index++);
+						std::vector<std::string> content;
+						for (int lineIndex = 0; lineIndex < 4; ++lineIndex) {
+							int strSize = std::atoi(&line[index + 1]);
+							for (index = index + 2; line[index] && line[index] != ','; index++);
+							index += 3;
+							std::string str;
+							for (int strIndex = 0; strIndex < strSize; ++strIndex) {
+								if (line[index + strIndex] == '\\' && line[index + strIndex + 1] == '\"') {
+									str += '\"';
+									++strSize;
+									++strIndex;
+								} else {
+									str += line[index + strIndex];
+								}
+							}
+							content.push_back(str);
+							for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
+						}
+						glm::ivec3 pos;
+						pos.z = skey & (WORLD_HEIGHT - 1);
+						pos.y = ((skey >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
+						pos.x = ((skey >> WORLD_SHIFT) >> CHUNK_SHIFT);
+						SignInstance *sign = new SignInstance(NULL, value, pos);
+						sign->setContent(content);
+						backups_value.signs[skey] = sign;
+						ofs << "one more sign at " << skey << " with content \"" << content[0] << "\", \"" << content[1] << "\", \"" << content[2] << "\", \"" << content[3] << '\"' << std::endl;
+						for (;line[index + 1] && line[index + 1] != '{'; ++index);
 					}
 				} else {
 					std::cerr << "foreigh line in backup: " << line << std::endl;

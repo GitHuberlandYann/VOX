@@ -10,6 +10,7 @@
 # include "PerlinNoise.hpp"
 # include "ChestInstance.hpp"
 # include "FurnaceInstance.hpp"
+# include "SignInstance.hpp"
 class Camera;
 # include "Inventory.hpp"
 # include "Entity.hpp"
@@ -80,6 +81,8 @@ enum COLLISION {
 	PARTIAL
 };
 
+typedef struct s_sign_info t_sign_info;
+
 typedef struct s_collision {
 	int type;
 	float minZ = 0.0f;
@@ -112,6 +115,7 @@ struct s_backup { // TODO add fluids and entities to backups
 	std::set<int> removed;
 	std::map<int, ChestInstance*> chests;
 	std::map<int, FurnaceInstance*> furnaces;
+	std::map<int, SignInstance*> signs;
 };
 
 class Chunk
@@ -137,6 +141,7 @@ class Chunk
 		std::array<std::vector<t_redstoneTick>, SCHEDULE::SIZE> _redstone_schedule;
 		std::map<int, ChestInstance*> _chests;
 		std::map<int, FurnaceInstance*> _furnaces;
+		std::map<int, SignInstance*> _signs;
 		std::vector<Entity*> _entities;
 		std::vector<Particle*> _particles;
 		std::map<int, Particle*> _flames;
@@ -247,6 +252,8 @@ class Chunk
 		void openChest( glm::ivec3 pos );
 		ChestInstance *getChestInstance( glm::ivec3 pos );
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
+		void setSignContent( t_sign_info sign );
+
 		GLint getBlockAtAbsolute( int posX, int posY, int posZ );
 		GLint getBlockAt( glm::ivec3 pos, bool askNeighbours = true );
 		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours = true );

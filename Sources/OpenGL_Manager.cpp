@@ -311,7 +311,16 @@ void OpenGL_Manager::setup_window( void )
 	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // doesn't seem to work in full sreen mode
 	glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE); // doesn't seem to work in windowed mode
 
-	const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	int count;
+	GLFWmonitor** monitors = glfwGetMonitors(&count);
+	GLFWmonitor *monitor = (count > 1) ? monitors[1] : monitors[0];
+	// std::cout << count << " monitors detected, sizes are:" << std::endl;
+	// for (int i = 0; i < count; ++i) {
+	// 	const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+	// 	std::cout << "\t" << i << " -> " << mode->width << ", " << mode->height << std::endl;
+	// }
+
+	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 	WIN_WIDTH = mode->width;
 	WIN_HEIGHT = mode->height;
 	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << ", refresh rate is " << mode->refreshRate << std::endl;
@@ -319,7 +328,7 @@ void OpenGL_Manager::setup_window( void )
 	// (Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN))
 	// 	? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr)
 	// 	: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", nullptr, nullptr);
-	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr);
+	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", monitor, nullptr);
 	if (_window == NULL) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -713,6 +722,8 @@ void OpenGL_Manager::main_loop( void )
 				mtx.unlock();
 			}
 			switch (_menu->run(nbTicks == 1 && tickUpdate)) {
+				case MENU::RET::SIGN_DONE:
+					_chunk_hit->setSignContent(_menu->getSignContent());
 				case (MENU::RET::BACK_TO_GAME): // back to game
 					#if !__linux__
 						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -776,9 +787,6 @@ void OpenGL_Manager::main_loop( void )
 						setup_communication_shaders();
 						load_texture();
 					}
-					break ;
-				case MENU::RET::SIGN_DONE:
-				case MENU::RET::SIGN_DONE_NO_ENTRY:
 					break ;
 				default:
 					break ;
