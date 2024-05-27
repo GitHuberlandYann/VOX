@@ -189,6 +189,8 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		}
 	} else if (shape == GEOMETRY::PISTON) {
 		block_value += (_camera->getOrientation6() << 9);
+	} else if (type == blocks::OBSERVER) {
+		block_value += (opposite_dir(_camera->getOrientation6()) << 9);
 	} else if (s_blocks[type]->oriented) {
 		if ((type != blocks::LEVER && shape != GEOMETRY::BUTTON) || ((block_value >> 12) & 0x3) != PLACEMENT::WALL) {
 			block_value += (_camera->getOrientation() << 9);
@@ -607,6 +609,14 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update )
 		}
 		if (update) {
 			update_block({posX, posY, posZ}, previous, value);
+		}
+		// update observers
+		for (int i = 0; i < 6; ++i) {
+			const glm::ivec3 delta = adj_blocks[i];
+			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z);
+			if ((adj & 0xFF) == blocks::OBSERVER && delta == -adj_blocks[(adj >> 9) & 0x7]) {
+				scheduleRedstoneTick({{posX + delta.x, posY + delta.y, posZ + delta.z}, 2, REDSTONE::ON});
+			}
 		}
 		_vertex_update = true;
 	}

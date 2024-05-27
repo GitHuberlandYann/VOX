@@ -200,6 +200,7 @@ namespace blocks {
 		STICKY_PISTON,
 		PISTON_HEAD,
 		MOVING_PISTON,
+		OBSERVER,
 		POPPY = 64,
 		DANDELION,
 		BLUE_ORCHID,
@@ -1963,6 +1964,35 @@ struct MovingPiston : Block {
 		virtual bool isTransparent( int value ) const {
 			return (value & REDSTONE::PISTON::RETRACTING);
 		}
+};
+
+struct Observer : Block {
+	public:
+		Observer() {
+			name = "OBSERVER";
+			mined = blocks::OBSERVER;
+			blast_resistance = 3.0f;
+			byHand = false;
+			needed_tool = blocks::WOODEN_PICKAXE;
+			hardness = 3.0f;
+			transparent = true;
+			oriented = true;
+			textureY = 12;
+		}
+		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+			int orientation = (value >> 9) & 0x7;
+			if (dir == orientation) {
+				return (2);
+			}
+			if (dir == opposite_dir(orientation)) {
+				return ((value & REDSTONE::ACTIVATED) ? 4 : 3);
+			}
+			if (orientation & 0x4) {
+				return (!(dir & 0x2));
+			}
+			return (!!(dir & 0x4));
+		}
+		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Poppy : Cross {

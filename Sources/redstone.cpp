@@ -1,5 +1,5 @@
 #include "Chunk.hpp"
-#include "DayCycle.hpp"
+#include "logs.hpp"
 
 /*
  Some info:
@@ -201,6 +201,11 @@ int Chunk::getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side
 				return ((adj >> REDSTONE::STRENGTH_OFFSET) & 0xF);
 			}
 			break ;
+		case blocks::OBSERVER:
+			if (target == -adj_blocks[(adj >> 9) & 0x7] && (adj & REDSTONE::ACTIVATED)) {
+				return (0xF);
+			}
+			break ;
 		case blocks::REDSTONE_TORCH:
 				if (!side && !(adj & REDSTONE::POWERED)) {
 					return (0xF);
@@ -257,6 +262,11 @@ int Chunk::getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bo
 				break ;
 			case blocks::REPEATER:
 				if (delta == -adj_blocks[(adj >> 9) & 0x7] && (adj & REDSTONE::POWERED)) {
+					return (0xF);
+				}
+				break ;
+			case blocks::OBSERVER:
+				if (delta == adj_blocks[(adj >> 9) & 0x7] && (adj & REDSTONE::ACTIVATED)) {
 					return (0xF);
 				}
 				break ;
@@ -320,6 +330,11 @@ int Chunk::getDustStrength( glm::ivec3 pos )
 				break ;
 			case blocks::REPEATER:
 				if (delta == -adj_blocks[(adj >> 9) & 0x7] && (adj & REDSTONE::POWERED)) {
+					return (0xF);
+				}
+				break ;
+			case blocks::OBSERVER:
+				if (delta == adj_blocks[(adj >> 9) & 0x7] && (adj & REDSTONE::ACTIVATED)) {
 					return (0xF);
 				}
 				break ;
@@ -1030,6 +1045,20 @@ void Chunk::updateRedstone( void )
 						break ;
 					case blocks::COMPARATOR:
 						updateComparator(red.pos, value, true);
+						break ;
+					case blocks::OBSERVER:
+						front = adj_blocks[(value >> 9) & 0x7];
+						REDLOG("observer front " << POS(front));
+						if (red.state) {
+							setBlockAt(value | REDSTONE::ACTIVATED, red.pos, false);
+							stronglyPower(red.pos - front, front, REDSTONE::ON);
+							weaklyPowerTarget(red.pos - front, front, REDSTONE::ON, false);
+							scheduleRedstoneTick({red.pos, 2, REDSTONE::OFF});
+						} else {
+							setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED), red.pos, false);
+							stronglyPower(red.pos - front, front, REDSTONE::OFF);
+							weaklyPowerTarget(red.pos - front, front, REDSTONE::OFF, false);
+						}
 						break ;
 					case blocks::REDSTONE_TORCH:
 						updateRedstoneTorch(red.pos, value);
