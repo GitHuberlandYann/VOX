@@ -595,7 +595,7 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update )
 		}
 	} else {
 		int previous;
-		if (update) {
+		if (update) { // || (value & 0xFF) == blocks::REDSTONE_LAMP) {
 			previous = getBlockAt(posX, posY, posZ);
 		}
 		int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
@@ -611,11 +611,21 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update )
 			update_block({posX, posY, posZ}, previous, value);
 		}
 		// update observers
+		if ((value & 0xFF) == blocks::MOVING_PISTON) {
+			return ;
+		}
+		if ((value & 0xFF) == blocks::OBSERVER && (previous & 0xFF) == blocks::MOVING_PISTON) {
+			scheduleRedstoneTick({{posX, posY, posZ}, REDSTONE::TICK, REDSTONE::ON});
+		}
+		// else if ((value & 0xFF) == blocks::REDSTONE_LAMP && (previous & REDSTONE::ACTIVATED) == (value & REDSTONE::ACTIVATED)) {
+		// 	std::cout << "LAMP CANCEL OBSERVER" << std::endl;
+		// 	return ;
+		// }
 		for (int i = 0; i < 6; ++i) {
 			const glm::ivec3 delta = adj_blocks[i];
 			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z);
 			if ((adj & 0xFF) == blocks::OBSERVER && delta == -adj_blocks[(adj >> 9) & 0x7]) {
-				scheduleRedstoneTick({{posX + delta.x, posY + delta.y, posZ + delta.z}, 2, REDSTONE::ON});
+				scheduleRedstoneTick({{posX + delta.x, posY + delta.y, posZ + delta.z}, REDSTONE::TICK, REDSTONE::ON});
 			}
 		}
 		_vertex_update = true;

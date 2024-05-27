@@ -3970,22 +3970,14 @@ void Observer::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::MINUSX)) {
 		switch (orientation) {
 			case (face_dir::MINUSX):
-				pp0 = p4; pp1 = p0; pp2 = p6; pp3 = p2;
-				break ;
 			case (face_dir::PLUSX):
-				pp0 = p4; pp1 = p0; pp2 = p6; pp3 = p2;
-				break ;
 			case (face_dir::MINUSY):
-				pp0 = p0; pp1 = p2; pp2 = p4; pp3 = p6;
-				break ;
 			case (face_dir::PLUSY):
-				pp0 = p6; pp1 = p4; pp2 = p2; pp3 = p0;
+				pp0 = p4; pp1 = p0; pp2 = p6; pp3 = p2;
 				break ;
 			case (face_dir::MINUSZ):
-				pp0 = p2; pp1 = p6; pp2 = p0; pp3 = p4;
-				break ;
 			case (face_dir::PLUSZ):
-				pp0 = p4; pp1 = p0; pp2 = p6; pp3 = p2;
+				pp0 = p6; pp1 = p4; pp2 = p2; pp3 = p0;
 				break ;
 		}
 		spec = (this->texX(face_dir::MINUSX, value) << 4) + (this->texY(face_dir::MINUSX, value) << 12) + (3 << 19);
@@ -3999,22 +3991,14 @@ void Observer::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::PLUSX)) {
 		switch (orientation) {
 			case (face_dir::MINUSX):
-				pp0 = p1; pp1 = p5; pp2 = p3; pp3 = p7;
-				break ;
 			case (face_dir::PLUSX):
-				pp0 = p1; pp1 = p5; pp2 = p3; pp3 = p7;
-				break ;
 			case (face_dir::MINUSY):
-				pp0 = p3; pp1 = p1; pp2 = p7; pp3 = p5;
-				break ;
 			case (face_dir::PLUSY):
-				pp0 = p5; pp1 = p7; pp2 = p1; pp3 = p3;
+				pp0 = p1; pp1 = p5; pp2 = p3; pp3 = p7;
 				break ;
 			case (face_dir::MINUSZ):
-				pp0 = p7; pp1 = p3; pp2 = p5; pp3 = p1;
-				break ;
 			case (face_dir::PLUSZ):
-				pp0 = p1; pp1 = p5; pp2 = p3; pp3 = p7;
+				pp0 = p5; pp1 = p7; pp2 = p1; pp3 = p3;
 				break ;
 		}
 		spec = (this->texX(face_dir::PLUSX, value) << 4) + (this->texY(face_dir::PLUSX, value) << 12) + (4 << 19);
@@ -4028,14 +4012,8 @@ void Observer::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::MINUSY)) {
 		switch (orientation) {
 			case (face_dir::MINUSX):
-				pp0 = p2; pp1 = p0; pp2 = p3; pp3 = p1;
-				break ;
 			case (face_dir::PLUSX):
-				pp0 = p1; pp1 = p3; pp2 = p0; pp3 = p2;
-				break ;
 			case (face_dir::MINUSY):
-				pp0 = p0; pp1 = p1; pp2 = p2; pp3 = p3;
-				break ;
 			case (face_dir::PLUSY):
 				pp0 = p0; pp1 = p1; pp2 = p2; pp3 = p3;
 				break ;
@@ -4057,14 +4035,8 @@ void Observer::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm:
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::PLUSY)) {
 		switch (orientation) {
 			case (face_dir::MINUSX):
-				pp0 = p4; pp1 = p6; pp2 = p5; pp3 = p7;
-				break ;
 			case (face_dir::PLUSX):
-				pp0 = p7; pp1 = p5; pp2 = p6; pp3 = p4;
-				break ;
 			case (face_dir::MINUSY):
-				pp0 = p5; pp1 = p4; pp2 = p7; pp3 = p6;
-				break ;
 			case (face_dir::PLUSY):
 				pp0 = p5; pp1 = p4; pp2 = p7; pp3 = p6;
 				break ;

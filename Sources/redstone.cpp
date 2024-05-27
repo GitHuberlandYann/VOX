@@ -443,13 +443,6 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 				// add lamp to tick delay machine
 				// std::cout << "\tschedule redstone lamp at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 				scheduleRedstoneTick({pos, 2 * REDSTONE::TICK});
-				// state = getRedstoneStrength(pos, {0, 0, 0}, REDSTONE::OFF, true);
-				// 		if (!state && (adj & REDSTONE::ACTIVATED)) { // turn it off
-				// 			short level = getLightLevel(pos.x, pos.y, pos.z) & 0xFF0F;
-				// 			setLightLevel(level, pos.x, pos.y, pos.z, true);
-				// 			startLightSpread(pos.x, pos.y, pos.z, false);
-				// 			setBlockAt(adj & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED), pos.x, pos.y, pos.z);
-				// 		}
 			}
 			break ;
 		case blocks::REPEATER:
@@ -904,7 +897,8 @@ void Chunk::retractPiston( glm::ivec3 pos, int value )
 	}
 	if ((value & 0xFF) == blocks::STICKY_PISTON && delCount < 2) { // retract block only if had time to finish push or didn't push block in the first place
 		int front2_value = getBlockAt(pos.x + front.x * 2, pos.y + front.y * 2, pos.z + front.z * 2);
-		if ((!s_blocks[front2_value & 0xFF]->transparent && (front2_value & 0xFF) != blocks::MOVING_PISTON)
+		if ((!s_blocks[front2_value & 0xFF]->transparent && (front2_value & 0xFF) != blocks::MOVING_PISTON && (front2_value & 0xFF) != blocks::BEDROCK)
+			|| (front2_value & 0xFF) == blocks::OBSERVER
 			|| (((front2_value & 0xFF) == blocks::PISTON || (front2_value & 0xFF) == blocks::STICKY_PISTON) && !(front2_value & REDSTONE::PISTON::MOVING))) {
 			setBlockAt(blocks::AIR, pos + front * 2, true);
 			setBlockAt(blocks::MOVING_PISTON | REDSTONE::PISTON::RETRACTING, pos + front, true);
@@ -954,10 +948,11 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 
 	const glm::ivec3 front = adj_blocks[(value >> 9) & 0x7];
 	bool powered = getRedstoneStrength(pos, front, REDSTONE::OFF, true);
-	if (!powered && front.z != 1) {
+	if (!powered && (!(value & REDSTONE::PISTON::MOVING) || front.z != 1 || (getBlockAt(pos + front) & 0xFF) != blocks::PISTON_HEAD)) {
+		// not powered AND (closed piston OR not oriented towards +z OR still extending)
 		powered = getRedstoneStrength(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, REDSTONE::OFF, true);
 		// if (powered) std::cout << "\tbtw, piston on next line powered by block above" << std::endl;
-	} // TODO pison can be powered through their extended head
+	}
 	std::cout << "piston update " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << " [" << DayCycle::Get()->getGameTicks() << "] powered: " << powered << std::endl;
 	if (powered && !(value & REDSTONE::ACTIVATED)) {
 		// check if extension possible
@@ -1053,7 +1048,7 @@ void Chunk::updateRedstone( void )
 							setBlockAt(value | REDSTONE::ACTIVATED, red.pos, false);
 							stronglyPower(red.pos - front, front, REDSTONE::ON);
 							weaklyPowerTarget(red.pos - front, front, REDSTONE::ON, false);
-							scheduleRedstoneTick({red.pos, 2, REDSTONE::OFF});
+							scheduleRedstoneTick({red.pos, REDSTONE::TICK, REDSTONE::OFF});
 						} else {
 							setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED), red.pos, false);
 							stronglyPower(red.pos - front, front, REDSTONE::OFF);
