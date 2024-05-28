@@ -1920,7 +1920,7 @@ struct Piston : Block {
 		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
 			int orientation = (value >> 9) & 0x7;
 			if (dir == orientation) {
-				return ((value & REDSTONE::ACTIVATED) ? 2 : 3 + (mined == blocks::STICKY_PISTON));
+				return ((value & REDSTONE::PISTON::MOVING) ? 2 : 3 + (mined == blocks::STICKY_PISTON));
 			}
 			if (dir == opposite_dir(orientation)) {
 				return (1);

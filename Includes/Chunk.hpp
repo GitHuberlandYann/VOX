@@ -258,8 +258,8 @@ class Chunk
 		GLint getBlockAt( glm::ivec3 pos, bool askNeighbours = true );
 		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours = true );
 		void setBlockAtAbsolute( int value, int posX, int posY, int posZ, bool update );
-		void setBlockAt( int value, glm::ivec3 pos, bool update );
-		void setBlockAt( int value, int posX, int posY, int posZ, bool update );
+		void setBlockAt( int value, glm::ivec3 pos, bool update, bool observer = true );
+		void setBlockAt( int value, int posX, int posY, int posZ, bool update, bool observer = true );
 		void update_adj_block( glm::ivec3 pos, int dir, int source );
 		void turnDirtToGrass( int posX, int posY, int posZ );
 

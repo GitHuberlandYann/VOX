@@ -211,7 +211,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 				break ;
 			case GEOMETRY::REPEATER:
 				previous = getBlockAt(pos.x, pos.y, pos.z - 1);
-				if (s_blocks[previous & 0xFF]->isTransparent(previous) && (previous & 0xFF) != blocks::GLASS) {
+				if (s_blocks[previous & 0xFF]->isTransparent(previous) && (previous & 0xFF) != blocks::GLASS && (previous & 0xFF) != blocks::OBSERVER) {
 					return ;
 				}
 				block_value ^= (1 << 9); // inverse dir (0->1, 1->0, 2->3, 3->2)
@@ -561,9 +561,9 @@ void Chunk::setBlockAtAbsolute( int value, int posX, int posY, int posZ, bool up
 /**
  * @brief fun overload of setBlockAt to use glm::ivec3 instead of 3 int args
 */
-void Chunk::setBlockAt( int value, glm::ivec3 pos, bool update )
+void Chunk::setBlockAt( int value, glm::ivec3 pos, bool update, bool observer )
 {
-	setBlockAt(value, pos.x, pos.y, pos.z, update);
+	setBlockAt(value, pos.x, pos.y, pos.z, update, observer);
 }
 
 /**
@@ -571,31 +571,32 @@ void Chunk::setBlockAt( int value, glm::ivec3 pos, bool update )
  * @param value data_value you want to set the block to
  * @param posX, posY, posZ relative coordinates of block to set
  * @param update whether you want to update adjacent blocks, redstone, and lighting
+ * @param observer defaults to true, if false we don't update adj observers
 */
-void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update )
+void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update, bool observer )
 {
 	if (!_blocks || posZ < 0 || posZ >= WORLD_HEIGHT) {
 		return ;
 	}
 	if (posX < 0) {
 		if (_neighbours[face_dir::MINUSX]) {
-			_neighbours[face_dir::MINUSX]->setBlockAt(value, posX + CHUNK_SIZE, posY, posZ, update);
+			_neighbours[face_dir::MINUSX]->setBlockAt(value, posX + CHUNK_SIZE, posY, posZ, update, observer);
 		}
 	} else if (posX >= CHUNK_SIZE) {
 		if (_neighbours[face_dir::PLUSX]) {
-			_neighbours[face_dir::PLUSX]->setBlockAt(value, posX - CHUNK_SIZE, posY, posZ, update);
+			_neighbours[face_dir::PLUSX]->setBlockAt(value, posX - CHUNK_SIZE, posY, posZ, update, observer);
 		}
 	} else if (posY < 0) {
 		if (_neighbours[face_dir::MINUSY]) {
-			_neighbours[face_dir::MINUSY]->setBlockAt(value, posX, posY + CHUNK_SIZE, posZ, update);
+			_neighbours[face_dir::MINUSY]->setBlockAt(value, posX, posY + CHUNK_SIZE, posZ, update, observer);
 		}
 	} else if (posY >= CHUNK_SIZE) {
 		if (_neighbours[face_dir::PLUSY]) {
-			_neighbours[face_dir::PLUSY]->setBlockAt(value, posX, posY - CHUNK_SIZE, posZ, update);
+			_neighbours[face_dir::PLUSY]->setBlockAt(value, posX, posY - CHUNK_SIZE, posZ, update, observer);
 		}
 	} else {
 		int previous;
-		if (update) { // || (value & 0xFF) == blocks::REDSTONE_LAMP) {
+		if (update) {
 			previous = getBlockAt(posX, posY, posZ);
 		}
 		int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
@@ -611,16 +612,12 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update )
 			update_block({posX, posY, posZ}, previous, value);
 		}
 		// update observers
-		if ((value & 0xFF) == blocks::MOVING_PISTON) {
+		if (!observer || (value & 0xFF) == blocks::MOVING_PISTON) {
 			return ;
 		}
 		if ((value & 0xFF) == blocks::OBSERVER && (previous & 0xFF) == blocks::MOVING_PISTON) {
 			scheduleRedstoneTick({{posX, posY, posZ}, REDSTONE::TICK, REDSTONE::ON});
 		}
-		// else if ((value & 0xFF) == blocks::REDSTONE_LAMP && (previous & REDSTONE::ACTIVATED) == (value & REDSTONE::ACTIVATED)) {
-		// 	std::cout << "LAMP CANCEL OBSERVER" << std::endl;
-		// 	return ;
-		// }
 		for (int i = 0; i < 6; ++i) {
 			const glm::ivec3 delta = adj_blocks[i];
 			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z);
@@ -732,7 +729,6 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 
 		// disconnect adj dust if solid block placed above
 		if (type == blocks::REDSTONE_DUST && (source == blocks::REPEATER || source == blocks::COMPARATOR
-			|| source == blocks::PISTON || source == blocks::STICKY_PISTON
 			|| source == blocks::TARGET || (dir == face_dir::MINUSZ))) {
 			connectRedstoneDust(pos, value, false);
 			setBlockAt(value, pos, false);
