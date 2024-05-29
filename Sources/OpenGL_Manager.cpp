@@ -559,7 +559,7 @@ void OpenGL_Manager::main_loop( void )
 	double previousFrame = lastTime;
 	int backFromMenu = 0; // TODO check this var's shinanigans
 
-	bool fluidUpdate = false, animUpdate = false, tickUpdate = false;
+	bool fluidUpdate = false, animUpdate = false, tickUpdate = false, redTickUpdate = false;
 
 	// main loop cheking for inputs and rendering everything
 	while (!glfwWindowShouldClose(_window))
@@ -586,10 +586,11 @@ void OpenGL_Manager::main_loop( void )
 			animUpdate = (nbTicks & 0x1);
 			if (!gamePaused) {
 				_camera->tickUpdate();
-				DayCycle::Get()->tickUpdate();
+				redTickUpdate = DayCycle::Get()->tickUpdate();
 			}
 		} else {
 			tickUpdate = false;
+			redTickUpdate = false;
 			fluidUpdate = false;
 			animUpdate = false;
 		}
@@ -619,7 +620,9 @@ void OpenGL_Manager::main_loop( void )
 			c->drawArray(newVaoCounter, faceCounter);
 			if (!gamePaused) {
 				if (tickUpdate) {
-					c->updateRedstone(); // scheduled ticks
+					if (redTickUpdate) {
+						c->updateRedstone(); // scheduled ticks
+					}
 					c->updateFurnaces(currentTime);
 					if (fluidUpdate) {
 						c->updateScheduledBlocks();

@@ -67,12 +67,12 @@ namespace REDSTONE {
 	const int TICK = 2;
 
 	// activated means it receives signal, powered means it also transmits signal
-	const int ACTIVATED_OFFSET = 18;
-	const int ACTIVATED = (1 << ACTIVATED_OFFSET);
 	const int POWERED_OFFSET = 16;
 	const int POWERED = (1 << POWERED_OFFSET);
 	const int WEAKDY_POWERED_OFFSET = 17;
 	const int WEAKDY_POWERED = (1 << WEAKDY_POWERED_OFFSET);
+	const int ACTIVATED_OFFSET = 18;
+	const int ACTIVATED = (1 << ACTIVATED_OFFSET);
 	const int STRENGTH_OFFSET = 20;
 	const int STRENGTH = (0xF << STRENGTH_OFFSET);
 
@@ -105,6 +105,11 @@ namespace REDSTONE {
 		const int RETRACTING = (1 << 28); // flag given to blocks::MOVING_PISTON to set their transparency -> transparent when retracting, solid when extending
 		const int FORCE_RETRACTION = 13; // used by Chunk::pistonExtendCount
 		const int CANCEL_RETRACTION = 42; // random nbr above 12, used by Chunk::pistonExtendCount
+	};
+
+	namespace OBSERVER {
+		const int ON = (1 << 19);
+		const int OFF = 0b10;
 	};
 
 	const int ALL_BITS = -1;

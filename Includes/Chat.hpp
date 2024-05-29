@@ -56,6 +56,7 @@ class Chat
 		void handle_clear( int argc, std::vector<std::string> &argv );
 		void handle_teleport( int argc, std::vector<std::string> &argv );
 		void handle_spawnpoint( int argc, std::vector<std::string> &argv );
+		bool handle_freeze( int argc, std::vector<std::string> &argv );
 
 		float parseLocation( std::string &str, int coord );
 

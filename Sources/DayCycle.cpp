@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "DayCycle.hpp"
+#include "Chat.hpp"
 
 // ************************************************************************** //
 //                                Private                                     //
@@ -7,7 +8,7 @@
 
 DayCycle::DayCycle( void )
 	: _gameTime(0), _ticks(0), _gameTicks(0), _day(0), _hour(6), _minute(0), _internal_light(15),
-		_time_multiplier(1), _forceReset(false)
+		_time_multiplier(1), _game_time_multiplier(-1), _forceReset(false)
 {
 
 }
@@ -115,11 +116,19 @@ void DayCycle::setCloudsColor( GLint uniform_location )
 	glUniform3f(uniform_location, color, color, color);
 }
 
-void DayCycle::tickUpdate( void )
+bool DayCycle::tickUpdate( void )
 {
 	_ticks += _time_multiplier;
-	++_gameTicks;
 	setInternals();
+	if (_game_time_multiplier == -1) { // default
+		++_gameTicks;
+		return (true);
+	} else if (_game_time_multiplier > 0) { // game was '//freeze'd and then //step was called
+		++_gameTicks;
+		--_game_time_multiplier;
+		return (true);
+	}
+	return (false); // game is '//freeze'd
 }
 
 int DayCycle::getTicks( void )
@@ -130,6 +139,11 @@ int DayCycle::getTicks( void )
 int DayCycle::getGameTicks( void )
 {
 	return (_gameTicks);
+}
+
+int DayCycle::getGameTimeMultiplier( void )
+{
+	return (_game_time_multiplier);
 }
 
 void DayCycle::setTicks( int ticks )
@@ -157,9 +171,37 @@ void DayCycle::updateTimeMultiplier( GLint mul )
 	}
 }
 
+/**
+ * @brief toggle game_time_multiplier between -1 and 0
+ * @param chat used to display message to user
+*/
+void DayCycle::freeze( Chat *chat )
+{
+	if (_game_time_multiplier == -1) {
+		_game_time_multiplier = 0;
+		return (chat->chatMessage("Game frozen."));
+	}
+	_game_time_multiplier = -1;
+	return (chat->chatMessage("Game unfrozen."));
+}
+
+/**
+ * @brief if game frozen, allows for steps to be taken
+ * @param chat used to display message to user
+ * @param steps nbr of ticks to step through
+*/
+void DayCycle::step( Chat *chat, int steps )
+{
+	if (_game_time_multiplier == -1) {
+		return (chat->chatMessage("You can't step when game is not frozen.", TEXT::RED));
+	}
+	_game_time_multiplier = steps;
+	return (chat->chatMessage("Taking " + std::to_string(steps) + " steps."));
+}
+
 std::string DayCycle::getInfos( void )
 {
-	return ("GameTimer\t> " + std::to_string(_ticks) + " speed " + std::to_string(_time_multiplier) + " on day " + std::to_string(_day) + " " + doubleDigits(_hour) + ":" + doubleDigits(_minute) + " (light " + doubleDigits(_internal_light) + ")");
+	return ("GameTimer\t> " + std::to_string(_ticks) + " speed " + std::to_string(_time_multiplier) + " on day " + std::to_string(_day) + " " + doubleDigits(_hour) + ":" + doubleDigits(_minute) + " (light " + doubleDigits(_internal_light) + ")" + " GT " + std::to_string(_gameTicks) + " [" + std::to_string(_game_time_multiplier) + "]");
 }
 
 std::string DayCycle::getTime( void )

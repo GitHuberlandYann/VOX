@@ -594,10 +594,13 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	_lifeTime += deltaTime;
 	int lifeLimit = (_retraction) ? 2 : 3;
 
-	float percent = glm::min(1.0, _lifeTime / (TICK * lifeLimit));
+	int currentTick = DayCycle::Get()->getGameTicks();
+
+	int GTMul = DayCycle::Get()->getGameTimeMultiplier();
+	float percent = (GTMul == -1) ? glm::min(1.0, _lifeTime / (TICK * lifeLimit))
+									: 1.0f * (currentTick - _tickStart) / lifeLimit;
 	s_blocks[_item.type & 0xFF]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, _pos + _dir * percent, _item.type);
 
-	int currentTick = DayCycle::Get()->getGameTicks();
     if (currentTick - _tickStart == lifeLimit) {
 		// finish extension, turn back to block
 		std::cout << "MovingPistonEntity finished movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] from " << _chunk->getStartX() + _pos.x << ", " << _chunk->getStartY() + _pos.y << ", " << _pos.z << " to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;

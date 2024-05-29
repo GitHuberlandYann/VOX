@@ -1065,6 +1065,27 @@ void Chunk::updateRedstone( void )
 							stronglyPower(red.pos - front, front, REDSTONE::OFF);
 							weaklyPowerTarget(red.pos - front, front, REDSTONE::OFF, false);
 						}
+						// REDLOG("observer front " << POS(front) << " full state " << red.state);
+						// if (red.state == REDSTONE::ON) {
+						// 	if (!(value & REDSTONE::OBSERVER::ON)) { // turn on observer
+						// 		REDLOG("observer activation");
+						// 		setBlockAt(value | REDSTONE::ACTIVATED | REDSTONE::OBSERVER::ON, red.pos, false);
+						// 		stronglyPower(red.pos - front, front, REDSTONE::ON);
+						// 		weaklyPowerTarget(red.pos - front, front, REDSTONE::ON, false);
+						// 	}
+						// 	scheduleRedstoneTick({red.pos, REDSTONE::TICK, REDSTONE::OBSERVER::OFF}); // schedule observer to cut pulse
+						// } else if (red.state == REDSTONE::OBSERVER::OFF) {
+						// 	if (value & REDSTONE::ACTIVATED) { // turn off observer's pulse
+						// 		REDLOG("observer cut pulse");
+						// 		setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED), red.pos, false, false);
+						// 		stronglyPower(red.pos - front, front, REDSTONE::OFF);
+						// 		weaklyPowerTarget(red.pos - front, front, REDSTONE::OFF, false);
+						// 	}
+						// 	scheduleRedstoneTick({red.pos, REDSTONE::TICK, REDSTONE::OFF}); // schedule observer to turn off
+						// } else if (red.state == REDSTONE::OFF && (value & REDSTONE::OBSERVER::ON)) { // turn off observer
+						// 	REDLOG("observer shut down");
+						// 	setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::OBSERVER::ON), red.pos, false, false);
+						// }
 						break ;
 					case blocks::REDSTONE_TORCH:
 						updateRedstoneTorch(red.pos, value);

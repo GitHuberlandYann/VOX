@@ -260,6 +260,38 @@ void Chat::handle_spawnpoint( int argc, std::vector<std::string> &argv )
 	chatMessage("Wrong usage of /spawnpoint [location]");
 }
 
+/**
+ * @brief Checks if command is one of //freeze or //step
+ * @return argv[0] != //freeze | //step
+*/
+bool Chat::handle_freeze( int argc, std::vector<std::string> &argv )
+{
+	if (!argv[0].compare("//freeze") && argc == 1) {
+		DayCycle::Get()->freeze(this);
+		return (false);
+	} else if (!argv[0].compare("//step") && argc < 3) {
+		if (argc == 1) {
+			DayCycle::Get()->step(this, 1);
+		} else {
+			int steps = 0;
+			size_t index = 0;
+			for (; argv[1][index]; ++index) {
+				if (!isdigit(argv[1][index])) {
+					break ;
+				}
+				steps = steps * 10 + argv[1][index] - '0';
+			}
+			if (argv[1][index]) { // argv[1] is not only digits
+				chatMessage("Wrong usage of //step [nbr]", TEXT::RED);
+			} else {
+				DayCycle::Get()->step(this, steps);
+			}
+		}
+		return (false);
+	}
+	return (true);
+}
+
 class InvalidLocationException : public std::exception
 {
 	public:
@@ -368,7 +400,7 @@ bool Chat::sendMessage( std::string str )
 	if (str[0] == '/') {
 		std::vector<std::string> parstr = split(str, ' ');
 		if (str[1] == '/') {
-			if (!WorldEdit::Get()->parseCommand(parstr)) {
+			if (!WorldEdit::Get()->parseCommand(parstr) || !handle_freeze(parstr.size(), parstr)) {
 				return (true);
 			}
 		} else {

@@ -12,6 +12,8 @@
 	SUNRISE // end 06h
 };*/
 
+class Chat;
+
 class DayCycle
 {
 	private:
@@ -19,7 +21,7 @@ class DayCycle
 		static std::mutex _mtx;
 
 		double _gameTime;
-		int _ticks, _gameTicks, _day, _hour, _minute, _internal_light, _time_multiplier;
+		int _ticks, _gameTicks, _day, _hour, _minute, _internal_light, _time_multiplier, _game_time_multiplier;
 		bool _forceReset;
 		GLuint _shaderProgram, _particleShaderProgram;
 		GLint _uniInternalLight, _uniPartInternalLight;
@@ -35,15 +37,21 @@ class DayCycle
 
 		static DayCycle *Get( void );
 		static void Destroy( void );
+
 		void setUniInternalLight( GLuint shaderProgram, GLuint particleShaderProgram,
 			GLint internal_light, GLint partice_internal_light );
 		void setCloudsColor( GLint uniform_location );
-		void tickUpdate( void );
+		bool tickUpdate( void );
 		int getTicks( void );
 		int getGameTicks( void );
+		int getGameTimeMultiplier( void );
 		void setTicks( int ticks );
 		void addTicks( int ticks );
+
 		void updateTimeMultiplier( GLint mul );
+		void freeze( Chat *chat );
+		void step( Chat *chat, int steps );
+
 		std::string getInfos( void );
 		std::string getTime( void );
 		std::string saveString( void );

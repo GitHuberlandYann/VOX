@@ -305,8 +305,7 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 		std::cout << "ERROR Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & 0xFF]->name << std::endl;
 		return ;
 	}
-	_blocks[offset] = value;
-	_added[offset] = value;
+	setBlockAt(value, pos, true);
 }
 
 /**
@@ -555,7 +554,7 @@ GLint Chunk::getBlockAt( int posX, int posY, int posZ, bool askNeighbours )
  */
 void Chunk::setBlockAtAbsolute( int value, int posX, int posY, int posZ, bool update )
 {
-	setBlockAt(value, posX - _startX, posY - _startY, posZ, update);
+	setBlockAt(value, posX - _startX, posY - _startY, posZ, update, false);
 }
 
 /**
@@ -611,6 +610,7 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update, bo
 		if (update) {
 			update_block({posX, posY, posZ}, previous, value);
 		}
+		_vertex_update = true;
 		// update observers
 		if (!observer || (value & 0xFF) == blocks::MOVING_PISTON) {
 			return ;
@@ -625,7 +625,6 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update, bo
 				scheduleRedstoneTick({{posX + delta.x, posY + delta.y, posZ + delta.z}, REDSTONE::TICK, REDSTONE::ON});
 			}
 		}
-		_vertex_update = true;
 	}
 }
 
