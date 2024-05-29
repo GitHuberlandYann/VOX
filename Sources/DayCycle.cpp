@@ -196,7 +196,7 @@ void DayCycle::step( Chat *chat, int steps )
 		return (chat->chatMessage("You can't step when game is not frozen.", TEXT::RED));
 	}
 	_game_time_multiplier = steps;
-	return (chat->chatMessage("Taking " + std::to_string(steps) + " steps."));
+	return (chat->chatMessage("Taking " + std::to_string(steps) + ((steps > 1) ? " steps." : " step.")));
 }
 
 std::string DayCycle::getInfos( void )

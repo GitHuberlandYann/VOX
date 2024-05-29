@@ -107,11 +107,6 @@ namespace REDSTONE {
 		const int CANCEL_RETRACTION = 42; // random nbr above 12, used by Chunk::pistonExtendCount
 	};
 
-	namespace OBSERVER {
-		const int ON = (1 << 19);
-		const int OFF = 0b10;
-	};
-
 	const int ALL_BITS = -1;
 };
 

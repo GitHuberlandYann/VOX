@@ -28,6 +28,8 @@
 	- can be blocked by powered repeater/comparator from side
 	- if lock/unlock causes a scheduled tick and another scheduled tick is called on the same tick (input signal change),
 			the second schedule is aborted
+	- if alimented when already powered, we don't update it
+	- when it depowers, checks if should power again on its own
 
  - comparator:
 	- outputs same signal as rear input
@@ -39,9 +41,14 @@
 	- no delay to start movement
 	- 3 game ticks to extend, 2 game ticks to retract
 	- can't move more than 12 other blocks
-	- also checks above on the side for power source
+	- also checks above on the side for power source == quasi-connectivity
 	- piston head and moved blocks are entities until end of movement
 	- if sticky piston retracts before finishing to push, doesn't retract block it pushed
+
+ - observer:
+	- 1 tick delay
+	- generates 1 tick pulse of strength 15 when block in front is updated
+	- if updated again when didn't finish pulse, abort update
 
  - lever:
 	- stronly powers block it is placed on, weakly powers ajd blocks
@@ -456,6 +463,9 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 		case blocks::REPEATER:
 			if (source == -adj_blocks[(adj >> 9) & 0x7]) { // signal comes from behind repeater
 				// std::cout << "scheduling repeater from " << source.x << ", " << source.y << ", " << source.z << std::endl;
+				if (state && (adj & REDSTONE::POWERED)) {
+					break ;
+				}
 				scheduleRedstoneTick({pos, REDSTONE::TICK * (((adj >> REDSTONE::REPEATER::TICKS_OFFSET) & 0x3) + 1), state});
 			} else if (!source.x == !!adj_blocks[(adj >> 9) & 0x7].x && !source.y == !!adj_blocks[(adj >> 9) & 0x7].y) { // signal comes from side
 				// we check if it comes from repeater and (un)lock the repeater
@@ -1044,7 +1054,7 @@ void Chunk::updateRedstone( void )
 							setBlockAt(value, red.pos.x, red.pos.y, red.pos.z, false);
 							stronglyPower(red.pos + front, -front, REDSTONE::OFF);
 							weaklyPowerTarget(red.pos + front, -front, REDSTONE::OFF, false);
-							if (red.state & REDSTONE::REPEATER::LOCK) { initRepeater(red.pos, value, true); }
+							initRepeater(red.pos, value, true);
 						}
 						break ;
 					case blocks::COMPARATOR:
@@ -1056,7 +1066,7 @@ void Chunk::updateRedstone( void )
 						if (red.state && !(value & REDSTONE::ACTIVATED)) {
 							REDLOG("observer activation");
 							setBlockAt(value | REDSTONE::ACTIVATED, red.pos, false);
-							stronglyPower(red.pos - front, front, REDSTONE::ON);
+							stronglyPower(red.pos - front, front, 0xF);
 							weaklyPowerTarget(red.pos - front, front, REDSTONE::ON, false);
 							scheduleRedstoneTick({red.pos, REDSTONE::TICK, REDSTONE::OFF});
 						} else if (value & REDSTONE::ACTIVATED) {
@@ -1065,27 +1075,6 @@ void Chunk::updateRedstone( void )
 							stronglyPower(red.pos - front, front, REDSTONE::OFF);
 							weaklyPowerTarget(red.pos - front, front, REDSTONE::OFF, false);
 						}
-						// REDLOG("observer front " << POS(front) << " full state " << red.state);
-						// if (red.state == REDSTONE::ON) {
-						// 	if (!(value & REDSTONE::OBSERVER::ON)) { // turn on observer
-						// 		REDLOG("observer activation");
-						// 		setBlockAt(value | REDSTONE::ACTIVATED | REDSTONE::OBSERVER::ON, red.pos, false);
-						// 		stronglyPower(red.pos - front, front, REDSTONE::ON);
-						// 		weaklyPowerTarget(red.pos - front, front, REDSTONE::ON, false);
-						// 	}
-						// 	scheduleRedstoneTick({red.pos, REDSTONE::TICK, REDSTONE::OBSERVER::OFF}); // schedule observer to cut pulse
-						// } else if (red.state == REDSTONE::OBSERVER::OFF) {
-						// 	if (value & REDSTONE::ACTIVATED) { // turn off observer's pulse
-						// 		REDLOG("observer cut pulse");
-						// 		setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED), red.pos, false, false);
-						// 		stronglyPower(red.pos - front, front, REDSTONE::OFF);
-						// 		weaklyPowerTarget(red.pos - front, front, REDSTONE::OFF, false);
-						// 	}
-						// 	scheduleRedstoneTick({red.pos, REDSTONE::TICK, REDSTONE::OFF}); // schedule observer to turn off
-						// } else if (red.state == REDSTONE::OFF && (value & REDSTONE::OBSERVER::ON)) { // turn off observer
-						// 	REDLOG("observer shut down");
-						// 	setBlockAt(value & (REDSTONE::ALL_BITS - REDSTONE::OBSERVER::ON), red.pos, false, false);
-						// }
 						break ;
 					case blocks::REDSTONE_TORCH:
 						updateRedstoneTorch(red.pos, value);
@@ -1170,14 +1159,19 @@ void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 		}
 		std::cout << "new schedule " << s_blocks[target & 0xFF]->name << " (" << (-3 + priority) << ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " pos " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << " ticks: " << red.ticks << " state " << (red.state & 0xF) << ((red.state & REDSTONE::REPEATER::LOCK) ? " lock" : "") << std::endl;
 		for (auto &sched : _redstone_schedule[priority]) {
-			if (sched.pos == red.pos && sched.ticks == red.ticks) {
-				if (sched.state == red.state) {
-					std::cout << "aborted." << std::endl;
-				} else if ((target & 0xFF) == blocks::COMPARATOR) {
-					sched.state = red.state;
-					std::cout << "abort previous state." << std::endl;
+			if (sched.pos == red.pos) {
+				if (sched.ticks == red.ticks) {
+					if (sched.state == red.state) {
+						std::cout << "aborted." << std::endl;
+					} else if ((target & 0xFF) == blocks::COMPARATOR) {
+						sched.state = red.state;
+						std::cout << "abort previous state." << std::endl;
+					}
+					return ;
+				} else if ((target & 0xFF) == blocks::OBSERVER && sched.state == REDSTONE::OFF) {
+					REDLOG("observer aborted.");
+					return ;
 				}
-				return ;
 			}
 		}
 		_redstone_schedule[priority].push_back(red);
