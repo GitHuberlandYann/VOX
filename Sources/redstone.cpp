@@ -894,6 +894,37 @@ void Chunk::extendPiston( glm::ivec3 pos, int value, int count )
 }
 
 /**
+ * @brief checks if given block can be pulled by sticky piston
+*/
+static bool pullableBlock( int value )
+{
+	int type = (value & 0xFF);
+	switch (s_blocks[type]->geometry) {
+		case GEOMETRY::NONE:
+		case GEOMETRY::CROSS:
+		case GEOMETRY::CROP:
+		case GEOMETRY::TORCH:
+		case GEOMETRY::BUTTON:
+		case GEOMETRY::LEVER:
+		case GEOMETRY::DUST:
+		case GEOMETRY::REPEATER:
+		case GEOMETRY::DOOR:
+		case GEOMETRY::TRAPDOOR:
+			return (false);
+		case GEOMETRY::PISTON:
+			return (!(value & REDSTONE::PISTON::MOVING));
+	}
+	switch (type) {
+		case blocks::MOVING_PISTON:
+		case blocks::BEDROCK:
+		case blocks::FURNACE:
+		case blocks::CRAFTING_TABLE:
+			return (false);
+	}
+	return (true);
+}
+
+/**
  * @brief retract piston at given pos, first check if piston finished its extension,
  * if not place entities being moved at their final pos and retract piston head
  * (this allows sticky_piston to not retract blocks if updated within 1 redstone tick)
@@ -915,9 +946,10 @@ void Chunk::retractPiston( glm::ivec3 pos, int value )
 	}
 	if ((value & 0xFF) == blocks::STICKY_PISTON && delCount < 2) { // retract block only if had time to finish push or didn't push block in the first place
 		int front2_value = getBlockAt(pos.x + front.x * 2, pos.y + front.y * 2, pos.z + front.z * 2);
-		if ((!s_blocks[front2_value & 0xFF]->transparent && (front2_value & 0xFF) != blocks::MOVING_PISTON && (front2_value & 0xFF) != blocks::BEDROCK)
-			|| (front2_value & 0xFF) == blocks::OBSERVER
-			|| (((front2_value & 0xFF) == blocks::PISTON || (front2_value & 0xFF) == blocks::STICKY_PISTON) && !(front2_value & REDSTONE::PISTON::MOVING))) {
+		if (pullableBlock(front2_value)) {
+		// if ((!s_blocks[front2_value & 0xFF]->transparent && (front2_value & 0xFF) != blocks::MOVING_PISTON && (front2_value & 0xFF) != blocks::BEDROCK)
+		// 	|| (front2_value & 0xFF) == blocks::OBSERVER
+		// 	|| (((front2_value & 0xFF) == blocks::PISTON || (front2_value & 0xFF) == blocks::STICKY_PISTON) && !(front2_value & REDSTONE::PISTON::MOVING))) {
 			setBlockAt(blocks::AIR, pos + front * 2, true);
 			setBlockAt(blocks::MOVING_PISTON | REDSTONE::PISTON::RETRACTING, pos + front, true);
 			_entities.push_back(new MovingPistonEntity(this, pos, pos + front * 2, -front, false, true, front2_value));

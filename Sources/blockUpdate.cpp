@@ -708,8 +708,8 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		// break attached block whose attachement got removed
 		glm::ivec3 attachement = getAttachedDir(value);
 		if (attachement != glm::ivec3(0, 0, 0)) {
-			int base = getBlockAt(pos + attachement);
-			if (base == blocks::AIR) {
+			int base = (getBlockAt(pos + attachement) & 0xFF);
+			if (base == blocks::AIR || base == blocks::PISTON_HEAD) {
 				if (s_blocks[type]->byHand) {
 					entity_block(pos.x, pos.y, pos.z, type);
 				}
