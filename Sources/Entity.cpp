@@ -105,7 +105,7 @@ int MovingPistonEntity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
 			return (REDSTONE::PISTON::CANCEL_RETRACTION);
 		}
 		if (!_piston_head) {
-			_chunk->setBlockAt(_item.type, _endPos, ((_item.type & 0xFF) == blocks::OBSERVER)); // might want to add bool arg to this function, set it to false in (void)FORCE FINISH RETRACTION and to true in FORCE FINISH RETRACTION
+			_chunk->setBlockAt(_item.type, _endPos, ((_item.type & 0xFF) == blocks::OBSERVER) || ((_item.type & 0xFF) == blocks::REDSTONE_BLOCK)); // might want to add bool arg to this function, set it to false in (void)FORCE FINISH RETRACTION and to true in FORCE FINISH RETRACTION
 			if (_retraction) { // TODO check if this still necessary
 				_chunk->setBlockAt(blocks::AIR, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
 			}

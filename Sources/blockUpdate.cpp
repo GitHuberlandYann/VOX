@@ -103,6 +103,8 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		_blocks[offset + (((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1)] = blocks::AIR;
 		_added.erase(offset + (((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1));
 		_removed.insert(offset + (((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1));
+	} else if (type == blocks::LEVER && (value & REDSTONE::POWERED)) {
+		flickLever(pos, value & (REDSTONE::ALL_BITS - REDSTONE::POWERED), REDSTONE::OFF);
 	}
 	if (useInventory && type == blocks::WATER) {
 		_inventory->addBlock(type); // water bucket
@@ -673,7 +675,10 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 			light_try_spread(pos.x, pos.y, pos.z, 1, false, LIGHT_RECURSE);
 		}
 
-		if (type == blocks::AIR) {
+		if (type >= blocks::WATER) {
+			_fluids.insert((((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z);
+			return ;
+		} else if (type == blocks::AIR) {
 			return ;
 		}
 

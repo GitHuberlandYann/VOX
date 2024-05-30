@@ -120,7 +120,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			_menu->setState(MENU::CRAFTING);
 			return ;
 		case blocks::CHEST:
-			if (air_flower(_chunk_hit->getBlockAt(_block_hit.pos.x - _chunk_hit->getStartX(), _block_hit.pos.y - _chunk_hit->getStartY(), _block_hit.pos.z + 1), true, false, false)) {
+			if (!s_blocks[_chunk_hit->getBlockAt(_block_hit.pos.x - _chunk_hit->getStartX(), _block_hit.pos.y - _chunk_hit->getStartY(), _block_hit.pos.z + 1) & 0xFF]->transparent) {
 				return ;
 			}
 			_chunk_hit->openChest(_block_hit.pos);

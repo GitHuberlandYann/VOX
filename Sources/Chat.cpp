@@ -97,6 +97,12 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t/spawnpoint <location>");
 						chatMessage("\t\tSets your spawn point to a certain location.");
 						break ;
+					case CHAT::cmds::GIVE:
+						chatMessage("/give <player> <item>");
+						chatMessage("\tgive selected item to selected player.");
+						chatMessage("\tfor now, only 'me' accepted as player.");
+						chatMessage("\titem must be valid.");
+						break ;
 					default:
 						chatMessage("Command recognised but documentation not coded yet.");
 				}
@@ -199,6 +205,10 @@ void Chat::handle_clear( int argc, std::vector<std::string> &argv )
 		} else if (!argv[1].compare("p") || !argv[1].compare("particles")) {
 			chatMessage("Cleared " + std::to_string(_oglMan->clearParticles()) + " particles");
 			return ;
+		} else if (!argv[1].compare("i") || !argv[1].compare("inventory")) {
+			_oglMan->_inventory->spillInventory(NULL);
+			chatMessage("Cleared your inventory");
+			return ;
 		}
 	}
 	chatMessage("Wrong usage of command /clear");
@@ -258,6 +268,95 @@ void Chat::handle_spawnpoint( int argc, std::vector<std::string> &argv )
 		}
 	}
 	chatMessage("Wrong usage of /spawnpoint [location]");
+}
+
+/**
+ * @brief parse arg after give and give player selected item if valid entry
+*/
+void Chat::handle_give( int argc, std::vector<std::string> &argv )
+{
+	if (argc != 3 || argv[1].compare("me")) {
+		chatMessage("Wrong usage of /give me <item>");
+		return ;
+	} else if (!argv[2].compare("redstone")) {
+		_oglMan->_inventory->spillInventory(NULL);
+		_oglMan->_inventory->absorbItem({blocks::OBSERVER});
+		_oglMan->_inventory->absorbItem({blocks::LEVER});
+		_oglMan->_inventory->absorbItem({blocks::REDSTONE_DUST});
+		_oglMan->_inventory->absorbItem({blocks::STICKY_PISTON});
+		_oglMan->_inventory->absorbItem({blocks::REPEATER});
+		_oglMan->_inventory->absorbItem({blocks::STONE_BRICKS});
+		_oglMan->_inventory->absorbItem({blocks::WORLDEDIT_WAND});
+		_oglMan->_inventory->absorbItem({blocks::IRON_BLOCK});
+		_oglMan->_inventory->absorbItem({blocks::GLASS});
+
+		_oglMan->_inventory->absorbItem({blocks::STONE_BUTTON});
+		_oglMan->_inventory->absorbItem({blocks::OAK_BUTTON});
+		_oglMan->_inventory->absorbItem({blocks::CHEST});
+		_oglMan->_inventory->absorbItem({blocks::TORCH});
+		_oglMan->_inventory->absorbItem({blocks::STONE});
+		_oglMan->_inventory->absorbItem({blocks::COAL_ORE});
+		_oglMan->_inventory->absorbItem({blocks::REDSTONE_ORE});
+		_oglMan->_inventory->absorbItem({blocks::DIAMOND_ORE});
+		_oglMan->_inventory->absorbItem({blocks::GRASS_BLOCK});
+		_oglMan->_inventory->absorbItem({blocks::OAK_SIGN});
+		_oglMan->_inventory->absorbItem({blocks::REDSTONE_LAMP});
+		_oglMan->_inventory->absorbItem({blocks::OAK_STAIRS_BOTTOM});
+		_oglMan->_inventory->absorbItem({blocks::PISTON});
+		_oglMan->_inventory->absorbItem({blocks::COMPARATOR});
+		_oglMan->_inventory->absorbItem({blocks::REDSTONE_TORCH});
+		_oglMan->_inventory->absorbItem({blocks::REDSTONE_BLOCK});
+		_oglMan->_inventory->absorbItem({blocks::IRON_ORE});
+		return ;
+	}
+	int item = 0;
+	size_t index = 0;
+	for (; argv[2][index]; ++index) {
+		if (!isdigit(argv[2][index])) {
+			return (chatMessage("Wrong usage of /give me <item>, item invalid"));
+		}
+		item = item * 10 + argv[2][index] - '0';
+	}
+	if (item < 0 || item >= S_BLOCKS_SIZE) {
+		return (chatMessage("Wrong usage of /give me <item>, item invalid"));
+	}
+	switch (item) {
+		case blocks::AIR:
+		case blocks::FARMLAND:
+		case blocks::DIRT_PATH:
+		case blocks::OAK_STAIRS_TOP:
+		case blocks::STONE_STAIRS_TOP:
+		case blocks::SMOOTH_STONE_STAIRS_TOP:
+		case blocks::COBBLESTONE_STAIRS_TOP:
+		case blocks::STONE_BRICKS_STAIRS_TOP:
+		case blocks::OAK_SLAB_TOP:
+		case blocks::STONE_SLAB_TOP:
+		case blocks::SMOOTH_STONE_SLAB_TOP:
+		case blocks::COBBLESTONE_SLAB_TOP:
+		case blocks::STONE_BRICKS_SLAB_TOP:
+		case blocks::PISTON_HEAD:
+		case blocks::MOVING_PISTON:
+		case blocks::WHEAT_CROP:
+		case blocks::WHEAT_CROP1:
+		case blocks::WHEAT_CROP2:
+		case blocks::WHEAT_CROP3:
+		case blocks::WHEAT_CROP4:
+		case blocks::WHEAT_CROP5:
+		case blocks::WHEAT_CROP6:
+		case blocks::WHEAT_CROP7:
+		case blocks::WATER:
+		case blocks::WATER1:
+		case blocks::WATER2:
+		case blocks::WATER3:
+		case blocks::WATER4:
+		case blocks::WATER5:
+		case blocks::WATER6:
+		case blocks::WATER7:
+		case blocks::WORLDEDIT_WAND:
+			return (chatMessage("item " + s_blocks[item]->name + " [" + std::to_string(item) + "] can't be given."));
+	}
+	_oglMan->_inventory->replaceSlot(item, true);
+	chatMessage("item " + s_blocks[item]->name + " [" + std::to_string(item) + "] has been added to your inventory.");
 }
 
 /**
@@ -429,6 +528,9 @@ bool Chat::sendMessage( std::string str )
 						case CHAT::cmds::SP:
 						case CHAT::cmds::SPAWNPOINT:
 							handle_spawnpoint(parstr.size(), parstr);
+							break ;
+						case CHAT::cmds::GIVE:
+							handle_give(parstr.size(), parstr);
 							break ;
 						default:
 							chatMessage("Command recognised but behavior not coded yet.");

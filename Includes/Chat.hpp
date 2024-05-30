@@ -19,10 +19,11 @@ namespace CHAT {
 		TP,
 		TELEPORT,
 		SP,
-		SPAWNPOINT
+		SPAWNPOINT,
+		GIVE,
 	};
-	const int NBR_CMDS = 9;
-	const std::array<std::string, NBR_CMDS> commands = {"/help", "/seed", "/gamemode", "/time", "/clear", "/tp", "/teleport", "/sp", "/spawnpoint"};
+	const int NBR_CMDS = 10;
+	const std::array<std::string, NBR_CMDS> commands = {"/help", "/seed", "/gamemode", "/time", "/clear", "/tp", "/teleport", "/sp", "/spawnpoint", "/give"};
 }
 
 # define NBR_ARG_TIME 4
@@ -56,6 +57,7 @@ class Chat
 		void handle_clear( int argc, std::vector<std::string> &argv );
 		void handle_teleport( int argc, std::vector<std::string> &argv );
 		void handle_spawnpoint( int argc, std::vector<std::string> &argv );
+		void handle_give( int argc, std::vector<std::string> &argv );
 		bool handle_freeze( int argc, std::vector<std::string> &argv );
 
 		float parseLocation( std::string &str, int coord );
