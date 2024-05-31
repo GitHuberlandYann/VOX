@@ -62,7 +62,6 @@ MENU::RET Menu::main_menu( void )
 			DIR *dir = opendir("Worlds");
 			if (dir == NULL) {
 				std::cerr << "failed to open dir Worlds/" << std::endl;
-				_state = MENU::MAIN;
 				return (MENU::RET::NO_CHANGE);
 			}
 			struct dirent *dent;

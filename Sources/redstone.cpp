@@ -411,11 +411,11 @@ void Chunk::stronglyPower( glm::ivec3 pos, glm::ivec3 source, int state )
 			if (value == previous) {
 				return ;
 			} else if (!strongly_powered && !weakdy_powered) { // lamp is unpowered with delay
-				// setBlockAt(value, pos, false, false);
+				setBlockAt(value, pos, false, false);
 				return ;
 			}
 		}
-		setBlockAt(value, pos, false);
+		setBlockAt(value, pos, false, (value & 0xFF) != blocks::REDSTONE_LAMP);
 		if (strongly_powered) {
 			weaklyPower(pos, source, REDSTONE::ON, false);
 		} else if (weakdy_powered) {
@@ -912,7 +912,7 @@ static bool pullableBlock( int value )
 		case GEOMETRY::TRAPDOOR:
 			return (false);
 		case GEOMETRY::PISTON:
-			return (!(value & REDSTONE::PISTON::MOVING));
+			return (type != blocks::MOVING_PISTON && !(value & REDSTONE::PISTON::MOVING));
 	}
 	switch (type) {
 		case blocks::MOVING_PISTON:

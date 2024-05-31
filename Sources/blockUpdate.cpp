@@ -458,9 +458,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		}
 		updateRedstoneDust(pos);
 	} else if (type == blocks::AIR) { // rm block
-		if (prev_type == blocks::GLASS) { // TODO check neighbours and spread water
-			return ;
-		} else if (s_blocks[prev_type]->light_level) {
+		if (s_blocks[prev_type]->light_level) {
 			std::cout << "rm light" << std::endl;
 			if (prev_type == blocks::TORCH) {
 				delete _flames[offset];
@@ -668,10 +666,8 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		bool transparent = s_blocks[source]->isTransparent(source);
 
 		// update light status around placed block
-		if (transparent || type == blocks::MOVING_PISTON) { 
-			if (dir != face_dir::PLUSZ) {
-				light_try_spread(pos.x, pos.y, pos.z, 1, true, LIGHT_RECURSE); // spread sky light, but not upwards duh
-			}
+		if (transparent || type == blocks::MOVING_PISTON) {
+			light_try_spread(pos.x, pos.y, pos.z, 1, true, LIGHT_RECURSE);
 			light_try_spread(pos.x, pos.y, pos.z, 1, false, LIGHT_RECURSE);
 		}
 
