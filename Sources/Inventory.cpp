@@ -323,7 +323,7 @@ t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstanc
 	}
 	int craft_place = 0;
 	t_item *bat = getBlockPtr(value, craft_place, furnace, chest);
-	if (!bat) {
+	if (!bat || (furnace &&  value == 51 && !s_blocks[block.type]->isFuel)) {
 		return (block);
 	}
 	t_item res = *bat;
@@ -355,7 +355,7 @@ t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceIns
 	}
 	int craft_place = 0;
 	t_item *bat = getBlockPtr(value, craft_place, furnace, chest);
-	if (!bat) {
+	if (!bat || (furnace &&  value == 51 && !s_blocks[block.type]->isFuel)) {
 		return (block);
 	}
 	if (bat->amount == 64) {

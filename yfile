@@ -64,12 +64,12 @@ IN PROGRES:
 	- universal use of tps instead of deltatimes
 
 TODAY:
-	- Adventure mode (can't break block you didn't place, can only place block on ores)
 	- Way more blocks ?? + world file "version: " line + /respawn
 	- Br///ken 0 on signs
 	- from down to up: piston(facing up)-block-redstoneblock -> causes problem
 	- shift click to gather all blocks from chest
-	- gamemode in Settings
+	- chests being broken by water
+	- toggle don't draw chunks behind player in Settings
 	
 	SHORTTERM memory:
 	\/ - work on cleanAtlas
@@ -179,20 +179,25 @@ TODAY:
 	- gui size
 	- centralize settings and save/load them in file
 	- resource packs
-	- main menu
-	- world selection menu
-	- world creation menu
-    - load menu
-	- pause menu
-	- options menu
-	- video settings menu
-	- resource packs menu
-    - inventory menu
-    - crafting menu
-	- chest menu
-	- furnace menu
-	- chat menu
-	- death menu
+	- Game modes:
+		- survival
+		- creative
+		- adventure
+	- Menus:
+		- main menu
+		- world selection menu
+		- world creation menu
+		- load menu
+		- pause menu
+		- options menu
+		- video settings menu
+		- resource packs menu
+		- inventory menu
+		- crafting menu
+		- chest menu
+		- furnace menu
+		- chat menu
+		- death menu
 
 
 Controls (QWERTY):
@@ -313,6 +318,7 @@ Some info:
 		- 0x10000 strongly powered (1 << 16)
 		- 0x20000 weakdy   powered (1 << 17) (typo on purpose, meaning by redtone dust)
 		- 0x40000 activated (1 << 18) - redstone componants
+		- 0x80000 adventure_block (1 << 19) - only blocks you can break in adventure mode
 		- 0xF << 20 signal strength
 	- Furnace 0x7 << 9 == orientation, 0x1000 == furnace ON/OFF
 	- table craft 0x7 << 9 == orientation
@@ -331,7 +337,8 @@ Some info:
 	- redstone dust 0xF << 20 strength 0xFF << 24 'arms'
 	- repeater 0x7 << 9 orientation, 0x3 << 12 delay, 1 << 15 locked, 1 << 16 lit
 	- comparator 0x7 << 9 orientation, 1 << 12 mode, 0xF << 20 strength
-	- piston 0x7 << 9 orientation, 1 << 18 activated, 1 << 19 inMovement
+	- piston 0x7 << 9 orientation, 1 << 18 activated, 1 << 12 inMovement
+	- piston_head 1 << 12 sticky head
 	- moving_piston 1 << 28 retracting
 
 	- powered blocks: (1 << 16)

@@ -53,7 +53,6 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t\t\tsurvival for Survival mode");
 						chatMessage("\t\t\tcreative for Creative mode");
 						chatMessage("\t\t\tadventure for Adventure mode");
-						chatMessage("\t\t\tspectator for Spectator mode");
 						break ;
 					case CHAT::cmds::TIME:
 						chatMessage("/help time");
@@ -78,6 +77,9 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t/clear particles");
 						chatMessage("\t/clear p");
 						chatMessage("\t\tClears all particles.");
+						chatMessage("\t/clear inventory");
+						chatMessage("\t/clear i");
+						chatMessage("\t\tClears your inventory.");
 						break ;
 					case CHAT::cmds::TP:
 					case CHAT::cmds::TELEPORT:
@@ -121,11 +123,14 @@ void Chat::handle_gamemode( int argc, std::vector<std::string> &argv )
 		_oglMan->getGamemode();
 		return ;
 	} else if (argc == 2) {
-		if (!argv[1].compare("creative") || !argv[1].compare("0")) {
-			_oglMan->setGamemode(false);
+		if (!argv[1].compare("survival") || !argv[1].compare("0")) {
+			_oglMan->setGamemode(GAMEMODE::SURVIVAL);
 			return ;	
-		} else if (!argv[1].compare("survival") || !argv[1].compare("1")) {
-			_oglMan->setGamemode(true);
+		} else if (!argv[1].compare("creative") || !argv[1].compare("1")) {
+			_oglMan->setGamemode(GAMEMODE::CREATIVE);
+			return ;
+		} else if (!argv[1].compare("adventure") || !argv[1].compare("2")) {
+			_oglMan->setGamemode(GAMEMODE::ADVENTURE);
 			return ;
 		}
 	}
@@ -461,7 +466,7 @@ std::string Chat::getHistoMsg( bool up )
 	return (_historic[_historic.size() - _histo_cursor].str);
 }
 
-void Chat::chatMessage( std::string str, int color )
+void Chat::chatMessage( std::string str, uint color )
 {
 	size_t pxl_width = 0, offset, font_size = 12, limit = CHAT_BOX_WIDTH - CHAT_BOX_X - 2 * CHAT_BOX_OFFSET;
 	int start = 0, end = 0;

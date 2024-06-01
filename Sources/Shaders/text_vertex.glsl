@@ -13,7 +13,7 @@ in int specifications;
  * 0x0000FF00 Green
  * 0x000000FF Blue
  */
-in int color;
+in uint color;
 in ivec2 position;
 
 uniform int win_width;
@@ -33,5 +33,5 @@ void main()
 	TexCoords = vec2((specifications & 0xF)       * one16th + (((specifications & 0x100) == 0x100) ? one16th - half_pxl : half_pxl),
 					((specifications >> 4) & 0xF) * one8th  + (((specifications & 0x200) == 0x200) ? one8th - half_pxl : half_pxl));
 
-	Color = vec4((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF) / 255.0f;
+	Color = vec4((color >> 16) & 0xFFU, (color >> 8) & 0xFFU, color & 0xFFU, (color >> 24) & 0xFFU) / 255.0f;
 }

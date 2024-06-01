@@ -22,7 +22,7 @@ enum {
 
 typedef struct s_hit {
 	glm::ivec3 pos, prev_pos, water_pos;
-	int value;
+	int value, type;
 	bool water_value;
 }				t_hit;
 
@@ -35,9 +35,9 @@ class OpenGL_Manager
 		glm::ivec2 _current_chunk;
 		std::array<GLuint, 4> _textures;
 		GLint _fill;
-		bool _debug_mode, _game_mode, _outline, _paused, _threadUpdate, _threadStop;
+		bool _debug_mode, _outline, _paused, _threadUpdate, _threadStop;
 		float _break_time, _eat_timer, _bow_timer;
-		int _break_frame, _hand_content;
+		int _game_mode, _break_frame, _hand_content;
 		std::string _world_name;
 		std::vector<Chunk *> _visible_chunks;
 		std::vector<t_shaderInput> _entities;
@@ -55,7 +55,7 @@ class OpenGL_Manager
 		void chunk_update( void );
 		float getBreakTime( bool canHarvest );
 		void user_inputs( float deltaTime, bool rayCast );
-		t_hit get_block_hit( bool debug_info );
+		t_hit get_block_hit( void );
 		void handle_add_rm_block( bool adding, bool collect );
 		void update_cam_view( void );
 		void update_cam_perspective( void );
@@ -92,7 +92,7 @@ class OpenGL_Manager
 		void setup_communication_shaders( void );
 		void load_texture( void );
 		void resetInputsPtrs( void );
-		void setGamemode( bool gamemode );
+		void setGamemode( int gamemode );
 		void getGamemode( void );
 		size_t clearEntities( void );
 		size_t clearParticles( void );

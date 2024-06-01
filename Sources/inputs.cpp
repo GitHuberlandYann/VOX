@@ -18,10 +18,10 @@ void OpenGL_Manager::resetInputsPtrs( void )
 	_visible_chunks.clear();
 }
 
-t_hit OpenGL_Manager::get_block_hit( bool debug_info )
+t_hit OpenGL_Manager::get_block_hit( void )
 {
-	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0};
-	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == CREATIVE) ? CHUNK_SIZE : REACH);
+	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
+	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == GAMEMODE::CREATIVE) ? CHUNK_SIZE : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
 	Chunk *chunk = NULL;
@@ -74,7 +74,8 @@ t_hit OpenGL_Manager::get_block_hit( bool debug_info )
 			if (!target->hasHitbox || line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + target->hitboxCenter, target->hitboxHalfSize)) {
 				_chunk_hit = chunk;
 				res.pos = i;
-				res.value = (debug_info) ? value : type;
+				res.value = value;
+				res.type = type;
 				// _ui->chatMessage(s_blocks[type]->name + ((value & REDSTONE::POWERED) ? " block hit is powered" : " block hit is not powered"));
 				return (res);
 			} else if (target->hasOrientedHitbox) {
@@ -83,7 +84,8 @@ t_hit OpenGL_Manager::get_block_hit( bool debug_info )
 				if (line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
 					_chunk_hit = chunk;
 					res.pos = i;
-					res.value = (debug_info) ? value : type;
+					res.value = value;
+					res.type = type;
 					return (res);
 				}
 
@@ -98,10 +100,14 @@ t_hit OpenGL_Manager::get_block_hit( bool debug_info )
 void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 {
 	if (!adding) {
-		if (_block_hit.value == blocks::AIR) {
+		if (_block_hit.type == blocks::AIR) {
 			return ;
 		} else if (_hand_content == blocks::WORLDEDIT_WAND) {
 			return (WorldEdit::Get()->setSelectionStart(_block_hit.pos));
+		}
+		if (_game_mode == GAMEMODE::ADVENTURE && !(_block_hit.value & GAMEMODE::ADVENTURE_BLOCK)) {
+			_ui->chatMessage("[Adventure mode] you can't break blocks you didn't place yourself.", TEXT::RED);
+			return ;
 		}
 		if (_chunk_hit) {
 			_chunk_hit->handleHit(collect, 0, _block_hit.pos, Modif::REMOVE);
@@ -114,7 +120,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	// from now on adding = true
-	switch (_block_hit.value) {
+	switch (_block_hit.type) {
 		case blocks::CRAFTING_TABLE:
 			_paused = true;
 			_menu->setState(MENU::CRAFTING);
@@ -146,29 +152,40 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		case blocks::STONE_BUTTON:
 		case blocks::OAK_BUTTON:
 			if (_current_chunk_ptr) {
-				_current_chunk_ptr->handleHit(false, _block_hit.value, _block_hit.pos, Modif::USE);
+				_current_chunk_ptr->handleHit(false, _block_hit.type, _block_hit.pos, Modif::USE);
 			}
 			return ;
 	}
 	int type = _hand_content;
 	int shape = s_blocks[type]->geometry;
-	// std::cout << "aiming " << s_blocks[type]->name << " towards " << s_blocks[_block_hit.value]->name << std::endl;;
+	if (type >= blocks::WOODEN_HOE && type <= blocks::DIAMOND_HOE
+		&& (_block_hit.type == blocks::DIRT || _block_hit.type == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
+		type = blocks::FARMLAND;
+		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
+		return ;
+	} else if (type >= blocks::WOODEN_SHOVEL && type <= blocks::DIAMOND_SHOVEL
+		&& (_block_hit.type == blocks::DIRT || _block_hit.type == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
+		type = blocks::DIRT_PATH;
+		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
+		return ;
+	}
+	if (_game_mode == GAMEMODE::ADVENTURE) {
+		if (_block_hit.type != s_blocks[type]->adventure_block) {
+			if (type == blocks::BUCKET || type == blocks::WATER_BUCKET) {
+				_ui->chatMessage("[Adventure mode] you can only use " + s_blocks[type]->name + " on " + s_blocks[s_blocks[type]->adventure_block]->name + ".", TEXT::RED);
+				return ;
+			}
+			_ui->chatMessage("[Adventure mode] you can only place " + s_blocks[type]->name + " on " + s_blocks[s_blocks[type]->adventure_block]->name + ".", TEXT::RED);
+			return ;
+		}
+	}
+	// std::cout << "aiming " << s_blocks[type]->name << " towards " << s_blocks[_block_hit.type]->name << std::endl;;
 	if (type == blocks::WATER_BUCKET) { // use it like any other block
 		type = blocks::WATER;
 	} else if (type == blocks::BUCKET) { // special case, add but remove water instead
 		if (_block_hit.water_value) {
 			_current_chunk_ptr->handleHit(collect, type, _block_hit.water_pos, Modif::REMOVE);
 		}
-		return ;
-	} else if (type >= blocks::WOODEN_HOE && type <= blocks::DIAMOND_HOE
-		&& (_block_hit.value == blocks::DIRT || _block_hit.value == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
-		type = blocks::FARMLAND;
-		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
-		return ;
-	} else if (type >= blocks::WOODEN_SHOVEL && type <= blocks::DIAMOND_SHOVEL
-		&& (_block_hit.value == blocks::DIRT || _block_hit.value == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
-		type = blocks::DIRT_PATH;
-		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
 		return ;
 	} else if (type == blocks::WHEAT_SEEDS) {
 		type = blocks::WHEAT_CROP;
@@ -198,7 +215,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_menu->setState(MENU::SIGN);
 		_menu->setSignPos(_block_hit.prev_pos);
 	} else if (type == blocks::LEVER || shape == GEOMETRY::BUTTON) {
-		if (s_blocks[_block_hit.value]->geometry != GEOMETRY::CUBE) { // TODO chnge this
+		if (s_blocks[_block_hit.type]->geometry != GEOMETRY::CUBE) { // TODO chnge this
 			return ;
 		}
 		if (_block_hit.pos.z > _block_hit.prev_pos.z) {
@@ -253,7 +270,10 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		}
 	}
 
-	if (_block_hit.value) { // rm if statement for nice cheat
+	if (_block_hit.type) { // rm if statement for nice cheat
+		if (_game_mode == GAMEMODE::ADVENTURE && type != blocks::WATER) {
+			type |= GAMEMODE::ADVENTURE_BLOCK;
+		}
 		_current_chunk_ptr->handleHit(collect, type, _block_hit.prev_pos, Modif::ADD);
 	}
 }
@@ -326,7 +346,7 @@ void OpenGL_Manager::chunk_update( void )
 float OpenGL_Manager::getBreakTime( bool canHarvest )
 {
 	float speedMultiplier = 1;
-	int needed_tool = s_blocks[_block_hit.value]->needed_tool;
+	int needed_tool = s_blocks[_block_hit.type]->needed_tool;
 	bool isBestTool = _hand_content >= needed_tool && _hand_content < needed_tool + 4;
 
 	if (isBestTool) {
@@ -347,7 +367,7 @@ float OpenGL_Manager::getBreakTime( bool canHarvest )
 		speedMultiplier /= 5;
 	}
 
-	float damage = speedMultiplier / s_blocks[_block_hit.value]->hardness;
+	float damage = speedMultiplier / s_blocks[_block_hit.type]->hardness;
 	if (damage < 0) { // bedrock and such
 		return (FLT_MAX);
 	}
@@ -357,7 +377,7 @@ float OpenGL_Manager::getBreakTime( bool canHarvest )
 		damage /= 100;
 	}
 
-	// _ui->chatMessage(s_blocks[_block_hit.value]->name + " using " + s_blocks[_hand_content]->name);
+	// _ui->chatMessage(s_blocks[_block_hit.type]->name + " using " + s_blocks[_hand_content]->name);
 	// Instant breaking
 	if (damage > 1) {
 		// _ui->chatMessage("\tINSTANT BREAK");
@@ -366,7 +386,7 @@ float OpenGL_Manager::getBreakTime( bool canHarvest )
 
 	int ticks = glm::ceil(1 / damage);
 	float seconds = ticks / 20.0f;
-	// _ui->chatMessage(std::to_string(seconds) + " vs " + std::to_string(s_blocks[_block_hit.value]->getBreakTime(_hand_content)));
+	// _ui->chatMessage(std::to_string(seconds) + " vs " + std::to_string(s_blocks[_block_hit.type]->getBreakTime(_hand_content)));
 	return (seconds);
 }
 
@@ -420,17 +440,23 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	}
 	// toggle F3 + I == display full info about block hit
 	if (INPUT::key_down(INPUT::INFO) && INPUT::key_update(INPUT::INFO) && INPUT::key_down(INPUT::DEBUG)) {
-		t_hit bHit = get_block_hit(true);
+		t_hit bHit = get_block_hit();
 		_ui->chatMessage("*******************");
-		_ui->chatMessage("Info about " + s_blocks[bHit.value & 0xFF]->name + " at " + std::to_string(bHit.pos.x) + ", " + std::to_string(bHit.pos.y) + ", " + std::to_string(bHit.pos.z));
+		_ui->chatMessage("Info about " + s_blocks[bHit.type]->name + " at " + std::to_string(bHit.pos.x) + ", " + std::to_string(bHit.pos.y) + ", " + std::to_string(bHit.pos.z));
 		_ui->chatMessage(std::string("visible: ") + ((bHit.value & blocks::NOTVISIBLE) ? "FALSE" : "TRUE"));
+		_ui->chatMessage(std::string("adventure block: ") + ((bHit.value & GAMEMODE::ADVENTURE_BLOCK) ? "TRUE" : "FALSE"));
 		_ui->chatMessage(std::string("orientation: ") + std::to_string((bHit.value >> 9) & 0x7));
-		_ui->chatMessage(std::string("transparent: ") + ((s_blocks[bHit.value & 0xFF]->isTransparent(bHit.value)) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("transparent: ") + ((s_blocks[bHit.type]->isTransparent(bHit.value)) ? "TRUE" : "FALSE"));
 		_ui->chatMessage(std::string("powered: ") + ((bHit.value & REDSTONE::POWERED) ? "TRUE" : "FALSE"));
 		_ui->chatMessage(std::string("weakdy powered: ") + ((bHit.value & REDSTONE::WEAKDY_POWERED) ? "TRUE" : "FALSE"));
 		_ui->chatMessage(std::string("activated: ") + ((bHit.value & REDSTONE::ACTIVATED) ? "TRUE" : "FALSE"));
 		_ui->chatMessage(std::string("strength: ") + std::to_string((bHit.value >> REDSTONE::STRENGTH_OFFSET) & 0xF));
-		_ui->chatMessage(std::string("moving piston: ") + ((bHit.value & REDSTONE::PISTON::MOVING) ? "TRUE" : "FALSE"));
+		switch (bHit.type) {
+			case blocks::PISTON:
+			case blocks::STICKY_PISTON:
+				_ui->chatMessage(std::string("moving piston: ") + ((bHit.value & REDSTONE::PISTON::MOVING) ? "TRUE" : "FALSE"));
+			break ;
+		}
 		_ui->chatMessage("*******************");
 	}
 	// toggle F5 mode
@@ -462,13 +488,13 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	_camera->setDelta(deltaTime);
 	_hand_content = _inventory->getCurrentSlot();
 	if (INPUT::key_down(INPUT::BREAK)) {
-		if (_game_mode == SURVIVAL) {
-			if (_block_hit.value == blocks::AIR) {
+		if (_game_mode != GAMEMODE::CREATIVE) {
+			if (_block_hit.type == blocks::AIR) {
 				_camera->setArmAnimation(INPUT::key_update(INPUT::BREAK));
 			} else {
 				_camera->setArmAnimation(true);
 				_break_time += deltaTime;
-				bool can_collect = s_blocks[_block_hit.value]->canCollect(_hand_content);
+				bool can_collect = s_blocks[_block_hit.type]->canCollect(_hand_content);
 				float break_time = getBreakTime(can_collect);
 				if (_break_time >= break_time) {
 					_break_time = (break_time > 0) ? -0.3f : 0;
@@ -480,7 +506,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 					int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
 					if (_break_frame != break_frame) {
 						if (_chunk_hit) {
-							_chunk_hit->updateBreak({_block_hit.pos, _block_hit.value});
+							_chunk_hit->updateBreak({_block_hit.pos, _block_hit.type});
 						}
 						_break_frame = break_frame;
 					}
@@ -497,7 +523,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_camera->setArmAnimation(false);
 	}
 	if (INPUT::key_down(INPUT::USE)) {
-		if (_game_mode == SURVIVAL && s_blocks[_hand_content]->isFood) {
+		if (_game_mode != GAMEMODE::CREATIVE && s_blocks[_hand_content]->isFood) {
 			_eat_timer += deltaTime;
 			if (_eat_timer >= 1.61f) {
 				if (_camera->canEatFood(_hand_content)) {
@@ -508,7 +534,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		} else if (_hand_content == blocks::BOW) {
 			_bow_timer += deltaTime;
 		} else if (INPUT::key_update(INPUT::USE)) {
-			handle_add_rm_block(true, _game_mode == SURVIVAL);
+			handle_add_rm_block(true, _game_mode != GAMEMODE::CREATIVE);
 			_camera->setArmAnimation(true);
 		}
 	} else if (INPUT::key_update(INPUT::USE)) {
@@ -531,9 +557,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			}
 		}
 	}
-	if (_block_hit.value != blocks::AIR
+	if (_block_hit.type != blocks::AIR
 		&& INPUT::key_down(INPUT::SAMPLE) && INPUT::key_update(INPUT::SAMPLE)) { // pick up in creative mode, or swap
-		_inventory->replaceSlot(_block_hit.value, _game_mode == CREATIVE);
+		_inventory->replaceSlot(_block_hit.type, _game_mode == GAMEMODE::CREATIVE);
 	}
 
 	// toggle polygon mode fill / lines
@@ -576,14 +602,14 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_camera->setRun(INPUT::key_down(INPUT::RUN));
 	}
 
-	if (_game_mode == CREATIVE) { // no collision check, free to move however you want
+	if (_game_mode == GAMEMODE::CREATIVE) { // no collision check, free to move however you want
 		_camera->moveFly(key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown);
 	}
 
 	// we update the current chunk before we update cam view, because we check in current chunk for collision
 	// update block hit
 	if (rayCast) {
-		if (_game_mode == SURVIVAL && _current_chunk_ptr) { // on first frame -> no _current_chunk_ptr
+		if (_game_mode != GAMEMODE::CREATIVE && _current_chunk_ptr) { // on first frame -> no _current_chunk_ptr
 			_camera->setSneak(key_cam_zdown);
 			_camera->setJump(key_cam_zup && INPUT::key_update(INPUT::JUMP));
 			_camera->moveHuman(Z_AXIS, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement
@@ -613,7 +639,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		}
 
 		// Chunk *save_chunk = _chunk_hit;
-		t_hit block_hit = get_block_hit(false);
+		t_hit block_hit = get_block_hit();
 		if (_block_hit.pos != block_hit.pos) {
 			_break_time = 0;
 			_break_frame = _outline;

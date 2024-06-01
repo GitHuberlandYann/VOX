@@ -68,8 +68,8 @@ class UI
 		void updateWinSize( void );
 
 		void addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement = false );
-        void drawUserInterface( std::string str, bool game_mode, float deltaTime );
-        void chatMessage( std::string str );
+        void drawUserInterface( std::string str, int game_mode, float deltaTime );
+        void chatMessage( std::string str, uint color = TEXT::WHITE );
 		void inventoryMessage( std::string str );
 		void textToScreen( bool ingame );
 };

@@ -25,7 +25,7 @@ Text::~Text( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-void Text::addQuads( int spec, int posX, int posY, int width, int height, int color )
+void Text::addQuads( int spec, int posX, int posY, int width, int height, uint color )
 {
 	_texts.push_back({spec + (0 << 8) + (0 << 9), color, posX,         posY});
 	_texts.push_back({spec + (1 << 8) + (0 << 9), color, posX + width, posY});
@@ -134,7 +134,7 @@ int Utils::Text::textWidth( int font_size, std::string str, int limit )
 	return (res);
 }
 
-void Text::addText( int posX, int posY, int font_size, int color, std::string str )
+void Text::addText( int posX, int posY, int font_size, uint color, std::string str )
 {
 	int startX = posX;
 	char c;
@@ -186,12 +186,12 @@ void Text::toScreen( void )
     glBindVertexArray(_vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, tSize * 4 * sizeof(GLint), &_texts[0][0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, tSize * 4 * sizeof(GLint), &_texts[0].spec, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(TEXT::SPECATTRIB);
 	glVertexAttribIPointer(TEXT::SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
 	glEnableVertexAttribArray(TEXT::COLATTRIB);
-	glVertexAttribIPointer(TEXT::COLATTRIB, 1, GL_INT, 4 * sizeof(GLint), (void *)(1 * sizeof(GLint)));
+	glVertexAttribIPointer(TEXT::COLATTRIB, 1, GL_UNSIGNED_INT, 4 * sizeof(GLint), (void *)(1 * sizeof(GLint)));
 	glEnableVertexAttribArray(TEXT::POSATTRIB);
 	glVertexAttribIPointer(TEXT::POSATTRIB, 2, GL_INT, 4 * sizeof(GLint), (void *)(2 * sizeof(GLint)));
 

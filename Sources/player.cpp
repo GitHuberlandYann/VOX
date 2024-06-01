@@ -1,9 +1,9 @@
 #include "Camera.hpp"
 #include "utils.h"
 
-void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, bool game_mode )
+void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int game_mode )
 {
-	if (_hideUI || game_mode == CREATIVE) {
+	if (_hideUI || game_mode == GAMEMODE::CREATIVE) {
 		return ;
 	}
 	glm::vec3 pos = getCamPos();
@@ -180,7 +180,7 @@ void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, bool game_
 	}
 }
 
-void Camera::drawPlayer( std::vector<t_shaderInput> &arr, int item, bool game_mode )
+void Camera::drawPlayer( std::vector<t_shaderInput> &arr, int item, int game_mode )
 {
 	if (!_current_chunk_ptr) {
 		return ;

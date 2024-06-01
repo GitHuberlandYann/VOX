@@ -465,13 +465,13 @@ void Camera::processMouseMovement( float x_offset, float y_offset )
 	updateCameraVectors();
 }
 
-std::string Camera::getCamString( bool game_mode )
+std::string Camera::getCamString( int game_mode )
 {
 	const std::string strtrue = "TRUE";
 	const std::string strfalse = "FALSE";
 	_mtx.lock();
 	int light = (_current_chunk_ptr) ? _current_chunk_ptr->getCamLightLevel(_current_block) : 0;
-	std::string str =  ((game_mode == CREATIVE)
+	std::string str =  ((game_mode == GAMEMODE::CREATIVE)
 		? "\nPos\t\t> x: " + std::to_string(_position.x)
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 				+ "\niPos\t> x:" + std::to_string(_current_block.x) // TODO might sometimes want to use current_block instea of _position when dealing with chunks

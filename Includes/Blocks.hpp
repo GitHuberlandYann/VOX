@@ -101,13 +101,17 @@ namespace REDSTONE {
 	namespace PISTON {
 		const int STICKY_OFFSET = 12;
 		const int STICKY = (1 << STICKY_OFFSET);
-		const int MOVING = (1 << 19);
+		const int MOVING = (1 << 12);
 		const int RETRACTING = (1 << 28); // flag given to blocks::MOVING_PISTON to set their transparency -> transparent when retracting, solid when extending
 		const int FORCE_RETRACTION = 13; // used by Chunk::pistonExtendCount
 		const int CANCEL_RETRACTION = 42; // random nbr above 12, used by Chunk::pistonExtendCount
 	};
 
 	const int ALL_BITS = -1;
+};
+
+namespace GAMEMODE {
+	const int ADVENTURE_BLOCK = (1 << 19);
 };
 
 namespace GEOMETRY {
@@ -275,6 +279,7 @@ struct Block {
 	public:
 		std::string name = "DEFAULT";
 		int mined = blocks::AIR;
+		int adventure_block = blocks::BEDROCK;
 		bool stackable = true;
 		char light_level = 0;
 		bool isFuel = false;
@@ -986,6 +991,7 @@ struct CraftingTable : Cube {
 		CraftingTable() {
 			name = "CRAFTING_TABLE";
 			mined = blocks::CRAFTING_TABLE;
+			adventure_block = blocks::COAL_ORE;
 			isFuel = true;
 			fuel_time = 15;
 			blast_resistance = 2.5f;
@@ -1010,6 +1016,7 @@ struct Furnace : Cube {
 		Furnace() {
 			name = "FURNACE";
 			mined = blocks::FURNACE;
+			adventure_block = blocks::COAL_ORE;
 			blast_resistance = 3.5f;
 			oriented = true;
 			byHand = false;
@@ -1225,6 +1232,7 @@ struct Lever : Block {
 		Lever() {
 			name = "LEVER";
 			mined = blocks::LEVER;
+			adventure_block = blocks::REDSTONE_ORE;
 			blast_resistance = 0.5f;
 			collisionHitbox_1x1x1 = false;
 			hasHitbox = true;
@@ -1588,6 +1596,7 @@ struct StoneButton : Button {
 	public:
 		StoneButton() {
 			name = "STONE_BUTTON";
+			adventure_block = blocks::REDSTONE_ORE;
 			mined = blocks::STONE_BUTTON;
 			blast_resistance = 6.0f;
 			byHand = false;
@@ -1603,6 +1612,7 @@ struct OakButton : Button {
 		OakButton() {
 			name = "OAK_BUTTON";
 			mined = blocks::OAK_BUTTON;
+			adventure_block = blocks::REDSTONE_ORE;
 			blast_resistance = 0.5f;
 			byHand = true;
 			needed_tool = blocks::WOODEN_AXE;
@@ -2197,6 +2207,7 @@ struct Repeater : Block {
 		Repeater() {
 			name = "REPEATER";
 			mined = blocks::REPEATER;
+			adventure_block = blocks::IRON_ORE;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
@@ -2224,6 +2235,7 @@ struct Comparator : Block {
 		Comparator() {
 			name = "COMPARATOR";
 			mined = blocks::COMPARATOR;
+			adventure_block = blocks::IRON_ORE;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
@@ -2694,6 +2706,7 @@ struct Bucket : Block {
 	public:
 		Bucket() {
 			name = "BUCKET";
+			adventure_block = blocks::DIAMOND_ORE;
 			item3D = false;
 			textureX = 9;
 			textureY = 4;
@@ -2704,6 +2717,7 @@ struct WaterBucket : Block {
 	public:
 		WaterBucket() {
 			name = "WATER_BUCKET";
+			adventure_block = blocks::DIAMOND_ORE;
 			stackable = false;
 			item3D = false;
 			textureX = 9;
@@ -2765,6 +2779,7 @@ struct WheatSeeds : Block {
 	public:
 		WheatSeeds() {
 			name = "WHEAT_SEEDS";
+			adventure_block = blocks::FARMLAND;
 			item3D = false;
 			textureX = 9;
 			textureY = 10;

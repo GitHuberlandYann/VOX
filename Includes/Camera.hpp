@@ -68,6 +68,7 @@ class Camera
     	void updateCameraVectors( void );
 		void moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, GLint z );
 		void applyGravityUnderwater( void );
+		void drawHeldItem( std::vector<t_shaderInput> &arr, int item, int game_mode );
 	
 	public:
 		glm::ivec3 _current_block;
@@ -78,8 +79,7 @@ class Camera
 		Camera( glm::vec3 position );
 		~Camera( void );
 
-		void drawHeldItem( std::vector<t_shaderInput> &arr, int item, bool game_mode );
-		void drawPlayer( std::vector<t_shaderInput> &arr, int item, bool game_mode );
+		void drawPlayer( std::vector<t_shaderInput> &arr, int item, int game_mode );
 
 		glm::mat4 getViewMatrix( void );
 		glm::mat4 getPerspectiveMatrix( void );
@@ -125,7 +125,7 @@ class Camera
 		std::vector<glm::ivec3> get_ray_casting( GLfloat radius );
 		void processMouseMovement( float x_offset, float y_offset );
 
-		std::string getCamString( bool game_mode );
+		std::string getCamString( int game_mode );
 		std::string saveString( void );
 		void loadWorld( std::ofstream & ofs, std::ifstream & indata );
 		void setPos( glm::vec3 pos );

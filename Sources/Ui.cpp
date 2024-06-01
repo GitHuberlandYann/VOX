@@ -525,7 +525,7 @@ void UI::addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bo
 	_items.push_back(v2[2]);
 }
 
-void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
+void UI::drawUserInterface( std::string str, int game_mode, float deltaTime )
 {
 	if (_inventoryMessage.timer > 0) {
 		_inventoryMessage.timer -= deltaTime;
@@ -546,7 +546,7 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 	// Bench b;
 	glUseProgram(_shaderProgram);
     glBindVertexArray(_vao);
-	(game_mode == SURVIVAL)
+	(game_mode != GAMEMODE::CREATIVE)
 		? glDrawArrays(GL_TRIANGLES, 0, _nb_points)
 		: glDrawArrays(GL_TRIANGLES, 0, _nb_points_crea);
 	// b.stop("drawArrays");
@@ -558,9 +558,9 @@ void UI::drawUserInterface( std::string str, bool game_mode, float deltaTime )
 	// b.stop("display numbers");
 }
 
-void UI::chatMessage( std::string str )
+void UI::chatMessage( std::string str, uint color )
 {
-	_chat->chatMessage(str);
+	_chat->chatMessage(str, color);
 }
 
 void UI::inventoryMessage( std::string str )

@@ -7,10 +7,9 @@ void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _window(NULL), _shaderProgram(0), _skyShaderProgram(0), _particleShaderProgram(0),
-		_textures({NULL}), _fill(FILL),
-		_debug_mode(true), _game_mode(CREATIVE), _outline(true), _paused(true),
-		_threadUpdate(false), _threadStop(false),
-		_break_time(0), _eat_timer(0), _bow_timer(0), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0})
+		_textures({NULL}), _fill(FILL), _debug_mode(true), _outline(true), _paused(true),
+		_threadUpdate(false), _threadStop(false), _break_time(0), _eat_timer(0), _bow_timer(0),
+		_game_mode(GAMEMODE::CREATIVE), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0})
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_world_name = "default.json";
@@ -96,7 +95,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 
 void OpenGL_Manager::addBreakingAnim( void )
 {
-	if (_block_hit.value == blocks::AIR) {
+	if (_block_hit.type == blocks::AIR) {
 		return ;
 	}
 
@@ -109,8 +108,8 @@ void OpenGL_Manager::addBreakingAnim( void )
 	glm::vec3 p5 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z + 1.001f};
 	glm::vec3 p6 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
 	glm::vec3 p7 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
-	// if (s_blocks[_block_hit.value]->hasHitbox) {
-	// 	glm::vec3 hitCenter = s_blocks[_block_hit.value]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.value]->hitboxHalfSize;
+	// if (s_blocks[_block_hit.type]->hasHitbox) {
+	// 	glm::vec3 hitCenter = s_blocks[_block_hit.type]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.type]->hitboxHalfSize;
 	// 	p0 += glm::vec3(     hitCenter.x - hitHalfSize.x,      hitCenter.y - hitHalfSize.y, -1 + hitCenter.z + hitHalfSize.z);
 	// 	p1 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x,      hitCenter.y - hitHalfSize.y, -1 + hitCenter.z + hitHalfSize.z);
 	// 	p2 += glm::vec3(     hitCenter.x - hitHalfSize.x,      hitCenter.y - hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
@@ -122,7 +121,7 @@ void OpenGL_Manager::addBreakingAnim( void )
 	// 	p7 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x, -1 + hitCenter.y + hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
 	// }
 
-	int spec = (14 << 4) + ((_block_hit.value == blocks::GLASS && _break_frame == 1) ? 0 : (_break_frame << 12));
+	int spec = (14 << 4) + ((_block_hit.type == blocks::GLASS && _break_frame == 1) ? 0 : (_break_frame << 12));
 	t_shaderInput v0 = {spec, p4};
 	t_shaderInput v1 = {spec + XTEX, p0};
 	t_shaderInput v2 = {spec + YTEX, p6};
@@ -170,10 +169,10 @@ void OpenGL_Manager::drawEntities( void )
 	// _hand->update(deltaTime);
 	size_t esize = _entities.size();
 
-	bool hitBox = false;/*/(_block_hit.value != blocks::AIR) && (_block_hit.value != blocks::CHEST);
+	bool hitBox = false;/*/(_block_hit.type != blocks::AIR) && (_block_hit.type != blocks::CHEST);
 	if (!hitBox) {
-	} else if (s_blocks[_block_hit.value]->hasHitbox) {
-		glm::vec3 hitCenter = s_blocks[_block_hit.value]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.value]->hitboxHalfSize;
+	} else if (s_blocks[_block_hit.type]->hasHitbox) {
+		glm::vec3 hitCenter = s_blocks[_block_hit.type]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.type]->hitboxHalfSize;
 		glm::vec3 pos = {_block_hit.pos.x + hitCenter.x - hitHalfSize.x, _block_hit.pos.y + hitCenter.y - hitHalfSize.y, _block_hit.pos.z + hitCenter.z - hitHalfSize.z};
 		addLine(pos, pos + glm::vec3(2 * hitHalfSize.x, 0, 0));
 		addLine(pos, pos + glm::vec3(0, 2 * hitHalfSize.y, 0));
@@ -498,16 +497,19 @@ void OpenGL_Manager::load_texture( void )
 	glUniform1i(glGetUniformLocation(_particleShaderProgram, "textures"), 6);
 }
 
-void OpenGL_Manager::setGamemode( bool gamemode )
+void OpenGL_Manager::setGamemode( int gamemode )
 {
+	if (gamemode < GAMEMODE::SURVIVAL || gamemode > GAMEMODE::ADVENTURE) {
+		return ;
+	}
 	_game_mode = gamemode;
 	_camera->resetFall();
-	_ui->chatMessage(std::string("Gamemode set to ") + ((gamemode) ? "SURVIVAL" : "CREATIVE"));
+	_ui->chatMessage("Gamemode set to " + GAMEMODE::str[gamemode]);
 }
 
 void OpenGL_Manager::getGamemode( void )
 {
-	_ui->chatMessage(std::string("Current gamemode is ") + ((_game_mode) ? "SURVIVAL" : "CREATIVE"));
+	_ui->chatMessage("Current gamemode is " + GAMEMODE::str[_game_mode]);
 }
 
 size_t OpenGL_Manager::clearEntities( void )
@@ -684,11 +686,11 @@ void OpenGL_Manager::main_loop( void )
 						+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
 						+ "\nTPS: " + std::to_string(nbTicksLastSecond)
 						+ '\n' + _camera->getCamString(_game_mode)
-						+ "\nBlock\t> " + s_blocks[_block_hit.value]->name
-						+ ((_block_hit.value != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
-						+ ((_block_hit.value) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
+						+ "\nBlock\t> " + s_blocks[_block_hit.type]->name
+						+ ((_block_hit.type != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
+						+ ((_block_hit.type) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
 						+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
-						+ ((_game_mode == SURVIVAL) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
+						+ ((_game_mode != GAMEMODE::CREATIVE) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
 						+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 						// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
 						+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size());
@@ -703,7 +705,7 @@ void OpenGL_Manager::main_loop( void )
 						+ "\nSky faces\t> " + std::to_string(skyFaces)
 						+ "\nWater faces\t> " + std::to_string(waterFaces)
 						+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST))
-						+ "\nGame mode\t\t> " + ((_game_mode) ? "SURVIVAL" : "CREATIVE");
+						+ "\nGame mode\t\t> " + GAMEMODE::str[_game_mode];
 				mtx_backup.lock();
 				str += "\nBackups\t> " + std::to_string(_backups.size());
 				mtx_backup.unlock();
@@ -751,7 +753,7 @@ void OpenGL_Manager::main_loop( void )
 					_world_name = _menu->getWorldFile();
 					_camera->setSpawnpoint({0, 0, 256});
 					_camera->respawn();
-					_game_mode = SURVIVAL;
+					_game_mode = GAMEMODE::SURVIVAL;
 					DayCycle::Get()->setTicks(1000);
 					initWorld();
 					break ;

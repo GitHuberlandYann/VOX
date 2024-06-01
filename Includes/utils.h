@@ -28,9 +28,11 @@ extern int WIN_HEIGHT;
 # define GUI_MIN 1
 # define GUI_MAX glm::max(1, glm::min(WIN_WIDTH / 320, WIN_HEIGHT / 240))
 
-enum {
-	CREATIVE = false,
-	SURVIVAL = true
+namespace GAMEMODE {
+	const int SURVIVAL = 0;
+	const int CREATIVE = 1;
+	const int ADVENTURE = 2;
+	const std::array<std::string, 3> str = {"SURVIVAL", "CREATIVE", "ADVENTURE"};
 };
 
 class Chunk;
