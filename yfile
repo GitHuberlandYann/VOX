@@ -65,9 +65,6 @@ IN PROGRES:
 
 TODAY:
 	- Way more blocks ?? + world file "version: " line + /respawn
-	- Br///ken 0 on signs
-	- from down to up: piston(facing up)-block-redstoneblock -> causes problem
-	- shift click to gather all blocks from chest
 	- chests being broken by water
 	- toggle don't draw chunks behind player in Settings
 	

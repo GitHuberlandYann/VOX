@@ -943,6 +943,10 @@ void Chunk::retractPiston( glm::ivec3 pos, int value )
 				++delCount;
 			}
 		}
+	} else if ((front_value & 0xFF) != blocks::PISTON_HEAD) { // retract called before extend could even begin
+		setBlockAt(value, pos, false, false); // restore value
+		std::cout << "\t.. no change (after double change)" << std::endl;
+		return ;
 	}
 	if ((value & 0xFF) == blocks::STICKY_PISTON && delCount < 2) { // retract block only if had time to finish push or didn't push block in the first place
 		int front2_value = getBlockAt(pos.x + front.x * 2, pos.y + front.y * 2, pos.z + front.z * 2);

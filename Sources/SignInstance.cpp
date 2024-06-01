@@ -86,7 +86,7 @@ void SignInstance::displayText( std::vector<t_shaderInput> &partArr )
 				startLine += 7.0f * right * 0.01f;
 				++charLine;
 			} else {
-				int spec = 128 + 8 * (c & 0xF) + ((8 * (c >> 4)) << 8) + (1 << 19);  // + (_chunk->getLightLevel(_pos.x, _pos.y, _pos.z) << 24); // (1 << 19) = atlas index
+				int spec = 8 * (c & 0xF) + ((160 + 8 * (c >> 4)) << 8) + (1 << 19);  // + (_chunk->getLightLevel(_pos.x, _pos.y, _pos.z) << 24); // (1 << 19) = atlas index
 				partArr.push_back({spec, startLine});
 				partArr.push_back({spec + 8 + (1 << 17), startLine + 7.0f * right * 0.01f});
 				partArr.push_back({spec + (8 << 8) + (1 << 18), startLine - 7.0f * up * 0.01f});

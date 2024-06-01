@@ -18,33 +18,31 @@ Inventory::~Inventory( void )
 
 t_item *Inventory::getBlockPtr( int value, int &craft_place, FurnaceInstance *furnace, ChestInstance *chest )
 {
-	if (value < 0 || value > 78) {
+	if (value < CELLS::hotbar_first) {
 		return (NULL);
-	}
-	t_item *res = NULL;
-	if (value < 9) {
+	} else if (value <= CELLS::hotbar_last) {
 		_modif = true;
-		res = &_content[value];
-	} else if (value < 36) {
-		res = &_backpack[value - 9];
-	} else if (value < 40) {
+		return (&_content[value]);
+	} else if (value <= CELLS::backpack_last) {
+		return (&_backpack[value - CELLS::backpack_first]);
+	} else if (value <= CELLS::icraft_last) {
 		craft_place = 1;
-		res = &_icraft[value - 36];
-	} else if (value < 50) {
+		return (&_icraft[value - CELLS::icraft_first]);
+	} else if (value <= CELLS::table_craft_last) {
 		craft_place = 2;
-		res = &_craft[value - 41];
-	} else if (value < 52) {
+		return (&_craft[value - CELLS::table_craft_first]);
+	} else if (value <= CELLS::furnace_fuel) {
 		if (!furnace) {
 			return (NULL);
 		}
-		res = furnace->pickCompoFuel(value == 51);
-	} else if (value < 79) {
+		return (furnace->pickCompoFuel(value == CELLS::furnace_fuel));
+	} else if (value <= CELLS::chest_last) {
 		if (!chest) {
 			return (NULL);
 		}
-		res = chest->getItem(value - 52);
+		return (chest->getItem(value - CELLS::chest_first));
 	}
-	return (res);
+	return (NULL);
 }
 
 void Inventory::changeCrafted( int craft )
@@ -123,7 +121,7 @@ t_item Inventory::pickCrafted( int craft, t_item block )
 	return (block);
 }
 
-int Inventory::findEmptyCell( t_item block, bool swap )
+int Inventory::findEmptyCell( t_item block, bool hotbar_first )
 {
 	if (s_blocks[block.type]->stackable) {
 		for (int index = 0; index < 9; index++) {
@@ -133,11 +131,11 @@ int Inventory::findEmptyCell( t_item block, bool swap )
 		}
 		for (int index = 0; index < 27; index++) {
 			if (_backpack[index].type == block.type && _backpack[index].amount + block.amount <= 64) {
-				return (index + 9);
+				return (index + CELLS::backpack_first);
 			}
 		}
 	}
-	if (swap) {
+	if (hotbar_first) {
 		for (int index = 0; index < 9; index++) {
 			if (_content[index].type == blocks::AIR) {
 				return (index);
@@ -146,10 +144,10 @@ int Inventory::findEmptyCell( t_item block, bool swap )
 	}
 	for (int index = 0; index < 27; index++) {
 		if (_backpack[index].type == blocks::AIR) {
-			return (index + 9);
+			return (index + CELLS::backpack_first);
 		}
 	}
-	if (!swap) {
+	if (!hotbar_first) {
 		for (int index = 0; index < 9; index++) {
 			if (_content[index].type == blocks::AIR) {
 				return (index);
@@ -168,7 +166,7 @@ int Inventory::findBlockCell( int type )
 	}
 	for (int index = 0; index < 27; index++) {
 		if (_backpack[index].type == type) {
-			return (index + 9);
+			return (index + CELLS::backpack_first);
 		}
 	}
 	return (-1);
@@ -184,7 +182,7 @@ void Inventory::pickAllCrafted( int craft )
 	if (location < 9) {
 		bat = &_content[location];
 	} else {
-		bat = &_backpack[location - 9];
+		bat = &_backpack[location - CELLS::backpack_first];
 	}
 	while (_crafted.type != blocks::AIR && bat->amount + _crafted.amount <= 64) {
 		*bat = pickCrafted(craft, *bat);
@@ -262,10 +260,79 @@ void Inventory::setSlot( int value )
 	_ui->inventoryMessage((type != blocks::AIR) ? s_blocks[type]->name : "");
 }
 
+/**
+ * @brief moves selected block from one location to the other, depending on args
+ * @param craft 0 = inventory, 1 = craft, 2 = furnace
+ * @param value selected slot
+ * @param furnace ptr to furnace if opened
+ * @param chest ptr to chest if opened
+*/
+void Inventory::shiftBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
+{
+	t_item item = pickBlockAt(craft, value, furnace, chest);
+	if (!item.type) {
+		return ;
+	}
+	switch (craft) {
+		case 0: // inventory
+		case 1: // table craft
+			if (value <= CELLS::hotbar_last) {
+				restoreBlock(item);
+			} else {
+				restoreBlock(item, true);
+			}
+			item.type = blocks::AIR;
+			break ;
+		default:
+			if (furnace) {
+				if (value <= CELLS::backpack_last) { // from inventory to furnace
+					if (s_blocks[item.type]->isFuel) {
+						item = putBlockAt(craft, CELLS::furnace_fuel, item, furnace, NULL, false);
+					} else {
+						item = putBlockAt(craft, CELLS::furnace_composant, item, furnace, NULL, false);
+					}
+				} else { // from furnace to inventory
+					if (restoreBlock(item)) {
+						item.type = blocks::AIR;
+					}
+				}
+			} else if (chest) {
+				if (value <= CELLS::backpack_last) { // from inventory to chest
+					if (s_blocks[item.type]->stackable) {
+						for (int index = 0; index < 27; index++) {
+							t_item *bat = chest->getItem(index);
+							if (bat->type == item.type && bat->amount + item.amount <= 64) {
+								bat->type = item.type;
+								bat->amount += item.amount;
+								return ;
+							}
+						}
+					}
+					for (int index = 0; index < 27; index++) {
+						t_item *bat = chest->getItem(index);
+						if (!bat->type) {
+							bat->type = item.type;
+							bat->amount += item.amount;
+							return ;
+						}
+					}
+				} else { // from chest to inventory
+					if (restoreBlock(item)) {
+						item.type = blocks::AIR;
+					}
+				}
+			}
+			break ;
+	}
+	if (item.type) { // restore blocks to their original pos
+		putBlockAt(craft, value, item, furnace, chest);
+	}
+}
+
 t_item Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	// std::cout << "pickBlockAt " << value << std::endl;
-	if (value == 40) {
+	if (value == CELLS::product) {
 		if (furnace) {
 			return (furnace->pickProduction());
 		}
@@ -288,7 +355,7 @@ t_item Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace, C
 
 t_item Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
-	if (value == 40) {
+	if (value == CELLS::product) {
 		if (!furnace) { // for now does nothing if in furnace
 			pickAllCrafted(craft);
 		}
@@ -313,9 +380,9 @@ t_item Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *furnac
 	return (t_item({0}));
 }
 
-t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest )
+t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest, bool swap )
 {
-	if (value == 40) {
+	if (value == CELLS::product) {
 		if (furnace) {
 			return (block);
 		}
@@ -323,7 +390,7 @@ t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstanc
 	}
 	int craft_place = 0;
 	t_item *bat = getBlockPtr(value, craft_place, furnace, chest);
-	if (!bat || (furnace &&  value == 51 && !s_blocks[block.type]->isFuel)) {
+	if (!bat || (furnace &&  value == CELLS::furnace_fuel && !s_blocks[block.type]->isFuel)) {
 		return (block);
 	}
 	t_item res = *bat;
@@ -340,6 +407,9 @@ t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstanc
 		changeCrafted(craft_place);
 		return (t_item({0}));
 	}
+	if (!swap) {
+		return (block);
+	}
 	*bat = block;
 	changeCrafted(craft_place);
 	return (res);
@@ -347,7 +417,7 @@ t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstanc
 
 t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest )
 {
-	if (value == 40) {
+	if (value == CELLS::product) {
 		if (!furnace) {
 			pickAllCrafted(craft);
 		}
@@ -355,7 +425,7 @@ t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceIns
 	}
 	int craft_place = 0;
 	t_item *bat = getBlockPtr(value, craft_place, furnace, chest);
-	if (!bat || (furnace &&  value == 51 && !s_blocks[block.type]->isFuel)) {
+	if (!bat || (furnace &&  value == CELLS::furnace_fuel && !s_blocks[block.type]->isFuel)) {
 		return (block);
 	}
 	if (bat->amount == 64) {
@@ -375,18 +445,23 @@ t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceIns
 	return (block);
 }
 
-void Inventory::restoreBlock( t_item block, bool swap )
+/**
+ * @brief find cell capable of receiving block and place block in it
+ * @return false if cell not found
+*/
+bool Inventory::restoreBlock( t_item block, bool hotbar_first )
 {
-	int location = findEmptyCell(block, swap);
+	int location = findEmptyCell(block, hotbar_first);
 	if (location == -1) {
-		return ;
+		return (false);
 	}
-	if (location < 9) {
+	if (location <= CELLS::hotbar_last) {
 		_content[location] = {block.type, block.amount + _content[location].amount, block.dura};
 		_modif = true;
 	} else {
-		_backpack[location - 9] = {block.type, block.amount + _backpack[location - 9].amount, block.dura};
+		_backpack[location - CELLS::backpack_first] = {block.type, block.amount + _backpack[location - CELLS::backpack_first].amount, block.dura};
 	}
+	return (true);
 }
 
 bool Inventory::absorbItem( t_item block )
@@ -395,11 +470,11 @@ bool Inventory::absorbItem( t_item block )
 	if (location == -1) {
 		return (false);
 	}
-	if (location < 9) {
+	if (location <= CELLS::hotbar_last) {
 		_content[location] = {block.type, block.amount + _content[location].amount, block.dura};
 		_modif = true;
 	} else {
-		_backpack[location - 9] = {block.type, block.amount + _backpack[location - 9].amount, block.dura};
+		_backpack[location - CELLS::backpack_first] = {block.type, block.amount + _backpack[location - CELLS::backpack_first].amount, block.dura};
 	}
 	return (true);
 }
@@ -519,22 +594,22 @@ void Inventory::replaceSlot( int type, bool creative )
 
 void Inventory::swapCells( int slot, int location )
 {
-	if (slot == location || location == 40) {
+	if (slot == location || location == CELLS::product) {
 		return ;
 	}
-	if (location < 0 || location > 49) {
+	if (location < CELLS::hotbar_first || location > CELLS::table_craft_last) {
 		return ;
 	}
 	_modif = true;
 	t_item *bat;
-	if (location < 9) {
+	if (location <= CELLS::hotbar_last) {
 		bat = &_content[location];
-	} else if (location < 36) {
-		bat = &_backpack[location - 9];
-	} else if (location < 40) {
-		bat = &_icraft[location - 36];
+	} else if (location <= CELLS::backpack_last) {
+		bat = &_backpack[location - CELLS::backpack_first];
+	} else if (location <= CELLS::icraft_last) {
+		bat = &_icraft[location - CELLS::icraft_first];
 	} else {
-		bat = &_craft[location - 41];
+		bat = &_craft[location - CELLS::table_craft_first];
 	}
 	if (_content[slot].type == bat->type && bat->type != blocks::AIR) {
 		_content[slot].amount += bat->amount;
@@ -579,7 +654,7 @@ void Inventory::spillInventory( Chunk *chunk )
 			details = _backpack[index];
 			_backpack[index] = {0};
 			if (chunk) {
-				chunk->dropEntity({glm::cos(index + 9), glm::sin(index + 9), 0}, details);
+				chunk->dropEntity({glm::cos(index + CELLS::backpack_first), glm::sin(index + CELLS::backpack_first), 0}, details);
 			}
 		}
 	}

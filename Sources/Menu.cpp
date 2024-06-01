@@ -28,7 +28,7 @@ void Menu::reset_values( void )
 {
 	_selection = 0;
 	if (_selected_block.type != blocks::AIR) {
-		_inventory.restoreBlock(_selected_block);
+		_inventory.restoreBlock(_selected_block); // TODO drop item if restoreBlock finds no empty cell
 	}
 	_inventory.restoreiCraft();
 	_inventory.restoreCraft();
@@ -544,7 +544,11 @@ MENU::RET Menu::ingame_inputs( void )
 	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
 		if (_selection) {
 			if (_selected_block.type == blocks::AIR) {
-				_selected_block = _inventory.pickBlockAt(craft, _selection - 1, _furnace, _chest);
+				if (INPUT::key_down(INPUT::SNEAK)) {
+					_inventory.shiftBlockAt(craft, _selection - 1, _furnace, _chest);
+				} else {
+					_selected_block = _inventory.pickBlockAt(craft, _selection - 1, _furnace, _chest);
+				}
 			} else {
 				_selected_block = _inventory.putBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
 				_ui->addFace({0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, false, true); // TODO better way to update ui than this
@@ -1709,16 +1713,16 @@ void Menu::processMouseMovement( float posX, float posY )
 		}
 		_selection = 0;
 		break ;
-	default:
+	default: // ingame menus
 		for (int index = 0; index < 9; index++) {
 			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * index * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 + 59 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
-				_selection = index + 1;
+				_selection = CELLS::hotbar_first + index + 1;
 				return ;
 			}
 		}
 		for (int index = 0; index < 27; index++) {
 			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 + _gui_size + 18 * _gui_size * (index / 9), 16 * _gui_size, 16 * _gui_size)) {
-				_selection = index + 10;
+				_selection = CELLS::backpack_first + index + 1;
 				return ;
 			}
 		}
@@ -1726,46 +1730,46 @@ void Menu::processMouseMovement( float posX, float posY )
 			case MENU::INVENTORY:
 				for (int index = 0; index < 4; index++) {
 					if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (5 + index % 2) * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 - 65 * _gui_size + 18 * _gui_size * (index / 2), 16 * _gui_size, 16 * _gui_size)) {
-						_selection = index + 37;
+						_selection = CELLS::icraft_first + index + 1;
 						return ;
 					}
 				}
 				if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + 149 * _gui_size, WIN_HEIGHT / 2 - 55 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
-					_selection = 41;
+					_selection = CELLS::product + 1;
 					return ;
 				}
 				break ;
 			case MENU::CRAFTING:
 				for (int index = 0; index < 9; index++) {
 					if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (1 + index % 3) * _gui_size) + _gui_size * 7, WIN_HEIGHT / 2 - 66 * _gui_size + 18 * _gui_size * (index / 3), 16 * _gui_size, 16 * _gui_size)) {
-						_selection = index + 42;
+						_selection = CELLS::table_craft_first + index + 1;
 						return ;
 					}
 				}
 				if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + 119 * _gui_size, WIN_HEIGHT / 2 - 48 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
-					_selection = 41;
+					_selection = CELLS::product + 1;
 					return ;
 				}
 				break ;
 			case MENU::CHEST:
 				for (int index = 0; index < 27; index++) {
 					if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 - 65 * _gui_size + 18 * _gui_size * (index / 9), 16 * _gui_size, 16 * _gui_size)) {
-						_selection = index + 53;
+						_selection = CELLS::chest_first + index + 1;
 						return ;
 					}
 				}
 				break ;
 			case MENU::FURNACE:
 				if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size, WIN_HEIGHT / 2 - 66 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
-					_selection = 51;
+					_selection = CELLS::furnace_composant + 1;
 					return ;
 				}
 				if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size, WIN_HEIGHT / 2 - 30 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
-					_selection = 52;
+					_selection = CELLS::furnace_fuel + 1;
 					return ;
 				}
 				if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + 111 * _gui_size, WIN_HEIGHT / 2 - 48 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
-					_selection = 41;
+					_selection = CELLS::product + 1;
 					return ;
 				}
 				break ;

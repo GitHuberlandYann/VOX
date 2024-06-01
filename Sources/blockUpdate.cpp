@@ -275,7 +275,7 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 		value ^= (DOOR::OPEN << 12);
 		_blocks[offset] = value;
 		_added[offset] = value;
-		offset += ((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1;
+		pos.z += ((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1;
 		value ^= (DOOR::UPPER_HALF << 12);
 		break ;
 	case blocks::OAK_TRAPDOOR:

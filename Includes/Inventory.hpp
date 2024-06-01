@@ -201,6 +201,22 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::REDSTONE_BLOCK, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::AIR, blocks::REDSTONE_DUST, 9},
 };
 
+namespace CELLS {
+	const int hotbar_first = 0;
+	const int hotbar_last = 8;
+	const int backpack_first = 9;
+	const int backpack_last = 35;
+	const int icraft_first = 36;
+	const int icraft_last = 39;
+	const int product = 40;
+	const int table_craft_first = 41;
+	const int table_craft_last = 49;
+	const int furnace_composant = 50;
+	const int furnace_fuel = 51;
+	const int chest_first = 52;
+	const int chest_last = 78;
+};
+
 typedef struct s_item {
 	int type = blocks::AIR;
 	int amount = 0;
@@ -224,7 +240,7 @@ class Inventory
 		void changeCrafted( int craft );
 		void produceCraft( int craft );
 		t_item pickCrafted( int craft, t_item block );
-		int findEmptyCell( t_item block, bool swap = false );
+		int findEmptyCell( t_item block, bool hotbar_first = false );
 		int findBlockCell( int type );
 		void pickAllCrafted( int craft );
 
@@ -240,11 +256,12 @@ class Inventory
 		t_item getCrafted( void );
 		int getSlotNum( void );
         void setSlot( int value );
+		void shiftBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
 		t_item pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
 		t_item pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
-		t_item putBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest );
+		t_item putBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest, bool swap = true );
 		t_item putOneBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest );
-		void restoreBlock( t_item block, bool swap = false );
+		bool restoreBlock( t_item block, bool hotbar_first = false );
 		bool absorbItem( t_item block );
 		void restoreiCraft( void );
 		void restoreCraft( void );
