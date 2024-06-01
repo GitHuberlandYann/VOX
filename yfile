@@ -44,6 +44,7 @@ TODOS:
 	- fix faces open/closed trapdoors not matching
 	- fix touchy stairs still displaying touchy faces
 	- blocks with oriented light occlusion (ie slabs, stairs)
+	- fix fallingBlockEntity falling on torch
 	- enchanting table
 	- stars at night
 	- save entities
@@ -63,7 +64,13 @@ IN PROGRES:
 	- universal use of tps instead of deltatimes
 
 TODAY:
-	- fix fallingBlockEntity falling on torch
+	- Adventure mode (can't break block you didn't place, can only place block on ores)
+	- Way more blocks ?? + world file "version: " line + /respawn
+	- Br///ken 0 on signs
+	- from down to up: piston(facing up)-block-redstoneblock -> causes problem
+	- shift click to gather all blocks from chest
+	- gamemode in Settings
+	- clear inventory on world save and quit
 
 SHORTTERM memory:
 	\/ - work on cleanAtlas

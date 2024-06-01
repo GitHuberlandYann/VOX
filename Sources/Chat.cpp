@@ -275,6 +275,8 @@ void Chat::handle_spawnpoint( int argc, std::vector<std::string> &argv )
 */
 void Chat::handle_give( int argc, std::vector<std::string> &argv )
 {
+	int item = 0;
+
 	if (argc != 3 || argv[1].compare("me")) {
 		chatMessage("Wrong usage of /give me <item>");
 		return ;
@@ -308,14 +310,22 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		_oglMan->_inventory->absorbItem({blocks::REDSTONE_BLOCK});
 		_oglMan->_inventory->absorbItem({blocks::IRON_ORE});
 		return ;
-	}
-	int item = 0;
-	size_t index = 0;
-	for (; argv[2][index]; ++index) {
-		if (!isdigit(argv[2][index])) {
-			return (chatMessage("Wrong usage of /give me <item>, item invalid"));
+	} else if (!argv[2].compare(0, 8, "blocks::")) {
+		int i = 0;
+		for (; i < S_BLOCKS_SIZE; ++i) {
+			if (!case_insensitive_compare(s_blocks[i]->name, argv[2].substr(8))) {
+				item = i;
+				break ;
+			}
 		}
-		item = item * 10 + argv[2][index] - '0';
+	} else {
+		size_t index = 0;
+		for (; argv[2][index]; ++index) {
+			if (!isdigit(argv[2][index])) {
+				return (chatMessage("Wrong usage of /give me <item>, item invalid"));
+			}
+			item = item * 10 + argv[2][index] - '0';
+		}
 	}
 	if (item < 0 || item >= S_BLOCKS_SIZE) {
 		return (chatMessage("Wrong usage of /give me <item>, item invalid"));

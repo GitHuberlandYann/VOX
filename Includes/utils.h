@@ -39,6 +39,7 @@ typedef struct s_shaderInput t_shaderInput;
 std::string get_file_content( std::string file_name );
 std::string	trim_spaces( std::string str );
 std::vector<std::string> split( std::string &str, char sep );
+bool case_insensitive_compare( std::string a, std::string b );
 
 GLuint createShaderProgram( std::string vertex, std::string geometry, std::string fragment );
 void check_glstate( std::string str, bool displayDebug );

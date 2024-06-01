@@ -79,6 +79,21 @@ std::vector<std::string> split( std::string &str, char sep )
 	return (res);
 }
 
+bool case_insensitive_compare( std::string a, std::string b )
+{
+	size_t sizeA = a.size(), sizeB = b.size();
+
+	if (sizeA != sizeB) {
+		return (true);
+	}
+	for (size_t index = 0; index < sizeA; ++index) {
+		if (std::tolower(static_cast<unsigned char>(a[index])) != std::tolower(static_cast<unsigned char>(b[index]))) {
+			return (true);
+		}
+	}
+	return (false);
+}
+
 static void compile_shader( GLuint ptrShader, std::string name )
 {
 	glCompileShader(ptrShader);

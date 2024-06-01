@@ -521,13 +521,14 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 							for (index = index + 2; line[index] && line[index] != ','; index++);
 							index += 3;
 							std::string str;
-							for (int strIndex = 0; strIndex < strSize; ++strIndex) {
+							for (int strIndex = 0; strIndex < strSize; ++strIndex, ++index) {
 								if (line[index + strIndex] == '\\' && line[index + strIndex + 1] == '\"') {
 									str += '\"';
 									++strSize;
 									++strIndex;
+									++index;
 								} else {
-									str += line[index + strIndex];
+									str += line[index];
 								}
 							}
 							content.push_back(str);
