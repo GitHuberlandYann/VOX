@@ -70,9 +70,8 @@ TODAY:
 	- from down to up: piston(facing up)-block-redstoneblock -> causes problem
 	- shift click to gather all blocks from chest
 	- gamemode in Settings
-	- clear inventory on world save and quit
-
-SHORTTERM memory:
+	
+	SHORTTERM memory:
 	\/ - work on cleanAtlas
 	\/ - work on readme
 	\/ - rework Makefile
@@ -80,8 +79,8 @@ SHORTTERM memory:
 	- rework general code structure (who owns who)
 	\/ - check how to update atlas texture ingame
 	\/ - make menus texts responsive
-
-DONE:
+	
+	DONE:
 	- pthread chunk creation
     - skybox
     - only display chunks in fieldview + little offset
@@ -157,6 +156,8 @@ DONE:
 	- update skylight on leave break
 	- torches can be placed on walls
 	- add top and bottom faces to torches
+	- clear inventory on world save and quit
+	- fix hidden ui on world change
     - FOV changed on isRunning change
     - stop fov run if player idle
 	- water if air && level > surface_level && level < 64

@@ -57,23 +57,7 @@ MENU::RET Menu::main_menu( void )
 {
 	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
 		if (_selection == 1) { //singleplayer
-			_state = MENU::WORLD_SELECT;
-			reset_values();			
-			DIR *dir = opendir("Worlds");
-			if (dir == NULL) {
-				std::cerr << "failed to open dir Worlds/" << std::endl;
-				return (MENU::RET::NO_CHANGE);
-			}
-			struct dirent *dent;
-			while ((dent = readdir(dir)) != NULL)
-			{
-				std::string file = dent->d_name;
-				if (file != "." && file != ".." && file.size() >= 6 && !file.compare(file.size() - 5, 5, ".json")) {
-					_worlds.push_back(file);
-				}
-			}
-			closedir(dir);
-			return (MENU::RET::NO_CHANGE);
+			return (enter_world_select_menu());
 		} else if (_selection == 5) { // options
 			_state = MENU::MAIN_OPTIONS;
 			reset_values();
@@ -84,18 +68,11 @@ MENU::RET Menu::main_menu( void )
 			return (MENU::RET::QUIT);
 		}
 	}
-	if (INPUT::key_down(INPUT::JUMP)) { // skip world selection and launch with default seed
-		_state = MENU::LOAD;
-		reset_values();
-		return (MENU::RET::PLAY_DEFAULT);
-	}
 
 	setup_array_buffer_main();
 	glUseProgram(_shaderProgram);
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
-
-	// _text->addText(WIN_WIDTH / 2 - 220, WIN_HEIGHT / 2 - 120 * 3, 24, TEXT::WHITE, "Press space to start");
 
    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 200 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Singleplayer");
    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size, 200 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Multiplayer");
@@ -103,6 +80,27 @@ MENU::RET Menu::main_menu( void )
    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Options...");
    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, "Quit Game");
 	return (MENU::RET::NO_CHANGE);
+}
+
+MENU::RET Menu::enter_world_select_menu( void )
+{
+	_state = MENU::WORLD_SELECT;
+	reset_values();			
+	DIR *dir = opendir("Worlds");
+	if (dir == NULL) {
+		std::cerr << "failed to open dir Worlds/" << std::endl;
+		return (MENU::RET::NO_CHANGE);
+	}
+	struct dirent *dent;
+	while ((dent = readdir(dir)) != NULL)
+	{
+		std::string file = dent->d_name;
+		if (file != "." && file != ".." && file.size() >= 6 && !file.compare(file.size() - 5, 5, ".json")) {
+			_worlds.push_back(file);
+		}
+	}
+	closedir(dir);
+	return (world_select_menu());
 }
 
 MENU::RET Menu::world_select_menu( void )
@@ -115,7 +113,9 @@ MENU::RET Menu::world_select_menu( void )
 			return (MENU::RET::WORLD_SELECTED);
 		} else if (_selection == 4) { // create new world
 			_state = MENU::WORLD_CREATE;
+			perlin_seed = 0;
 			reset_values();
+			_world_file = "";
 			return (world_create_menu(false));
 		} else if (_selection == 6) { // cancel, go back to main menu
 			_state = MENU::MAIN;
@@ -154,9 +154,7 @@ MENU::RET Menu::world_select_menu( void )
 MENU::RET Menu::world_create_menu( bool animUpdate )
 {
 	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
-		_state = MENU::WORLD_SELECT;
-		reset_values();
-		return (world_select_menu());
+		return (enter_world_select_menu());
 	}
 	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
 		if ((_selection != 1 && _input_world) || (_selection != 2 && _input_seed)) {
@@ -170,7 +168,7 @@ MENU::RET Menu::world_create_menu( bool animUpdate )
 			_input_world = true;
 		} else if (_selection == 2 && !_input_seed) { // change seed
 			glfwSetCharCallback(_window, INPUT::character_callback);
-			INPUT::setCurrentMessage(std::to_string(perlin_seed));
+			INPUT::setCurrentMessage((perlin_seed) ? std::to_string(perlin_seed) : "");
 			_input_seed = true;
 		} else if (_selection == 3) { // toggle world type
 			Settings::Get()->setBool(SETTINGS::BOOL::FLAT_WORLD, !Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD));
@@ -194,9 +192,7 @@ MENU::RET Menu::world_create_menu( bool animUpdate )
 			reset_values();
 			return (MENU::RET::WORLD_CREATED);
 		} else if (_selection == 6) { // cancel, go back to wold select menu
-			_state = MENU::WORLD_SELECT;
-			reset_values();
-			return (world_select_menu());
+			return (enter_world_select_menu());
 		}
 	}
 	if (INPUT::key_down(INPUT::DELETE) && INPUT::key_update(INPUT::DELETE)) {

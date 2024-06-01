@@ -41,7 +41,6 @@ namespace MENU
 		WORLD_SELECTED,
 		WORLD_CREATED,
 		SAVE_AND_QUIT,
-		PLAY_DEFAULT,
 		RESPAWN_PLAYER,
 		RESPAWN_SAVE_QUIT,
 		FOV_UPDATE,
@@ -93,6 +92,7 @@ class Menu
 
 		void reset_values( void );
 		MENU::RET main_menu( void );
+		MENU::RET enter_world_select_menu( void );
 		MENU::RET world_select_menu( void );
 		MENU::RET world_create_menu( bool animUpdate );
 		MENU::RET loading_screen_menu( void );

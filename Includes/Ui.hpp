@@ -71,7 +71,7 @@ class UI
         void drawUserInterface( std::string str, bool game_mode, float deltaTime );
         void chatMessage( std::string str );
 		void inventoryMessage( std::string str );
-		void textToScreen( void );
+		void textToScreen( bool ingame );
 };
 
 #endif

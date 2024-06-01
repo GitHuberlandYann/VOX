@@ -568,9 +568,13 @@ void UI::inventoryMessage( std::string str )
 	_inventoryMessage = {str, 2};
 }
 
-void UI::textToScreen( void )
+/**
+ * @brief display items and text, if !ingame, items are not displayed
+ * @param ingame Menu::GetState() >= Menu::Pause
+*/
+void UI::textToScreen( bool ingame )
 {
-	if (_hideUI) {
+	if (!ingame || _hideUI) {
 		return (_text->toScreen());
 	}
 

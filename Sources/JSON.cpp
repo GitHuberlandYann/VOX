@@ -92,6 +92,8 @@ std::string Inventory::saveString( void )
 		}
 	}
 	res += "]\n\t},\n\t";
+	spillInventory(NULL);
+	setSlot(0);
 	return (res);
 }
 

@@ -749,11 +749,10 @@ void OpenGL_Manager::main_loop( void )
 					break ;
 				case (MENU::RET::WORLD_CREATED): // create new world, go into loading mode
 					_world_name = _menu->getWorldFile();
-					DayCycle::Get()->addTicks(0); // used to forceReset sky color
-					initWorld();
-					break ;
-				case (MENU::RET::PLAY_DEFAULT): // skip world selection and play with default seed of 123456
-					DayCycle::Get()->addTicks(0); // used to forceReset sky color
+					_camera->setSpawnpoint({0, 0, 256});
+					_camera->respawn();
+					_game_mode = SURVIVAL;
+					DayCycle::Get()->setTicks(1000);
 					initWorld();
 					break ;
 				case (MENU::RET::RESPAWN_PLAYER): // Respawn player, init world again
@@ -765,7 +764,6 @@ void OpenGL_Manager::main_loop( void )
 				case (MENU::RET::SAVE_AND_QUIT): // save and quit to menu
 					resetInputsPtrs();
 					saveWorld();
-					_ui->_hideUI = true;
 					break ;
 				case (MENU::RET::FOV_UPDATE): // fov change
 					update_cam_perspective();
@@ -795,7 +793,7 @@ void OpenGL_Manager::main_loop( void )
 					break ;
 			}
 		}
-		_ui->textToScreen();
+		_ui->textToScreen(_menu->getState() >= MENU::PAUSE);
 		// b.stamp("textoscreen");
 		mtx_deleted_chunks.lock();
 		for (auto& todel: _deleted_chunks) {
