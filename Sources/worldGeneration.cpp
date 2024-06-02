@@ -229,7 +229,7 @@ void Chunk::generate_flat_world( void )
 		} else {
 			// if (it->second & GAMEMODE::ADVENTURE_BLOCK) {
 			// 	std::cout << "ADVENTURE BLOCK FOUND IN MAP: " << s_blocks[it->second & 0xFF]->name << " at " << _startX + ((it->first >> WORLD_SHIFT) >> CHUNK_SHIFT) << ", " << _startY + ((it->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) << ", " << (it->first & (WORLD_HEIGHT - 1)) << std::endl;
-			// 	it->second &= (REDSTONE::ALL_BITS - GAMEMODE::ADVENTURE_BLOCK);
+			// 	// it->second &= (REDSTONE::ALL_BITS - GAMEMODE::ADVENTURE_BLOCK);
 			// 	// it->second |= REDSTONE::PISTON::MOVING;
 			// }
 			_blocks[it->first] = it->second;

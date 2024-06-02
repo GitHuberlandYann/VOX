@@ -408,6 +408,10 @@ t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstanc
 		return (t_item({0}));
 	}
 	if (!swap) {
+		if (bat->type == blocks::AIR) {
+			*bat = block;
+			return (t_item({0}));
+		}
 		return (block);
 	}
 	*bat = block;

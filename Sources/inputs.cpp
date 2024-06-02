@@ -169,7 +169,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
 		return ;
 	}
-	if (_game_mode == GAMEMODE::ADVENTURE) {
+	if (_game_mode == GAMEMODE::ADVENTURE && type != blocks::AIR) {
 		if (_block_hit.type != s_blocks[type]->adventure_block) {
 			if (type == blocks::BUCKET || type == blocks::WATER_BUCKET) {
 				_ui->chatMessage("[Adventure mode] you can only use " + s_blocks[type]->name + " on " + s_blocks[s_blocks[type]->adventure_block]->name + ".", TEXT::RED);

@@ -467,8 +467,8 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 				updateRedstoneTorch(pos, value);
 			}
 			_lights[offset] &= 0xFF00;
-			light_spread(pos.x, pos.y, pos.z, false); // spread block light
-			_light_update = false;
+			// light_spread(pos.x, pos.y, pos.z, false); // spread block light
+			// _light_update = false;
 			std::cout << "over" << std::endl;
 		} else if (prev_type == blocks::OAK_LEAVES) {
 			_lights[offset] &= 0xFF;
@@ -480,6 +480,9 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		for (int i = 0; i < 15; ++i) {
 			_particles.push_back(new Particle(this, {pos.x + _startX + Random::randomFloat(_seed), pos.y + _startY + Random::randomFloat(_seed), pos.z + Random::randomFloat(_seed)}, PARTICLES::BREAKING, 0, prev_type));
 		}
+		light_spread(pos.x, pos.y, pos.z, false);
+		light_spread(pos.x, pos.y, pos.z, true);
+		_light_update = false;
 	}
 
 	if (!s_blocks[type]->isTransparent(value)) {
