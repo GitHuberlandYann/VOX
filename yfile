@@ -51,6 +51,7 @@ TODOS:
 	- entity shadow
 	- rework clouds
 	- commands /say /me /save /setblock /kill
+	- toggle don't draw chunks behind player in Settings
     - Sound https://www.ambiera.com/irrklang/tutorials.html
 	- upon world generation, place player on ground by using continentalness
 	- water ligth level
@@ -66,7 +67,6 @@ IN PROGRES:
 TODAY:
 	- Way more blocks ?? + world file "version: " line + /respawn
 	- chests being broken by water
-	- toggle don't draw chunks behind player in Settings
 	
 	SHORTTERM memory:
 	\/ - work on cleanAtlas

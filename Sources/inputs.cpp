@@ -170,6 +170,10 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	}
 	if (_game_mode == GAMEMODE::ADVENTURE && type != blocks::AIR) {
+		int dist = glm::abs(_block_hit.pos.x - _block_hit.prev_pos.x) + glm::abs(_block_hit.pos.y - _block_hit.prev_pos.y) + glm::abs(_block_hit.pos.z - _block_hit.prev_pos.z);
+		if (dist > 1) {
+			return ;
+		}
 		if (_block_hit.type != s_blocks[type]->adventure_block) {
 			if (type == blocks::BUCKET || type == blocks::WATER_BUCKET) {
 				_ui->chatMessage("[Adventure mode] you can only use " + s_blocks[type]->name + " on " + s_blocks[s_blocks[type]->adventure_block]->name + ".", TEXT::RED);
