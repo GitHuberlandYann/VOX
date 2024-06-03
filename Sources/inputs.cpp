@@ -409,7 +409,8 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		return ;
 	}
 	// toggle chat
-	if (INPUT::key_down(INPUT::CHAT) && INPUT::key_update(INPUT::CHAT)) {
+	if ((INPUT::key_down(INPUT::CHAT) && INPUT::key_update(INPUT::CHAT))
+		|| (INPUT::key_down(INPUT::ENTER) && INPUT::key_update(INPUT::ENTER))) {
 		_paused = true;
 		_menu->setState(MENU::CHAT);
 		return ;
