@@ -25,7 +25,7 @@ Text::~Text( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-void Text::addQuads( int spec, int posX, int posY, int width, int height, uint color )
+void Text::addQuads( int spec, int posX, int posY, int width, int height, unsigned color )
 {
 	_texts.push_back({spec + (0 << 8) + (0 << 9), color, posX,         posY});
 	_texts.push_back({spec + (1 << 8) + (0 << 9), color, posX + width, posY});
@@ -134,7 +134,7 @@ int Utils::Text::textWidth( int font_size, std::string str, int limit )
 	return (res);
 }
 
-void Text::addText( int posX, int posY, int font_size, uint color, std::string str )
+void Text::addText( int posX, int posY, int font_size, unsigned color, std::string str )
 {
 	int startX = posX;
 	char c;

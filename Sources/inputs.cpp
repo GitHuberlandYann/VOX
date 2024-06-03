@@ -627,6 +627,9 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 					|| _current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
 					_camera->unmoveHuman(originalPos); // if collision after movement, undo movement + setRun(false)
 				}
+			} else if (key_cam_zdown && _camera->_touchGround && _current_chunk_ptr->collisionBox(_camera->getPos() - glm::vec3(0, 0, 0.6f), 0.3f, 0.7f, 0.7f).type == COLLISION::NONE) {
+				// if sneaking and touch ground and after move we have gap of more than 0.6 under our feet, undo movement
+				_camera->unmoveHuman(originalPos);
 			}
 			originalPos = _camera->getPos();
 			_camera->moveHuman(Y_AXIS, key_cam_v, key_cam_h, 0); // move on Y_AXIS
@@ -636,6 +639,8 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 					|| _current_chunk_ptr->collisionBox(_camera->getPos(), 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
 					_camera->unmoveHuman(originalPos);
 				}
+			} else if (key_cam_zdown && _camera->_touchGround && _current_chunk_ptr->collisionBox(_camera->getPos() - glm::vec3(0, 0, 0.6f), 0.3f, 0.7f, 0.7f).type == COLLISION::NONE) {
+				_camera->unmoveHuman(originalPos);
 			}
 			_current_chunk_ptr->applyGravity(); // move on Z_AXIS
 			_camera->setWaterStatus(false, _current_chunk_ptr->collisionBoxWater(_camera->getPos(), 0.3f, 0));

@@ -274,14 +274,38 @@ void Inventory::shiftBlockAt( int craft, int value, FurnaceInstance *furnace, Ch
 		return ;
 	}
 	switch (craft) {
-		case 0: // inventory
-		case 1: // table craft
+		case 1: // inventory
 			if (value <= CELLS::hotbar_last) {
 				restoreBlock(item);
 			} else {
 				restoreBlock(item, true);
 			}
 			item.type = blocks::AIR;
+			break ;
+		case 2: // table craft
+			if (value <= CELLS::backpack_last) {
+				if (s_blocks[item.type]->stackable) {
+					for (int index = 0; index < 9; index++) {
+						t_item *bat = &_craft[index];
+						if (bat->type == item.type && bat->amount + item.amount <= 64) {
+							bat->type = item.type;
+							bat->amount += item.amount;
+							return ;
+						}
+					}
+				}
+				for (int index = 0; index < 9; index++) {
+					t_item *bat = &_craft[index];
+					if (!bat->type) {
+						bat->type = item.type;
+						bat->amount += item.amount;
+						return ;
+					}
+				}
+			} else {
+				restoreBlock(item);
+				item.type = blocks::AIR;
+			}
 			break ;
 		default:
 			if (furnace) {

@@ -3,10 +3,10 @@
 
 namespace TEXT
 {
-	const uint WHITE = 0xFFFFFFFF;
-	const uint BLACK = 0xFF000000;
-	const uint GREEN = 0xFF00FF00;
-	const uint RED = 0xFFFF0000;
+	const unsigned WHITE = 0xFFFFFFFF;
+	const unsigned BLACK = 0xFF000000;
+	const unsigned GREEN = 0xFF00FF00;
+	const unsigned RED = 0xFFFF0000;
 
 	enum {
 		SPECATTRIB,
@@ -17,7 +17,7 @@ namespace TEXT
 
 typedef struct s_text_shader_input {
 	int spec;
-	uint color;
+	unsigned color;
 	int posX;
 	int posY;
 }				t_text_shader_input;
@@ -30,7 +30,7 @@ class Text
 		GLuint *_textures;
 		std::vector<t_text_shader_input> _texts;
 
-		void addQuads( int spec, int posX, int posY, int width, int height, uint color );
+		void addQuads( int spec, int posX, int posY, int width, int height, unsigned color );
 
 	public:
 		Text( void );
@@ -40,7 +40,7 @@ class Text
 		void load_texture( void );
 		void updateWinSize( void );
 
-        void addText( int posX, int posY, int font_size, uint color, std::string str );
+        void addText( int posX, int posY, int font_size, unsigned color, std::string str );
 		void addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, std::string str );
 		void toScreen( void );
 };

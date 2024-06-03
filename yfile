@@ -26,7 +26,6 @@ Project Requirements:
              - different biomes
 
 TODOS:
-	- hitbox change + no fall on sneak
     - biomes
 	- fix light spread problems caused by recurse limitation (when torches are next to each other)
 	- display item name and details upon mouse hover in menus
@@ -38,7 +37,6 @@ TODOS:
 	- item frame
 	- ladder
 	- stone wall
-	- have Menu/UI::add_item_value use s_blocks[type]->addItem() instead
 	- bed
 	- add light diff on levers faces
 	- fix faces open/closed trapdoors not matching
@@ -59,16 +57,16 @@ TODOS:
 	- multiplayer ? Server-Client logic on singleplayer ?
 	- divide chunk in 16 subsections ?
     - speedrun option : goal is to hold a diamond pickaxe in your hand in the shortest time -> leaderboard stored in json
-
-IN PROGRES:
+	
+	IN PROGRES:
 	- bow and arrow
 	- universal use of tps instead of deltatimes
-
+	
 TODAY:
 	- Way more blocks ?? + world file "version: " line + /respawn
 	- chests being broken by water
 	
-	SHORTTERM memory:
+SHORTTERM memory:
 	\/ - work on cleanAtlas
 	\/ - work on readme
 	\/ - rework Makefile
@@ -77,7 +75,7 @@ TODAY:
 	\/ - check how to update atlas texture ingame
 	\/ - make menus texts responsive
 	
-	DONE:
+DONE:
 	- pthread chunk creation
     - skybox
     - only display chunks in fieldview + little offset
@@ -101,6 +99,7 @@ TODAY:
 	- smooth partial collision instead of teleportation
 	- fix <slab to slab transition makes you go up 1 full block>
 	- change applyGravity to make use of height in collision box and avoid for loops
+	- have Menu/UI::add_item_value use s_blocks[type]->addItem() instead
     - player gravity
 	- change physics in water
     - hitbox around player for collisions - https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
@@ -120,6 +119,7 @@ TODAY:
 	- fences
     - items on ground after break
 	- item number color/placement/size in ingame menus
+	- hitbox change + no fall on sneak
     - fix fall going through blocks + fix jump into block above head
 	- strafing speed reduction + rework movements
     - better fall damage

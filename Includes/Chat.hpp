@@ -71,7 +71,7 @@ class Chat
 		void resetHistoCursor( void );
 		std::string getHistoMsg( bool up );
 
-		void chatMessage( std::string str, uint color = TEXT::WHITE );
+		void chatMessage( std::string str, unsigned color = TEXT::WHITE );
 		bool sendMessage( std::string str );
 		void blitMessages( float deltaTime );
 		void blitPastMessages( void );

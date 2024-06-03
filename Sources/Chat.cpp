@@ -314,6 +314,7 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		_oglMan->_inventory->absorbItem({blocks::REDSTONE_TORCH});
 		_oglMan->_inventory->absorbItem({blocks::REDSTONE_BLOCK});
 		_oglMan->_inventory->absorbItem({blocks::IRON_ORE});
+		_oglMan->_inventory->absorbItem({blocks::TARGET});
 		return ;
 	} else if (!argv[2].compare(0, 8, "blocks::")) {
 		int i = 0;
@@ -466,7 +467,7 @@ std::string Chat::getHistoMsg( bool up )
 	return (_historic[_historic.size() - _histo_cursor].str);
 }
 
-void Chat::chatMessage( std::string str, uint color )
+void Chat::chatMessage( std::string str, unsigned color )
 {
 	size_t pxl_width = 0, offset, font_size = 12, limit = CHAT_BOX_WIDTH - CHAT_BOX_X - 2 * CHAT_BOX_OFFSET;
 	int start = 0, end = 0;
