@@ -45,6 +45,7 @@ Distance fog
 Gravity-affected blocks (sand, gravel, lit tnts)
 UI for inventory and ingame menus
 Crafting system, storage system
+Redstone components - repeaters, comparators, pistons, observers
 
 And a lot more! All done in C++
 ```
@@ -64,6 +65,9 @@ Night time. Torches on the walls. Items dropped as 3D entities on the ground.
 
 Falling sand. While using a custom data pack.
 ![sand](Resources/Screenshots/thumbnail6.png)
+
+Fully working redstone. 3x3 pistons doors and other mechanisms.
+![redstone](Resources/Screenshots/thumbnail8.png)
 
 And of course, Minecraft wouldn't be Minecraft without.. DIAMONDS!
 ![diamonds](Resources/Screenshots/thumbnail7.png)
