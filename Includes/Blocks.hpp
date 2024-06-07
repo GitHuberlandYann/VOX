@@ -231,13 +231,6 @@ namespace blocks {
 		COMPARATOR,
 		CHEST,
 		WHEAT_CROP = 80,
-		WHEAT_CROP1,
-		WHEAT_CROP2,
-		WHEAT_CROP3,
-		WHEAT_CROP4,
-		WHEAT_CROP5,
-		WHEAT_CROP6,
-		WHEAT_CROP7,
 		WATER = 88,
 		WATER1,
 		WATER2,
@@ -744,9 +737,9 @@ struct Crop : Block {
 		Crop() {
 			blast_resistance = 0.0f;
 			hasHitbox = true;
+			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, 1 / 32.0f};
-			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = GEOMETRY::CROP;
 			byHand = true;
 			hardness = 0.0f;
@@ -836,6 +829,8 @@ struct TBD : Cube {
 	public:
 		TBD() {
 			name = "TBD";
+			textureX = 15;
+			textureY = 15;
 		}
 };
 
@@ -2305,94 +2300,16 @@ struct WheatCrop : Crop {
 		WheatCrop() {
 			name = "WHEAT_CROP";
 			mined = blocks::WHEAT_SEEDS;
-			hitboxCenter = {0.5f, 0.5f, 1 / 32.0f};
-			hitboxHalfSize = {0.4f, 0.4f, 1 / 32.0f};
 			textureX = 7;
-			textureY = 0;
 		}
-};
-
-struct WheatCrop1 : Crop {
-	public:
-		WheatCrop1() {
-			name = "WHEAT_CROP 1";
-			mined = blocks::WHEAT_SEEDS;
-			hitboxCenter = {0.5f, 0.5f, 3 / 32.0f};
-			hitboxHalfSize = {0.4f, 0.4f, 3 / 32.0f};
-			textureX = 7;
-			textureY = 1;
+		virtual int texY( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+			(void)dir;
+			return (value >> blocks::BITFIELD_OFFSET);
 		}
-};
-
-struct WheatCrop2 : Crop {
-	public:
-		WheatCrop2() {
-			name = "WHEAT_CROP 2";
-			mined = blocks::WHEAT_SEEDS;
-			hitboxCenter = {0.5f, 0.5f, 5 / 32.0f};
-			hitboxHalfSize = {0.4f, 0.4f, 5 / 32.0f};
-			textureX = 7;
-			textureY = 2;
-		}
-};
-
-struct WheatCrop3 : Crop {
-	public:
-		WheatCrop3() {
-			name = "WHEAT_CROP 3";
-			mined = blocks::WHEAT_SEEDS;
-			hitboxCenter = {0.5f, 0.5f, 7 / 32.0f};
-			hitboxHalfSize = {0.4f, 0.4f, 7 / 32.0f};
-			textureX = 7;
-			textureY = 3;
-		}
-};
-
-struct WheatCrop4 : Crop {
-	public:
-		WheatCrop4() {
-			name = "WHEAT_CROP 4";
-			mined = blocks::WHEAT_SEEDS;
-			hitboxCenter = {0.5f, 0.5f, 9 / 32.0f};
-			hitboxHalfSize = {0.4f, 0.4f, 9 / 32.0f};
-			textureX = 7;
-			textureY = 4;
-		}
-};
-
-struct WheatCrop5 : Crop {
-	public:
-		WheatCrop5() {
-			name = "WHEAT_CROP 5";
-			mined = blocks::WHEAT_SEEDS;
-			hitboxCenter = {0.5f, 0.5f, 11 / 32.0f};
-			hitboxHalfSize = {0.4f, 0.4f, 11 / 32.0f};
-			textureX = 7;
-			textureY = 5;
-		}
-};
-
-struct WheatCrop6 : Crop {
-	public:
-		WheatCrop6() {
-			name = "WHEAT_CROP 6";
-			mined = blocks::WHEAT_SEEDS;
-			hitboxCenter = {0.5f, 0.5f, 13 / 32.0f};
-			hitboxHalfSize = {0.4f, 0.4f, 13 / 32.0f};
-			textureX = 7;
-			textureY = 6;
-		}
-};
-
-struct WheatCrop7 : Crop {
-	public:
-		WheatCrop7() {
-			name = "WHEAT_CROP 7";
-			mined = blocks::WHEAT;
-			hitboxCenter = {0.5f, 0.5f, 15 / 32.0f};
-			hitboxHalfSize = {0.4f, 0.4f, 15 / 32.0f};
-			textureX = 7;
-			textureY = 7;
+		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+			(void)orientation;
+			hitbox[0] = {0.5f, 0.5f, (1 + bitfield * 2) / 32.0f};
+			hitbox[1] = {0.4f, 0.4f, (1 + bitfield * 2) / 32.0f};
 		}
 };
 

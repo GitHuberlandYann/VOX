@@ -6,9 +6,10 @@
 // ************************************************************************** //
 
 /* generate one or many entities depending on block broken */
-void Chunk::entity_block( int posX, int posY, int posZ, int type )
+void Chunk::entity_block( int posX, int posY, int posZ, int value )
 {
-	// std::cout << "breaking " << s_blocks[type]->name << std::endl;
+	int type = (value & blocks::TYPE);
+	std::cout << "breaking " << s_blocks[type]->name << std::endl;
 	float random;
 	switch (type) {
 	case blocks::GRASS:
@@ -31,7 +32,11 @@ void Chunk::entity_block( int posX, int posY, int posZ, int type )
 			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::APPLE, 1, {0, 0}}));
 		}
 		break ;
-	case blocks::WHEAT_CROP7:
+	case blocks::WHEAT_CROP:
+		if ((value >> blocks::BITFIELD_OFFSET) < 7) { // not fully grown
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {s_blocks[type]->mined, 1, {0, 0}}));
+			return ;
+		}
 		_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::WHEAT, 1, {0, 0}}));
 		random = Random::randomFloat(_seed);
 		if (random <= 0.0787f) {
@@ -100,16 +105,16 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		}
 	} else if (type == blocks::OAK_DOOR) {
 		// break other part of door
-		_blocks[offset + (((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1)] = blocks::AIR;
-		_added.erase(offset + (((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1));
-		_removed.insert(offset + (((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1));
+		_blocks[offset + (((value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF) ? -1 : 1)] = blocks::AIR;
+		_added.erase(offset + (((value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF) ? -1 : 1));
+		_removed.insert(offset + (((value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF) ? -1 : 1));
 	} else if (type == blocks::LEVER && (value & REDSTONE::POWERED)) {
 		flickLever(pos, value & (REDSTONE::ALL_BITS - REDSTONE::POWERED), REDSTONE::OFF);
 	}
 	if (useInventory && type == blocks::WATER) {
 		_inventory->addBlock(type); // water bucket
 	} else if (useInventory) {
-		entity_block(pos.x, pos.y, pos.z, type);
+		entity_block(pos.x, pos.y, pos.z, value);
 	}
 
 	setBlockAt(blocks::AIR, pos, true);
@@ -731,7 +736,7 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 			int base = (getBlockAt(pos + attachement) & blocks::TYPE);
 			if (base == blocks::AIR || base == blocks::PISTON_HEAD) {
 				if (s_blocks[type]->byHand) {
-					entity_block(pos.x, pos.y, pos.z, type);
+					entity_block(pos.x, pos.y, pos.z, value);
 				}
 				if (type == blocks::OAK_SIGN) {
 					int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;

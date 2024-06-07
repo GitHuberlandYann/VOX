@@ -11,7 +11,7 @@ const Block *s_blocks[S_BLOCKS_SIZE] = {
 	new CobbleStoneSlabTop(), new StoneBricksSlabBottom(), new StoneBricksSlabTop(), new Piston(), new StickyPiston(), new PistonHead(), new MovingPiston(), new Observer(),
 	new Poppy(), new Dandelion(), new BlueOrchid(), new Allium(), new CornFlower(), new PinkTulip(), new Grass(), new SugarCane(),
 	new DeadBush(), new OakSapling(), new Torch(), new RedstoneTorch(), new RedstoneDust(), new Repeater(), new Comparator(), new Chest(),
-	new WheatCrop(), new WheatCrop1(), new WheatCrop2(), new WheatCrop3(), new WheatCrop4(), new WheatCrop5(), new WheatCrop6(), new WheatCrop7(),
+	new WheatCrop(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(),
 	new Water(), new Water1(), new Water2(), new Water3(), new Water4(), new Water5(), new Water6(), new Water7(),
 	new Stick(), new WoodenShovel(), new StoneShovel(), new IronShovel(), new DiamondShovel(), new WoodenAxe(), new StoneAxe(), new IronAxe(),
 	new DiamondAxe(), new WoodenPickaxe(), new StonePickaxe(), new IronPickaxe(), new DiamondPickaxe(), new Bow(), new Arrow(), new WorldEditWand(),
@@ -2568,7 +2568,7 @@ void Crop::addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ive
 	glm::vec3 p6 = {start.x + pos.x + 0, start.y + pos.y + 1, pos.z - ONE16TH};
 	glm::vec3 p7 = {start.x + pos.x + 1, start.y + pos.y + 1, pos.z - ONE16TH};
 
-	int spec = (textureX << 4) + (textureY << 12) + (0 << 19) + (chunk->computeLight(pos.x, pos.y, pos.z) << 24);
+	int spec = (textureX << 4) + (texY(face_dir::PLUSZ, value) << 12) + (0 << 19) + (chunk->computeLight(pos.x, pos.y, pos.z) << 24);
 	t_shaderInput v0 = {spec, {p4.x + 3.0f * ONE16TH, p4.y, p4.z}};
 	t_shaderInput v1 = {spec + XTEX, {p0.x + 3.0f * ONE16TH, p0.y, p0.z}};
 	t_shaderInput v2 = {spec + YTEX, {p6.x + 3.0f * ONE16TH, p6.y, p6.z}};

@@ -353,13 +353,6 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		case blocks::PISTON_HEAD:
 		case blocks::MOVING_PISTON:
 		case blocks::WHEAT_CROP:
-		case blocks::WHEAT_CROP1:
-		case blocks::WHEAT_CROP2:
-		case blocks::WHEAT_CROP3:
-		case blocks::WHEAT_CROP4:
-		case blocks::WHEAT_CROP5:
-		case blocks::WHEAT_CROP6:
-		case blocks::WHEAT_CROP7:
 		case blocks::WATER:
 		case blocks::WATER1:
 		case blocks::WATER2:

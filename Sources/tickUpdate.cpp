@@ -27,6 +27,10 @@ void Chunk::updateCrop( int value, int offset )
 		}
 		return ;
 	}
+	int growth_stage = (value >> blocks::BITFIELD_OFFSET) & 0x7;
+	if (growth_stage == 7) {
+		return ;
+	}
 	float points = (getBlockAt(posX, posY, posZ - 1) & FARMLAND::WET) ? 4 : 2;
 	for (int index = 0; index < 8; ++index) {
 		const int delta[2] = {neighbour8[index][0], neighbour8[index][1]};
@@ -38,8 +42,8 @@ void Chunk::updateCrop( int value, int offset )
 	float growth_probability = 1.0f / (glm::floor(25 / points) + 1);
 	// std::cout << "points " << points << ", proba: " << growth_probability << "%" << std::endl;
 	if (Random::randomFloat(_seed) <= growth_probability) {
-		_blocks[offset] = value + 1;
-		_added[offset] = value + 1;
+		_blocks[offset] = value + (1 << blocks::BITFIELD_OFFSET);
+		_added[offset] = value + (1 << blocks::BITFIELD_OFFSET);
 		_vertex_update = true;
 		// std::cout << "Success!" << std::endl;
 	} else {
@@ -80,7 +84,7 @@ void Chunk::updateFarmland( int value, int offset )
 			_added[offset] = (value & (REDSTONE::ALL_BITS - FARMLAND::MOISTURE)) + ((wetness - 1) << FARMLAND::MOISTURE_OFFSET);
 			_removed.erase(offset);
 			return ;
-		} else if (type_above < blocks::WHEAT_CROP || type_above > blocks::WHEAT_CROP7) {
+		} else if (type_above != blocks::WHEAT_CROP) { // TODO once other crops implemented, use ->geometry != GEO::CROP instead
 			// std::cout << "updateFarmland replace_block " << _startX << ", " << _startY << std::endl;
 			setBlockAt(blocks::DIRT, {posX, posY, posZ}, true);
 			_vertex_update = true;
@@ -255,16 +259,26 @@ void Chunk::tickUpdate( void )
 			int value = _blocks[selected], type = value & blocks::TYPE;
 				// std::cout << "updating crop in chunk " << _startX << ", " << _startY << ": " << ((selected >> WORLD_SHIFT) >> CHUNK_SHIFT) << " " << ((selected >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) << ", " << (selected & (WORLD_HEIGHT - 1)) << std::endl;
 			if (value & blocks::NOTVISIBLE) { // not updated
-			} else if (type >= blocks::WHEAT_CROP && type <= blocks::WHEAT_CROP6) {
-				updateCrop(value, selected);
-			} else if (type == blocks::FARMLAND) {
-				updateFarmland(value, selected);
-			} else if (type == blocks::GRASS_BLOCK) {
-				spreadGrassblock(selected);
-			} else if (type == blocks::OAK_LEAVES && (value & LEAVES::NATURAL)) {
-				decayLeaves(selected);
-			} else if (type == blocks::OAK_SAPLING) {
-				growTree(value, selected);
+				continue ;
+			}
+			switch (type) {
+				case blocks::WHEAT_CROP:
+					updateCrop(value, selected);
+					break ;
+				case blocks::FARMLAND:
+					updateFarmland(value, selected);
+					break ;
+				case blocks::GRASS_BLOCK:
+					spreadGrassblock(selected);
+					break ;
+				case blocks::OAK_LEAVES:
+					if (value & LEAVES::NATURAL) {
+						decayLeaves(selected);
+					}
+					break ;
+				case blocks::OAK_SAPLING:
+					growTree(value, selected);
+					break ;
 			}
 		}
 	}

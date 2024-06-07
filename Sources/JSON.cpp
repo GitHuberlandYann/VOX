@@ -361,6 +361,9 @@ static int convert( int value ) // used when I change s_blocks big time
 		return (value);
 	}
 	// transition from v0.0 to v1.0: 0xF00 becomes 0xF000 and 0xF000 becomes 0xF000000
+	if (value >= blocks::WHEAT_CROP && value <= blocks::WHEAT_CROP + 7) {
+		value = blocks::WHEAT_CROP + ((value - blocks::WHEAT_CROP) << blocks::BITFIELD_OFFSET);
+	}
 	return ((value & 0XFFFF00FF) | (((value >> 8) & 0xF) << 12) | (((value >> 12) & 0xF) << 24));
 }
 
