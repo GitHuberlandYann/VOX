@@ -228,13 +228,13 @@ void Chunk::generate_flat_world( void )
 			it = _added.erase(it);
 		} else {
 			// if (it->second & GAMEMODE::ADVENTURE_BLOCK) {
-			// 	std::cout << "ADVENTURE BLOCK FOUND IN MAP: " << s_blocks[it->second & 0xFF]->name << " at " << _startX + ((it->first >> WORLD_SHIFT) >> CHUNK_SHIFT) << ", " << _startY + ((it->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) << ", " << (it->first & (WORLD_HEIGHT - 1)) << std::endl;
+			// 	std::cout << "ADVENTURE BLOCK FOUND IN MAP: " << s_blocks[it->second & blocks::TYPE]->name << " at " << _startX + ((it->first >> WORLD_SHIFT) >> CHUNK_SHIFT) << ", " << _startY + ((it->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) << ", " << (it->first & (WORLD_HEIGHT - 1)) << std::endl;
 			// 	// it->second &= (REDSTONE::ALL_BITS - GAMEMODE::ADVENTURE_BLOCK);
 			// 	// it->second |= REDSTONE::PISTON::MOVING;
 			// }
 			_blocks[it->first] = it->second;
-			if ((it->second & 0xFF) == blocks::TORCH) {
-				addFlame(it->first, {((it->first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((it->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (it->first & (WORLD_HEIGHT - 1))}, blocks::TORCH, (it->second >> 9) & 0x7);
+			if ((it->second & blocks::TYPE) == blocks::TORCH) {
+				addFlame(it->first, {((it->first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((it->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (it->first & (WORLD_HEIGHT - 1))}, blocks::TORCH, (it->second >> blocks::ORIENTATION_OFFSET) & 0x7);
 			}
 			++it;
 		}
@@ -305,7 +305,7 @@ void Chunk::generate_blocks( void )
 		for (int index = 0; index < 61; index++) {
 			const GLint delta[3] = {oak_normal[index][0], oak_normal[index][1], oak_normal[index][2]};
 			if (_blocks[((((tree.x + delta[0]) << CHUNK_SHIFT) + tree.y + delta[1]) << WORLD_SHIFT) + tree.z + delta[2]] == blocks::AIR) {
-				_blocks[((((tree.x + delta[0]) << CHUNK_SHIFT) + tree.y + delta[1]) << WORLD_SHIFT) + tree.z + delta[2]] = blocks::OAK_LEAVES + blocks::NATURAL;
+				_blocks[((((tree.x + delta[0]) << CHUNK_SHIFT) + tree.y + delta[1]) << WORLD_SHIFT) + tree.z + delta[2]] = blocks::OAK_LEAVES + LEAVES::NATURAL;
 			}
 		}
 	}
@@ -378,8 +378,8 @@ void Chunk::generate_blocks( void )
 	}
 	for (auto a: _added) {
 		_blocks[a.first] = a.second;
-		if ((a.second & 0xFF) == blocks::TORCH) {
-			addFlame(a.first, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (a.first & (WORLD_HEIGHT - 1))}, blocks::TORCH, (a.second >> 9) & 0x7);
+		if ((a.second & blocks::TYPE) == blocks::TORCH) {
+			addFlame(a.first, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (a.first & (WORLD_HEIGHT - 1))}, blocks::TORCH, (a.second >> blocks::ORIENTATION_OFFSET) & 0x7);
 			// _flames.emplace(a.first, new Particle(this, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT) + _startX + 0.5f, ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) + _startY + 0.5f, (a.first & (WORLD_HEIGHT - 1)) + 10.0f / 16.0f + 0.1f}, PARTICLES::FLAME));
 		}
 	}

@@ -27,12 +27,12 @@ void Chunk::updateCrop( int value, int offset )
 		}
 		return ;
 	}
-	float points = (getBlockAt(posX, posY, posZ - 1) & blocks::WET_FARMLAND) ? 4 : 2;
+	float points = (getBlockAt(posX, posY, posZ - 1) & FARMLAND::WET) ? 4 : 2;
 	for (int index = 0; index < 8; ++index) {
 		const int delta[2] = {neighbour8[index][0], neighbour8[index][1]};
 		int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ - 1);
-		if ((adj & 0xFF) == blocks::FARMLAND) {
-			points += (adj & blocks::WET_FARMLAND) ? 0.75f : 0.25f;
+		if ((adj & blocks::TYPE) == blocks::FARMLAND) {
+			points += (adj & FARMLAND::WET) ? 0.75f : 0.25f;
 		}
 	} // TODO might want to handle diag crop
 	float growth_probability = 1.0f / (glm::floor(25 / points) + 1);
@@ -52,7 +52,7 @@ bool Chunk::watered_farmland( int posX, int posY, int posZ )
 	for (int row = posX - 4; row <= posX + 4; row++) {
 		for (int col = posY - 4; col <= posY + 4; col++) {
 			for (int level = posZ; level <= posZ + 1; level++) {
-				if ((getBlockAt(row, col, level) & 0xFF) >= blocks::WATER) {
+				if ((getBlockAt(row, col, level) & blocks::TYPE) >= blocks::WATER) {
 					return (true);
 				}
 			}
@@ -69,15 +69,15 @@ void Chunk::updateFarmland( int value, int offset )
 	bool hydrated = watered_farmland(posX, posY, posZ);
 	if (!hydrated) {
 		int wetness = (value >> 10) & 0x7;
-		int type_above = getBlockAt(posX, posY, posZ + 1) & 0xFF;
+		int type_above = getBlockAt(posX, posY, posZ + 1) & blocks::TYPE;
 		if (wetness == 1) {
-			_blocks[offset] = value & 0xFF;
-			_added[offset] = value & 0xFF;
+			_blocks[offset] = value & blocks::TYPE;
+			_added[offset] = value & blocks::TYPE;
 			_vertex_update = true;
 			return ;
 		} else if (wetness > 1) {
-			_blocks[offset] = (value & 0xFFE1FF) + ((wetness - 1) << 10);
-			_added[offset] = (value & 0xFFE1FF) + ((wetness - 1) << 10);
+			_blocks[offset] = (value & (REDSTONE::ALL_BITS - FARMLAND::MOISTURE)) + ((wetness - 1) << FARMLAND::MOISTURE_OFFSET);
+			_added[offset] = (value & (REDSTONE::ALL_BITS - FARMLAND::MOISTURE)) + ((wetness - 1) << FARMLAND::MOISTURE_OFFSET);
 			_removed.erase(offset);
 			return ;
 		} else if (type_above < blocks::WHEAT_CROP || type_above > blocks::WHEAT_CROP7) {
@@ -86,9 +86,9 @@ void Chunk::updateFarmland( int value, int offset )
 			_vertex_update = true;
 			return ;
 		}
-	} else if (!(value & blocks::WET_FARMLAND)) {
-		_blocks[offset] = (value & 0xFF) + blocks::WET_FARMLAND + (0x7 << 10);
-		_added[offset] = (value & 0xFF) + blocks::WET_FARMLAND + (0x7 << 10);
+	} else if (!(value & FARMLAND::WET)) {
+		_blocks[offset] = (value & blocks::TYPE) | FARMLAND::WET | (0x7 << FARMLAND::MOISTURE_OFFSET);
+		_added[offset] = (value & blocks::TYPE) | FARMLAND::WET | (0x7 << FARMLAND::MOISTURE_OFFSET);
 		_vertex_update = true;
 	}
 }
@@ -107,7 +107,7 @@ void Chunk::spreadGrassblock( int offset )
 	int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
 	if (posZ < 254) {
-		int above = _blocks[offset + 1] & 0xFF;
+		int above = _blocks[offset + 1] & blocks::TYPE;
 		if (!s_blocks[above]->transparent || above >= blocks::WATER) {
 			_blocks[offset] = blocks::DIRT;
 			_added[offset] = blocks::DIRT;
@@ -129,8 +129,8 @@ void Chunk::spreadGrassblock( int offset )
 		int selected = Random::rangedNumber(_seed, 0, 3 * 3 * 5 - 1);
 		const int delta[3] = {neighbour45[selected][0], neighbour45[selected][1], neighbour45[selected][2]};
 		int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2]);
-		if ((adj & 0xFF) == blocks::DIRT && !(adj & blocks::NOTVISIBLE)) {
-			int above_adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2] + 1) & 0xFF;
+		if ((adj & blocks::TYPE) == blocks::DIRT && !(adj & blocks::NOTVISIBLE)) {
+			int above_adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2] + 1) & blocks::TYPE;
 			if (s_blocks[above_adj]->transparent && above_adj < blocks::WATER) {
 				turnDirtToGrass(posX + delta[0], posY + delta[1], posZ + delta[2]);
 			}
@@ -143,7 +143,7 @@ bool Chunk::findLog( int posX, int posY, int posZ, int level )
 	if (--level < 0) {
 		return (false);
 	}
-	int type = getBlockAt(posX, posY, posZ) & 0xFF;
+	int type = getBlockAt(posX, posY, posZ) & blocks::TYPE;
 	if (type == blocks::OAK_LOG) {
 		return (true);
 	} else if (type != blocks::OAK_LEAVES) {
@@ -178,7 +178,7 @@ bool Chunk::spaceForTree( int posX, int posY, int posZ )
 	for (int row = -1; row < 2; row++) {
 		for (int col = -1; col < 2; col++) {
 			for (int level = 1; level < 6; level++) {
-				int type = getBlockAt(posX + row, posY + col, posZ + level) & 0xFF;
+				int type = getBlockAt(posX + row, posY + col, posZ + level) & blocks::TYPE;
 				if (air_flower(type, true, false, true) && type != blocks::GRASS_BLOCK && type != blocks::DIRT) {
 					return (false);
 				}
@@ -201,9 +201,9 @@ void Chunk::growTree( int value, int offset )
 	std::cout << "failure. light " << light << std::endl;
 		return ;
 	}
-	if (!((value >> 9) & 0x1)) { // grow into stage 1, no visual diff
-		_blocks[offset] = value + (1 << 9);
-		_added[offset] = value + (1 << 9);
+	if (!(value & SAPLING::GROWTH)) { // grow into stage 1, no visual diff
+		_blocks[offset] = value | SAPLING::GROWTH;
+		_added[offset] = value | SAPLING::GROWTH;
 	std::cout << "grow stage 1!" << std::endl;
 		return ;
 	}
@@ -252,7 +252,7 @@ void Chunk::tickUpdate( void )
 	for (int i = 0; i < 16; i++) {
 		for (int j = 0; j < 3; j++) {
 			int selected = Random::rangedNumber(_seed, i * (1 << 12), (i + 1) * (1 << 12));
-			int value = _blocks[selected], type = value & 0xFF;
+			int value = _blocks[selected], type = value & blocks::TYPE;
 				// std::cout << "updating crop in chunk " << _startX << ", " << _startY << ": " << ((selected >> WORLD_SHIFT) >> CHUNK_SHIFT) << " " << ((selected >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) << ", " << (selected & (WORLD_HEIGHT - 1)) << std::endl;
 			if (value & blocks::NOTVISIBLE) { // not updated
 			} else if (type >= blocks::WHEAT_CROP && type <= blocks::WHEAT_CROP6) {
@@ -261,7 +261,7 @@ void Chunk::tickUpdate( void )
 				updateFarmland(value, selected);
 			} else if (type == blocks::GRASS_BLOCK) {
 				spreadGrassblock(selected);
-			} else if (type == blocks::OAK_LEAVES && (value & blocks::NATURAL)) {
+			} else if (type == blocks::OAK_LEAVES && (value & LEAVES::NATURAL)) {
 				decayLeaves(selected);
 			} else if (type == blocks::OAK_SAPLING) {
 				growTree(value, selected);
@@ -279,7 +279,7 @@ void Chunk::updateScheduledBlocks( void )
 
 	for (size_t index = 0; index < size; ++index) {
 		int offset = _scheduled_to_fall[0];
-		int type = _blocks[offset] & 0xFF;
+		int type = _blocks[offset] & blocks::TYPE;
 		if (type != blocks::SAND && type != blocks::GRAVEL) {
 			// std::cerr << _startX << ", " << _startY << " scheduled_to_fall block is " << s_blocks[type]->name << std::endl;
 			_scheduled_to_fall.erase(_scheduled_to_fall.begin());

@@ -102,7 +102,7 @@ GLint Chunk::face_count( int type, glm::ivec3 pos )
 
 GLint Chunk::face_count( int type, int row, int col, int level )
 {
-	type &= 0xFF;
+	type &= blocks::TYPE;
 	if (!type || type >= blocks::WATER) {
 		std::cerr << "face_count ERROR counting " << s_blocks[type]->name << std::endl;
 		return (0);
@@ -142,7 +142,7 @@ void Chunk::resetDisplayedFaces( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				int offset = (((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level;
-				GLint value = _blocks[offset], type = value & 0xFF;
+				GLint value = _blocks[offset], type = value & blocks::TYPE;
 				bool restore = false;
 				if ((value & blocks::NOTVISIBLE) && (!row || !col || row == CHUNK_SIZE - 1 || col == CHUNK_SIZE - 1)) {
 					value -= blocks::NOTVISIBLE;
@@ -150,7 +150,7 @@ void Chunk::resetDisplayedFaces( void )
 				}
 				if (type == blocks::CHEST) {}
 				else if (type > blocks::AIR && type < blocks::WATER) {
-					GLint below = ((level) ? _blocks[offset - 1] : 0) & 0xFF;
+					GLint below = ((level) ? _blocks[offset - 1] : 0) & blocks::TYPE;
 					if (!air_flower(type, false, false, true) && type < blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
 						_blocks[offset] = blocks::AIR;
 					} else {
@@ -406,21 +406,21 @@ void Chunk::checkFillVertices( void )
 	if (cnt > _nb_neighbours) {
 		if (cnt == 4) {
 			for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
-				switch (a.second & 0xFF) {
+				switch (a.second & blocks::TYPE) {
 				case blocks::REDSTONE_LAMP:
 					if (!(a.second & REDSTONE::ACTIVATED)) {
 						continue ;
 					}
 				case blocks::TORCH:
 				case blocks::REDSTONE_TORCH:
-					if ((a.second & 0xFF) == blocks::REDSTONE_TORCH && (a.second & REDSTONE::POWERED)) {
+					if ((a.second & blocks::TYPE) == blocks::REDSTONE_TORCH && (a.second & REDSTONE::POWERED)) {
 						break ; // red torch is turned off
 					}
 					int level = a.first & (WORLD_HEIGHT - 1);
 					int col = ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 					int row = ((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
 					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
-					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] += s_blocks[a.second & 0xFF]->light_level + (s_blocks[a.second & 0xFF]->light_level << 4); // 0xF0 = light source. & 0xF = light level
+					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] += s_blocks[a.second & blocks::TYPE]->light_level + (s_blocks[a.second & blocks::TYPE]->light_level << 4); // 0xF0 = light source. & 0xF = light level
 					light_spread(row, col, level, false);
 					break ;
 				}
@@ -431,7 +431,7 @@ void Chunk::checkFillVertices( void )
 					for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
 						if (!(_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xF000)) {
 							int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-							if (s_blocks[value & 0xFF]->transparent) { // underground hole
+							if (s_blocks[value & blocks::TYPE]->transparent) { // underground hole
 								// spread_light TODO watch out for leaves and water light damping..
 								light_spread(row, col, level, true);
 							}
@@ -582,8 +582,8 @@ int Chunk::isHit( glm::ivec3 pos )
 	// if (_thread.joinable()) {
 	// 	_thread.join();
 	// }
-	int type = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z]; // TODO RESTORE & 0xFF;
-	if ((type & 0xFF) > blocks::WATER) { // ... TODO AND RM & 0xFF from here
+	int type = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z];
+	if ((type & blocks::TYPE) > blocks::WATER) {
 		return (blocks::AIR);
 	}
 	return (type);
@@ -630,7 +630,7 @@ void Chunk::explosion( glm::vec3 pos, int power )
 					std::vector<glm::ivec3> vt = voxel_traversal(pos, end);
 					intensity += 0.75f;
 					for (auto &p : vt) {
-						int type = getBlockAt(p.x - _startX, p.y - _startY, p.z) & 0xFF;
+						int type = getBlockAt(p.x - _startX, p.y - _startY, p.z) & blocks::TYPE;
 						intensity -= 0.75f + s_blocks[type]->blast_resistance;
 						if (intensity < 0) {
 							break ;
@@ -723,7 +723,7 @@ void Chunk::updateFurnaces( double currentTime )
 		if (state != furnace_state::NOCHANGE) {
 			// std::cout << "FURNACE STATE CHANGE TO " << state << std::endl;
 			int value = _blocks[fur.first];
-			_blocks[fur.first] = (value & 0xFFFFEFFF) + ((state == furnace_state::ON) << 12);
+			_blocks[fur.first] = (value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED)) + ((state == furnace_state::ON) << REDSTONE::ACTIVATED_OFFSET);
 			// set/unset furnace position as light source of 13 using state
 			int posZ = fur.first & (WORLD_HEIGHT - 1);
 			int posY = ((fur.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));

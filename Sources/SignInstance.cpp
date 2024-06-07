@@ -48,7 +48,7 @@ void SignInstance::displayText( std::vector<t_shaderInput> &partArr )
 	}
 
 	glm::vec3 right, front, up;
-	switch ((_value >> 9) & 0x7) {
+	switch ((_value >> blocks::ORIENTATION_OFFSET) & 0x7) {
 		case (face_dir::MINUSX):
 			right = glm::vec3( 0, 1, 0);
 			front = glm::vec3(-1, 0, 0);

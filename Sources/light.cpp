@@ -76,7 +76,7 @@ void Chunk::generate_lights( void )
 			char light_level = 15;
 			for (int level = WORLD_HEIGHT - 1; level >= 0; level--) {
 				if (light_level) {
-					int type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xFF;
+					int type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & blocks::TYPE;
 					if (!s_blocks[type]->transparent) { // block hit
 						light_level = 0;
 					} else if (type == blocks::OAK_LEAVES || type >= blocks::WATER) {
@@ -133,9 +133,9 @@ int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets
 	// return (!!air_flower(getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]), true, true, false)
 	// 		+ !!air_flower(getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]), true, true, false)
 	// 		+ !!air_flower(getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]), true, true, false));
-	return (!s_blocks[getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]) & 0xFF]->transparent
-			+ !s_blocks[getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]) & 0xFF]->transparent
-			+ !s_blocks[getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]) & 0xFF]->transparent);
+	return (!s_blocks[getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]) & blocks::TYPE]->transparent
+			+ !s_blocks[getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]) & blocks::TYPE]->transparent
+			+ !s_blocks[getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]) & blocks::TYPE]->transparent);
 }
 
 void Chunk::fill_vertex_array( void )
@@ -150,7 +150,7 @@ void Chunk::fill_vertex_array( void )
 				if (block_value & blocks::NOTVISIBLE) {
 					continue ;
 				}
-				s_blocks[block_value & 0xFF]->addMesh(this, _vertices, {_startX, _startY}, {row, col, level}, block_value);
+				s_blocks[block_value & blocks::TYPE]->addMesh(this, _vertices, {_startX, _startY}, {row, col, level}, block_value);
 			}
 		}
 	}
@@ -289,7 +289,7 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 			}
 		}
 	} else {
-		int type = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] & 0xFF;
+		int type = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] & blocks::TYPE;
 		// if (air_flower(type, false, true, true) && type != blocks::OAK_SLAB_BOTTOM && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
 		// 	return ;
 		// }

@@ -60,7 +60,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
-	int value = _blocks[offset], type = value & 0xFF; // TODO better handling of invis block gets deleted
+	int value = _blocks[offset], type = value & blocks::TYPE; // TODO better handling of invis block gets deleted
 	if (type == blocks::CHEST) {
 		auto search = _chests.find(offset);
 		if (search != _chests.end()) {
@@ -143,10 +143,10 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":add block " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
-	int type = block_value & 0xFF;
+	int type = block_value & blocks::TYPE;
 	int shape = s_blocks[type]->geometry;
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
-		int type_under = (_blocks[offset - 1] & 0xFF);
+		int type_under = (_blocks[offset - 1] & blocks::TYPE);
 		if (type_under == blocks::AIR) {
 			if (useInventory) {
 				_inventory->removeBlock(false);
@@ -164,38 +164,38 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		// if not, check if block underneath and change orientation
 		// else abort mission
 		int neighbourShape = GEOMETRY::NONE;
-		switch ((block_value >> 9) & 0x7) {
+		switch ((block_value >> blocks::ORIENTATION_OFFSET) & 0x7) {
 		case face_dir::PLUSX:
-			neighbourShape = s_blocks[getBlockAt(pos.x + 1, pos.y, pos.z) & 0xFF]->geometry;
+			neighbourShape = s_blocks[getBlockAt(pos.x + 1, pos.y, pos.z) & blocks::TYPE]->geometry;
 			break;
 		case face_dir::MINUSX:
-			neighbourShape = s_blocks[getBlockAt(pos.x - 1, pos.y, pos.z) & 0xFF]->geometry;
+			neighbourShape = s_blocks[getBlockAt(pos.x - 1, pos.y, pos.z) & blocks::TYPE]->geometry;
 			break;
 		case face_dir::PLUSY:
-			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y + 1, pos.z) & 0xFF]->geometry;
+			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y + 1, pos.z) & blocks::TYPE]->geometry;
 			break;
 		case face_dir::MINUSY:
-			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y - 1, pos.z) & 0xFF]->geometry;
+			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y - 1, pos.z) & blocks::TYPE]->geometry;
 			break;
 		}
 		if (neighbourShape != GEOMETRY::CUBE) {
-			block_value = type + (face_dir::MINUSZ << 9);
-			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1) & 0xFF]->geometry;
+			block_value = type + (face_dir::MINUSZ << blocks::ORIENTATION_OFFSET);
+			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1) & blocks::TYPE]->geometry;
 			if (!(neighbourShape == GEOMETRY::CUBE || neighbourShape == GEOMETRY::SLAB_TOP
 				|| neighbourShape == GEOMETRY::STAIRS_TOP || neighbourShape == GEOMETRY::FENCE)) {
 				return ;
 			}
 		}
 		if (type == blocks::TORCH) {
-			addFlame(offset, pos, blocks::TORCH, (block_value >> 9) & 0x7);
+			addFlame(offset, pos, blocks::TORCH, (block_value >> blocks::ORIENTATION_OFFSET) & 0x7);
 		}
 	} else if (shape == GEOMETRY::PISTON) {
-		block_value += (_camera->getOrientation6() << 9);
+		block_value += (_camera->getOrientation6() << blocks::ORIENTATION_OFFSET);
 	} else if (type == blocks::OBSERVER) {
-		block_value += (opposite_dir(_camera->getOrientation6()) << 9);
+		block_value += (opposite_dir(_camera->getOrientation6()) << blocks::ORIENTATION_OFFSET);
 	} else if (s_blocks[type]->oriented) {
-		if ((type != blocks::LEVER && shape != GEOMETRY::BUTTON) || ((block_value >> 12) & 0x3) != PLACEMENT::WALL) {
-			block_value += (_camera->getOrientation() << 9);
+		if ((type != blocks::LEVER && shape != GEOMETRY::BUTTON) || ((block_value >> blocks::BITFIELD_OFFSET) & 0x3) != PLACEMENT::WALL) {
+			block_value += (_camera->getOrientation() << blocks::ORIENTATION_OFFSET);
 		}
 		switch (shape) {
 			case GEOMETRY::STAIRS_BOTTOM:
@@ -205,18 +205,18 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			case GEOMETRY::DOOR:
 				handle_door_placement(pos, block_value);
 				if (block_value == blocks::AIR) return ; // door couldn't be placed
-				else if (!((block_value >> 12) & DOOR::UPPER_HALF)) { // place upper_half
-					_blocks[offset + 1] = block_value | (DOOR::UPPER_HALF << 12);
+				else if (!((block_value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF)) { // place upper_half
+					_blocks[offset + 1] = block_value | (DOOR::UPPER_HALF << blocks::BITFIELD_OFFSET);
 					_removed.erase(offset + 1);
-					_added[offset + 1] = block_value | (DOOR::UPPER_HALF << 12);
+					_added[offset + 1] = block_value | (DOOR::UPPER_HALF << blocks::BITFIELD_OFFSET);
 				}
 				break ;
 			case GEOMETRY::REPEATER:
 				previous = getBlockAt(pos.x, pos.y, pos.z - 1);
-				if (s_blocks[previous & 0xFF]->isTransparent(previous) && (previous & 0xFF) != blocks::GLASS && (previous & 0xFF) != blocks::OBSERVER) {
+				if (s_blocks[previous & blocks::TYPE]->isTransparent(previous) && (previous & blocks::TYPE) != blocks::GLASS && (previous & blocks::TYPE) != blocks::OBSERVER) {
 					return ;
 				}
-				block_value ^= (1 << 9); // inverse dir (0->1, 1->0, 2->3, 3->2)
+				block_value ^= (1 << blocks::ORIENTATION_OFFSET); // inverse dir (0->1, 1->0, 2->3, 3->2)
 				initRepeater(pos, block_value, true);
 				break ;
 		}
@@ -226,7 +226,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		if (previous >= blocks::WATER) {
 			return ;
 		}
-		int type_below = _blocks[offset - 1] & 0xFF;
+		int type_below = _blocks[offset - 1] & blocks::TYPE;
 		if (type == blocks::WHEAT_CROP) {
 		} else if (type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
 			return ; // can't place flower on something else than grass/dirt block
@@ -234,7 +234,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			return ;
 		}
 	} else if (shape == GEOMETRY::DUST) {
-		int shape_below = s_blocks[_blocks[offset - 1] & 0xFF]->geometry;
+		int shape_below = s_blocks[_blocks[offset - 1] & blocks::TYPE]->geometry;
 		if (!(shape_below == GEOMETRY::CUBE || shape_below == GEOMETRY::SLAB_TOP || shape_below == GEOMETRY::PISTON
 			|| shape_below == GEOMETRY::STAIRS_TOP || shape_below == GEOMETRY::GLASS)) {
 			return ;
@@ -266,20 +266,20 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 {
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	int value = _blocks[offset];
-	if ((value & 0xFF) != type) {
-		std::cerr << "Chunk::regeneration type diff " << s_blocks[value & 0xFF]->name << " vs " << s_blocks[type]->name << std::endl;
+	if ((value & blocks::TYPE) != type) {
+		std::cerr << "Chunk::regeneration type diff " << s_blocks[value & blocks::TYPE]->name << " vs " << s_blocks[type]->name << std::endl;
 		return ;
 	}
 	switch (type) {
 	case blocks::OAK_DOOR:
-		value ^= (DOOR::OPEN << 12);
+		value ^= (DOOR::OPEN << blocks::BITFIELD_OFFSET);
 		_blocks[offset] = value;
 		_added[offset] = value;
-		pos.z += ((value >> 12) & DOOR::UPPER_HALF) ? -1 : 1;
-		value ^= (DOOR::UPPER_HALF << 12);
+		pos.z += ((value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF) ? -1 : 1;
+		value ^= (DOOR::UPPER_HALF << blocks::BITFIELD_OFFSET);
 		break ;
 	case blocks::OAK_TRAPDOOR:
-		value ^= (DOOR::OPEN << 12);
+		value ^= (DOOR::OPEN << blocks::BITFIELD_OFFSET);
 		break ;
 	case blocks::LEVER:
 		value ^= REDSTONE::POWERED;
@@ -304,7 +304,7 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 		scheduleRedstoneTick({pos, ((type == blocks::STONE_BUTTON) ? 10 : 15) * REDSTONE::TICK});
 		break ;
 	default:
-		std::cout << "ERROR Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & 0xFF]->name << std::endl;
+		std::cout << "ERROR Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & blocks::TYPE]->name << std::endl;
 		return ;
 	}
 	setBlockAt(value, pos, true);
@@ -319,7 +319,7 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 */
 void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif )
 {
-	int previous_type = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z] & 0xFF;
+	int previous_type = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z] & blocks::TYPE;
 	switch (modif) {
 		case Modif::REMOVE:
 			if (previous_type == blocks::AIR || previous_type == blocks::BEDROCK) { // can't rm bedrock
@@ -329,7 +329,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			remove_block(useInventory, pos);
 		break ;
 		case Modif::ADD:
-			if (type == blocks::WHEAT_CROP && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z - 1] & 0xFF) != blocks::FARMLAND) { // can't place crop on something other than farmland
+			if (type == blocks::WHEAT_CROP && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z - 1] & blocks::TYPE) != blocks::FARMLAND) { // can't place crop on something other than farmland
 				return ;
 			} else if ((previous_type != blocks::AIR && previous_type < blocks::WATER) || type == blocks::AIR) { // can't replace block
 				return ;
@@ -338,7 +338,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			add_block(useInventory, pos, type, previous_type);
 			break ;
 		case Modif::REPLACE:
-			if (type == blocks::DIRT_PATH && pos.z < 254 && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z + 1] & 0xFF) != blocks::AIR) { // can't turn dirt to dirt path if anything above it
+			if (type == blocks::DIRT_PATH && pos.z < 254 && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z + 1] & blocks::TYPE) != blocks::AIR) { // can't turn dirt to dirt path if anything above it
 				return ;
 			} else if ((type == blocks::DIRT_PATH || type == blocks::FARMLAND) && previous_type != blocks::DIRT && previous_type != blocks::GRASS_BLOCK) {
 				return ;
@@ -376,11 +376,11 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 */
 void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 {
-	int type = (value & 0xFF), prev_type = (previous & 0xFF);
+	int type = (value & blocks::TYPE), prev_type = (previous & blocks::TYPE);
 	std::cout << "UPDATE_BLOCK at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << ". " << s_blocks[prev_type]->name << " -> " << s_blocks[type]->name << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	if (type == blocks::SAND || type == blocks::GRAVEL) {
-		int type_under = (_blocks[offset - 1] & 0xFF);
+		int type_under = (_blocks[offset - 1] & blocks::TYPE);
 		if (type_under == blocks::AIR) {
 			if (previous == blocks::AIR) {
 				_entities.push_back(new FallingBlockEntity(this, {pos.x + _startX, pos.y + _startY, pos.z}, {type, 1, {0, 0}}));
@@ -615,16 +615,16 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update, bo
 		}
 		_vertex_update = true;
 		// update observers
-		if (!observer || (value & 0xFF) == blocks::MOVING_PISTON) {
+		if (!observer || (value & blocks::TYPE) == blocks::MOVING_PISTON) {
 			return ;
 		}
-		if ((value & 0xFF) == blocks::OBSERVER && (previous & 0xFF) == blocks::MOVING_PISTON) {
+		if ((value & blocks::TYPE) == blocks::OBSERVER && (previous & blocks::TYPE) == blocks::MOVING_PISTON) {
 			scheduleRedstoneTick({{posX, posY, posZ}, REDSTONE::TICK, REDSTONE::ON});
 		}
 		for (int i = 0; i < 6; ++i) {
 			const glm::ivec3 delta = adj_blocks[i];
 			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z);
-			if ((adj & 0xFF) == blocks::OBSERVER && delta == -adj_blocks[(adj >> 9) & 0x7]) {
+			if ((adj & blocks::TYPE) == blocks::OBSERVER && delta == -adj_blocks[(adj >> blocks::ORIENTATION_OFFSET) & 0x7]) {
 				scheduleRedstoneTick({{posX + delta.x, posY + delta.y, posZ + delta.z}, REDSTONE::TICK, REDSTONE::ON});
 			}
 		}
@@ -664,7 +664,7 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		}
 	} else {
 		_vertex_update = true;
-		int value = getBlockAt(pos), type = (value & 0xFF);
+		int value = getBlockAt(pos), type = (value & blocks::TYPE);
 
 		bool transparent = s_blocks[source]->isTransparent(source);
 
@@ -692,19 +692,35 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		}
 
 		// update fence status
-		if ((type == blocks::OAK_FENCE || type == blocks::GLASS_PANE) && (!transparent || source == type)) {
+		if (type == blocks::OAK_FENCE || type == blocks::GLASS_PANE) {
 			switch (dir) {
 				case face_dir::MINUSX:
-					setBlockAt(value | (FENCE::PX << 12), pos, false);
+					if (!transparent || source == type) {
+						setBlockAt(value | (FENCE::PX << blocks::BITFIELD_OFFSET), pos, false);
+					} else if (source == blocks::AIR && (value & (FENCE::PX << blocks::BITFIELD_OFFSET))) {
+						setBlockAt(value ^ (FENCE::PX << blocks::BITFIELD_OFFSET), pos, false);
+					}
 					break ;
 				case face_dir::PLUSX:
-					setBlockAt(value | (FENCE::MX << 12), pos, false);
+					if (!transparent || source == type) {
+						setBlockAt(value | (FENCE::MX << blocks::BITFIELD_OFFSET), pos, false);
+					} else if (source == blocks::AIR && (value & (FENCE::MX << blocks::BITFIELD_OFFSET))) {
+						setBlockAt(value ^ (FENCE::MX << blocks::BITFIELD_OFFSET), pos, false);
+					}
 					break ;
 				case face_dir::MINUSY:
-					setBlockAt(value | (FENCE::PY << 12), pos, false);
+					if (!transparent || source == type) {
+						setBlockAt(value | (FENCE::PY << blocks::BITFIELD_OFFSET), pos, false);
+					} else if (source == blocks::AIR && (value & (FENCE::PY << blocks::BITFIELD_OFFSET))) {
+						setBlockAt(value ^ (FENCE::PY << blocks::BITFIELD_OFFSET), pos, false);
+					}
 					break ;
 				case face_dir::PLUSY:
-					setBlockAt(value | (FENCE::MY << 12), pos, false);
+					if (!transparent || source == type) {
+						setBlockAt(value | (FENCE::MY << blocks::BITFIELD_OFFSET), pos, false);
+					} else if (source == blocks::AIR && (value & (FENCE::MY << blocks::BITFIELD_OFFSET))) {
+						setBlockAt(value ^ (FENCE::MY << blocks::BITFIELD_OFFSET), pos, false);
+					}
 					break ;
 			}
 		}
@@ -712,7 +728,7 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		// break attached block whose attachement got removed
 		glm::ivec3 attachement = getAttachedDir(value);
 		if (attachement != glm::ivec3(0, 0, 0)) {
-			int base = (getBlockAt(pos + attachement) & 0xFF);
+			int base = (getBlockAt(pos + attachement) & blocks::TYPE);
 			if (base == blocks::AIR || base == blocks::PISTON_HEAD) {
 				if (s_blocks[type]->byHand) {
 					entity_block(pos.x, pos.y, pos.z, type);
@@ -788,202 +804,202 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 {
 	int behind, front, left, right;
-	switch ((type >> 9) & 0x7) {
+	switch ((type >> blocks::ORIENTATION_OFFSET) & 0x7) {
 		case face_dir::MINUSX:
-			type |= ((CORNERS::PM | CORNERS::PP) << 12);
+			type |= ((CORNERS::PM | CORNERS::PP) << blocks::BITFIELD_OFFSET);
 			behind = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((behind & 0xFF) == (type & 0xFF)) {
-				if (((behind >> 9) & 0x7) == face_dir::MINUSY) {
-					type ^= (CORNERS::PM << 12); // outside corner
+			if ((behind & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
+					type ^= (CORNERS::PM << blocks::BITFIELD_OFFSET); // outside corner
 					goto SKIP_FRONT_MINUSX;
-				} else if (((behind >> 9) & 0x7) == face_dir::PLUSY) {
-					type ^= (CORNERS::PP << 12);
+				} else if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
+					type ^= (CORNERS::PP << blocks::BITFIELD_OFFSET);
 					goto SKIP_FRONT_MINUSX;
 				}
 			}
 			front = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((front & 0xFF) == (type & 0xFF)) {
-				if (((front >> 9) & 0x7) == face_dir::MINUSY) {
-					type |= (CORNERS::MP << 12); // inside corner
-				} else if (((front >> 9) & 0x7) == face_dir::PLUSY) {
-					type |= (CORNERS::MM << 12);
+			if ((front & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
+					type |= (CORNERS::MP << blocks::BITFIELD_OFFSET); // inside corner
+				} else if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
+					type |= (CORNERS::MM << blocks::BITFIELD_OFFSET);
 				}
 			}
 			SKIP_FRONT_MINUSX:
 			left = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((left & 0xFF) == (type & 0xFF)) {
-				if (((left >> 9) & 0x7) == face_dir::MINUSY) {
-					if (((left >> 12) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
-						left |= (CORNERS::PM << 12); // transform left stair into inside corner stair
+			if ((left & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
+					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
+						left |= (CORNERS::PM << blocks::BITFIELD_OFFSET); // transform left stair into inside corner stair
 						setBlockAt(left, pos.x, pos.y + 1, pos.z, false);
 					}
-				} else if (((left >> 9) & 0x7) == face_dir::PLUSY) {
-					if (((left >> 12) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
-						left ^= (CORNERS::MM << 12); // transform left stair into outside corner stair
+				} else if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
+					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
+						left ^= (CORNERS::MM << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
 						setBlockAt(left, pos.x, pos.y + 1, pos.z, false);
 					}
 				}
 			}
 			right = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((right & 0xFF) == (type & 0xFF)) {
-				if (((right >> 9) & 0x7) == face_dir::MINUSY) {
-					if (((right >> 12) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
-						right ^= (CORNERS::MP << 12); // transform left stair into outside corner stair
+			if ((right & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
+					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
+						right ^= (CORNERS::MP << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
 						setBlockAt(right, pos.x, pos.y - 1, pos.z, false);
 					}
-				} else if (((right >> 9) & 0x7) == face_dir::PLUSY) {
-					if (((right >> 12) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
-						right |= (CORNERS::PP << 12); // transform right stair into inside corner stair
+				} else if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
+					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
+						right |= (CORNERS::PP << blocks::BITFIELD_OFFSET); // transform right stair into inside corner stair
 						setBlockAt(right, pos.x, pos.y - 1, pos.z, false);
 					}
 				}
 			}
 			break ;
 		case face_dir::PLUSX:
-			type |= ((CORNERS::MM | CORNERS::MP) << 12);
+			type |= ((CORNERS::MM | CORNERS::MP) << blocks::BITFIELD_OFFSET);
 			behind = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((behind & 0xFF) == (type & 0xFF)) {
-				if (((behind >> 9) & 0x7) == face_dir::MINUSY) {
-					type ^= (CORNERS::MM << 12); // outside corner
+			if ((behind & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
+					type ^= (CORNERS::MM << blocks::BITFIELD_OFFSET); // outside corner
 					goto SKIP_FRONT_PLUSX;
-				} else if (((behind >> 9) & 0x7) == face_dir::PLUSY) {
-					type ^= (CORNERS::MP << 12);
+				} else if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
+					type ^= (CORNERS::MP << blocks::BITFIELD_OFFSET);
 					goto SKIP_FRONT_PLUSX;
 				}
 			}
 			front = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((front & 0xFF) == (type & 0xFF)) {
-				if (((front >> 9) & 0x7) == face_dir::MINUSY) {
-					type |= (CORNERS::PP << 12); // inside corner
-				} else if (((front >> 9) & 0x7) == face_dir::PLUSY) {
-					type |= (CORNERS::PM << 12);
+			if ((front & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
+					type |= (CORNERS::PP << blocks::BITFIELD_OFFSET); // inside corner
+				} else if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
+					type |= (CORNERS::PM << blocks::BITFIELD_OFFSET);
 				}
 			}
 			SKIP_FRONT_PLUSX:
 			left = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((left & 0xFF) == (type & 0xFF)) {
-				if (((left >> 9) & 0x7) == face_dir::MINUSY) {
-					if (((left >> 12) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
-						left ^= (CORNERS::PP << 12); // transform left stair into outside corner stair
+			if ((left & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
+					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
+						left ^= (CORNERS::PP << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
 						setBlockAt(left, pos.x, pos.y - 1, pos.z, false);
 					}
-				} else if (((left >> 9) & 0x7) == face_dir::PLUSY) {
-					if (((left >> 12) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
-						left |= (CORNERS::MP << 12); // transform left stair into inside corner stair
+				} else if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
+					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
+						left |= (CORNERS::MP << blocks::BITFIELD_OFFSET); // transform left stair into inside corner stair
 						setBlockAt(left, pos.x, pos.y - 1, pos.z, false);
 					}
 				}
 			}
 			right = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((right & 0xFF) == (type & 0xFF)) {
-				if (((right >> 9) & 0x7) == face_dir::MINUSY) {
-					if (((right >> 12) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
-						right |= (CORNERS::MM << 12); // transform right stair into inside corner stair
+			if ((right & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
+					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
+						right |= (CORNERS::MM << blocks::BITFIELD_OFFSET); // transform right stair into inside corner stair
 						setBlockAt(right, pos.x, pos.y + 1, pos.z, false);
 					}
-				} else if (((right >> 9) & 0x7) == face_dir::PLUSY) {
-					if (((right >> 12) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
-						right ^= (CORNERS::PM << 12); // transform left stair into outside corner stair
+				} else if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
+					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
+						right ^= (CORNERS::PM << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
 						setBlockAt(right, pos.x, pos.y + 1, pos.z, false);
 					}
 				}
 			}
 			break ;
 		case face_dir::MINUSY:
-			type |= ((CORNERS::MP | CORNERS::PP) << 12);
+			type |= ((CORNERS::MP | CORNERS::PP) << blocks::BITFIELD_OFFSET);
 			behind = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((behind & 0xFF) == (type & 0xFF)) {
-				if (((behind >> 9) & 0x7) == face_dir::MINUSX) {
-					type ^= (CORNERS::MP << 12); // outside corner
+			if ((behind & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
+					type ^= (CORNERS::MP << blocks::BITFIELD_OFFSET); // outside corner
 					goto SKIP_FRONT_MINUSY;
-				} else if (((behind >> 9) & 0x7) == face_dir::PLUSX) {
-					type ^= (CORNERS::PP << 12);
+				} else if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
+					type ^= (CORNERS::PP << blocks::BITFIELD_OFFSET);
 					goto SKIP_FRONT_MINUSY;
 				}
 			}
 			front = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((front & 0xFF) == (type & 0xFF)) {
-				if (((front >> 9) & 0x7) == face_dir::MINUSX) {
-					type |= (CORNERS::PM << 12); // inside corner
-				} else if (((front >> 9) & 0x7) == face_dir::PLUSX) {
-					type |= (CORNERS::MM << 12);
+			if ((front & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
+					type |= (CORNERS::PM << blocks::BITFIELD_OFFSET); // inside corner
+				} else if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
+					type |= (CORNERS::MM << blocks::BITFIELD_OFFSET);
 				}
 			}
 			SKIP_FRONT_MINUSY:
 			left = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((left & 0xFF) == (type & 0xFF)) {
-				if (((left >> 9) & 0x7) == face_dir::MINUSX) {
-					if (((left >> 12) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
-						left ^= (CORNERS::PM << 12); // transform left stair into outside corner stair
+			if ((left & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
+					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
+						left ^= (CORNERS::PM << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
 						setBlockAt(left, pos.x - 1, pos.y, pos.z, false);
 					}
-				} else if (((left >> 9) & 0x7) == face_dir::PLUSX) {
-					if (((left >> 12) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
-						left |= (CORNERS::PP << 12); // transform left stair into inside corner stair
+				} else if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
+					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
+						left |= (CORNERS::PP << blocks::BITFIELD_OFFSET); // transform left stair into inside corner stair
 						setBlockAt(left, pos.x - 1, pos.y, pos.z, false);
 					}
 				}
 			}
 			right = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((right & 0xFF) == (type & 0xFF)) {
-				if (((right >> 9) & 0x7) == face_dir::MINUSX) {
-					if (((right >> 12) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
-						right |= (CORNERS::MP << 12); // transform right stair into inside corner stair
+			if ((right & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
+					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
+						right |= (CORNERS::MP << blocks::BITFIELD_OFFSET); // transform right stair into inside corner stair
 						setBlockAt(right, pos.x + 1, pos.y, pos.z, false);
 					}
-				} else if (((right >> 9) & 0x7) == face_dir::PLUSX) {
-					if (((right >> 12) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
-						right ^= (CORNERS::MM << 12); // transform left stair into outside corner stair
+				} else if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
+					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
+						right ^= (CORNERS::MM << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
 						setBlockAt(right, pos.x + 1, pos.y, pos.z, false);
 					}
 				}
 			}
 			break ;
 		case face_dir::PLUSY:
-			type |= ((CORNERS::MM | CORNERS::PM) << 12);
+			type |= ((CORNERS::MM | CORNERS::PM) << blocks::BITFIELD_OFFSET);
 			behind = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((behind & 0xFF) == (type & 0xFF)) {
-				if (((behind >> 9) & 0x7) == face_dir::MINUSX) {
-					type ^= (CORNERS::MM << 12); // outside corner
+			if ((behind & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
+					type ^= (CORNERS::MM << blocks::BITFIELD_OFFSET); // outside corner
 					goto SKIP_FRONT_PLUSY;
-				} else if (((behind >> 9) & 0x7) == face_dir::PLUSX) {
-					type ^= (CORNERS::PM << 12);
+				} else if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
+					type ^= (CORNERS::PM << blocks::BITFIELD_OFFSET);
 					goto SKIP_FRONT_PLUSY;
 				}
 			}
 			front = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((front & 0xFF) == (type & 0xFF)) {
-				if (((front >> 9) & 0x7) == face_dir::MINUSX) {
-					type |= (CORNERS::PP << 12); // inside corner
-				} else if (((front >> 9) & 0x7) == face_dir::PLUSX) {
-					type |= (CORNERS::MP << 12);
+			if ((front & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
+					type |= (CORNERS::PP << blocks::BITFIELD_OFFSET); // inside corner
+				} else if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
+					type |= (CORNERS::MP << blocks::BITFIELD_OFFSET);
 				}
 			}
 			SKIP_FRONT_PLUSY:
 			left = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((left & 0xFF) == (type & 0xFF)) {
-				if (((left >> 9) & 0x7) == face_dir::MINUSX) {
-					if (((left >> 12) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
-						left |= (CORNERS::MM << 12); // transform left stair into inside corner stair
+			if ((left & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
+					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
+						left |= (CORNERS::MM << blocks::BITFIELD_OFFSET); // transform left stair into inside corner stair
 						setBlockAt(left, pos.x + 1, pos.y, pos.z, false);
 					}
-				} else if (((left >> 9) & 0x7) == face_dir::PLUSX) {
-					if (((left >> 12) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
-						left ^= (CORNERS::MP << 12); // transform left stair into outside corner stair
+				} else if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
+					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
+						left ^= (CORNERS::MP << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
 						setBlockAt(left, pos.x + 1, pos.y, pos.z, false);
 					}
 				}
 			}
 			right = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((right & 0xFF) == (type & 0xFF)) {
-				if (((right >> 9) & 0x7) == face_dir::MINUSX) {
-					if (((right >> 12) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
-						right ^= (CORNERS::PP << 12); // transform left stair into outside corner stair
+			if ((right & blocks::TYPE) == (type & blocks::TYPE)) {
+				if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
+					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
+						right ^= (CORNERS::PP << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
 						setBlockAt(right, pos.x - 1, pos.y, pos.z, false);
 					}
-				} else if (((right >> 9) & 0x7) == face_dir::PLUSX) {
-					if (((right >> 12) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
-						right |= (CORNERS::PM << 12); // transform right stair into inside corner stair
+				} else if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
+					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
+						right |= (CORNERS::PM << blocks::BITFIELD_OFFSET); // transform right stair into inside corner stair
 						setBlockAt(right, pos.x - 1, pos.y, pos.z, false);
 					}
 				}
@@ -995,7 +1011,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 void Chunk::handle_door_placement( glm::ivec3 pos, int &type )
 {
 	int below = getBlockAt(pos.x, pos.y, pos.z - 1, false);
-	if (!s_blocks[below & 0xFF]->collisionHitbox_1x1x1) {
+	if (!s_blocks[below & blocks::TYPE]->collisionHitbox_1x1x1) {
 		type = blocks::AIR;
 		return ;
 	}
@@ -1011,19 +1027,19 @@ void Chunk::handle_door_placement( glm::ivec3 pos, int &type )
 void Chunk::handle_fence_placement( glm::ivec3 pos, int &type )
 {
 	int next = getBlockAt(pos.x - 1, pos.y, pos.z);
-	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == (type & 0xFF)) {
-		type |= (FENCE::MX << 12);
+	if (s_blocks[next & blocks::TYPE]->collisionHitbox_1x1x1 || (next & blocks::TYPE) == (type & blocks::TYPE)) {
+		type |= (FENCE::MX << blocks::BITFIELD_OFFSET);
 	}
 	next = getBlockAt(pos.x + 1, pos.y, pos.z);
-	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == (type & 0xFF)) {
-		type |= (FENCE::PX << 12);
+	if (s_blocks[next & blocks::TYPE]->collisionHitbox_1x1x1 || (next & blocks::TYPE) == (type & blocks::TYPE)) {
+		type |= (FENCE::PX << blocks::BITFIELD_OFFSET);
 	}
 	next = getBlockAt(pos.x, pos.y - 1, pos.z);
-	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == (type & 0xFF)) {
-		type |= (FENCE::MY << 12);
+	if (s_blocks[next & blocks::TYPE]->collisionHitbox_1x1x1 || (next & blocks::TYPE) == (type & blocks::TYPE)) {
+		type |= (FENCE::MY << blocks::BITFIELD_OFFSET);
 	}
 	next = getBlockAt(pos.x, pos.y + 1, pos.z);
-	if (s_blocks[next & 0xFF]->collisionHitbox_1x1x1 || (next & 0xFF) == (type & 0xFF)) {
-		type |= (FENCE::PY << 12);
+	if (s_blocks[next & blocks::TYPE]->collisionHitbox_1x1x1 || (next & blocks::TYPE) == (type & blocks::TYPE)) {
+		type |= (FENCE::PY << blocks::BITFIELD_OFFSET);
 	}
 }

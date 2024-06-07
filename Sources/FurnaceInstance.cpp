@@ -130,7 +130,7 @@ int FurnaceInstance::updateTimes( float currentTime )
 			_fuel_time += _current_fuel_time;
 			_current_fuel_time = s_blocks[_fuel.type]->fuel_time;
 			if (_current_fuel_time) {
-				if (--_fuel.type == 0) {
+				if (--_fuel.amount == 0) {
 					_fuel = {0};
 				}
 			} else {

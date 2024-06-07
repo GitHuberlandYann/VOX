@@ -307,35 +307,36 @@ Some info:
     - nm vox | grep <function>
     - export MallocStackLogging=1 into system("leaks vox");
 
-
 - _blocks
 	- all - reserved bits:
-		- 0xFF  type
-		- 0x100 NotVisible
+		- 0xFFF  type ==> 4096 possible blocks
+		- 0x1000 NotVisible (1 << 12)
+		- (0x7 << 13) Orientation
 		- 0x10000 strongly powered (1 << 16)
 		- 0x20000 weakdy   powered (1 << 17) (typo on purpose, meaning by redtone dust)
 		- 0x40000 activated (1 << 18) - redstone componants
 		- 0x80000 adventure_block (1 << 19) - only blocks you can break in adventure mode
-		- 0xF << 20 signal strength
-	- Furnace 0x7 << 9 == orientation, 0x1000 == furnace ON/OFF
+		- 0xF00000 signal strength (0xF << 20)
+		- 0xFF000000 custom info (0xFF << 24)
+	- Furnace 0x7 << 9 == orientation, 1 << 18 == furnace ON/OFF
 	- table craft 0x7 << 9 == orientation
 	- torch 0x7 << 9 == orientation
-	- Farmland 0x1 << 9 == WET_FARMLAND, 0x7 << 10 == wetness
-	- Leaves 0x1 << 9 == hand placed
-	- saplings 0x1 << 9 == growth stage
-	- stairs 0x7 << 9 == orientation, 0xF << 12 == corners
-	- doors 0x7 << 9 == orientation, 0x1000 == half, 0x2000 == hinge, 0x4000 == open
-	- trapdoors 0x7 << 9 == orientation, 0x1000 == half, 0x4000 == open
-	- fence 0xF << 12 == 'arms'
-	- glass panes 0xF << 12 == 'arms'
-	- lever 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor)
-	- button 0x7 << 9 == orientation, 0x3 << 12 == placement(wall, ceiling, floor)
+	- Farmland 0x1 << 24 == WET_FARMLAND, 0x7 << 25 == moisture
+	- Leaves 0x1 << 24 == hand placed
+	- saplings 0x1 << 24 == growth stage
+	- stairs 0x7 << 9 == orientation, 0xF << 24 == corners
+	- doors 0x7 << 9 == orientation, 1 << 24 == half, 1 << 25 == hinge, 1 << 26 == open
+	- trapdoors 0x7 << 9 == orientation, 1 << 24 == half, 1 << 25 == open
+	- fence 0xF << 24 == 'arms'
+	- glass panes 0xF << 24 == 'arms'
+	- lever 0x7 << 9 == orientation, 0x3 << 24 == placement(wall, ceiling, floor)
+	- button 0x7 << 9 == orientation, 0x3 << 24 == placement(wall, ceiling, floor)
 	- redstone lamp 1 << 18 lit
 	- redstone dust 0xF << 20 strength 0xFF << 24 'arms'
-	- repeater 0x7 << 9 orientation, 0x3 << 12 delay, 1 << 15 locked, 1 << 16 lit
-	- comparator 0x7 << 9 orientation, 1 << 12 mode, 0xF << 20 strength
-	- piston 0x7 << 9 orientation, 1 << 18 activated, 1 << 12 inMovement
-	- piston_head 1 << 12 sticky head
+	- repeater 0x7 << 9 orientation, 0x3 << 24 delay, 1 << 27 locked, 1 << 16 lit
+	- comparator 0x7 << 9 orientation, 1 << 24 mode, 0xF << 20 strength
+	- piston 0x7 << 9 orientation, 1 << 18 activated, 1 << 24 inMovement
+	- piston_head 1 << 24 sticky head
 	- moving_piston 1 << 28 retracting
 
 	- powered blocks: (1 << 16)

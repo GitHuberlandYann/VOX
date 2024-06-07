@@ -325,7 +325,7 @@ namespace EXTRUSION {
 		}
 		light <<= 24;
 
-		int texStartX = s_blocks[type]->texX(face_dir::MINUSY, 2) * 16, texStartY = s_blocks[type]->texY(face_dir::MINUSY, 2) * 16;
+		int texStartX = s_blocks[type]->texX(face_dir::MINUSY, blocks::ITEM) * 16, texStartY = s_blocks[type]->texY(face_dir::MINUSY, blocks::ITEM) * 16;
 		// front face
 		int spec = texStartX + (texStartY << 8) + light;
 		t_shaderInput v0 = {spec, pos};

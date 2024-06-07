@@ -56,10 +56,18 @@ enum PLACEMENT {
 	CEILING
 };
 
-enum AXIS {
-	Z,
-	X,
-	Y
+namespace SAPLING {
+	const int GROWTH = (1 << 24);
+};
+
+namespace LEAVES {
+	const int NATURAL = (1 << 24);
+};
+
+namespace FARMLAND {
+	const int WET = (1 << 24);
+	const int MOISTURE_OFFSET = 25;
+	const int MOISTURE = (0x7 << MOISTURE_OFFSET);
 };
 
 namespace REDSTONE {
@@ -89,20 +97,20 @@ namespace REDSTONE {
 	};
 
 	namespace REPEATER {
-		const int TICKS_OFFSET = 12;
-		const int LOCK = (1 << 15);
+		const int TICKS_OFFSET = 24;
+		const int LOCK = (1 << 27);
 	}
 
 	namespace COMPARATOR {
-		const int MODE = (1 << 12);
+		const int MODE = (1 << 24);
 		const int COMPARE = 0;
 		const int SUBSTRACT = 1;
 	};
 
 	namespace PISTON {
-		const int STICKY_OFFSET = 12;
+		const int STICKY_OFFSET = 24;
 		const int STICKY = (1 << STICKY_OFFSET);
-		const int MOVING = (1 << 12);
+		const int MOVING = (1 << 24);
 		const int RETRACTING = (1 << 28); // flag given to blocks::MOVING_PISTON to set their transparency -> transparent when retracting, solid when extending
 		const int FORCE_RETRACTION = 13; // used by Chunk::pistonExtendCount
 		const int CANCEL_RETRACTION = 42; // random nbr above 12, used by Chunk::pistonExtendCount
@@ -270,10 +278,14 @@ namespace blocks {
 		APPLE,
 		FLINT,
 		FLINT_AND_STEEL,
-		NOTVISIBLE = 1 << 8,
-		WET_FARMLAND = 1 << 9,
-		NATURAL = 1 << 9
 	};
+	const int TYPE = 0xFFF;
+	const int NOTVISIBLE = (1 << 12);
+	const int ORIENTATION_OFFSET = 13;
+	const int ORIENTATION_MASK = 0x7;
+	const int ORIENTATION = (ORIENTATION_MASK << ORIENTATION_OFFSET);
+	const int BITFIELD_OFFSET = 24;
+	const int ITEM = 1942;
 }
 
 struct Block {
@@ -317,12 +329,12 @@ struct Block {
 			}
 			return (tool >= needed_tool + needed_material_level && tool < needed_tool + 4);
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
-			(void)dir;(void)offset;
+		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+			(void)dir;(void)value;
 			return (textureX);
 		}
-		virtual int texY( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
-			(void)dir;(void)offset;
+		virtual int texY( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+			(void)dir;(void)value;
 			return (textureY);
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
@@ -838,8 +850,8 @@ struct GrassBlock : Cube {
 			hardness = 0.6f;
 			textureY = 1;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)offset;
+		virtual int texX( face_dir dir, int value ) const {
+			(void)value;
 			if (dir == face_dir::PLUSZ) {
 				return (1);
 			} else if (dir == face_dir::MINUSZ) {
@@ -864,17 +876,18 @@ struct OakLog : Cube {
 			hardness = 2.0f;
 			textureY = 2;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
+		virtual int texX( face_dir dir, int value ) const {
+			int axis = (value >> blocks::ORIENTATION_OFFSET) & 0x7;
 			switch (dir) {
 				case face_dir::MINUSZ:
 				case face_dir::PLUSZ:
-					return ((offset == AXIS::Z) + 2 * (offset == AXIS::X));
+					return ((axis == face_dir::PLUSZ) + 2 * (axis == face_dir::PLUSX));
 				case face_dir::MINUSX:
 				case face_dir::PLUSX:
-					return ((offset == AXIS::X) + 2 * (offset == AXIS::Y));
+					return ((axis == face_dir::PLUSX) + 2 * (axis == face_dir::PLUSY));
 				case face_dir::MINUSY:
 				case face_dir::PLUSY:
-					return ((offset == AXIS::Y) + 2 * (offset == AXIS::X));
+					return ((axis == face_dir::PLUSY) + 2 * (axis == face_dir::PLUSX));
 			}
 			return (0);
 		}
@@ -893,8 +906,8 @@ struct Cactus : Cube {
 			transparent = true;
 			textureY = 3;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)offset;
+		virtual int texX( face_dir dir, int value ) const {
+			(void)value;
 			if (dir == face_dir::PLUSZ) {
 				return (1);
 			} else if (dir == face_dir::MINUSZ) {
@@ -921,9 +934,9 @@ struct Farmland : Block {
 			hardness = 0.6f;
 			textureY = 1;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
+		virtual int texX( face_dir dir, int value ) const {
 			if (dir == face_dir::PLUSZ) {
-				return (2 + !offset);
+				return (2 + !(value & FARMLAND::WET));
 			}
 			return (4);
 		}
@@ -938,8 +951,8 @@ struct DirtPath : Farmland {
 			blast_resistance = 0.65f;
 			hardness = 0.65f;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)offset;
+		virtual int texX( face_dir dir, int value ) const {
+			(void)value;
 			if (dir == face_dir::PLUSZ) {
 				return (1);
 			} else if (dir == face_dir::MINUSZ) {
@@ -947,8 +960,8 @@ struct DirtPath : Farmland {
 			}
 			return (0);
 		}
-		virtual int texY(  face_dir dir, int offset ) const {
-			(void)offset;
+		virtual int texY(  face_dir dir, int value ) const {
+			(void)value;
 			if (dir == face_dir::MINUSZ) {
 				return (1);
 			}
@@ -967,8 +980,8 @@ struct TNT : Cube {
 			redstoneComponant = true;
 			textureY = 6;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)offset;
+		virtual int texX( face_dir dir, int value ) const {
+			(void)value;
 			if (dir == face_dir::PLUSZ) {
 				return (1);
 			} else if (dir == face_dir::MINUSZ) {
@@ -989,8 +1002,8 @@ struct Target : Cube {
 			hardness = 0.5f;
 			textureY = 7;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
-			(void)offset;
+		virtual int texX( face_dir dir, int value ) const {
+			(void)value;
 			return (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ);
 		}
 };
@@ -1010,10 +1023,10 @@ struct CraftingTable : Cube {
 			hardness = 2.5f;
 			textureY = 8;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
+		virtual int texX( face_dir dir, int value ) const {
 			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
 				return (1);
-			} else if ((offset & 0x7) == dir) {
+			} else if (((value >> blocks::ORIENTATION_OFFSET) & 0x7) == dir) {
 				return (2);
 			}
 			return (0);
@@ -1033,11 +1046,11 @@ struct Furnace : Cube {
 			hardness = 3.5f;
 			textureY = 9;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
+		virtual int texX( face_dir dir, int value ) const {
 			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
 				return (1);
-			} else if ((offset & 0x7) == dir) {
-				return (2 + ((offset >> 4) & 0x1));
+			} else if (((value >> blocks::ORIENTATION_OFFSET) & 0x7) == dir) {
+				return (2 + ((value >> REDSTONE::ACTIVATED_OFFSET) & 0x1));
 			}
 			return (0);
 		}
@@ -1088,18 +1101,18 @@ struct OakDoor : Door {
 			hardness = 3.0f;
 		}
 		// offset is bool half or 2 if item
-		virtual int texX( face_dir dir, int offset ) const {
+		virtual int texX( face_dir dir, int value ) const {
 			(void)dir;
-			return ((offset == 2) ? 9 : 0);
+			return ((value == blocks::ITEM) ? 9 : 0);
 		}
-		virtual int texY( face_dir dir, int offset ) const {
+		virtual int texY( face_dir dir, int value ) const {
 			switch (dir) {
 				case face_dir::PLUSZ:
 					return (10);
 				case face_dir::MINUSZ:
 					return (11);
 				default:
-					return ((offset == 2) ? 14 : 11 - (offset & DOOR::UPPER_HALF));
+					return ((value == blocks::ITEM) ? 14 : 11 - ((value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF));
 			}
 		}
 };
@@ -1516,6 +1529,7 @@ struct Glass : Block {
 			textureX = 4;
 			textureY = 11;
 		}
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
 };
 
 struct GlassPane : Block {
@@ -1595,9 +1609,9 @@ struct RedstoneLamp : Cube {
 			redstoneComponant = true;
 			textureX = 5;
 		}
-		virtual int texY( face_dir dir, int offset ) const {
+		virtual int texY( face_dir dir, int value ) const {
 			(void)dir;
-			return (8 + (offset == 1));
+			return ((value & REDSTONE::ACTIVATED) ? 9 : 8);
 		}
 };
 
@@ -1937,7 +1951,7 @@ struct Piston : Block {
 			textureY = 13;
 		}
 		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
-			int orientation = (value >> 9) & 0x7;
+			int orientation = (value >> blocks::ORIENTATION_OFFSET) & 0x7;
 			if (dir == orientation) {
 				return ((value & REDSTONE::PISTON::MOVING) ? 2 : 3 + (mined == blocks::STICKY_PISTON));
 			}
@@ -2000,7 +2014,7 @@ struct Observer : Block {
 			textureY = 12;
 		}
 		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
-			int orientation = (value >> 9) & 0x7;
+			int orientation = (value >> blocks::ORIENTATION_OFFSET) & 0x7;
 			if (dir == orientation) {
 				return (2);
 			}
@@ -2179,8 +2193,7 @@ struct RedstoneTorch : Torch {
 		}
 		virtual int texY( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
 			(void)dir;
-			if (offset == 2) return (11);
-			return (11 + offset);
+			return ((offset == blocks::ITEM) ? 11 : 11 + offset);
 		}
 };
 
@@ -2200,15 +2213,13 @@ struct RedstoneDust : Block {
 			transparent = true;
 			item3D = false;
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
+		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
 			(void)dir;
-			if (offset == 2) return (7);
-			return (6 - offset);
+			return ((value == blocks::ITEM) ? 7 : 6);
 		}
-		virtual int texY( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
+		virtual int texY( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
 			(void)dir;
-			if (offset == 2) return (8);
-			return (12);
+			return ((value == blocks::ITEM) ? 8 : 12);
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
@@ -2233,10 +2244,9 @@ struct Repeater : Block {
 			item3D = false;
 			textureY = 13;
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
+		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
 			(void)dir;
-			if (offset == 2) return (7);
-			return (6 - offset);
+			return ((value == blocks::ITEM) ? 7 : 6 - value);
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
@@ -2261,10 +2271,9 @@ struct Comparator : Block {
 			item3D = false;
 			textureY = 14;
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
+		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
 			(void)dir;
-			if (offset == 2) return (7);
-			return (6 - offset);
+			return ((value == blocks::ITEM) ? 7 : 6 - value);
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };

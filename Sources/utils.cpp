@@ -293,7 +293,7 @@ std::string doubleDigits( int nb )
    * if air_water, water is NOT considered as air (I know this is dumb)*/
 int air_flower( int value, bool air_leaves, bool air_glass, bool air_water )
 {
-	value &= 0xFF;
+	value &= blocks::TYPE;
 	if (air_water && value >= blocks::WATER) {
 		return (value);
 	}
@@ -333,8 +333,8 @@ face_dir opposite_dir( int dir )
  */
 bool visible_face( int value, int next, face_dir dir )
 {
-	value &= 0xFF;
-	next &= 0xFF;
+	value &= blocks::TYPE;
+	next &= blocks::TYPE;
 	int valueShape = s_blocks[value]->geometry;
 	int nextShape = s_blocks[next]->geometry;
 

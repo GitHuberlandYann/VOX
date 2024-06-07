@@ -26,7 +26,8 @@ void OpenGL_Manager::saveWorld( void )
 	_block_hit = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
 
 	// then store everything
-	std::string json = "{\n\t\"seed\": " + std::to_string(perlin_seed)
+	std::string json = "{\n\t\"version\": \"" + SETTINGS::CURRENT_VERSION
+		+ "\",\n\t\"seed\": " + std::to_string(perlin_seed)
 		+ ",\n\t\"game_mode\": " + std::to_string(_game_mode)
 		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
 		+ ",\n\t\"f5_mode\": " + ((_ui->_hideUI) ? "true" : "false")
@@ -234,12 +235,18 @@ void OpenGL_Manager::loadWorld( std::string file )
 		if (!indata.is_open()) {
 			throw InvalidFileException();
 		}
+		Settings::Get()->setString(SETTINGS::STRING::VERSION, ""); // reset version
 		std::string line;
 		while (!indata.eof()) {
 			std::getline(indata, line);
 			line = trim_spaces(line);
 			if (line.empty() || line[0] == '#') {
 				continue ;
+			} else if (line == "{" || line == "}") {
+			} else if (!line.compare(0, 11, "\"version\": ")) {
+				std::string version = line.substr(12, line.size() - 14);
+				Settings::Get()->setString(SETTINGS::STRING::VERSION, version);
+				ofs << "version set to " << version << std::endl;
 			} else if (!line.compare(0, 8, "\"seed\": ")) {
 				perlin_seed = std::atoi(&line[8]);
 				ofs << "seed set to " << perlin_seed << std::endl;
@@ -268,6 +275,8 @@ void OpenGL_Manager::loadWorld( std::string file )
 				_inventory->loadWorld(ofs, indata);
 			} else if (!line.compare(0, 11, "\"backups\": ")) {
 				loadBackups(ofs, indata);
+			} else {
+				ofs << "FOREIGN LINE IN LOADWORLD: " << line << std::endl;
 			}
 		}
 		indata.close();
@@ -346,17 +355,14 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 	throw UnclosedBracketException();
 }
 
-// static int convert( int value ) // used when I change s_blocks big time
-// {
-// 	int type = value & 0xFF;
-// 	if (type < blocks::BEDROCK - 8) {
-// 		return (value);
-// 	}
-// 	if (type < blocks::POPPY - 16) {
-// 		return (value + 8);
-// 	}
-// 	return (value + 16);
-// }
+static int convert( int value ) // used when I change s_blocks big time
+{
+	if (Settings::Get()->getString(SETTINGS::STRING::VERSION) == SETTINGS::CURRENT_VERSION) {
+		return (value);
+	}
+	// transition from v0.0 to v1.0: 0xF00 becomes 0xF000 and 0xF000 becomes 0xF000000
+	return ((value & 0XFFFF00FF) | (((value >> 8) & 0xF) << 12) | (((value >> 12) & 0xF) << 24));
+}
 
 void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 {
@@ -374,26 +380,26 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 		} else if (!line.compare(0, 11, "\"content\": ")) {
 			index = 12;
 			for (int cindex = 0; cindex < 9 && line[index]; cindex++) {
-				_content[cindex].type = std::atoi(&line[index + 1]);
+				_content[cindex].type = convert(std::atoi(&line[index + 1]));
 				for (; line[index] && line[index] != ','; index++);
 				_content[cindex].amount = std::atoi(&line[index + 2]);
 				++index;
 				for (; line[index] && line[index] != ','; index++);
 				_content[cindex].dura.x = std::atoi(&line[index + 2]);
-				_content[cindex].dura.y = s_blocks[_content[cindex].type]->durability;
+				_content[cindex].dura.y = s_blocks[_content[cindex].type & blocks::TYPE]->durability;
 				for (index = index + 2; line[index] && line[index] != '['; index++);
 				ofs << "inventory slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount << ", " << _content[cindex].dura.x << ", " << _content[cindex].dura.y << std::endl;
 			}
 		} else if (!line.compare(0, 12, "\"backpack\": ")) {
 			index = 13;
 			for (int bindex = 0; bindex < 27 && line[index]; bindex++) {
-				_backpack[bindex].type = std::atoi(&line[index + 1]);
+				_backpack[bindex].type = convert(std::atoi(&line[index + 1]));
 				for (; line[index] && line[index] != ','; index++);
 				_backpack[bindex].amount = std::atoi(&line[index + 2]);
 				++index;
 				for (; line[index] && line[index] != ','; index++);
 				_backpack[bindex].dura.x = std::atoi(&line[index + 2]);
-				_backpack[bindex].dura.y = s_blocks[_backpack[bindex].type]->durability;
+				_backpack[bindex].dura.y = s_blocks[_backpack[bindex].type & blocks::TYPE]->durability;
 				for (index = index + 2; line[index] && line[index] != '['; index++);
 				ofs << "inventory backpack slot " << bindex << " set to " << _backpack[bindex].type << ", " << _backpack[bindex].amount << ", " << _backpack[bindex].dura.x << ", " << _backpack[bindex].dura.y << std::endl;
 			}
@@ -411,13 +417,13 @@ void ChestInstance::loadContent( std::ofstream & ofs, std::string &line, int &in
 	for (; line[index] && line[index] != '['; ++index);
 	index += !!line[index];
 	for (int cindex = 0; cindex < 27 && line[index]; cindex++) {
-		_content[cindex].type = std::atoi(&line[index + 1]);
+		_content[cindex].type = convert(std::atoi(&line[index + 1]));
 		for (; line[index] && line[index] != ','; index++);
 		_content[cindex].amount = std::atoi(&line[index + 2]);
 		++index;
 		for (; line[index] && line[index] != ','; index++);
 		_content[cindex].dura.x = std::atoi(&line[index + 2]);
-		_content[cindex].dura.y = s_blocks[_content[cindex].type]->durability;
+		_content[cindex].dura.y = s_blocks[_content[cindex].type & blocks::TYPE]->durability;
 		if (cindex < 26) {
 			for (index = index + 2; line[index] && line[index] != '['; index++);
 		}
@@ -451,7 +457,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 					while (line[index + 1] == '[') {
 						int addkey = std::atoi(&line[index + 2]);
 						for (; line[index] && line[index] != ','; index++);
-						backups_value.added[addkey] = std::atoi(&line[index + 2]);
+						backups_value.added[addkey] = convert(std::atoi(&line[index + 2]));
 						ofs << "backups new added " << addkey << ", " << backups_value.added[addkey] << std::endl;
 						for (; line[index + 1] && line[index + 1] != '['; index++);
 					}
@@ -482,28 +488,28 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						FurnaceInstance *fur = new FurnaceInstance();
 						t_item item;
 						for (index = index + 9; line[index] && line[index] != ':'; index++);
-						item.type = std::atoi(&line[index + 3]);
+						item.type = convert(std::atoi(&line[index + 3]));
 						for (; line[index] && line[index] != ','; index++);
 						item.amount = std::atoi(&line[index + 2]);
 						for (; line[index] && line[index] != ','; index++);
 						item.dura.x = std::atoi(&line[index + 2]);
-						item.dura.y = s_blocks[item.type]->durability;
+						item.dura.y = s_blocks[item.type & blocks::TYPE]->durability;
 						fur->setComposant(item);
 						for (; line[index] && line[index] != ':'; index++);
-						item.type = std::atoi(&line[index + 3]);
+						item.type = convert(std::atoi(&line[index + 3]));
 						for (; line[index] && line[index] != ','; index++);
 						item.amount = std::atoi(&line[index + 2]);
 						for (; line[index] && line[index] != ','; index++);
 						item.dura.x = std::atoi(&line[index + 2]);
-						item.dura.y = s_blocks[item.type]->durability;
+						item.dura.y = s_blocks[item.type & blocks::TYPE]->durability;
 						fur->setFuel(item);
 						for (; line[index] && line[index] != ':'; index++);
-						item.type = std::atoi(&line[index + 3]);
+						item.type = convert(std::atoi(&line[index + 3]));
 						for (; line[index] && line[index] != ','; index++);
 						item.amount = std::atoi(&line[index + 2]);
 						for (; line[index] && line[index] != ','; index++);
 						item.dura.x = std::atoi(&line[index + 2]);
-						item.dura.y = s_blocks[item.type]->durability;
+						item.dura.y = s_blocks[item.type & blocks::TYPE]->durability;
 						fur->setProduction(item);
 						backups_value.furnaces[fkey] = fur;
 						ofs << "one more furnace at " << fkey << std::endl;
@@ -515,7 +521,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 					while (line[index + 1] == '{') {
 						int skey = std::atoi(&line[index + 9]);
 						for (index = index + 9; line[index] && line[index] != ':'; index++);
-						int value = std::atoi(&line[index + 2]);
+						int value = convert(std::atoi(&line[index + 2]));
 						for (index = index + 2; line[index] && line[index] != '['; index++);
 						std::vector<std::string> content;
 						for (int lineIndex = 0; lineIndex < 4; ++lineIndex) {

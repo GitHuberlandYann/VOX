@@ -10,6 +10,7 @@
 # define FOV_START     	  70.0f // if fov = -fov, world is upside down
 # define BRIGHTNESS_START 0.05f
 
+
 namespace SETTINGS {
 	enum BOOL {
 		FULLSCREEN,
@@ -63,10 +64,13 @@ namespace SETTINGS {
 		TEXT_VERTEX_SHADER,
 		UI_FRAGMENT_SHADER,
 		UI_VERTEX_SHADER,
+		NBR_SHADERS = UI_VERTEX_SHADER + 1 - NBR_TEXTURES,
+
+		VERSION = UI_VERTEX_SHADER + 1,
 
 		NBR_STRING,
-		NBR_SHADERS = NBR_STRING - NBR_TEXTURES,
 	};
+	const std::string CURRENT_VERSION = "v1.0";
 
 	enum {
 		FANCY,

@@ -56,11 +56,11 @@ t_hit OpenGL_Manager::get_block_hit( void )
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		int value = chunk->isHit(i);
-		// if ((value & 0xFF) == blocks::GLASS_PANE) {
-		// 	_ui->chatMessage("orientation " + std::to_string((value >> 9) & 0x7)
+		// if ((value & blocks::TYPE) == blocks::GLASS_PANE) {
+		// 	_ui->chatMessage("orientation " + std::to_string((value >> blocks::ORIENTATION_OFFSET) & 0x7)
 		// 		+ " bitfield " + std::to_string(value >> 12));
 		// }
-		int type = value & 0xFF;
+		int type = value & blocks::TYPE;
 		if (type == blocks::WATER) {
 			if (!res.water_value) {
 				res.water_pos = i;
@@ -80,7 +80,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 				return (res);
 			} else if (target->hasOrientedHitbox) {
 				glm::vec3 hitbox[2];
-				target->getSecondaryHitbox(hitbox, (value >> 9) & 0x7, value >> 12);
+				target->getSecondaryHitbox(hitbox, (value >> blocks::ORIENTATION_OFFSET) & 0x7, value >> blocks::BITFIELD_OFFSET);
 				if (line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
 					_chunk_hit = chunk;
 					res.pos = i;
@@ -126,7 +126,7 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			_menu->setState(MENU::CRAFTING);
 			return ;
 		case blocks::CHEST:
-			if (!s_blocks[_chunk_hit->getBlockAt(_block_hit.pos.x - _chunk_hit->getStartX(), _block_hit.pos.y - _chunk_hit->getStartY(), _block_hit.pos.z + 1) & 0xFF]->transparent) {
+			if (!s_blocks[_chunk_hit->getBlockAt(_block_hit.pos.x - _chunk_hit->getStartX(), _block_hit.pos.y - _chunk_hit->getStartY(), _block_hit.pos.z + 1) & blocks::TYPE]->transparent) {
 				return ;
 			}
 			_chunk_hit->openChest(_block_hit.pos);
@@ -201,17 +201,17 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		return ;
 	} else if (type == blocks::TORCH || type == blocks::REDSTONE_TORCH) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
-			type += (face_dir::MINUSZ << 9);
+			type += (face_dir::MINUSZ << blocks::ORIENTATION_OFFSET);
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
-			type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::PLUSX : face_dir::MINUSX) << 9);
+			type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::PLUSX : face_dir::MINUSX) << blocks::ORIENTATION_OFFSET);
 		} else {
-			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
+			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << blocks::ORIENTATION_OFFSET);
 		}
 	} else if (type == blocks::OAK_SIGN) {
 		if (_block_hit.pos.x != _block_hit.prev_pos.x) {
-			type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::PLUSX : face_dir::MINUSX) << 9);
+			type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::PLUSX : face_dir::MINUSX) << blocks::ORIENTATION_OFFSET);
 		} else if (_block_hit.pos.y != _block_hit.prev_pos.y) {
-			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << 9);
+			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << blocks::ORIENTATION_OFFSET);
 		} else {
 			return ;
 		}
@@ -223,15 +223,15 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			return ;
 		}
 		if (_block_hit.pos.z > _block_hit.prev_pos.z) {
-			type += (PLACEMENT::CEILING << 12);
+			type += (PLACEMENT::CEILING << blocks::BITFIELD_OFFSET);
 		} else if (_block_hit.pos.z < _block_hit.prev_pos.z) {
-			type += (PLACEMENT::FLOOR << 12);
+			type += (PLACEMENT::FLOOR << blocks::BITFIELD_OFFSET);
 		} else {
-			type += (PLACEMENT::WALL << 12);
+			type += (PLACEMENT::WALL << blocks::BITFIELD_OFFSET);
 			if (_block_hit.pos.x != _block_hit.prev_pos.x) {
-				type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::MINUSX : face_dir::PLUSX) << 9);
+				type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::MINUSX : face_dir::PLUSX) << blocks::ORIENTATION_OFFSET);
 			} else {
-				type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::MINUSY : face_dir::PLUSY) << 9);
+				type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::MINUSY : face_dir::PLUSY) << blocks::ORIENTATION_OFFSET);
 			}
 		}
 	} else if (shape == GEOMETRY::SLAB_BOTTOM || shape == GEOMETRY::STAIRS_BOTTOM) { // TODO get rid of oak_slab_top and oak_stairs_top and use DOOR::UPPER_HALF instead
@@ -266,11 +266,11 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		}
 	} else if (type == blocks::OAK_LOG) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
-			type += (AXIS::Z << 9);
+			type += (face_dir::PLUSZ << blocks::ORIENTATION_OFFSET);
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
-			type += (AXIS::X << 9);
+			type += (face_dir::PLUSX << blocks::ORIENTATION_OFFSET);
 		} else {
-			type += (AXIS::Y << 9);
+			type += (face_dir::PLUSY << blocks::ORIENTATION_OFFSET);
 		}
 	}
 
@@ -450,7 +450,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		_ui->chatMessage("Info about " + s_blocks[bHit.type]->name + " at " + std::to_string(bHit.pos.x) + ", " + std::to_string(bHit.pos.y) + ", " + std::to_string(bHit.pos.z));
 		_ui->chatMessage(std::string("visible: ") + ((bHit.value & blocks::NOTVISIBLE) ? "FALSE" : "TRUE"));
 		_ui->chatMessage(std::string("adventure block: ") + ((bHit.value & GAMEMODE::ADVENTURE_BLOCK) ? "TRUE" : "FALSE"));
-		_ui->chatMessage(std::string("orientation: ") + std::to_string((bHit.value >> 9) & 0x7));
+		_ui->chatMessage(std::string("orientation: ") + std::to_string((bHit.value >> blocks::ORIENTATION_OFFSET) & 0x7));
 		_ui->chatMessage(std::string("transparent: ") + ((s_blocks[bHit.type]->isTransparent(bHit.value)) ? "TRUE" : "FALSE"));
 		_ui->chatMessage(std::string("powered: ") + ((bHit.value & REDSTONE::POWERED) ? "TRUE" : "FALSE"));
 		_ui->chatMessage(std::string("weakdy powered: ") + ((bHit.value & REDSTONE::WEAKDY_POWERED) ? "TRUE" : "FALSE"));
