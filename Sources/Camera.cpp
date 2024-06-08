@@ -153,20 +153,20 @@ int Camera::getOrientation( void ) // if change this, then change face_dir in Ch
 }
 
 /**
- * @brief same as ::getOrientation, but also return PLUSZ/MINUSZ
+ * @brief same as ::getOrientation, but also return plus_z/minus_z
 */
 int Camera::getOrientation6( void )
 {
 	if (glm::abs(_front.x) > glm::abs(_front.y)) {
 		if (glm::abs(_front.z) > glm::abs(_front.x)) {
-			return ((_front.z < 0) ? face_dir::PLUSZ : face_dir::MINUSZ);
+			return ((_front.z < 0) ? face_dir::plus_z : face_dir::minus_z);
 		}
-		return ((_front.x < 0) ? face_dir::PLUSX : face_dir::MINUSX);
+		return ((_front.x < 0) ? face_dir::plus_x : face_dir::minus_x);
 	}
 	if (glm::abs(_front.z) > glm::abs(_front.y)) {
-		return ((_front.z < 0) ? face_dir::PLUSZ : face_dir::MINUSZ);
+		return ((_front.z < 0) ? face_dir::plus_z : face_dir::minus_z);
 	}
-	return ((_front.y < 0) ? face_dir::PLUSY : face_dir::MINUSY);
+	return ((_front.y < 0) ? face_dir::plus_y : face_dir::minus_y);
 }
 
 glm::vec3 Camera::getPos( void )
@@ -440,7 +440,7 @@ void Camera::processYaw( GLint offset )
 	updateCameraVectors();
 }
 
-std::vector<glm::ivec3> Camera::get_ray_casting( GLfloat radius )
+std::vector<glm::ivec3> Camera::computeRayCasting( GLfloat radius )
 {
 	glm::vec3 pos = getEyePos();
 	return (voxel_traversal(pos, pos + _front * radius));

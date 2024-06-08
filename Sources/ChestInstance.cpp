@@ -25,37 +25,37 @@ void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
 	// bottom box 
 	glm::vec3 pos, right, back;
 	switch (_orientation) {
-		case face_dir::MINUSY:
-			pos   = {_pos.x + ONE16TH,        _pos.y + ONE16TH,        _pos.z + 0};
-			right = {14.0f * ONE16TH,        0,                        0};
-			back  = {0,                      14.0f * ONE16TH,          0};
+		case face_dir::minus_y:
+			pos   = {_pos.x + one16th,        _pos.y + one16th,        _pos.z + 0};
+			right = {14.0f * one16th,        0,                        0};
+			back  = {0,                      14.0f * one16th,          0};
 			break ;
-		case face_dir::PLUSY:
-			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + 1.0f - ONE16TH, _pos.z + 0};
-			right = {-14.0f * ONE16TH,       0,                        0};
-			back  = {0,                      -14.0f * ONE16TH,         0};
+		case face_dir::plus_y:
+			pos   = {_pos.x + 1.0f - one16th, _pos.y + 1.0f - one16th, _pos.z + 0};
+			right = {-14.0f * one16th,       0,                        0};
+			back  = {0,                      -14.0f * one16th,         0};
 			break ;
-		case face_dir::PLUSX:
-			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + ONE16TH,        _pos.z + 0};
-			right = {0,                      14.0f * ONE16TH,          0};
-			back  = {-14.0f * ONE16TH,       0,                        0};
+		case face_dir::plus_x:
+			pos   = {_pos.x + 1.0f - one16th, _pos.y + one16th,        _pos.z + 0};
+			right = {0,                      14.0f * one16th,          0};
+			back  = {-14.0f * one16th,       0,                        0};
 			break ;
-		case face_dir::MINUSX:
-			pos   = {_pos.x + ONE16TH,       _pos.y + 1.0f - ONE16TH,  _pos.z + 0};
-			right = {0,                      -14.0f * ONE16TH,         0};
-			back  = {14.0f * ONE16TH,        0,                        0};
+		case face_dir::minus_x:
+			pos   = {_pos.x + one16th,       _pos.y + 1.0f - one16th,  _pos.z + 0};
+			right = {0,                      -14.0f * one16th,         0};
+			back  = {14.0f * one16th,        0,                        0};
 			break ;
 		default:
 			std::cout << "ERROR DISPLAY OPEN CHEST" << std::endl;
 			return ;
 	}
-	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f * ONE16TH};
-	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f * ONE16TH};
+	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f * one16th};
+	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f * one16th};
 	glm::vec3 p2 = {pos.x + 0,       pos.y + 0,       pos.z + 0};
 	glm::vec3 p3 = {pos.x + right.x, pos.y + right.y, pos.z + 0};
 
-	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 10.0f * ONE16TH};
-	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f * ONE16TH};
+	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 10.0f * one16th};
+	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f * one16th};
 	glm::vec3 p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 0};
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
@@ -106,15 +106,15 @@ void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
 	// top box
 	pos += back;
 	back *= (5 / 14.0f);
-	p0 = {pos.x + 0,       pos.y + 0      , pos.z + 24.0f * ONE16TH};
-	p1 = {pos.x + right.x, pos.y + right.y, pos.z + 24.0f * ONE16TH};
-	p2 = {pos.x + 0,       pos.y + 0,       pos.z + 10.0f * ONE16TH};
-	p3 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f * ONE16TH};
+	p0 = {pos.x + 0,       pos.y + 0      , pos.z + 24.0f * one16th};
+	p1 = {pos.x + right.x, pos.y + right.y, pos.z + 24.0f * one16th};
+	p2 = {pos.x + 0,       pos.y + 0,       pos.z + 10.0f * one16th};
+	p3 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f * one16th};
 
-	p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 24.0f * ONE16TH};
-	p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 24.0f * ONE16TH};
-	p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 10.0f * ONE16TH};
-	p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f * ONE16TH};
+	p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 24.0f * one16th};
+	p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 24.0f * one16th};
+	p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 10.0f * one16th};
+	p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f * one16th};
 
     spec = (4 << 4) + (15 << 12) + (5 << 19) + (itemLight << 24);
     v0 = {spec + 1, p0};
@@ -160,15 +160,15 @@ void ChestInstance::display_open( std::vector<t_shaderInput> &arr )
 
 	const float ONE14TH = 1.0f / 14.0f;
 	// adding lock
-	p0 += glm::vec3( right.x * 6.0f * ONE14TH + back.x * 0.4f,  right.y * 6.0f * ONE14TH + back.y * 0.4f, ONE16TH);
-	p1 += glm::vec3(-right.x * 6.0f * ONE14TH + back.x * 0.4f, -right.y * 6.0f * ONE14TH + back.y * 0.4f, ONE16TH);
-	p2 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * 0.4f,  right.y * 6.0f * ONE14TH - back.y * 0.4f, 15.0f * ONE16TH);
-	p3 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * 0.4f, -right.y * 6.0f * ONE14TH - back.y * 0.4f, 15.0f * ONE16TH);
+	p0 += glm::vec3( right.x * 6.0f * ONE14TH + back.x * 0.4f,  right.y * 6.0f * ONE14TH + back.y * 0.4f, one16th);
+	p1 += glm::vec3(-right.x * 6.0f * ONE14TH + back.x * 0.4f, -right.y * 6.0f * ONE14TH + back.y * 0.4f, one16th);
+	p2 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * 0.4f,  right.y * 6.0f * ONE14TH - back.y * 0.4f, 15.0f * one16th);
+	p3 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * 0.4f, -right.y * 6.0f * ONE14TH - back.y * 0.4f, 15.0f * one16th);
 
 	p4 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * 0.6f,  right.y * 6.0f * ONE14TH - back.y * 0.6f, 0);
 	p5 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * 0.6f, -right.y * 6.0f * ONE14TH - back.y * 0.6f, 0);
-	p6 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * 1.4f,  right.y * 6.0f * ONE14TH - back.y * 1.4f, 14.0f * ONE16TH);
-	p7 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * 1.4f, -right.y * 6.0f * ONE14TH - back.y * 1.4f, 14.0f * ONE16TH);
+	p6 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * 1.4f,  right.y * 6.0f * ONE14TH - back.y * 1.4f, 14.0f * one16th);
+	p7 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * 1.4f, -right.y * 6.0f * ONE14TH - back.y * 1.4f, 14.0f * one16th);
 
     spec = (5 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24); // front
     v0 = {spec, p0};
@@ -220,37 +220,37 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
 	// bottom box -> same as display_open
 	glm::vec3 pos, right, back;
 	switch (_orientation) {
-		case face_dir::MINUSY:
-			pos   = {_pos.x + ONE16TH,        _pos.y + ONE16TH,        _pos.z + 0};
-			right = {14.0f * ONE16TH,        0,                        0};
-			back  = {0,                      14.0f * ONE16TH,          0};
+		case face_dir::minus_y:
+			pos   = {_pos.x + one16th,        _pos.y + one16th,        _pos.z + 0};
+			right = {14.0f * one16th,        0,                        0};
+			back  = {0,                      14.0f * one16th,          0};
 			break ;
-		case face_dir::PLUSY:
-			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + 1.0f - ONE16TH, _pos.z + 0};
-			right = {-14.0f * ONE16TH,       0,                        0};
-			back  = {0,                      -14.0f * ONE16TH,         0};
+		case face_dir::plus_y:
+			pos   = {_pos.x + 1.0f - one16th, _pos.y + 1.0f - one16th, _pos.z + 0};
+			right = {-14.0f * one16th,       0,                        0};
+			back  = {0,                      -14.0f * one16th,         0};
 			break ;
-		case face_dir::PLUSX:
-			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + ONE16TH,        _pos.z + 0};
-			right = {0,                      14.0f * ONE16TH,          0};
-			back  = {-14.0f * ONE16TH,       0,                        0};
+		case face_dir::plus_x:
+			pos   = {_pos.x + 1.0f - one16th, _pos.y + one16th,        _pos.z + 0};
+			right = {0,                      14.0f * one16th,          0};
+			back  = {-14.0f * one16th,       0,                        0};
 			break ;
-		case face_dir::MINUSX:
-			pos   = {_pos.x + ONE16TH,       _pos.y + 1.0f - ONE16TH,  _pos.z + 0};
-			right = {0,                      -14.0f * ONE16TH,         0};
-			back  = {14.0f * ONE16TH,        0,                        0};
+		case face_dir::minus_x:
+			pos   = {_pos.x + one16th,       _pos.y + 1.0f - one16th,  _pos.z + 0};
+			right = {0,                      -14.0f * one16th,         0};
+			back  = {14.0f * one16th,        0,                        0};
 			break ;
 		default:
 			std::cout << "ERROR DISPLAY OPEN CHEST" << std::endl;
 			return ;
 	}
-	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f * ONE16TH};
-	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f * ONE16TH};
+	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f * one16th};
+	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 10.0f * one16th};
 	glm::vec3 p2 = {pos.x + 0,       pos.y + 0,       pos.z + 0};
 	glm::vec3 p3 = {pos.x + right.x, pos.y + right.y, pos.z + 0};
 
-	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 10.0f * ONE16TH};
-	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f * ONE16TH};
+	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 10.0f * one16th};
+	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 10.0f * one16th};
 	glm::vec3 p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 0};
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
@@ -302,11 +302,11 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
 	// alpha is angle between top and bottom boxes
 	float alpha = glm::radians(_timer / CHEST_ANIM_TIME * 90);
 	float sina = glm::sin(alpha), cosa = glm::cos(alpha);
-	glm::vec3 top = {-cosa * back.x, -cosa * back.y, sina * 14.0f * ONE16TH};
+	glm::vec3 top = {-cosa * back.x, -cosa * back.y, sina * 14.0f * one16th};
 	pos += back;
-	pos.z += 10.f * ONE16TH;
+	pos.z += 10.f * one16th;
 	back *= (5 / 14.0f * sina);
-	back.z = 5 * ONE16TH * cosa;
+	back.z = 5 * one16th * cosa;
 	p0 = pos + top;
 	p1 = pos + top + right;
 	p2 = pos;
@@ -418,37 +418,37 @@ void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
 {
 	glm::vec3 pos, right, back;
 	switch (_orientation) {
-		case face_dir::MINUSY:
-			pos   = {_pos.x + ONE16TH,        _pos.y + ONE16TH,        _pos.z + 0};
-			right = {14.0f * ONE16TH,        0,                        0};
-			back  = {0,                      14.0f * ONE16TH,          0};
+		case face_dir::minus_y:
+			pos   = {_pos.x + one16th,        _pos.y + one16th,        _pos.z + 0};
+			right = {14.0f * one16th,        0,                        0};
+			back  = {0,                      14.0f * one16th,          0};
 			break ;
-		case face_dir::PLUSY:
-			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + 1.0f - ONE16TH, _pos.z + 0};
-			right = {-14.0f * ONE16TH,       0,                        0};
-			back  = {0,                      -14.0f * ONE16TH,         0};
+		case face_dir::plus_y:
+			pos   = {_pos.x + 1.0f - one16th, _pos.y + 1.0f - one16th, _pos.z + 0};
+			right = {-14.0f * one16th,       0,                        0};
+			back  = {0,                      -14.0f * one16th,         0};
 			break ;
-		case face_dir::PLUSX:
-			pos   = {_pos.x + 1.0f - ONE16TH, _pos.y + ONE16TH,        _pos.z + 0};
-			right = {0,                      14.0f * ONE16TH,          0};
-			back  = {-14.0f * ONE16TH,       0,                        0};
+		case face_dir::plus_x:
+			pos   = {_pos.x + 1.0f - one16th, _pos.y + one16th,        _pos.z + 0};
+			right = {0,                      14.0f * one16th,          0};
+			back  = {-14.0f * one16th,       0,                        0};
 			break ;
-		case face_dir::MINUSX:
-			pos   = {_pos.x + ONE16TH,       _pos.y + 1.0f - ONE16TH,  _pos.z + 0};
-			right = {0,                      -14.0f * ONE16TH,         0};
-			back  = {14.0f * ONE16TH,        0,                        0};
+		case face_dir::minus_x:
+			pos   = {_pos.x + one16th,       _pos.y + 1.0f - one16th,  _pos.z + 0};
+			right = {0,                      -14.0f * one16th,         0};
+			back  = {14.0f * one16th,        0,                        0};
 			break ;
 		default:
 			std::cout << "ERROR DISPLAY CLOSED CHEST" << std::endl;
 			return ;
 	}
-	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 15.0f * ONE16TH};
-	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 15.0f * ONE16TH};
+	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 15.0f * one16th};
+	glm::vec3 p1 = {pos.x + right.x, pos.y + right.y, pos.z + 15.0f * one16th};
 	glm::vec3 p2 = {pos.x + 0,       pos.y + 0,       pos.z + 0};
 	glm::vec3 p3 = {pos.x + right.x, pos.y + right.y, pos.z + 0};
 
-	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 15.0f * ONE16TH};
-	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 15.0f * ONE16TH};
+	glm::vec3 p4 = {pos.x + back.x + 0,       pos.y + back.y + 0      , pos.z + 15.0f * one16th};
+	glm::vec3 p5 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 15.0f * one16th};
 	glm::vec3 p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 0};
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
@@ -500,15 +500,15 @@ void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
 
 	const float ONE14TH = 1.0f / 14.0f;
 	// adding lock
-	p0 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * ONE14TH,  right.y * 6.0f * ONE14TH - back.y * ONE14TH, -3.0f * ONE16TH);
-	p1 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * ONE14TH, -right.y * 6.0f * ONE14TH - back.y * ONE14TH, -3.0f * ONE16TH);
-	p2 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * ONE14TH,  right.y * 6.0f * ONE14TH - back.y * ONE14TH,  8.0f * ONE16TH);
-	p3 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * ONE14TH, -right.y * 6.0f * ONE14TH - back.y * ONE14TH,  8.0f * ONE16TH);
+	p0 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * ONE14TH,  right.y * 6.0f * ONE14TH - back.y * ONE14TH, -3.0f * one16th);
+	p1 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * ONE14TH, -right.y * 6.0f * ONE14TH - back.y * ONE14TH, -3.0f * one16th);
+	p2 += glm::vec3( right.x * 6.0f * ONE14TH - back.x * ONE14TH,  right.y * 6.0f * ONE14TH - back.y * ONE14TH,  8.0f * one16th);
+	p3 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x * ONE14TH, -right.y * 6.0f * ONE14TH - back.y * ONE14TH,  8.0f * one16th);
 
-	p4 += glm::vec3( right.x * 6.0f * ONE14TH - back.x,  right.y * 6.0f * ONE14TH - back.y, -3.0f * ONE16TH);
-	p5 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x, -right.y * 6.0f * ONE14TH - back.y, -3.0f * ONE16TH);
-	p6 += glm::vec3( right.x * 6.0f * ONE14TH - back.x,  right.y * 6.0f * ONE14TH - back.y,  8.0f * ONE16TH);
-	p7 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x, -right.y * 6.0f * ONE14TH - back.y,  8.0f * ONE16TH);
+	p4 += glm::vec3( right.x * 6.0f * ONE14TH - back.x,  right.y * 6.0f * ONE14TH - back.y, -3.0f * one16th);
+	p5 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x, -right.y * 6.0f * ONE14TH - back.y, -3.0f * one16th);
+	p6 += glm::vec3( right.x * 6.0f * ONE14TH - back.x,  right.y * 6.0f * ONE14TH - back.y,  8.0f * one16th);
+	p7 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x, -right.y * 6.0f * ONE14TH - back.y,  8.0f * one16th);
 
     spec = (5 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24); // front
     v0 = {spec, p0};

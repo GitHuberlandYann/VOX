@@ -19,7 +19,7 @@ void Chunk::gen_ore_blob( int ore_type, int row, int col, int level, int &blob_s
 {
 	if (row == -1 || col == -1 || !level || !blob_size
 		|| row == CHUNK_SIZE || col == CHUNK_SIZE || level == WORLD_HEIGHT
-		|| _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] != blocks::STONE) {
+		|| _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] != blocks::stone) {
 		return ;
 	}
 	_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = ore_type;
@@ -84,54 +84,54 @@ int Chunk::get_block_type( siv::PerlinNoise perlin, int row, int col, int level,
 	bool grass, bool tree_gen, std::vector<glm::ivec3> &trees )
 {
 	if (level == 0) {
-		return (blocks::BEDROCK);
+		return (blocks::bedrock);
 	}
-	int value = (level > surface_level) ? blocks::AIR : (level < surface_level - 2 || level < SEA_LEVEL) ? blocks::STONE : blocks::GRASS_BLOCK;
+	int value = (level > surface_level) ? blocks::air : (level < surface_level - 2 || level < SEA_LEVEL) ? blocks::stone : blocks::grass_block;
 	if (value) {
 		if (_continent == cont::CONT_MUSHROOM_FIELDS) {
-			return (blocks::GRASS_BLOCK);
-			// return (blocks::DIAMOND_ORE);
+			return (blocks::grass_block);
+			// return (blocks::diamond_ore);
 		}
-		if (value == blocks::STONE) {
+		if (value == blocks::stone) {
 			double undergound = perlin.noise3D_01((_startX + row) / 100.0f, (_startY + col) / 100.0f, level / 100.0f);
-			(undergound < 0.55) ? : value = blocks::GRAVEL;//blocks::SAND;
-		} else if (value == blocks::GRASS_BLOCK && _continent <= cont::CONT_COAST) {
-			value = blocks::SAND;
+			(undergound < 0.55) ? : value = blocks::gravel;//blocks::sand;
+		} else if (value == blocks::grass_block && _continent <= cont::CONT_COAST) {
+			value = blocks::sand;
 		}
 	} else if (level <= SEA_LEVEL) {
-		value = blocks::WATER;
+		value = blocks::water;
 	} else if (_continent <= cont::CONT_COAST) {
 		if (surface_level >= SEA_LEVEL && level <= surface_level + 3) {
 			if (tree_gen) {
-				value = blocks::CACTUS;
+				value = blocks::cactus;
 			} else if (dandelion && surface_level == SEA_LEVEL) {
-				value = blocks::SUGAR_CANE;
+				value = blocks::sugar_cane;
 			} else if (level == surface_level + 1) {
 				if (poppy) {
-					value = blocks::DEAD_BUSH;
+					value = blocks::dead_bush;
 				}
 			}
 		}
 	} else if (tree_gen && surface_level > 65 && level <= surface_level + 5 && surface_level < 220) {
-		value = blocks::OAK_LOG;
+		value = blocks::oak_log + (face_dir::plus_z << offset::blocks::orientation);
 		if (level == surface_level + 5) {
 			trees.push_back({row, col, level});
 		}
 	} else if (level == surface_level + 1 && surface_level > 65 && surface_level < 220) {
 		if (poppy) {
-			value = blocks::POPPY;
+			value = blocks::poppy;
 		} else if (dandelion) {
-			value = blocks::DANDELION;
+			value = blocks::dandelion;
 		} else if (blue_orchid) {
-			value = blocks::BLUE_ORCHID;
+			value = blocks::blue_orchid;
 		} else if (allium) {
-			value = blocks::ALLIUM;
+			value = blocks::allium;
 		} else if (cornflower) {
-			value = blocks::CORNFLOWER;
+			value = blocks::cornflower;
 		} else if (pink_tulip) {
-			value = blocks::PINK_TULIP;
+			value = blocks::pink_tulip;
 		} else if (grass) {
-			value = blocks::GRASS;
+			value = blocks::grass;
 		}
 	}
 	return (value);
@@ -209,17 +209,17 @@ void Chunk::generate_flat_world( void )
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
-				_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (level > surface_level) ? blocks::AIR
-						: (level == 0) ? blocks::BEDROCK : value;
+				_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = (level > surface_level) ? blocks::air
+						: (level == 0) ? blocks::bedrock : value;
 			}
 		}
 	}
 
 	for (auto it = _removed.begin(); it != _removed.end();) {
-		if (_blocks[*it] == blocks::AIR) {
+		if (_blocks[*it] == blocks::air) {
 			it = _removed.erase(it);
 		} else {
-			_blocks[*it] = blocks::AIR;
+			_blocks[*it] = blocks::air;
 			++it;
 		}
 	}
@@ -227,14 +227,14 @@ void Chunk::generate_flat_world( void )
 		if (_blocks[it->first] == it->second) {
 			it = _added.erase(it);
 		} else {
-			// if (it->second & GAMEMODE::ADVENTURE_BLOCK) {
-			// 	std::cout << "ADVENTURE BLOCK FOUND IN MAP: " << s_blocks[it->second & blocks::TYPE]->name << " at " << _startX + ((it->first >> WORLD_SHIFT) >> CHUNK_SHIFT) << ", " << _startY + ((it->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) << ", " << (it->first & (WORLD_HEIGHT - 1)) << std::endl;
-			// 	// it->second &= (REDSTONE::ALL_BITS - GAMEMODE::ADVENTURE_BLOCK);
-			// 	// it->second |= REDSTONE::PISTON::MOVING;
+			// if (it->second & mask::adventure_block) {
+			// 	std::cout << "ADVENTURE BLOCK FOUND IN MAP: " << s_blocks[it->second & mask::blocks::type]->name << " at " << _startX + ((it->first >> WORLD_SHIFT) >> CHUNK_SHIFT) << ", " << _startY + ((it->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) << ", " << (it->first & (WORLD_HEIGHT - 1)) << std::endl;
+			// 	// it->second &= (mask::all_bits - mask::adventure_block);
+			// 	// it->second |= mask::redstone::piston::moving;
 			// }
 			_blocks[it->first] = it->second;
-			if ((it->second & blocks::TYPE) == blocks::TORCH) {
-				addFlame(it->first, {((it->first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((it->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (it->first & (WORLD_HEIGHT - 1))}, blocks::TORCH, (it->second >> blocks::ORIENTATION_OFFSET) & 0x7);
+			if ((it->second & mask::blocks::type) == blocks::torch) {
+				addFlame(it->first, {((it->first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((it->first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (it->first & (WORLD_HEIGHT - 1))}, blocks::torch, (it->second >> offset::blocks::orientation) & 0x7);
 			}
 			++it;
 		}
@@ -284,7 +284,7 @@ void Chunk::generate_blocks( void )
 					#endif
 				}//cave = -1;
 				(((cave >= 0.459 && cave <= 0.551f) && !(pillar < 0.3f - 0.7f * (surface_level / 2 - glm::abs(level - surface_level / 2)) / (5.0f * surface_level))))
-					? _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::AIR//get_block_type_cave(row, col, level, ground_cave, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees)
+					? _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::air//get_block_type_cave(row, col, level, ground_cave, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees)
 					: _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
 				// _blocks[(row * CHUNK_SIZE + col) * WORLD_HEIGHT + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
 				// GLfloat squashing_factor;
@@ -304,8 +304,8 @@ void Chunk::generate_blocks( void )
 	for (auto& tree: trees) { // TODO put trees on chunk border and communicate with border chunks
 		for (int index = 0; index < 61; index++) {
 			const GLint delta[3] = {oak_normal[index][0], oak_normal[index][1], oak_normal[index][2]};
-			if (_blocks[((((tree.x + delta[0]) << CHUNK_SHIFT) + tree.y + delta[1]) << WORLD_SHIFT) + tree.z + delta[2]] == blocks::AIR) {
-				_blocks[((((tree.x + delta[0]) << CHUNK_SHIFT) + tree.y + delta[1]) << WORLD_SHIFT) + tree.z + delta[2]] = blocks::OAK_LEAVES + LEAVES::NATURAL;
+			if (_blocks[((((tree.x + delta[0]) << CHUNK_SHIFT) + tree.y + delta[1]) << WORLD_SHIFT) + tree.z + delta[2]] == blocks::air) {
+				_blocks[((((tree.x + delta[0]) << CHUNK_SHIFT) + tree.y + delta[1]) << WORLD_SHIFT) + tree.z + delta[2]] = blocks::oak_leaves + mask::leaves::natural;
 			}
 		}
 	}
@@ -318,30 +318,30 @@ void Chunk::generate_blocks( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-				if (value == blocks::STONE) {
+				if (value == blocks::stone) {
 					if (coal_blobs < 20 && Random::rangedNumber(_seed, 0, 1000) <= 1) {
 						int size = (Random::rangedNumber(_seed, 0, 1000) + 3) / 30;
-						gen_ore_blob(blocks::COAL_ORE, row, col, level, size, 0);
+						gen_ore_blob(blocks::coal_ore, row, col, level, size, 0);
 						coal_blobs++;
 					} else if (iron_blobs < 10 && (level <= 56 || level > 80) && Random::rangedNumber(_seed, 0, 1000) <= 1) {
 						int size = (Random::rangedNumber(_seed, 0, 1000) + 3) / 60;
-						gen_ore_blob(blocks::IRON_ORE, row, col, level, size, 0);
+						gen_ore_blob(blocks::iron_ore, row, col, level, size, 0);
 						iron_blobs++;
 					} else if (!gravel_blob && Random::rangedNumber(_seed, 0, 1000) <= 1) {
 						int size = 60;
-						gen_ore_blob(blocks::GRAVEL, row, col, level, size, 0);
+						gen_ore_blob(blocks::gravel, row, col, level, size, 0);
 						gravel_blob = true;
 					} else if (diamond_blobs < 7 && level < 15 && Random::rangedNumber(_seed, 0, 1000) <= 1) {
 						int size = (Random::rangedNumber(_seed, 0, 1000) + 5) / 200;
-						gen_ore_blob(blocks::DIAMOND_ORE, row, col, level, size, 0);
+						gen_ore_blob(blocks::diamond_ore, row, col, level, size, 0);
 						diamond_blobs++;
 					}
 				}
 				// turning grass into dirt if under other block
-				if (value == blocks::GRASS_BLOCK && level != 255) {
+				if (value == blocks::grass_block && level != 255) {
 					int block_above = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level + 1];
-					if (block_above && block_above < blocks::POPPY) {
-						_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::DIRT;
+					if (block_above && block_above < blocks::poppy) {
+						_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::dirt;
 					}
 				}
 			}
@@ -354,17 +354,17 @@ void Chunk::generate_blocks( void )
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
 				if (value) {
-					if (value >= blocks::WATER) {
+					if (value >= blocks::water) {
 						// do nothing
-					} else if (exposed_block(row, col, level, value != blocks::OAK_LEAVES, value != blocks::GLASS)) {
-						if (value == blocks::IRON_ORE && Random::rangedNumber(_seed, 0, 1000) < 500) {
-							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::STONE;
-						} else if (value == blocks::GRAVEL && Random::rangedNumber(_seed, 0, 1000) < 100) {
-							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::STONE;
-						} else if (value == blocks::DIAMOND_ORE && Random::rangedNumber(_seed, 0, 1000) < 900) {
-							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::STONE;
-						} else if (value == blocks::COAL_ORE && Random::rangedNumber(_seed, 0, 1000) < 200) {
-							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::STONE;
+					} else if (exposed_block(row, col, level, value != blocks::oak_leaves, value != blocks::glass)) {
+						if (value == blocks::iron_ore && Random::rangedNumber(_seed, 0, 1000) < 500) {
+							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::stone;
+						} else if (value == blocks::gravel && Random::rangedNumber(_seed, 0, 1000) < 100) {
+							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::stone;
+						} else if (value == blocks::diamond_ore && Random::rangedNumber(_seed, 0, 1000) < 900) {
+							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::stone;
+						} else if (value == blocks::coal_ore && Random::rangedNumber(_seed, 0, 1000) < 200) {
+							_blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] = blocks::stone;
 						}
 					}
 				}
@@ -374,12 +374,12 @@ void Chunk::generate_blocks( void )
 
 	// loading backup, MUST be done after all randomness to not alter anything
 	for (auto r: _removed) {
-		_blocks[r] = blocks::AIR;
+		_blocks[r] = blocks::air;
 	}
 	for (auto a: _added) {
 		_blocks[a.first] = a.second;
-		if ((a.second & blocks::TYPE) == blocks::TORCH) {
-			addFlame(a.first, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (a.first & (WORLD_HEIGHT - 1))}, blocks::TORCH, (a.second >> blocks::ORIENTATION_OFFSET) & 0x7);
+		if ((a.second & mask::blocks::type) == blocks::torch) {
+			addFlame(a.first, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT), ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)), (a.first & (WORLD_HEIGHT - 1))}, blocks::torch, (a.second >> offset::blocks::orientation) & 0x7);
 			// _flames.emplace(a.first, new Particle(this, {((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT) + _startX + 0.5f, ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) + _startY + 0.5f, (a.first & (WORLD_HEIGHT - 1)) + 10.0f / 16.0f + 0.1f}, PARTICLES::FLAME));
 		}
 	}

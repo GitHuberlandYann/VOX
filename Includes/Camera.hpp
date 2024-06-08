@@ -122,7 +122,7 @@ class Camera
 
 		void processPitch( GLint offset );
 		void processYaw( GLint offset );
-		std::vector<glm::ivec3> get_ray_casting( GLfloat radius );
+		std::vector<glm::ivec3> computeRayCasting( GLfloat radius );
 		void processMouseMovement( float x_offset, float y_offset );
 
 		std::string getCamString( int game_mode );

@@ -287,34 +287,34 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		return ;
 	} else if (!argv[2].compare("redstone")) {
 		_oglMan->_inventory->spillInventory(NULL);
-		_oglMan->_inventory->absorbItem({blocks::OBSERVER});
-		_oglMan->_inventory->absorbItem({blocks::LEVER});
-		_oglMan->_inventory->absorbItem({blocks::REDSTONE_DUST});
-		_oglMan->_inventory->absorbItem({blocks::STICKY_PISTON});
-		_oglMan->_inventory->absorbItem({blocks::REPEATER});
-		_oglMan->_inventory->absorbItem({blocks::STONE_BRICKS});
-		_oglMan->_inventory->absorbItem({blocks::WORLDEDIT_WAND});
-		_oglMan->_inventory->absorbItem({blocks::IRON_BLOCK});
-		_oglMan->_inventory->absorbItem({blocks::GLASS});
+		_oglMan->_inventory->absorbItem({blocks::observer});
+		_oglMan->_inventory->absorbItem({blocks::lever});
+		_oglMan->_inventory->absorbItem({blocks::redstone_dust});
+		_oglMan->_inventory->absorbItem({blocks::sticky_piston});
+		_oglMan->_inventory->absorbItem({blocks::repeater});
+		_oglMan->_inventory->absorbItem({blocks::stone_bricks});
+		_oglMan->_inventory->absorbItem({blocks::worldedit_wand});
+		_oglMan->_inventory->absorbItem({blocks::iron_block});
+		_oglMan->_inventory->absorbItem({blocks::glass});
 
-		_oglMan->_inventory->absorbItem({blocks::STONE_BUTTON});
-		_oglMan->_inventory->absorbItem({blocks::OAK_BUTTON});
-		_oglMan->_inventory->absorbItem({blocks::CHEST});
-		_oglMan->_inventory->absorbItem({blocks::TORCH});
-		_oglMan->_inventory->absorbItem({blocks::STONE});
-		_oglMan->_inventory->absorbItem({blocks::COAL_ORE});
-		_oglMan->_inventory->absorbItem({blocks::REDSTONE_ORE});
-		_oglMan->_inventory->absorbItem({blocks::DIAMOND_ORE});
-		_oglMan->_inventory->absorbItem({blocks::GRASS_BLOCK});
-		_oglMan->_inventory->absorbItem({blocks::OAK_SIGN});
-		_oglMan->_inventory->absorbItem({blocks::REDSTONE_LAMP});
-		_oglMan->_inventory->absorbItem({blocks::OAK_STAIRS_BOTTOM});
-		_oglMan->_inventory->absorbItem({blocks::PISTON});
-		_oglMan->_inventory->absorbItem({blocks::COMPARATOR});
-		_oglMan->_inventory->absorbItem({blocks::REDSTONE_TORCH});
-		_oglMan->_inventory->absorbItem({blocks::REDSTONE_BLOCK});
-		_oglMan->_inventory->absorbItem({blocks::IRON_ORE});
-		_oglMan->_inventory->absorbItem({blocks::TARGET});
+		_oglMan->_inventory->absorbItem({blocks::stone_button});
+		_oglMan->_inventory->absorbItem({blocks::oak_button});
+		_oglMan->_inventory->absorbItem({blocks::chest});
+		_oglMan->_inventory->absorbItem({blocks::torch});
+		_oglMan->_inventory->absorbItem({blocks::stone});
+		_oglMan->_inventory->absorbItem({blocks::coal_ore});
+		_oglMan->_inventory->absorbItem({blocks::redstone_ore});
+		_oglMan->_inventory->absorbItem({blocks::diamond_ore});
+		_oglMan->_inventory->absorbItem({blocks::grass_block});
+		_oglMan->_inventory->absorbItem({blocks::oak_sign});
+		_oglMan->_inventory->absorbItem({blocks::redstone_lamp});
+		_oglMan->_inventory->absorbItem({blocks::oak_stairs_bottom});
+		_oglMan->_inventory->absorbItem({blocks::piston});
+		_oglMan->_inventory->absorbItem({blocks::comparator});
+		_oglMan->_inventory->absorbItem({blocks::redstone_torch});
+		_oglMan->_inventory->absorbItem({blocks::redstone_block});
+		_oglMan->_inventory->absorbItem({blocks::iron_ore});
+		_oglMan->_inventory->absorbItem({blocks::target});
 		return ;
 	} else if (!argv[2].compare(0, 8, "blocks::")) {
 		int i = 0;
@@ -337,31 +337,31 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		return (chatMessage("Wrong usage of /give me <item>, item invalid"));
 	}
 	switch (item) {
-		case blocks::AIR:
-		case blocks::FARMLAND:
-		case blocks::DIRT_PATH:
-		case blocks::OAK_STAIRS_TOP:
-		case blocks::STONE_STAIRS_TOP:
-		case blocks::SMOOTH_STONE_STAIRS_TOP:
-		case blocks::COBBLESTONE_STAIRS_TOP:
-		case blocks::STONE_BRICKS_STAIRS_TOP:
-		case blocks::OAK_SLAB_TOP:
-		case blocks::STONE_SLAB_TOP:
-		case blocks::SMOOTH_STONE_SLAB_TOP:
-		case blocks::COBBLESTONE_SLAB_TOP:
-		case blocks::STONE_BRICKS_SLAB_TOP:
-		case blocks::PISTON_HEAD:
-		case blocks::MOVING_PISTON:
-		case blocks::WHEAT_CROP:
-		case blocks::WATER:
-		case blocks::WATER1:
-		case blocks::WATER2:
-		case blocks::WATER3:
-		case blocks::WATER4:
-		case blocks::WATER5:
-		case blocks::WATER6:
-		case blocks::WATER7:
-		case blocks::WORLDEDIT_WAND:
+		case blocks::air:
+		case blocks::farmland:
+		case blocks::dirt_path:
+		case blocks::oak_stairs_top:
+		case blocks::stone_stairs_top:
+		case blocks::smooth_stone_stairs_top:
+		case blocks::cobblestone_stairs_top:
+		case blocks::stone_bricks_stairs_top:
+		case blocks::oak_slab_top:
+		case blocks::stone_slab_top:
+		case blocks::smooth_stone_slab_top:
+		case blocks::cobblestone_slab_top:
+		case blocks::stone_bricks_slab_top:
+		case blocks::piston_head:
+		case blocks::moving_piston:
+		case blocks::wheat_crop:
+		case blocks::water:
+		case blocks::water1:
+		case blocks::water2:
+		case blocks::water3:
+		case blocks::water4:
+		case blocks::water5:
+		case blocks::water6:
+		case blocks::water7:
+		case blocks::worldedit_wand:
 			return (chatMessage("item " + s_blocks[item]->name + " [" + std::to_string(item) + "] can't be given."));
 	}
 	_oglMan->_inventory->replaceSlot(item, true);

@@ -100,31 +100,31 @@ int MovingPistonEntity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
 		int currentTick = DayCycle::Get()->getGameTicks();
 		std::cout << "MovingPistonEntity forcefinish movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
 		if (currentTick == _tickStart && _retraction) {
-			std::cout << "\ttrap card activated->REDSTONE::PISTON::CANCEL_RETRACTION" << std::endl;
+			std::cout << "\ttrap card activated->redstone::piston::cancel_retraction" << std::endl;
 			_chunk->setBlockAt(_item.type,  _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
-			return (REDSTONE::PISTON::CANCEL_RETRACTION);
+			return (redstone::piston::cancel_retraction);
 		}
 		if (!_piston_head) {
-			_chunk->setBlockAt(_item.type, _endPos, ((_item.type & blocks::TYPE) == blocks::OBSERVER) || ((_item.type & blocks::TYPE) == blocks::REDSTONE_BLOCK)); // might want to add bool arg to this function, set it to false in (void)FORCE FINISH RETRACTION and to true in FORCE FINISH RETRACTION
+			_chunk->setBlockAt(_item.type, _endPos, ((_item.type & mask::blocks::type) == blocks::observer) || ((_item.type & mask::blocks::type) == blocks::redstone_block)); // might want to add bool arg to this function, set it to false in (void)FORCE FINISH RETRACTION and to true in FORCE FINISH RETRACTION
 			// _chunk->setBlockAt(_item.type, _endPos, !_retraction);
 			if (_retraction) { // TODO check if this still necessary
-				_chunk->setBlockAt(blocks::AIR, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
+				_chunk->setBlockAt(blocks::air, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
 			}
-			if ((_item.type & blocks::TYPE) == blocks::PISTON || (_item.type & blocks::TYPE) == blocks::STICKY_PISTON) {
+			if ((_item.type & mask::blocks::type) == blocks::piston || (_item.type & mask::blocks::type) == blocks::sticky_piston) {
 				_chunk->updatePiston(_endPos, _item.type);
 			}
 		} else {
-			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::STICKY_PISTON : blocks::PISTON) | (_item.type & (0x7 << blocks::ORIENTATION_OFFSET)), _endPos, false);
+			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::sticky_piston : blocks::piston) | (_item.type & (0x7 << offset::blocks::orientation)), _endPos, false);
 			int front_value = _chunk->getBlockAt(_pos);
-			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & blocks::TYPE]->name << std::endl;
-			// if ((front_value & blocks::TYPE) == blocks::MOVING_PISTON) {
-			// 	_chunk->setBlockAt(blocks::AIR, _pos, true);
+			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & mask::blocks::type]->name << std::endl;
+			// if ((front_value & mask::blocks::type) == blocks::moving_piston) {
+			// 	_chunk->setBlockAt(blocks::air, _pos, true);
 			// }
-			_chunk->setBlockAt(_chunk->getBlockAt(_source) & (REDSTONE::ALL_BITS - REDSTONE::PISTON::MOVING), _source, false);
+			_chunk->setBlockAt(_chunk->getBlockAt(_source) & (mask::all_bits - mask::redstone::piston::moving), _source, false);
 		}
 		return (true);
 	} else if (target == glm::ivec3(_endPos)) {
-		return (REDSTONE::PISTON::FORCE_RETRACTION);
+		return (redstone::piston::force_retraction);
 	}
 	return (false);
 }
@@ -185,8 +185,8 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
     float cosRot = glm::cos(_lifeTime);
     float sinRot = glm::sin(_lifeTime);
 
-	int shape = s_blocks[_item.type]->geometry;
-	float zSize = (shape == GEOMETRY::SLAB_BOTTOM) ? 0.125f : (shape == GEOMETRY::TRAPDOOR) ? 0.046875f : 0.25f;
+	geometry shape = s_blocks[_item.type]->geometry;
+	float zSize = (shape == geometry::slab_bottom) ? 0.125f : (shape == geometry::trapdoor) ? 0.046875f : 0.25f;
 
 	glm::vec3 p0 = {_pos.x - 0.176777f * cosRot, _pos.y - 0.176777f * sinRot, _pos.z + zSize + (cosRot + 1) / 4};
 	glm::vec3 p1 = {_pos.x + 0.176777f * sinRot, _pos.y - 0.176777f * cosRot, _pos.z + zSize + (cosRot + 1) / 4};
@@ -198,7 +198,7 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	glm::vec3 p6 = {_pos.x - 0.176777f * sinRot, _pos.y + 0.176777f * cosRot, _pos.z + (cosRot + 1) / 4};
 	glm::vec3 p7 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
 
-	if (shape == GEOMETRY::STAIRS_BOTTOM) {
+	if (shape == geometry::stairs_bottom) {
 	    int itemLight = _chunk->computePosLight(_pos);
 
 	    int spec = (s_blocks[_item.type]->texX() << 4) + (s_blocks[_item.type]->texY() << 12) + (3 << 19) + (itemLight << 24);
@@ -266,47 +266,47 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	    v2 = {spec + YTEX, p6};
 	    v3 = {spec + XTEX + YTEX, p7};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-	} else if (s_blocks[_item.type]->item3D) { //(_item.type < blocks::POPPY && _item.type != blocks::OAK_DOOR && _item.type != blocks::GLASS_PANE) {
-		int offset = ((_item.type >= blocks::CRAFTING_TABLE && _item.type < blocks::BEDROCK) ? face_dir::MINUSX: 0);
+	} else if (s_blocks[_item.type]->item3D) { //(_item.type < blocks::poppy && _item.type != blocks::oak_door && _item.type != blocks::glass_pane) {
+		int offset = ((_item.type >= blocks::crafting_table && _item.type < blocks::bedrock) ? face_dir::minus_x: 0);
 	    int itemLight = _chunk->computePosLight(_pos);
-		int slabOffset = (shape == GEOMETRY::SLAB_BOTTOM) ? (8 << 8) : (shape == GEOMETRY::TRAPDOOR) ? (13 << 8) : 0;
+		int slabOffset = (shape == geometry::slab_bottom) ? (8 << 8) : (shape == geometry::trapdoor) ? (13 << 8) : 0;
 
-	    int spec = (s_blocks[_item.type]->texX(face_dir::MINUSX, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSX, offset) << 12) + (3 << 19) + (itemLight << 24);
+	    int spec = (s_blocks[_item.type]->texX(face_dir::minus_x, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::minus_x, offset) << 12) + (3 << 19) + (itemLight << 24);
 	    t_shaderInput v0 = {spec + slabOffset, p4};
 	    t_shaderInput v1 = {spec + slabOffset + XTEX, p0};
 	    t_shaderInput v2 = {spec + YTEX, p6};
 	    t_shaderInput v3 = {spec + XTEX + YTEX, p2};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = (s_blocks[_item.type]->texX(face_dir::PLUSX, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSX, offset) << 12) + (4 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::plus_x, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::plus_x, offset) << 12) + (4 << 19) + (itemLight << 24);
 	    v0 = {spec + slabOffset, p1};
 	    v1 = {spec + slabOffset + XTEX, p5};
 	    v2 = {spec + YTEX, p3};
 	    v3 = {spec + XTEX + YTEX, p7};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = (s_blocks[_item.type]->texX(face_dir::MINUSY, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSY, offset) << 12) + (1 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::minus_y, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::minus_y, offset) << 12) + (1 << 19) + (itemLight << 24);
 	    v0 = {spec + slabOffset, p0};
 	    v1 = {spec + slabOffset + XTEX, p1};
 	    v2 = {spec + YTEX, p2};
 	    v3 = {spec + XTEX + YTEX, p3};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = (s_blocks[_item.type]->texX(face_dir::PLUSY, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSY, offset) << 12) + (2 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::plus_y, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::plus_y, offset) << 12) + (2 << 19) + (itemLight << 24);
 	    v0 = {spec + slabOffset, p5};
 	    v1 = {spec + slabOffset + XTEX, p4};
 	    v2 = {spec + YTEX, p7};
 	    v3 = {spec + XTEX + YTEX, p6};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = (s_blocks[_item.type]->texX(face_dir::PLUSZ, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::PLUSZ, offset) << 12) + (0 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::plus_z, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::plus_z, offset) << 12) + (0 << 19) + (itemLight << 24);
 	    v0 = {spec, p4};
 	    v1 = {spec + XTEX, p5};
 	    v2 = {spec + YTEX, p0};
 	    v3 = {spec + XTEX + YTEX, p1};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		spec = (s_blocks[_item.type]->texX(face_dir::MINUSZ, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSZ, offset) << 12) + (5 << 19) + (itemLight << 24);
+		spec = (s_blocks[_item.type]->texX(face_dir::minus_z, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::minus_z, offset) << 12) + (5 << 19) + (itemLight << 24);
 	    v0 = {spec, p2};
 	    v1 = {spec + XTEX, p3};
 	    v2 = {spec + YTEX, p6};
@@ -346,10 +346,10 @@ bool FallingBlockEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	// std::cout << "FALLING BLOCK UPDATE" << std::endl;
 	_dir.z -= 0.1f;
 	_pos.z += _dir.z * deltaTime;
-	int type = (_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & blocks::TYPE);
-	if (type != blocks::AIR && type < blocks::WATER) {
+	int type = (_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type);
+	if (type != blocks::air && type < blocks::water) {
 		// std::cout << "youston, we touched ground" << std::endl;
-		if (type >= blocks::POPPY) { // 'drops' as entity, but is already entity, so update state is enough
+		if (type >= blocks::poppy) { // 'drops' as entity, but is already entity, so update state is enough
 	// TODO fix this;
 			// unsigned seed = type * type + type;
 			// _lifeTime = 0;
@@ -371,7 +371,7 @@ bool FallingBlockEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	glm::vec3 p6 = {_pos.x + 0, _pos.y + 1, _pos.z + 0};
 	glm::vec3 p7 = {_pos.x + 1, _pos.y + 1, _pos.z + 0};
 
-	int texture = (s_blocks[_item.type]->texX(face_dir::MINUSX) << 4) + (s_blocks[_item.type]->texY(face_dir::MINUSX) << 12);
+	int texture = (s_blocks[_item.type]->texX(face_dir::minus_x) << 4) + (s_blocks[_item.type]->texY(face_dir::minus_x) << 12);
 	int faceLight = _chunk->computePosLight(_pos);
 	int spec = texture + (3 << 19);
 	spec += (faceLight << 24);
@@ -472,42 +472,42 @@ bool TNTEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderIn
 	int itemLight = _chunk->computePosLight(_pos);
 	int saturation = (static_cast<int>(_lifeTime * 10) / 3) & 0x2;
 
-	int spec = (s_blocks[_item.type]->texX(face_dir::MINUSX) << 4) + ((s_blocks[_item.type]->texY(face_dir::MINUSX) - saturation) << 12) + (3 << 19) + (itemLight << 24);
+	int spec = (s_blocks[_item.type]->texX(face_dir::minus_x) << 4) + ((s_blocks[_item.type]->texY(face_dir::minus_x) - saturation) << 12) + (3 << 19) + (itemLight << 24);
 	t_shaderInput v0 = {spec, p4};
 	t_shaderInput v1 = {spec + XTEX, p0};
 	t_shaderInput v2 = {spec + YTEX, p6};
 	t_shaderInput v3 = {spec + XTEX + YTEX, p2};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = (s_blocks[_item.type]->texX(face_dir::PLUSX) << 4) + ((s_blocks[_item.type]->texY(face_dir::PLUSX) - saturation) << 12) + (4 << 19) + (itemLight << 24);
+	spec = (s_blocks[_item.type]->texX(face_dir::plus_x) << 4) + ((s_blocks[_item.type]->texY(face_dir::plus_x) - saturation) << 12) + (4 << 19) + (itemLight << 24);
     v0 = {spec, p1};
     v1 = {spec + XTEX, p5};
     v2 = {spec + YTEX, p3};
     v3 = {spec + XTEX + YTEX, p7};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = (s_blocks[_item.type]->texX(face_dir::MINUSY) << 4) + ((s_blocks[_item.type]->texY(face_dir::MINUSY) - saturation) << 12) + (1 << 19) + (itemLight << 24);
+	spec = (s_blocks[_item.type]->texX(face_dir::minus_y) << 4) + ((s_blocks[_item.type]->texY(face_dir::minus_y) - saturation) << 12) + (1 << 19) + (itemLight << 24);
     v0 = {spec, p0};
     v1 = {spec + XTEX, p1};
     v2 = {spec + YTEX, p2};
     v3 = {spec + XTEX + YTEX, p3};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = (s_blocks[_item.type]->texX(face_dir::PLUSY) << 4) + ((s_blocks[_item.type]->texY(face_dir::PLUSY) - saturation) << 12) + (2 << 19) + (itemLight << 24);
+	spec = (s_blocks[_item.type]->texX(face_dir::plus_y) << 4) + ((s_blocks[_item.type]->texY(face_dir::plus_y) - saturation) << 12) + (2 << 19) + (itemLight << 24);
     v0 = {spec, p5};
     v1 = {spec + XTEX, p4};
     v2 = {spec + YTEX, p7};
     v3 = {spec + XTEX + YTEX, p6};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = (s_blocks[_item.type]->texX(face_dir::PLUSZ) << 4) + ((s_blocks[_item.type]->texY(face_dir::PLUSZ) - saturation) << 12) + (0 << 19) + (itemLight << 24);
+	spec = (s_blocks[_item.type]->texX(face_dir::plus_z) << 4) + ((s_blocks[_item.type]->texY(face_dir::plus_z) - saturation) << 12) + (0 << 19) + (itemLight << 24);
     v0 = {spec, p4};
     v1 = {spec + XTEX, p5};
     v2 = {spec + YTEX, p0};
     v3 = {spec + XTEX + YTEX, p1};
     arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-	spec = (s_blocks[_item.type]->texX(face_dir::MINUSZ) << 4) + ((s_blocks[_item.type]->texY(face_dir::MINUSZ) - saturation) << 12) + (5 << 19) + (itemLight << 24);
+	spec = (s_blocks[_item.type]->texX(face_dir::minus_z) << 4) + ((s_blocks[_item.type]->texY(face_dir::minus_z) - saturation) << 12) + (5 << 19) + (itemLight << 24);
     v0 = {spec, p2};
     v1 = {spec + XTEX, p3};
     v2 = {spec + YTEX, p6};
@@ -548,7 +548,7 @@ bool ArrowEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shader
 	glm::vec3 p2 = _pos - dir * 0.5f + hnormal * (1.25f / 16);
 
 	int itemLight = _chunk->computePosLight(_pos - _dir * 0.25f);
-    int spec = (s_blocks[blocks::ARROW]->texX() << 4) + ((s_blocks[blocks::ARROW]->texY() + 1) << 12) + (0 << 19) + (itemLight << 24);
+    int spec = (s_blocks[blocks::arrow]->texX() << 4) + ((s_blocks[blocks::arrow]->texY() + 1) << 12) + (0 << 19) + (itemLight << 24);
     t_shaderInput v0 = {spec, p0};
     t_shaderInput v1 = {spec + XTEX, p1};
     t_shaderInput v2 = {spec + (1 << 18) + (5 << 8), p2};
@@ -600,7 +600,7 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	int GTMul = DayCycle::Get()->getGameTimeMultiplier();
 	float percent = (GTMul == -1) ? glm::min(1.0, _lifeTime / (TICK * lifeLimit))
 									: 1.0f * (currentTick - _tickStart) / lifeLimit;
-	s_blocks[_item.type & blocks::TYPE]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, _pos + _dir * percent, _item.type);
+	s_blocks[_item.type & mask::blocks::type]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, _pos + _dir * percent, _item.type);
 
     if (currentTick - _tickStart == lifeLimit) {
 		// finish extension, turn back to block
@@ -608,21 +608,21 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 		if (!_piston_head) {
 			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 			if (_retraction) {
-				_chunk->setBlockAt(blocks::AIR, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
+				_chunk->setBlockAt(blocks::air, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
 			}
-			if ((_item.type & blocks::TYPE) == blocks::PISTON || (_item.type & blocks::TYPE) == blocks::STICKY_PISTON) {
+			if ((_item.type & mask::blocks::type) == blocks::piston || (_item.type & mask::blocks::type) == blocks::sticky_piston) {
 				_chunk->updatePiston(_endPos, _item.type);
 			}
 		} else {
-			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::STICKY_PISTON : blocks::PISTON) | (_item.type & (0x7 << blocks::ORIENTATION_OFFSET)), _endPos, false);
+			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::sticky_piston : blocks::piston) | (_item.type & (0x7 << offset::blocks::orientation)), _endPos, false);
 			int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z);
-			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & blocks::TYPE]->name << std::endl;
-			// if ((front_value & blocks::TYPE) == blocks::MOVING_PISTON) {
-			// 	_chunk->setBlockAt(blocks::AIR, _pos.x, _pos.y, _pos.z, true);
+			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & mask::blocks::type]->name << std::endl;
+			// if ((front_value & mask::blocks::type) == blocks::moving_piston) {
+			// 	_chunk->setBlockAt(blocks::air, _pos.x, _pos.y, _pos.z, true);
 			// }
 			std::cout << "source is " << _chunk->getStartX() + _source.x << ", " << _chunk->getStartY() + _source.y << ", " << _source.z << std::endl;
 			int piston_value = _chunk->getBlockAt(_source);
-			_chunk->setBlockAt(piston_value & (REDSTONE::ALL_BITS - REDSTONE::PISTON::MOVING), _source, false);
+			_chunk->setBlockAt(piston_value & (mask::all_bits - mask::redstone::piston::moving), _source, false);
 			_chunk->updatePiston(_source, piston_value);
 		}
         return (true);

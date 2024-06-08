@@ -5,7 +5,7 @@
 
 void Block::addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const
 {
-    int spec = (texX(face_dir::MINUSX, blocks::ITEM) << 4) + (texY(face_dir::MINUSX, blocks::ITEM) << 12) + (3 << 19) + (0xF << 24);
+    int spec = (texX(face_dir::minus_x, blocks::item) << 4) + (texY(face_dir::minus_x, blocks::item) << 12) + (3 << 19) + (0xF << 24);
 	glm::ivec3 v0 = {spec, x, y};
 	glm::ivec3 v1 = {spec + (1 << 4), x + width * gui_size, y};
 	glm::ivec3 v2 = {spec + (1 << 12), x, y + width * gui_size};
@@ -17,21 +17,21 @@ void Cube::addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, b
 {
     x += gui_size;
     // top face
-	int spec = (15 << 24) + (texX(face_dir::PLUSZ, face_dir::PLUSX) << 4) + (texY(face_dir::PLUSZ, face_dir::PLUSX) << 12);
+	int spec = (15 << 24) + (texX(face_dir::plus_z, face_dir::plus_x) << 4) + (texY(face_dir::plus_z, face_dir::plus_x) << 12);
 	glm::ivec3 v0 = {spec, x, y + width * gui_size * 81.25f / 362.5f};
 	glm::ivec3 v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, y};
 	glm::ivec3 v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * gui_size, y + width * gui_size * 81.25f / 362.5f};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// left face
-	spec = (10 << 24) + (texX(face_dir::MINUSY, face_dir::PLUSX) << 4) + (texY(face_dir::MINUSY, face_dir::PLUSX) << 12);
+	spec = (10 << 24) + (texX(face_dir::minus_y, face_dir::plus_x) << 4) + (texY(face_dir::minus_y, face_dir::plus_x) << 12);
 	v0 = {spec, x, y + width * gui_size * 81.25f / 362.5f};
 	v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	v2 = {spec + (1 << 12), x, y + width * gui_size * 281.25f / 362.5f};
 	v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right face
-	spec = (7 << 24) + (texX(face_dir::PLUSX, face_dir::PLUSX) << 4) + (texY(face_dir::PLUSX, face_dir::PLUSX) << 12);
+	spec = (7 << 24) + (texX(face_dir::plus_x, face_dir::plus_x) << 4) + (texY(face_dir::plus_x, face_dir::plus_x) << 12);
 	v0 = {spec, x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	v1 = {spec + (1 << 4), x + (width - 2) * gui_size, y + width * gui_size * 81.25f / 362.5f};
 	v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
@@ -43,21 +43,21 @@ void Glass::addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, 
 {
     x += gui_size;
     // top face
-	int spec = (15 << 24) + (texX(face_dir::PLUSZ, face_dir::PLUSX) << 4) + (texY(face_dir::PLUSZ, face_dir::PLUSX) << 12);
+	int spec = (15 << 24) + (texX(face_dir::plus_z, face_dir::plus_x) << 4) + (texY(face_dir::plus_z, face_dir::plus_x) << 12);
 	glm::ivec3 v0 = {spec, x, y + width * gui_size * 81.25f / 362.5f};
 	glm::ivec3 v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, y};
 	glm::ivec3 v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * gui_size, y + width * gui_size * 81.25f / 362.5f};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// left face
-	spec = (10 << 24) + (texX(face_dir::MINUSY, face_dir::PLUSX) << 4) + (texY(face_dir::MINUSY, face_dir::PLUSX) << 12);
+	spec = (10 << 24) + (texX(face_dir::minus_y, face_dir::plus_x) << 4) + (texY(face_dir::minus_y, face_dir::plus_x) << 12);
 	v0 = {spec, x, y + width * gui_size * 81.25f / 362.5f};
 	v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	v2 = {spec + (1 << 12), x, y + width * gui_size * 281.25f / 362.5f};
 	v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right face
-	spec = (7 << 24) + (texX(face_dir::PLUSX, face_dir::PLUSX) << 4) + (texY(face_dir::PLUSX, face_dir::PLUSX) << 12);
+	spec = (7 << 24) + (texX(face_dir::plus_x, face_dir::plus_x) << 4) + (texY(face_dir::plus_x, face_dir::plus_x) << 12);
 	v0 = {spec, x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	v1 = {spec + (1 << 4), x + (width - 2) * gui_size, y + width * gui_size * 81.25f / 362.5f};
 	v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
@@ -69,21 +69,21 @@ void OakLog::addItem( UI *ui, int x, int y, int gui_size, int width, bool alien,
 {
     x += gui_size;
     // top face
-	int spec = (15 << 24) + (texX(face_dir::PLUSZ, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 4) + (texY(face_dir::PLUSZ, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 12);
+	int spec = (15 << 24) + (texX(face_dir::plus_z, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::plus_z, face_dir::plus_z << offset::blocks::orientation) << 12);
     glm::ivec3 v0 = {spec, x, y + width * gui_size * 81.25f / 362.5f};
 	glm::ivec3 v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, y};
 	glm::ivec3 v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * gui_size, y + width * gui_size * 81.25f / 362.5f};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// left face
-	spec = (10 << 24) + (texX(face_dir::MINUSY, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 4) + (texY(face_dir::MINUSY, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 12);
+	spec = (10 << 24) + (texX(face_dir::minus_y, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::minus_y, face_dir::plus_z << offset::blocks::orientation) << 12);
 	v0 = {spec, x, y + width * gui_size * 81.25f / 362.5f};
 	v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	v2 = {spec + (1 << 12), x, y + width * gui_size * 281.25f / 362.5f};
 	v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right face
-	spec = (7 << 24) + (texX(face_dir::PLUSX, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 4) + (texY(face_dir::PLUSX, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 12);
+	spec = (7 << 24) + (texX(face_dir::plus_x, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::plus_x, face_dir::plus_z << offset::blocks::orientation) << 12);
 	v0 = {spec, x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	v1 = {spec + (1 << 4), x + (width - 2) * gui_size, y + width * gui_size * 81.25f / 362.5f};
 	v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
@@ -96,21 +96,21 @@ void SlabBottom::addItem( UI *ui, int x, int y, int gui_size, int width, bool al
     x += gui_size;
     int ytop = y + width * gui_size * 100.0f / 362.5f;
 	// top face
-	int spec = (15 << 24) + (texX(face_dir::PLUSZ, face_dir::PLUSX) << 4) + (texY(face_dir::PLUSZ, face_dir::PLUSX) << 12);
+	int spec = (15 << 24) + (texX(face_dir::plus_z, face_dir::plus_x) << 4) + (texY(face_dir::plus_z, face_dir::plus_x) << 12);
 	glm::ivec3 v0 = {spec, x, ytop + width * gui_size * 81.25f / 362.5f};
 	glm::ivec3 v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, ytop};
 	glm::ivec3 v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, ytop + width * gui_size * 162.5f / 362.5f};
 	glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * gui_size, ytop + width * gui_size * 81.25f / 362.5f};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// left face
-	spec = (10 << 24) + (texX(face_dir::MINUSY, face_dir::PLUSX) << 4) + (texY(face_dir::MINUSY, face_dir::PLUSX) << 12);
+	spec = (10 << 24) + (texX(face_dir::minus_y, face_dir::plus_x) << 4) + (texY(face_dir::minus_y, face_dir::plus_x) << 12);
 	v0 = {spec + (8 << 8), x, ytop + width * gui_size * 81.25f / 362.5f};
 	v1 = {spec + (8 << 8) + (1 << 4), x + (width - 2) * 0.5f * gui_size, ytop + width * gui_size * 162.5f / 362.5f};
 	v2 = {spec + (1 << 12), x, y + width * gui_size * 281.25f / 362.5f};
 	v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right face
-	spec = (7 << 24) + (texX(face_dir::PLUSX, face_dir::PLUSX) << 4) + (texY(face_dir::PLUSX, face_dir::PLUSX) << 12);
+	spec = (7 << 24) + (texX(face_dir::plus_x, face_dir::plus_x) << 4) + (texY(face_dir::plus_x, face_dir::plus_x) << 12);
 	v0 = {spec + (8 << 8), x + (width - 2) * 0.5f * gui_size, ytop + width * gui_size * 162.5f / 362.5f};
 	v1 = {spec + (8 << 8) + (1 << 4), x + (width - 2) * gui_size, ytop + width * gui_size * 81.25f / 362.5f};
 	v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
@@ -163,70 +163,70 @@ void StairsBottom::addItem( UI *ui, int x, int y, int gui_size, int width, bool 
 
 void Fence::addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const
 {
-    int spec = (15 << 24) + (s_blocks[blocks::OAK_PLANKS]->texX() << 4) + (s_blocks[blocks::OAK_PLANKS]->texY() << 12);
+    int spec = (15 << 24) + (s_blocks[blocks::oak_planks]->texX() << 4) + (s_blocks[blocks::oak_planks]->texY() << 12);
 	// top of left pole
-	glm::ivec3 v0 = {spec + 6, x + width * gui_size * 3.0f * ONE16TH, y + width * gui_size * 3.66f * ONE16TH};
-	glm::ivec3 v1 = {spec + 10, x + width * gui_size * 5.0f * ONE16TH, y + width * gui_size * 3.0f * ONE16TH};
-	glm::ivec3 v2 = {spec + 6 + (4 << 8), x + width * gui_size * 5.0f * ONE16TH, y + width * gui_size * 4.33f * ONE16TH};
-	glm::ivec3 v3 = {spec + 10 + (4 << 8), x + width * gui_size * 7.0f * ONE16TH, y + width * gui_size * 3.66f * ONE16TH};
+	glm::ivec3 v0 = {spec + 6, x + width * gui_size * 3.0f * one16th, y + width * gui_size * 3.66f * one16th};
+	glm::ivec3 v1 = {spec + 10, x + width * gui_size * 5.0f * one16th, y + width * gui_size * 3.0f * one16th};
+	glm::ivec3 v2 = {spec + 6 + (4 << 8), x + width * gui_size * 5.0f * one16th, y + width * gui_size * 4.33f * one16th};
+	glm::ivec3 v3 = {spec + 10 + (4 << 8), x + width * gui_size * 7.0f * one16th, y + width * gui_size * 3.66f * one16th};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// top of right pole
-	v0 = {spec + 6, x + width * gui_size * 9.0f * ONE16TH, y + width * gui_size * 1.66f * ONE16TH};
-	v1 = {spec + 10, x + width * gui_size * 11.0f * ONE16TH, y + width * gui_size * 1.0f * ONE16TH};
-	v2 = {spec + 6 + (4 << 8), x + width * gui_size * 11.0f * ONE16TH, y + width * gui_size * 2.33f * ONE16TH};
-	v3 = {spec + 10 + (4 << 8), x + width * gui_size * 13.0f * ONE16TH, y + width * gui_size * 1.66f * ONE16TH};
+	v0 = {spec + 6, x + width * gui_size * 9.0f * one16th, y + width * gui_size * 1.66f * one16th};
+	v1 = {spec + 10, x + width * gui_size * 11.0f * one16th, y + width * gui_size * 1.0f * one16th};
+	v2 = {spec + 6 + (4 << 8), x + width * gui_size * 11.0f * one16th, y + width * gui_size * 2.33f * one16th};
+	v3 = {spec + 10 + (4 << 8), x + width * gui_size * 13.0f * one16th, y + width * gui_size * 1.66f * one16th};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// left of left pole
 	spec -= (5 << 24);
-	v0 = {spec + 6, x + width * gui_size * 3.0f * ONE16TH, y + width * gui_size * 3.66f * ONE16TH};
-	v1 = {spec + 10, x + width * gui_size * 5.0f * ONE16TH, y + width * gui_size * 4.33f * ONE16TH};
-	v2 = {spec + 6 + (1 << 12), x + width * gui_size * 3.0f * ONE16TH, y + width * gui_size * 14.33f * ONE16TH};
-	v3 = {spec + 10 + (1 << 12), x + width * gui_size * 5.0f * ONE16TH, y + width * gui_size * 15.0f * ONE16TH};
+	v0 = {spec + 6, x + width * gui_size * 3.0f * one16th, y + width * gui_size * 3.66f * one16th};
+	v1 = {spec + 10, x + width * gui_size * 5.0f * one16th, y + width * gui_size * 4.33f * one16th};
+	v2 = {spec + 6 + (1 << 12), x + width * gui_size * 3.0f * one16th, y + width * gui_size * 14.33f * one16th};
+	v3 = {spec + 10 + (1 << 12), x + width * gui_size * 5.0f * one16th, y + width * gui_size * 15.0f * one16th};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// left of right pole
-	v0 = {spec + 6, x + width * gui_size * 9.0f * ONE16TH, y + width * gui_size * 1.66f * ONE16TH};
-	v1 = {spec + 10, x + width * gui_size * 11.0f * ONE16TH, y + width * gui_size * 2.33f * ONE16TH};
-	v2 = {spec + 6 + (1 << 12), x + width * gui_size * 9.0f * ONE16TH, y + width * gui_size * 12.33f * ONE16TH};
-	v3 = {spec + 10 + (1 << 12), x + width * gui_size * 11.0f * ONE16TH, y + width * gui_size * 13.0f * ONE16TH};
+	v0 = {spec + 6, x + width * gui_size * 9.0f * one16th, y + width * gui_size * 1.66f * one16th};
+	v1 = {spec + 10, x + width * gui_size * 11.0f * one16th, y + width * gui_size * 2.33f * one16th};
+	v2 = {spec + 6 + (1 << 12), x + width * gui_size * 9.0f * one16th, y + width * gui_size * 12.33f * one16th};
+	v3 = {spec + 10 + (1 << 12), x + width * gui_size * 11.0f * one16th, y + width * gui_size * 13.0f * one16th};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right of left pole
 	spec -= (3 << 24);
-	v0 = {spec + 6, x + width * gui_size * 5.0f * ONE16TH, y + width * gui_size * 4.33f * ONE16TH};
-	v1 = {spec + 10, x + width * gui_size * 7.0f * ONE16TH, y + width * gui_size * 3.66f * ONE16TH};
-	v2 = {spec + 6 + (1 << 12), x + width * gui_size * 5.0f * ONE16TH, y + width * gui_size * 15.0f * ONE16TH};
-	v3 = {spec + 10 + (1 << 12), x + width * gui_size * 7.0f * ONE16TH, y + width * gui_size * 14.33f * ONE16TH};
+	v0 = {spec + 6, x + width * gui_size * 5.0f * one16th, y + width * gui_size * 4.33f * one16th};
+	v1 = {spec + 10, x + width * gui_size * 7.0f * one16th, y + width * gui_size * 3.66f * one16th};
+	v2 = {spec + 6 + (1 << 12), x + width * gui_size * 5.0f * one16th, y + width * gui_size * 15.0f * one16th};
+	v3 = {spec + 10 + (1 << 12), x + width * gui_size * 7.0f * one16th, y + width * gui_size * 14.33f * one16th};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right of right pole
-	v0 = {spec + 6, x + width * gui_size * 11.0f * ONE16TH, y + width * gui_size * 2.33f * ONE16TH};
-	v1 = {spec + 10, x + width * gui_size * 13.0f * ONE16TH, y + width * gui_size * 1.66f * ONE16TH};
-	v2 = {spec + 6 + (1 << 12), x + width * gui_size * 11.0f * ONE16TH, y + width * gui_size * 13.0f * ONE16TH};
-	v3 = {spec + 10 + (1 << 12), x + width * gui_size * 13.0f * ONE16TH, y + width * gui_size * 12.33f * ONE16TH};
+	v0 = {spec + 6, x + width * gui_size * 11.0f * one16th, y + width * gui_size * 2.33f * one16th};
+	v1 = {spec + 10, x + width * gui_size * 13.0f * one16th, y + width * gui_size * 1.66f * one16th};
+	v2 = {spec + 6 + (1 << 12), x + width * gui_size * 11.0f * one16th, y + width * gui_size * 13.0f * one16th};
+	v3 = {spec + 10 + (1 << 12), x + width * gui_size * 13.0f * one16th, y + width * gui_size * 12.33f * one16th};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// top of top bar
 	spec += (8 << 24);
-	v0 = {spec + (1 << 8), x + width * gui_size * 6.5f * ONE16TH, y + width * gui_size * 3.66f * ONE16TH};
-	v1 = {spec + (1 << 4) + (1 << 8), x + width * gui_size * 9.5f * ONE16TH, y + width * gui_size * 2.66f * ONE16TH};
-	v2 = {spec + (3 << 8), x + width * gui_size * 7.5f * ONE16TH, y + width * gui_size * 4.0f * ONE16TH};
-	v3 = {spec + (1 << 4) + (3 << 8), x + width * gui_size * 10.5f * ONE16TH, y + width * gui_size * 3.0f * ONE16TH};
+	v0 = {spec + (1 << 8), x + width * gui_size * 6.5f * one16th, y + width * gui_size * 3.66f * one16th};
+	v1 = {spec + (1 << 4) + (1 << 8), x + width * gui_size * 9.5f * one16th, y + width * gui_size * 2.66f * one16th};
+	v2 = {spec + (3 << 8), x + width * gui_size * 7.5f * one16th, y + width * gui_size * 4.0f * one16th};
+	v3 = {spec + (1 << 4) + (3 << 8), x + width * gui_size * 10.5f * one16th, y + width * gui_size * 3.0f * one16th};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// top of bottom bar
-	v0 = {spec + (1 << 8), x + width * gui_size * 7.0f * ONE16TH, y + width * gui_size * 7.5f * ONE16TH};
-	v1 = {spec + (1 << 4) + (1 << 8), x + width * gui_size * 9.5f * ONE16TH, y + width * gui_size * 6.66f * ONE16TH};
-	v2 = {spec + (3 << 8), x + width * gui_size * 7.5f * ONE16TH, y + width * gui_size * 8.0f * ONE16TH};
-	v3 = {spec + (1 << 4) + (3 << 8), x + width * gui_size * 10.5f * ONE16TH, y + width * gui_size * 7.0f * ONE16TH};
+	v0 = {spec + (1 << 8), x + width * gui_size * 7.0f * one16th, y + width * gui_size * 7.5f * one16th};
+	v1 = {spec + (1 << 4) + (1 << 8), x + width * gui_size * 9.5f * one16th, y + width * gui_size * 6.66f * one16th};
+	v2 = {spec + (3 << 8), x + width * gui_size * 7.5f * one16th, y + width * gui_size * 8.0f * one16th};
+	v3 = {spec + (1 << 4) + (3 << 8), x + width * gui_size * 10.5f * one16th, y + width * gui_size * 7.0f * one16th};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right of top bar
 	spec -= (8 << 24);
-	v0 = {spec + (1 << 8), x + width * gui_size * 7.0f * ONE16TH, y + width * gui_size * 4.16f * ONE16TH};
-	v1 = {spec + (1 << 4) + (1 << 8), x + width * gui_size * 10.5f * ONE16TH, y + width * gui_size * 3.0f * ONE16TH};
-	v2 = {spec + (4 << 8), x + width * gui_size * 7.0f * ONE16TH, y + width * gui_size * 6.16f * ONE16TH};
-	v3 = {spec + (1 << 4) + (4 << 8), x + width * gui_size * 10.5f * ONE16TH, y + width * gui_size * 5.0f * ONE16TH};
+	v0 = {spec + (1 << 8), x + width * gui_size * 7.0f * one16th, y + width * gui_size * 4.16f * one16th};
+	v1 = {spec + (1 << 4) + (1 << 8), x + width * gui_size * 10.5f * one16th, y + width * gui_size * 3.0f * one16th};
+	v2 = {spec + (4 << 8), x + width * gui_size * 7.0f * one16th, y + width * gui_size * 6.16f * one16th};
+	v3 = {spec + (1 << 4) + (4 << 8), x + width * gui_size * 10.5f * one16th, y + width * gui_size * 5.0f * one16th};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right of bottom bar
-	v0 = {spec + (1 << 8), x + width * gui_size * 7.0f * ONE16TH, y + width * gui_size * 8.16f * ONE16TH};
-	v1 = {spec + (1 << 4) + (1 << 8), x + width * gui_size * 10.5f * ONE16TH, y + width * gui_size * 7.0f * ONE16TH};
-	v2 = {spec + (4 << 8), x + width * gui_size * 7.0f * ONE16TH, y + width * gui_size * 10.16f * ONE16TH};
-	v3 = {spec + (1 << 4) + (4 << 8), x + width * gui_size * 10.5f * ONE16TH, y + width * gui_size * 9.0f * ONE16TH};
+	v0 = {spec + (1 << 8), x + width * gui_size * 7.0f * one16th, y + width * gui_size * 8.16f * one16th};
+	v1 = {spec + (1 << 4) + (1 << 8), x + width * gui_size * 10.5f * one16th, y + width * gui_size * 7.0f * one16th};
+	v2 = {spec + (4 << 8), x + width * gui_size * 7.0f * one16th, y + width * gui_size * 10.16f * one16th};
+	v3 = {spec + (1 << 4) + (4 << 8), x + width * gui_size * 10.5f * one16th, y + width * gui_size * 9.0f * one16th};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 }
 
@@ -235,21 +235,21 @@ void Trapdoor::addItem( UI *ui, int x, int y, int gui_size, int width, bool alie
     x += gui_size;
     int ytop = y + width * gui_size * 162.5f / 362.5f;
 	// top face
-	int spec = (15 << 24) + (texX(face_dir::PLUSZ, face_dir::PLUSX) << 4) + (texY(face_dir::PLUSZ, face_dir::PLUSX) << 12);
+	int spec = (15 << 24) + (texX(face_dir::plus_z, face_dir::plus_x) << 4) + (texY(face_dir::plus_z, face_dir::plus_x) << 12);
 	glm::ivec3 v0 = {spec, x, ytop + width * gui_size * 81.25f / 362.5f};
 	glm::ivec3 v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, ytop};
 	glm::ivec3 v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, ytop + width * gui_size * 162.5f / 362.5f};
 	glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * gui_size, ytop + width * gui_size * 81.25f / 362.5f};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// left face
-	spec = (10 << 24) + (texX(face_dir::MINUSY, face_dir::PLUSX) << 4) + (texY(face_dir::MINUSY, face_dir::PLUSX) << 12);
+	spec = (10 << 24) + (texX(face_dir::minus_y, face_dir::plus_x) << 4) + (texY(face_dir::minus_y, face_dir::plus_x) << 12);
 	v0 = {spec + (13 << 8), x, ytop + width * gui_size * 81.25f / 362.5f};
 	v1 = {spec + (13 << 8) + (1 << 4), x + (width - 2) * 0.5f * gui_size, ytop + width * gui_size * 162.5f / 362.5f};
 	v2 = {spec + (1 << 12), x, y + width * gui_size * 281.25f / 362.5f};
 	v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right face
-	spec = (7 << 24) + (texX(face_dir::PLUSX, face_dir::PLUSX) << 4) + (texY(face_dir::PLUSX, face_dir::PLUSX) << 12);
+	spec = (7 << 24) + (texX(face_dir::plus_x, face_dir::plus_x) << 4) + (texY(face_dir::plus_x, face_dir::plus_x) << 12);
 	v0 = {spec + (13 << 8), x + (width - 2) * 0.5f * gui_size, ytop + width * gui_size * 162.5f / 362.5f};
 	v1 = {spec + (13 << 8) + (1 << 4), x + (width - 2) * gui_size, ytop + width * gui_size * 81.25f / 362.5f};
 	v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
@@ -288,21 +288,21 @@ void Piston::addItem( UI *ui, int x, int y, int gui_size, int width, bool alien,
 {
     x += gui_size;
     // top face
-	int spec = (15 << 24) + (texX(face_dir::PLUSZ, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 4) + (texY(face_dir::PLUSZ, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 12);
+	int spec = (15 << 24) + (texX(face_dir::plus_z, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::plus_z, face_dir::plus_z << offset::blocks::orientation) << 12);
 	glm::ivec3 v0 = {spec, x, y + width * gui_size * 81.25f / 362.5f};
 	glm::ivec3 v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, y};
 	glm::ivec3 v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * gui_size, y + width * gui_size * 81.25f / 362.5f};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// left face
-	spec = (10 << 24) + (texX(face_dir::MINUSY, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 4) + (texY(face_dir::MINUSY, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 12);
+	spec = (10 << 24) + (texX(face_dir::minus_y, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::minus_y, face_dir::plus_z << offset::blocks::orientation) << 12);
 	v0 = {spec, x, y + width * gui_size * 81.25f / 362.5f};
 	v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	v2 = {spec + (1 << 12), x, y + width * gui_size * 281.25f / 362.5f};
 	v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right face
-	spec = (7 << 24) + (texX(face_dir::PLUSX, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 4) + (texY(face_dir::PLUSX, face_dir::PLUSZ << blocks::ORIENTATION_OFFSET) << 12);
+	spec = (7 << 24) + (texX(face_dir::plus_x, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::plus_x, face_dir::plus_z << offset::blocks::orientation) << 12);
 	v0 = {spec, x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	v1 = {spec + (1 << 4), x + (width - 2) * gui_size, y + width * gui_size * 81.25f / 362.5f};
 	v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
@@ -314,21 +314,21 @@ void Observer::addItem( UI *ui, int x, int y, int gui_size, int width, bool alie
 {
     x += gui_size;
     // top face
-	int spec = (15 << 24) + (texX(face_dir::PLUSZ, face_dir::PLUSX << blocks::ORIENTATION_OFFSET) << 4) + (texY(face_dir::PLUSZ, face_dir::PLUSX << blocks::ORIENTATION_OFFSET) << 12);
+	int spec = (15 << 24) + (texX(face_dir::plus_z, face_dir::plus_x << offset::blocks::orientation) << 4) + (texY(face_dir::plus_z, face_dir::plus_x << offset::blocks::orientation) << 12);
 	glm::ivec3 v0 = {spec, x, y + width * gui_size * 81.25f / 362.5f};
 	glm::ivec3 v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, y};
 	glm::ivec3 v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	glm::ivec3 v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * gui_size, y + width * gui_size * 81.25f / 362.5f};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// left face
-	spec = (10 << 24) + (texX(face_dir::MINUSY, face_dir::PLUSX << blocks::ORIENTATION_OFFSET) << 4) + (texY(face_dir::MINUSY, face_dir::PLUSX << blocks::ORIENTATION_OFFSET) << 12);
+	spec = (10 << 24) + (texX(face_dir::minus_y, face_dir::plus_x << offset::blocks::orientation) << 4) + (texY(face_dir::minus_y, face_dir::plus_x << offset::blocks::orientation) << 12);
 	v0 = {spec, x, y + width * gui_size * 81.25f / 362.5f};
 	v1 = {spec + (1 << 4), x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	v2 = {spec + (1 << 12), x, y + width * gui_size * 281.25f / 362.5f};
 	v3 = {spec + (1 << 4) + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 	// right face
-	spec = (7 << 24) + (texX(face_dir::PLUSX, face_dir::PLUSX << blocks::ORIENTATION_OFFSET) << 4) + (texY(face_dir::PLUSX, face_dir::PLUSX << blocks::ORIENTATION_OFFSET) << 12);
+	spec = (7 << 24) + (texX(face_dir::plus_x, face_dir::plus_x << offset::blocks::orientation) << 4) + (texY(face_dir::plus_x, face_dir::plus_x << offset::blocks::orientation) << 12);
 	v0 = {spec, x + (width - 2) * 0.5f * gui_size, y + width * gui_size * 162.5f / 362.5f};
 	v1 = {spec + (1 << 4), x + (width - 2) * gui_size, y + width * gui_size * 81.25f / 362.5f};
 	v2 = {spec + (1 << 12), x + (width - 2) * 0.5f * gui_size, y + width * gui_size};

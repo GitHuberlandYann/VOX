@@ -51,14 +51,14 @@ class Chat
 		std::vector<std::pair<t_msg, float>> _current;
 		std::vector<t_msg> _past, _historic;
 
-		void handle_help( int argc, std::vector<std::string> &argv );
-		void handle_gamemode( int argc, std::vector<std::string> &argv );
-		void handle_time( int argc, std::vector<std::string> &argv );
-		void handle_clear( int argc, std::vector<std::string> &argv );
-		void handle_teleport( int argc, std::vector<std::string> &argv );
-		void handle_spawnpoint( int argc, std::vector<std::string> &argv );
-		void handle_give( int argc, std::vector<std::string> &argv );
-		bool handle_freeze( int argc, std::vector<std::string> &argv );
+		void handle_help( int argc, std::vector<std::string>& argv );
+		void handle_gamemode( int argc, std::vector<std::string>& argv );
+		void handle_time( int argc, std::vector<std::string>& argv );
+		void handle_clear( int argc, std::vector<std::string>& argv );
+		void handle_teleport( int argc, std::vector<std::string>& argv );
+		void handle_spawnpoint( int argc, std::vector<std::string>& argv );
+		void handle_give( int argc, std::vector<std::string>& argv );
+		bool handle_freeze( int argc, std::vector<std::string>& argv );
 
 		float parseLocation( std::string &str, int coord );
 

@@ -21,7 +21,7 @@ void OpenGL_Manager::resetInputsPtrs( void )
 t_hit OpenGL_Manager::get_block_hit( void )
 {
 	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
-	std::vector<glm::ivec3> ids = _camera->get_ray_casting((_game_mode == GAMEMODE::CREATIVE) ? CHUNK_SIZE : REACH);
+	std::vector<glm::ivec3> ids = _camera->computeRayCasting((_game_mode == GAMEMODE::CREATIVE) ? CHUNK_SIZE : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
 	Chunk *chunk = NULL;
@@ -56,12 +56,12 @@ t_hit OpenGL_Manager::get_block_hit( void )
 		}
 		// std::cout << "current_chunk should be " << current_chunk.x << ", " << current_chunk.y << std::endl;
 		int value = chunk->isHit(i);
-		// if ((value & blocks::TYPE) == blocks::GLASS_PANE) {
-		// 	_ui->chatMessage("orientation " + std::to_string((value >> blocks::ORIENTATION_OFFSET) & 0x7)
+		// if ((value & mask::blocks::type) == blocks::glass_pane) {
+		// 	_ui->chatMessage("orientation " + std::to_string((value >> offset::blocks::orientation) & 0x7)
 		// 		+ " bitfield " + std::to_string(value >> 12));
 		// }
-		int type = value & blocks::TYPE;
-		if (type == blocks::WATER) {
+		int type = value & mask::blocks::type;
+		if (type == blocks::water) {
 			if (!res.water_value) {
 				res.water_pos = i;
 				res.water_value = true;
@@ -76,11 +76,11 @@ t_hit OpenGL_Manager::get_block_hit( void )
 				res.pos = i;
 				res.value = value;
 				res.type = type;
-				// _ui->chatMessage(s_blocks[type]->name + ((value & REDSTONE::POWERED) ? " block hit is powered" : " block hit is not powered"));
+				// _ui->chatMessage(s_blocks[type]->name + ((value & mask::redstone::powered) ? " block hit is powered" : " block hit is not powered"));
 				return (res);
 			} else if (target->hasOrientedHitbox) {
 				glm::vec3 hitbox[2];
-				target->getSecondaryHitbox(hitbox, (value >> blocks::ORIENTATION_OFFSET) & 0x7, value >> blocks::BITFIELD_OFFSET);
+				target->getSecondaryHitbox(hitbox, (value >> offset::blocks::orientation) & 0x7, value >> offset::blocks::bitfield);
 				if (line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
 					_chunk_hit = chunk;
 					res.pos = i;
@@ -100,12 +100,12 @@ t_hit OpenGL_Manager::get_block_hit( void )
 void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 {
 	if (!adding) {
-		if (_block_hit.type == blocks::AIR) {
+		if (_block_hit.type == blocks::air) {
 			return ;
-		} else if (_hand_content == blocks::WORLDEDIT_WAND) {
+		} else if (_hand_content == blocks::worldedit_wand) {
 			return (WorldEdit::Get()->setSelectionStart(_block_hit.pos));
 		}
-		if (_game_mode == GAMEMODE::ADVENTURE && !(_block_hit.value & GAMEMODE::ADVENTURE_BLOCK)) {
+		if (_game_mode == GAMEMODE::ADVENTURE && !(_block_hit.value & mask::adventure_block)) {
 			_ui->chatMessage("[Adventure mode] you can't break blocks you didn't place yourself.", TEXT::RED);
 			return ;
 		}
@@ -121,12 +121,12 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	}
 	// from now on adding = true
 	switch (_block_hit.type) {
-		case blocks::CRAFTING_TABLE:
+		case blocks::crafting_table:
 			_paused = true;
 			_menu->setState(MENU::CRAFTING);
 			return ;
-		case blocks::CHEST:
-			if (!s_blocks[_chunk_hit->getBlockAt(_block_hit.pos.x - _chunk_hit->getStartX(), _block_hit.pos.y - _chunk_hit->getStartY(), _block_hit.pos.z + 1) & blocks::TYPE]->transparent) {
+		case blocks::chest:
+			if (!s_blocks[_chunk_hit->getBlockAt(_block_hit.pos.x - _chunk_hit->getStartX(), _block_hit.pos.y - _chunk_hit->getStartY(), _block_hit.pos.z + 1) & mask::blocks::type]->transparent) {
 				return ;
 			}
 			_chunk_hit->openChest(_block_hit.pos);
@@ -134,48 +134,48 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			_menu->setState(MENU::CHEST);
 			_menu->setChestInstance(_chunk_hit->getChestInstance(_block_hit.pos));
 			return ;
-		case blocks::FURNACE:
+		case blocks::furnace:
 			_paused = true;
 			_menu->setState(MENU::FURNACE);
 			_menu->setFurnaceInstance(_chunk_hit->getFurnaceInstance(_block_hit.pos));
 			return ;
-		case blocks::TNT:
-			if (_hand_content == blocks::FLINT_AND_STEEL && _current_chunk_ptr) {
-				_current_chunk_ptr->handleHit(false, blocks::TNT, _block_hit.pos, Modif::LITNT);
+		case blocks::tnt:
+			if (_hand_content == blocks::flint_and_steel && _current_chunk_ptr) {
+				_current_chunk_ptr->handleHit(false, blocks::tnt, _block_hit.pos, Modif::LITNT);
 			}
 			break ;
-		case blocks::OAK_DOOR:
-		case blocks::OAK_TRAPDOOR:
-		case blocks::LEVER:
-		case blocks::REPEATER:
-		case blocks::COMPARATOR:
-		case blocks::STONE_BUTTON:
-		case blocks::OAK_BUTTON:
+		case blocks::oak_door:
+		case blocks::oak_trapdoor:
+		case blocks::lever:
+		case blocks::repeater:
+		case blocks::comparator:
+		case blocks::stone_button:
+		case blocks::oak_button:
 			if (_current_chunk_ptr) {
 				_current_chunk_ptr->handleHit(false, _block_hit.type, _block_hit.pos, Modif::USE);
 			}
 			return ;
 	}
 	int type = _hand_content;
-	int shape = s_blocks[type]->geometry;
-	if (type >= blocks::WOODEN_HOE && type <= blocks::DIAMOND_HOE
-		&& (_block_hit.type == blocks::DIRT || _block_hit.type == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
-		type = blocks::FARMLAND;
+	geometry shape = s_blocks[type]->geometry;
+	if (type >= blocks::wooden_hoe && type <= blocks::diamond_hoe
+		&& (_block_hit.type == blocks::dirt || _block_hit.type == blocks::grass_block)) { // special case, add but change block to farmland instead
+		type = blocks::farmland;
 		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
 		return ;
-	} else if (type >= blocks::WOODEN_SHOVEL && type <= blocks::DIAMOND_SHOVEL
-		&& (_block_hit.type == blocks::DIRT || _block_hit.type == blocks::GRASS_BLOCK)) { // special case, add but change block to farmland instead
-		type = blocks::DIRT_PATH;
+	} else if (type >= blocks::wooden_shovel && type <= blocks::diamond_shovel
+		&& (_block_hit.type == blocks::dirt || _block_hit.type == blocks::grass_block)) { // special case, add but change block to farmland instead
+		type = blocks::dirt_path;
 		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
 		return ;
 	}
-	if (_game_mode == GAMEMODE::ADVENTURE && type != blocks::AIR) {
+	if (_game_mode == GAMEMODE::ADVENTURE && type != blocks::air) {
 		int dist = glm::abs(_block_hit.pos.x - _block_hit.prev_pos.x) + glm::abs(_block_hit.pos.y - _block_hit.prev_pos.y) + glm::abs(_block_hit.pos.z - _block_hit.prev_pos.z);
 		if (dist > 1) {
 			return ;
 		}
 		if (_block_hit.type != s_blocks[type]->adventure_block) {
-			if (type == blocks::BUCKET || type == blocks::WATER_BUCKET) {
+			if (type == blocks::bucket || type == blocks::water_bucket) {
 				_ui->chatMessage("[Adventure mode] you can only use " + s_blocks[type]->name + " on " + s_blocks[s_blocks[type]->adventure_block]->name + ".", TEXT::RED);
 				return ;
 			}
@@ -184,57 +184,57 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 		}
 	}
 	// std::cout << "aiming " << s_blocks[type]->name << " towards " << s_blocks[_block_hit.type]->name << std::endl;;
-	if (type == blocks::WATER_BUCKET) { // use it like any other block
-		type = blocks::WATER;
-	} else if (type == blocks::BUCKET) { // special case, add but remove water instead
+	if (type == blocks::water_bucket) { // use it like any other block
+		type = blocks::water;
+	} else if (type == blocks::bucket) { // special case, add but remove water instead
 		if (_block_hit.water_value) {
 			_current_chunk_ptr->handleHit(collect, type, _block_hit.water_pos, Modif::REMOVE);
 		}
 		return ;
-	} else if (type == blocks::WHEAT_SEEDS) {
-		type = blocks::WHEAT_CROP;
-	} else if (type == blocks::AIR || type >= blocks::STICK) {
+	} else if (type == blocks::wheat_seeds) {
+		type = blocks::wheat_crop;
+	} else if (type == blocks::air || type >= blocks::stick) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
-		if (type == blocks::WORLDEDIT_WAND) {
+		if (type == blocks::worldedit_wand) {
 			return (WorldEdit::Get()->setSelectionEnd(_block_hit.pos));
 		}
 		return ;
-	} else if (type == blocks::TORCH || type == blocks::REDSTONE_TORCH) {
+	} else if (type == blocks::torch || type == blocks::redstone_torch) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
-			type += (face_dir::MINUSZ << blocks::ORIENTATION_OFFSET);
+			type += (face_dir::minus_z << offset::blocks::orientation);
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
-			type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::PLUSX : face_dir::MINUSX) << blocks::ORIENTATION_OFFSET);
+			type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::plus_x : face_dir::minus_x) << offset::blocks::orientation);
 		} else {
-			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << blocks::ORIENTATION_OFFSET);
+			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::plus_y : face_dir::minus_y) << offset::blocks::orientation);
 		}
-	} else if (type == blocks::OAK_SIGN) {
+	} else if (type == blocks::oak_sign) {
 		if (_block_hit.pos.x != _block_hit.prev_pos.x) {
-			type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::PLUSX : face_dir::MINUSX) << blocks::ORIENTATION_OFFSET);
+			type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::plus_x : face_dir::minus_x) << offset::blocks::orientation);
 		} else if (_block_hit.pos.y != _block_hit.prev_pos.y) {
-			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::PLUSY : face_dir::MINUSY) << blocks::ORIENTATION_OFFSET);
+			type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::plus_y : face_dir::minus_y) << offset::blocks::orientation);
 		} else {
 			return ;
 		}
 		_paused = true;
 		_menu->setState(MENU::SIGN);
 		_menu->setSignPos(_block_hit.prev_pos);
-	} else if (type == blocks::LEVER || shape == GEOMETRY::BUTTON) {
-		if (s_blocks[_block_hit.type]->geometry != GEOMETRY::CUBE) { // TODO chnge this
+	} else if (type == blocks::lever || shape == geometry::button) {
+		if (s_blocks[_block_hit.type]->geometry != geometry::cube) { // TODO chnge this
 			return ;
 		}
 		if (_block_hit.pos.z > _block_hit.prev_pos.z) {
-			type += (PLACEMENT::CEILING << blocks::BITFIELD_OFFSET);
+			type += (placement::ceiling << offset::blocks::bitfield);
 		} else if (_block_hit.pos.z < _block_hit.prev_pos.z) {
-			type += (PLACEMENT::FLOOR << blocks::BITFIELD_OFFSET);
+			type += (placement::floor << offset::blocks::bitfield);
 		} else {
-			type += (PLACEMENT::WALL << blocks::BITFIELD_OFFSET);
+			type += (placement::wall << offset::blocks::bitfield);
 			if (_block_hit.pos.x != _block_hit.prev_pos.x) {
-				type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::MINUSX : face_dir::PLUSX) << blocks::ORIENTATION_OFFSET);
+				type += (((_block_hit.pos.x > _block_hit.prev_pos.x) ? face_dir::minus_x : face_dir::plus_x) << offset::blocks::orientation);
 			} else {
-				type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::MINUSY : face_dir::PLUSY) << blocks::ORIENTATION_OFFSET);
+				type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::minus_y : face_dir::plus_y) << offset::blocks::orientation);
 			}
 		}
-	} else if (shape == GEOMETRY::SLAB_BOTTOM || shape == GEOMETRY::STAIRS_BOTTOM) { // TODO get rid of oak_slab_top and oak_stairs_top and use DOOR::UPPER_HALF instead
+	} else if (shape == geometry::slab_bottom || shape == geometry::stairs_bottom) { // TODO get rid of oak_slab_top and oak_stairs_top and use door::upper_half instead
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
 			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? type : type + 1); // oak_slab_top = oak_slab_bottom + 1
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
@@ -249,34 +249,34 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 			glm::vec3 intersect = line_plane_intersection(_camera->getEyePos(), _camera->getDir(), p0, {0, 1, 0});
 			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type + 1);
 		}
-	} else if (shape == GEOMETRY::TRAPDOOR) {
+	} else if (shape == geometry::trapdoor) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
-			type += ((_block_hit.pos.z < _block_hit.prev_pos.z) ? 0 : (DOOR::UPPER_HALF << 12));
+			type += ((_block_hit.pos.z < _block_hit.prev_pos.z) ? 0 : (door::upper_half << 12));
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.x > _block_hit.prev_pos.x) ? glm::ivec3(0, 0, 0) : glm::ivec3(1, 0, 0));
 			glm::vec3 intersect = line_plane_intersection(_camera->getEyePos(), _camera->getDir(), p0, {1, 0, 0});
-			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (DOOR::UPPER_HALF << 12));
+			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (door::upper_half << 12));
 			// _ui->chatMessage("block hit " + std::to_string(_block_hit.pos.x) + ", " + std::to_string(_block_hit.pos.y) + ", " + std::to_string(_block_hit.pos.z));
 			// _ui->chatMessage("p0 at " + std::to_string(p0.x) + ", " + std::to_string(p0.y) + ", " + std::to_string(p0.z));
 			// _ui->chatMessage("intersect at " + std::to_string(intersect.x) + ", " + std::to_string(intersect.y) + ", " + std::to_string(intersect.z));
 		} else {
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
 			glm::vec3 intersect = line_plane_intersection(_camera->getEyePos(), _camera->getDir(), p0, {0, 1, 0});
-			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (DOOR::UPPER_HALF << 12));
+			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (door::upper_half << 12));
 		}
-	} else if (type == blocks::OAK_LOG) {
+	} else if (type == blocks::oak_log) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
-			type += (face_dir::PLUSZ << blocks::ORIENTATION_OFFSET);
+			type += (face_dir::plus_z << offset::blocks::orientation);
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
-			type += (face_dir::PLUSX << blocks::ORIENTATION_OFFSET);
+			type += (face_dir::plus_x << offset::blocks::orientation);
 		} else {
-			type += (face_dir::PLUSY << blocks::ORIENTATION_OFFSET);
+			type += (face_dir::plus_y << offset::blocks::orientation);
 		}
 	}
 
 	if (_block_hit.type) { // rm if statement for nice cheat
-		if (_game_mode == GAMEMODE::ADVENTURE && type != blocks::WATER) {
-			type |= GAMEMODE::ADVENTURE_BLOCK;
+		if (_game_mode == GAMEMODE::ADVENTURE && type != blocks::water) {
+			type |= mask::adventure_block;
 		}
 		_current_chunk_ptr->handleHit(collect, type, _block_hit.prev_pos, Modif::ADD);
 	}
@@ -448,19 +448,19 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		t_hit bHit = get_block_hit();
 		_ui->chatMessage("*******************");
 		_ui->chatMessage("Info about " + s_blocks[bHit.type]->name + " at " + std::to_string(bHit.pos.x) + ", " + std::to_string(bHit.pos.y) + ", " + std::to_string(bHit.pos.z));
-		_ui->chatMessage(std::string("visible: ") + ((bHit.value & blocks::NOTVISIBLE) ? "FALSE" : "TRUE"));
-		_ui->chatMessage(std::string("adventure block: ") + ((bHit.value & GAMEMODE::ADVENTURE_BLOCK) ? "TRUE" : "FALSE"));
-		_ui->chatMessage(std::string("orientation: ") + std::to_string((bHit.value >> blocks::ORIENTATION_OFFSET) & 0x7));
+		_ui->chatMessage(std::string("visible: ") + ((bHit.value & mask::blocks::notVisible) ? "FALSE" : "TRUE"));
+		_ui->chatMessage(std::string("adventure block: ") + ((bHit.value & mask::adventure_block) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("orientation: ") + std::to_string((bHit.value >> offset::blocks::orientation) & 0x7));
 		_ui->chatMessage(std::string("transparent: ") + ((s_blocks[bHit.type]->isTransparent(bHit.value)) ? "TRUE" : "FALSE"));
-		_ui->chatMessage(std::string("powered: ") + ((bHit.value & REDSTONE::POWERED) ? "TRUE" : "FALSE"));
-		_ui->chatMessage(std::string("weakdy powered: ") + ((bHit.value & REDSTONE::WEAKDY_POWERED) ? "TRUE" : "FALSE"));
-		_ui->chatMessage(std::string("activated: ") + ((bHit.value & REDSTONE::ACTIVATED) ? "TRUE" : "FALSE"));
-		_ui->chatMessage(std::string("strength: ") + std::to_string((bHit.value >> REDSTONE::STRENGTH_OFFSET) & 0xF));
-		_ui->chatMessage(std::string("bitfield: ") + std::to_string(bHit.value >> blocks::BITFIELD_OFFSET));
+		_ui->chatMessage(std::string("powered: ") + ((bHit.value & mask::redstone::powered) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("weakdy powered: ") + ((bHit.value & mask::redstone::weakdy_powered) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("activated: ") + ((bHit.value & mask::redstone::activated) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("strength: ") + std::to_string((bHit.value >> offset::redstone::strength) & 0xF));
+		_ui->chatMessage(std::string("bitfield: ") + std::to_string(bHit.value >> offset::blocks::bitfield));
 		switch (bHit.type) {
-			case blocks::PISTON:
-			case blocks::STICKY_PISTON:
-				_ui->chatMessage(std::string("moving piston: ") + ((bHit.value & REDSTONE::PISTON::MOVING) ? "TRUE" : "FALSE"));
+			case blocks::piston:
+			case blocks::sticky_piston:
+				_ui->chatMessage(std::string("moving piston: ") + ((bHit.value & mask::redstone::piston::moving) ? "TRUE" : "FALSE"));
 			break ;
 		}
 		_ui->chatMessage("*******************");
@@ -495,7 +495,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	_hand_content = _inventory->getCurrentSlot();
 	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_game_mode != GAMEMODE::CREATIVE) {
-			if (_block_hit.type == blocks::AIR) {
+			if (_block_hit.type == blocks::air) {
 				_camera->setArmAnimation(INPUT::key_update(INPUT::BREAK));
 			} else {
 				_camera->setArmAnimation(true);
@@ -537,14 +537,14 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				}
 				_eat_timer = 0;
 			}
-		} else if (_hand_content == blocks::BOW) {
+		} else if (_hand_content == blocks::bow) {
 			_bow_timer += deltaTime;
 		} else if (INPUT::key_update(INPUT::USE)) {
 			handle_add_rm_block(true, _game_mode != GAMEMODE::CREATIVE);
 			_camera->setArmAnimation(true);
 		}
 	} else if (INPUT::key_update(INPUT::USE)) {
-		if (_hand_content == blocks::BOW && _bow_timer && _current_chunk_ptr) {
+		if (_hand_content == blocks::bow && _bow_timer && _current_chunk_ptr) {
 			// TODO rm arrow from inventory (once implemented)
 			_inventory->decrementDurabitilty();
 			_current_chunk_ptr->shootArrow(_bow_timer);
@@ -556,14 +556,14 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	if (INPUT::key_down(INPUT::DROP)) {
 		if (_current_chunk_ptr) {
 			t_item details = _inventory->removeBlock(true);
-			if (details.type != blocks::AIR) {
+			if (details.type != blocks::air) {
 				mtx.lock();
 				_current_chunk_ptr->dropEntity(_camera->getDir(), details);
 				mtx.unlock();
 			}
 		}
 	}
-	if (_block_hit.type != blocks::AIR
+	if (_block_hit.type != blocks::air
 		&& INPUT::key_down(INPUT::SAMPLE) && INPUT::key_update(INPUT::SAMPLE)) { // pick up in creative mode, or swap
 		_inventory->replaceSlot(_block_hit.type, _game_mode == GAMEMODE::CREATIVE);
 	}

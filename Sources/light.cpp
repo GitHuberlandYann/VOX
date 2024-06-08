@@ -30,7 +30,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 			} else {
 				short adj = getLightLevel(posX + delta.x, posY + delta.y, posZ + delta.z) >> shift;
 				maxLevel = maxs(maxLevel, adj & 0xF);
-				if (skySpread && index == face_dir::PLUSZ && (adj & 0xF0)) {
+				if (skySpread && index == face_dir::plus_z && (adj & 0xF0)) {
 					// TODO if _blocks[offset].. is not water/leaves
 					// 	maxLevel = adj&0xFF - (0x10 if adj & 0xF0 else 0);
 					// else
@@ -58,7 +58,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 	// spread in all 6 directions
 	for (int index = 0; index < 6; index++) {
 		const glm::ivec3 delta = adj_blocks[index];
-		if (skySpread && index == face_dir::MINUSZ && level == 0xFF) {
+		if (skySpread && index == face_dir::minus_z && level == 0xFF) {
 			light_try_spread(posX + delta.x, posY + delta.y, posZ + delta.z, 0xF0, skySpread, recurse - 1);
 		} else {
 			light_try_spread(posX + delta.x, posY + delta.y, posZ + delta.z, level, skySpread, recurse - 1);
@@ -76,10 +76,10 @@ void Chunk::generate_lights( void )
 			char light_level = 15;
 			for (int level = WORLD_HEIGHT - 1; level >= 0; level--) {
 				if (light_level) {
-					int type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & blocks::TYPE;
+					int type = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & mask::blocks::type;
 					if (!s_blocks[type]->transparent) { // block hit
 						light_level = 0;
-					} else if (type == blocks::OAK_LEAVES || type >= blocks::WATER) {
+					} else if (type == blocks::oak_leaves || type >= blocks::water) {
 						--light_level;
 					}
 					if (light_level == 15) {
@@ -133,9 +133,9 @@ int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets
 	// return (!!air_flower(getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]), true, true, false)
 	// 		+ !!air_flower(getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]), true, true, false)
 	// 		+ !!air_flower(getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]), true, true, false));
-	return (!s_blocks[getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]) & blocks::TYPE]->transparent
-			+ !s_blocks[getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]) & blocks::TYPE]->transparent
-			+ !s_blocks[getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]) & blocks::TYPE]->transparent);
+	return (!s_blocks[getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]) & mask::blocks::type]->transparent
+			+ !s_blocks[getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]) & mask::blocks::type]->transparent
+			+ !s_blocks[getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]) & mask::blocks::type]->transparent);
 }
 
 void Chunk::fill_vertex_array( void )
@@ -147,10 +147,10 @@ void Chunk::fill_vertex_array( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				GLint block_value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-				if (block_value & blocks::NOTVISIBLE) {
+				if (block_value & mask::blocks::notVisible) {
 					continue ;
 				}
-				s_blocks[block_value & blocks::TYPE]->addMesh(this, _vertices, {_startX, _startY}, {row, col, level}, block_value);
+				s_blocks[block_value & mask::blocks::type]->addMesh(this, _vertices, {_startX, _startY}, {row, col, level}, block_value);
 			}
 		}
 	}
@@ -183,20 +183,20 @@ short Chunk::getLightLevel( int posX, int posY, int posZ )
 		return (0xFF00);
 	}
 	if (posX < 0) {
-		if (_neighbours[face_dir::MINUSX]) {
-			return (_neighbours[face_dir::MINUSX]->getLightLevel(posX + CHUNK_SIZE, posY, posZ));
+		if (_neighbours[face_dir::minus_x]) {
+			return (_neighbours[face_dir::minus_x]->getLightLevel(posX + CHUNK_SIZE, posY, posZ));
 		}
 	} else if (posX >= CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSX]) {
-			return (_neighbours[face_dir::PLUSX]->getLightLevel(posX - CHUNK_SIZE, posY, posZ));
+		if (_neighbours[face_dir::plus_x]) {
+			return (_neighbours[face_dir::plus_x]->getLightLevel(posX - CHUNK_SIZE, posY, posZ));
 		}
 	} else if (posY < 0) {
-		if (_neighbours[face_dir::MINUSY]) {
-			return (_neighbours[face_dir::MINUSY]->getLightLevel(posX, posY + CHUNK_SIZE, posZ));
+		if (_neighbours[face_dir::minus_y]) {
+			return (_neighbours[face_dir::minus_y]->getLightLevel(posX, posY + CHUNK_SIZE, posZ));
 		}
 	} else if (posY >= CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSY]) {
-			return (_neighbours[face_dir::PLUSY]->getLightLevel(posX, posY - CHUNK_SIZE, posZ));
+		if (_neighbours[face_dir::plus_y]) {
+			return (_neighbours[face_dir::plus_y]->getLightLevel(posX, posY - CHUNK_SIZE, posZ));
 		}
 	} else {
 		return (_lights[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ]);
@@ -210,23 +210,23 @@ void Chunk::setLightLevel( short level, int posX, int posY, int posZ, bool askNe
 		return ;
 	}
 	if (posX < 0) {
-		if (askNeighbours && _neighbours[face_dir::MINUSX]) {
-			_neighbours[face_dir::MINUSX]->setLightLevel(level, posX + CHUNK_SIZE, posY, posZ, true);
+		if (askNeighbours && _neighbours[face_dir::minus_x]) {
+			_neighbours[face_dir::minus_x]->setLightLevel(level, posX + CHUNK_SIZE, posY, posZ, true);
 			return ;
 		}
 	} else if (posX >= CHUNK_SIZE) {
-		if (askNeighbours && _neighbours[face_dir::PLUSX]) {
-			_neighbours[face_dir::PLUSX]->setLightLevel(level, posX - CHUNK_SIZE, posY, posZ, true);
+		if (askNeighbours && _neighbours[face_dir::plus_x]) {
+			_neighbours[face_dir::plus_x]->setLightLevel(level, posX - CHUNK_SIZE, posY, posZ, true);
 			return ;
 		}
 	} else if (posY < 0) {
-		if (askNeighbours && _neighbours[face_dir::MINUSY]) {
-			_neighbours[face_dir::MINUSY]->setLightLevel(level, posX, posY + CHUNK_SIZE, posZ, true);
+		if (askNeighbours && _neighbours[face_dir::minus_y]) {
+			_neighbours[face_dir::minus_y]->setLightLevel(level, posX, posY + CHUNK_SIZE, posZ, true);
 			return ;
 		}
 	} else if (posY >= CHUNK_SIZE) {
-		if (askNeighbours && _neighbours[face_dir::PLUSY]) {
-			_neighbours[face_dir::PLUSY]->setLightLevel(level, posX, posY - CHUNK_SIZE, posZ, true);
+		if (askNeighbours && _neighbours[face_dir::plus_y]) {
+			_neighbours[face_dir::plus_y]->setLightLevel(level, posX, posY - CHUNK_SIZE, posZ, true);
 			return ;
 		}
 	} else {
@@ -240,23 +240,23 @@ void Chunk::startLightSpread( int posX, int posY, int posZ, bool skySpread )
 		return ;
 	}
 	if (posX < 0) {
-		if (_neighbours[face_dir::MINUSX]) {
-			_neighbours[face_dir::MINUSX]->startLightSpread(posX + CHUNK_SIZE, posY, posZ, skySpread);
+		if (_neighbours[face_dir::minus_x]) {
+			_neighbours[face_dir::minus_x]->startLightSpread(posX + CHUNK_SIZE, posY, posZ, skySpread);
 			return ;
 		}
 	} else if (posX >= CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSX]) {
-			_neighbours[face_dir::PLUSX]->startLightSpread(posX - CHUNK_SIZE, posY, posZ, skySpread);
+		if (_neighbours[face_dir::plus_x]) {
+			_neighbours[face_dir::plus_x]->startLightSpread(posX - CHUNK_SIZE, posY, posZ, skySpread);
 			return ;
 		}
 	} else if (posY < 0) {
-		if (_neighbours[face_dir::MINUSY]) {
-			_neighbours[face_dir::MINUSY]->startLightSpread(posX, posY + CHUNK_SIZE, posZ, skySpread);
+		if (_neighbours[face_dir::minus_y]) {
+			_neighbours[face_dir::minus_y]->startLightSpread(posX, posY + CHUNK_SIZE, posZ, skySpread);
 			return ;
 		}
 	} else if (posY >= CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSY]) {
-			_neighbours[face_dir::PLUSY]->startLightSpread(posX, posY - CHUNK_SIZE, posZ, skySpread);
+		if (_neighbours[face_dir::plus_y]) {
+			_neighbours[face_dir::plus_y]->startLightSpread(posX, posY - CHUNK_SIZE, posZ, skySpread);
 			return ;
 		}
 	} else {
@@ -272,25 +272,25 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 	if (posX < 0 || posX >= CHUNK_SIZE || posY < 0 || posY >= CHUNK_SIZE) {
 		// spread neighbour
 		if (posX == -1) {
-			if (_neighbours[face_dir::MINUSX]) {
-				_neighbours[face_dir::MINUSX]->light_try_spread(CHUNK_SIZE - 1, posY, posZ, level, skySpread, recurse);
+			if (_neighbours[face_dir::minus_x]) {
+				_neighbours[face_dir::minus_x]->light_try_spread(CHUNK_SIZE - 1, posY, posZ, level, skySpread, recurse);
 			}
 		} else if (posY == -1) {
-			if (_neighbours[face_dir::MINUSY]) {
-				_neighbours[face_dir::MINUSY]->light_try_spread(posX, CHUNK_SIZE - 1, posZ, level, skySpread, recurse);
+			if (_neighbours[face_dir::minus_y]) {
+				_neighbours[face_dir::minus_y]->light_try_spread(posX, CHUNK_SIZE - 1, posZ, level, skySpread, recurse);
 			}
 		} else if (posX == CHUNK_SIZE) {
-			if (_neighbours[face_dir::PLUSX]) {
-				_neighbours[face_dir::PLUSX]->light_try_spread(0, posY, posZ, level, skySpread, recurse);
+			if (_neighbours[face_dir::plus_x]) {
+				_neighbours[face_dir::plus_x]->light_try_spread(0, posY, posZ, level, skySpread, recurse);
 			}
 		} else if (posY == CHUNK_SIZE) {
-			if (_neighbours[face_dir::PLUSY]) {
-				_neighbours[face_dir::PLUSY]->light_try_spread(posX, 0, posZ, level, skySpread, recurse);
+			if (_neighbours[face_dir::plus_y]) {
+				_neighbours[face_dir::plus_y]->light_try_spread(posX, 0, posZ, level, skySpread, recurse);
 			}
 		}
 	} else {
-		int type = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] & blocks::TYPE;
-		// if (air_flower(type, false, true, true) && type != blocks::OAK_SLAB_BOTTOM && type != blocks::FARMLAND && type != blocks::DIRT_PATH) {
+		int type = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] & mask::blocks::type;
+		// if (air_flower(type, false, true, true) && type != blocks::OAK_SLAB_BOTTOM && type != blocks::farmland && type != blocks::dirt_PATH) {
 		// 	return ;
 		// }
 		if (!s_blocks[type]->transparent) {

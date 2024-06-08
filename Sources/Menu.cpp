@@ -27,7 +27,7 @@ Menu::~Menu( void )
 void Menu::reset_values( void )
 {
 	_selection = 0;
-	if (_selected_block.type != blocks::AIR) {
+	if (_selected_block.type != blocks::air) {
 		_inventory.restoreBlock(_selected_block); // TODO drop item if restoreBlock finds no empty cell
 	}
 	_inventory.restoreiCraft();
@@ -543,7 +543,7 @@ MENU::RET Menu::ingame_inputs( void )
 	}
 	if (INPUT::key_down(INPUT::BREAK) && INPUT::key_update(INPUT::BREAK)) {
 		if (_selection) {
-			if (_selected_block.type == blocks::AIR) {
+			if (_selected_block.type == blocks::air) {
 				if (INPUT::key_down(INPUT::SNEAK)) {
 					_inventory.shiftBlockAt(craft, _selection - 1, _furnace, _chest);
 				} else {
@@ -558,10 +558,10 @@ MENU::RET Menu::ingame_inputs( void )
 	if (INPUT::key_down(INPUT::USE)) {
 		bool first_frame = INPUT::key_update(INPUT::USE);
 		if (_selection) {
-			if (_selected_block.type == blocks::AIR) {
+			if (_selected_block.type == blocks::air) {
 				if (first_frame) {
 					_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1, _furnace, _chest);
-					if (_selected_block.type != blocks::AIR) {
+					if (_selected_block.type != blocks::air) {
 						_selection_list.push_back(_selection);
 					}
 				}
@@ -1068,7 +1068,7 @@ void Menu::add_item_value( t_item item, int x, int y, bool movement )
 void Menu::add_slot_value( int index )
 {
 	t_item item = _inventory.getSlotBlock(index);
-	if (item.type == blocks::AIR) {
+	if (item.type == blocks::air) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * index * _gui_size) + _gui_size * 3;
@@ -1079,7 +1079,7 @@ void Menu::add_slot_value( int index )
 void Menu::add_backpack_value( int index )
 {
 	t_item item = _inventory.getBackpackBlock(index);
-	if (item.type == blocks::AIR) {
+	if (item.type == blocks::air) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3;
@@ -1090,7 +1090,7 @@ void Menu::add_backpack_value( int index )
 void Menu::add_icraft_value( int index )
 {
 	t_item item = _inventory.getiCraftBlock(index);
-	if (item.type == blocks::AIR) {
+	if (item.type == blocks::air) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (5 + index % 2) * _gui_size) + _gui_size * 3;
@@ -1101,7 +1101,7 @@ void Menu::add_icraft_value( int index )
 void Menu::add_craft_value( int index )
 {
 	t_item item = _inventory.getCraftBlock(index);
-	if (item.type == blocks::AIR) {
+	if (item.type == blocks::air) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (1 + index % 3) * _gui_size) + _gui_size * 7;
@@ -1112,7 +1112,7 @@ void Menu::add_craft_value( int index )
 void Menu::add_crafted_value( void )
 {
 	t_item item = _inventory.getCrafted();
-	if (item.type == blocks::AIR) {
+	if (item.type == blocks::air) {
 		return ;
 	}
 	if (_state == MENU::INVENTORY) {
@@ -1133,7 +1133,7 @@ void Menu::add_chest_value( int index )
 		// std::cout << "add_chest_value NULL item at " << index << std::endl;
 		return ;
 	}
-	if (item->type == blocks::AIR) {
+	if (item->type == blocks::air) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3;
@@ -1144,7 +1144,7 @@ void Menu::add_chest_value( int index )
 void Menu::add_furnace_value( void )
 {
 	t_item item = _furnace->getComposant();
-	if (item.type != blocks::AIR) {
+	if (item.type != blocks::air) {
 		int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size;
 		int y = WIN_HEIGHT / 2 - 66 * _gui_size;
 		add_item_value(item, x, y, _gui_size);
@@ -1158,13 +1158,13 @@ void Menu::add_furnace_value( void )
 		addQuads(1, (WIN_WIDTH - (166 * _gui_size)) / 2 + 74 * _gui_size, WIN_HEIGHT / 2 - 49 * _gui_size, progress * _gui_size, 17 * _gui_size, 38, 47, progress, 17);
 	}
 	item = _furnace->getFuel();
-	if (item.type != blocks::AIR) {
+	if (item.type != blocks::air) {
 		int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size;
 		int y = WIN_HEIGHT / 2 - 30 * _gui_size;
 		add_item_value(item, x, y, _gui_size);
 	}
 	item = _furnace->getProduction();
-	if (item.type != blocks::AIR) {
+	if (item.type != blocks::air) {
 		int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 111 * _gui_size;
 		int y = WIN_HEIGHT / 2 - 48 * _gui_size;
 		add_item_value(item, x, y, _gui_size);
@@ -1187,7 +1187,7 @@ void Menu::setup_array_buffer_inventory( void )
 	}
 	add_crafted_value();
 
-	if (_selected_block.type != blocks::AIR) {
+	if (_selected_block.type != blocks::air) {
 		double mouseX, mouseY;
 		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		add_item_value(_selected_block, mouseX - 8 * _gui_size, mouseY - 8 * _gui_size, true);
@@ -1212,7 +1212,7 @@ void Menu::setup_array_buffer_crafting( void )
 	}
 	add_crafted_value();
 
-	if (_selected_block.type != blocks::AIR) {
+	if (_selected_block.type != blocks::air) {
 		double mouseX, mouseY;
 		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		add_item_value(_selected_block, mouseX - 8 * _gui_size, mouseY - 8 * _gui_size, true);
@@ -1236,7 +1236,7 @@ void Menu::setup_array_buffer_chest( void )
 		add_chest_value(index);
 	}
 
-	if (_selected_block.type != blocks::AIR) {
+	if (_selected_block.type != blocks::air) {
 		double mouseX, mouseY;
 		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		add_item_value(_selected_block, mouseX - 8 * _gui_size, mouseY - 8 * _gui_size, true);
@@ -1258,7 +1258,7 @@ void Menu::setup_array_buffer_furnace( void )
 	}
 	add_furnace_value();
 
-	if (_selected_block.type != blocks::AIR) {
+	if (_selected_block.type != blocks::air) {
 		double mouseX, mouseY;
 		glfwGetCursorPos(_window, &mouseX, &mouseY);
 		add_item_value(_selected_block, mouseX - 8 * _gui_size, mouseY - 8 * _gui_size, true);

@@ -8,51 +8,51 @@
 /* generate one or many entities depending on block broken */
 void Chunk::entity_block( int posX, int posY, int posZ, int value )
 {
-	int type = (value & blocks::TYPE);
+	int type = (value & mask::blocks::type);
 	std::cout << "breaking " << s_blocks[type]->name << std::endl;
 	float random;
 	switch (type) {
-	case blocks::GRASS:
+	case blocks::grass:
 		random = Random::randomFloat(_seed);
 		if (random <= 0.125f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat_seeds, 1, {0, 0}}));
 		}
 		break ;
-	case blocks::OAK_LEAVES:
+	case blocks::oak_leaves:
 		random = Random::randomFloat(_seed);
 		if (random <= 0.05f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::OAK_SAPLING, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::oak_sapling, 1, {0, 0}}));
 		}
 		random = Random::randomFloat(_seed);
 		if (random <= 0.02f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::STICK, 2, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::stick, 2, {0, 0}}));
 		}
 		random = Random::randomFloat(_seed);
 		if (random <= 0.005f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::APPLE, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::apple, 1, {0, 0}}));
 		}
 		break ;
-	case blocks::WHEAT_CROP:
-		if ((value >> blocks::BITFIELD_OFFSET) < 7) { // not fully grown
+	case blocks::wheat_crop:
+		if ((value >> offset::blocks::bitfield) < 7) { // not fully grown
 			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {s_blocks[type]->mined, 1, {0, 0}}));
 			return ;
 		}
-		_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::WHEAT, 1, {0, 0}}));
+		_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat, 1, {0, 0}}));
 		random = Random::randomFloat(_seed);
 		if (random <= 0.0787f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::WHEAT_SEEDS, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat_seeds, 1, {0, 0}}));
 		} else if (random <= 0.0787f + 0.3149f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::WHEAT_SEEDS, 2, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat_seeds, 2, {0, 0}}));
 		} else if (random <= 0.0787f + 0.3149f + 0.4198f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::WHEAT_SEEDS, 3, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat_seeds, 3, {0, 0}}));
 		} else {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::WHEAT_SEEDS, 4, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat_seeds, 4, {0, 0}}));
 		}
 		break ;
-	case blocks::GRAVEL:
+	case blocks::gravel:
 		random = Random::randomFloat(_seed);
 		if (random < 0.1f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::FLINT, 1, {0, 0}}));
+			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::flint, 1, {0, 0}}));
 			return ;
 		} // no break on gravel so it drops a gravel block
 	default:
@@ -65,8 +65,8 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
-	int value = _blocks[offset], type = value & blocks::TYPE; // TODO better handling of invis block gets deleted
-	if (type == blocks::CHEST) {
+	int value = _blocks[offset], type = value & mask::blocks::type; // TODO better handling of invis block gets deleted
+	if (type == blocks::chest) {
 		auto search = _chests.find(offset);
 		if (search != _chests.end()) {
 			t_item *item;
@@ -79,7 +79,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			delete _chests[offset]; // TODO what happens if chest explodes while we use it ? prob heap use after free in Menu.cpp
 			_chests.erase(offset);
 		}
-	} else if (type == blocks::FURNACE) {
+	} else if (type == blocks::furnace) {
 		auto search = _furnaces.find(offset); // drop furnace's items
 		if (search != _furnaces.end()) {
 			t_item items = search->second->getComposant();
@@ -97,46 +97,46 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			delete _furnaces[offset];
 			_furnaces.erase(offset);
 		}
-	} else if (type == blocks::OAK_SIGN) {
+	} else if (type == blocks::oak_sign) {
 		auto search = _signs.find(offset);
 		if (search != _signs.end()) {
 			delete _signs[offset];
 			_signs.erase(offset);
 		}
-	} else if (type == blocks::OAK_DOOR) {
+	} else if (type == blocks::oak_door) {
 		// break other part of door
-		_blocks[offset + (((value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF) ? -1 : 1)] = blocks::AIR;
-		_added.erase(offset + (((value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF) ? -1 : 1));
-		_removed.insert(offset + (((value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF) ? -1 : 1));
-	} else if (type == blocks::LEVER && (value & REDSTONE::POWERED)) {
-		flickLever(pos, value & (REDSTONE::ALL_BITS - REDSTONE::POWERED), REDSTONE::OFF);
+		_blocks[offset + (((value >> offset::blocks::bitfield) & door::upper_half) ? -1 : 1)] = blocks::air;
+		_added.erase(offset + (((value >> offset::blocks::bitfield) & door::upper_half) ? -1 : 1));
+		_removed.insert(offset + (((value >> offset::blocks::bitfield) & door::upper_half) ? -1 : 1));
+	} else if (type == blocks::lever && (value & mask::redstone::powered)) {
+		flickLever(pos, value & (mask::all_bits - mask::redstone::powered), redstone::off);
 	}
-	if (useInventory && type == blocks::WATER) {
+	if (useInventory && type == blocks::water) {
 		_inventory->addBlock(type); // water bucket
 	} else if (useInventory) {
 		entity_block(pos.x, pos.y, pos.z, value);
 	}
 
-	setBlockAt(blocks::AIR, pos, true);
+	setBlockAt(blocks::air, pos, true);
 }
 
 void Chunk::addFlame( int offset, glm::vec3 pos, int source, int orientation )
 {
-	if (source == blocks::TORCH) {
+	if (source == blocks::torch) {
 		switch (orientation) {
-		case face_dir::MINUSX:
+		case face_dir::minus_x:
 			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.25f, pos.y + _startY + 0.5f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
 			break ;
-		case face_dir::PLUSX:
+		case face_dir::plus_x:
 			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.75f, pos.y + _startY + 0.5f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
 			break ;
-		case face_dir::MINUSY:
+		case face_dir::minus_y:
 			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.25f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
 			break ;
-		case face_dir::PLUSY:
+		case face_dir::plus_y:
 			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.75f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
 			break ;
-		case face_dir::MINUSZ:
+		case face_dir::minus_z:
 			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 11.0f / 16.0f + 0.05f}, PARTICLES::FLAME));
 			break ;
 		}
@@ -148,11 +148,11 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":add block " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
-	int type = block_value & blocks::TYPE;
-	int shape = s_blocks[type]->geometry;
-	if (type == blocks::SAND || type == blocks::GRAVEL) {
-		int type_under = (_blocks[offset - 1] & blocks::TYPE);
-		if (type_under == blocks::AIR) {
+	int type = block_value & mask::blocks::type;
+	geometry shape = s_blocks[type]->geometry;
+	if (type == blocks::sand || type == blocks::gravel) {
+		int type_under = (_blocks[offset - 1] & mask::blocks::type);
+		if (type_under == blocks::air) {
 			if (useInventory) {
 				_inventory->removeBlock(false);
 			}
@@ -160,88 +160,90 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			return ;
 		}
 	}
-	if (type == blocks::WATER) { // we place water
-		if (previous < blocks::WATER) {
+	if (type == blocks::water) { // we place water
+		if (previous < blocks::water) {
 			_hasWater = true;
 		}
-	} else if (shape == GEOMETRY::TORCH) {
+	} else if (shape == geometry::torch) {
 		// check if orientation possible (wall available to hang from)
 		// if not, check if block underneath and change orientation
 		// else abort mission
-		int neighbourShape = GEOMETRY::NONE;
-		switch ((block_value >> blocks::ORIENTATION_OFFSET) & 0x7) {
-		case face_dir::PLUSX:
-			neighbourShape = s_blocks[getBlockAt(pos.x + 1, pos.y, pos.z) & blocks::TYPE]->geometry;
+		geometry neighbourShape = geometry::none;
+		switch ((block_value >> offset::blocks::orientation) & 0x7) {
+		case face_dir::plus_x:
+			neighbourShape = s_blocks[getBlockAt(pos.x + 1, pos.y, pos.z) & mask::blocks::type]->geometry;
 			break;
-		case face_dir::MINUSX:
-			neighbourShape = s_blocks[getBlockAt(pos.x - 1, pos.y, pos.z) & blocks::TYPE]->geometry;
+		case face_dir::minus_x:
+			neighbourShape = s_blocks[getBlockAt(pos.x - 1, pos.y, pos.z) & mask::blocks::type]->geometry;
 			break;
-		case face_dir::PLUSY:
-			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y + 1, pos.z) & blocks::TYPE]->geometry;
+		case face_dir::plus_y:
+			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y + 1, pos.z) & mask::blocks::type]->geometry;
 			break;
-		case face_dir::MINUSY:
-			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y - 1, pos.z) & blocks::TYPE]->geometry;
+		case face_dir::minus_y:
+			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y - 1, pos.z) & mask::blocks::type]->geometry;
 			break;
 		}
-		if (neighbourShape != GEOMETRY::CUBE) {
-			block_value = type + (face_dir::MINUSZ << blocks::ORIENTATION_OFFSET);
-			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1) & blocks::TYPE]->geometry;
-			if (!(neighbourShape == GEOMETRY::CUBE || neighbourShape == GEOMETRY::SLAB_TOP
-				|| neighbourShape == GEOMETRY::STAIRS_TOP || neighbourShape == GEOMETRY::FENCE)) {
+		if (neighbourShape != geometry::cube) {
+			block_value = type + (face_dir::minus_z << offset::blocks::orientation);
+			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1) & mask::blocks::type]->geometry;
+			if (!(neighbourShape == geometry::cube || neighbourShape == geometry::slab_top
+				|| neighbourShape == geometry::stairs_top || neighbourShape == geometry::fence)) {
 				return ;
 			}
 		}
-		if (type == blocks::TORCH) {
-			addFlame(offset, pos, blocks::TORCH, (block_value >> blocks::ORIENTATION_OFFSET) & 0x7);
+		if (type == blocks::torch) {
+			addFlame(offset, pos, blocks::torch, (block_value >> offset::blocks::orientation) & 0x7);
 		}
-	} else if (shape == GEOMETRY::PISTON) {
-		block_value += (_camera->getOrientation6() << blocks::ORIENTATION_OFFSET);
-	} else if (type == blocks::OBSERVER) {
-		block_value += (opposite_dir(_camera->getOrientation6()) << blocks::ORIENTATION_OFFSET);
+	} else if (shape == geometry::piston) {
+		block_value += (_camera->getOrientation6() << offset::blocks::orientation);
+	} else if (type == blocks::observer) {
+		block_value += (opposite_dir(_camera->getOrientation6()) << offset::blocks::orientation);
 	} else if (s_blocks[type]->oriented) {
-		if ((type != blocks::LEVER && shape != GEOMETRY::BUTTON) || ((block_value >> blocks::BITFIELD_OFFSET) & 0x3) != PLACEMENT::WALL) {
-			block_value += (_camera->getOrientation() << blocks::ORIENTATION_OFFSET);
+		if ((type != blocks::lever && shape != geometry::button) || ((block_value >> offset::blocks::bitfield) & 0x3) != placement::wall) {
+			block_value += (_camera->getOrientation() << offset::blocks::orientation);
 		}
 		switch (shape) {
-			case GEOMETRY::STAIRS_BOTTOM:
-			case GEOMETRY::STAIRS_TOP:
+			case geometry::stairs_bottom:
+			case geometry::stairs_top:
 				handle_stair_corners(pos, block_value);
 				break ;
-			case GEOMETRY::DOOR:
+			case geometry::door:
 				handle_door_placement(pos, block_value);
-				if (block_value == blocks::AIR) return ; // door couldn't be placed
-				else if (!((block_value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF)) { // place upper_half
-					_blocks[offset + 1] = block_value | (DOOR::UPPER_HALF << blocks::BITFIELD_OFFSET);
+				if (block_value == blocks::air) return ; // door couldn't be placed
+				else if (!((block_value >> offset::blocks::bitfield) & door::upper_half)) { // place upper_half
+					_blocks[offset + 1] = block_value | (door::upper_half << offset::blocks::bitfield);
 					_removed.erase(offset + 1);
-					_added[offset + 1] = block_value | (DOOR::UPPER_HALF << blocks::BITFIELD_OFFSET);
+					_added[offset + 1] = block_value | (door::upper_half << offset::blocks::bitfield);
 				}
 				break ;
-			case GEOMETRY::REPEATER:
+			case geometry::repeater:
 				previous = getBlockAt(pos.x, pos.y, pos.z - 1);
-				if (s_blocks[previous & blocks::TYPE]->isTransparent(previous) && (previous & blocks::TYPE) != blocks::GLASS && (previous & blocks::TYPE) != blocks::OBSERVER) {
+				if (s_blocks[previous & mask::blocks::type]->isTransparent(previous) && (previous & mask::blocks::type) != blocks::glass && (previous & mask::blocks::type) != blocks::observer) {
 					return ;
 				}
-				block_value ^= (1 << blocks::ORIENTATION_OFFSET); // inverse dir (0->1, 1->0, 2->3, 3->2)
+				block_value ^= (1 << offset::blocks::orientation); // inverse dir (0->1, 1->0, 2->3, 3->2)
 				initRepeater(pos, block_value, true);
 				break ;
+			default:
+				break ;
 		}
-	} else if (type == blocks::OAK_FENCE || type == blocks::GLASS_PANE) {
+	} else if (type == blocks::oak_fence || type == blocks::glass_pane) {
 		handle_fence_placement(pos, block_value);
-	} else if ((shape == GEOMETRY::CROSS || shape == GEOMETRY::CROP) && pos.z > 0) {
-		if (previous >= blocks::WATER) {
+	} else if ((shape == geometry::cross || shape == geometry::crop) && pos.z > 0) {
+		if (previous >= blocks::water) {
 			return ;
 		}
-		int type_below = _blocks[offset - 1] & blocks::TYPE;
-		if (type == blocks::WHEAT_CROP) {
-		} else if (type_below != blocks::GRASS_BLOCK && type_below != blocks::DIRT && type_below != blocks::SAND) {
+		int type_below = _blocks[offset - 1] & mask::blocks::type;
+		if (type == blocks::wheat_crop) {
+		} else if (type_below != blocks::grass_block && type_below != blocks::dirt && type_below != blocks::sand) {
 			return ; // can't place flower on something else than grass/dirt block
-		} else if (!(type_below > blocks::AIR && type_below < blocks::POPPY) || s_blocks[type_below]->hasHitbox) {
+		} else if (!(type_below > blocks::air && type_below < blocks::poppy) || s_blocks[type_below]->hasHitbox) {
 			return ;
 		}
-	} else if (shape == GEOMETRY::DUST) {
-		int shape_below = s_blocks[_blocks[offset - 1] & blocks::TYPE]->geometry;
-		if (!(shape_below == GEOMETRY::CUBE || shape_below == GEOMETRY::SLAB_TOP || shape_below == GEOMETRY::PISTON
-			|| shape_below == GEOMETRY::STAIRS_TOP || shape_below == GEOMETRY::GLASS)) {
+	} else if (shape == geometry::dust) {
+		geometry shape_below = s_blocks[_blocks[offset - 1] & mask::blocks::type]->geometry;
+		if (!(shape_below == geometry::cube || shape_below == geometry::slab_top || shape_below == geometry::piston
+			|| shape_below == geometry::stairs_top || shape_below == geometry::glass)) {
 			return ;
 		}
 	}
@@ -271,45 +273,45 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 {
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 	int value = _blocks[offset];
-	if ((value & blocks::TYPE) != type) {
-		std::cerr << "Chunk::regeneration type diff " << s_blocks[value & blocks::TYPE]->name << " vs " << s_blocks[type]->name << std::endl;
+	if ((value & mask::blocks::type) != type) {
+		std::cerr << "Chunk::regeneration type diff " << s_blocks[value & mask::blocks::type]->name << " vs " << s_blocks[type]->name << std::endl;
 		return ;
 	}
 	switch (type) {
-	case blocks::OAK_DOOR:
-		value ^= (DOOR::OPEN << blocks::BITFIELD_OFFSET);
+	case blocks::oak_door:
+		value ^= (door::open << offset::blocks::bitfield);
 		_blocks[offset] = value;
 		_added[offset] = value;
-		pos.z += ((value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF) ? -1 : 1;
-		value ^= (DOOR::UPPER_HALF << blocks::BITFIELD_OFFSET);
+		pos.z += ((value >> offset::blocks::bitfield) & door::upper_half) ? -1 : 1;
+		value ^= (door::upper_half << offset::blocks::bitfield);
 		break ;
-	case blocks::OAK_TRAPDOOR:
-		value ^= (DOOR::OPEN << blocks::BITFIELD_OFFSET);
+	case blocks::oak_trapdoor:
+		value ^= (door::open << offset::blocks::bitfield);
 		break ;
-	case blocks::LEVER:
-		value ^= REDSTONE::POWERED;
+	case blocks::lever:
+		value ^= mask::redstone::powered;
 		_blocks[offset] = value; // used by adj dust
-		flickLever(pos, value, (value >> REDSTONE::POWERED_OFFSET) & 0x1);
+		flickLever(pos, value, (value >> offset::redstone::powered) & 0x1);
 		break ;
-	case blocks::REPEATER: // add 1 tick delay, mod it by 4
-		value = (value & (REDSTONE::ALL_BITS - (0x3 << REDSTONE::REPEATER::TICKS_OFFSET)))
-				| (((((value >> REDSTONE::REPEATER::TICKS_OFFSET) & 0x3) + 1) & 0x3) << REDSTONE::REPEATER::TICKS_OFFSET);
+	case blocks::repeater: // add 1 tick delay, mod it by 4
+		value = (value & (mask::all_bits - (0x3 << offset::redstone::repeater::ticks)))
+				| (((((value >> offset::redstone::repeater::ticks) & 0x3) + 1) & 0x3) << offset::redstone::repeater::ticks);
 		break ;
-	case blocks::COMPARATOR: // switch mode between compare and substract
-		value ^= REDSTONE::COMPARATOR::MODE;
+	case blocks::comparator: // switch mode between compare and substract
+		value ^= mask::redstone::comparator::mode;
 		updateComparator(pos, value, false);
 		break ;
-	case blocks::STONE_BUTTON:
-	case blocks::OAK_BUTTON:
+	case blocks::stone_button:
+	case blocks::oak_button:
 		std::cout << "button pressed" << std::endl;
-		value |= REDSTONE::POWERED | REDSTONE::STRENGTH;
+		value |= mask::redstone::powered | mask::redstone::strength;
 		_blocks[offset] = value; // used by adj dust
 		stronglyPower(pos + getAttachedDir(value), -getAttachedDir(value), 0xF);
-		weaklyPower(pos, {0, 0, 0}, REDSTONE::ON, false);
-		scheduleRedstoneTick({pos, ((type == blocks::STONE_BUTTON) ? 10 : 15) * REDSTONE::TICK});
+		weaklyPower(pos, {0, 0, 0}, redstone::on, false);
+		scheduleRedstoneTick({pos, ((type == blocks::stone_button) ? 10 : 15) * redstone::tick});
 		break ;
 	default:
-		std::cout << "ERROR Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & blocks::TYPE]->name << std::endl;
+		std::cout << "ERROR Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & mask::blocks::type]->name << std::endl;
 		return ;
 	}
 	setBlockAt(value, pos, true);
@@ -324,28 +326,28 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 */
 void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif )
 {
-	int previous_type = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z] & blocks::TYPE;
+	int previous_type = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z] & mask::blocks::type;
 	switch (modif) {
 		case Modif::REMOVE:
-			if (previous_type == blocks::AIR || previous_type == blocks::BEDROCK) { // can't rm bedrock
+			if (previous_type == blocks::air || previous_type == blocks::bedrock) { // can't rm bedrock
 				return ;
 			}
 			// std::cout << "remove_block. displayed before " << _displayed_faces << std::endl;
 			remove_block(useInventory, pos);
 		break ;
 		case Modif::ADD:
-			if (type == blocks::WHEAT_CROP && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z - 1] & blocks::TYPE) != blocks::FARMLAND) { // can't place crop on something other than farmland
+			if (type == blocks::wheat_crop && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z - 1] & mask::blocks::type) != blocks::farmland) { // can't place crop on something other than farmland
 				return ;
-			} else if ((previous_type != blocks::AIR && previous_type < blocks::WATER) || type == blocks::AIR) { // can't replace block
+			} else if ((previous_type != blocks::air && previous_type < blocks::water) || type == blocks::air) { // can't replace block
 				return ;
 			}
 			// std::cout << "ADD BLOCK " << s_blocks[previous_type]->name << " -> " << s_blocks[type]->name << std::endl;
 			add_block(useInventory, pos, type, previous_type);
 			break ;
 		case Modif::REPLACE:
-			if (type == blocks::DIRT_PATH && pos.z < 254 && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z + 1] & blocks::TYPE) != blocks::AIR) { // can't turn dirt to dirt path if anything above it
+			if (type == blocks::dirt_path && pos.z < 254 && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z + 1] & mask::blocks::type) != blocks::air) { // can't turn dirt to dirt path if anything above it
 				return ;
-			} else if ((type == blocks::DIRT_PATH || type == blocks::FARMLAND) && previous_type != blocks::DIRT && previous_type != blocks::GRASS_BLOCK) {
+			} else if ((type == blocks::dirt_path || type == blocks::farmland) && previous_type != blocks::dirt && previous_type != blocks::grass_block) {
 				return ;
 			}
 			replace_block(useInventory, pos, type);
@@ -358,11 +360,11 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			use_block(pos, type);
 			break ;
 	}
-	if (type == blocks::WATER || type == blocks::BUCKET) {
-		// std::cout << "modif to water with " << ((type == blocks::WATER) ? "water" : "bucket") << std::endl;
+	if (type == blocks::water || type == blocks::bucket) {
+		// std::cout << "modif to water with " << ((type == blocks::water) ? "water" : "bucket") << std::endl;
 		// std::cout << "water count before " << waterSave << ", after " << _water_count << std::endl;
 		return ;
-	} else if (type == blocks::GLASS || previous_type == blocks::GLASS) {
+	} else if (type == blocks::glass || previous_type == blocks::glass) {
 		sort_water(_camera->getPos(), true);
 		return ;
 	}
@@ -381,56 +383,56 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 */
 void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 {
-	int type = (value & blocks::TYPE), prev_type = (previous & blocks::TYPE);
+	int type = (value & mask::blocks::type), prev_type = (previous & mask::blocks::type);
 	std::cout << "UPDATE_BLOCK at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << ". " << s_blocks[prev_type]->name << " -> " << s_blocks[type]->name << std::endl;
 	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
-	if (type == blocks::SAND || type == blocks::GRAVEL) {
-		int type_under = (_blocks[offset - 1] & blocks::TYPE);
-		if (type_under == blocks::AIR) {
-			if (previous == blocks::AIR) {
+	if (type == blocks::sand || type == blocks::gravel) {
+		int type_under = (_blocks[offset - 1] & mask::blocks::type);
+		if (type_under == blocks::air) {
+			if (previous == blocks::air) {
 				_entities.push_back(new FallingBlockEntity(this, {pos.x + _startX, pos.y + _startY, pos.z}, {type, 1, {0, 0}}));
-				setBlockAt(blocks::AIR, pos, false);
+				setBlockAt(blocks::air, pos, false);
 			} else {
 				_scheduled_to_fall.push_back(offset);
 			}
 			return ;
 		}
 	}
-	if (prev_type >= blocks::WATER || type == blocks::WATER) {
+	if (prev_type >= blocks::water || type == blocks::water) {
 		_fluids.insert(offset);
-		if (prev_type < blocks::WATER) { _hasWater = true; }
+		if (prev_type < blocks::water) { _hasWater = true; }
 	}
 
 	// cut recursion here
 	if (prev_type == type) {
-		// if (type == blocks::PISTON || type == blocks::STICKY_PISTON) {
+		// if (type == blocks::piston || type == blocks::sticky_piston) {
 		// 	updatePiston(pos, value);
 		// }
 		return ;
 	}
 
 	// redstone update
-	if ((previous & REDSTONE::POWERED) && prev_type != blocks::LEVER) {
-		weaklyPower(pos, {0, 0, 0}, REDSTONE::OFF, false);
-	} else if (previous & REDSTONE::WEAKDY_POWERED) { // we remove a weakdy powered block
-		weaklyPower(pos, {0, 0, 0}, REDSTONE::OFF, true);
+	if ((previous & mask::redstone::powered) && prev_type != blocks::lever) {
+		weaklyPower(pos, {0, 0, 0}, redstone::off, false);
+	} else if (previous & mask::redstone::weakdy_powered) { // we remove a weakdy powered block
+		weaklyPower(pos, {0, 0, 0}, redstone::off, true);
 	}
-	stronglyPower(pos, {0, 0, 0}, REDSTONE::OFF);
-	if (type == blocks::REDSTONE_BLOCK) {
-		setBlockAt(value | REDSTONE::POWERED, pos, false);
-		weaklyPower(pos, {0, 0, 0}, REDSTONE::ON, false);
+	stronglyPower(pos, {0, 0, 0}, redstone::off);
+	if (type == blocks::redstone_block) {
+		setBlockAt(value | mask::redstone::powered, pos, false);
+		weaklyPower(pos, {0, 0, 0}, redstone::on, false);
 	} else if (s_blocks[type]->redstoneComponant) {
-		int active = getRedstoneStrength(pos, {0, 0, 0}, REDSTONE::OFF, true);
+		int active = getRedstoneStrength(pos, {0, 0, 0}, redstone::off, true);
 		if (active) {
-			value |= REDSTONE::ACTIVATED;
-			int powered = getRedstoneStrength(pos, {0, 0, 0}, REDSTONE::OFF, false);
+			value |= mask::redstone::activated;
+			int powered = getRedstoneStrength(pos, {0, 0, 0}, redstone::off, false);
 			if (powered) {
-				value |= REDSTONE::POWERED;
+				value |= mask::redstone::powered;
 			}
 			setBlockAt(value, pos, false);
-			if (type == blocks::REDSTONE_LAMP) {
+			if (type == blocks::redstone_lamp) {
 				_lights[offset] &= 0xFF00;
-				_lights[offset] += s_blocks[blocks::REDSTONE_LAMP]->light_level + (s_blocks[blocks::REDSTONE_LAMP]->light_level << 4);
+				_lights[offset] += s_blocks[blocks::redstone_lamp]->light_level + (s_blocks[blocks::redstone_lamp]->light_level << 4);
 				light_spread(pos.x, pos.y, pos.z, false);
 				_light_update = false;
 			}
@@ -438,14 +440,14 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 	}
 
 	// specific updates
-	if (type == blocks::CHEST) {
+	if (type == blocks::chest) {
 		_chests.emplace(offset, new ChestInstance(this, {pos.x + _startX, pos.y + _startY, pos.z}, _camera->getOrientation()));
-	} else if (type == blocks::FURNACE) {
+	} else if (type == blocks::furnace) {
 		_furnaces.emplace(offset, new FurnaceInstance());
-	} else if (type == blocks::OAK_SIGN) {
+	} else if (type == blocks::oak_sign) {
 		_signs.emplace(offset, new SignInstance(this, value, pos));
-	} else if (type == blocks::TORCH || type == blocks::REDSTONE_TORCH) {
-		if (type == blocks::REDSTONE_TORCH) {
+	} else if (type == blocks::torch || type == blocks::redstone_torch) {
+		if (type == blocks::redstone_torch) {
 			updateRedstoneTorch(pos, value);
 		}
 		std::cout << "add light" << std::endl;
@@ -454,32 +456,32 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		light_spread(pos.x, pos.y, pos.z, false);
 		_light_update = false;
 		std::cout << "over" << std::endl;
-	} else if (type == blocks::GLASS) {
+	} else if (type == blocks::glass) {
 		_hasWater = true; // glass considered as invis block
-	} else if (type == blocks::REDSTONE_DUST) {
-		if (prev_type == blocks::AIR) {
+	} else if (type == blocks::redstone_dust) {
+		if (prev_type == blocks::air) {
 			connectRedstoneDust(pos, value, true);
 			setBlockAt(value, pos, false);
 		}
 		updateRedstoneDust(pos);
-	} else if (type == blocks::AIR) { // rm block
+	} else if (type == blocks::air) { // rm block
 		if (s_blocks[prev_type]->light_level) {
 			std::cout << "rm light" << std::endl;
-			if (prev_type == blocks::TORCH) {
+			if (prev_type == blocks::torch) {
 				delete _flames[offset];
 				_flames.erase(offset);
-			} else if (prev_type == blocks::REDSTONE_TORCH) {
+			} else if (prev_type == blocks::redstone_torch) {
 				updateRedstoneTorch(pos, value);
 			}
 			_lights[offset] &= 0xFF00;
 			// light_spread(pos.x, pos.y, pos.z, false); // spread block light
 			// _light_update = false;
 			std::cout << "over" << std::endl;
-		} else if (prev_type == blocks::OAK_LEAVES) {
+		} else if (prev_type == blocks::oak_leaves) {
 			_lights[offset] &= 0xFF;
-		} else if (prev_type == blocks::LEVER) {
+		} else if (prev_type == blocks::lever) {
 			flickLever(pos, value, false);
-		} else if (prev_type == blocks::REDSTONE_DUST) {
+		} else if (prev_type == blocks::redstone_dust) {
 			updateRedstoneDust(pos);
 		}
 		for (int i = 0; i < 15; ++i) {
@@ -530,26 +532,26 @@ GLint Chunk::getBlockAt( glm::ivec3 pos, bool askNeighbours )
 GLint Chunk::getBlockAt( int posX, int posY, int posZ, bool askNeighbours )
 {
 	if (!_blocks || posZ < 0) {
-		return (blocks::BEDROCK);
+		return (blocks::bedrock);
 	} else if (posZ >= WORLD_HEIGHT) {
-		return (blocks::AIR);
+		return (blocks::air);
 	}
-	int res = blocks::BEDROCK;
+	int res = blocks::bedrock;
 	if (posX < 0) {
-		if (askNeighbours && _neighbours[face_dir::MINUSX]) {
-			res = _neighbours[face_dir::MINUSX]->getBlockAt(posX + CHUNK_SIZE, posY, posZ, askNeighbours);
+		if (askNeighbours && _neighbours[face_dir::minus_x]) {
+			res = _neighbours[face_dir::minus_x]->getBlockAt(posX + CHUNK_SIZE, posY, posZ, askNeighbours);
 		}
 	} else if (posX >= CHUNK_SIZE) {
-		if (askNeighbours && _neighbours[face_dir::PLUSX]) {
-			res = _neighbours[face_dir::PLUSX]->getBlockAt(posX - CHUNK_SIZE, posY, posZ, askNeighbours);
+		if (askNeighbours && _neighbours[face_dir::plus_x]) {
+			res = _neighbours[face_dir::plus_x]->getBlockAt(posX - CHUNK_SIZE, posY, posZ, askNeighbours);
 		}
 	} else if (posY < 0) {
-		if (askNeighbours && _neighbours[face_dir::MINUSY]) {
-			res = _neighbours[face_dir::MINUSY]->getBlockAt(posX, posY + CHUNK_SIZE, posZ, askNeighbours);
+		if (askNeighbours && _neighbours[face_dir::minus_y]) {
+			res = _neighbours[face_dir::minus_y]->getBlockAt(posX, posY + CHUNK_SIZE, posZ, askNeighbours);
 		}
 	} else if (posY >= CHUNK_SIZE) {
-		if (askNeighbours && _neighbours[face_dir::PLUSY]) {
-			res = _neighbours[face_dir::PLUSY]->getBlockAt(posX, posY - CHUNK_SIZE, posZ, askNeighbours);
+		if (askNeighbours && _neighbours[face_dir::plus_y]) {
+			res = _neighbours[face_dir::plus_y]->getBlockAt(posX, posY - CHUNK_SIZE, posZ, askNeighbours);
 		}
 	} else {
 		res = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ];
@@ -586,20 +588,20 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update, bo
 		return ;
 	}
 	if (posX < 0) {
-		if (_neighbours[face_dir::MINUSX]) {
-			_neighbours[face_dir::MINUSX]->setBlockAt(value, posX + CHUNK_SIZE, posY, posZ, update, observer);
+		if (_neighbours[face_dir::minus_x]) {
+			_neighbours[face_dir::minus_x]->setBlockAt(value, posX + CHUNK_SIZE, posY, posZ, update, observer);
 		}
 	} else if (posX >= CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSX]) {
-			_neighbours[face_dir::PLUSX]->setBlockAt(value, posX - CHUNK_SIZE, posY, posZ, update, observer);
+		if (_neighbours[face_dir::plus_x]) {
+			_neighbours[face_dir::plus_x]->setBlockAt(value, posX - CHUNK_SIZE, posY, posZ, update, observer);
 		}
 	} else if (posY < 0) {
-		if (_neighbours[face_dir::MINUSY]) {
-			_neighbours[face_dir::MINUSY]->setBlockAt(value, posX, posY + CHUNK_SIZE, posZ, update, observer);
+		if (_neighbours[face_dir::minus_y]) {
+			_neighbours[face_dir::minus_y]->setBlockAt(value, posX, posY + CHUNK_SIZE, posZ, update, observer);
 		}
 	} else if (posY >= CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSY]) {
-			_neighbours[face_dir::PLUSY]->setBlockAt(value, posX, posY - CHUNK_SIZE, posZ, update, observer);
+		if (_neighbours[face_dir::plus_y]) {
+			_neighbours[face_dir::plus_y]->setBlockAt(value, posX, posY - CHUNK_SIZE, posZ, update, observer);
 		}
 	} else {
 		int previous;
@@ -620,17 +622,17 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update, bo
 		}
 		_vertex_update = true;
 		// update observers
-		if (!observer || (value & blocks::TYPE) == blocks::MOVING_PISTON) {
+		if (!observer || (value & mask::blocks::type) == blocks::moving_piston) {
 			return ;
 		}
-		if ((value & blocks::TYPE) == blocks::OBSERVER && (previous & blocks::TYPE) == blocks::MOVING_PISTON) {
-			scheduleRedstoneTick({{posX, posY, posZ}, REDSTONE::TICK, REDSTONE::ON});
+		if ((value & mask::blocks::type) == blocks::observer && (previous & mask::blocks::type) == blocks::moving_piston) {
+			scheduleRedstoneTick({{posX, posY, posZ}, redstone::tick, redstone::on});
 		}
 		for (int i = 0; i < 6; ++i) {
 			const glm::ivec3 delta = adj_blocks[i];
 			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z);
-			if ((adj & blocks::TYPE) == blocks::OBSERVER && delta == -adj_blocks[(adj >> blocks::ORIENTATION_OFFSET) & 0x7]) {
-				scheduleRedstoneTick({{posX + delta.x, posY + delta.y, posZ + delta.z}, REDSTONE::TICK, REDSTONE::ON});
+			if ((adj & mask::blocks::type) == blocks::observer && delta == -adj_blocks[(adj >> offset::blocks::orientation) & 0x7]) {
+				scheduleRedstoneTick({{posX + delta.x, posY + delta.y, posZ + delta.z}, redstone::tick, redstone::on});
 			}
 		}
 	}
@@ -648,83 +650,83 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		return ;
 	}
 	if (pos.x < 0) {
-		if (_neighbours[face_dir::MINUSX]) {
+		if (_neighbours[face_dir::minus_x]) {
 			pos.x += CHUNK_SIZE;
-			_neighbours[face_dir::MINUSX]->update_adj_block(pos, dir, source);
+			_neighbours[face_dir::minus_x]->update_adj_block(pos, dir, source);
 		}
 	} else if (pos.x >= CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSX]) {
+		if (_neighbours[face_dir::plus_x]) {
 			pos.x -= CHUNK_SIZE;
-			_neighbours[face_dir::PLUSX]->update_adj_block(pos, dir, source);
+			_neighbours[face_dir::plus_x]->update_adj_block(pos, dir, source);
 		}
 	} else if (pos.y < 0) {
-		if (_neighbours[face_dir::MINUSY]) {
+		if (_neighbours[face_dir::minus_y]) {
 			pos.y += CHUNK_SIZE;
-			_neighbours[face_dir::MINUSY]->update_adj_block(pos, dir, source);
+			_neighbours[face_dir::minus_y]->update_adj_block(pos, dir, source);
 		}
 	} else if (pos.y >= CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSY]) {
+		if (_neighbours[face_dir::plus_y]) {
 			pos.y -= CHUNK_SIZE;
-			_neighbours[face_dir::PLUSY]->update_adj_block(pos, dir, source);
+			_neighbours[face_dir::plus_y]->update_adj_block(pos, dir, source);
 		}
 	} else {
 		_vertex_update = true;
-		int value = getBlockAt(pos), type = (value & blocks::TYPE);
+		int value = getBlockAt(pos), type = (value & mask::blocks::type);
 
 		bool transparent = s_blocks[source]->isTransparent(source);
 
 		// update light status around placed block
-		if (transparent || type == blocks::MOVING_PISTON) {
+		if (transparent || type == blocks::moving_piston) {
 			light_try_spread(pos.x, pos.y, pos.z, 1, true, LIGHT_RECURSE);
 			light_try_spread(pos.x, pos.y, pos.z, 1, false, LIGHT_RECURSE);
 		}
 
-		if (type >= blocks::WATER) {
+		if (type >= blocks::water) {
 			_fluids.insert((((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z);
 			return ;
-		} else if (type == blocks::AIR) {
+		} else if (type == blocks::air) {
 			return ;
 		}
 
 		// update block's visibility
 		bool visible = face_count(type, pos);
-		if (visible && (value & blocks::NOTVISIBLE)) {
-			value ^= blocks::NOTVISIBLE;
+		if (visible && (value & mask::blocks::notVisible)) {
+			value ^= mask::blocks::notVisible;
 			setBlockAt(value, pos, false);
-		} else if (!visible && !(value & blocks::NOTVISIBLE)) {
-			value |= blocks::NOTVISIBLE;
+		} else if (!visible && !(value & mask::blocks::notVisible)) {
+			value |= mask::blocks::notVisible;
 			setBlockAt(value, pos, false);
 		}
 
 		// update fence status
-		if (type == blocks::OAK_FENCE || type == blocks::GLASS_PANE) {
+		if (type == blocks::oak_fence || type == blocks::glass_pane) {
 			switch (dir) {
-				case face_dir::MINUSX:
+				case face_dir::minus_x:
 					if (!transparent || source == type) {
-						setBlockAt(value | (FENCE::PX << blocks::BITFIELD_OFFSET), pos, false);
-					} else if (source == blocks::AIR && (value & (FENCE::PX << blocks::BITFIELD_OFFSET))) {
-						setBlockAt(value ^ (FENCE::PX << blocks::BITFIELD_OFFSET), pos, false);
+						setBlockAt(value | (fence::px << offset::blocks::bitfield), pos, false);
+					} else if (source == blocks::air && (value & (fence::px << offset::blocks::bitfield))) {
+						setBlockAt(value ^ (fence::px << offset::blocks::bitfield), pos, false);
 					}
 					break ;
-				case face_dir::PLUSX:
+				case face_dir::plus_x:
 					if (!transparent || source == type) {
-						setBlockAt(value | (FENCE::MX << blocks::BITFIELD_OFFSET), pos, false);
-					} else if (source == blocks::AIR && (value & (FENCE::MX << blocks::BITFIELD_OFFSET))) {
-						setBlockAt(value ^ (FENCE::MX << blocks::BITFIELD_OFFSET), pos, false);
+						setBlockAt(value | (fence::mx << offset::blocks::bitfield), pos, false);
+					} else if (source == blocks::air && (value & (fence::mx << offset::blocks::bitfield))) {
+						setBlockAt(value ^ (fence::mx << offset::blocks::bitfield), pos, false);
 					}
 					break ;
-				case face_dir::MINUSY:
+				case face_dir::minus_y:
 					if (!transparent || source == type) {
-						setBlockAt(value | (FENCE::PY << blocks::BITFIELD_OFFSET), pos, false);
-					} else if (source == blocks::AIR && (value & (FENCE::PY << blocks::BITFIELD_OFFSET))) {
-						setBlockAt(value ^ (FENCE::PY << blocks::BITFIELD_OFFSET), pos, false);
+						setBlockAt(value | (fence::py << offset::blocks::bitfield), pos, false);
+					} else if (source == blocks::air && (value & (fence::py << offset::blocks::bitfield))) {
+						setBlockAt(value ^ (fence::py << offset::blocks::bitfield), pos, false);
 					}
 					break ;
-				case face_dir::PLUSY:
+				case face_dir::plus_y:
 					if (!transparent || source == type) {
-						setBlockAt(value | (FENCE::MY << blocks::BITFIELD_OFFSET), pos, false);
-					} else if (source == blocks::AIR && (value & (FENCE::MY << blocks::BITFIELD_OFFSET))) {
-						setBlockAt(value ^ (FENCE::MY << blocks::BITFIELD_OFFSET), pos, false);
+						setBlockAt(value | (fence::my << offset::blocks::bitfield), pos, false);
+					} else if (source == blocks::air && (value & (fence::my << offset::blocks::bitfield))) {
+						setBlockAt(value ^ (fence::my << offset::blocks::bitfield), pos, false);
 					}
 					break ;
 			}
@@ -733,12 +735,12 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		// break attached block whose attachement got removed
 		glm::ivec3 attachement = getAttachedDir(value);
 		if (attachement != glm::ivec3(0, 0, 0)) {
-			int base = (getBlockAt(pos + attachement) & blocks::TYPE);
-			if (base == blocks::AIR || base == blocks::PISTON_HEAD) {
+			int base = (getBlockAt(pos + attachement) & mask::blocks::type);
+			if (base == blocks::air || base == blocks::piston_head) {
 				if (s_blocks[type]->byHand) {
 					entity_block(pos.x, pos.y, pos.z, value);
 				}
-				if (type == blocks::OAK_SIGN) {
+				if (type == blocks::oak_sign) {
 					int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
 					auto search = _signs.find(offset);
 					if (search != _signs.end()) {
@@ -746,14 +748,14 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 						_signs.erase(offset);
 					}
 				}
-				setBlockAt(blocks::AIR, pos, true);
+				setBlockAt(blocks::air, pos, true);
 				return ;
 			}
 		}
 
 		// disconnect adj dust if solid block placed above
-		if (type == blocks::REDSTONE_DUST && (source == blocks::REPEATER || source == blocks::COMPARATOR
-			|| source == blocks::TARGET || (dir == face_dir::MINUSZ))) {
+		if (type == blocks::redstone_dust && (source == blocks::repeater || source == blocks::comparator
+			|| source == blocks::target || (dir == face_dir::minus_z))) {
 			connectRedstoneDust(pos, value, false);
 			setBlockAt(value, pos, false);
 		}
@@ -773,20 +775,20 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 {
 	glm::ivec3 chunk_pos = {pos.x - _startX, pos.y - _startY, pos.z};
 	if (chunk_pos.x < 0) {
-		if (_neighbours[face_dir::MINUSX]) {
-			return (_neighbours[face_dir::MINUSX]->handleHit(useInventory, type, pos, modif));
+		if (_neighbours[face_dir::minus_x]) {
+			return (_neighbours[face_dir::minus_x]->handleHit(useInventory, type, pos, modif));
 		}
 	} else if (chunk_pos.x >= CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSX]) {
-			return (_neighbours[face_dir::PLUSX]->handleHit(useInventory, type, pos, modif));
+		if (_neighbours[face_dir::plus_x]) {
+			return (_neighbours[face_dir::plus_x]->handleHit(useInventory, type, pos, modif));
 		}
 	} else if (chunk_pos.y < 0) {
-		if (_neighbours[face_dir::MINUSY]) {
-			return (_neighbours[face_dir::MINUSY]->handleHit(useInventory, type, pos, modif));
+		if (_neighbours[face_dir::minus_y]) {
+			return (_neighbours[face_dir::minus_y]->handleHit(useInventory, type, pos, modif));
 		}
 	} else if (chunk_pos.y >= CHUNK_SIZE) {
-		if (_neighbours[face_dir::PLUSY]) {
-			return (_neighbours[face_dir::PLUSY]->handleHit(useInventory, type, pos, modif));
+		if (_neighbours[face_dir::plus_y]) {
+			return (_neighbours[face_dir::plus_y]->handleHit(useInventory, type, pos, modif));
 		}
 	} else {
 		// std::cout << _startX << " " << _startY << ": handle hit at pos " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
@@ -809,202 +811,202 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 {
 	int behind, front, left, right;
-	switch ((type >> blocks::ORIENTATION_OFFSET) & 0x7) {
-		case face_dir::MINUSX:
-			type |= ((CORNERS::PM | CORNERS::PP) << blocks::BITFIELD_OFFSET);
+	switch ((type >> offset::blocks::orientation) & 0x7) {
+		case face_dir::minus_x:
+			type |= ((corners::pm | corners::pp) << offset::blocks::bitfield);
 			behind = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((behind & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
-					type ^= (CORNERS::PM << blocks::BITFIELD_OFFSET); // outside corner
-					goto SKIP_FRONT_MINUSX;
-				} else if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
-					type ^= (CORNERS::PP << blocks::BITFIELD_OFFSET);
-					goto SKIP_FRONT_MINUSX;
+			if ((behind & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
+					type ^= (corners::pm << offset::blocks::bitfield); // outside corner
+					goto SKIP_FRONT_minus_x;
+				} else if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::plus_y) {
+					type ^= (corners::pp << offset::blocks::bitfield);
+					goto SKIP_FRONT_minus_x;
 				}
 			}
 			front = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((front & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
-					type |= (CORNERS::MP << blocks::BITFIELD_OFFSET); // inside corner
-				} else if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
-					type |= (CORNERS::MM << blocks::BITFIELD_OFFSET);
+			if ((front & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((front >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
+					type |= (corners::mp << offset::blocks::bitfield); // inside corner
+				} else if (((front >> offset::blocks::orientation) & 0x7) == face_dir::plus_y) {
+					type |= (corners::mm << offset::blocks::bitfield);
 				}
 			}
-			SKIP_FRONT_MINUSX:
+			SKIP_FRONT_minus_x:
 			left = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((left & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
-					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
-						left |= (CORNERS::PM << blocks::BITFIELD_OFFSET); // transform left stair into inside corner stair
+			if ((left & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((left >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
+					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::mp | corners::pp)) {
+						left |= (corners::pm << offset::blocks::bitfield); // transform left stair into inside corner stair
 						setBlockAt(left, pos.x, pos.y + 1, pos.z, false);
 					}
-				} else if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
-					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
-						left ^= (CORNERS::MM << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
+				} else if (((left >> offset::blocks::orientation) & 0x7) == face_dir::plus_y) {
+					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::mm | corners::pm)) {
+						left ^= (corners::mm << offset::blocks::bitfield); // transform left stair into outside corner stair
 						setBlockAt(left, pos.x, pos.y + 1, pos.z, false);
 					}
 				}
 			}
 			right = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((right & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
-					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
-						right ^= (CORNERS::MP << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
+			if ((right & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((right >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
+					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::mp | corners::pp)) {
+						right ^= (corners::mp << offset::blocks::bitfield); // transform left stair into outside corner stair
 						setBlockAt(right, pos.x, pos.y - 1, pos.z, false);
 					}
-				} else if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
-					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
-						right |= (CORNERS::PP << blocks::BITFIELD_OFFSET); // transform right stair into inside corner stair
+				} else if (((right >> offset::blocks::orientation) & 0x7) == face_dir::plus_y) {
+					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::mm | corners::pm)) {
+						right |= (corners::pp << offset::blocks::bitfield); // transform right stair into inside corner stair
 						setBlockAt(right, pos.x, pos.y - 1, pos.z, false);
 					}
 				}
 			}
 			break ;
-		case face_dir::PLUSX:
-			type |= ((CORNERS::MM | CORNERS::MP) << blocks::BITFIELD_OFFSET);
+		case face_dir::plus_x:
+			type |= ((corners::mm | corners::mp) << offset::blocks::bitfield);
 			behind = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((behind & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
-					type ^= (CORNERS::MM << blocks::BITFIELD_OFFSET); // outside corner
-					goto SKIP_FRONT_PLUSX;
-				} else if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
-					type ^= (CORNERS::MP << blocks::BITFIELD_OFFSET);
-					goto SKIP_FRONT_PLUSX;
+			if ((behind & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
+					type ^= (corners::mm << offset::blocks::bitfield); // outside corner
+					goto SKIP_FRONT_plus_x;
+				} else if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::plus_y) {
+					type ^= (corners::mp << offset::blocks::bitfield);
+					goto SKIP_FRONT_plus_x;
 				}
 			}
 			front = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((front & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
-					type |= (CORNERS::PP << blocks::BITFIELD_OFFSET); // inside corner
-				} else if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
-					type |= (CORNERS::PM << blocks::BITFIELD_OFFSET);
+			if ((front & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((front >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
+					type |= (corners::pp << offset::blocks::bitfield); // inside corner
+				} else if (((front >> offset::blocks::orientation) & 0x7) == face_dir::plus_y) {
+					type |= (corners::pm << offset::blocks::bitfield);
 				}
 			}
-			SKIP_FRONT_PLUSX:
+			SKIP_FRONT_plus_x:
 			left = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((left & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
-					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
-						left ^= (CORNERS::PP << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
+			if ((left & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((left >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
+					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::mp | corners::pp)) {
+						left ^= (corners::pp << offset::blocks::bitfield); // transform left stair into outside corner stair
 						setBlockAt(left, pos.x, pos.y - 1, pos.z, false);
 					}
-				} else if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
-					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
-						left |= (CORNERS::MP << blocks::BITFIELD_OFFSET); // transform left stair into inside corner stair
+				} else if (((left >> offset::blocks::orientation) & 0x7) == face_dir::plus_y) {
+					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::mm | corners::pm)) {
+						left |= (corners::mp << offset::blocks::bitfield); // transform left stair into inside corner stair
 						setBlockAt(left, pos.x, pos.y - 1, pos.z, false);
 					}
 				}
 			}
 			right = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((right & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSY) {
-					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MP | CORNERS::PP)) {
-						right |= (CORNERS::MM << blocks::BITFIELD_OFFSET); // transform right stair into inside corner stair
+			if ((right & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((right >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
+					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::mp | corners::pp)) {
+						right |= (corners::mm << offset::blocks::bitfield); // transform right stair into inside corner stair
 						setBlockAt(right, pos.x, pos.y + 1, pos.z, false);
 					}
-				} else if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSY) {
-					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::PM)) {
-						right ^= (CORNERS::PM << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
+				} else if (((right >> offset::blocks::orientation) & 0x7) == face_dir::plus_y) {
+					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::mm | corners::pm)) {
+						right ^= (corners::pm << offset::blocks::bitfield); // transform left stair into outside corner stair
 						setBlockAt(right, pos.x, pos.y + 1, pos.z, false);
 					}
 				}
 			}
 			break ;
-		case face_dir::MINUSY:
-			type |= ((CORNERS::MP | CORNERS::PP) << blocks::BITFIELD_OFFSET);
+		case face_dir::minus_y:
+			type |= ((corners::mp | corners::pp) << offset::blocks::bitfield);
 			behind = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((behind & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
-					type ^= (CORNERS::MP << blocks::BITFIELD_OFFSET); // outside corner
-					goto SKIP_FRONT_MINUSY;
-				} else if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
-					type ^= (CORNERS::PP << blocks::BITFIELD_OFFSET);
-					goto SKIP_FRONT_MINUSY;
+			if ((behind & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
+					type ^= (corners::mp << offset::blocks::bitfield); // outside corner
+					goto SKIP_FRONT_minus_y;
+				} else if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::plus_x) {
+					type ^= (corners::pp << offset::blocks::bitfield);
+					goto SKIP_FRONT_minus_y;
 				}
 			}
 			front = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((front & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
-					type |= (CORNERS::PM << blocks::BITFIELD_OFFSET); // inside corner
-				} else if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
-					type |= (CORNERS::MM << blocks::BITFIELD_OFFSET);
+			if ((front & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((front >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
+					type |= (corners::pm << offset::blocks::bitfield); // inside corner
+				} else if (((front >> offset::blocks::orientation) & 0x7) == face_dir::plus_x) {
+					type |= (corners::mm << offset::blocks::bitfield);
 				}
 			}
-			SKIP_FRONT_MINUSY:
+			SKIP_FRONT_minus_y:
 			left = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((left & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
-					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
-						left ^= (CORNERS::PM << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
+			if ((left & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((left >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
+					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::pm | corners::pp)) {
+						left ^= (corners::pm << offset::blocks::bitfield); // transform left stair into outside corner stair
 						setBlockAt(left, pos.x - 1, pos.y, pos.z, false);
 					}
-				} else if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
-					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
-						left |= (CORNERS::PP << blocks::BITFIELD_OFFSET); // transform left stair into inside corner stair
+				} else if (((left >> offset::blocks::orientation) & 0x7) == face_dir::plus_x) {
+					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::mm | corners::mp)) {
+						left |= (corners::pp << offset::blocks::bitfield); // transform left stair into inside corner stair
 						setBlockAt(left, pos.x - 1, pos.y, pos.z, false);
 					}
 				}
 			}
 			right = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((right & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
-					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
-						right |= (CORNERS::MP << blocks::BITFIELD_OFFSET); // transform right stair into inside corner stair
+			if ((right & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((right >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
+					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::pm | corners::pp)) {
+						right |= (corners::mp << offset::blocks::bitfield); // transform right stair into inside corner stair
 						setBlockAt(right, pos.x + 1, pos.y, pos.z, false);
 					}
-				} else if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
-					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
-						right ^= (CORNERS::MM << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
+				} else if (((right >> offset::blocks::orientation) & 0x7) == face_dir::plus_x) {
+					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::mm | corners::mp)) {
+						right ^= (corners::mm << offset::blocks::bitfield); // transform left stair into outside corner stair
 						setBlockAt(right, pos.x + 1, pos.y, pos.z, false);
 					}
 				}
 			}
 			break ;
-		case face_dir::PLUSY:
-			type |= ((CORNERS::MM | CORNERS::PM) << blocks::BITFIELD_OFFSET);
+		case face_dir::plus_y:
+			type |= ((corners::mm | corners::pm) << offset::blocks::bitfield);
 			behind = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((behind & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
-					type ^= (CORNERS::MM << blocks::BITFIELD_OFFSET); // outside corner
-					goto SKIP_FRONT_PLUSY;
-				} else if (((behind >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
-					type ^= (CORNERS::PM << blocks::BITFIELD_OFFSET);
-					goto SKIP_FRONT_PLUSY;
+			if ((behind & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
+					type ^= (corners::mm << offset::blocks::bitfield); // outside corner
+					goto SKIP_FRONT_plus_y;
+				} else if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::plus_x) {
+					type ^= (corners::pm << offset::blocks::bitfield);
+					goto SKIP_FRONT_plus_y;
 				}
 			}
 			front = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((front & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
-					type |= (CORNERS::PP << blocks::BITFIELD_OFFSET); // inside corner
-				} else if (((front >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
-					type |= (CORNERS::MP << blocks::BITFIELD_OFFSET);
+			if ((front & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((front >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
+					type |= (corners::pp << offset::blocks::bitfield); // inside corner
+				} else if (((front >> offset::blocks::orientation) & 0x7) == face_dir::plus_x) {
+					type |= (corners::mp << offset::blocks::bitfield);
 				}
 			}
-			SKIP_FRONT_PLUSY:
+			SKIP_FRONT_plus_y:
 			left = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((left & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
-					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
-						left |= (CORNERS::MM << blocks::BITFIELD_OFFSET); // transform left stair into inside corner stair
+			if ((left & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((left >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
+					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::pm | corners::pp)) {
+						left |= (corners::mm << offset::blocks::bitfield); // transform left stair into inside corner stair
 						setBlockAt(left, pos.x + 1, pos.y, pos.z, false);
 					}
-				} else if (((left >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
-					if (((left >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
-						left ^= (CORNERS::MP << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
+				} else if (((left >> offset::blocks::orientation) & 0x7) == face_dir::plus_x) {
+					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::mm | corners::mp)) {
+						left ^= (corners::mp << offset::blocks::bitfield); // transform left stair into outside corner stair
 						setBlockAt(left, pos.x + 1, pos.y, pos.z, false);
 					}
 				}
 			}
 			right = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((right & blocks::TYPE) == (type & blocks::TYPE)) {
-				if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::MINUSX) {
-					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::PM | CORNERS::PP)) {
-						right ^= (CORNERS::PP << blocks::BITFIELD_OFFSET); // transform left stair into outside corner stair
+			if ((right & mask::blocks::type) == (type & mask::blocks::type)) {
+				if (((right >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
+					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::pm | corners::pp)) {
+						right ^= (corners::pp << offset::blocks::bitfield); // transform left stair into outside corner stair
 						setBlockAt(right, pos.x - 1, pos.y, pos.z, false);
 					}
-				} else if (((right >> blocks::ORIENTATION_OFFSET) & 0x7) == face_dir::PLUSX) {
-					if (((right >> blocks::BITFIELD_OFFSET) & 0xF) == (CORNERS::MM | CORNERS::MP)) {
-						right |= (CORNERS::PM << blocks::BITFIELD_OFFSET); // transform right stair into inside corner stair
+				} else if (((right >> offset::blocks::orientation) & 0x7) == face_dir::plus_x) {
+					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::mm | corners::mp)) {
+						right |= (corners::pm << offset::blocks::bitfield); // transform right stair into inside corner stair
 						setBlockAt(right, pos.x - 1, pos.y, pos.z, false);
 					}
 				}
@@ -1016,35 +1018,35 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 void Chunk::handle_door_placement( glm::ivec3 pos, int &type )
 {
 	int below = getBlockAt(pos.x, pos.y, pos.z - 1, false);
-	if (!s_blocks[below & blocks::TYPE]->collisionHitbox_1x1x1) {
-		type = blocks::AIR;
+	if (!s_blocks[below & mask::blocks::type]->collisionHitbox_1x1x1) {
+		type = blocks::air;
 		return ;
 	}
 	int above = getBlockAt(pos.x, pos.y, pos.z + 1, false);
-	if (above != blocks::AIR) {
-		type = blocks::AIR;
+	if (above != blocks::air) {
+		type = blocks::air;
 		return ;
 	}
-	// TODO DOOR::RIGHT_HINGE
+	// TODO door::right_hinge
 }
 
 // used by glass pane too
 void Chunk::handle_fence_placement( glm::ivec3 pos, int &type )
 {
 	int next = getBlockAt(pos.x - 1, pos.y, pos.z);
-	if (s_blocks[next & blocks::TYPE]->collisionHitbox_1x1x1 || (next & blocks::TYPE) == (type & blocks::TYPE)) {
-		type |= (FENCE::MX << blocks::BITFIELD_OFFSET);
+	if (s_blocks[next & mask::blocks::type]->collisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+		type |= (fence::mx << offset::blocks::bitfield);
 	}
 	next = getBlockAt(pos.x + 1, pos.y, pos.z);
-	if (s_blocks[next & blocks::TYPE]->collisionHitbox_1x1x1 || (next & blocks::TYPE) == (type & blocks::TYPE)) {
-		type |= (FENCE::PX << blocks::BITFIELD_OFFSET);
+	if (s_blocks[next & mask::blocks::type]->collisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+		type |= (fence::px << offset::blocks::bitfield);
 	}
 	next = getBlockAt(pos.x, pos.y - 1, pos.z);
-	if (s_blocks[next & blocks::TYPE]->collisionHitbox_1x1x1 || (next & blocks::TYPE) == (type & blocks::TYPE)) {
-		type |= (FENCE::MY << blocks::BITFIELD_OFFSET);
+	if (s_blocks[next & mask::blocks::type]->collisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+		type |= (fence::my << offset::blocks::bitfield);
 	}
 	next = getBlockAt(pos.x, pos.y + 1, pos.z);
-	if (s_blocks[next & blocks::TYPE]->collisionHitbox_1x1x1 || (next & blocks::TYPE) == (type & blocks::TYPE)) {
-		type |= (FENCE::PY << blocks::BITFIELD_OFFSET);
+	if (s_blocks[next & mask::blocks::type]->collisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+		type |= (fence::py << offset::blocks::bitfield);
 	}
 }

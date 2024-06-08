@@ -19,17 +19,18 @@ int main( int ac, char **av )
 	std::cout << std::endl << " ---- Hello ----" << std::endl;
 	// std::cout << "hardware concurrency of this computer: " << std::thread::hardware_concurrency() << std::endl;
 
-	OpenGL_Manager *render = new OpenGL_Manager();
+	{
+		OpenGL_Manager render;
 
-	render->setup_window();
-	std::cout << std::endl;
-	render->create_shaders();
-	render->setup_communication_shaders();
-	render->load_texture();
-	std::cout << std::endl;
-	render->main_loop();
+		render.setup_window();
+		std::cout << std::endl;
+		render.create_shaders();
+		render.setup_communication_shaders();
+		render.load_texture();
+		std::cout << std::endl;
+		render.main_loop();
+	}
 
-	delete render;
 	for (int index = 0; index < S_BLOCKS_SIZE; index++) {
 		delete s_blocks[index];
 	}

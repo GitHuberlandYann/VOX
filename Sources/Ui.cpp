@@ -34,7 +34,7 @@ UI::~UI( void )
 void UI::add_inventory_elem( int index )
 {
 	int type = _inventory.getSlotBlock(index).type;
-	if (type == blocks::AIR) {
+	if (type == blocks::air) {
 		return ;
 	}
 	int x = (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 4;

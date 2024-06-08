@@ -11,7 +11,7 @@ void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int game_m
 	const float scale = 0.057857142857142864 * 0.5f;
 
 	pos += _right * 8.0f * scale - _world_up * 9.0f * scale + _world_up * glm::sin(_walk_time * 7) * 0.03f + _right * glm::cos(_walk_time * 4) * 0.03f;
-	if (item == blocks::AIR) { // draw arm, only the two visible faces
+	if (item == blocks::air) { // draw arm, only the two visible faces
 		const int speco = 0; // 64 for second skin
 		glm::vec3 armFront = glm::normalize(_front + _world_up * 0.3f);
 		glm::vec3 armRight = glm::normalize(glm::cross(armFront, _world_up) - _world_up * 0.3f);
@@ -47,7 +47,7 @@ void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int game_m
 		v2 = {spec + (1 << 17) - (12 << 8), p2};
 		v3 = {spec - 4 - (12 << 8), p3};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-	} else if (s_blocks[item]->item3D) { //(item < blocks::POPPY && item != blocks::OAK_DOOR && item != blocks::GLASS_PANE) { // draw block
+	} else if (s_blocks[item]->item3D) { //(item < blocks::poppy && item != blocks::oak_door && item != blocks::glass_pane) { // draw block
 		glm::vec3 itemFront = glm::normalize(glm::vec3(glm::vec2(_front + _right * 0.5f), 0));
 		glm::vec3 itemRight = glm::normalize(glm::cross(itemFront, _world_up));
 		if (_armAnimation) {
@@ -59,7 +59,7 @@ void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int game_m
 		}
 		glm::vec3 itemUp = glm::normalize(glm::cross(itemRight, itemFront));
 
-		if (s_blocks[item]->geometry == GEOMETRY::STAIRS_BOTTOM) {
+		if (s_blocks[item]->geometry == geometry::stairs_bottom) {
 			// up
 			glm::vec3 p0 = pos + _world_up * (0.1f + 0.5f * _front.z) + itemFront * 12.0f * scale - itemRight * 0.25f;
 			glm::vec3 p1 = p0 + itemRight * 0.25f;
@@ -133,21 +133,21 @@ void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int game_m
 		glm::vec3 p2 = p0 - itemFront * 0.25f;
 		glm::vec3 p3 = p1 - itemFront * 0.25f;
 
-		int spec = s_blocks[item]->texX(face_dir::PLUSZ) * 16 + ((s_blocks[item]->texY(face_dir::PLUSZ) * 16) << 8) + itemLight;
+		int spec = s_blocks[item]->texX(face_dir::plus_z) * 16 + ((s_blocks[item]->texY(face_dir::plus_z) * 16) << 8) + itemLight;
 		t_shaderInput v0 = {spec, p0};
 		t_shaderInput v1 = {spec + 16 + (1 << 17), p1};
 		t_shaderInput v2 = {spec + (16 << 8) + (1 << 18), p2};
 		t_shaderInput v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
 		arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-		int shape = s_blocks[item]->geometry;
-		float height = (shape == GEOMETRY::SLAB_BOTTOM) ? 0.125f : (shape == GEOMETRY::TRAPDOOR) ? 0.046875f : 0.25f;
-		int yoff = (shape == GEOMETRY::SLAB_BOTTOM) ? 8 : (shape == GEOMETRY::TRAPDOOR) ? 3 : 16;
+		geometry shape = s_blocks[item]->geometry;
+		float height = (shape == geometry::slab_bottom) ? 0.125f : (shape == geometry::trapdoor) ? 0.046875f : 0.25f;
+		int yoff = (shape == geometry::slab_bottom) ? 8 : (shape == geometry::trapdoor) ? 3 : 16;
 		// left
 		p1 = p2;
 		p2 = p0 - itemUp * height;
 		p3 = p1 - itemUp * height;
-		spec = s_blocks[item]->texX(face_dir::MINUSX) * 16 + ((s_blocks[item]->texY(face_dir::MINUSX) * 16) << 8) + itemLight;
+		spec = s_blocks[item]->texX(face_dir::minus_x) * 16 + ((s_blocks[item]->texY(face_dir::minus_x) * 16) << 8) + itemLight;
 		v0 = {spec, p0};
 		v1 = {spec + 16 + (1 << 17), p1};
 		v2 = {spec + (yoff << 8) + (1 << 18), p2};
@@ -351,7 +351,7 @@ void Camera::drawPlayer( std::vector<t_shaderInput> &arr, int item, int game_mod
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 // draw held item
-	if (item != blocks::AIR) {
+	if (item != blocks::air) {
 		glm::vec3 itemPos = pos - armUp * 12.0f * scale;
 		p0 = itemPos + armUp * 0.25f;
 		p1 = itemPos + armFront * 0.25f + armUp * 0.25f;
@@ -362,45 +362,45 @@ void Camera::drawPlayer( std::vector<t_shaderInput> &arr, int item, int game_mod
 		p5 = itemPos + armFront * 0.25f - armRight * 0.25f + armUp * 0.25f;
 		p6 = itemPos - armRight * 0.25f;
 		p7 = itemPos + armFront * 0.25f - armRight * 0.25f;
-		if (item < blocks::POPPY) {
-			int offset = ((item >= blocks::CRAFTING_TABLE && item < blocks::BEDROCK) ? face_dir::MINUSX: 0);
+		if (item < blocks::poppy) {
+			int offset = ((item >= blocks::crafting_table && item < blocks::bedrock) ? face_dir::minus_x: 0);
 
-			spec = 16 * s_blocks[item]->texX(face_dir::MINUSX, offset) + (16 * s_blocks[item]->texY(face_dir::MINUSX, offset) << 8) + (itemLight << 24);
+			spec = 16 * s_blocks[item]->texX(face_dir::minus_x, offset) + (16 * s_blocks[item]->texY(face_dir::minus_x, offset) << 8) + (itemLight << 24);
 			v0 = {spec, p4};
 			v1 = {spec + 16 + (1 << 17), p0};
 			v2 = {spec + (16 << 8) + (1 << 18), p6};
 			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p2};
 			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-			spec = 16 * s_blocks[item]->texX(face_dir::PLUSX, offset) + (16 * s_blocks[item]->texY(face_dir::PLUSX, offset) << 8) + (itemLight << 24);
+			spec = 16 * s_blocks[item]->texX(face_dir::plus_x, offset) + (16 * s_blocks[item]->texY(face_dir::plus_x, offset) << 8) + (itemLight << 24);
 			v0 = {spec, p1};
 			v1 = {spec + 16 + (1 << 17), p5};
 			v2 = {spec + (16 << 8) + (1 << 18), p3};
 			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p7};
 			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-			spec = 16 * s_blocks[item]->texX(face_dir::MINUSY, offset) + (16 * s_blocks[item]->texY(face_dir::MINUSY, offset) << 8) + (itemLight << 24);
+			spec = 16 * s_blocks[item]->texX(face_dir::minus_y, offset) + (16 * s_blocks[item]->texY(face_dir::minus_y, offset) << 8) + (itemLight << 24);
 			v0 = {spec, p0};
 			v1 = {spec + 16 + (1 << 17), p1};
 			v2 = {spec + (16 << 8) + (1 << 18), p2};
 			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
 			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-			spec = 16 * s_blocks[item]->texX(face_dir::PLUSY, offset) + (16 * s_blocks[item]->texY(face_dir::PLUSY, offset) << 8) + (itemLight << 24);
+			spec = 16 * s_blocks[item]->texX(face_dir::plus_y, offset) + (16 * s_blocks[item]->texY(face_dir::plus_y, offset) << 8) + (itemLight << 24);
 			v0 = {spec, p5};
 			v1 = {spec + 16 + (1 << 17), p4};
 			v2 = {spec + (16 << 8) + (1 << 18), p7};
 			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p6};
 			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-			spec = 16 * s_blocks[item]->texX(face_dir::PLUSZ, offset) + (16 * s_blocks[item]->texY(face_dir::PLUSZ, offset) << 8) + (itemLight << 24);
+			spec = 16 * s_blocks[item]->texX(face_dir::plus_z, offset) + (16 * s_blocks[item]->texY(face_dir::plus_z, offset) << 8) + (itemLight << 24);
 			v0 = {spec, p4};
 			v1 = {spec + 16 + (1 << 17), p5};
 			v2 = {spec + (16 << 8) + (1 << 18), p0};
 			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p1};
 			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-			spec = 16 * s_blocks[item]->texX(face_dir::MINUSZ, offset) + (16 * s_blocks[item]->texY(face_dir::MINUSZ, offset) << 8) + (itemLight << 24);
+			spec = 16 * s_blocks[item]->texX(face_dir::minus_z, offset) + (16 * s_blocks[item]->texY(face_dir::minus_z, offset) << 8) + (itemLight << 24);
 			v0 = {spec, p2};
 			v1 = {spec + 16 + (1 << 17), p3};
 			v2 = {spec + (16 << 8) + (1 << 18), p6};

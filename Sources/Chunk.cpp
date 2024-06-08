@@ -17,20 +17,20 @@ Chunk::Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::lis
 // std::cout << "new chunk at " << posX << ", " << posY << std::endl;
 	for (auto c : *chunks) { // TODO load backups if needed. for trees
 		if (c->isInChunk(_startX - CHUNK_SIZE, _startY)) {
-			_neighbours[face_dir::MINUSX] = c;
-			c->setNeighbour(this, face_dir::PLUSX);
+			_neighbours[face_dir::minus_x] = c;
+			c->setNeighbour(this, face_dir::plus_x);
 			++cnt;
 		} else if (c->isInChunk(_startX + CHUNK_SIZE, _startY)) {
-			_neighbours[face_dir::PLUSX] = c;
-			c->setNeighbour(this, face_dir::MINUSX);
+			_neighbours[face_dir::plus_x] = c;
+			c->setNeighbour(this, face_dir::minus_x);
 			++cnt;
 		} else if (c->isInChunk(_startX, _startY - CHUNK_SIZE)) {
-			_neighbours[face_dir::MINUSY] = c;
-			c->setNeighbour(this, face_dir::PLUSY);
+			_neighbours[face_dir::minus_y] = c;
+			c->setNeighbour(this, face_dir::plus_y);
 			++cnt;
 		} else if (c->isInChunk(_startX, _startY + CHUNK_SIZE)) {
-			_neighbours[face_dir::PLUSY] = c;
-			c->setNeighbour(this, face_dir::MINUSY);
+			_neighbours[face_dir::plus_y] = c;
+			c->setNeighbour(this, face_dir::minus_y);
 			++cnt;
 		}
 
@@ -46,21 +46,21 @@ Chunk::~Chunk( void )
 		_thread.join();
 	}
 
-	if (_neighbours[face_dir::MINUSX]) {
-		_neighbours[face_dir::MINUSX]->setNeighbour(NULL, face_dir::PLUSX);
-		_neighbours[face_dir::MINUSX] = NULL;
+	if (_neighbours[face_dir::minus_x]) {
+		_neighbours[face_dir::minus_x]->setNeighbour(NULL, face_dir::plus_x);
+		_neighbours[face_dir::minus_x] = NULL;
 	}
-	if (_neighbours[face_dir::PLUSX]) {
-		_neighbours[face_dir::PLUSX]->setNeighbour(NULL, face_dir::MINUSX);
-		_neighbours[face_dir::PLUSX] = NULL;
+	if (_neighbours[face_dir::plus_x]) {
+		_neighbours[face_dir::plus_x]->setNeighbour(NULL, face_dir::minus_x);
+		_neighbours[face_dir::plus_x] = NULL;
 	}
-	if (_neighbours[face_dir::MINUSY]) {
-		_neighbours[face_dir::MINUSY]->setNeighbour(NULL, face_dir::PLUSY);
-		_neighbours[face_dir::MINUSY] = NULL;
+	if (_neighbours[face_dir::minus_y]) {
+		_neighbours[face_dir::minus_y]->setNeighbour(NULL, face_dir::plus_y);
+		_neighbours[face_dir::minus_y] = NULL;
 	}
-	if (_neighbours[face_dir::PLUSY]) {
-		_neighbours[face_dir::PLUSY]->setNeighbour(NULL, face_dir::MINUSY);
-		_neighbours[face_dir::PLUSY] = NULL;
+	if (_neighbours[face_dir::plus_y]) {
+		_neighbours[face_dir::plus_y]->setNeighbour(NULL, face_dir::minus_y);
+		_neighbours[face_dir::plus_y] = NULL;
 	}
 
 	glDeleteBuffers(1, &_vbo);
@@ -102,34 +102,34 @@ GLint Chunk::face_count( int type, glm::ivec3 pos )
 
 GLint Chunk::face_count( int type, int row, int col, int level )
 {
-	type &= blocks::TYPE;
-	if (!type || type >= blocks::WATER) {
+	type &= mask::blocks::type;
+	if (!type || type >= blocks::water) {
 		std::cerr << "face_count ERROR counting " << s_blocks[type]->name << std::endl;
 		return (0);
 	}
-	if (type == blocks::GLASS || type == blocks::CHEST) {
+	if (type == blocks::glass || type == blocks::chest) {
 		return (0);
 	}
-	if (type >= blocks::POPPY) {
-		return (2 << (type >= blocks::TORCH));
+	if (type >= blocks::poppy) {
+		return (2 << (type >= blocks::torch));
 	}
-	GLint res = visible_face(type, getBlockAt(row - 1, col, level), face_dir::MINUSX)
-				+ visible_face(type, getBlockAt(row + 1, col, level), face_dir::PLUSX)
-				+ visible_face(type, getBlockAt(row, col - 1, level), face_dir::MINUSY)
-				+ visible_face(type, getBlockAt(row, col + 1, level), face_dir::PLUSY);
+	GLint res = visible_face(type, getBlockAt(row - 1, col, level), face_dir::minus_x)
+				+ visible_face(type, getBlockAt(row + 1, col, level), face_dir::plus_x)
+				+ visible_face(type, getBlockAt(row, col - 1, level), face_dir::minus_y)
+				+ visible_face(type, getBlockAt(row, col + 1, level), face_dir::plus_y);
 	switch (level) {
 		case 0:
-			res += visible_face(type, getBlockAt(row, col, level + 1), face_dir::PLUSZ);
+			res += visible_face(type, getBlockAt(row, col, level + 1), face_dir::plus_z);
 			break ;
 		case 255:
-			res += visible_face(type, getBlockAt(row, col, level - 1), face_dir::MINUSZ);
+			res += visible_face(type, getBlockAt(row, col, level - 1), face_dir::minus_z);
 			res += 1;
 			break ;
 		default:
-			res += visible_face(type, getBlockAt(row, col, level - 1), face_dir::MINUSZ);
-			res += visible_face(type, getBlockAt(row, col, level + 1), face_dir::PLUSZ);
+			res += visible_face(type, getBlockAt(row, col, level - 1), face_dir::minus_z);
+			res += visible_face(type, getBlockAt(row, col, level + 1), face_dir::plus_z);
 	}
-	if (type == blocks::OAK_STAIRS_BOTTOM || type == blocks::OAK_STAIRS_TOP) {
+	if (type == blocks::oak_stairs_bottom || type == blocks::oak_stairs_top) {
 		res += 2; // +3 if corner stair, but np so far
 	}
 	return (res);
@@ -142,29 +142,29 @@ void Chunk::resetDisplayedFaces( void )
 		for (int col = 0; col < CHUNK_SIZE; col++) {
 			for (int level = 0; level < WORLD_HEIGHT; level++) {
 				int offset = (((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level;
-				GLint value = _blocks[offset], type = value & blocks::TYPE;
+				GLint value = _blocks[offset], type = value & mask::blocks::type;
 				bool restore = false;
-				if ((value & blocks::NOTVISIBLE) && (!row || !col || row == CHUNK_SIZE - 1 || col == CHUNK_SIZE - 1)) {
-					value -= blocks::NOTVISIBLE;
+				if ((value & mask::blocks::notVisible) && (!row || !col || row == CHUNK_SIZE - 1 || col == CHUNK_SIZE - 1)) {
+					value -= mask::blocks::notVisible;
 					restore = true;
 				}
-				if (type == blocks::CHEST) {}
-				else if (type > blocks::AIR && type < blocks::WATER) {
-					GLint below = ((level) ? _blocks[offset - 1] : 0) & blocks::TYPE;
-					if (!air_flower(type, false, false, true) && type < blocks::TORCH && below != blocks::GRASS_BLOCK && below != blocks::DIRT && below != blocks::SAND) {
-						_blocks[offset] = blocks::AIR;
+				if (type == blocks::chest) {}
+				else if (type > blocks::air && type < blocks::water) {
+					GLint below = ((level) ? _blocks[offset - 1] : 0) & mask::blocks::type;
+					if (!air_flower(type, false, false, true) && type < blocks::torch && below != blocks::grass_block && below != blocks::dirt && below != blocks::sand) {
+						_blocks[offset] = blocks::air;
 					} else {
 						GLint count = face_count(type, row, col, level);
 						if (count) {
 							// std::cout << "count is " << count << std::endl;
 							if (restore) {
 								_blocks[offset] = value;
-							} else if (value & blocks::NOTVISIBLE) {
-								_blocks[offset] = value - blocks::NOTVISIBLE;
-								_added[offset] = value - blocks::NOTVISIBLE;
+							} else if (value & mask::blocks::notVisible) {
+								_blocks[offset] = value - mask::blocks::notVisible;
+								_added[offset] = value - mask::blocks::notVisible;
 							}
-						} else if (type > blocks::AIR) { // hide block
-							_blocks[offset] = value | blocks::NOTVISIBLE;
+						} else if (type > blocks::air) { // hide block
+							_blocks[offset] = value | mask::blocks::notVisible;
 						}
 					}
 				}
@@ -297,7 +297,7 @@ void Chunk::waitGenDone( void )
 	while (!_genDone);
 }
 
-void Chunk::setNeighbour( Chunk *neighbour, face_dir index )
+void Chunk::setNeighbour( Chunk *neighbour, int index )
 {
 	if (_neighbours[index] && neighbour) {
 		std::cerr << "setNeighbour ERROR DUPLICATE " << neighbour->getStartX() << ", " << neighbour->getStartY() << " vs " << _neighbours[index]->getStartX() << ", " << _neighbours[index]->getStartY() << std::endl;
@@ -406,21 +406,21 @@ void Chunk::checkFillVertices( void )
 	if (cnt > _nb_neighbours) {
 		if (cnt == 4) {
 			for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
-				switch (a.second & blocks::TYPE) {
-				case blocks::REDSTONE_LAMP:
-					if (!(a.second & REDSTONE::ACTIVATED)) {
+				switch (a.second & mask::blocks::type) {
+				case blocks::redstone_lamp:
+					if (!(a.second & mask::redstone::activated)) {
 						continue ;
 					}
-				case blocks::TORCH:
-				case blocks::REDSTONE_TORCH:
-					if ((a.second & blocks::TYPE) == blocks::REDSTONE_TORCH && (a.second & REDSTONE::POWERED)) {
+				case blocks::torch:
+				case blocks::redstone_torch:
+					if ((a.second & mask::blocks::type) == blocks::redstone_torch && (a.second & mask::redstone::powered)) {
 						break ; // red torch is turned off
 					}
 					int level = a.first & (WORLD_HEIGHT - 1);
 					int col = ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
 					int row = ((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
 					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
-					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] += s_blocks[a.second & blocks::TYPE]->light_level + (s_blocks[a.second & blocks::TYPE]->light_level << 4); // 0xF0 = light source. & 0xF = light level
+					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] += s_blocks[a.second & mask::blocks::type]->light_level + (s_blocks[a.second & mask::blocks::type]->light_level << 4); // 0xF0 = light source. & 0xF = light level
 					light_spread(row, col, level, false);
 					break ;
 				}
@@ -431,7 +431,7 @@ void Chunk::checkFillVertices( void )
 					for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
 						if (!(_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xF000)) {
 							int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
-							if (s_blocks[value & blocks::TYPE]->transparent) { // underground hole
+							if (s_blocks[value & mask::blocks::type]->transparent) { // underground hole
 								// spread_light TODO watch out for leaves and water light damping..
 								light_spread(row, col, level, true);
 							}
@@ -542,11 +542,11 @@ void Chunk::sort_sky( glm::vec3 &pos, bool vip )
 	}
 	order.clear();
 	_skyVaoReset = true;
-	_mtx.lock();
 	if (vip) {
+		_mtx.lock();
 		_skyVaoVIP = true;
+		_mtx.unlock();
 	}
-	_mtx.unlock();
 }
 
 bool Chunk::inPerimeter( int posX, int posY, GLint render_dist )
@@ -573,18 +573,18 @@ int Chunk::isHit( glm::ivec3 pos )
 	// std::cout << "current_chunk is " << _startX << ", " << _startY << std::endl;
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
 	if (chunk_pos.z < 0 || chunk_pos.z > 255) {
-		return (blocks::AIR);
+		return (blocks::air);
 	}
 	if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE) {
 		std::cout << "ERROR block out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
-		return (blocks::AIR);
+		return (blocks::air);
 	}
 	// if (_thread.joinable()) {
 	// 	_thread.join();
 	// }
 	int type = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z];
-	if ((type & blocks::TYPE) > blocks::WATER) {
-		return (blocks::AIR);
+	if ((type & mask::blocks::type) > blocks::water) {
+		return (blocks::air);
 	}
 	return (type);
 }
@@ -599,18 +599,18 @@ void Chunk::handleBlast( glm::vec3 pos, int blast_radius )
 	}
 
 	glm::vec3 relative = {pos.x - _startX, pos.y - _startY, pos.z};
-	if (relative.x > 0 && relative.x - blast_radius < 0 && _neighbours[face_dir::MINUSX]) {
-		_neighbours[face_dir::MINUSX]->handleBlast(pos, blast_radius);
+	if (relative.x > 0 && relative.x - blast_radius < 0 && _neighbours[face_dir::minus_x]) {
+		_neighbours[face_dir::minus_x]->handleBlast(pos, blast_radius);
 	}
-	if (relative.x <= CHUNK_SIZE && relative.x + blast_radius >= CHUNK_SIZE && _neighbours[face_dir::PLUSX]) {
-		_neighbours[face_dir::PLUSX]->handleBlast(pos, blast_radius);
+	if (relative.x <= CHUNK_SIZE && relative.x + blast_radius >= CHUNK_SIZE && _neighbours[face_dir::plus_x]) {
+		_neighbours[face_dir::plus_x]->handleBlast(pos, blast_radius);
 	}
 
-	if (relative.y > 0 && relative.y - blast_radius < 0 && _neighbours[face_dir::MINUSY]) {
-		_neighbours[face_dir::MINUSY]->handleBlast(pos, blast_radius);
+	if (relative.y > 0 && relative.y - blast_radius < 0 && _neighbours[face_dir::minus_y]) {
+		_neighbours[face_dir::minus_y]->handleBlast(pos, blast_radius);
 	}
-	if (relative.y <= CHUNK_SIZE && relative.y + blast_radius >= CHUNK_SIZE && _neighbours[face_dir::PLUSY]) {
-		_neighbours[face_dir::PLUSY]->handleBlast(pos, blast_radius);
+	if (relative.y <= CHUNK_SIZE && relative.y + blast_radius >= CHUNK_SIZE && _neighbours[face_dir::plus_y]) {
+		_neighbours[face_dir::plus_y]->handleBlast(pos, blast_radius);
 	}
 }
 
@@ -630,16 +630,16 @@ void Chunk::explosion( glm::vec3 pos, int power )
 					std::vector<glm::ivec3> vt = voxel_traversal(pos, end);
 					intensity += 0.75f;
 					for (auto &p : vt) {
-						int type = getBlockAt(p.x - _startX, p.y - _startY, p.z) & blocks::TYPE;
+						int type = getBlockAt(p.x - _startX, p.y - _startY, p.z) & mask::blocks::type;
 						intensity -= 0.75f + s_blocks[type]->blast_resistance;
 						if (intensity < 0) {
 							break ;
-						} else if (type == blocks::TNT) {
+						} else if (type == blocks::tnt) {
 							handleHit(false, type, p, Modif::LITNT);
 							_entities.back()->setLifetime(3.5 - Random::randomFloat(_seed)); // tnt lit by explosion has lifetime in [0.5;1.5] sec
 							// TODO better particles spawning
 							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, PARTICLES::EXPLOSION, Random::randomFloat(_seed)));
-						} else if (type != blocks::AIR) {
+						} else if (type != blocks::air) {
 							// std::cout << "block " << s_blocks[type]->name << " removed" << std::endl;
 							handleHit(true, type, p, Modif::REMOVE);
 							// handleHit(false, type, p, Modif::REMOVE);
@@ -663,7 +663,7 @@ void Chunk::shootArrow( float timer )
 
 void Chunk::updateBreak( glm::ivec4 block_hit )
 {
-	if (block_hit.w == blocks::AIR || !_vaoReset) {
+	if (block_hit.w == blocks::air || !_vaoReset) {
 		return ;
 	}
 	glm::ivec3 chunk_pos = {block_hit.x - _startX, block_hit.y - _startY, block_hit.z};
@@ -683,7 +683,7 @@ int Chunk::isLoaded( GLint &counter )
 	if (!_vaoSet) {
 		_mtx.unlock();
 		++counter;
-		if (counter % 50 <= 5) {
+		if ((counter % 50) <= 5) {
 			setup_array_buffer();
 		}
 		return (0);
@@ -723,7 +723,7 @@ void Chunk::updateFurnaces( double currentTime )
 		if (state != furnace_state::NOCHANGE) {
 			// std::cout << "FURNACE STATE CHANGE TO " << state << std::endl;
 			int value = _blocks[fur.first];
-			_blocks[fur.first] = (value & (REDSTONE::ALL_BITS - REDSTONE::ACTIVATED)) + ((state == furnace_state::ON) << REDSTONE::ACTIVATED_OFFSET);
+			_blocks[fur.first] = (value & (mask::all_bits - mask::redstone::activated)) + ((state == furnace_state::ON) << offset::redstone::activated);
 			// set/unset furnace position as light source of 13 using state
 			int posZ = fur.first & (WORLD_HEIGHT - 1);
 			int posY = ((fur.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));

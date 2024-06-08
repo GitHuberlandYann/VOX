@@ -9,289 +9,329 @@
 # include <glm/gtc/type_ptr.hpp>
 # include <string>
 # include <vector>
+# include <array>
 
 class Chunk;
 class UI;
 typedef struct s_shaderInput t_shaderInput;
 
-const float ONE16TH = 0.0625f;
+const float one16th = 0.0625f;
 
 # define S_BLOCKS_SIZE 128
 
-enum face_dir {
-	MINUSY,
-	PLUSY,
-	MINUSX,
-	PLUSX,
-	MINUSZ,
-	PLUSZ
-};
-
-enum CORNERS {
-	MM = 0b0001, // -x-y
-	MP = 0b0010, // -x+y
-	PM = 0b0100, // +x-y
-	PP = 0b1000, // +x+y
-};
-
-enum FENCE {
-	MY = 0b0001, // -y
-	PY = 0b0010, // +y
-	MX = 0b0100, // -x
-	PX = 0b1000, // +x
-	BASE,
-	ARM,
-	ARM_END,
-};
-
-enum DOOR {
-	UPPER_HALF  = 0b001,
-	RIGHT_HINGE = 0b010,
-	OPEN        = 0b100
-};
-
-enum PLACEMENT {
-	WALL,
-	FLOOR,
-	CEILING
-};
-
-namespace SAPLING {
-	const int GROWTH = (1 << 24);
-};
-
-namespace LEAVES {
-	const int NATURAL = (1 << 24);
-};
-
-namespace FARMLAND {
-	const int WET = (1 << 24);
-	const int MOISTURE_OFFSET = 25;
-	const int MOISTURE = (0x7 << MOISTURE_OFFSET);
-};
-
-namespace REDSTONE {
-	const bool ON = true;
-	const bool OFF = false;
-	const int TICK = 2;
-
-	// activated means it receives signal, powered means it also transmits signal
-	const int POWERED_OFFSET = 16;
-	const int POWERED = (1 << POWERED_OFFSET);
-	const int WEAKDY_POWERED_OFFSET = 17;
-	const int WEAKDY_POWERED = (1 << WEAKDY_POWERED_OFFSET);
-	const int ACTIVATED_OFFSET = 18;
-	const int ACTIVATED = (1 << ACTIVATED_OFFSET);
-	const int STRENGTH_OFFSET = 20;
-	const int STRENGTH = (0xF << STRENGTH_OFFSET);
-
-	namespace DUST {
-		const int CONNECT = 0x3;
-		const int NONE = 0;
-		const int SIDE = 1;
-		const int UP   = 2;
-		const int MY = 24;
-		const int PY = 26;
-		const int MX = 28;
-		const int PX = 30;
-	};
-
-	namespace REPEATER {
-		const int TICKS_OFFSET = 24;
-		const int LOCK = (1 << 27);
-	}
-
-	namespace COMPARATOR {
-		const int MODE = (1 << 24);
-		const int COMPARE = 0;
-		const int SUBSTRACT = 1;
-	};
-
-	namespace PISTON {
-		const int STICKY_OFFSET = 24;
-		const int STICKY = (1 << STICKY_OFFSET);
-		const int MOVING = (1 << 24);
-		const int RETRACTING = (1 << 28); // flag given to blocks::MOVING_PISTON to set their transparency -> transparent when retracting, solid when extending
-		const int FORCE_RETRACTION = 13; // used by Chunk::pistonExtendCount
-		const int CANCEL_RETRACTION = 42; // random nbr above 12, used by Chunk::pistonExtendCount
-	};
-
-	const int ALL_BITS = -1;
-};
-
-namespace GAMEMODE {
-	const int ADVENTURE_BLOCK = (1 << 19);
-};
-
-namespace GEOMETRY {
+namespace face_dir {
 	enum {
-		NONE,          // air, water
-		CUBE,          // default blocks
-		CROSS,         // flowers and such
-		FARMLAND,      // cube with z = 15 * ONE16TH
-		TORCH,
-		SLAB_BOTTOM,
-		SLAB_TOP,
-		STAIRS_BOTTOM,
-		STAIRS_TOP,
-		FENCE,
-		GLASS,
-		GLASS_PANE,
-		DOOR,
-		TRAPDOOR,
-		CROP,
-		LEVER,
-		DUST,
-		REPEATER,
-		BUTTON,
-		PISTON,
+		minus_y,
+		plus_y,
+		minus_x,
+		plus_x,
+		minus_z,
+		plus_z
 	};
+};
+
+namespace corners {
+	const int mm = 0b0001;  // -x-y
+	const int mp = 0b0010;  // -x+y
+	const int pm = 0b0100;  // +x-y
+	const int pp = 0b1000;  // +x+y
+};
+
+namespace fence {
+	const int my = 0b0001;  // -y
+	const int py = 0b0010;  // +y
+	const int mx = 0b0100;  // -x
+	const int px = 0b1000;  // +x
+	enum {
+		base,
+		arm,
+		arm_end,
+	};
+};
+
+namespace door {
+	const int upper_half  = 0b001;
+	const int right_hinge = 0b010;
+	const int open        = 0b100;
+};
+
+namespace placement {
+	enum {
+		wall,
+		floor,
+		ceiling
+	};
+};
+
+namespace redstone {
+	const bool on = true;
+	const bool off = false;
+	const int tick = 2;
+
+	namespace dust {
+		const int none = 0;
+		const int side = 1;
+		const int up   = 2;
+	};
+
+	namespace comparator {
+		const int compare = 0;
+		const int substract = 1;
+	};
+
+	namespace piston {
+		const int force_retraction = 13; // used by Chunk::pistonExtendCount
+		const int cancel_retraction = 42; // random nbr above 12, used by Chunk::pistonExtendCount
+	};
+};
+
+namespace offset {
+
+	namespace blocks {
+		const int orientation = 13;
+		const int bitfield = 24;
+	};
+
+	namespace redstone {
+		const int powered = 16;
+		const int weakdy_powered = 17;
+		const int activated = 18;
+		const int strength = 20;
+
+		namespace dust {
+			const int my = 24;
+			const int py = 26;
+			const int mx = 28;
+			const int px = 30;
+		};
+
+		namespace repeater {
+			const int ticks = 24;
+		};
+
+		namespace piston {
+			const int sticky = 24;
+		};
+	};
+
+	const int adventure_block = 19;
+
+	namespace farmland {
+		const int moisture = 25;
+	};
+};
+
+namespace mask {
+	const int all_bits = -1;
+
+	namespace blocks {
+		const int type = 0xFFF;
+		const int notVisible = (1 << 12);
+		const int orientation = (0x7 << offset::blocks::orientation);
+	};
+
+	namespace redstone {
+		const int powered = (1 << offset::redstone::powered);
+		const int weakdy_powered = (1 << offset::redstone::weakdy_powered);
+		const int activated = (1 << offset::redstone::activated);
+		const int strength = (0xF << offset::redstone::strength);
+		
+		namespace dust {
+			const int connect = 0x3;
+		};
+
+		namespace repeater {
+			const int lock = (1 << 27);
+		};
+
+		namespace comparator {
+			const int mode = (1 << 24);
+		};
+
+		namespace piston {
+			const int sticky = (1 << offset::redstone::piston::sticky);
+			const int moving = (1 << 24);
+			const int retracting = (1 << 28); // flag given to blocks::MOVING_PISTON to set their transparency -> transparent when retracting, solid when extending
+		};
+	};
+
+	const int adventure_block = (1 << offset::adventure_block);
+
+	namespace sapling {
+		const int growth = (1 << 24);
+	};
+
+	namespace leaves {
+		const int natural = (1 << 24);
+	};
+
+	namespace farmland {
+		const int wet = (1 << 24);
+		const int moisture = (0x7 << offset::farmland::moisture);
+	};
+};
+
+enum class geometry {
+	none,          // air, water
+	cube,          // default blocks
+	cross,         // flowers and such
+	farmland,      // cube with z = 15 * one16th
+	torch,
+	slab_bottom,
+	slab_top,
+	stairs_bottom,
+	stairs_top,
+	fence,
+	glass,
+	glass_pane,
+	door,
+	trapdoor,
+	crop,
+	lever,
+	dust,
+	repeater,
+	button,
+	piston,
 };
 
 namespace blocks {
 	enum {
-		AIR,
-		GRASS_BLOCK,
-		OAK_LOG,
-		CACTUS,
-		FARMLAND,
-		DIRT_PATH,
-		TNT,
-		TARGET,
-		CRAFTING_TABLE = 8,
-		FURNACE,
-		OAK_STAIRS_BOTTOM,
-		OAK_STAIRS_TOP,
-		OAK_DOOR,
-		OAK_TRAPDOOR,
-		STONE_STAIRS_BOTTOM,
-		STONE_STAIRS_TOP,
-		SMOOTH_STONE_STAIRS_BOTTOM,
-		SMOOTH_STONE_STAIRS_TOP,
-		COBBLESTONE_STAIRS_BOTTOM,
-		COBBLESTONE_STAIRS_TOP,
-		STONE_BRICKS_STAIRS_BOTTOM,
-		STONE_BRICKS_STAIRS_TOP,
-		LEVER,
-		OAK_SIGN,
-		BEDROCK = 24,
-		DIRT,
-		SMOOTH_STONE,
-		STONE,
-		COBBLESTONE,
-		STONE_BRICKS,
-		CRACKED_STONE_BRICKS,
-		SAND,
-		GRAVEL,
-		OAK_LEAVES,
-		OAK_PLANKS,
-		GLASS,
-		GLASS_PANE,
-		REDSTONE_LAMP,
-		STONE_BUTTON,
-		OAK_BUTTON,
-		COAL_ORE = 40,
-		IRON_ORE,
-		DIAMOND_ORE,
-		COAL_BLOCK,
-		IRON_BLOCK,
-		DIAMOND_BLOCK,
-		REDSTONE_ORE,
-		REDSTONE_BLOCK,
-		OAK_SLAB_BOTTOM = 48,
-		OAK_SLAB_TOP,
-		OAK_FENCE,
-		STONE_SLAB_BOTTOM,
-		STONE_SLAB_TOP,
-		SMOOTH_STONE_SLAB_BOTTOM,
-		SMOOTH_STONE_SLAB_TOP,
-		COBBLESTONE_SLAB_BOTTOM,
-		COBBLESTONE_SLAB_TOP,
-		STONE_BRICKS_SLAB_BOTTOM,
-		STONE_BRICKS_SLAB_TOP,
-		PISTON,
-		STICKY_PISTON,
-		PISTON_HEAD,
-		MOVING_PISTON,
-		OBSERVER,
-		POPPY = 64,
-		DANDELION,
-		BLUE_ORCHID,
-		ALLIUM,
-		CORNFLOWER,
-		PINK_TULIP,
-		GRASS,
-		SUGAR_CANE,
-		DEAD_BUSH,
-		OAK_SAPLING,
-		TORCH,
-		REDSTONE_TORCH,
-		REDSTONE_DUST,
-		REPEATER,
-		COMPARATOR,
-		CHEST,
-		WHEAT_CROP = 80,
-		WATER = 88,
-		WATER1,
-		WATER2,
-		WATER3,
-		WATER4,
-		WATER5,
-		WATER6,
-		WATER7,
-		STICK = 96,
-		WOODEN_SHOVEL,
-		STONE_SHOVEL,
-		IRON_SHOVEL,
-		DIAMOND_SHOVEL,
-		WOODEN_AXE,
-		STONE_AXE,
-		IRON_AXE,
-		DIAMOND_AXE,
-		WOODEN_PICKAXE,
-		STONE_PICKAXE,
-		IRON_PICKAXE,
-		DIAMOND_PICKAXE,
-		BOW,
-		ARROW,
-		WORLDEDIT_WAND,
-		COAL = 112,
-		CHARCOAL,
-		IRON_INGOT,
-		DIAMOND,
-		BUCKET,
-		WATER_BUCKET,
-		WOODEN_HOE,
-		STONE_HOE,
-		IRON_HOE,
-		DIAMOND_HOE,
-		WHEAT_SEEDS,
-		WHEAT,
-		BREAD,
-		APPLE,
-		FLINT,
-		FLINT_AND_STEEL,
+		air,
+		grass_block,
+		oak_log,
+		cactus,
+		farmland,
+		dirt_path,
+		tnt,
+		target,
+		crafting_table = 8,
+		furnace,
+		oak_stairs_bottom,
+		oak_stairs_top,
+		oak_door,
+		oak_trapdoor,
+		stone_stairs_bottom,
+		stone_stairs_top,
+		smooth_stone_stairs_bottom,
+		smooth_stone_stairs_top,
+		cobblestone_stairs_bottom,
+		cobblestone_stairs_top,
+		stone_bricks_stairs_bottom,
+		stone_bricks_stairs_top,
+		lever,
+		oak_sign,
+		bedrock = 24,
+		dirt,
+		smooth_stone,
+		stone,
+		cobblestone,
+		stone_bricks,
+		cracked_stone_bricks,
+		sand,
+		gravel,
+		oak_leaves,
+		oak_planks,
+		glass,
+		glass_pane,
+		redstone_lamp,
+		stone_button,
+		oak_button,
+		coal_ore = 40,
+		iron_ore,
+		diamond_ore,
+		coal_block,
+		iron_block,
+		diamond_block,
+		redstone_ore,
+		redstone_block,
+		oak_slab_bottom = 48,
+		oak_slab_top,
+		oak_fence,
+		stone_slab_bottom,
+		stone_slab_top,
+		smooth_stone_slab_bottom,
+		smooth_stone_slab_top,
+		cobblestone_slab_bottom,
+		cobblestone_slab_top,
+		stone_bricks_slab_bottom,
+		stone_bricks_slab_top,
+		piston,
+		sticky_piston,
+		piston_head,
+		moving_piston,
+		observer,
+		poppy = 64,
+		dandelion,
+		blue_orchid,
+		allium,
+		cornflower,
+		pink_tulip,
+		grass,
+		sugar_cane,
+		dead_bush,
+		oak_sapling,
+		torch,
+		redstone_torch,
+		redstone_dust,
+		repeater,
+		comparator,
+		chest,
+		wheat_crop = 80,
+		water = 88,
+		water1,
+		water2,
+		water3,
+		water4,
+		water5,
+		water6,
+		water7,
+		stick = 96,
+		wooden_shovel,
+		stone_shovel,
+		iron_shovel,
+		diamond_shovel,
+		wooden_axe,
+		stone_axe,
+		iron_axe,
+		diamond_axe,
+		wooden_pickaxe,
+		stone_pickaxe,
+		iron_pickaxe,
+		diamond_pickaxe,
+		bow,
+		arrow,
+		worldedit_wand,
+		coal = 112,
+		charcoal,
+		iron_ingot,
+		diamond,
+		bucket,
+		water_bucket,
+		wooden_hoe,
+		stone_hoe,
+		iron_hoe,
+		diamond_hoe,
+		wheat_seeds,
+		wheat,
+		bread,
+		apple,
+		flint,
+		flint_and_steel,
 	};
-	const int TYPE = 0xFFF;
-	const int NOTVISIBLE = (1 << 12);
-	const int ORIENTATION_OFFSET = 13;
-	const int ORIENTATION_MASK = 0x7;
-	const int ORIENTATION = (ORIENTATION_MASK << ORIENTATION_OFFSET);
-	const int BITFIELD_OFFSET = 24;
-	const int ITEM = 1942;
+	const int item = 1942;
 }
 
 struct Block {
 	public:
 		std::string name = "DEFAULT";
-		int mined = blocks::AIR;
-		int adventure_block = blocks::BEDROCK;
+		int mined = blocks::air;
+		int adventure_block = blocks::bedrock;
 		bool stackable = true;
 		char light_level = 0;
 		bool isFuel = false;
 		float fuel_time = 0;
 		bool isComposant = false;
-		int getProduction = blocks::AIR;
+		int getProduction = blocks::air;
 		float blast_resistance = FLT_MAX;
 		bool hasHitbox = false;
 		bool hasOrientedHitbox = false;
@@ -301,12 +341,12 @@ struct Block {
 		bool orientedCollisionHitbox = false;
 		glm::vec3 hitboxCenter = {0, 0, 0};
 		glm::vec3 hitboxHalfSize = {0, 0, 0};
-		int geometry = GEOMETRY::CUBE;
+		geometry geometry = geometry::cube;
 		bool isFood = false;
 		int hunger_restauration = 0;
 		float saturation_restauration = 0;
 		bool byHand = false;
-		int needed_tool = blocks::NOTVISIBLE;
+		int needed_tool = blocks::item;
 		int needed_material_level = 0;
 		int durability = 0;
 		float hardness = -1;
@@ -322,11 +362,11 @@ struct Block {
 			}
 			return (tool >= needed_tool + needed_material_level && tool < needed_tool + 4);
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+		virtual int texX( int dir = face_dir::minus_y, int value = 0 ) const {
 			(void)dir;(void)value;
 			return (textureX);
 		}
-		virtual int texY( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+		virtual int texY( int dir = face_dir::minus_y, int value = 0 ) const {
 			(void)dir;(void)value;
 			return (textureY);
 		}
@@ -351,7 +391,7 @@ struct Block {
 struct Cube : Block {
 	public:
 		Cube() {
-			geometry = GEOMETRY::CUBE;
+			geometry = geometry::cube;
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
@@ -365,7 +405,7 @@ struct Cross : Block {
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
-			geometry = GEOMETRY::CROSS;
+			geometry = geometry::cross;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -382,7 +422,7 @@ struct SlabBottom : Block {
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = GEOMETRY::SLAB_BOTTOM;
+			geometry = geometry::slab_bottom;
 			transparent = true;
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
@@ -397,7 +437,7 @@ struct SlabTop : Block {
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.75f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = GEOMETRY::SLAB_TOP;
+			geometry = geometry::slab_top;
 			transparent = true;
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
@@ -414,45 +454,45 @@ struct StairsBottom : Block {
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.25f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = GEOMETRY::STAIRS_BOTTOM;
+			geometry = geometry::stairs_bottom;
 			transparent = true;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
 			switch (corners) {
-				case CORNERS::MM | CORNERS::MP:
+				case corners::mm | corners::mp:
 					hitbox[0] = {0.25f, 0.5f, 0.75f}; // hitboxCenter
 					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
 					break ;
-				case CORNERS::PM | CORNERS::PP:
+				case corners::pm | corners::pp:
 					hitbox[0] = {0.75f, 0.5f, 0.75f};
 					hitbox[1] = {0.25f, 0.5f, 0.25f};
 					break ;
-				case CORNERS::MM | CORNERS::PM:
+				case corners::mm | corners::pm:
 					hitbox[0] = {0.5f, 0.25f, 0.75f};
 					hitbox[1] = {0.5f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::MP | CORNERS::PP:
+				case corners::mp | corners::pp:
 					hitbox[0] = {0.5f, 0.75f, 0.75f};
 					hitbox[1] = {0.5f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::MM:
+				case corners::mm:
 					hitbox[0] = {0.25f, 0.25f, 0.75f};
 					hitbox[1] = {0.25f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::MP:
+				case corners::mp:
 					hitbox[0] = {0.25f, 0.75f, 0.75f};
 					hitbox[1] = {0.25f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::PM:
+				case corners::pm:
 					hitbox[0] = {0.75f, 0.25f, 0.75f};
 					hitbox[1] = {0.25f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::PP:
+				case corners::pp:
 					hitbox[0] = {0.75f, 0.75f, 0.75f};
 					hitbox[1] = {0.25f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::MM | CORNERS::MP | CORNERS::PM:
-					if (orientation == face_dir::PLUSX) {
+				case corners::mm | corners::mp | corners::pm:
+					if (orientation == face_dir::plus_x) {
 						hitbox[0] = {0.25f, 0.5f, 0.75f};
 						hitbox[1] = {0.25f, 0.5f, 0.25f};
 					} else {
@@ -460,8 +500,8 @@ struct StairsBottom : Block {
 						hitbox[1] = {0.5f, 0.25f, 0.25f};
 					}
 					break ;
-				case CORNERS::MM | CORNERS::MP | CORNERS::PP:
-					if (orientation == face_dir::PLUSX) {
+				case corners::mm | corners::mp | corners::pp:
+					if (orientation == face_dir::plus_x) {
 						hitbox[0] = {0.25f, 0.5f, 0.75f};
 						hitbox[1] = {0.25f, 0.5f, 0.25f};
 					} else {
@@ -469,8 +509,8 @@ struct StairsBottom : Block {
 						hitbox[1] = {0.5f, 0.25f, 0.25f};
 					}
 					break ;
-				case CORNERS::PM | CORNERS::PP | CORNERS::MM:
-					if (orientation == face_dir::MINUSX) {
+				case corners::pm | corners::pp | corners::mm:
+					if (orientation == face_dir::minus_x) {
 						hitbox[0] = {0.75f, 0.5f, 0.75f};
 						hitbox[1] = {0.25f, 0.5f, 0.25f};
 					} else {
@@ -478,8 +518,8 @@ struct StairsBottom : Block {
 						hitbox[1] = {0.5f, 0.25f, 0.25f};
 					}
 					break ;
-				case CORNERS::PM | CORNERS::PP | CORNERS::MP:
-					if (orientation == face_dir::MINUSX) {
+				case corners::pm | corners::pp | corners::mp:
+					if (orientation == face_dir::minus_x) {
 						hitbox[0] = {0.75f, 0.5f, 0.75f};
 						hitbox[1] = {0.25f, 0.5f, 0.25f};
 					} else {
@@ -504,45 +544,45 @@ struct StairsTop : Block {
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 0.75f};
 			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = GEOMETRY::STAIRS_TOP;
+			geometry = geometry::stairs_top;
 			transparent = true;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
 			switch (corners) {
-				case CORNERS::MM | CORNERS::MP:
+				case corners::mm | corners::mp:
 					hitbox[0] = {0.25f, 0.5f, 0.25f}; // hitboxCenter
 					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
 					break ;
-				case CORNERS::PM | CORNERS::PP:
+				case corners::pm | corners::pp:
 					hitbox[0] = {0.75f, 0.5f, 0.25f};
 					hitbox[1] = {0.25f, 0.5f, 0.25f};
 					break ;
-				case CORNERS::MM | CORNERS::PM:
+				case corners::mm | corners::pm:
 					hitbox[0] = {0.5f, 0.25f, 0.25f};
 					hitbox[1] = {0.5f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::MP | CORNERS::PP:
+				case corners::mp | corners::pp:
 					hitbox[0] = {0.5f, 0.75f, 0.25f};
 					hitbox[1] = {0.5f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::MM:
+				case corners::mm:
 					hitbox[0] = {0.25f, 0.25f, 0.25f};
 					hitbox[1] = {0.25f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::MP:
+				case corners::mp:
 					hitbox[0] = {0.25f, 0.75f, 0.25f};
 					hitbox[1] = {0.25f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::PM:
+				case corners::pm:
 					hitbox[0] = {0.75f, 0.25f, 0.25f};
 					hitbox[1] = {0.25f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::PP:
+				case corners::pp:
 					hitbox[0] = {0.75f, 0.75f, 0.25f};
 					hitbox[1] = {0.25f, 0.25f, 0.25f};
 					break ;
-				case CORNERS::MM | CORNERS::MP | CORNERS::PM:
-					if (orientation == face_dir::PLUSX) {
+				case corners::mm | corners::mp | corners::pm:
+					if (orientation == face_dir::plus_x) {
 						hitbox[0] = {0.25f, 0.5f, 0.25f};
 						hitbox[1] = {0.25f, 0.5f, 0.25f};
 					} else {
@@ -550,8 +590,8 @@ struct StairsTop : Block {
 						hitbox[1] = {0.5f, 0.25f, 0.25f};
 					}
 					break ;
-				case CORNERS::MM | CORNERS::MP | CORNERS::PP:
-					if (orientation == face_dir::PLUSX) {
+				case corners::mm | corners::mp | corners::pp:
+					if (orientation == face_dir::plus_x) {
 						hitbox[0] = {0.25f, 0.5f, 0.25f};
 						hitbox[1] = {0.25f, 0.5f, 0.25f};
 					} else {
@@ -559,8 +599,8 @@ struct StairsTop : Block {
 						hitbox[1] = {0.5f, 0.25f, 0.25f};
 					}
 					break ;
-				case CORNERS::PM | CORNERS::PP | CORNERS::MM:
-					if (orientation == face_dir::MINUSX) {
+				case corners::pm | corners::pp | corners::mm:
+					if (orientation == face_dir::minus_x) {
 						hitbox[0] = {0.75f, 0.5f, 0.25f};
 						hitbox[1] = {0.25f, 0.5f, 0.25f};
 					} else {
@@ -568,8 +608,8 @@ struct StairsTop : Block {
 						hitbox[1] = {0.5f, 0.25f, 0.25f};
 					}
 					break ;
-				case CORNERS::PM | CORNERS::PP | CORNERS::MP:
-					if (orientation == face_dir::MINUSX) {
+				case corners::pm | corners::pp | corners::mp:
+					if (orientation == face_dir::minus_x) {
 						hitbox[0] = {0.75f, 0.5f, 0.25f};
 						hitbox[1] = {0.25f, 0.5f, 0.25f};
 					} else {
@@ -591,36 +631,36 @@ struct Fence : Block {
 			collisionHitbox = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
-			geometry = GEOMETRY::FENCE;
+			geometry = geometry::fence;
 			transparent = true;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
 			(void)orientation;
 			hitbox[0] = {0.5f, 0.5f, 0.5f};
 			hitbox[1] = {0.125f, 0.125f, 0.5f};
-			switch (bitfield & (FENCE::MX | FENCE::PX)) {
-				case FENCE::MX:
+			switch (bitfield & (fence::mx | fence::px)) {
+				case fence::mx:
 					hitbox[0].x = 0.375f;
 					hitbox[1].x = 0.375f;
 					break ;
-				case FENCE::PX:
+				case fence::px:
 					hitbox[0].x = 1 - 0.375f;
 					hitbox[1].x = 0.375f;
 					break ;
-				case FENCE::MX | FENCE::PX:
+				case fence::mx | fence::px:
 					hitbox[1].x = 0.5f;
 					break ;
 			}
-			switch (bitfield & (FENCE::MY | FENCE::PY)) {
-				case FENCE::MY:
+			switch (bitfield & (fence::my | fence::py)) {
+				case fence::my:
 					hitbox[0].y = 0.375f;
 					hitbox[1].y = 0.375f;
 					break ;
-				case FENCE::PY:
+				case fence::py:
 					hitbox[0].y = 1 - 0.375f;
 					hitbox[1].y = 0.375f;
 					break ;
-				case FENCE::MY | FENCE::PY:
+				case fence::my | fence::py:
 					hitbox[1].y = 0.5f;
 					break ;
 			}
@@ -639,47 +679,47 @@ struct Door : Block {
 			oriented = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
-			geometry = GEOMETRY::DOOR;
+			geometry = geometry::door;
 			transparent = true;
 			redstoneComponant = true;
 			item3D = false;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
-			bool open = !!(bitfield & DOOR::OPEN) ^ !!((bitfield << 12) & REDSTONE::POWERED);
+			bool open = !!(bitfield & door::open) ^ !!((bitfield << 12) & mask::redstone::powered);
 			switch (orientation) {
-				case face_dir::MINUSX:
+				case face_dir::minus_x:
 					if (!open) {
 						hitbox[0] = {0.90625f, 0.5f, 0.5f};
 						hitbox[1] = {0.09375f, 0.5f, 0.5f};
 					} else {
-						hitbox[0] = {0.5f, (bitfield & DOOR::RIGHT_HINGE) ? 0.09375f : 0.90625f, 0.5f};
+						hitbox[0] = {0.5f, (bitfield & door::right_hinge) ? 0.09375f : 0.90625f, 0.5f};
 						hitbox[1] = {0.5f, 0.09375f, 0.5f};
 					}
 					break ;
-				case face_dir::PLUSX:
+				case face_dir::plus_x:
 					if (!open) {
 						hitbox[0] = {0.09375f, 0.5f, 0.5f};
 						hitbox[1] = {0.09375f, 0.5f, 0.5f};
 					} else {
-						hitbox[0] = {0.5f, (bitfield & DOOR::RIGHT_HINGE) ? 0.90625f : 0.09375f, 0.5f};
+						hitbox[0] = {0.5f, (bitfield & door::right_hinge) ? 0.90625f : 0.09375f, 0.5f};
 						hitbox[1] = {0.5f, 0.09375f, 0.5f};
 					}
 					break ;
-				case face_dir::MINUSY:
+				case face_dir::minus_y:
 					if (!open) {
 						hitbox[0] = {0.5f, 0.90625f, 0.5f};
 						hitbox[1] = {0.5f, 0.09375f, 0.5f};
 					} else {
-						hitbox[0] = {(bitfield & DOOR::RIGHT_HINGE) ? 0.90625f : 0.09375f, 0.5f, 0.5f};
+						hitbox[0] = {(bitfield & door::right_hinge) ? 0.90625f : 0.09375f, 0.5f, 0.5f};
 						hitbox[1] = {0.09375f, 0.5f, 0.5f};
 					}
 					break ;
-				case face_dir::PLUSY:
+				case face_dir::plus_y:
 					if (!open) {
 						hitbox[0] = {0.5f, 0.09375f, 0.5f};
 						hitbox[1] = {0.5f, 0.09375f, 0.5f};
 					} else {
-						hitbox[0] = {(bitfield & DOOR::RIGHT_HINGE) ? 0.09375f : 0.90625f, 0.5f, 0.5f};
+						hitbox[0] = {(bitfield & door::right_hinge) ? 0.09375f : 0.90625f, 0.5f, 0.5f};
 						hitbox[1] = {0.09375f, 0.5f, 0.5f};
 					}
 					break ;
@@ -698,30 +738,30 @@ struct Trapdoor : Block {
 			oriented = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
-			geometry = GEOMETRY::TRAPDOOR;
+			geometry = geometry::trapdoor;
 			transparent = true;
 			redstoneComponant = true;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
-			bool open = !!(bitfield & DOOR::OPEN) ^ !!((bitfield << 12) & REDSTONE::POWERED);
+			bool open = !!(bitfield & door::open) ^ !!((bitfield << 12) & mask::redstone::powered);
 			if (!open) {
-				hitbox[0] = {0.5f, 0.5f, (bitfield & DOOR::UPPER_HALF) ? 0.90625f : 0.09375f};
+				hitbox[0] = {0.5f, 0.5f, (bitfield & door::upper_half) ? 0.90625f : 0.09375f};
 				hitbox[1] = {0.5f, 0.5f, 0.09375f};
 			} else {
 				switch (orientation) {
-					case face_dir::MINUSX:
+					case face_dir::minus_x:
 						hitbox[0] = {0.90625f, 0.5f, 0.5f};
 						hitbox[1] = {0.09375f, 0.5f, 0.5f};
 						break ;
-					case face_dir::PLUSX:
+					case face_dir::plus_x:
 						hitbox[0] = {0.09375f, 0.5f, 0.5f};
 						hitbox[1] = {0.09375f, 0.5f, 0.5f};
 						break ;
-					case face_dir::MINUSY:
+					case face_dir::minus_y:
 						hitbox[0] = {0.5f, 0.90625f, 0.5f};
 						hitbox[1] = {0.5f, 0.09375f, 0.5f};
 						break ;
-					case face_dir::PLUSY:
+					case face_dir::plus_y:
 						hitbox[0] = {0.5f, 0.09375f, 0.5f};
 						hitbox[1] = {0.5f, 0.09375f, 0.5f};
 						break ;
@@ -740,7 +780,7 @@ struct Crop : Block {
 			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
-			geometry = GEOMETRY::CROP;
+			geometry = geometry::crop;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
@@ -759,47 +799,47 @@ struct Button : Block {
 			oriented = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
-			geometry = GEOMETRY::BUTTON;
+			geometry = geometry::button;
 			transparent = true;
 			item3D = true;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
-			hitbox[0] = {0.5f, 0.5f, 1.5f * ONE16TH};
-			hitbox[1] = {0,    0,    1.5f * ONE16TH};
+			hitbox[0] = {0.5f, 0.5f, 1.5f * one16th};
+			hitbox[1] = {0,    0,    1.5f * one16th};
 			switch (bitfield & 0x3) {
-				case PLACEMENT::WALL:
+				case placement::wall:
 					switch (orientation) {
-						case face_dir::MINUSX:
-							hitbox[0] = {14.5f * ONE16TH, 0.5f,           0.5f};
-							hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
+						case face_dir::minus_x:
+							hitbox[0] = {14.5f * one16th, 0.5f,           0.5f};
+							hitbox[1] = { 1.5f * one16th, 3.0f * one16th, 4.0f * one16th};
 							break ;
-						case face_dir::PLUSX:
-							hitbox[0] = { 1.5f * ONE16TH, 0.5f,           0.5f};
-							hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
+						case face_dir::plus_x:
+							hitbox[0] = { 1.5f * one16th, 0.5f,           0.5f};
+							hitbox[1] = { 1.5f * one16th, 3.0f * one16th, 4.0f * one16th};
 							break ;
-						case face_dir::MINUSY:
-							hitbox[0] = {0.5f,           14.5f * ONE16TH, 0.5f};
-							hitbox[1] = {3.0f * ONE16TH,  1.5f * ONE16TH, 4.0f * ONE16TH};
+						case face_dir::minus_y:
+							hitbox[0] = {0.5f,           14.5f * one16th, 0.5f};
+							hitbox[1] = {3.0f * one16th,  1.5f * one16th, 4.0f * one16th};
 							break ;
-						case face_dir::PLUSY:
-							hitbox[0] = {0.5f,           1.5f * ONE16TH, 0.5f};
-							hitbox[1] = {3.0f * ONE16TH, 1.5f * ONE16TH, 4.0f * ONE16TH};
+						case face_dir::plus_y:
+							hitbox[0] = {0.5f,           1.5f * one16th, 0.5f};
+							hitbox[1] = {3.0f * one16th, 1.5f * one16th, 4.0f * one16th};
 							break ;
 					}
 					break ;
-				case PLACEMENT::FLOOR:
-				case PLACEMENT::CEILING:
-					hitbox[0].z = ((bitfield & 0x3) == PLACEMENT::FLOOR) ? 1.5f * ONE16TH : 14.5f * ONE16TH;
+				case placement::floor:
+				case placement::ceiling:
+					hitbox[0].z = ((bitfield & 0x3) == placement::floor) ? 1.5f * one16th : 14.5f * one16th;
 					switch (orientation) {
-						case face_dir::MINUSX:
-						case face_dir::PLUSX:
-							hitbox[1].x = 4.0f * ONE16TH;
-							hitbox[1].y = 3.0F * ONE16TH;
+						case face_dir::minus_x:
+						case face_dir::plus_x:
+							hitbox[1].x = 4.0f * one16th;
+							hitbox[1].y = 3.0F * one16th;
 							break ;
-						case face_dir::MINUSY:
-						case face_dir::PLUSY:
-							hitbox[1].x = 3.0f * ONE16TH;
-							hitbox[1].y = 4.0f * ONE16TH;
+						case face_dir::minus_y:
+						case face_dir::plus_y:
+							hitbox[1].x = 3.0f * one16th;
+							hitbox[1].y = 4.0f * one16th;
 							break ;
 					}
 					break ;
@@ -820,7 +860,7 @@ struct Air : Block {
 			name = "AIR";
 			blast_resistance = 0.0f;
 			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			transparent = true;
 		}
 };
@@ -838,18 +878,18 @@ struct GrassBlock : Cube {
 	public:
 		GrassBlock() {
 			name = "GRASS_BLOCK";
-			mined = blocks::DIRT;
+			mined = blocks::dirt;
 			blast_resistance = 0.6f;
 			byHand = true;
-			needed_tool = blocks::WOODEN_SHOVEL;
+			needed_tool = blocks::wooden_shovel;
 			hardness = 0.6f;
 			textureY = 1;
 		}
-		virtual int texX( face_dir dir, int value ) const {
+		virtual int texX( int dir, int value ) const {
 			(void)value;
-			if (dir == face_dir::PLUSZ) {
+			if (dir == face_dir::plus_z) {
 				return (1);
-			} else if (dir == face_dir::MINUSZ) {
+			} else if (dir == face_dir::minus_z) {
 				return (4);
 			}
 			return (0);
@@ -860,29 +900,29 @@ struct OakLog : Cube {
 	public:
 		OakLog() {
 			name = "OAK_LOG";
-			mined = blocks::OAK_LOG;
+			mined = blocks::oak_log;
 			isFuel = true;
 			fuel_time = 15;
 			isComposant = true;
-			getProduction = blocks::CHARCOAL;
+			getProduction = blocks::charcoal;
 			blast_resistance = 2.0f;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
 			textureY = 2;
 		}
-		virtual int texX( face_dir dir, int value ) const {
-			int axis = (value >> blocks::ORIENTATION_OFFSET) & 0x7;
+		virtual int texX( int dir, int value ) const {
+			int axis = (value >> offset::blocks::orientation) & 0x7;
 			switch (dir) {
-				case face_dir::MINUSZ:
-				case face_dir::PLUSZ:
-					return ((axis == face_dir::PLUSZ) + 2 * (axis == face_dir::PLUSX));
-				case face_dir::MINUSX:
-				case face_dir::PLUSX:
-					return ((axis == face_dir::PLUSX) + 2 * (axis == face_dir::PLUSY));
-				case face_dir::MINUSY:
-				case face_dir::PLUSY:
-					return ((axis == face_dir::PLUSY) + 2 * (axis == face_dir::PLUSX));
+				case face_dir::minus_z:
+				case face_dir::plus_z:
+					return ((axis == face_dir::plus_z) + 2 * (axis == face_dir::plus_x));
+				case face_dir::minus_x:
+				case face_dir::plus_x:
+					return ((axis == face_dir::plus_x) + 2 * (axis == face_dir::plus_y));
+				case face_dir::minus_y:
+				case face_dir::plus_y:
+					return ((axis == face_dir::plus_y) + 2 * (axis == face_dir::plus_x));
 			}
 			return (0);
 		}
@@ -893,7 +933,7 @@ struct Cactus : Cube {
 	public:
 		Cactus() {
 			name = "CACTUS";
-			mined = blocks::CACTUS;
+			mined = blocks::cactus;
 			blast_resistance = 0.4f;
 			collisionHitbox_1x1x1 = false;
 			byHand = true;
@@ -901,11 +941,11 @@ struct Cactus : Cube {
 			transparent = true;
 			textureY = 3;
 		}
-		virtual int texX( face_dir dir, int value ) const {
+		virtual int texX( int dir, int value ) const {
 			(void)value;
-			if (dir == face_dir::PLUSZ) {
+			if (dir == face_dir::plus_z) {
 				return (1);
-			} else if (dir == face_dir::MINUSZ) {
+			} else if (dir == face_dir::minus_z) {
 				return (2);
 			}
 			return (0);
@@ -916,22 +956,22 @@ struct Farmland : Block {
 	public:
 		Farmland() {
 			name = "FARMLAND";
-			mined = blocks::DIRT;
+			mined = blocks::dirt;
 			blast_resistance = 0.6f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
 			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
-			geometry = GEOMETRY::FARMLAND;
+			geometry = geometry::farmland;
 			byHand = true;
-			needed_tool = blocks::WOODEN_SHOVEL;
+			needed_tool = blocks::wooden_shovel;
 			hardness = 0.6f;
 			textureY = 1;
 		}
-		virtual int texX( face_dir dir, int value ) const {
-			if (dir == face_dir::PLUSZ) {
-				return (2 + !(value & FARMLAND::WET));
+		virtual int texX( int dir, int value ) const {
+			if (dir == face_dir::plus_z) {
+				return (2 + !(value & mask::farmland::wet));
 			}
 			return (4);
 		}
@@ -942,22 +982,22 @@ struct DirtPath : Farmland {
 	public:
 		DirtPath() {
 			name = "DIRT PATH";
-			mined = blocks::DIRT;
+			mined = blocks::dirt;
 			blast_resistance = 0.65f;
 			hardness = 0.65f;
 		}
-		virtual int texX( face_dir dir, int value ) const {
+		virtual int texX( int dir, int value ) const {
 			(void)value;
-			if (dir == face_dir::PLUSZ) {
+			if (dir == face_dir::plus_z) {
 				return (1);
-			} else if (dir == face_dir::MINUSZ) {
+			} else if (dir == face_dir::minus_z) {
 				return (4);
 			}
 			return (0);
 		}
-		virtual int texY(  face_dir dir, int value ) const {
+		virtual int texY( int dir, int value ) const {
 			(void)value;
-			if (dir == face_dir::MINUSZ) {
+			if (dir == face_dir::minus_z) {
 				return (1);
 			}
 			return (5);
@@ -968,18 +1008,18 @@ struct TNT : Cube {
 	public:
 		TNT() {
 			name = "TNT";
-			mined = blocks::TNT;
+			mined = blocks::tnt;
 			blast_resistance = 0.0f;
 			byHand = true;
 			hardness = 0.0f;
 			redstoneComponant = true;
 			textureY = 6;
 		}
-		virtual int texX( face_dir dir, int value ) const {
+		virtual int texX( int dir, int value ) const {
 			(void)value;
-			if (dir == face_dir::PLUSZ) {
+			if (dir == face_dir::plus_z) {
 				return (1);
-			} else if (dir == face_dir::MINUSZ) {
+			} else if (dir == face_dir::minus_z) {
 				return (2);
 			}
 			return (0);
@@ -990,16 +1030,16 @@ struct Target : Cube {
 	public:
 		Target() {
 			name = "TARGET";
-			mined = blocks::TARGET;
+			mined = blocks::target;
 			blast_resistance = 0.5f;
 			byHand = true;
-			needed_tool = blocks::WOODEN_HOE;
+			needed_tool = blocks::wooden_hoe;
 			hardness = 0.5f;
 			textureY = 7;
 		}
-		virtual int texX( face_dir dir, int value ) const {
+		virtual int texX( int dir, int value ) const {
 			(void)value;
-			return (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ);
+			return (dir == face_dir::plus_z || dir == face_dir::minus_z);
 		}
 };
 
@@ -1007,21 +1047,21 @@ struct CraftingTable : Cube {
 	public:
 		CraftingTable() {
 			name = "CRAFTING_TABLE";
-			mined = blocks::CRAFTING_TABLE;
-			adventure_block = blocks::COAL_ORE;
+			mined = blocks::crafting_table;
+			adventure_block = blocks::coal_ore;
 			isFuel = true;
 			fuel_time = 15;
 			blast_resistance = 2.5f;
 			oriented = true;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 2.5f;
 			textureY = 8;
 		}
-		virtual int texX( face_dir dir, int value ) const {
-			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
+		virtual int texX( int dir, int value ) const {
+			if (dir == face_dir::plus_z || dir == face_dir::minus_z) {
 				return (1);
-			} else if (((value >> blocks::ORIENTATION_OFFSET) & 0x7) == dir) {
+			} else if (((value >> offset::blocks::orientation) & 0x7) == dir) {
 				return (2);
 			}
 			return (0);
@@ -1032,20 +1072,20 @@ struct Furnace : Cube {
 	public:
 		Furnace() {
 			name = "FURNACE";
-			mined = blocks::FURNACE;
-			adventure_block = blocks::COAL_ORE;
+			mined = blocks::furnace;
+			adventure_block = blocks::coal_ore;
 			blast_resistance = 3.5f;
 			oriented = true;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 3.5f;
 			textureY = 9;
 		}
-		virtual int texX( face_dir dir, int value ) const {
-			if (dir == face_dir::PLUSZ || dir == face_dir::MINUSZ) {
+		virtual int texX( int dir, int value ) const {
+			if (dir == face_dir::plus_z || dir == face_dir::minus_z) {
 				return (1);
-			} else if (((value >> blocks::ORIENTATION_OFFSET) & 0x7) == dir) {
-				return (2 + ((value >> REDSTONE::ACTIVATED_OFFSET) & 0x1));
+			} else if (((value >> offset::blocks::orientation) & 0x7) == dir) {
+				return (2 + ((value >> offset::redstone::activated) & 0x1));
 			}
 			return (0);
 		}
@@ -1055,12 +1095,12 @@ struct OakStairsBottom : StairsBottom {
 	public:
 		OakStairsBottom() {
 			name = "OAK_STAIRS_BOTTOM";
-			mined = blocks::OAK_STAIRS_BOTTOM;
+			mined = blocks::oak_stairs_bottom;
 			blast_resistance = 3.0f;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 10;
@@ -1071,12 +1111,12 @@ struct OakStairsTop : StairsTop {
 	public:
 		OakStairsTop() {
 			name = "OAK_STAIRS_TOP";
-			mined = blocks::OAK_STAIRS_BOTTOM;
+			mined = blocks::oak_stairs_bottom;
 			blast_resistance = 3.0f;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 10;
@@ -1087,27 +1127,27 @@ struct OakDoor : Door {
 	public:
 		OakDoor() {
 			name = "OAK_DOOR";
-			mined = blocks::OAK_DOOR;
+			mined = blocks::oak_door;
 			blast_resistance = 3.0f;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 3.0f;
 		}
 		// offset is bool half or 2 if item
-		virtual int texX( face_dir dir, int value ) const {
+		virtual int texX( int dir, int value ) const {
 			(void)dir;
-			return ((value == blocks::ITEM) ? 9 : 0);
+			return ((value == blocks::item) ? 9 : 0);
 		}
-		virtual int texY( face_dir dir, int value ) const {
+		virtual int texY( int dir, int value ) const {
 			switch (dir) {
-				case face_dir::PLUSZ:
+				case face_dir::plus_z:
 					return (10);
-				case face_dir::MINUSZ:
+				case face_dir::minus_z:
 					return (11);
 				default:
-					return ((value == blocks::ITEM) ? 14 : 11 - ((value >> blocks::BITFIELD_OFFSET) & DOOR::UPPER_HALF));
+					return ((value == blocks::item) ? 14 : 11 - ((value >> offset::blocks::bitfield) & door::upper_half));
 			}
 		}
 };
@@ -1116,12 +1156,12 @@ struct OakTrapdoor : Trapdoor {
 	public:
 		OakTrapdoor() {
 			name = "OAK_TRAPDOOR";
-			mined = blocks::OAK_TRAPDOOR;
+			mined = blocks::oak_trapdoor;
 			blast_resistance = 3.0f;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 3.0f;
 			textureX = 2;
 			textureY = 11;
@@ -1132,12 +1172,12 @@ struct StoneStairsBottom : StairsBottom {
 	public:
 		StoneStairsBottom() {
 			name = "STONE_STAIRS_BOTTOM";
-			mined = blocks::STONE_STAIRS_BOTTOM;
+			mined = blocks::stone_stairs_bottom;
 			isComposant = true;
-			getProduction = blocks::SMOOTH_STONE_STAIRS_BOTTOM;
+			getProduction = blocks::smooth_stone_stairs_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 3;
@@ -1148,10 +1188,10 @@ struct StoneStairsTop : StairsTop {
 	public:
 		StoneStairsTop() {
 			name = "STONE_STAIRS_TOP";
-			mined = blocks::STONE_STAIRS_BOTTOM;
+			mined = blocks::stone_stairs_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 3;
@@ -1162,10 +1202,10 @@ struct SmoothStoneStairsBottom : StairsBottom {
 	public:
 		SmoothStoneStairsBottom() {
 			name = "SMOOTH_STONE_STAIRS_BOTTOM";
-			mined = blocks::SMOOTH_STONE_STAIRS_BOTTOM;
+			mined = blocks::smooth_stone_stairs_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 2;
@@ -1176,10 +1216,10 @@ struct SmoothStoneStairsTop : StairsTop {
 	public:
 		SmoothStoneStairsTop() {
 			name = "SMOOTH_STONE_STAIRS_TOP";
-			mined = blocks::SMOOTH_STONE_STAIRS_BOTTOM;
+			mined = blocks::smooth_stone_stairs_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 2;
@@ -1190,12 +1230,12 @@ struct CobbleStoneStairsBottom : StairsBottom {
 	public:
 		CobbleStoneStairsBottom() {
 			name = "COBBLESTONE_STAIRS_BOTTOM";
-			mined = blocks::COBBLESTONE_STAIRS_BOTTOM;
+			mined = blocks::cobblestone_stairs_bottom;
 			isComposant = true;
-			getProduction = blocks::STONE_STAIRS_BOTTOM;
+			getProduction = blocks::stone_stairs_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 4;
@@ -1206,10 +1246,10 @@ struct CobbleStoneStairsTop : StairsTop {
 	public:
 		CobbleStoneStairsTop() {
 			name = "COBBLESTONE_STAIRS_TOP";
-			mined = blocks::COBBLESTONE_STAIRS_BOTTOM;
+			mined = blocks::cobblestone_stairs_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 4;
@@ -1220,10 +1260,10 @@ struct StoneBricksStairsBottom : StairsBottom {
 	public:
 		StoneBricksStairsBottom() {
 			name = "STONE_BRICKS_STAIRS_BOTTOM";
-			mined = blocks::STONE_BRICKS_STAIRS_BOTTOM;
+			mined = blocks::stone_bricks_stairs_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 5;
@@ -1234,10 +1274,10 @@ struct StoneBricksStairsTop : StairsTop {
 	public:
 		StoneBricksStairsTop() {
 			name = "STONE_BRICKS_STAIRS_TOP";
-			mined = blocks::STONE_BRICKS_STAIRS_BOTTOM;
+			mined = blocks::stone_bricks_stairs_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 5;
@@ -1248,8 +1288,8 @@ struct Lever : Block {
 	public:
 		Lever() {
 			name = "LEVER";
-			mined = blocks::LEVER;
-			adventure_block = blocks::REDSTONE_ORE;
+			mined = blocks::lever;
+			adventure_block = blocks::redstone_ore;
 			blast_resistance = 0.5f;
 			collisionHitbox_1x1x1 = false;
 			hasHitbox = true;
@@ -1258,7 +1298,7 @@ struct Lever : Block {
 			oriented = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
-			geometry = GEOMETRY::LEVER;
+			geometry = geometry::lever;
 			byHand = true;
 			hardness = 0.5f;
 			transparent = true;
@@ -1267,42 +1307,42 @@ struct Lever : Block {
 			textureY = 10;
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
-			hitbox[0] = {0.5f, 0.5f, 1.5f * ONE16TH};
-			hitbox[1] = {0,    0,    1.5f * ONE16TH};
+			hitbox[0] = {0.5f, 0.5f, 1.5f * one16th};
+			hitbox[1] = {0,    0,    1.5f * one16th};
 			switch (bitfield & 0x3) {
-				case PLACEMENT::WALL:
+				case placement::wall:
 					switch (orientation) {
-						case face_dir::MINUSX:
-							hitbox[0] = {14.5f * ONE16TH, 0.5f,           0.5f};
-							hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
+						case face_dir::minus_x:
+							hitbox[0] = {14.5f * one16th, 0.5f,           0.5f};
+							hitbox[1] = { 1.5f * one16th, 3.0f * one16th, 4.0f * one16th};
 							break ;
-						case face_dir::PLUSX:
-							hitbox[0] = { 1.5f * ONE16TH, 0.5f,           0.5f};
-							hitbox[1] = { 1.5f * ONE16TH, 3.0f * ONE16TH, 4.0f * ONE16TH};
+						case face_dir::plus_x:
+							hitbox[0] = { 1.5f * one16th, 0.5f,           0.5f};
+							hitbox[1] = { 1.5f * one16th, 3.0f * one16th, 4.0f * one16th};
 							break ;
-						case face_dir::MINUSY:
-							hitbox[0] = {0.5f,           14.5f * ONE16TH, 0.5f};
-							hitbox[1] = {3.0f * ONE16TH,  1.5f * ONE16TH, 4.0f * ONE16TH};
+						case face_dir::minus_y:
+							hitbox[0] = {0.5f,           14.5f * one16th, 0.5f};
+							hitbox[1] = {3.0f * one16th,  1.5f * one16th, 4.0f * one16th};
 							break ;
-						case face_dir::PLUSY:
-							hitbox[0] = {0.5f,           1.5f * ONE16TH, 0.5f};
-							hitbox[1] = {3.0f * ONE16TH, 1.5f * ONE16TH, 4.0f * ONE16TH};
+						case face_dir::plus_y:
+							hitbox[0] = {0.5f,           1.5f * one16th, 0.5f};
+							hitbox[1] = {3.0f * one16th, 1.5f * one16th, 4.0f * one16th};
 							break ;
 					}
 					break ;
-				case PLACEMENT::FLOOR:
-				case PLACEMENT::CEILING:
-					hitbox[0].z = ((bitfield & 0x3) == PLACEMENT::FLOOR) ? 1.5f * ONE16TH : 14.5f * ONE16TH;
+				case placement::floor:
+				case placement::ceiling:
+					hitbox[0].z = ((bitfield & 0x3) == placement::floor) ? 1.5f * one16th : 14.5f * one16th;
 					switch (orientation) {
-						case face_dir::MINUSX:
-						case face_dir::PLUSX:
-							hitbox[1].x = 4.0f * ONE16TH;
-							hitbox[1].y = 3.0F * ONE16TH;
+						case face_dir::minus_x:
+						case face_dir::plus_x:
+							hitbox[1].x = 4.0f * one16th;
+							hitbox[1].y = 3.0F * one16th;
 							break ;
-						case face_dir::MINUSY:
-						case face_dir::PLUSY:
-							hitbox[1].x = 3.0f * ONE16TH;
-							hitbox[1].y = 4.0f * ONE16TH;
+						case face_dir::minus_y:
+						case face_dir::plus_y:
+							hitbox[1].x = 3.0f * one16th;
+							hitbox[1].y = 4.0f * one16th;
 							break ;
 					}
 					break ;
@@ -1315,15 +1355,15 @@ struct OakSign : Block {
 	public:
 		OakSign() {
 			name = "OAK_SIGN";
-			mined = blocks::OAK_SIGN;
+			mined = blocks::oak_sign;
 			blast_resistance = 1.0f;
 			collisionHitbox_1x1x1 = false;
 			hasHitbox = true;
 			hasOrientedHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 1.0f;
 			transparent = true;
 			item3D = false;
@@ -1333,21 +1373,21 @@ struct OakSign : Block {
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
 			(void)bitfield;
 			switch (orientation) {
-				case face_dir::MINUSX:
-					hitbox[0] = {1.75f * ONE16TH, 0.5f, 0.5f};
-					hitbox[1] = {1.75f * ONE16TH, 0.5f, 0.25f};
+				case face_dir::minus_x:
+					hitbox[0] = {1.75f * one16th, 0.5f, 0.5f};
+					hitbox[1] = {1.75f * one16th, 0.5f, 0.25f};
 					break ;
-				case face_dir::PLUSX:
-					hitbox[0] = {14.25f * ONE16TH, 0.5f, 0.5f};
-					hitbox[1] = {1.75f * ONE16TH, 0.5f, 0.25f};
+				case face_dir::plus_x:
+					hitbox[0] = {14.25f * one16th, 0.5f, 0.5f};
+					hitbox[1] = {1.75f * one16th, 0.5f, 0.25f};
 					break ;
-				case face_dir::MINUSY:
-					hitbox[0] = {0.5f, 1.75f * ONE16TH, 0.5f};
-					hitbox[1] = {0.5f, 1.75f * ONE16TH, 0.25f};
+				case face_dir::minus_y:
+					hitbox[0] = {0.5f, 1.75f * one16th, 0.5f};
+					hitbox[1] = {0.5f, 1.75f * one16th, 0.25f};
 					break ;
-				case face_dir::PLUSY:
-					hitbox[0] = {0.5f, 14.25f * ONE16TH, 0.5f};
-					hitbox[1] = {0.5f, 1.75f * ONE16TH, 0.25f};
+				case face_dir::plus_y:
+					hitbox[0] = {0.5f, 14.25f * one16th, 0.5f};
+					hitbox[1] = {0.5f, 1.75f * one16th, 0.25f};
 					break ;
 			}
 		}
@@ -1368,10 +1408,10 @@ struct Dirt : Cube {
 	public:
 		Dirt() {
 			name = "DIRT";
-			mined = blocks::DIRT;
+			mined = blocks::dirt;
 			blast_resistance = 0.5f;
 			byHand = true;
-			needed_tool = blocks::WOODEN_SHOVEL;
+			needed_tool = blocks::wooden_shovel;
 			hardness = 0.5f;
 			textureX = 4;
 			textureY = 1;
@@ -1382,10 +1422,10 @@ struct SmoothStone : Cube {
 	public:
 		SmoothStone() {
 			name = "SMOOTH_STONE";
-			mined = blocks::SMOOTH_STONE;
+			mined = blocks::smooth_stone;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 2;
@@ -1396,12 +1436,12 @@ struct Stone : Cube {
 	public:
 		Stone() {
 			name = "STONE";
-			mined = blocks::COBBLESTONE;
+			mined = blocks::cobblestone;
 			isComposant = true;
-			getProduction = blocks::SMOOTH_STONE;
+			getProduction = blocks::smooth_stone;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 3;
@@ -1412,12 +1452,12 @@ struct Cobblestone : Cube {
 	public:
 		Cobblestone() {
 			name = "COBBLESTONE";
-			mined = blocks::COBBLESTONE;
+			mined = blocks::cobblestone;
 			isComposant = true;
-			getProduction = blocks::STONE;
+			getProduction = blocks::stone;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 4;
@@ -1428,12 +1468,12 @@ struct StoneBrick : Cube {
 	public:
 		StoneBrick() {
 			name = "STONE_BRICK";
-			mined = blocks::STONE_BRICKS;
+			mined = blocks::stone_bricks;
 			isComposant = true;
-			getProduction = blocks::CRACKED_STONE_BRICKS;
+			getProduction = blocks::cracked_stone_bricks;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 5;
@@ -1444,10 +1484,10 @@ struct CrackedStoneBrick : Cube {
 	public:
 		CrackedStoneBrick() {
 			name = "CRACKED_STONE_BRICK";
-			mined = blocks::CRACKED_STONE_BRICKS;
+			mined = blocks::cracked_stone_bricks;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 6;
@@ -1458,12 +1498,12 @@ struct Sand : Cube {
 	public:
 		Sand() {
 			name = "SAND";
-			mined = blocks::SAND;
+			mined = blocks::sand;
 			isComposant = true;
-			getProduction = blocks::GLASS;
+			getProduction = blocks::glass;
 			blast_resistance = 0.5f;
 			byHand = true;
-			needed_tool = blocks::WOODEN_SHOVEL;
+			needed_tool = blocks::wooden_shovel;
 			hardness = 0.5f;
 			textureX = 4;
 			textureY = 7;
@@ -1474,10 +1514,10 @@ struct Gravel : Cube {
 	public:
 		Gravel() {
 			name = "GRAVEL";
-			mined = blocks::GRAVEL;
+			mined = blocks::gravel;
 			blast_resistance = 0.6f;
 			byHand = true;
-			needed_tool = blocks::WOODEN_SHOVEL;
+			needed_tool = blocks::wooden_shovel;
 			hardness = 0.6f;
 			textureX = 4;
 			textureY = 8;
@@ -1501,12 +1541,12 @@ struct OakPlanks : Cube {
 	public:
 		OakPlanks() {
 			name = "OAK_PLANKS";
-			mined = blocks::OAK_PLANKS;
+			mined = blocks::oak_planks;
 			isFuel = true;
 			fuel_time = 15;
 			blast_resistance = 3.0f;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 10;
@@ -1519,7 +1559,7 @@ struct Glass : Block {
 			name = "GLASS";
 			blast_resistance = 0.3f;
 			hardness = 0.3f;
-			geometry = GEOMETRY::GLASS;
+			geometry = geometry::glass;
 			transparent = true;
 			textureX = 4;
 			textureY = 11;
@@ -1538,20 +1578,20 @@ struct GlassPane : Block {
 			collisionHitbox = true;
 			orientedCollisionHitbox = true;
 			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
-			geometry = GEOMETRY::GLASS_PANE;
+			geometry = geometry::glass_pane;
 			hardness = 0.3f;
 			transparent = true;
 			item3D = false;
 			textureY = 11;
 		}
-		virtual int texX( face_dir dir, int offset ) const {
+		virtual int texX( int dir, int offset ) const {
 			(void)dir;
 			switch (offset) {
-				case FENCE::BASE:
+				case fence::base:
 					return (4);
-				case FENCE::ARM:
+				case fence::arm:
 					return (5);
-				case FENCE::ARM_END:
+				case fence::arm_end:
 					return (3);
 			}
 			return (4);
@@ -1560,29 +1600,29 @@ struct GlassPane : Block {
 			(void)orientation;
 			hitbox[0] = {0.5f, 0.5f, 0.5f};
 			hitbox[1] = {0.0625, 0.0625, 0.5f};
-			switch (bitfield & (FENCE::MX | FENCE::PX)) {
-				case FENCE::MX:
+			switch (bitfield & (fence::mx | fence::px)) {
+				case fence::mx:
 					hitbox[0].x = 0.28125f;
 					hitbox[1].x = 0.28125f;
 					break ;
-				case FENCE::PX:
+				case fence::px:
 					hitbox[0].x = 1 - 0.28125f;
 					hitbox[1].x = 0.28125f;
 					break ;
-				case FENCE::MX | FENCE::PX:
+				case fence::mx | fence::px:
 					hitbox[1].x = 0.5f;
 					break ;
 			}
-			switch (bitfield & (FENCE::MY | FENCE::PY)) {
-				case FENCE::MY:
+			switch (bitfield & (fence::my | fence::py)) {
+				case fence::my:
 					hitbox[0].y = 0.28125f;
 					hitbox[1].y = 0.28125f;
 					break ;
-				case FENCE::PY:
+				case fence::py:
 					hitbox[0].y = 1 - 0.28125f;
 					hitbox[1].y = 0.28125f;
 					break ;
-				case FENCE::MY | FENCE::PY:
+				case fence::my | fence::py:
 					hitbox[1].y = 0.5f;
 					break ;
 			}
@@ -1594,7 +1634,7 @@ struct RedstoneLamp : Cube {
 	public:
 		RedstoneLamp() {
 			name = "REDSTONE_LAMP";
-			mined = blocks::REDSTONE_LAMP;
+			mined = blocks::redstone_lamp;
 			light_level = 15;
 			isFuel = true;
 			fuel_time = 15;
@@ -1604,9 +1644,9 @@ struct RedstoneLamp : Cube {
 			redstoneComponant = true;
 			textureX = 5;
 		}
-		virtual int texY( face_dir dir, int value ) const {
+		virtual int texY( int dir, int value ) const {
 			(void)dir;
-			return ((value & REDSTONE::ACTIVATED) ? 9 : 8);
+			return ((value & mask::redstone::activated) ? 9 : 8);
 		}
 };
 
@@ -1614,11 +1654,11 @@ struct StoneButton : Button {
 	public:
 		StoneButton() {
 			name = "STONE_BUTTON";
-			adventure_block = blocks::REDSTONE_ORE;
-			mined = blocks::STONE_BUTTON;
+			mined = blocks::stone_button;
+			adventure_block = blocks::redstone_ore;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 3;
@@ -1629,11 +1669,11 @@ struct OakButton : Button {
 	public:
 		OakButton() {
 			name = "OAK_BUTTON";
-			mined = blocks::OAK_BUTTON;
-			adventure_block = blocks::REDSTONE_ORE;
+			mined = blocks::oak_button;
+			adventure_block = blocks::redstone_ore;
 			blast_resistance = 0.5f;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 0.5f;
 			textureX = 4;
 			textureY = 10;
@@ -1644,12 +1684,12 @@ struct CoalOre : Cube {
 	public:
 		CoalOre() {
 			name = "COAL_ORE";
-			mined = blocks::COAL;
+			mined = blocks::coal;
 			isComposant = true;
-			getProduction = blocks::COAL;
+			getProduction = blocks::coal;
 			blast_resistance = 3.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 3.0f;
 			textureX = 5;
 			textureY = 0;
@@ -1660,12 +1700,12 @@ struct IronOre : Cube {
 	public:
 		IronOre() {
 			name = "IRON_ORE";
-			mined = blocks::IRON_ORE;
+			mined = blocks::iron_ore;
 			isComposant = true;
-			getProduction = blocks::IRON_INGOT;
+			getProduction = blocks::iron_ingot;
 			blast_resistance = 3.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			needed_material_level = 1; // min stone to collect
 			hardness = 3.0f;
 			textureX = 5;
@@ -1677,12 +1717,12 @@ struct DiamondOre : Cube {
 	public:
 		DiamondOre() {
 			name = "DIAMOND_ORE";
-			mined = blocks::DIAMOND;
+			mined = blocks::diamond;
 			isComposant = true;
-			getProduction = blocks::DIAMOND;
+			getProduction = blocks::diamond;
 			blast_resistance = 3.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			needed_material_level = 2; // min iron to collect
 			hardness = 3.0f;
 			textureX = 5;
@@ -1694,12 +1734,12 @@ struct CoalBlock : Cube {
 	public:
 		CoalBlock() {
 			name = "COAL_BLOCK";
-			mined = blocks::COAL_BLOCK;
+			mined = blocks::coal_block;
 			isFuel = true;
 			fuel_time = 800;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 5.0f;
 			textureX = 5;
 			textureY = 3;
@@ -1710,10 +1750,10 @@ struct IronBlock : Cube {
 	public:
 		IronBlock() {
 			name = "IRON_BLOCK";
-			mined = blocks::IRON_BLOCK;
+			mined = blocks::iron_block;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			needed_material_level = 1; // min stone to collect
 			hardness = 5.0f;
 			textureX = 5;
@@ -1725,10 +1765,10 @@ struct DiamondBlock : Cube {
 	public:
 		DiamondBlock() {
 			name = "DIAMOND_BLOCK";
-			mined = blocks::DIAMOND_BLOCK;
+			mined = blocks::diamond_block;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			needed_material_level = 2; // min iron to collect
 			hardness = 5.0f;
 			textureX = 5;
@@ -1740,12 +1780,12 @@ struct RedstoneOre : Cube {
 	public:
 		RedstoneOre() {
 			name = "REDSTONE_ORE";
-			mined = blocks::REDSTONE_DUST; // TODO 4 or 5
+			mined = blocks::redstone_dust; // TODO 4 or 5
 			isComposant = true;
-			getProduction = blocks::REDSTONE_DUST;
+			getProduction = blocks::redstone_dust;
 			blast_resistance = 3.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			needed_material_level = 2; // min iron to collect
 			hardness = 3.0f;
 			textureX = 5;
@@ -1757,10 +1797,10 @@ struct RedstoneBlock : Cube {
 	public:
 		RedstoneBlock() {
 			name = "REDSTONE_BLOCK";
-			mined = blocks::REDSTONE_BLOCK;
+			mined = blocks::redstone_block;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 5.0f;
 			textureX = 5;
 			textureY = 7;
@@ -1771,12 +1811,12 @@ struct OakSlabBottom : SlabBottom {
 	public:
 		OakSlabBottom() {
 			name = "OAK_SLAB_BOTTOM";
-			mined = blocks::OAK_SLAB_BOTTOM;
+			mined = blocks::oak_slab_bottom;
 			blast_resistance = 3.0f;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 10;
@@ -1787,12 +1827,12 @@ struct OakSlabTop : SlabTop {
 	public:
 		OakSlabTop() {
 			name = "OAK_SLAB_TOP";
-			mined = blocks::OAK_SLAB_BOTTOM;
+			mined = blocks::oak_slab_bottom;
 			blast_resistance = 3.0f;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 10;
@@ -1803,12 +1843,12 @@ struct OakFence : Fence {
 	public:
 		OakFence() {
 			name = "OAK_FENCE";
-			mined = blocks::OAK_FENCE;
+			mined = blocks::oak_fence;
 			blast_resistance = 3.0f;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 10;
@@ -1819,12 +1859,12 @@ struct StoneSlabBottom : SlabBottom {
 	public:
 		StoneSlabBottom() {
 			name = "STONE_SLAB_BOTTOM";
-			mined = blocks::STONE_SLAB_BOTTOM;
+			mined = blocks::stone_slab_bottom;
 			isComposant = true;
-			getProduction = blocks::SMOOTH_STONE_SLAB_BOTTOM;
+			getProduction = blocks::smooth_stone_slab_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 3;
@@ -1835,10 +1875,10 @@ struct StoneSlabTop : SlabTop {
 	public:
 		StoneSlabTop() {
 			name = "STONE_SLAB_TOP";
-			mined = blocks::STONE_SLAB_BOTTOM;
+			mined = blocks::stone_slab_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 3;
@@ -1849,10 +1889,10 @@ struct SmoothStoneSlabBottom : SlabBottom {
 	public:
 		SmoothStoneSlabBottom() {
 			name = "SMOOTH_STONE_SLAB_BOTTOM";
-			mined = blocks::SMOOTH_STONE_SLAB_BOTTOM;
+			mined = blocks::smooth_stone_slab_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 2;
@@ -1863,10 +1903,10 @@ struct SmoothStoneSlabTop : SlabTop {
 	public:
 		SmoothStoneSlabTop() {
 			name = "SMOOTH_STONE_SLAB_TOP";
-			mined = blocks::SMOOTH_STONE_SLAB_BOTTOM;
+			mined = blocks::smooth_stone_slab_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 2;
@@ -1877,12 +1917,12 @@ struct CobbleStoneSlabBottom : SlabBottom {
 	public:
 		CobbleStoneSlabBottom() {
 			name = "COBBLESTONE_SLAB_BOTTOM";
-			mined = blocks::COBBLESTONE_SLAB_BOTTOM;
+			mined = blocks::cobblestone_slab_bottom;
 			isComposant = true;
-			getProduction = blocks::STONE_SLAB_BOTTOM;
+			getProduction = blocks::stone_slab_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 4;
@@ -1893,10 +1933,10 @@ struct CobbleStoneSlabTop : SlabTop {
 	public:
 		CobbleStoneSlabTop() {
 			name = "COBBLESTONE_SLAB_TOP";
-			mined = blocks::COBBLESTONE_SLAB_BOTTOM;
+			mined = blocks::cobblestone_slab_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 4;
@@ -1907,10 +1947,10 @@ struct StoneBricksSlabBottom : SlabBottom {
 	public:
 		StoneBricksSlabBottom() {
 			name = "STONE_BRICKS_SLAB_BOTTOM";
-			mined = blocks::STONE_BRICKS_SLAB_BOTTOM;
+			mined = blocks::stone_bricks_slab_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			textureX = 4;
 			textureY = 5;
@@ -1921,34 +1961,34 @@ struct StoneBricksSlabTop : SlabTop {
 	public:
 		StoneBricksSlabTop() {
 			name = "STONE_BRICKS_SLAB_TOP";
-			mined = blocks::STONE_BRICKS_SLAB_BOTTOM;
+			mined = blocks::stone_bricks_slab_bottom;
 			blast_resistance = 6.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 2.0f;
 			textureX = 4;
 			textureY = 5;
 		}
 };
-face_dir opposite_dir( int dir );
+int opposite_dir( int dir );
 struct Piston : Block {
 	public:
 		Piston() {
 			name = "PISTON";
-			mined = blocks::PISTON;
+			mined = blocks::piston;
 			blast_resistance = 0.5f;
-			geometry = GEOMETRY::PISTON;
+			geometry = geometry::piston;
 			byHand = true;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			transparent = true;
 			oriented = true;
 			textureY = 13;
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
-			int orientation = (value >> blocks::ORIENTATION_OFFSET) & 0x7;
+		virtual int texX( int dir = face_dir::minus_y, int value = 0 ) const {
+			int orientation = (value >> offset::blocks::orientation) & 0x7;
 			if (dir == orientation) {
-				return ((value & REDSTONE::PISTON::MOVING) ? 2 : 3 + (mined == blocks::STICKY_PISTON));
+				return ((value & mask::redstone::piston::moving) ? 2 : 3 + (mined == blocks::sticky_piston));
 			}
 			if (dir == opposite_dir(orientation)) {
 				return (1);
@@ -1963,7 +2003,7 @@ struct StickyPiston : Piston {
 	public:
 		StickyPiston() {
 			name = "STICKY_PISTON";
-			mined = blocks::STICKY_PISTON;
+			mined = blocks::sticky_piston;
 		}
 };
 
@@ -1972,9 +2012,9 @@ struct PistonHead : Block {
 		PistonHead() {
 			name = "PISTON_HEAD";
 			blast_resistance = 0.5f;
-			geometry = GEOMETRY::CROSS;
+			geometry = geometry::cross;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
 			transparent = true;
 			oriented = true;
@@ -1988,10 +2028,10 @@ struct MovingPiston : Block {
 	public:
 		MovingPiston() {
 			name = "MOVING_PISTON";
-			geometry = GEOMETRY::PISTON;
+			geometry = geometry::piston;
 		}
 		virtual bool isTransparent( int value ) const {
-			return (value & REDSTONE::PISTON::RETRACTING);
+			return (value & mask::redstone::piston::retracting);
 		}
 };
 
@@ -1999,22 +2039,22 @@ struct Observer : Block {
 	public:
 		Observer() {
 			name = "OBSERVER";
-			mined = blocks::OBSERVER;
+			mined = blocks::observer;
 			blast_resistance = 3.0f;
 			byHand = false;
-			needed_tool = blocks::WOODEN_PICKAXE;
+			needed_tool = blocks::wooden_pickaxe;
 			hardness = 3.0f;
 			transparent = true;
 			oriented = true;
 			textureY = 12;
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
-			int orientation = (value >> blocks::ORIENTATION_OFFSET) & 0x7;
+		virtual int texX( int dir = face_dir::minus_y, int value = 0 ) const {
+			int orientation = (value >> offset::blocks::orientation) & 0x7;
 			if (dir == orientation) {
 				return (2);
 			}
 			if (dir == opposite_dir(orientation)) {
-				return ((value & REDSTONE::ACTIVATED) ? 4 : 3);
+				return ((value & mask::redstone::activated) ? 4 : 3);
 			}
 			if (orientation & 0x4) {
 				return (!(dir & 0x2));
@@ -2029,7 +2069,7 @@ struct Poppy : Cross {
 	public:
 		Poppy() {
 			name = "POPPY";
-			mined = blocks::POPPY;
+			mined = blocks::poppy;
 			textureX = 6;
 			textureY = 0;
 		}
@@ -2039,7 +2079,7 @@ struct Dandelion : Cross {
 	public:
 		Dandelion() {
 			name = "DANDELION";
-			mined = blocks::DANDELION;
+			mined = blocks::dandelion;
 			textureX = 6;
 			textureY = 1;
 		}
@@ -2049,7 +2089,7 @@ struct BlueOrchid : Cross {
 	public:
 		BlueOrchid() {
 			name = "BLUE_ORCHID";
-			mined = blocks::BLUE_ORCHID;
+			mined = blocks::blue_orchid;
 			textureX = 6;
 			textureY = 2;
 		}
@@ -2059,7 +2099,7 @@ struct Allium : Cross {
 	public:
 		Allium() {
 			name = "ALLIUM";
-			mined = blocks::ALLIUM;
+			mined = blocks::allium;
 			textureX = 6;
 			textureY = 3;
 		}
@@ -2069,7 +2109,7 @@ struct CornFlower : Cross {
 	public:
 		CornFlower() {
 			name = "CORNFLOWER";
-			mined = blocks::CORNFLOWER;
+			mined = blocks::cornflower;
 			textureX = 6;
 			textureY = 4;
 		}
@@ -2079,7 +2119,7 @@ struct PinkTulip : Cross {
 	public:
 		PinkTulip() {
 			name = "PINK_TULIP";
-			mined = blocks::PINK_TULIP;
+			mined = blocks::pink_tulip;
 			textureX = 6;
 			textureY = 5;
 		}
@@ -2089,7 +2129,7 @@ struct Grass : Cross {
 	public:
 		Grass() {
 			name = "GRASS";
-			mined = blocks::WHEAT_SEEDS;
+			mined = blocks::wheat_seeds;
 			hasHitbox = false;
 			textureX = 6;
 			textureY = 6;
@@ -2100,7 +2140,7 @@ struct SugarCane : Cross {
 	public:
 		SugarCane() {
 			name = "SUGAR_CANE";
-			mined = blocks::SUGAR_CANE;
+			mined = blocks::sugar_cane;
 			hasHitbox = false;
 			textureX = 6;
 			textureY = 7;
@@ -2111,7 +2151,7 @@ struct DeadBush : Cross {
 	public:
 		DeadBush() {
 			name = "DEAD_BUSH";
-			mined = blocks::STICK;
+			mined = blocks::stick;
 			isFuel = true;
 			fuel_time = 5;
 			textureX = 6;
@@ -2123,7 +2163,7 @@ struct OakSapling : Cross {
 	public:
 		OakSapling() {
 			name = "OAK_SAPLING";
-			mined = blocks::OAK_SAPLING;
+			mined = blocks::oak_sapling;
 			isFuel = true;
 			fuel_time = 5;
 			textureX = 6;
@@ -2135,12 +2175,12 @@ struct Torch : Block {
 	public:
 		Torch() {
 			name = "TORCH";
-			mined = blocks::TORCH;
+			mined = blocks::torch;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
 			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::TORCH;
+			geometry = geometry::torch;
 			light_level = 14;
 			byHand = true;
 			hardness = 0.0f;
@@ -2152,25 +2192,25 @@ struct Torch : Block {
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
 			(void)bitfield;
 			switch (orientation) {
-				case face_dir::MINUSX:
-					hitbox[0] = {2 * ONE16TH, 0.5f, 8 * ONE16TH};
-					hitbox[1] = {2 * ONE16TH, ONE16TH, 5 * ONE16TH};
+				case face_dir::minus_x:
+					hitbox[0] = {2 * one16th, 0.5f, 8 * one16th};
+					hitbox[1] = {2 * one16th, one16th, 5 * one16th};
 					break ;
-				case face_dir::PLUSX:
-					hitbox[0] = {14 * ONE16TH, 0.5f, 8 * ONE16TH};
-					hitbox[1] = {2 * ONE16TH, ONE16TH, 5 * ONE16TH};
+				case face_dir::plus_x:
+					hitbox[0] = {14 * one16th, 0.5f, 8 * one16th};
+					hitbox[1] = {2 * one16th, one16th, 5 * one16th};
 					break ;
-				case face_dir::MINUSY:
-					hitbox[0] = {0.5f, 2 * ONE16TH, 8 * ONE16TH};
-					hitbox[1] = {ONE16TH, 2 * ONE16TH, 5 * ONE16TH};
+				case face_dir::minus_y:
+					hitbox[0] = {0.5f, 2 * one16th, 8 * one16th};
+					hitbox[1] = {one16th, 2 * one16th, 5 * one16th};
 					break ;
-				case face_dir::PLUSY:
-					hitbox[0] = {0.5f, 14 * ONE16TH, 8 * ONE16TH};
-					hitbox[1] = {ONE16TH, 2 * ONE16TH, 5 * ONE16TH};
+				case face_dir::plus_y:
+					hitbox[0] = {0.5f, 14 * one16th, 8 * one16th};
+					hitbox[1] = {one16th, 2 * one16th, 5 * one16th};
 					break ;
 				default:
-					hitbox[0] = {0.5f, 0.5f, 5 * ONE16TH};
-					hitbox[1] = {ONE16TH, ONE16TH, 5 * ONE16TH};
+					hitbox[0] = {0.5f, 0.5f, 5 * one16th};
+					hitbox[1] = {one16th, one16th, 5 * one16th};
 					break ;
 			}
 		}
@@ -2181,14 +2221,14 @@ struct RedstoneTorch : Torch {
 	public:
 		RedstoneTorch() {
 			name = "REDSTONE_TORCH";
-			mined = blocks::REDSTONE_TORCH;
+			mined = blocks::redstone_torch;
 			light_level = 7;
 			textureX = 7;
 			textureY = 11;
 		}
-		virtual int texY( face_dir dir = face_dir::MINUSY, int offset = 0 ) const {
+		virtual int texY( int dir = face_dir::minus_y, int offset = 0 ) const {
 			(void)dir;
-			return ((offset == blocks::ITEM) ? 11 : 11 + offset);
+			return ((offset == blocks::item) ? 11 : 11 + offset);
 		}
 };
 
@@ -2196,25 +2236,25 @@ struct RedstoneDust : Block {
 	public:
 		RedstoneDust() {
 			name = "REDSTONE_DUST";
-			mined = blocks::REDSTONE_DUST;
+			mined = blocks::redstone_dust;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0.5f, 0.5f, ONE16TH};
-			hitboxHalfSize = {0.2f, 0.2f, ONE16TH};
-			geometry = GEOMETRY::DUST;
+			hitboxCenter = {0.5f, 0.5f, one16th};
+			hitboxHalfSize = {0.2f, 0.2f, one16th};
+			geometry = geometry::dust;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
 			item3D = false;
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+		virtual int texX( int dir = face_dir::minus_y, int value = 0 ) const {
 			(void)dir;
-			return ((value == blocks::ITEM) ? 7 : 6);
+			return ((value == blocks::item) ? 7 : 6);
 		}
-		virtual int texY( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+		virtual int texY( int dir = face_dir::minus_y, int value = 0 ) const {
 			(void)dir;
-			return ((value == blocks::ITEM) ? 8 : 12);
+			return ((value == blocks::item) ? 8 : 12);
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
@@ -2223,25 +2263,25 @@ struct Repeater : Block {
 	public:
 		Repeater() {
 			name = "REPEATER";
-			mined = blocks::REPEATER;
-			adventure_block = blocks::IRON_ORE;
+			mined = blocks::repeater;
+			adventure_block = blocks::iron_ore;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, ONE16TH};
-			hitboxHalfSize = {0.5f, 0.5f, ONE16TH};
+			hitboxCenter = {0.5f, 0.5f, one16th};
+			hitboxHalfSize = {0.5f, 0.5f, one16th};
 			oriented = true;
-			geometry = GEOMETRY::REPEATER;
+			geometry = geometry::repeater;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
 			item3D = false;
 			textureY = 13;
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+		virtual int texX( int dir = face_dir::minus_y, int value = 0 ) const {
 			(void)dir;
-			return ((value == blocks::ITEM) ? 7 : 6 - value);
+			return ((value == blocks::item) ? 7 : 6 - value);
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
@@ -2250,25 +2290,25 @@ struct Comparator : Block {
 	public:
 		Comparator() {
 			name = "COMPARATOR";
-			mined = blocks::COMPARATOR;
-			adventure_block = blocks::IRON_ORE;
+			mined = blocks::comparator;
+			adventure_block = blocks::iron_ore;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, ONE16TH};
-			hitboxHalfSize = {0.5f, 0.5f, ONE16TH};
+			hitboxCenter = {0.5f, 0.5f, one16th};
+			hitboxHalfSize = {0.5f, 0.5f, one16th};
 			oriented = true;
-			geometry = GEOMETRY::REPEATER;
+			geometry = geometry::repeater;
 			byHand = true;
 			hardness = 0.0f;
 			transparent = true;
 			item3D = false;
 			textureY = 14;
 		}
-		virtual int texX( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+		virtual int texX( int dir = face_dir::minus_y, int value = 0 ) const {
 			(void)dir;
-			return ((value == blocks::ITEM) ? 7 : 6 - value);
+			return ((value == blocks::item) ? 7 : 6 - value);
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
@@ -2277,16 +2317,16 @@ struct Chest : Block {
 	public:
 		Chest() {
 			name = "CHEST";
-			mined = blocks::CHEST;
+			mined = blocks::chest;
 			blast_resistance = 2.5f;
 			hasHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5 / 16.0f};
 			hitboxHalfSize = {7 / 16.0f, 7 / 16.0f, 7.5 / 16.0f};
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			byHand = true;
-			needed_tool = blocks::WOODEN_AXE;
+			needed_tool = blocks::wooden_axe;
 			hardness = 2.5f;
 			transparent = true;
 			textureX = 0;
@@ -2299,12 +2339,12 @@ struct WheatCrop : Crop {
 	public:
 		WheatCrop() {
 			name = "WHEAT_CROP";
-			mined = blocks::WHEAT_SEEDS;
+			mined = blocks::wheat_seeds;
 			textureX = 7;
 		}
-		virtual int texY( face_dir dir = face_dir::MINUSY, int value = 0 ) const {
+		virtual int texY( int dir = face_dir::minus_y, int value = 0 ) const {
 			(void)dir;
-			return (value >> blocks::BITFIELD_OFFSET);
+			return (value >> offset::blocks::bitfield);
 		}
 		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
 			(void)orientation;
@@ -2317,10 +2357,10 @@ struct Water : Block {
 	public:
 		Water() {
 			name = "WATER";
-			mined = blocks::WATER_BUCKET;
+			mined = blocks::water_bucket;
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			transparent = true;
 		}
 };
@@ -2331,7 +2371,7 @@ struct Water1 : Block {
 			name = "WATER 1";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			transparent = true;
 		}
 };
@@ -2342,7 +2382,7 @@ struct Water2 : Block {
 			name = "WATER 2";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			transparent = true;
 		}
 };
@@ -2353,7 +2393,7 @@ struct Water3 : Block {
 			name = "WATER 3";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			transparent = true;
 		}
 };
@@ -2364,7 +2404,7 @@ struct Water4 : Block {
 			name = "WATER 4";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			transparent = true;
 		}
 };
@@ -2375,7 +2415,7 @@ struct Water5 : Block {
 			name = "WATER 5";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			transparent = true;
 		}
 };
@@ -2386,7 +2426,7 @@ struct Water6 : Block {
 			name = "WATER 6";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			transparent = true;
 		}
 };
@@ -2397,7 +2437,7 @@ struct Water7 : Block {
 			name = "WATER 7";
 			blast_resistance = 100.0f;
 			collisionHitbox_1x1x1 = false;
-			geometry = GEOMETRY::NONE;
+			geometry = geometry::none;
 			transparent = true;
 		}
 };
@@ -2467,7 +2507,7 @@ struct DiamondShovel : Block {
 struct WoodenAxe : Block {
 	public:
 		WoodenAxe() {
-			name = "WOODEN_AXE";
+			name = "wooden_axe";
 			stackable = false;
 			isFuel = true;
 			fuel_time = 10;
@@ -2644,7 +2684,7 @@ struct Bucket : Block {
 	public:
 		Bucket() {
 			name = "BUCKET";
-			adventure_block = blocks::DIAMOND_ORE;
+			adventure_block = blocks::diamond_ore;
 			item3D = false;
 			textureX = 9;
 			textureY = 4;
@@ -2655,7 +2695,7 @@ struct WaterBucket : Block {
 	public:
 		WaterBucket() {
 			name = "WATER_BUCKET";
-			adventure_block = blocks::DIAMOND_ORE;
+			adventure_block = blocks::diamond_ore;
 			stackable = false;
 			item3D = false;
 			textureX = 9;
@@ -2717,7 +2757,7 @@ struct WheatSeeds : Block {
 	public:
 		WheatSeeds() {
 			name = "WHEAT_SEEDS";
-			adventure_block = blocks::FARMLAND;
+			adventure_block = blocks::farmland;
 			item3D = false;
 			textureX = 9;
 			textureY = 10;
@@ -2780,6 +2820,6 @@ struct FlintAndSteel : Block {
 		}
 };
 
-extern const Block *s_blocks[S_BLOCKS_SIZE];
+extern const std::array<Block*, S_BLOCKS_SIZE> s_blocks;
 
 #endif

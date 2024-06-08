@@ -27,7 +27,7 @@ void Chunk::collisionWHitbox( t_collision &res, const Block *target, int value, 
 	}
 	if (target->orientedCollisionHitbox) {
 		glm::vec3 hitbox[2];
-		target->getSecondaryHitbox(hitbox, (value >> blocks::ORIENTATION_OFFSET) & 0x7, value >> blocks::BITFIELD_OFFSET);
+		target->getSecondaryHitbox(hitbox, (value >> offset::blocks::orientation) & 0x7, value >> offset::blocks::bitfield);
 		if (cube_cube_intersection(pos, {width, width, height},
 			{bX + hitbox[0].x + _startX, bY + hitbox[0].y + _startY, bZ + hitbox[0].z},
 			hitbox[1])) {
@@ -58,7 +58,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	int maxY = glm::floor(pos.y + width - _startY);
 	int top  = glm::floor(pos.z + height);
 	int value = getBlockAt(minX, minY, top);
-	const Block *target = s_blocks[value & blocks::TYPE];
+	const Block *target = s_blocks[value & mask::blocks::type];
 	if (target->collisionHitbox_1x1x1) {
 		return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 	} else if (target->collisionHitbox) {
@@ -66,7 +66,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	}
 	if (minX != maxX) {
 		value = getBlockAt(maxX, minY, top);
-		target = s_blocks[value & blocks::TYPE];
+		target = s_blocks[value & mask::blocks::type];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 		} else if (target->collisionHitbox) {
@@ -75,7 +75,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	}
 	if (minY != maxY) {
 		value = getBlockAt(minX, maxY, top);
-		target = s_blocks[value & blocks::TYPE];
+		target = s_blocks[value & mask::blocks::type];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 		} else if (target->collisionHitbox) {
@@ -84,7 +84,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	}
 	if (minX != maxX && minY != maxY) {
 		value = getBlockAt(maxX, maxY, top);
-		target = s_blocks[value & blocks::TYPE];
+		target = s_blocks[value & mask::blocks::type];
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 		} else if (target->collisionHitbox) {
@@ -120,24 +120,24 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 bool Chunk::collisionBoxWater( glm::vec3 pos, float width, float height )
 {
 	glm::ivec3 top0 = {glm::floor(pos.x - width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height)};
-	if ((getBlockAt(top0.x, top0.y, top0.z) & blocks::TYPE) >= blocks::WATER) {
+	if ((getBlockAt(top0.x, top0.y, top0.z) & mask::blocks::type) >= blocks::water) {
 		return (true);
 	}
 	glm::ivec3 top1 = {glm::floor(pos.x + width - _startX), glm::floor(pos.y - width - _startY), glm::floor(pos.z + height)};
 	if (top1 != top0) {
-		if ((getBlockAt(top1.x, top1.y, top1.z) & blocks::TYPE) >= blocks::WATER) {
+		if ((getBlockAt(top1.x, top1.y, top1.z) & mask::blocks::type) >= blocks::water) {
 			return (true);
 		}
 	}
 	glm::ivec3 top2 = {glm::floor(pos.x + width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height)};
 	if (top2 != top0) {
-		if ((getBlockAt(top2.x, top2.y, top2.z) & blocks::TYPE) >= blocks::WATER) {
+		if ((getBlockAt(top2.x, top2.y, top2.z) & mask::blocks::type) >= blocks::water) {
 			return (true);
 		}
 	}
 	glm::ivec3 top3 = {glm::floor(pos.x - width - _startX), glm::floor(pos.y + width - _startY), glm::floor(pos.z + height)};
 	if (top3 != top0) {
-		if ((getBlockAt(top3.x, top3.y, top3.z) & blocks::TYPE) >= blocks::WATER) {
+		if ((getBlockAt(top3.x, top3.y, top3.z) & mask::blocks::type) >= blocks::water) {
 			return (true);
 		}
 	}

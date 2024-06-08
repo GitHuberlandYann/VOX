@@ -27,7 +27,7 @@ class Particle
 		bool updateBreaking( std::vector<t_shaderInput> &arr, glm::vec3 camDir, float deltaTime );
 	
 	public:
-		Particle( Chunk *chunk, glm::vec3 pos, int type, float shade = 1, int block = blocks::AIR );
+		Particle( Chunk *chunk, glm::vec3 pos, int type, float shade = 1, int block = blocks::air );
 		~Particle( void );
 
 		bool update( std::vector<t_shaderInput> &arr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime );

@@ -77,7 +77,7 @@ namespace SETTINGS {
 		FAST,
 		OFF,
 	};
-	const std::array<int, 5> fw_types = {blocks::SAND, blocks::GRASS_BLOCK, blocks::WATER, blocks::STONE, blocks::OAK_LOG};
+	const std::array<int, 5> fw_types = {blocks::sand, blocks::grass_block, blocks::water, blocks::stone, blocks::oak_log};
 };
 
 class Settings

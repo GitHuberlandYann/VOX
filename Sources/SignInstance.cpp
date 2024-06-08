@@ -48,23 +48,23 @@ void SignInstance::displayText( std::vector<t_shaderInput> &partArr )
 	}
 
 	glm::vec3 right, front, up;
-	switch ((_value >> blocks::ORIENTATION_OFFSET) & 0x7) {
-		case (face_dir::MINUSX):
+	switch ((_value >> offset::blocks::orientation) & 0x7) {
+		case (face_dir::minus_x):
 			right = glm::vec3( 0, 1, 0);
 			front = glm::vec3(-1, 0, 0);
 			up    = glm::vec3( 0, 0, 1);
 			break ;
-		case (face_dir::PLUSX):
+		case (face_dir::plus_x):
 			right = glm::vec3(0, -1, 0);
 			front = glm::vec3(1,  0, 0);
 			up    = glm::vec3(0,  0, 1);
 			break ;
-		case (face_dir::MINUSY):
+		case (face_dir::minus_y):
 			right = glm::vec3(-1,  0, 0);
 			front = glm::vec3( 0, -1, 0);
 			up    = glm::vec3( 0,  0, 1);
 			break ;
-		case (face_dir::PLUSY):
+		case (face_dir::plus_y):
 			right = glm::vec3(1, 0, 0);
 			front = glm::vec3(0, 1, 0);
 			up    = glm::vec3(0, 0, 1);
@@ -73,7 +73,7 @@ void SignInstance::displayText( std::vector<t_shaderInput> &partArr )
 			std::cout << "ERROR signInstance::displayText orientation" << std::endl;
 			return ;
 	}
-	glm::vec3 topLeft = glm::vec3(_chunk->getStartX(), _chunk->getStartY(), 0) + _pos + glm::vec3(0.5f, 0.5f, 0.5f) + front * (0.5f - 1.751f * ONE16TH) + up * 0.225f;
+	glm::vec3 topLeft = glm::vec3(_chunk->getStartX(), _chunk->getStartY(), 0) + _pos + glm::vec3(0.5f, 0.5f, 0.5f) + front * (0.5f - 1.751f * one16th) + up * 0.225f;
 
 	for (size_t index = 0; index < 4; ++index) {
 		std::string str = _content[index];

@@ -79,6 +79,9 @@ OpenGL_Manager::~OpenGL_Manager( void )
 		for (auto fur : b.second.furnaces) {
 			delete fur.second;
 		}
+		for (auto s : b.second.signs) {
+			delete s.second;
+		}
 	}
 	_backups.clear();
 	mtx_backup.unlock();
@@ -95,7 +98,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 
 void OpenGL_Manager::addBreakingAnim( void )
 {
-	if (_block_hit.type == blocks::AIR) {
+	if (_block_hit.type == blocks::air) {
 		return ;
 	}
 
@@ -121,7 +124,7 @@ void OpenGL_Manager::addBreakingAnim( void )
 	// 	p7 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x, -1 + hitCenter.y + hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
 	// }
 
-	int spec = (14 << 4) + ((_block_hit.type == blocks::GLASS && _break_frame == 1) ? 0 : (_break_frame << 12));
+	int spec = (14 << 4) + ((_block_hit.type == blocks::glass && _break_frame == 1) ? 0 : (_break_frame << 12));
 	t_shaderInput v0 = {spec, p4};
 	t_shaderInput v1 = {spec + XTEX, p0};
 	t_shaderInput v2 = {spec + YTEX, p6};
@@ -169,7 +172,7 @@ void OpenGL_Manager::drawEntities( void )
 	// _hand->update(deltaTime);
 	size_t esize = _entities.size();
 
-	bool hitBox = false;/*/(_block_hit.type != blocks::AIR) && (_block_hit.type != blocks::CHEST);
+	bool hitBox = false;/*/(_block_hit.type != blocks::air) && (_block_hit.type != blocks::chest);
 	if (!hitBox) {
 	} else if (s_blocks[_block_hit.type]->hasHitbox) {
 		glm::vec3 hitCenter = s_blocks[_block_hit.type]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.type]->hitboxHalfSize;
@@ -687,7 +690,7 @@ void OpenGL_Manager::main_loop( void )
 						+ "\nTPS: " + std::to_string(nbTicksLastSecond)
 						+ '\n' + _camera->getCamString(_game_mode)
 						+ "\nBlock\t> " + s_blocks[_block_hit.type]->name
-						+ ((_block_hit.type != blocks::AIR) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
+						+ ((_block_hit.type != blocks::air) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
 						+ ((_block_hit.type) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
 						+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
 						+ ((_game_mode != GAMEMODE::CREATIVE) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")

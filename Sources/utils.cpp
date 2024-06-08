@@ -293,35 +293,35 @@ std::string doubleDigits( int nb )
    * if air_water, water is NOT considered as air (I know this is dumb)*/
 int air_flower( int value, bool air_leaves, bool air_glass, bool air_water )
 {
-	value &= blocks::TYPE;
-	if (air_water && value >= blocks::WATER) {
+	value &= mask::blocks::type;
+	if (air_water && value >= blocks::water) {
 		return (value);
 	}
-	if (value >= blocks::POPPY || value == blocks::CACTUS
-		|| (air_leaves && (value + (value < 0) * blocks::NOTVISIBLE) == blocks::OAK_LEAVES)
-		|| (air_glass && (value + (value < 0) * blocks::NOTVISIBLE) == blocks::GLASS)) {
+	if (value >= blocks::poppy || value == blocks::cactus
+		|| (air_leaves && value == blocks::oak_leaves)
+		|| (air_glass && value == blocks::glass)) {
 		return (0);
 	}
 	return (value);
 }
 
-face_dir opposite_dir( int dir )
+int opposite_dir( int dir )
 {
 	switch (dir) {
-		case face_dir::MINUSX:
-			return (face_dir::PLUSX);
-		case face_dir::PLUSX:
-			return (face_dir::MINUSX);
-		case face_dir::MINUSY:
-			return (face_dir::PLUSY);
-		case face_dir::PLUSY:
-			return (face_dir::MINUSY);
-		case face_dir::MINUSZ:
-			return (face_dir::PLUSZ);
-		case face_dir::PLUSZ:
-			return (face_dir::MINUSZ);
+		case face_dir::minus_x:
+			return (face_dir::plus_x);
+		case face_dir::plus_x:
+			return (face_dir::minus_x);
+		case face_dir::minus_y:
+			return (face_dir::plus_y);
+		case face_dir::plus_y:
+			return (face_dir::minus_y);
+		case face_dir::minus_z:
+			return (face_dir::plus_z);
+		case face_dir::plus_z:
+			return (face_dir::minus_z);
 	}
-	return (face_dir::MINUSX);
+	return (face_dir::minus_x);
 }
 
 /**
@@ -331,78 +331,82 @@ face_dir opposite_dir( int dir )
  * @param dir    dir from value to next
  * @return bool face_should_be_drawn
  */
-bool visible_face( int value, int next, face_dir dir )
+bool visible_face( int value, int next, int dir )
 {
-	value &= blocks::TYPE;
-	next &= blocks::TYPE;
-	int valueShape = s_blocks[value]->geometry;
-	int nextShape = s_blocks[next]->geometry;
+	value &= mask::blocks::type;
+	next &= mask::blocks::type;
+	geometry valueShape = s_blocks[value]->geometry;
+	geometry nextShape = s_blocks[next]->geometry;
 
 	switch (valueShape) {
-		case GEOMETRY::NONE:
-			return (value == blocks::OAK_SIGN);
-		case GEOMETRY::SLAB_BOTTOM:
-		case GEOMETRY::FARMLAND:
-			if (dir == face_dir::PLUSZ) {
+		case geometry::none:
+			return (value == blocks::oak_sign);
+		case geometry::slab_bottom:
+		case geometry::farmland:
+			if (dir == face_dir::plus_z) {
 				return (true);
 			}
 			break ;
-		case GEOMETRY::SLAB_TOP:
-			if (dir == face_dir::MINUSZ) {
+		case geometry::slab_top:
+			if (dir == face_dir::minus_z) {
 				return (true);
 			}
+			break ;
+		default:
 			break ;
 	}
-	if (next == blocks::OAK_LEAVES && (value != blocks::OAK_LEAVES
-		|| (value == blocks::OAK_LEAVES
-		&& (dir == face_dir::PLUSX || dir == face_dir::PLUSY || dir == face_dir::PLUSZ)))) {
+	if (next == blocks::oak_leaves && (value != blocks::oak_leaves
+		|| (value == blocks::oak_leaves
+		&& (dir == face_dir::plus_x || dir == face_dir::plus_y || dir == face_dir::plus_z)))) {
 		return (true);
 	}
 	switch (nextShape) {
-		case GEOMETRY::NONE:
-		case GEOMETRY::CROSS:
-		case GEOMETRY::TORCH:
-		case GEOMETRY::FENCE:
-		case GEOMETRY::DOOR:
-		case GEOMETRY::TRAPDOOR:
-		case GEOMETRY::CROP:
-		case GEOMETRY::LEVER:
-		case GEOMETRY::DUST:
-		case GEOMETRY::PISTON: // might want to change this..
-		case GEOMETRY::BUTTON:
+		case geometry::none:
+		case geometry::cross:
+		case geometry::torch:
+		case geometry::fence:
+		case geometry::door:
+		case geometry::trapdoor:
+		case geometry::crop:
+		case geometry::lever:
+		case geometry::dust:
+		case geometry::piston: // might want to change this..
+		case geometry::button:
 			return (true);
-		case GEOMETRY::REPEATER:
-			return (dir != face_dir::PLUSZ && valueShape != GEOMETRY::REPEATER);
-		case GEOMETRY::GLASS:
-		case GEOMETRY::GLASS_PANE:
+		case geometry::repeater:
+			return (dir != face_dir::plus_z && valueShape != geometry::repeater);
+		case geometry::glass:
+		case geometry::glass_pane:
 			return (valueShape != nextShape);
-		case GEOMETRY::SLAB_BOTTOM:
-			if (dir == face_dir::MINUSZ) {
+		case geometry::slab_bottom:
+			if (dir == face_dir::minus_z) {
 				return (true);
 			}
 			return (valueShape != nextShape);
-		case GEOMETRY::SLAB_TOP:
-			if (dir == face_dir::PLUSZ) {
+		case geometry::slab_top:
+			if (dir == face_dir::plus_z) {
 				return (true);
 			}
 			return (valueShape != nextShape);
-		case GEOMETRY::STAIRS_BOTTOM:
-			if (dir == face_dir::PLUSZ) {
+		case geometry::stairs_bottom:
+			if (dir == face_dir::plus_z) {
 				return (false);
 			}
 			return (true);
-		case GEOMETRY::STAIRS_TOP:
-			if (dir == face_dir::MINUSZ) {
+		case geometry::stairs_top:
+			if (dir == face_dir::minus_z) {
 				return (false);
 			}
 			return (true);
-		case GEOMETRY::FARMLAND:
-			if (dir == face_dir::MINUSZ) {
+		case geometry::farmland:
+			if (dir == face_dir::minus_z) {
 				return (true);
-			} else if (dir == face_dir::PLUSZ) {
+			} else if (dir == face_dir::plus_z) {
 				return (false);
 			}
-			return (valueShape != GEOMETRY::SLAB_BOTTOM && valueShape != GEOMETRY::FARMLAND);
+			return (valueShape != geometry::slab_bottom && valueShape != geometry::farmland);
+		default:
+			break ;
 	}
 	return (false);
 }
@@ -414,7 +418,7 @@ void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks )
 	int posY = chunk_pos(pos.y);
 
 	#if 1
-	int size = chunks.size();
+	size_t size = chunks.size();
 	std::vector<std::pair<int, Chunk *>> dists;
 	dists.reserve(chunks.capacity());
 	for (auto& c: chunks) {
@@ -422,9 +426,10 @@ void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks )
 	}
 	// std::cout << "in sort chunks, dists size = " << dists.size() << std::endl;
 	// b.stamp("SORT - manhattan");
-	for (int index = 0; index < size; index++) {
-		int minDist = dists[index].first, minIndex = index;
-		for (int jindex = index + 1; jindex < size; jindex++) {
+	for (size_t index = 0; index < size; index++) {
+		int minDist = dists[index].first;
+		size_t minIndex = index;
+		for (size_t jindex = index + 1; jindex < size; jindex++) {
 			if (dists[jindex].first > minDist) {
 				minIndex = jindex;
 				minDist = dists[minIndex].first;
@@ -686,12 +691,12 @@ static bool line_rectangle_intersection( glm::vec3 &camPos, glm::vec3 &camDir, g
 bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeCenter, glm::vec3 cubeHalfSize )
 {
 	// std::cout << "line_cube_intersection: " << camPos.x << ", " << camPos.y << ", " << camPos.z << " -> " << camDir.x << ", " << camDir.y << ", " << camDir.z << " and " << cubeCenter.x << ", " << cubeCenter.y << ", " << cubeCenter.z << " -> " << cubeHalfSize.x << ", " << cubeHalfSize.y << ", " << cubeHalfSize.z << std::endl;
-	return (line_rectangle_intersection(camPos, camDir, cubeCenter - cubeHalfSize, {2 * cubeHalfSize.x, 0, 2 * cubeHalfSize.z}) // face_dir::MINUSY
-			|| line_rectangle_intersection(camPos, camDir, cubeCenter - cubeHalfSize, {0, 2 * cubeHalfSize.y, 2 * cubeHalfSize.z}) // face_dir::MINUSX
-			|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x + cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {0, 2 * cubeHalfSize.y, 2 * cubeHalfSize.z}) // face_dir::PLUSX
-			|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y + cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {2 * cubeHalfSize.x, 0, 2 * cubeHalfSize.z}) // face_dir::PLUSY
-			|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z + cubeHalfSize.z}, {2 * cubeHalfSize.x, 2 * cubeHalfSize.y, 0}) // face_dir::PLUSZ
-			// no need for this check|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {2 * cubeHalfSize.x, 2 * cubeHalfSize.y, 0}) // face_dir::MINUSZ
+	return (line_rectangle_intersection(camPos, camDir, cubeCenter - cubeHalfSize, {2 * cubeHalfSize.x, 0, 2 * cubeHalfSize.z}) // face_dir::minus_y
+			|| line_rectangle_intersection(camPos, camDir, cubeCenter - cubeHalfSize, {0, 2 * cubeHalfSize.y, 2 * cubeHalfSize.z}) // face_dir::minus_x
+			|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x + cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {0, 2 * cubeHalfSize.y, 2 * cubeHalfSize.z}) // face_dir::plus_x
+			|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y + cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {2 * cubeHalfSize.x, 0, 2 * cubeHalfSize.z}) // face_dir::plus_y
+			|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z + cubeHalfSize.z}, {2 * cubeHalfSize.x, 2 * cubeHalfSize.y, 0}) // face_dir::plus_z
+			// no need for this check|| line_rectangle_intersection(camPos, camDir, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {2 * cubeHalfSize.x, 2 * cubeHalfSize.y, 0}) // face_dir::minus_z
 			);
 }
 

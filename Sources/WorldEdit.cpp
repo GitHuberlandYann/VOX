@@ -91,8 +91,8 @@ void WorldEdit::handleCmdSet( int value )
 	if (!chunk) {
 		return ;
 	}
-	if (value && (value >= blocks::STICK || s_blocks[value]->transparent)) {
-		value = blocks::STONE;
+	if (value && (value >= blocks::stick || s_blocks[value]->transparent)) {
+		value = blocks::stone;
 	}
 
 	glm::ivec3 start = {(_selectStart.x < _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y < _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z < _selectEnd.z) ? _selectStart.z : _selectEnd.z};
@@ -169,7 +169,7 @@ void WorldEdit::handleCmdPaste( bool notAirBlocks )
 		for (int posY = start.y; posY <= end.y; ++posY) {
 			for (int posZ = start.z; posZ <= end.z; ++posZ) {
 				int value = _clipboard[index++];
-				if (notAirBlocks && value == blocks::AIR) {
+				if (notAirBlocks && value == blocks::air) {
 					continue ;
 				}
 				chunk->setBlockAtAbsolute(value, posX, posY, posZ, false);
@@ -205,7 +205,7 @@ void WorldEdit::handleCmdMove( std::vector<std::string> &argv )
 
 	const glm::ivec3 dir = ((argv[1][0] == '-') ? 1 : -1) * adj_blocks[_openGL_Manager->_camera->getOrientation6()];
 	handleCmdCopy();
-	handleCmdSet(blocks::AIR);
+	handleCmdSet(blocks::air);
 	_clipStart += distance * dir;
 	_clipEnd += distance * dir;
 	handleCmdPaste(argc == 3);
@@ -230,7 +230,7 @@ bool WorldEdit::parseCommand( std::vector<std::string> &argv )
 	for (int index = 0; index < WEDIT::cmds::NBR_CMDS; ++index) {
 		if (!WEDIT::commands[index].compare(argv[0])) {
 			if (index == WEDIT::cmds::WAND) {
-				_inventory->replaceSlot(blocks::WORLDEDIT_WAND, true);
+				_inventory->replaceSlot(blocks::worldedit_wand, true);
 				_selectStart.z = 1000;
 				_selectEnd.z = 1000;
 				_running = true;
@@ -256,7 +256,7 @@ bool WorldEdit::parseCommand( std::vector<std::string> &argv )
 					break ;
 				case WEDIT::cmds::CUT:
 					// handleCmdCopy();
-					// handleCmdSet(blocks::AIR);
+					// handleCmdSet(blocks::air);
 					break ;
 				case WEDIT::cmds::PASTE:
 					handleCmdPaste(false);

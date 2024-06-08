@@ -39,16 +39,16 @@ class OpenGL_Manager
 		float _break_time, _eat_timer, _bow_timer;
 		int _game_mode, _break_frame, _hand_content;
 		std::string _world_name;
-		std::vector<Chunk *> _visible_chunks;
+		std::vector<Chunk*> _visible_chunks;
 		std::vector<t_shaderInput> _entities;
 		std::vector<t_shaderInput> _particles;
 		std::thread _thread;
 		std::mutex _mtx;
 		t_hit _block_hit;
 		Chunk *_current_chunk_ptr = NULL, *_chunk_hit = NULL;
-		UI *_ui;
-		Menu *_menu;
-		Skybox *_skybox;
+		UI* _ui;
+		Menu* _menu;
+		Skybox* _skybox;
 
 
 		void update_visible_chunks( void );
@@ -75,11 +75,11 @@ class OpenGL_Manager
 		void stopThread( void );
 
 	public:
-		std::list<Chunk *> _chunks;
-		std::vector<Chunk *> _perimeter_chunks, _deleted_chunks;
+		std::list<Chunk*> _chunks;
+		std::vector<Chunk*> _perimeter_chunks, _deleted_chunks;
 		std::map<std::pair<int, int>, s_backup> _backups;
-		Camera *_camera;
-		Inventory *_inventory;
+		Camera* _camera;
+		Inventory* _inventory;
 
 		OpenGL_Manager( void );
 		~OpenGL_Manager( void );

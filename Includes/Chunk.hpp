@@ -97,7 +97,7 @@ typedef struct s_shaderInput {
 typedef struct s_redstone {
 	glm::ivec3 pos = {0, 0, 0}; // offset of block inside chunk
 	int ticks = 0;              // size of delay
-	int state = REDSTONE::OFF;
+	int state = redstone::off;
 	// what happens if schedule redstone tick, then piston moves block, and now the thing being ticked is not what was expected?
 }				t_redstoneTick;
 
@@ -246,7 +246,7 @@ class Chunk
 		int computeSmoothLight( int basefaceLight, int row, int col, int level, std::array<int, 9> offsets );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
 
-		void setNeighbour( Chunk *neighbour, face_dir index );
+		void setNeighbour( Chunk *neighbour, int index );
 		void setBackup( std::map<std::pair<int, int>, s_backup> &backups );
 		void restoreBackup( s_backup &backup);
 		void openChest( glm::ivec3 pos );

@@ -263,9 +263,9 @@ void OpenGL_Manager::loadWorld( std::string file )
 				_outline = line.substr(11, 4) == "true";
 			} else if (!line.compare(0, 14, "\"flat_world\": ")) {
 				int value = std::atoi(&line[14]);
-				value = (value >= 0 && value < S_BLOCKS_SIZE) ? value : blocks::AIR;
+				value = (value >= 0 && value < S_BLOCKS_SIZE) ? value : blocks::air;
 				Settings::Get()->setInt(SETTINGS::INT::FLAT_WORLD_BLOCK, value);
-				Settings::Get()->setBool(SETTINGS::BOOL::FLAT_WORLD, value != blocks::AIR);
+				Settings::Get()->setBool(SETTINGS::BOOL::FLAT_WORLD, value != blocks::air);
 				ofs << "flat_world_block set to " << s_blocks[value]->name << std::endl;
 			} else if (!line.compare(0, 12, "\"dayCycle\": ")) {
 				DayCycle::Get()->loadWorld(ofs, line);
@@ -361,8 +361,8 @@ static int convert( int value ) // used when I change s_blocks big time
 		return (value);
 	}
 	// transition from v0.0 to v1.0: 0xF00 becomes 0xF000 and 0xF000 becomes 0xF000000
-	if (value >= blocks::WHEAT_CROP && value <= blocks::WHEAT_CROP + 7) {
-		value = blocks::WHEAT_CROP + ((value - blocks::WHEAT_CROP) << blocks::BITFIELD_OFFSET);
+	if (value >= blocks::wheat_crop && value <= blocks::wheat_crop + 7) {
+		value = blocks::wheat_crop + ((value - blocks::wheat_crop) << offset::blocks::bitfield);
 	}
 	return ((value & 0XFFFF00FF) | (((value >> 8) & 0xF) << 12) | (((value >> 12) & 0xF) << 24));
 }
@@ -389,7 +389,7 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 				++index;
 				for (; line[index] && line[index] != ','; index++);
 				_content[cindex].dura.x = std::atoi(&line[index + 2]);
-				_content[cindex].dura.y = s_blocks[_content[cindex].type & blocks::TYPE]->durability;
+				_content[cindex].dura.y = s_blocks[_content[cindex].type & mask::blocks::type]->durability;
 				for (index = index + 2; line[index] && line[index] != '['; index++);
 				ofs << "inventory slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount << ", " << _content[cindex].dura.x << ", " << _content[cindex].dura.y << std::endl;
 			}
@@ -402,7 +402,7 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 				++index;
 				for (; line[index] && line[index] != ','; index++);
 				_backpack[bindex].dura.x = std::atoi(&line[index + 2]);
-				_backpack[bindex].dura.y = s_blocks[_backpack[bindex].type & blocks::TYPE]->durability;
+				_backpack[bindex].dura.y = s_blocks[_backpack[bindex].type & mask::blocks::type]->durability;
 				for (index = index + 2; line[index] && line[index] != '['; index++);
 				ofs << "inventory backpack slot " << bindex << " set to " << _backpack[bindex].type << ", " << _backpack[bindex].amount << ", " << _backpack[bindex].dura.x << ", " << _backpack[bindex].dura.y << std::endl;
 			}
@@ -426,7 +426,7 @@ void ChestInstance::loadContent( std::ofstream & ofs, std::string &line, int &in
 		++index;
 		for (; line[index] && line[index] != ','; index++);
 		_content[cindex].dura.x = std::atoi(&line[index + 2]);
-		_content[cindex].dura.y = s_blocks[_content[cindex].type & blocks::TYPE]->durability;
+		_content[cindex].dura.y = s_blocks[_content[cindex].type & mask::blocks::type]->durability;
 		if (cindex < 26) {
 			for (index = index + 2; line[index] && line[index] != '['; index++);
 		}
@@ -496,7 +496,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						item.amount = std::atoi(&line[index + 2]);
 						for (; line[index] && line[index] != ','; index++);
 						item.dura.x = std::atoi(&line[index + 2]);
-						item.dura.y = s_blocks[item.type & blocks::TYPE]->durability;
+						item.dura.y = s_blocks[item.type & mask::blocks::type]->durability;
 						fur->setComposant(item);
 						for (; line[index] && line[index] != ':'; index++);
 						item.type = convert(std::atoi(&line[index + 3]));
@@ -504,7 +504,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						item.amount = std::atoi(&line[index + 2]);
 						for (; line[index] && line[index] != ','; index++);
 						item.dura.x = std::atoi(&line[index + 2]);
-						item.dura.y = s_blocks[item.type & blocks::TYPE]->durability;
+						item.dura.y = s_blocks[item.type & mask::blocks::type]->durability;
 						fur->setFuel(item);
 						for (; line[index] && line[index] != ':'; index++);
 						item.type = convert(std::atoi(&line[index + 3]));
@@ -512,7 +512,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						item.amount = std::atoi(&line[index + 2]);
 						for (; line[index] && line[index] != ','; index++);
 						item.dura.x = std::atoi(&line[index + 2]);
-						item.dura.y = s_blocks[item.type & blocks::TYPE]->durability;
+						item.dura.y = s_blocks[item.type & mask::blocks::type]->durability;
 						fur->setProduction(item);
 						backups_value.furnaces[fkey] = fur;
 						ofs << "one more furnace at " << fkey << std::endl;
