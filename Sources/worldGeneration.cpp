@@ -204,7 +204,7 @@ int Chunk::surfaceLevel( int row, int col, siv::PerlinNoise perlin )
 */
 void Chunk::generate_flat_world( void )
 {
-	int value = Settings::Get()->getInt(SETTINGS::INT::FLAT_WORLD_BLOCK);
+	int value = Settings::Get()->getInt(settings::ints::flat_world_block);
 	int surface_level = 10;
 	for (int row = 0; row < CHUNK_SIZE; row++) {
 		for (int col = 0; col < CHUNK_SIZE; col++) {
@@ -432,27 +432,17 @@ static void thread_setup_chunk( Chunk *current )
 void Chunk::generation( void )
 {
 	// Bench b;
-	_blocks = new GLint[ALLOC_SIZE];
-	if (Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD)) {
+	if (Settings::Get()->getBool(settings::bools::flat_world)) {
 		generate_flat_world();
 	} else {
 		generate_blocks();
 	}
 	// b.stamp("blocks");
-	_lights = new short[ALLOC_SIZE];
 	generate_lights();
 	// b.stamp("lights");
-	// _mtx.lock();
-	// _vertices = new GLint[_displayed_faces * 4 * 6]; // specifications, X Y Z
-	// _mtx.unlock();
 	_genDone = true;
-	// b.stamp("vertcices");
 	_mtx_sky.lock();
-	_sky = new GLboolean[(CHUNK_SIZE + 2) * (CHUNK_SIZE + 2)];
 	generate_sky();
-	if (_sky_count) {
-		_sky_vert = new GLint[_sky_count * 24]; // will be filled in later with a call to sort_sky
-	}
 	_mtx_sky.unlock();
 	// b.stamp("sky");
 	// b.stop("generation");

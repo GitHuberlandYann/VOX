@@ -6,9 +6,9 @@
 extern std::mutex mtx;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
-Menu::Menu( Inventory & inventory, UI *ui ) : _gui_size(3), _state(MENU::MAIN), _selection(0), _selected_world(0), _vaoSet(false),
+Menu::Menu( void ) : _gui_size(3), _state(MENU::MAIN), _selection(0), _selected_world(0), _vaoSet(false),
 	_textBar(true), _input_world(false), _input_seed(false), _change_to_apply(false),
-	_inventory(inventory), _ui(ui), _text(ui->getTextPtr()), _chat(ui->getChatPtr()), _chest(NULL), _furnace(NULL)
+	_inventory(NULL), _ui(NULL), _chat(NULL), _text(NULL), _chest(NULL), _furnace(NULL)
 {
 	_world_file = "";
 }
@@ -28,11 +28,11 @@ void Menu::reset_values( void )
 {
 	_selection = 0;
 	if (_selected_block.type != blocks::air) {
-		_inventory.restoreBlock(_selected_block); // TODO drop item if restoreBlock finds no empty cell
+		_inventory->restoreBlock(_selected_block); // TODO drop item if restoreBlock finds no empty cell
 	}
-	_inventory.restoreiCraft();
-	_inventory.restoreCraft();
-	_inventory.setModif(true);
+	_inventory->restoreiCraft();
+	_inventory->restoreCraft();
+	_inventory->setModif(true);
 	_selected_block = {0};
 	if (_chest) {
 		_chest->setState(chest_state::CLOSING);
@@ -171,17 +171,17 @@ MENU::RET Menu::world_create_menu( bool animUpdate )
 			INPUT::setCurrentMessage((perlin_seed) ? std::to_string(perlin_seed) : "");
 			_input_seed = true;
 		} else if (_selection == 3) { // toggle world type
-			Settings::Get()->setBool(SETTINGS::BOOL::FLAT_WORLD, !Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD));
+			Settings::Get()->setBool(settings::bools::flat_world, !Settings::Get()->getBool(settings::bools::flat_world));
 		} else if (_selection == 4) { // toggle flat world block
-			int current = Settings::Get()->getInt(SETTINGS::INT::FLAT_WORLD_BLOCK);
+			int current = Settings::Get()->getInt(settings::ints::flat_world_block);
 			int i = 0;
 			for (; i < 5; ++i) {
-				if (current == SETTINGS::fw_types[i]) {
+				if (current == settings::fw_types[i]) {
 					break ;
 				}
 			}
 			i = (i + 1) % 5;
-			Settings::Get()->setInt(SETTINGS::INT::FLAT_WORLD_BLOCK, SETTINGS::fw_types[i]);
+			Settings::Get()->setInt(settings::ints::flat_world_block, settings::fw_types[i]);
 		} else if (_selection == 5) { // confirm, go to load menu
 			if (!perlin_seed) {
 				const auto p1 = std::chrono::system_clock::now(); // works without #include <chrono> #include <ctime> ?
@@ -236,10 +236,10 @@ MENU::RET Menu::world_create_menu( bool animUpdate )
 	} else {
 		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, (perlin_seed) ? std::to_string(perlin_seed) : ""); // Seed
 	}
-    bool flat = Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD);
+    bool flat = Settings::Get()->getBool(settings::bools::flat_world);
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, (flat) ? "Flat World" : "Normal World"); // World Type
 	if (flat) {
-		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, s_blocks[Settings::Get()->getInt(SETTINGS::INT::FLAT_WORLD_BLOCK)]->name); // Flat World Block
+		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, s_blocks[Settings::Get()->getInt(settings::ints::flat_world_block)]->name); // Flat World Block
 	}
 
 	_text->addCenteredText(WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Create New World");
@@ -257,7 +257,7 @@ MENU::RET Menu::loading_screen_menu( void )
 		mtx.unlock();
 	}
 
-	int render_dist = Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST);
+	int render_dist = Settings::Get()->getInt(settings::ints::render_dist);
 	GLint goal = (1 + 2 * render_dist) * (1 + 2 * render_dist);
 	// std::cout << "CURRENT IS " << current_size << ", GOAL IS " << goal << std::endl;
 	if (current_size >= goal) {
@@ -344,7 +344,7 @@ MENU::RET Menu::options_menu( void )
 	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_selection == 1) { // FOV
 			_moving_slider = true;
-			Settings::Get()->setFloat(SETTINGS::FLOAT::FOV, _fov_gradient);
+			Settings::Get()->setFloat(settings::floats::fov, _fov_gradient);
 		} else if (!INPUT::key_update(INPUT::BREAK)) {
 		} else if (_selection == 5) { // video_settings
 			_state = (_state == MENU::OPTIONS) ? MENU::VIDEO_SETTINGS : MENU::MAIN_VIDEO_SETTINGS;
@@ -413,30 +413,30 @@ MENU::RET Menu::video_menu( void )
 	if (INPUT::key_down(INPUT::BREAK)) {
 		if (_selection == 1) { // Render dist
 			_moving_slider = true;
-			Settings::Get()->setInt(SETTINGS::INT::RENDER_DIST, static_cast<int>(_render_gradient));
+			Settings::Get()->setInt(settings::ints::render_dist, static_cast<int>(_render_gradient));
 		} else if (_selection == 7) { // Brightness
 			_moving_slider = true;
-			Settings::Get()->setFloat(SETTINGS::FLOAT::BRIGHTNESS, _brightness_gradient);
+			Settings::Get()->setFloat(settings::floats::brightness, _brightness_gradient);
 		} else if (!INPUT::key_update(INPUT::BREAK)) {
 		} else if (_selection == 2) { // Resolution
 			_drop_down_menu = !_drop_down_menu;
 		} else if (_selection == 3) { // Clouds
-			Settings::Get()->setInt(SETTINGS::INT::CLOUDS, (Settings::Get()->getInt(SETTINGS::INT::CLOUDS) + 1) % (SETTINGS::OFF + 1));
+			Settings::Get()->setInt(settings::ints::clouds, (Settings::Get()->getInt(settings::ints::clouds) + 1) % (settings::OFF + 1));
 		} else if (_selection == 4) { // FullScreen
-			// Settings::Get()->setBool(SETTINGS::BOOL::FULLSCREEN, !Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN)); (Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN)) ? glfwSetWindowMonitor(_window, glfwGetPrimaryMonitor(), 0, 0, WIN_WIDTH, WIN_HEIGHT, GLFW_DONT_CARE)	: glfwSetWindowMonitor(_window, nullptr, 0, 0, WIN_WIDTH, WIN_HEIGHT, GLFW_DONT_CARE);
+			// Settings::Get()->setBool(settings::bools::fullscreen, !Settings::Get()->getBool(settings::bools::fullscreen)); (Settings::Get()->getBool(settings::bools::fullscreen)) ? glfwSetWindowMonitor(_window, glfwGetPrimaryMonitor(), 0, 0, WIN_WIDTH, WIN_HEIGHT, GLFW_DONT_CARE)	: glfwSetWindowMonitor(_window, nullptr, 0, 0, WIN_WIDTH, WIN_HEIGHT, GLFW_DONT_CARE);
 		} else if (_selection == 5) { // Gui scale
 			changeGuiSize();
 		} else if (_selection == 6) { // Skybox
-			Settings::Get()->setBool(SETTINGS::BOOL::SKYBOX, !Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX));
+			Settings::Get()->setBool(settings::bools::skybox, !Settings::Get()->getBool(settings::bools::skybox));
 		} else if (_selection == 8) { // Particles
-			Settings::Get()->setBool(SETTINGS::BOOL::PARTICLES, !Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES));
+			Settings::Get()->setBool(settings::bools::particles, !Settings::Get()->getBool(settings::bools::particles));
 		} else if (_selection == 9) { // Face Culling
-			bool culling = !Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING);
-			Settings::Get()->setBool(SETTINGS::BOOL::FACE_CULLING, culling);
+			bool culling = !Settings::Get()->getBool(settings::bools::face_culling);
+			Settings::Get()->setBool(settings::bools::face_culling, culling);
 			// (culling) ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
 		} else if (_selection == 10) { // Smooth Lighting
-			bool smooth = !Settings::Get()->getBool(SETTINGS::BOOL::SMOOTH_LIGHTING);
-			Settings::Get()->setBool(SETTINGS::BOOL::SMOOTH_LIGHTING, smooth);
+			bool smooth = !Settings::Get()->getBool(settings::bools::smooth_lighting);
+			Settings::Get()->setBool(settings::bools::smooth_lighting, smooth);
 		} else if (_selection == 11) { // Done
 			_state = (_state == MENU::VIDEO_SETTINGS) ? MENU::OPTIONS : MENU::MAIN_OPTIONS;
 			reset_values();
@@ -471,19 +471,19 @@ MENU::RET Menu::video_menu( void )
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Render dist " + std::to_string(static_cast<int>(_render_gradient)));
 	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Resolution: " + std::to_string(WIN_WIDTH) + "x" + std::to_string(WIN_HEIGHT));
 	const std::array<std::string, 3> clouds = {"Clouds - Fancy", "Clouds - Fast", "Clouds - OFF"};
-	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, clouds[Settings::Get()->getInt(SETTINGS::INT::CLOUDS)]);
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, clouds[Settings::Get()->getInt(settings::ints::clouds)]);
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Gui scale " + std::to_string(_gui_size));
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Brightness " + std::to_string(static_cast<int>(_brightness_gradient * 100)));
-	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Face Culling ") + ((Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING)) ? "ON" : "OFF"));
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Face Culling ") + ((Settings::Get()->getBool(settings::bools::face_culling)) ? "ON" : "OFF"));
 	if (_drop_down_menu) {
-		for (int index = 0; index < Settings::Get()->getInt(SETTINGS::INT::AVAILABLE_RES); ++index) {
+		for (int index = 0; index < Settings::Get()->getInt(settings::ints::available_res); ++index) {
 			_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - (65 - 18 * index) * _gui_size, 200 * _gui_size, 18 * _gui_size, 7 * _gui_size, true, std::to_string(MENU::resolutions[index][0]) + "x" + std::to_string(MENU::resolutions[index][1]));
 		}
 	} else {
-		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("FullScreen ") + ((Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN)) ? "ON" : "OFF"));
-		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Skybox ") + ((Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX)) ? "ON" : "OFF"));
-		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Particles ") + ((Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES)) ? "ON" : "OFF"));
-		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Smooth Lighting ") + ((Settings::Get()->getBool(SETTINGS::BOOL::SMOOTH_LIGHTING)) ? "ON" : "OFF"));
+		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("FullScreen ") + ((Settings::Get()->getBool(settings::bools::fullscreen)) ? "ON" : "OFF"));
+		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Skybox ") + ((Settings::Get()->getBool(settings::bools::skybox)) ? "ON" : "OFF"));
+		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Particles ") + ((Settings::Get()->getBool(settings::bools::particles)) ? "ON" : "OFF"));
+		_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, std::string("Smooth Lighting ") + ((Settings::Get()->getBool(settings::bools::smooth_lighting)) ? "ON" : "OFF"));
 	}
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
 	return ((_moving_slider && _state == MENU::VIDEO_SETTINGS)
@@ -545,12 +545,12 @@ MENU::RET Menu::ingame_inputs( void )
 		if (_selection) {
 			if (_selected_block.type == blocks::air) {
 				if (INPUT::key_down(INPUT::SNEAK)) {
-					_inventory.shiftBlockAt(craft, _selection - 1, _furnace, _chest);
+					_inventory->shiftBlockAt(craft, _selection - 1, _furnace, _chest);
 				} else {
-					_selected_block = _inventory.pickBlockAt(craft, _selection - 1, _furnace, _chest);
+					_selected_block = _inventory->pickBlockAt(craft, _selection - 1, _furnace, _chest);
 				}
 			} else {
-				_selected_block = _inventory.putBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
+				_selected_block = _inventory->putBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
 				_ui->addFace({0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, false, true); // TODO better way to update ui than this
 			}
 		}
@@ -560,7 +560,7 @@ MENU::RET Menu::ingame_inputs( void )
 		if (_selection) {
 			if (_selected_block.type == blocks::air) {
 				if (first_frame) {
-					_selected_block = _inventory.pickHalfBlockAt(craft, _selection - 1, _furnace, _chest);
+					_selected_block = _inventory->pickHalfBlockAt(craft, _selection - 1, _furnace, _chest);
 					if (_selected_block.type != blocks::air) {
 						_selection_list.push_back(_selection);
 					}
@@ -575,7 +575,7 @@ MENU::RET Menu::ingame_inputs( void )
 				}
 				if (!inList) {
 					int count = _selected_block.amount;
-					_selected_block = _inventory.putOneBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
+					_selected_block = _inventory->putOneBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
 					if (_selected_block.amount < count) {
 						_selection_list.push_back(_selection);
 					}
@@ -587,31 +587,31 @@ MENU::RET Menu::ingame_inputs( void )
 		_selection_list.clear();
 	}
 	if (INPUT::key_down(INPUT::SLOT_0) && INPUT::key_update(INPUT::SLOT_0)) {
-		_inventory.swapCells(0, _selection - 1);
+		_inventory->swapCells(0, _selection - 1);
 	}
 	if (INPUT::key_down(INPUT::SLOT_1) && INPUT::key_update(INPUT::SLOT_1)) {
-		_inventory.swapCells(1, _selection - 1);
+		_inventory->swapCells(1, _selection - 1);
 	}
 	if (INPUT::key_down(INPUT::SLOT_2) && INPUT::key_update(INPUT::SLOT_2)) {
-		_inventory.swapCells(2, _selection - 1);
+		_inventory->swapCells(2, _selection - 1);
 	}
 	if (INPUT::key_down(INPUT::SLOT_3) && INPUT::key_update(INPUT::SLOT_3)) {
-		_inventory.swapCells(3, _selection - 1);
+		_inventory->swapCells(3, _selection - 1);
 	}
 	if (INPUT::key_down(INPUT::SLOT_4) && INPUT::key_update(INPUT::SLOT_4)) {
-		_inventory.swapCells(4, _selection - 1);
+		_inventory->swapCells(4, _selection - 1);
 	}
 	if (INPUT::key_down(INPUT::SLOT_5) && INPUT::key_update(INPUT::SLOT_5)) {
-		_inventory.swapCells(5, _selection - 1);
+		_inventory->swapCells(5, _selection - 1);
 	}
 	if (INPUT::key_down(INPUT::SLOT_6) && INPUT::key_update(INPUT::SLOT_6)) {
-		_inventory.swapCells(6, _selection - 1);
+		_inventory->swapCells(6, _selection - 1);
 	}
 	if (INPUT::key_down(INPUT::SLOT_7) && INPUT::key_update(INPUT::SLOT_7)) {
-		_inventory.swapCells(7, _selection - 1);
+		_inventory->swapCells(7, _selection - 1);
 	}
 	if (INPUT::key_down(INPUT::SLOT_8) && INPUT::key_update(INPUT::SLOT_8)) {
-		_inventory.swapCells(8, _selection - 1);
+		_inventory->swapCells(8, _selection - 1);
 	}
 	return (MENU::RET::NO_CHANGE);
 }
@@ -802,7 +802,7 @@ void Menu::setup_array_buffer_create( void )
     addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_input_world) ? 195 : 71, 200, 20); // World Name
     addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_input_seed) ? 195 : 71, 200, 20); // Seed
     addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 3) ? 111 : 91, 200, 20); // World Type
-	if (Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD)) {
+	if (Settings::Get()->getBool(settings::bools::flat_world)) {
 		addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20); // Flat World Block
 	}
 
@@ -920,7 +920,7 @@ void Menu::setup_array_buffer_video( void )
     addQuads(1, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 11) ? 111 : 91, 200, 20); // Done
 
 	if (_drop_down_menu) {
-		for (int index = 0; index < Settings::Get()->getInt(SETTINGS::INT::AVAILABLE_RES); ++index) {
+		for (int index = 0; index < Settings::Get()->getInt(settings::ints::available_res); ++index) {
 			addQuads(1, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - (65 - 18 * index) * _gui_size, 200 * _gui_size, 18 * _gui_size, 0, 72, 200, 18);
 		}
 	}
@@ -1067,7 +1067,7 @@ void Menu::add_item_value( t_item item, int x, int y, bool movement )
 
 void Menu::add_slot_value( int index )
 {
-	t_item item = _inventory.getSlotBlock(index);
+	t_item item = _inventory->getSlotBlock(index);
 	if (item.type == blocks::air) {
 		return ;
 	}
@@ -1078,7 +1078,7 @@ void Menu::add_slot_value( int index )
 
 void Menu::add_backpack_value( int index )
 {
-	t_item item = _inventory.getBackpackBlock(index);
+	t_item item = _inventory->getBackpackBlock(index);
 	if (item.type == blocks::air) {
 		return ;
 	}
@@ -1089,7 +1089,7 @@ void Menu::add_backpack_value( int index )
 
 void Menu::add_icraft_value( int index )
 {
-	t_item item = _inventory.getiCraftBlock(index);
+	t_item item = _inventory->getiCraftBlock(index);
 	if (item.type == blocks::air) {
 		return ;
 	}
@@ -1100,7 +1100,7 @@ void Menu::add_icraft_value( int index )
 
 void Menu::add_craft_value( int index )
 {
-	t_item item = _inventory.getCraftBlock(index);
+	t_item item = _inventory->getCraftBlock(index);
 	if (item.type == blocks::air) {
 		return ;
 	}
@@ -1111,7 +1111,7 @@ void Menu::add_craft_value( int index )
 
 void Menu::add_crafted_value( void )
 {
-	t_item item = _inventory.getCrafted();
+	t_item item = _inventory->getCrafted();
 	if (item.type == blocks::air) {
 		return ;
 	}
@@ -1341,7 +1341,7 @@ void Menu::processMouseMovement( float posX, float posY )
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 3;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
-			_selection = (Settings::Get()->getBool(SETTINGS::BOOL::FLAT_WORLD)) ? 4 : 0;
+			_selection = (Settings::Get()->getBool(settings::bools::flat_world)) ? 4 : 0;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size)) {
 			_selection = (_world_file == "") ? 0 : 5;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size)) {
@@ -1399,7 +1399,7 @@ void Menu::processMouseMovement( float posX, float posY )
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 2;
 		} else if (_drop_down_menu) {
-			for (int i = 0; i < Settings::Get()->getInt(SETTINGS::INT::AVAILABLE_RES); ++i) {
+			for (int i = 0; i < Settings::Get()->getInt(settings::ints::available_res); ++i) {
 				if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - (65 - 18 * i) * _gui_size, 200 * _gui_size, 18 * _gui_size)) {
 					_selection = 70 + i;
 					return ;
@@ -1576,12 +1576,12 @@ void Menu::processMouseMovement( float posX, float posY )
 void Menu::setWindow( GLFWwindow *window )
 {
 	_window = window;
-	Settings::Get()->setInt(SETTINGS::INT::MONITOR_WIDTH, WIN_WIDTH);
-	Settings::Get()->setInt(SETTINGS::INT::MONITOR_HEIGHT, WIN_HEIGHT);
-	Settings::Get()->setInt(SETTINGS::INT::AVAILABLE_RES, MENU::resolutions_size);
+	Settings::Get()->setInt(settings::ints::monitor_width, WIN_WIDTH);
+	Settings::Get()->setInt(settings::ints::monitor_height, WIN_HEIGHT);
+	Settings::Get()->setInt(settings::ints::available_res, MENU::resolutions_size);
 	for (int i = 0; i < MENU::resolutions_size; ++i) {
 		if (WIN_WIDTH < MENU::resolutions[i][0] || WIN_HEIGHT < MENU::resolutions[i][1]) {
-			Settings::Get()->setInt(SETTINGS::INT::AVAILABLE_RES, i);
+			Settings::Get()->setInt(settings::ints::available_res, i);
 			break ;
 		}
 	}
@@ -1593,19 +1593,29 @@ void Menu::setShaderProgram( GLuint shaderProgram )
 	_shaderProgram = shaderProgram;
 }
 
-void Menu::setChunks( std::list<Chunk *> &chunks )
+void Menu::setPtrs( Inventory* inventory, UI* ui )
+{
+	_inventory = inventory;
+	_ui = ui;
+	if (ui) {
+		_chat = ui->getChatPtr();
+		_text = ui->getTextPtr();
+	}
+}
+
+void Menu::setChunks( std::list<Chunk*>& chunks )
 {
 	if (_state == MENU::LOAD) {
 		_chunks = chunks;
 	}
 }
 
-void Menu::setChestInstance( ChestInstance *chest )
+void Menu::setChestInstance( ChestInstance* chest )
 {
 	_chest = chest;
 }
 
-void Menu::setFurnaceInstance( FurnaceInstance *furnace )
+void Menu::setFurnaceInstance( FurnaceInstance* furnace )
 {
 	_furnace = furnace;
 }

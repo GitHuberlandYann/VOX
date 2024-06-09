@@ -69,6 +69,27 @@ typedef struct s_sign_info {
 
 class Menu
 {
+	public:
+		Menu( void );
+		~Menu( void );
+
+		void processMouseMovement( float posX, float posY );
+		void setWindow( GLFWwindow *window );
+		void setShaderProgram( GLuint shaderProgram );
+		void setPtrs( Inventory* inventory, UI* ui );
+		void setChunks( std::list<Chunk *>& chunks );
+		void setChestInstance( ChestInstance* chest );
+		void setFurnaceInstance( FurnaceInstance* furnace );
+		void setSignPos( glm::ivec3 pos );
+		void setState( int state );
+		int getState( void );
+		void changeGuiSize( void );
+		std::string getWorldFile( void );
+		t_sign_info getSignContent( void );
+		MENU::RET run( bool animUpdate );
+
+		std::string getInfoString( void );
+
 	private:
 	    GLuint _vao, _vbo;
 		GLuint _shaderProgram;
@@ -81,14 +102,14 @@ class Menu
 		std::vector<int> _selection_list;
 		std::vector<std::array<int, 3>> _vertices;
 		std::string _world_file;
-		GLFWwindow *_window;
-		Inventory &_inventory;
-		UI *_ui;
-		Text *_text;
-		Chat *_chat;
-		std::list<Chunk *> _chunks;
-		ChestInstance *_chest;
-		FurnaceInstance *_furnace;
+		GLFWwindow* _window;
+		Inventory* _inventory;
+		UI* _ui;
+		std::shared_ptr<Chat> _chat;
+		std::shared_ptr<Text> _text;
+		std::list<Chunk*> _chunks;
+		ChestInstance* _chest;
+		FurnaceInstance* _furnace;
 
 		void reset_values( void );
 		MENU::RET main_menu( void );
@@ -140,26 +161,6 @@ class Menu
 
 		void loadSettings( void );
 		void saveSettings( void );
-
-	public:
-		Menu( Inventory & inventory, UI *ui );
-		~Menu( void );
-
-		void processMouseMovement( float posX, float posY );
-		void setWindow( GLFWwindow *window );
-		void setShaderProgram( GLuint shaderProgram );
-		void setChunks( std::list<Chunk *> &chunks );
-		void setChestInstance( ChestInstance *chest );
-		void setFurnaceInstance( FurnaceInstance *furnace );
-		void setSignPos( glm::ivec3 pos );
-		void setState( int state );
-		int getState( void );
-		void changeGuiSize( void );
-		std::string getWorldFile( void );
-		t_sign_info getSignContent( void );
-		MENU::RET run( bool animUpdate );
-
-		std::string getInfoString( void );
 };
 
 #endif

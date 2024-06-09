@@ -9,8 +9,7 @@ Chunk::Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::lis
 	_skyVaoSet(false), _skyVaoVIP(false), _genDone(false), _light_update(false), _vertex_update(false),
 	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
-	_blocks(NULL), _water_vert(NULL), _sky_vert(NULL), _lights(NULL),
-	_sky(NULL), _hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
+	_hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
 	_neighbours({NULL, NULL, NULL, NULL}), _camera(camera), _inventory(inventory)
 {
 	int cnt = 0;
@@ -67,12 +66,6 @@ Chunk::~Chunk( void )
 	glDeleteVertexArrays(1, &_vao);
 	glDeleteBuffers(1, &_skyVbo);
 	glDeleteVertexArrays(1, &_skyVao);
-
-	delete [] _blocks;
-	delete [] _lights;
-	delete [] _water_vert;
-	delete [] _sky;
-	delete [] _sky_vert;
 
 	// chests and furnaces are deleted in OpenGl_Manager when deleting backups
 	for (auto e : _entities) {
@@ -228,7 +221,7 @@ void Chunk::setup_sky_array_buffer( void )
 	glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
 	// check_glstate("BIND Chunk::setup_sky_array_buffer", false);}
 	_mtx_sky.lock();
-	glBufferData(GL_ARRAY_BUFFER, _sky_count * 24 * sizeof(GLint), _sky_vert, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _sky_count * 24 * sizeof(GLint), &_sky_vert[0][0], GL_STATIC_DRAW);
 	_mtx_sky.unlock();
 
 	// check_glstate("BUFFERDATA Chunk::setup_sky_array_buffer", false);
@@ -256,7 +249,7 @@ void Chunk::setup_water_array_buffer( void )
 
 	glBindBuffer(GL_ARRAY_BUFFER, _waterVbo);
 	_mtx_fluid.lock();
-	glBufferData(GL_ARRAY_BUFFER, _water_count * 24 * sizeof(GLint), _water_vert, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _water_count * 24 * sizeof(GLint), &_water_vert[0][0], GL_STATIC_DRAW);
 	_mtx_fluid.unlock();
 
 	_waterVaoReset = false;
@@ -507,23 +500,11 @@ void Chunk::sort_sky( glm::vec3 &pos, bool vip )
 		return ;
 	}
 
-	for (size_t index = 0; index < order.size() - 1; index++) {
-		float minDist = order[index].first;
-		size_t minIndex = index;
-		for (size_t jindex = index + 1; jindex < order.size(); jindex++) {
-			if (order[jindex].first > minDist) {
-				minIndex = jindex;
-				minDist = order[minIndex].first;
-			}
-		}
-		if (minIndex != index) {
-			std::pair<float, std::array<int, 6>> tmp = order[minIndex];
-			order[minIndex] = order[index];
-			order[index] = tmp;
-		}
-	}
-
-	size_t vindex = 0;
+	std::sort(order.begin(), order.end(), []( std::pair<float, std::array<int, 6>> a, std::pair<float, std::array<int, 6>> b )
+                                  {
+                                      return (a.first > b.first);
+                                  });
+	_sky_vert.clear();
 	for (auto& o: order) {
 		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], 0}, offset0, offset1, offset2;
 		if (!o.second[5]) {
@@ -537,7 +518,7 @@ void Chunk::sort_sky( glm::vec3 &pos, bool vip )
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_sky.lock();
-		face_water_vertices(_sky_vert, start, offset0, offset1, offset2, vindex);
+		face_water_vertices(_sky_vert, start, offset0, offset1, offset2);
 		_mtx_sky.unlock();
 	}
 	order.clear();

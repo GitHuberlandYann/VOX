@@ -20,18 +20,6 @@ typedef struct s_shaderInput t_shaderInput;
 
 class ChestInstance
 {
-	private:
-		int _orientation, _state;
-		float _timer;
-		glm::ivec3 _pos;
-		glm::ivec2 _chunk_pos;
-		std::array<t_item, 27> _content;
-		Chunk *_chunk;
-
-		void display_open( std::vector<t_shaderInput> &arr );
-		void display_moving( std::vector<t_shaderInput> &arr );
-		void display_closed( std::vector<t_shaderInput> &arr );
-
 	public:
 		ChestInstance( Chunk *chunk, glm::ivec3 pos, int orientation );
 		~ChestInstance( void );
@@ -44,6 +32,18 @@ class ChestInstance
 
 		// std::string getInfoString( void );
 		void loadContent( std::ofstream & ofs, std::string &line, int &index );
+
+	private:
+		int _orientation, _state;
+		float _timer;
+		glm::ivec3 _pos;
+		glm::ivec2 _chunk_pos;
+		std::array<t_item, 27> _content;
+		Chunk *_chunk;
+
+		void display_open( std::vector<t_shaderInput> &arr );
+		void display_moving( std::vector<t_shaderInput> &arr );
+		void display_closed( std::vector<t_shaderInput> &arr );
 };
 
 #endif

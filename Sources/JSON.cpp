@@ -26,13 +26,13 @@ void OpenGL_Manager::saveWorld( void )
 	_block_hit = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
 
 	// then store everything
-	std::string json = "{\n\t\"version\": \"" + SETTINGS::CURRENT_VERSION
+	std::string json = "{\n\t\"version\": \"" + settings::current_version
 		+ "\",\n\t\"seed\": " + std::to_string(perlin_seed)
 		+ ",\n\t\"game_mode\": " + std::to_string(_game_mode)
 		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
 		+ ",\n\t\"f5_mode\": " + ((_ui->_hideUI) ? "true" : "false")
 		+ ",\n\t\"outline\": " + ((_outline) ? "true" : "false")
-		+ ",\n\t\"flat_world\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::FLAT_WORLD_BLOCK))
+		+ ",\n\t\"flat_world\": " + std::to_string(Settings::Get()->getInt(settings::ints::flat_world_block))
 		+ DayCycle::Get()->saveString()
 		+ _camera->saveString()
 		+ _inventory->saveString()
@@ -235,7 +235,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 		if (!indata.is_open()) {
 			throw InvalidFileException();
 		}
-		Settings::Get()->setString(SETTINGS::STRING::VERSION, ""); // reset version
+		Settings::Get()->setString(settings::version, ""); // reset version
 		std::string line;
 		while (!indata.eof()) {
 			std::getline(indata, line);
@@ -245,7 +245,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 			} else if (line == "{" || line == "}") {
 			} else if (!line.compare(0, 11, "\"version\": ")) {
 				std::string version = line.substr(12, line.size() - 14);
-				Settings::Get()->setString(SETTINGS::STRING::VERSION, version);
+				Settings::Get()->setString(settings::version, version);
 				ofs << "version set to " << version << std::endl;
 			} else if (!line.compare(0, 8, "\"seed\": ")) {
 				perlin_seed = std::atoi(&line[8]);
@@ -264,8 +264,8 @@ void OpenGL_Manager::loadWorld( std::string file )
 			} else if (!line.compare(0, 14, "\"flat_world\": ")) {
 				int value = std::atoi(&line[14]);
 				value = (value >= 0 && value < S_BLOCKS_SIZE) ? value : blocks::air;
-				Settings::Get()->setInt(SETTINGS::INT::FLAT_WORLD_BLOCK, value);
-				Settings::Get()->setBool(SETTINGS::BOOL::FLAT_WORLD, value != blocks::air);
+				Settings::Get()->setInt(settings::ints::flat_world_block, value);
+				Settings::Get()->setBool(settings::bools::flat_world, value != blocks::air);
 				ofs << "flat_world_block set to " << s_blocks[value]->name << std::endl;
 			} else if (!line.compare(0, 12, "\"dayCycle\": ")) {
 				DayCycle::Get()->loadWorld(ofs, line);
@@ -357,7 +357,7 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 
 static int convert( int value ) // used when I change s_blocks big time
 {
-	if (Settings::Get()->getString(SETTINGS::STRING::VERSION) == SETTINGS::CURRENT_VERSION) {
+	if (Settings::Get()->getString(settings::version) == settings::current_version) {
 		return (value);
 	}
 	// transition from v0.0 to v1.0: 0xF00 becomes 0xF000 and 0xF000 becomes 0xF000000
@@ -597,37 +597,37 @@ void Menu::loadSettings( void )
 				continue ;
 			} else if (!line.compare(0, 7, "\"fov\": ")) {
 				_fov_gradient = std::stof(&line[7]);
-				Settings::Get()->setFloat(SETTINGS::FLOAT::FOV, _fov_gradient);
+				Settings::Get()->setFloat(settings::floats::fov, _fov_gradient);
 				ofs << "fov set to " << _fov_gradient << std::endl;
 			} else if (!line.compare(0, 19, "\"render_distance\": ")) {
 				int render = std::atoi(&line[19]);
 				_render_gradient = render;
-				Settings::Get()->setInt(SETTINGS::INT::RENDER_DIST, render);
+				Settings::Get()->setInt(settings::ints::render_dist, render);
 				ofs << "render dist set to " << render << std::endl;
 			} else if (!line.compare(0, 14, "\"brightness\": ")) {
 				_brightness_gradient = std::stof(&line[14]);
-				Settings::Get()->setFloat(SETTINGS::FLOAT::BRIGHTNESS, _brightness_gradient);
+				Settings::Get()->setFloat(settings::floats::brightness, _brightness_gradient);
 				ofs << "brightness set to " << _brightness_gradient << std::endl;
 			} else if (!line.compare(0, 10, "\"clouds\": ")) {
 				int clouds = std::atoi(&line[10]);
-				Settings::Get()->setInt(SETTINGS::INT::CLOUDS, clouds);
+				Settings::Get()->setInt(settings::ints::clouds, clouds);
 				const std::array<std::string, 3> cloudstr = {"Clouds - Fancy", "Clouds - Fast", "Clouds - OFF"};
 				ofs << "clouds set to " << cloudstr[clouds] << std::endl;
 			} else if (!line.compare(0, 10, "\"skybox\": ")) {
 				int skybox = std::atoi(&line[10]);
-				Settings::Get()->setBool(SETTINGS::BOOL::SKYBOX, skybox);
+				Settings::Get()->setBool(settings::bools::skybox, skybox);
 				ofs << "skybox set to " << ((skybox) ? "true" : "false") << std::endl;
 			} else if (!line.compare(0, 13, "\"particles\": ")) {
 				int particles = std::atoi(&line[13]);
-				Settings::Get()->setBool(SETTINGS::BOOL::PARTICLES, particles);
+				Settings::Get()->setBool(settings::bools::particles, particles);
 				ofs << "particles set to " << ((particles) ? "true" : "false") << std::endl;
 			} else if (!line.compare(0, 16, "\"face_culling\": ")) {
 				int face_culling = std::atoi(&line[16]);
-				Settings::Get()->setBool(SETTINGS::BOOL::FACE_CULLING, face_culling);
+				Settings::Get()->setBool(settings::bools::face_culling, face_culling);
 				ofs << "face_culling set to " << face_culling << std::endl;
 			} else if (!line.compare(0, 19, "\"smooth_lighting\": ")) {
 				int smooth_lighting = std::atoi(&line[19]);
-				Settings::Get()->setBool(SETTINGS::BOOL::SMOOTH_LIGHTING, smooth_lighting);
+				Settings::Get()->setBool(settings::bools::smooth_lighting, smooth_lighting);
 				ofs << "smooth_lighting set to " << smooth_lighting << std::endl;
 			} else if (!line.compare(0, 13, "\"gui_scale\": ")) {
 				_gui_size = std::atoi(&line[13]) - 1;
@@ -659,15 +659,15 @@ void Menu::loadSettings( void )
 
 void Menu::saveSettings( void )
 {
-	std::string json = "{\n\t\"fov\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV))
-					+ ",\n\t\"render_distance\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST))
-					+ ",\n\t\"clouds\": " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::CLOUDS))
+	std::string json = "{\n\t\"fov\": " + std::to_string(Settings::Get()->getFloat(settings::floats::fov))
+					+ ",\n\t\"render_distance\": " + std::to_string(Settings::Get()->getInt(settings::ints::render_dist))
+					+ ",\n\t\"clouds\": " + std::to_string(Settings::Get()->getInt(settings::ints::clouds))
 					+ ",\n\t\"gui_scale\": " + std::to_string(_gui_size)
-					+ ",\n\t\"skybox\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX))
-					+ ",\n\t\"brightness\": " + std::to_string(Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS))
-					+ ",\n\t\"particles\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES))
-					+ ",\n\t\"face_culling\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING))
-					+ ",\n\t\"smooth_lighting\": " + std::to_string(Settings::Get()->getBool(SETTINGS::BOOL::SMOOTH_LIGHTING))
+					+ ",\n\t\"skybox\": " + std::to_string(Settings::Get()->getBool(settings::bools::skybox))
+					+ ",\n\t\"brightness\": " + std::to_string(Settings::Get()->getFloat(settings::floats::brightness))
+					+ ",\n\t\"particles\": " + std::to_string(Settings::Get()->getBool(settings::bools::particles))
+					+ ",\n\t\"face_culling\": " + std::to_string(Settings::Get()->getBool(settings::bools::face_culling))
+					+ ",\n\t\"smooth_lighting\": " + std::to_string(Settings::Get()->getBool(settings::bools::smooth_lighting))
 					+ ",\n\t\"resource_packs\": [";
 	std::vector<std::string> &packs = Settings::Get()->getResourcePacks();
 	bool start = true;
@@ -692,7 +692,7 @@ void Menu::saveSettings( void )
 bool Settings::loadResourcePacks( void )
 {
 	std::ofstream ofs("Resources/loadingSettings.log", std::ofstream::out | std::ofstream::app);
-	std::array<bool, SETTINGS::NBR_TEXTURES> check_set = {false};
+	std::array<bool, settings::strings::size_textures> check_set = {false};
 	for (auto &pack: _packs) {
 		try {
 			ofs << "Opening file Resources/Resource_Packs/" << pack << std::endl;
@@ -709,99 +709,99 @@ bool Settings::loadResourcePacks( void )
 				} else if (!line.compare(0, 15, "\"BLOCK_ATLAS\": ")) {
 					size_t end = line.find('\"', 16);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::BLOCK_ATLAS] = line.substr(16, end - 16);
-					check_set[SETTINGS::STRING::BLOCK_ATLAS] = true;
+					_strings[settings::strings::block_atlas] = line.substr(16, end - 16);
+					check_set[settings::strings::block_atlas] = true;
 				} else if (!line.compare(0, 15, "\"ASCII_ATLAS\": ")) {
 					size_t end = line.find('\"', 16);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::ASCII_ATLAS] = line.substr(16, end - 16);
-					check_set[SETTINGS::STRING::ASCII_ATLAS] = true;
+					_strings[settings::strings::ascii_atlas] = line.substr(16, end - 16);
+					check_set[settings::strings::ascii_atlas] = true;
 				} else if (!line.compare(0, 12, "\"UI_ATLAS\": ")) {
 					size_t end = line.find('\"', 13);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::UI_ATLAS] = line.substr(13, end - 13);
-					check_set[SETTINGS::STRING::UI_ATLAS] = true;
+					_strings[settings::strings::ui_atlas] = line.substr(13, end - 13);
+					check_set[settings::strings::ui_atlas] = true;
 				} else if (!line.compare(0, 19, "\"CONTAINER_ATLAS\": ")) {
 					size_t end = line.find('\"', 20);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::CONTAINER_ATLAS] = line.substr(20, end - 20);
-					check_set[SETTINGS::STRING::CONTAINER_ATLAS] = true;
+					_strings[settings::strings::container_atlas] = line.substr(20, end - 20);
+					check_set[settings::strings::container_atlas] = true;
 				} else if (!line.compare(0, 18, "\"PARTICLE_ATLAS\": ")) {
 					size_t end = line.find('\"', 19);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::PARTICLE_ATLAS] = line.substr(19, end - 19);
-					check_set[SETTINGS::STRING::PARTICLE_ATLAS] = true;
+					_strings[settings::strings::particle_atlas] = line.substr(19, end - 19);
+					check_set[settings::strings::particle_atlas] = true;
 				} else if (!line.compare(0, 15, "\"MODEL_ATLAS\": ")) {
 					size_t end = line.find('\"', 16);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::MODEL_ATLAS] = line.substr(16, end - 16);
-					check_set[SETTINGS::STRING::MODEL_ATLAS] = true;
+					_strings[settings::strings::model_atlas] = line.substr(16, end - 16);
+					check_set[settings::strings::model_atlas] = true;
 				} else if (!line.compare(0, 15, "\"WATER_STILL\": ")) {
 					size_t end = line.find('\"', 16);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::WATER_STILL] = line.substr(16, end - 16);
-					check_set[SETTINGS::STRING::WATER_STILL] = true;
+					_strings[settings::strings::water_still] = line.substr(16, end - 16);
+					check_set[settings::strings::water_still] = true;
 				} else if (!line.compare(0, 14, "\"WATER_FLOW\": ")) {
 					size_t end = line.find('\"', 15);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::WATER_FLOW] = line.substr(15, end - 15);
-					check_set[SETTINGS::STRING::WATER_FLOW] = true;
+					_strings[settings::strings::water_flow] = line.substr(15, end - 15);
+					check_set[settings::strings::water_flow] = true;
 				} else if (!line.compare(0, 24, "\"MAIN_FRAGMENT_SHADER\": ")) {
 					size_t end = line.find('\"', 25);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::MAIN_FRAGMENT_SHADER] = line.substr(25, end - 25);
+					_strings[settings::strings::main_fragment_shader] = line.substr(25, end - 25);
 				} else if (!line.compare(0, 22, "\"MAIN_VERTEX_SHADER\": ")) {
 					size_t end = line.find('\"', 23);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::MAIN_VERTEX_SHADER] = line.substr(23, end - 23);
+					_strings[settings::strings::main_vertex_shader] = line.substr(23, end - 23);
 				} else if (!line.compare(0, 24, "\"ITEM_FRAGMENT_SHADER\": ")) {
 					size_t end = line.find('\"', 25);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::ITEM_FRAGMENT_SHADER] = line.substr(25, end - 25);
+					_strings[::settings::strings::item_fragment_shader] = line.substr(25, end - 25);
 				} else if (!line.compare(0, 22, "\"ITEM_VERTEX_SHADER\": ")) {
 					size_t end = line.find('\"', 23);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::ITEM_VERTEX_SHADER] = line.substr(23, end - 23);
+					_strings[::settings::strings::item_vertex_shader] = line.substr(23, end - 23);
 				} else if (!line.compare(0, 28, "\"PARTICLE_FRAGMENT_SHADER\": ")) {
 					size_t end = line.find('\"', 29);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::PARTICLE_FRAGMENT_SHADER] = line.substr(29, end - 29);
+					_strings[settings::strings::particle_fragment_shader] = line.substr(29, end - 29);
 				} else if (!line.compare(0, 26, "\"PARTICLE_VERTEX_SHADER\": ")) {
 					size_t end = line.find('\"', 27);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::PARTICLE_VERTEX_SHADER] = line.substr(27, end - 27);
+					_strings[settings::strings::particle_vertex_shader] = line.substr(27, end - 27);
 				} else if (!line.compare(0, 23, "\"SKY_FRAGMENT_SHADER\": ")) {
 					size_t end = line.find('\"', 24);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::SKY_FRAGMENT_SHADER] = line.substr(24, end - 24);
+					_strings[settings::strings::sky_fragment_shader] = line.substr(24, end - 24);
 				} else if (!line.compare(0, 21, "\"SKY_VERTEX_SHADER\": ")) {
 					size_t end = line.find('\"', 22);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::SKY_VERTEX_SHADER] = line.substr(22, end - 22);
+					_strings[settings::strings::sky_vertex_shader] = line.substr(22, end - 22);
 				} else if (!line.compare(0, 26, "\"SKYBOX_FRAGMENT_SHADER\": ")) {
 					size_t end = line.find('\"', 27);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::SKYBOX_FRAGMENT_SHADER] = line.substr(27, end - 27);
+					_strings[settings::strings::skybox_fragment_shader] = line.substr(27, end - 27);
 				} else if (!line.compare(0, 24, "\"SKYBOX_VERTEX_SHADER\": ")) {
 					size_t end = line.find('\"', 25);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::SKYBOX_VERTEX_SHADER] = line.substr(25, end - 25);
+					_strings[settings::strings::skybox_vertex_shader] = line.substr(25, end - 25);
 				} else if (!line.compare(0, 24, "\"TEXT_FRAGMENT_SHADER\": ")) {
 					size_t end = line.find('\"', 25);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::TEXT_FRAGMENT_SHADER] = line.substr(25, end - 25);
+					_strings[settings::strings::text_fragment_shader] = line.substr(25, end - 25);
 				} else if (!line.compare(0, 22, "\"TEXT_VERTEX_SHADER\": ")) {
 					size_t end = line.find('\"', 23);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::TEXT_VERTEX_SHADER] = line.substr(23, end - 23);
+					_strings[settings::strings::text_vertex_shader] = line.substr(23, end - 23);
 				} else if (!line.compare(0, 22, "\"UI_FRAGMENT_SHADER\": ")) {
 					size_t end = line.find('\"', 23);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::UI_FRAGMENT_SHADER] = line.substr(23, end - 23);
+					_strings[settings::strings::ui_fragment_shader] = line.substr(23, end - 23);
 				} else if (!line.compare(0, 20, "\"UI_VERTEX_SHADER\": ")) {
 					size_t end = line.find('\"', 21);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[SETTINGS::STRING::UI_VERTEX_SHADER] = line.substr(21, end - 21);
+					_strings[settings::strings::ui_vertex_shader] = line.substr(21, end - 21);
 				}
 			}
 		}
@@ -809,7 +809,7 @@ bool Settings::loadResourcePacks( void )
 			std::cerr << e.what() << std::endl << "Settings::loadResourcePacks" << std::endl;
 		}
 	}
-	for (int i = 0; i < SETTINGS::STRING::NBR_TEXTURES; ++i) {
+	for (int i = 0; i < settings::strings::size_textures; ++i) {
 		if (!check_set[i]) {
 			std::cerr << "missing field " << i << " in check_set" << std::endl;
 			return (1);

@@ -531,7 +531,7 @@ GLint Chunk::getBlockAt( glm::ivec3 pos, bool askNeighbours )
 */
 GLint Chunk::getBlockAt( int posX, int posY, int posZ, bool askNeighbours )
 {
-	if (!_blocks || posZ < 0) {
+	if (posZ < 0) {
 		return (blocks::bedrock);
 	} else if (posZ >= WORLD_HEIGHT) {
 		return (blocks::air);
@@ -584,7 +584,7 @@ void Chunk::setBlockAt( int value, glm::ivec3 pos, bool update, bool observer )
 */
 void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update, bool observer )
 {
-	if (!_blocks || posZ < 0 || posZ >= WORLD_HEIGHT) {
+	if (posZ < 0 || posZ >= WORLD_HEIGHT) {
 		return ;
 	}
 	if (posX < 0) {

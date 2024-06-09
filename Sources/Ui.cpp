@@ -2,12 +2,12 @@
 #include "Ui.hpp"
 #include "Settings.hpp"
 
-UI::UI( Inventory & inventory, Camera &camera )
-	: _shaderProgram(0), _itemShaderProgram(0), _textures(NULL), _gui_size(4), _nb_items(0),
-	_movement(false), _inventory(inventory), _camera(camera), _vaoSet(false), _hideUI(false)
+UI::UI( void )
+	: _hideUI(false), _shaderProgram(0), _itemShaderProgram(0), _textures({0, 0}), _gui_size(4), _nb_items(0),
+	_movement(false), _text(std::make_shared<Text>()), _chat(std::make_shared<Chat>(_text)), _inventory(NULL),
+	_camera(NULL), _vaoSet(false)
 {
-	_text = new Text();
-	_chat = new Chat(_text);
+
 }
 
 UI::~UI( void )
@@ -16,15 +16,11 @@ UI::~UI( void )
     glDeleteBuffers(1, &_vbo);
 	glDeleteVertexArrays(1, &_vao);
 	
-	if (_textures) {
-		glDeleteTextures(2, _textures);
-		delete [] _textures;
+	if (_textures[0]) {
+		glDeleteTextures(2, &_textures[0]);
 	}
 	
 	glDeleteProgram(_shaderProgram);
-
-	delete _text;
-	delete _chat;
 }
 
 // ************************************************************************** //
@@ -33,7 +29,7 @@ UI::~UI( void )
 
 void UI::add_inventory_elem( int index )
 {
-	int type = _inventory.getSlotBlock(index).type;
+	int type = _inventory->getSlotBlock(index).type;
 	if (type == blocks::air) {
 		return ;
 	}
@@ -56,7 +52,7 @@ void UI::addQuads( std::vector<std::array<int, 3>> &vertices, int atlas, int pos
 
 void UI::add_dura_value( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	glm::ivec2 dura = _inventory.getSlotBlock(index).dura;
+	glm::ivec2 dura = _inventory->getSlotBlock(index).dura;
 	if (dura.y == 0 || dura.x == dura.y) {
 		return ;
 	}
@@ -74,7 +70,7 @@ void UI::add_hearts_holder( std::vector<std::array<int, 3>> &vertices, int index
 
 void UI::add_hearts( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, 1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 18 * (_camera._health_points == (1 + 2 * index)) + 9 * (_camera._health_points > (1 + 2 * index)), 16, 9, 9);
+	addQuads(vertices, 1, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 18 * (_camera->_health_points == (1 + 2 * index)) + 9 * (_camera->_health_points > (1 + 2 * index)), 16, 9, 9);
 }
 
 void UI::add_armor_holder( std::vector<std::array<int, 3>> &vertices, int index )
@@ -94,12 +90,12 @@ void UI::add_food_holder( std::vector<std::array<int, 3>> &vertices, int index, 
 
 void UI::add_food( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, 1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 82 + 9 * (_camera._foodLevel == (1 + 2 * index)), 16, 9, 9);
+	addQuads(vertices, 1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 82 + 9 * (_camera->_foodLevel == (1 + 2 * index)), 16, 9, 9);
 }
 
 void UI::add_bubbles( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, 1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 99 + 9 * (_camera.getWaterStatus() == (1 + 2 * index)), 16, 9, 9);
+	addQuads(vertices, 1, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 99 + 9 * (_camera->getWaterStatus() == (1 + 2 * index)), 16, 9, 9);
 }
 
 void UI::setup_array_buffer( void )
@@ -108,7 +104,7 @@ void UI::setup_array_buffer( void )
 
 	addQuads(vertices, 1, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16); // crosshair
 	addQuads(vertices, 1, (WIN_WIDTH - (182 * _gui_size)) / 2, WIN_HEIGHT - (22 * _gui_size) * 2, 182 * _gui_size, 22 * _gui_size, 0, 25, 182, 22); // hot bar
-	int slotNum = _inventory.getSlotNum();
+	int slotNum = _inventory->getSlotNum();
 	addQuads(vertices, 1, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * slotNum * _gui_size) - _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 - _gui_size, 24 * _gui_size, 24 * _gui_size, 0, 47, 24, 24); // slot select
 
 	for (int index = 0; index < 9; index++) {
@@ -118,7 +114,7 @@ void UI::setup_array_buffer( void )
 	for (int index = 0; index < 10; index++) {
 		add_hearts_holder(vertices, index);
 	}
-	for (int index = 0; index < (_camera._health_points >> 1) + (_camera._health_points & 1); index++) {
+	for (int index = 0; index < (_camera->_health_points >> 1) + (_camera->_health_points & 1); index++) {
 		add_hearts(vertices, index);
 	}
 	for (int index = 0; index < 10; index++) {
@@ -127,14 +123,14 @@ void UI::setup_array_buffer( void )
 	for (int index = 0; index < 4; index++) {
 		add_armor(vertices, index);
 	}
-	int saturation = glm::floor(_camera._foodSaturationLevel);
+	int saturation = glm::floor(_camera->_foodSaturationLevel);
 	for (int index = 0; index < 10; index++) {
 		add_food_holder(vertices, index, saturation);
 	}
-	for (int index = 0; index < (_camera._foodLevel >> 1) + (_camera._foodLevel & 1); index++) {
+	for (int index = 0; index < (_camera->_foodLevel >> 1) + (_camera->_foodLevel & 1); index++) {
 		add_food(vertices, index);
 	}
-	for (int index = 0; index < (_camera.getWaterStatus() >> 1) + (_camera.getWaterStatus() & 1); index++) {
+	for (int index = 0; index < (_camera->getWaterStatus() >> 1) + (_camera->getWaterStatus() & 1); index++) {
 		add_bubbles(vertices, index);
 	}
 
@@ -174,7 +170,7 @@ void UI::display_slot_value( int index )
 	if (index < 0 || index >= 9) {
 		return ;
 	}
-	int value = _inventory.getSlotBlock(index).amount;
+	int value = _inventory->getSlotBlock(index).amount;
 	if (value > 1) {
 		if (value > 9) {
 			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, TEXT::BLACK, std::to_string(value / 10));
@@ -189,12 +185,19 @@ void UI::display_slot_value( int index )
 //                                Public                                      //
 // ************************************************************************** //
 
-Text *UI::getTextPtr( void )
+void UI::setPtrs( OpenGL_Manager* oglMan, Inventory* inventory, Camera* camera )
+{
+	_chat->setOGLManPtr(oglMan);
+	_inventory = inventory;
+	_camera = camera;
+}
+
+std::shared_ptr<Text> UI::getTextPtr( void )
 {
 	return (_text);
 }
 
-Chat *UI::getChatPtr( void )
+std::shared_ptr<Chat> UI::getChatPtr( void )
 {
 	return (_chat);
 }
@@ -210,16 +213,16 @@ GLuint UI::getShaderProgram( void )
 	return (_shaderProgram);
 }
 
-void UI::setup_shader( void )
+void UI::setupShader( void )
 {
-	_text->setup_shader();
+	_text->setupShader();
 
 	// setup item shader program
 	if (_itemShaderProgram) {
 		glDeleteProgram(_itemShaderProgram);
 	}
-	_itemShaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::ITEM_VERTEX_SHADER), "",
-										Settings::Get()->getString(SETTINGS::STRING::ITEM_FRAGMENT_SHADER));
+	_itemShaderProgram = createShaderProgram(Settings::Get()->getString(::settings::strings::item_vertex_shader), "",
+										Settings::Get()->getString(::settings::strings::item_fragment_shader));
 
 	glBindFragDataLocation(_itemShaderProgram, 0, "outColor");
 
@@ -238,8 +241,8 @@ void UI::setup_shader( void )
 	if (_shaderProgram) {
 		glDeleteProgram(_shaderProgram);
 	}
-	_shaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::UI_VERTEX_SHADER), "",
-										Settings::Get()->getString(SETTINGS::STRING::UI_FRAGMENT_SHADER));
+	_shaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::ui_vertex_shader), "",
+										Settings::Get()->getString(settings::strings::ui_fragment_shader));
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
@@ -255,9 +258,9 @@ void UI::setup_shader( void )
 	check_glstate("UI_Shader program successfully created\n", true);
 }
 
-void UI::load_texture( void )
+void UI::loadTextures( void )
 {
-	_text->load_texture();
+	_text->loadTexture();
 
 	glUseProgram(_itemShaderProgram);
 	glUniform1i(glGetUniformLocation(_itemShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
@@ -265,17 +268,15 @@ void UI::load_texture( void )
 	glUseProgram(_shaderProgram);
 	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0);
 
-	if (_textures) {
-		glDeleteTextures(2, _textures);
-		delete [] _textures;
+	if (_textures[0]) {
+		glDeleteTextures(2, &_textures[0]);
 	}
-	_textures = new GLuint[2];
-	glGenTextures(2, _textures);
+	glGenTextures(2, &_textures[0]);
 
-	loadTextureShader(2, _textures[0], Settings::Get()->getString(SETTINGS::STRING::UI_ATLAS));
+	loadTextureShader(2, _textures[0], Settings::Get()->getString(settings::strings::ui_atlas));
 	glUniform1i(glGetUniformLocation(_shaderProgram, "uiAtlas"), 2);
 
-	loadTextureShader(3, _textures[1], Settings::Get()->getString(SETTINGS::STRING::CONTAINER_ATLAS));
+	loadTextureShader(3, _textures[1], Settings::Get()->getString(settings::strings::container_atlas));
 	glUniform1i(glGetUniformLocation(_shaderProgram, "containerAtlas"), 3);
 }
 
@@ -331,10 +332,10 @@ void UI::drawUserInterface( std::string str, int game_mode, float deltaTime )
 	if (_hideUI) {
 		return ;
 	}
-	if (!_vaoSet || _inventory.getModif() || _camera.getModif()) {
+	if (!_vaoSet || _inventory->getModif() || _camera->getModif()) {
 		setup_array_buffer();
 		setup_item_array_buffer();
-		_inventory.setModif(false);
+		_inventory->setModif(false);
 		_movement = true;
 	}
 

@@ -11,66 +11,66 @@
 # define BRIGHTNESS_START 0.05f
 
 
-namespace SETTINGS {
-	enum BOOL {
-		FULLSCREEN,
-		SKYBOX,
-		PARTICLES,
-		FACE_CULLING,
-		VISIBLE_CHUNK_BORDER,
-		SMOOTH_LIGHTING,
-		FLAT_WORLD,
-		NBR_BOOL
+namespace settings {
+	enum bools {
+		fullscreen,
+		skybox,
+		particles,
+		face_culling,
+		visible_chunk_border,
+		smooth_lighting,
+		flat_world,
+		size_bools
 	};
 
-	enum INT {
-		RENDER_DIST,
-		CLOUDS,
-		MONITOR_WIDTH,
-		MONITOR_HEIGHT,
-		AVAILABLE_RES,
-		FLAT_WORLD_BLOCK,
-		NBR_INT
+	enum ints {
+		render_dist,
+		clouds,
+		monitor_width,
+		monitor_height,
+		available_res,
+		flat_world_block,
+		size_ints
 	};
 
-	enum FLOAT {
-		FOV,
-		BRIGHTNESS,
-		NBR_FLOAT
+	enum floats {
+		fov,
+		brightness,
+		size_floats
 	};
 
-	enum STRING {
-		BLOCK_ATLAS,
-		ASCII_ATLAS,
-		UI_ATLAS,
-		CONTAINER_ATLAS,
-		PARTICLE_ATLAS,
-		MODEL_ATLAS,
-		WATER_STILL,
-		WATER_FLOW,
-		NBR_TEXTURES,
+	enum strings {
+		block_atlas,
+		ascii_atlas,
+		ui_atlas,
+		container_atlas,
+		particle_atlas,
+		model_atlas,
+		water_still,
+		water_flow,
+		size_textures,
 
-		MAIN_FRAGMENT_SHADER = NBR_TEXTURES,
-		MAIN_VERTEX_SHADER,
-		ITEM_FRAGMENT_SHADER,
-		ITEM_VERTEX_SHADER,
-		PARTICLE_FRAGMENT_SHADER,
-		PARTICLE_VERTEX_SHADER,
-		SKY_FRAGMENT_SHADER,
-		SKY_VERTEX_SHADER,
-		SKYBOX_FRAGMENT_SHADER,
-		SKYBOX_VERTEX_SHADER,
-		TEXT_FRAGMENT_SHADER,
-		TEXT_VERTEX_SHADER,
-		UI_FRAGMENT_SHADER,
-		UI_VERTEX_SHADER,
-		NBR_SHADERS = UI_VERTEX_SHADER + 1 - NBR_TEXTURES,
+		main_fragment_shader = size_textures,
+		main_vertex_shader,
+		item_fragment_shader,
+		item_vertex_shader,
+		particle_fragment_shader,
+		particle_vertex_shader,
+		sky_fragment_shader,
+		sky_vertex_shader,
+		skybox_fragment_shader,
+		skybox_vertex_shader,
+		text_fragment_shader,
+		text_vertex_shader,
+		ui_fragment_shader,
+		ui_vertex_shader,
+		size_shaders = ui_vertex_shader + 1 - size_textures,
 
-		VERSION = UI_VERTEX_SHADER + 1,
+		version = ui_vertex_shader + 1,
 
-		NBR_STRING,
+		size_strings,
 	};
-	const std::string CURRENT_VERSION = "v1.0";
+	const std::string current_version = "v1.0";
 
 	enum {
 		FANCY,
@@ -82,22 +82,9 @@ namespace SETTINGS {
 
 class Settings
 {
-	private:
-		static Settings *_settingsInstance;
-		static std::mutex _mtx;
-
-		std::array<bool, SETTINGS::NBR_BOOL> _bools;
-		std::array<int, SETTINGS::NBR_INT> _ints;
-		std::array<float, SETTINGS::NBR_FLOAT> _floats;
-		std::array<std::string, SETTINGS::NBR_STRING> _strings;
-		std::vector<std::string> _packs;
-
-		Settings( void );
-		~Settings( void );
-
 	public:
-		Settings( Settings &other ) = delete;
-		void operator=( const Settings &other ) = delete;
+		Settings( Settings& other ) = delete;
+		void operator=( const Settings& other ) = delete;
 
 		static Settings *Get( void );
 		static void Destroy( void );
@@ -116,8 +103,21 @@ class Settings
 
 		void pushResourcePack( std::string pack );
 		void setResourcePacks( std::vector<std::string> &packs );
-		std::vector<std::string> &getResourcePacks( void );
+		std::vector<std::string>& getResourcePacks( void );
 		bool loadResourcePacks( void );
+
+	private:
+		static Settings *_settingsInstance;
+		static std::mutex _mtx;
+
+		std::array<bool, settings::bools::size_bools> _bools;
+		std::array<int, settings::ints::size_ints> _ints;
+		std::array<float, settings::floats::size_floats> _floats;
+		std::array<std::string, settings::strings::size_strings> _strings;
+		std::vector<std::string> _packs;
+
+		Settings( void );
+		~Settings( void );
 };
 
 #endif

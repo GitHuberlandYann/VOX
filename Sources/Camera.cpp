@@ -3,15 +3,16 @@
 #include "utils.h"
 extern std::mutex mtx;
 
-Camera::Camera( glm::vec3 position )
-	: _fall_time(0), _walk_time(0), _breathTime(0), _armAnimTime(0), _fov_offset(0), _fall_distance(0),
-	_foodTickTimer(0), _camPlacement(CAMPLACEMENT::DEFAULT), _foodExhaustionLevel(0), _smoothCamZ(0), _z0(position.z), _fall_immunity(true),
+Camera::Camera( void )
+	: _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
+	_inJump(false), _touchGround(false), _foodSaturationLevel(20),
+	_fall_time(0), _walk_time(0), _breathTime(0), _armAnimTime(0), _fov_offset(0), _fall_distance(0), _current_block(0),
+	_foodTickTimer(0), _camPlacement(CAMPLACEMENT::DEFAULT), _foodExhaustionLevel(0), _smoothCamZ(0), _z0(255), _fall_immunity(true),
 	_walking(false), _sprinting(false), _sneaking(false), _smoothCam(false), _healthUpdate(false),
-	_waterHead(false), _waterFeet(false), _armAnimation(false), _hideUI(false), _current_chunk_ptr(NULL), _movement_speed(FLY_SPEED), _health_points(20), _foodLevel(20),
-	_inJump(false), _touchGround(false), _foodSaturationLevel(20)
+	_waterHead(false), _waterFeet(false), _armAnimation(false), _hideUI(false), _current_chunk_ptr(NULL)
 {
-	_position = position;
-	_spawnpoint = position;
+	_position = {0, 0, 255};
+	_spawnpoint = _position;
 	_lastTp = {0, 0, 0};
 	_world_up = glm::vec3(0.0f, 0.0f, 1.0f);
 	_yaw = YAW;
@@ -42,7 +43,7 @@ void Camera::updateCameraVectors( void )
 	_right = glm::normalize(glm::cross(_front, _world_up));
 	_up    = glm::normalize(glm::cross(_right, _front));
 	_front2 = glm::normalize(glm::vec2(_front)); // used in chunkInFront
-	_right2 = glm::vec2(glm::cos(glm::radians(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV) + _fov_offset))) * glm::normalize(glm::vec2(_right));
+	_right2 = glm::vec2(glm::cos(glm::radians(Settings::Get()->getFloat(settings::floats::fov) + _fov_offset))) * glm::normalize(glm::vec2(_right));
 }
 
 void Camera::moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, GLint z )
@@ -126,7 +127,7 @@ glm::mat4 Camera::getViewMatrix( void )
 
 glm::mat4 Camera::getPerspectiveMatrix( void )
 {
-	return (glm::perspective(glm::radians(Settings::Get()->getFloat(SETTINGS::FLOAT::FOV) + _fov_offset), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
+	return (glm::perspective(glm::radians(Settings::Get()->getFloat(settings::floats::fov) + _fov_offset), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
 }
 
 bool Camera::chunkInFront( glm::ivec2 current_chunk, int posX, int posY )

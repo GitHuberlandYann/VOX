@@ -1,6 +1,8 @@
 #ifndef CHAT_HPP
 # define CHAT_HPP
 
+# include <memory>
+
 # include "utils.h"
 # include "Text.hpp"
 class OpenGL_Manager;
@@ -44,26 +46,8 @@ typedef struct s_msg {
 
 class Chat
 {
-	private:
-		int _histo_cursor;
-		OpenGL_Manager *_oglMan;
-		Text *_text;
-		std::vector<std::pair<t_msg, float>> _current;
-		std::vector<t_msg> _past, _historic;
-
-		void handle_help( int argc, std::vector<std::string>& argv );
-		void handle_gamemode( int argc, std::vector<std::string>& argv );
-		void handle_time( int argc, std::vector<std::string>& argv );
-		void handle_clear( int argc, std::vector<std::string>& argv );
-		void handle_teleport( int argc, std::vector<std::string>& argv );
-		void handle_spawnpoint( int argc, std::vector<std::string>& argv );
-		void handle_give( int argc, std::vector<std::string>& argv );
-		bool handle_freeze( int argc, std::vector<std::string>& argv );
-
-		float parseLocation( std::string &str, int coord );
-
 	public:
-		Chat( Text *text );
+		Chat( std::shared_ptr<Text> text );
 		~Chat( void );
 
 		void setOGLManPtr( OpenGL_Manager *oglMan );
@@ -78,6 +62,24 @@ class Chat
 		int computeHeight( void );
 
 		std::string getInfoString( void );
+
+	private:
+		int _histo_cursor;
+		OpenGL_Manager *_oglMan;
+		std::shared_ptr<Text> _text;
+		std::vector<std::pair<t_msg, float>> _current;
+		std::vector<t_msg> _past, _historic;
+
+		void handle_help( int argc, std::vector<std::string>& argv );
+		void handle_gamemode( int argc, std::vector<std::string>& argv );
+		void handle_time( int argc, std::vector<std::string>& argv );
+		void handle_clear( int argc, std::vector<std::string>& argv );
+		void handle_teleport( int argc, std::vector<std::string>& argv );
+		void handle_spawnpoint( int argc, std::vector<std::string>& argv );
+		void handle_give( int argc, std::vector<std::string>& argv );
+		bool handle_freeze( int argc, std::vector<std::string>& argv );
+
+		float parseLocation( std::string &str, int coord );
 };
 
 #endif

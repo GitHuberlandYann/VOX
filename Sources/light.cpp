@@ -114,7 +114,7 @@ int Chunk::computeLight( int row, int col, int level )
 // used to have a smooth lighting from one block to another
 int Chunk::computeSmoothLight( int faceLight, int row, int col, int level, std::array<int, 9> offsets )
 {
-	if (!Settings::Get()->getBool(SETTINGS::BOOL::SMOOTH_LIGHTING)) {
+	if (!Settings::Get()->getBool(settings::bools::smooth_lighting)) {
 		return (faceLight);
 	}
 	short light = getLightLevel(row + offsets[0], col + offsets[1], level + offsets[2]);
@@ -177,7 +177,7 @@ int Chunk::computePosLight( glm::vec3 pos )
 
 short Chunk::getLightLevel( int posX, int posY, int posZ )
 {
-	if (!_lights || posZ < 0) {
+	if (posZ < 0) {
 		return (0);
 	} else if (posZ >= WORLD_HEIGHT) {
 		return (0xFF00);
@@ -206,7 +206,7 @@ short Chunk::getLightLevel( int posX, int posY, int posZ )
 
 void Chunk::setLightLevel( short level, int posX, int posY, int posZ, bool askNeighbours )
 {
-	if (!_lights || posZ < 0 || posZ >= WORLD_HEIGHT) {
+	if (posZ < 0 || posZ >= WORLD_HEIGHT) {
 		return ;
 	}
 	if (posX < 0) {
@@ -236,7 +236,7 @@ void Chunk::setLightLevel( short level, int posX, int posY, int posZ, bool askNe
 
 void Chunk::startLightSpread( int posX, int posY, int posZ, bool skySpread )
 {
-	if (!_lights || posZ < 0 || posZ >= WORLD_HEIGHT) {
+	if (posZ < 0 || posZ >= WORLD_HEIGHT) {
 		return ;
 	}
 	if (posX < 0) {

@@ -5,10 +5,6 @@
 
 class Bench
 {
-	private:
-		std::chrono::time_point<std::chrono::high_resolution_clock> _startTimePoint;
-		std::chrono::time_point<std::chrono::high_resolution_clock> _stampTimePoint;
-
 	public:
 		Bench()
 		{
@@ -53,6 +49,10 @@ class Bench
 			}
 			_stampTimePoint = currentTimePoint;
 		}
+
+	private:
+		std::chrono::time_point<std::chrono::high_resolution_clock> _startTimePoint;
+		std::chrono::time_point<std::chrono::high_resolution_clock> _stampTimePoint;
 };
 
 #endif

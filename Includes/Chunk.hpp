@@ -120,113 +120,6 @@ struct s_backup { // TODO add fluids and entities to backups
 
 class Chunk
 {
-    private:
-        GLuint _vao, _vbo, _waterVao, _waterVbo, _skyVao, _skyVbo;
-        bool _vaoSet, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
-		std::atomic_bool _genDone, _light_update, _vertex_update, _vaoReset, _vaoVIP, _waterVaoReset, _skyVaoReset, _sortedOnce;
-        GLint _startX, _startY, _nb_neighbours;
-		unsigned _seed;
-		GLint _continent;
-		GLint *_blocks, *_water_vert, *_sky_vert;
-		std::vector<t_shaderInput> _vertices;
-		short *_lights; // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
-		GLboolean *_sky, _hasWater;
-		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
-		std::array<Chunk *, 4> _neighbours;
-		Camera *_camera;
-		Inventory *_inventory;
-		std::map<int,int> _added;
-		std::set<int> _removed, _fluids;
-		std::vector<int> _scheduled_to_fall;
-		std::array<std::vector<t_redstoneTick>, SCHEDULE::SIZE> _redstone_schedule;
-		std::map<int, ChestInstance*> _chests;
-		std::map<int, FurnaceInstance*> _furnaces;
-		std::map<int, SignInstance*> _signs;
-		std::vector<Entity*> _entities;
-		std::vector<Particle*> _particles;
-		std::map<int, Particle*> _flames;
-		std::thread _thread;
-		std::mutex _mtx, _mtx_fluid, _mtx_sky;
-
-		// utils
-		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
-		void collisionWHitbox( t_collision &res, const Block *target, int value, glm::vec3 pos, float width,
-			float height, int bX, int bY, int bZ );
-		GLint face_count( int type, glm::ivec3 pos );
-		GLint face_count( int type, int row, int col, int level );
-		bool exposed_block( int row, int col, int level, bool isNotLeaves, bool isNotGlass );
-
-		// fluids
-		int exposed_water_faces( int row, int col, int level );
-		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );
-		bool endFlow( std::set<int> *newFluids, int &value, int posX, int posY, int posZ );
-		bool addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
-
-		// world gen
-		// int get_block_type_cave( int row, int col, int level, int ground_level,
-		// 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
-		// 	bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
-		int get_block_type( siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
-			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
-			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
-		int surfaceLevel( int row, int col, siv::PerlinNoise perlin );
-		void generate_flat_world( void );
-		void generate_blocks( void );
-		void resetDisplayedFaces( void );
-		void generate_sky( void );
-
-		// player-related block update
-		void regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif );
-		void entity_block( int posX, int posY, int posZ, int type );
-		void remove_block( bool useInventory, glm::ivec3 pos );
-		void handle_stair_corners( glm::ivec3 pos, int &type );
-		void handle_door_placement( glm::ivec3 pos, int &type );
-		void handle_fence_placement( glm::ivec3 pos, int &type );
-		void addFlame( int offset, glm::vec3 pos, int source, int orientation );
-		void add_block( bool useInventory, glm::ivec3 pos, int block_value, int previous );
-		void replace_block( bool useInventory, glm::ivec3 pos, int type );
-		void use_block( glm::ivec3 pos, int type );
-		void update_block( glm::ivec3 pos, int previous, int value );
-
-		// lights
-		void light_spread( int posX, int posY, int posZ, bool skySpread, int recurse = LIGHT_RECURSE );
-		void generate_lights( void );
-
-		// redstone
-		glm::ivec3 getAttachedDir( int value );
-		int getWeakdyState( glm::ivec3 pos, glm::ivec3 except );
-		int getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side, bool repeater );
-		int getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bool weak );
-		int getDustStrength( glm::ivec3 pos );
-		void stronglyPower( glm::ivec3 pos, glm::ivec3 except, int state );
-		void weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bool weakdy );
-		void weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state, bool weakdy );
-		void flickLever( glm::ivec3 pos, int value, bool state );
-		void updateRedstoneTorch( glm::ivec3 pos, int value );
-		void updateRedstoneDust( glm::ivec3 pos );
-		void initRepeater( glm::ivec3 pos, int &value, bool init );
-		void updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate );
-		int pistonExtendCount( glm::ivec3 pos, int value );
-		void extendPiston( glm::ivec3 pos, int value, int count );
-		void retractPiston( glm::ivec3 pos, int value );
-		void connectRedstoneDust( glm::ivec3 pos, int &value, bool placed );
-
-		// block update (20/sec)
-		void updateCrop( int value, int offset );
-		bool watered_farmland( int posX, int posY, int posZ );
-		void updateFarmland( int value, int offset );
-		void spreadGrassblock( int offset );
-		bool findLog( int posX, int posY, int posZ, int level );
-		void decayLeaves( int offset );
-		bool spaceForTree( int posX, int posY, int posZ );
-		void growTree( int value, int offset );
-
-		// array buffer
-        void fill_vertex_array( void );
-        void setup_array_buffer( void );
-		void setup_sky_array_buffer( void );
-		void setup_water_array_buffer( void );
-
     public:
         Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::list<Chunk *> *chunks );
         ~Chunk( void );
@@ -307,6 +200,115 @@ class Chunk
 		size_t clearParticles( void );
 
 		std::string getAddsRmsString( void );
+
+    private:
+        GLuint _vao, _vbo, _waterVao, _waterVbo, _skyVao, _skyVbo;
+        bool _vaoSet, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
+		std::atomic_bool _genDone, _light_update, _vertex_update, _vaoReset, _vaoVIP, _waterVaoReset, _skyVaoReset, _sortedOnce;
+        GLint _startX, _startY, _nb_neighbours;
+		unsigned _seed;
+		GLint _continent;
+		std::array<GLint, ALLOC_SIZE> _blocks;
+		std::vector<glm::ivec4> _water_vert, _sky_vert;
+		std::vector<t_shaderInput> _vertices;
+		std::array<short, ALLOC_SIZE> _lights;  // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
+		std::array<GLboolean, (CHUNK_SIZE + 2) * (CHUNK_SIZE + 2)> _sky;
+		GLboolean _hasWater;
+		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
+		std::array<Chunk *, 4> _neighbours;
+		Camera *_camera;
+		Inventory *_inventory;
+		std::map<int,int> _added;
+		std::set<int> _removed, _fluids;
+		std::vector<int> _scheduled_to_fall;
+		std::array<std::vector<t_redstoneTick>, SCHEDULE::SIZE> _redstone_schedule;
+		std::map<int, ChestInstance*> _chests;
+		std::map<int, FurnaceInstance*> _furnaces;
+		std::map<int, SignInstance*> _signs;
+		std::vector<Entity*> _entities;
+		std::vector<Particle*> _particles;
+		std::map<int, Particle*> _flames;
+		std::thread _thread;
+		std::mutex _mtx, _mtx_fluid, _mtx_sky;
+
+		// utils
+		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
+		void collisionWHitbox( t_collision& res, const Block* target, int value, glm::vec3 pos, float width,
+			float height, int bX, int bY, int bZ );
+		GLint face_count( int type, glm::ivec3 pos );
+		GLint face_count( int type, int row, int col, int level );
+		bool exposed_block( int row, int col, int level, bool isNotLeaves, bool isNotGlass );
+
+		// fluids
+		int exposed_water_faces( int row, int col, int level );
+		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );
+		bool endFlow( std::set<int> *newFluids, int &value, int posX, int posY, int posZ );
+		bool addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
+
+		// world gen
+		// int get_block_type_cave( int row, int col, int level, int ground_level,
+		// 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
+		// 	bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
+		int get_block_type( siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
+			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
+			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
+		int surfaceLevel( int row, int col, siv::PerlinNoise perlin );
+		void generate_flat_world( void );
+		void generate_blocks( void );
+		void resetDisplayedFaces( void );
+		void generate_sky( void );
+
+		// player-related block update
+		void regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif );
+		void entity_block( int posX, int posY, int posZ, int type );
+		void remove_block( bool useInventory, glm::ivec3 pos );
+		void handle_stair_corners( glm::ivec3 pos, int &type );
+		void handle_door_placement( glm::ivec3 pos, int &type );
+		void handle_fence_placement( glm::ivec3 pos, int &type );
+		void addFlame( int offset, glm::vec3 pos, int source, int orientation );
+		void add_block( bool useInventory, glm::ivec3 pos, int block_value, int previous );
+		void replace_block( bool useInventory, glm::ivec3 pos, int type );
+		void use_block( glm::ivec3 pos, int type );
+		void update_block( glm::ivec3 pos, int previous, int value );
+
+		// lights
+		void light_spread( int posX, int posY, int posZ, bool skySpread, int recurse = LIGHT_RECURSE );
+		void generate_lights( void );
+
+		// redstone
+		glm::ivec3 getAttachedDir( int value );
+		int getWeakdyState( glm::ivec3 pos, glm::ivec3 except );
+		int getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side, bool repeater );
+		int getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bool weak );
+		int getDustStrength( glm::ivec3 pos );
+		void stronglyPower( glm::ivec3 pos, glm::ivec3 except, int state );
+		void weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bool weakdy );
+		void weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state, bool weakdy );
+		void flickLever( glm::ivec3 pos, int value, bool state );
+		void updateRedstoneTorch( glm::ivec3 pos, int value );
+		void updateRedstoneDust( glm::ivec3 pos );
+		void initRepeater( glm::ivec3 pos, int &value, bool init );
+		void updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate );
+		int pistonExtendCount( glm::ivec3 pos, int value );
+		void extendPiston( glm::ivec3 pos, int value, int count );
+		void retractPiston( glm::ivec3 pos, int value );
+		void connectRedstoneDust( glm::ivec3 pos, int &value, bool placed );
+
+		// block update (20/sec)
+		void updateCrop( int value, int offset );
+		bool watered_farmland( int posX, int posY, int posZ );
+		void updateFarmland( int value, int offset );
+		void spreadGrassblock( int offset );
+		bool findLog( int posX, int posY, int posZ, int level );
+		void decayLeaves( int offset );
+		bool spaceForTree( int posX, int posY, int posZ );
+		void growTree( int value, int offset );
+
+		// array buffer
+        void fill_vertex_array( void );
+        void setup_array_buffer( void );
+		void setup_sky_array_buffer( void );
+		void setup_water_array_buffer( void );
 };
 
 #endif

@@ -10,6 +10,7 @@
 # include <string>
 # include <vector>
 # include <array>
+# include <memory>
 
 class Chunk;
 class UI;
@@ -2820,6 +2821,6 @@ struct FlintAndSteel : Block {
 		}
 };
 
-extern const std::array<Block*, S_BLOCKS_SIZE> s_blocks;
+extern const std::array<std::unique_ptr<Block>, S_BLOCKS_SIZE> s_blocks;
 
 #endif

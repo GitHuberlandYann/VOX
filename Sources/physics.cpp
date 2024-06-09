@@ -13,7 +13,7 @@
  * @param width, height dimensions of the player's hitbox
  * @param bX, bY, bZ block's position
 */
-void Chunk::collisionWHitbox( t_collision &res, const Block *target, int value, glm::vec3 pos, float width, float height, int bX, int bY, int bZ )
+void Chunk::collisionWHitbox( t_collision& res, const Block* target, int value, glm::vec3 pos, float width, float height, int bX, int bY, int bZ )
 {
 	if (cube_cube_intersection(pos, {width, width, height},
 		{bX + target->hitboxCenter.x + _startX, bY + target->hitboxCenter.y + _startY, bZ + target->hitboxCenter.z},
@@ -58,7 +58,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	int maxY = glm::floor(pos.y + width - _startY);
 	int top  = glm::floor(pos.z + height);
 	int value = getBlockAt(minX, minY, top);
-	const Block *target = s_blocks[value & mask::blocks::type];
+	const Block* target = s_blocks[value & mask::blocks::type].get();
 	if (target->collisionHitbox_1x1x1) {
 		return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 	} else if (target->collisionHitbox) {
@@ -66,7 +66,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	}
 	if (minX != maxX) {
 		value = getBlockAt(maxX, minY, top);
-		target = s_blocks[value & mask::blocks::type];
+		target = s_blocks[value & mask::blocks::type].get();
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 		} else if (target->collisionHitbox) {
@@ -75,7 +75,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	}
 	if (minY != maxY) {
 		value = getBlockAt(minX, maxY, top);
-		target = s_blocks[value & mask::blocks::type];
+		target = s_blocks[value & mask::blocks::type].get();
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 		} else if (target->collisionHitbox) {
@@ -84,7 +84,7 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	}
 	if (minX != maxX && minY != maxY) {
 		value = getBlockAt(maxX, maxY, top);
-		target = s_blocks[value & mask::blocks::type];
+		target = s_blocks[value & mask::blocks::type].get();
 		if (target->collisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
 		} else if (target->collisionHitbox) {
@@ -328,6 +328,22 @@ void Camera::unmoveHuman( glm::vec3 pos )
 	_position = pos;
 	_mtx.unlock();
 	setRun(false);
+}
+
+/**
+ * @brief if current block pos different from last recorded, we sort water and sky vertices
+*/
+void Camera::updateCurrentBlock( void )
+{
+	glm::vec3 camPos = getEyePos();
+	glm::ivec3 current_block = {glm::floor(camPos.x), glm::floor(camPos.y), glm::floor(camPos.z)};
+	if (current_block != _current_block) {
+		_current_block = current_block;
+		if (_current_chunk_ptr) {
+			_current_chunk_ptr->sort_sky(camPos, true);
+			_current_chunk_ptr->sort_water(camPos, true);
+		}
+	}
 }
 
 /**

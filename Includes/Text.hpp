@@ -24,25 +24,25 @@ typedef struct s_text_shader_input {
 
 class Text
 {
-	private:
-        GLuint _vao, _vbo;
-		GLuint _shaderProgram;
-		GLuint *_textures;
-		std::vector<t_text_shader_input> _texts;
-
-		void addQuads( int spec, int posX, int posY, int width, int height, unsigned color );
-
 	public:
 		Text( void );
 		~Text( void );
 
-        void setup_shader( void );
-		void load_texture( void );
+        void setupShader( void );
+		void loadTexture( void );
 		void updateWinSize( void );
 
         void addText( int posX, int posY, int font_size, unsigned color, std::string str );
 		void addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, std::string str );
 		void toScreen( void );
+
+	private:
+        GLuint _vao, _vbo;
+		GLuint _shaderProgram;
+		GLuint _texture;
+		std::vector<t_text_shader_input> _texts;
+
+		void addQuads( int spec, int posX, int posY, int width, int height, unsigned color );
 };
 
 #endif

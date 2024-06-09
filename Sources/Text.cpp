@@ -2,7 +2,7 @@
 #include "Text.hpp"
 #include "Settings.hpp"
 
-Text::Text( void ) : _shaderProgram(0), _textures(NULL)
+Text::Text( void ) : _shaderProgram(0), _texture(0)
 {
 }
 
@@ -12,9 +12,8 @@ Text::~Text( void )
 	glDeleteBuffers(1, &_vbo);
 	glDeleteVertexArrays(1, &_vao);
 
-	if (_textures) {
-		glDeleteTextures(1, _textures);
-		delete [] _textures;
+	if (_texture) {
+		glDeleteTextures(1, &_texture);
 	}
 	glDeleteProgram(_shaderProgram);
 
@@ -40,13 +39,13 @@ void Text::addQuads( int spec, int posX, int posY, int width, int height, unsign
 //                                Public                                      //
 // ************************************************************************** //
 
-void Text::setup_shader( void )
+void Text::setupShader( void )
 {
 	if (_shaderProgram) {
 		glDeleteProgram(_shaderProgram);
 	}
-	_shaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::TEXT_VERTEX_SHADER), "",
-										Settings::Get()->getString(SETTINGS::STRING::TEXT_FRAGMENT_SHADER));
+	_shaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::text_vertex_shader), "",
+										Settings::Get()->getString(settings::strings::text_fragment_shader));
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
 	glBindAttribLocation(_shaderProgram, TEXT::SPECATTRIB, "specifications");
@@ -65,17 +64,15 @@ void Text::setup_shader( void )
 	glGenBuffers(1, &_vbo);
 }
 
-void Text::load_texture( void )
+void Text::loadTexture( void )
 {
-	if (_textures) {
-		glDeleteTextures(1, _textures);
-		delete [] _textures;
+	if (_texture) {
+		glDeleteTextures(1, &_texture);
 	}
-	_textures = new GLuint[1];
-	glGenTextures(1, _textures);
+	glGenTextures(1, &_texture);
 
 	glUseProgram(_shaderProgram);
-	loadTextureShader(1, _textures[0], Settings::Get()->getString(SETTINGS::STRING::ASCII_ATLAS));
+	loadTextureShader(1, _texture, Settings::Get()->getString(settings::strings::ascii_atlas));
 	glUniform1i(glGetUniformLocation(_shaderProgram, "asciiAtlas"), 1); // sampler2D #index in fragment shader
 }
 

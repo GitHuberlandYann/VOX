@@ -1,22 +1,22 @@
 #include "Chunk.hpp"
 
-const std::array<Block*, S_BLOCKS_SIZE> s_blocks = {
-	new Air(), new GrassBlock(), new OakLog(), new Cactus(), new Farmland(), new DirtPath(), new TNT(), new Target(),
-	new CraftingTable(), new Furnace(), new OakStairsBottom(), new OakStairsTop(), new OakDoor(), new OakTrapdoor(), new StoneStairsBottom(), new StoneStairsTop(),
-	new SmoothStoneStairsBottom(), new SmoothStoneStairsTop(), new CobbleStoneStairsBottom(), new CobbleStoneStairsTop(), new StoneBricksStairsBottom(), new StoneBricksStairsTop(), new Lever(), new OakSign(),
-	new Bedrock(), new Dirt(), new SmoothStone(), new Stone(), new Cobblestone(), new StoneBrick(), new CrackedStoneBrick(), new Sand(),
-	new Gravel(), new OakLeaves(), new OakPlanks(), new Glass(), new GlassPane(), new RedstoneLamp(), new StoneButton(), new OakButton(),
-	new CoalOre(), new IronOre(), new DiamondOre(), new CoalBlock(), new IronBlock(), new DiamondBlock(), new RedstoneOre(), new RedstoneBlock(),
-	new OakSlabBottom(), new OakSlabTop(), new OakFence(), new StoneSlabBottom(), new StoneSlabTop(), new SmoothStoneSlabBottom(), new SmoothStoneSlabTop(), new CobbleStoneSlabBottom(),
-	new CobbleStoneSlabTop(), new StoneBricksSlabBottom(), new StoneBricksSlabTop(), new Piston(), new StickyPiston(), new PistonHead(), new MovingPiston(), new Observer(),
-	new Poppy(), new Dandelion(), new BlueOrchid(), new Allium(), new CornFlower(), new PinkTulip(), new Grass(), new SugarCane(),
-	new DeadBush(), new OakSapling(), new Torch(), new RedstoneTorch(), new RedstoneDust(), new Repeater(), new Comparator(), new Chest(),
-	new WheatCrop(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(), new TBD(),
-	new Water(), new Water1(), new Water2(), new Water3(), new Water4(), new Water5(), new Water6(), new Water7(),
-	new Stick(), new WoodenShovel(), new StoneShovel(), new IronShovel(), new DiamondShovel(), new WoodenAxe(), new StoneAxe(), new IronAxe(),
-	new DiamondAxe(), new WoodenPickaxe(), new StonePickaxe(), new IronPickaxe(), new DiamondPickaxe(), new Bow(), new Arrow(), new WorldEditWand(),
-	new Coal(), new Charcoal(), new IronIngot(), new Diamond(), new Bucket(), new WaterBucket(), new WoodenHoe(), new StoneHoe(),
-	new IronHoe(), new DiamondHoe(), new WheatSeeds(), new Wheat(), new Bread(), new Apple(), new Flint(), new FlintAndSteel()
+const std::array<std::unique_ptr<Block>, S_BLOCKS_SIZE> s_blocks = {
+	std::make_unique<Air>(), std::make_unique<GrassBlock>(), std::make_unique<OakLog>(), std::make_unique<Cactus>(), std::make_unique<Farmland>(), std::make_unique<DirtPath>(), std::make_unique<TNT>(), std::make_unique<Target>(),
+	std::make_unique<CraftingTable>(), std::make_unique<Furnace>(), std::make_unique<OakStairsBottom>(), std::make_unique<OakStairsTop>(), std::make_unique<OakDoor>(), std::make_unique<OakTrapdoor>(), std::make_unique<StoneStairsBottom>(), std::make_unique<StoneStairsTop>(),
+	std::make_unique<SmoothStoneStairsBottom>(), std::make_unique<SmoothStoneStairsTop>(), std::make_unique<CobbleStoneStairsBottom>(), std::make_unique<CobbleStoneStairsTop>(), std::make_unique<StoneBricksStairsBottom>(), std::make_unique<StoneBricksStairsTop>(), std::make_unique<Lever>(), std::make_unique<OakSign>(),
+	std::make_unique<Bedrock>(), std::make_unique<Dirt>(), std::make_unique<SmoothStone>(), std::make_unique<Stone>(), std::make_unique<Cobblestone>(), std::make_unique<StoneBrick>(), std::make_unique<CrackedStoneBrick>(), std::make_unique<Sand>(),
+	std::make_unique<Gravel>(), std::make_unique<OakLeaves>(), std::make_unique<OakPlanks>(), std::make_unique<Glass>(), std::make_unique<GlassPane>(), std::make_unique<RedstoneLamp>(), std::make_unique<StoneButton>(), std::make_unique<OakButton>(),
+	std::make_unique<CoalOre>(), std::make_unique<IronOre>(), std::make_unique<DiamondOre>(), std::make_unique<CoalBlock>(), std::make_unique<IronBlock>(), std::make_unique<DiamondBlock>(), std::make_unique<RedstoneOre>(), std::make_unique<RedstoneBlock>(),
+	std::make_unique<OakSlabBottom>(), std::make_unique<OakSlabTop>(), std::make_unique<OakFence>(), std::make_unique<StoneSlabBottom>(), std::make_unique<StoneSlabTop>(), std::make_unique<SmoothStoneSlabBottom>(), std::make_unique<SmoothStoneSlabTop>(), std::make_unique<CobbleStoneSlabBottom>(),
+	std::make_unique<CobbleStoneSlabTop>(), std::make_unique<StoneBricksSlabBottom>(), std::make_unique<StoneBricksSlabTop>(), std::make_unique<Piston>(), std::make_unique<StickyPiston>(), std::make_unique<PistonHead>(), std::make_unique<MovingPiston>(), std::make_unique<Observer>(),
+	std::make_unique<Poppy>(), std::make_unique<Dandelion>(), std::make_unique<BlueOrchid>(), std::make_unique<Allium>(), std::make_unique<CornFlower>(), std::make_unique<PinkTulip>(), std::make_unique<Grass>(), std::make_unique<SugarCane>(),
+	std::make_unique<DeadBush>(), std::make_unique<OakSapling>(), std::make_unique<Torch>(), std::make_unique<RedstoneTorch>(), std::make_unique<RedstoneDust>(), std::make_unique<Repeater>(), std::make_unique<Comparator>(), std::make_unique<Chest>(),
+	std::make_unique<WheatCrop>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
+	std::make_unique<Water>(), std::make_unique<Water1>(), std::make_unique<Water2>(), std::make_unique<Water3>(), std::make_unique<Water4>(), std::make_unique<Water5>(), std::make_unique<Water6>(), std::make_unique<Water7>(),
+	std::make_unique<Stick>(), std::make_unique<WoodenShovel>(), std::make_unique<StoneShovel>(), std::make_unique<IronShovel>(), std::make_unique<DiamondShovel>(), std::make_unique<WoodenAxe>(), std::make_unique<StoneAxe>(), std::make_unique<IronAxe>(),
+	std::make_unique<DiamondAxe>(), std::make_unique<WoodenPickaxe>(), std::make_unique<StonePickaxe>(), std::make_unique<IronPickaxe>(), std::make_unique<DiamondPickaxe>(), std::make_unique<Bow>(), std::make_unique<Arrow>(), std::make_unique<WorldEditWand>(),
+	std::make_unique<Coal>(), std::make_unique<Charcoal>(), std::make_unique<IronIngot>(), std::make_unique<Diamond>(), std::make_unique<Bucket>(), std::make_unique<WaterBucket>(), std::make_unique<WoodenHoe>(), std::make_unique<StoneHoe>(),
+	std::make_unique<IronHoe>(), std::make_unique<DiamondHoe>(), std::make_unique<WheatSeeds>(), std::make_unique<Wheat>(), std::make_unique<Bread>(), std::make_unique<Apple>(), std::make_unique<Flint>(), std::make_unique<FlintAndSteel>()
 };
 
 void Cube::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const

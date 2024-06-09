@@ -224,7 +224,7 @@ void Chunk::growTree( int value, int offset )
 
 void Chunk::turnDirtToGrass( int posX, int posY, int posZ )
 {
-	if (!_blocks || posZ < 0 || posZ >= WORLD_HEIGHT) {
+	if (posZ < 0 || posZ >= WORLD_HEIGHT) {
 		return ;
 	}
 	if (posX < 0) {

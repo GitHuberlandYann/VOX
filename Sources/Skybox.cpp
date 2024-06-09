@@ -29,13 +29,13 @@ Skybox::~Skybox( void )
 //                                Public                                      //
 // ************************************************************************** //
 
-void Skybox::create_shader( void )
+void Skybox::createShader( void )
 {
 	if (_shaderProgram) {
 		glDeleteProgram(_shaderProgram);
 	}
-	_shaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::SKYBOX_VERTEX_SHADER), "",
-										Settings::Get()->getString(SETTINGS::STRING::SKYBOX_FRAGMENT_SHADER));
+	_shaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::skybox_vertex_shader), "",
+										Settings::Get()->getString(settings::strings::skybox_fragment_shader));
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
@@ -47,7 +47,7 @@ void Skybox::create_shader( void )
 	check_glstate("Skybox shader program successfully created", true);
 }
 
-void Skybox::setup_communication_shaders( void )
+void Skybox::setupCommunicationShaders( void )
 {
 	_uniView = glGetUniformLocation(_shaderProgram, "view");
 	_uniProj = glGetUniformLocation(_shaderProgram, "proj");
@@ -88,13 +88,13 @@ void Skybox::setup_communication_shaders( void )
 	check_glstate("Skybox::setup_communication_shaders", false);
 }
 
-void Skybox::update_cam_view( glm::mat4 view )
+void Skybox::updateCamView( glm::mat4 view )
 {
 	glUseProgram(_shaderProgram);
 	glUniformMatrix4fv(_uniView, 1, GL_FALSE, glm::value_ptr(view));
 }
 
-void Skybox::update_cam_perspective( glm::mat4 proj )
+void Skybox::updateCamPerspective( glm::mat4 proj )
 {
 	glUseProgram(_shaderProgram);
 	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));

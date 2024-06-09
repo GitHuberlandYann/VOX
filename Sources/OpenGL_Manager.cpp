@@ -6,21 +6,19 @@
 void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
-	: _window(NULL), _shaderProgram(0), _skyShaderProgram(0), _particleShaderProgram(0),
-		_textures({NULL}), _fill(FILL), _debug_mode(true), _outline(true), _paused(true),
-		_threadUpdate(false), _threadStop(false), _break_time(0), _eat_timer(0), _bow_timer(0),
-		_game_mode(GAMEMODE::CREATIVE), _break_frame(0), _block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0})
+	: _camera(std::make_unique<Camera>()), _inventory(std::make_unique<Inventory>()),
+	_window(NULL), _shaderProgram(0), _skyShaderProgram(0), _particleShaderProgram(0),
+	_textures({NULL}), _fill(FILL), _debug_mode(true), _outline(true), _paused(true),
+	_threadUpdate(false), _threadStop(false), _break_time(0), _eat_timer(0), _bow_timer(0),
+	_game_mode(GAMEMODE::CREATIVE), _break_frame(0), _world_name("default.json"),
+	_block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0}),
+	_ui(std::make_unique<UI>()), _menu(std::make_unique<Menu>()), _skybox(std::make_unique<Skybox>())
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
-	_world_name = "default.json";
-	_camera = new Camera(glm::vec3(1.0f, -2.0f, 66.0f));
-	_inventory = new Inventory();
-	_ui = new UI(*_inventory, *_camera);
-	_inventory->setUIPtr(_ui);
-	_ui->getChatPtr()->setOGLManPtr(this);
-	_menu = new Menu(*_inventory, _ui);
-	_skybox = new Skybox();
-	WorldEdit::Get()->setPtrs(this, _inventory, _ui->getChatPtr());
+	_inventory->setUIPtr(_ui.get());
+	_ui->setPtrs(this, _inventory.get(), _camera.get());
+	_menu->setPtrs(_inventory.get(), _ui.get());
+	WorldEdit::Get()->setPtrs(this, _inventory.get(), _ui->getChatPtr().get());
 
 	startThread();
 }
@@ -46,30 +44,20 @@ OpenGL_Manager::~OpenGL_Manager( void )
 
 	set_cursor_position_callback(NULL, NULL);
 	set_scroll_callback(NULL);
-	WorldEdit::Get()->setPtrs();
-	delete _camera;
-	delete _inventory;
-	delete _ui;
-	delete _menu;
-	delete _skybox;
+	_inventory->setUIPtr(NULL);
+	_ui->setPtrs(NULL, NULL, NULL);
+	_menu->setPtrs(NULL, NULL);
+	WorldEdit::Get()->setPtrs(NULL, NULL, NULL);
 
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
 
-	_visible_chunks.clear();
-	mtx_perimeter.lock();
-	_perimeter_chunks.clear();
-	mtx_perimeter.unlock();
-	mtx_deleted_chunks.lock();
-	_deleted_chunks.clear();
-	mtx_deleted_chunks.unlock();
 	mtx.lock();
 	for (auto& c: _chunks) {
 		c->setBackup(_backups);
 		delete c;
 	}
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
-	_chunks.clear();
 	mtx.unlock();
 	mtx_backup.lock();
 	for (auto &b : _backups) {
@@ -83,7 +71,6 @@ OpenGL_Manager::~OpenGL_Manager( void )
 			delete s.second;
 		}
 	}
-	_backups.clear();
 	mtx_backup.unlock();
 
 	DayCycle::Destroy();
@@ -214,7 +201,7 @@ void OpenGL_Manager::drawEntities( void )
 	}//*/
 
 	bool borders = false;
-	if (Settings::Get()->getBool(SETTINGS::BOOL::VISIBLE_CHUNK_BORDER)) {
+	if (Settings::Get()->getBool(settings::bools::visible_chunk_border)) {
 		borders = true;
 		for (int i = 0; i < 13; i += 4) {
 			addLine(glm::vec3(_current_chunk.x + i,  _current_chunk.y,      0), glm::vec3(_current_chunk.x + i,  _current_chunk.y,      256));
@@ -296,7 +283,7 @@ void error_callback( int error, const char *msg ) {
     std::cerr << s << std::endl;
 }
 
-void OpenGL_Manager::setup_window( void )
+void OpenGL_Manager::setupWindow( void )
 {
 	glfwSetErrorCallback( error_callback );
 	if (!glfwInit()) {
@@ -327,7 +314,7 @@ void OpenGL_Manager::setup_window( void )
 	WIN_HEIGHT = mode->height;
 	// std::cout << "win size is set to " << WIN_WIDTH << ", " << WIN_HEIGHT << ", refresh rate is " << mode->refreshRate << std::endl;
 
-	// (Settings::Get()->getBool(SETTINGS::BOOL::FULLSCREEN))
+	// (Settings::Get()->getBool(settings::bools::fullscreen))
 	// 	? _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", glfwGetPrimaryMonitor(), nullptr)
 	// 	: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", nullptr, nullptr);
 	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", monitor, nullptr);
@@ -364,22 +351,22 @@ void OpenGL_Manager::setup_window( void )
 
 void OpenGL_Manager::initWorld( void )
 {
-	chunk_update();
+	chunkUpdate();
 	setThreadUpdate(true);
 }
 
-void OpenGL_Manager::create_shaders( void )
+void OpenGL_Manager::createShaders( void )
 {
 	// first setup the ui and text shaders
-	_ui->setup_shader();
+	_ui->setupShader();
 	_menu->setShaderProgram(_ui->getShaderProgram());
 
 	// then setup the sky/water shader
 	if (_skyShaderProgram) {
 		glDeleteProgram(_skyShaderProgram);
 	}
-	_skyShaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::SKY_VERTEX_SHADER), "",
-										Settings::Get()->getString(SETTINGS::STRING::SKY_FRAGMENT_SHADER));
+	_skyShaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::sky_vertex_shader), "",
+										Settings::Get()->getString(settings::strings::sky_fragment_shader));
 
 	glBindFragDataLocation(_skyShaderProgram, 0, "outColor");
 
@@ -394,8 +381,8 @@ void OpenGL_Manager::create_shaders( void )
 	if (_particleShaderProgram) {
 		glDeleteProgram(_particleShaderProgram);
 	}
-	_particleShaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::PARTICLE_VERTEX_SHADER), "",
-										Settings::Get()->getString(SETTINGS::STRING::PARTICLE_FRAGMENT_SHADER));
+	_particleShaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::particle_vertex_shader), "",
+										Settings::Get()->getString(settings::strings::particle_fragment_shader));
 
 	glBindFragDataLocation(_particleShaderProgram, 0, "outColor");
 
@@ -408,14 +395,14 @@ void OpenGL_Manager::create_shaders( void )
 	check_glstate("particleShader program successfully created", true);
 
 	// then setup the skybox shader
-	_skybox->create_shader();
+	_skybox->createShader();
 	
 	// then setup the main shader
 	if (_shaderProgram) {
 		glDeleteProgram(_shaderProgram);
 	}
-	_shaderProgram = createShaderProgram(Settings::Get()->getString(SETTINGS::STRING::MAIN_VERTEX_SHADER), "",
-										Settings::Get()->getString(SETTINGS::STRING::MAIN_FRAGMENT_SHADER));
+	_shaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::main_vertex_shader), "",
+										Settings::Get()->getString(settings::strings::main_fragment_shader));
 
 	glBindFragDataLocation(_shaderProgram, 0, "outColor");
 
@@ -428,27 +415,27 @@ void OpenGL_Manager::create_shaders( void )
 	check_glstate("Shader program successfully created", true);
 }
 
-void OpenGL_Manager::setup_communication_shaders( void )
+void OpenGL_Manager::setupCommunicationShaders( void )
 {
-	_skybox->setup_communication_shaders();
+	_skybox->setupCommunicationShaders();
 
 	glUseProgram(_shaderProgram);
 	_uniFog = glGetUniformLocation(_shaderProgram, "fogDist");
-	glUniform1f(_uniFog, (1 + Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)) << CHUNK_SHIFT);
+	glUniform1f(_uniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << CHUNK_SHIFT);
 	_skyUniFog = glGetUniformLocation(_skyShaderProgram, "fogDist");
 	glUseProgram(_skyShaderProgram);
-	glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)) << CHUNK_SHIFT);
+	glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << CHUNK_SHIFT);
 	glUseProgram(_shaderProgram);
 
 	_uniView = glGetUniformLocation(_shaderProgram, "view");
 	_skyUniView = glGetUniformLocation(_skyShaderProgram, "view");
 	_partUniView = glGetUniformLocation(_particleShaderProgram, "view");
-	update_cam_view();
+	updateCamView();
 
 	_uniProj = glGetUniformLocation(_shaderProgram, "proj");
 	_skyUniProj = glGetUniformLocation(_skyShaderProgram, "proj");
 	_partUniProj = glGetUniformLocation(_particleShaderProgram, "proj");
-	update_cam_perspective();
+	updateCamPerspective();
 
 	DayCycle::Get()->setUniInternalLight(_shaderProgram, _particleShaderProgram,
 		glGetUniformLocation(_shaderProgram, "internal_light"), glGetUniformLocation(_particleShaderProgram, "internal_light"));
@@ -456,9 +443,9 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	_uniBrightness = glGetUniformLocation(_shaderProgram, "min_brightness");
 	_partUniBrightness = glGetUniformLocation(_particleShaderProgram, "min_brightness");
 	glUseProgram(_particleShaderProgram);
-	glUniform1f(_partUniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
+	glUniform1f(_partUniBrightness, Settings::Get()->getFloat(settings::floats::brightness));
 	glUseProgram(_shaderProgram);
-	glUniform1f(_uniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
+	glUniform1f(_uniBrightness, Settings::Get()->getFloat(settings::floats::brightness));
 
 	_skyUniColor = glGetUniformLocation(_skyShaderProgram, "color");
 	_skyUniAnim = glGetUniformLocation(_skyShaderProgram, "animFrame");
@@ -466,9 +453,9 @@ void OpenGL_Manager::setup_communication_shaders( void )
 	check_glstate("\nCommunication with shader program successfully established", true);
 }
 
-void OpenGL_Manager::load_texture( void )
+void OpenGL_Manager::loadTextures( void )
 {
-	_ui->load_texture();
+	_ui->loadTextures();
 
 	if (_textures[0]) {
 		glDeleteTextures(_textures.size(), &_textures[0]);
@@ -477,16 +464,16 @@ void OpenGL_Manager::load_texture( void )
 	glGenTextures(4, &_textures[0]);
 
 	glUseProgram(_shaderProgram);
-	loadTextureShader(0, _textures[0], Settings::Get()->getString(SETTINGS::STRING::BLOCK_ATLAS));
+	loadTextureShader(0, _textures[0], Settings::Get()->getString(settings::strings::block_atlas));
 	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // sampler2D #index in fragment shader
 
 	glUseProgram(_skyShaderProgram);
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
 
-	loadTextureShader(4, _textures[1], Settings::Get()->getString(SETTINGS::STRING::WATER_STILL));
+	loadTextureShader(4, _textures[1], Settings::Get()->getString(settings::strings::water_still));
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterStill"), 4);
 
-	loadTextureShader(5, _textures[2], Settings::Get()->getString(SETTINGS::STRING::WATER_FLOW));
+	loadTextureShader(5, _textures[2], Settings::Get()->getString(settings::strings::water_flow));
 	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterFlow"), 5);
 
 	glUseProgram(_particleShaderProgram);
@@ -494,9 +481,9 @@ void OpenGL_Manager::load_texture( void )
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _textures[3]);
 
 	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 3);
-	loadSubTextureArray(0, Settings::Get()->getString(SETTINGS::STRING::BLOCK_ATLAS));
-	loadSubTextureArray(1, Settings::Get()->getString(SETTINGS::STRING::PARTICLE_ATLAS));
-	loadSubTextureArray(2, Settings::Get()->getString(SETTINGS::STRING::MODEL_ATLAS));
+	loadSubTextureArray(0, Settings::Get()->getString(settings::strings::block_atlas));
+	loadSubTextureArray(1, Settings::Get()->getString(settings::strings::particle_atlas));
+	loadSubTextureArray(2, Settings::Get()->getString(settings::strings::model_atlas));
 	glUniform1i(glGetUniformLocation(_particleShaderProgram, "textures"), 6);
 }
 
@@ -535,7 +522,7 @@ size_t OpenGL_Manager::clearParticles( void )
 
 void OpenGL_Manager::main_loop( void )
 {
-	if (Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING)) {
+	if (Settings::Get()->getBool(settings::bools::face_culling)) {
 		glEnable(GL_CULL_FACE);
 	}
 	glCullFace(GL_FRONT);
@@ -603,14 +590,14 @@ void OpenGL_Manager::main_loop( void )
 		// Bench b;
 		if (!_paused) {
 			if (++backFromMenu != 1) {
-				user_inputs(deltaTime, ++backFromMenu > 3);
+				userInputs(deltaTime, ++backFromMenu > 3);
 			}
-			chunk_update();
+			chunkUpdate();
 		} else if (_camera->_update && _menu->getState() >= MENU::INVENTORY) {
 			// _ui->chatMessage("debug time");
-			chunk_update();
-			update_cam_view();
-			update_visible_chunks();
+			chunkUpdate();
+			updateCamView();
+			updateVisibleChunks();
 			if (!_visible_chunks.size()) {
 				_current_chunk.x += 32; // we want chunk_update to call thread on next loop
 				_camera->_update = true;
@@ -636,7 +623,7 @@ void OpenGL_Manager::main_loop( void )
 					c->tickUpdate(); // random ticks
 				}
 				c->updateEntities(_entities, _particles, deltaTime);
-				if (Settings::Get()->getBool(SETTINGS::BOOL::PARTICLES)) {
+				if (Settings::Get()->getBool(settings::bools::particles)) {
 					c->updateParticles(_particles, deltaTime);
 				}
 			}
@@ -654,18 +641,18 @@ void OpenGL_Manager::main_loop( void )
 			drawEntities();
 		}
 
-		if (_menu->getState() >= MENU::PAUSE && Settings::Get()->getBool(SETTINGS::BOOL::SKYBOX)) {
+		if (_menu->getState() >= MENU::PAUSE && Settings::Get()->getBool(settings::bools::skybox)) {
 			_skybox->render(_camera->getCamPos());
 		}
 
 		#if 1
 		glUseProgram(_skyShaderProgram);
 		if (animUpdate) {
-			update_anim_frame();
+			updateAnimFrame();
 		}
 		glDisable(GL_CULL_FACE);
 		DayCycle::Get()->setCloudsColor(_skyUniColor);
-		if (Settings::Get()->getInt(SETTINGS::INT::CLOUDS) != SETTINGS::OFF) {
+		if (Settings::Get()->getInt(settings::ints::clouds) != settings::OFF) {
 			for (auto& c: _visible_chunks) {
 				c->drawSky(newVaoCounter, skyFaces);
 			}
@@ -674,7 +661,7 @@ void OpenGL_Manager::main_loop( void )
 		for (auto&c: _visible_chunks) {
 			c->drawWater(newVaoCounter, waterFaces);
 		}
-		if (Settings::Get()->getBool(SETTINGS::BOOL::FACE_CULLING)) {
+		if (Settings::Get()->getBool(settings::bools::face_culling)) {
 			glEnable(GL_CULL_FACE);
 		}
 		// b.stamp("display water sky");
@@ -707,7 +694,7 @@ void OpenGL_Manager::main_loop( void )
 				str += "\nDisplayed faces\t> " + std::to_string(faceCounter)
 						+ "\nSky faces\t> " + std::to_string(skyFaces)
 						+ "\nWater faces\t> " + std::to_string(waterFaces)
-						+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST))
+						+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(settings::ints::render_dist))
 						+ "\nGame mode\t\t> " + GAMEMODE::str[_game_mode];
 				mtx_backup.lock();
 				str += "\nBackups\t> " + std::to_string(_backups.size());
@@ -732,27 +719,27 @@ void OpenGL_Manager::main_loop( void )
 			switch (_menu->run(nbTicks == 1 && tickUpdate)) {
 				case MENU::RET::SIGN_DONE:
 					_chunk_hit->setSignContent(_menu->getSignContent());
-				case (MENU::RET::BACK_TO_GAME): // back to game
+				case MENU::RET::BACK_TO_GAME: // back to game
 					#if !__linux__
 						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 						if (glfwRawMouseMotionSupported()) {
 							glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 						}
 					#endif
-					set_cursor_position_callback(_camera, NULL);
-					set_scroll_callback(_inventory);
+					set_cursor_position_callback(_camera.get(), NULL);
+					set_scroll_callback(_inventory.get());
 					_paused = false;
 					backFromMenu = 0;
 					_camera->_update = true;
 					setThreadUpdate(true);
 					break ;
-				case (MENU::RET::WORLD_SELECTED): // world selected, go into loading mode
+				case MENU::RET::WORLD_SELECTED: // world selected, go into loading mode
 					_world_name = _menu->getWorldFile();
 					glUseProgram(_shaderProgram); // used by dayCycle to modif internal light
 					loadWorld("Worlds/" + _world_name);
 					initWorld();
 					break ;
-				case (MENU::RET::WORLD_CREATED): // create new world, go into loading mode
+				case MENU::RET::WORLD_CREATED: // create new world, go into loading mode
 					_world_name = _menu->getWorldFile();
 					_camera->setSpawnpoint({0, 0, 256});
 					_camera->respawn();
@@ -760,38 +747,38 @@ void OpenGL_Manager::main_loop( void )
 					DayCycle::Get()->setTicks(1000);
 					initWorld();
 					break ;
-				case (MENU::RET::RESPAWN_PLAYER): // Respawn player, init world again
+				case MENU::RET::RESPAWN_PLAYER: // Respawn player, init world again
 					_camera->respawn();
 					initWorld();
 					break ;
-				case (MENU::RET::RESPAWN_SAVE_QUIT): // Respawn player, then save and quit to menu
+				case MENU::RET::RESPAWN_SAVE_QUIT: // Respawn player, then save and quit to menu
 					_camera->respawn();
-				case (MENU::RET::SAVE_AND_QUIT): // save and quit to menu
+				case MENU::RET::SAVE_AND_QUIT: // save and quit to menu
 					resetInputsPtrs();
 					saveWorld();
 					break ;
-				case (MENU::RET::FOV_UPDATE): // fov change
-					update_cam_perspective();
+				case MENU::RET::FOV_UPDATE: // fov change
+					updateCamPerspective();
 					break ;
-				case (MENU::RET::RENDER_DIST_UPDATE): // render dist change
+				case MENU::RET::RENDER_DIST_UPDATE: // render dist change
 					// _ui->chatMessage("Render distance set to " + std::to_string(render_dist));
 					glUseProgram(_skyShaderProgram);
-					glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)) << CHUNK_SHIFT);
+					glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << CHUNK_SHIFT);
 					glUseProgram(_shaderProgram);
-					glUniform1f(_uniFog, (1 + Settings::Get()->getInt(SETTINGS::INT::RENDER_DIST)) << CHUNK_SHIFT);
+					glUniform1f(_uniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << CHUNK_SHIFT);
 					setThreadUpdate(true);
 					break ;
-				case (MENU::RET::BRIGHTNESS_UPDATE): // brightness change
+				case MENU::RET::BRIGHTNESS_UPDATE: // brightness change
 					glUseProgram(_particleShaderProgram);
-					glUniform1f(_partUniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
+					glUniform1f(_partUniBrightness, Settings::Get()->getFloat(settings::floats::brightness));
 					glUseProgram(_shaderProgram);
-					glUniform1f(_uniBrightness, Settings::Get()->getFloat(SETTINGS::FLOAT::BRIGHTNESS));
+					glUniform1f(_uniBrightness, Settings::Get()->getFloat(settings::floats::brightness));
 					break ;
-				case (MENU::RET::APPLY_RESOURCE_PACKS):
+				case MENU::RET::APPLY_RESOURCE_PACKS:
 					if (!Settings::Get()->loadResourcePacks()) { // if missing field in resource packs, we don't load
-						create_shaders();
-						setup_communication_shaders();
-						load_texture();
+						createShaders();
+						setupCommunicationShaders();
+						loadTextures();
 					}
 					break ;
 				default:

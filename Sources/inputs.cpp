@@ -18,7 +18,7 @@ void OpenGL_Manager::resetInputsPtrs( void )
 	_visible_chunks.clear();
 }
 
-t_hit OpenGL_Manager::get_block_hit( void )
+t_hit OpenGL_Manager::getBlockHit( void )
 {
 	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
 	std::vector<glm::ivec3> ids = _camera->computeRayCasting((_game_mode == GAMEMODE::CREATIVE) ? CHUNK_SIZE : REACH);
@@ -42,7 +42,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 			}
 			if (!chunk) {
 				if (!_visible_chunks.size()) {
-					update_visible_chunks();
+					updateVisibleChunks();
 				} else {
 					std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
 				}
@@ -70,7 +70,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 		} else if (type) {
 			// we know cube is hit, now check if hitbox is hit (only on non cube-filling values)
 			// TODO move hitboxes of torches depending on the wall they hang on
-			const Block *target = s_blocks[type];
+			const auto& target = s_blocks[type];
 			if (!target->hasHitbox || line_cube_intersection(_camera->getEyePos(), _camera->getDir(), glm::vec3(i) + target->hitboxCenter, target->hitboxHalfSize)) {
 				_chunk_hit = chunk;
 				res.pos = i;
@@ -97,7 +97,7 @@ t_hit OpenGL_Manager::get_block_hit( void )
 	return (res);
 }
 
-void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
+void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 {
 	if (!adding) {
 		if (_block_hit.type == blocks::air) {
@@ -282,10 +282,10 @@ void OpenGL_Manager::handle_add_rm_block( bool adding, bool collect )
 	}
 }
 
-void OpenGL_Manager::update_cam_view( void )
+void OpenGL_Manager::updateCamView( void )
 {
 	glm::mat4 view = _camera->getViewMatrix();
-	_skybox->update_cam_view(view);
+	_skybox->updateCamView(view);
 	glUseProgram(_skyShaderProgram);
 	glUniformMatrix4fv(_skyUniView, 1, GL_FALSE, glm::value_ptr(view));
 	glUseProgram(_particleShaderProgram);
@@ -296,10 +296,10 @@ void OpenGL_Manager::update_cam_view( void )
 	// glUniform3fv(_uniCamPos, 1, glm::value_ptr(_camera->getPos()));
 }
 
-void OpenGL_Manager::update_cam_perspective( void )
+void OpenGL_Manager::updateCamPerspective( void )
 {
 	glm::mat4 proj = _camera->getPerspectiveMatrix();
-	_skybox->update_cam_perspective(proj);
+	_skybox->updateCamPerspective(proj);
 	glUseProgram(_skyShaderProgram);
 	glUniformMatrix4fv(_skyUniProj, 1, GL_FALSE, glm::value_ptr(proj));
 	glUseProgram(_particleShaderProgram);
@@ -308,7 +308,7 @@ void OpenGL_Manager::update_cam_perspective( void )
 	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 }
 
-void OpenGL_Manager::update_anim_frame( void )
+void OpenGL_Manager::updateAnimFrame( void )
 {
 	static int current_frame;
 	glUniform1i(_skyUniAnim, current_frame);
@@ -317,7 +317,7 @@ void OpenGL_Manager::update_anim_frame( void )
 	}
 }
 
-void OpenGL_Manager::update_visible_chunks( void )
+void OpenGL_Manager::updateVisibleChunks( void )
 {
 	std::vector<Chunk *> newvis_chunks;
 	newvis_chunks.reserve(_visible_chunks.capacity());
@@ -331,7 +331,7 @@ void OpenGL_Manager::update_visible_chunks( void )
 	_visible_chunks = newvis_chunks;
 }
 
-void OpenGL_Manager::chunk_update( void )
+void OpenGL_Manager::chunkUpdate( void )
 {
 	int posX = chunk_pos(static_cast<int>(glm::floor(_camera->getPos().x)));
 	int posY = chunk_pos(static_cast<int>(glm::floor(_camera->getPos().y)));
@@ -394,7 +394,7 @@ float OpenGL_Manager::getBreakTime( bool canHarvest )
 	return (seconds);
 }
 
-void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
+void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 {
 	// open menu
 	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
@@ -438,14 +438,14 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 	// toggle game mode
 	if (INPUT::key_down(INPUT::GAMEMODE) && INPUT::key_update(INPUT::GAMEMODE)) {
 		if (INPUT::key_down(INPUT::DEBUG)) {
-			Settings::Get()->setBool(SETTINGS::BOOL::VISIBLE_CHUNK_BORDER, !Settings::Get()->getBool(SETTINGS::BOOL::VISIBLE_CHUNK_BORDER));
+			Settings::Get()->setBool(settings::bools::visible_chunk_border, !Settings::Get()->getBool(settings::bools::visible_chunk_border));
 		} else {
 			setGamemode(!_game_mode);
 		}
 	}
 	// toggle F3 + I == display full info about block hit
 	if (INPUT::key_down(INPUT::INFO) && INPUT::key_update(INPUT::INFO) && INPUT::key_down(INPUT::DEBUG)) {
-		t_hit bHit = get_block_hit();
+		t_hit bHit = getBlockHit();
 		_ui->chatMessage("*******************");
 		_ui->chatMessage("Info about " + s_blocks[bHit.type]->name + " at " + std::to_string(bHit.pos.x) + ", " + std::to_string(bHit.pos.y) + ", " + std::to_string(bHit.pos.z));
 		_ui->chatMessage(std::string("visible: ") + ((bHit.value & mask::blocks::notVisible) ? "FALSE" : "TRUE"));
@@ -505,7 +505,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				if (_break_time >= break_time) {
 					_break_time = (break_time > 0) ? -0.3f : 0;
 					_break_frame = _outline;
-					handle_add_rm_block(false, can_collect);
+					handleBlockModif(false, can_collect);
 					_camera->updateExhaustion(EXHAUSTION_BREAKING_BLOCK);
 					_inventory->decrementDurabitilty();
 				} else {
@@ -519,7 +519,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 				}
 			}
 		} else if (INPUT::key_update(INPUT::BREAK)) {
-			handle_add_rm_block(false, false);
+			handleBlockModif(false, false);
 		}
 	} else if (INPUT::key_update(INPUT::BREAK)) {
 		_camera->setArmAnimation(false);
@@ -540,7 +540,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		} else if (_hand_content == blocks::bow) {
 			_bow_timer += deltaTime;
 		} else if (INPUT::key_update(INPUT::USE)) {
-			handle_add_rm_block(true, _game_mode != GAMEMODE::CREATIVE);
+			handleBlockModif(true, _game_mode != GAMEMODE::CREATIVE);
 			_camera->setArmAnimation(true);
 		}
 	} else if (INPUT::key_update(INPUT::USE)) {
@@ -650,7 +650,7 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 		}
 
 		// Chunk *save_chunk = _chunk_hit;
-		t_hit block_hit = get_block_hit();
+		t_hit block_hit = getBlockHit();
 		if (_block_hit.pos != block_hit.pos) {
 			_break_time = 0;
 			_break_frame = _outline;
@@ -664,23 +664,15 @@ void OpenGL_Manager::user_inputs( float deltaTime, bool rayCast )
 			return ;
 		}
 	}
-	glm::vec3 camPos = _camera->getEyePos();
-	glm::ivec3 current_block = {glm::floor(camPos.x), glm::floor(camPos.y), glm::floor(camPos.z)};
-	if (current_block != _camera->_current_block) {
-		_camera->_current_block = current_block;
-		if (_current_chunk_ptr) {
-			_current_chunk_ptr->sort_sky(camPos, true);
-			_current_chunk_ptr->sort_water(camPos, true);
-		}
-	}
+	_camera->updateCurrentBlock();
 
 	if (_camera->_fovUpdate) {
 		_camera->_fovUpdate = false;
-		update_cam_perspective();
+		updateCamPerspective();
 	}
 	if (_camera->_update) {
-		update_cam_view();
-		update_visible_chunks();
+		updateCamView();
+		updateVisibleChunks();
 	}
 
 	GLint key_cam_speed = INPUT::key_down(INPUT::FLY_SPEED_UP) - INPUT::key_down(INPUT::FLY_SPEED_DOWN);

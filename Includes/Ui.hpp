@@ -15,6 +15,7 @@ enum {
     UI_TEXATTRIB
 };
 
+class OpenGL_Manager;
 class Inventory;
 class Camera;
 
@@ -25,18 +26,39 @@ typedef struct s_inv_mess {
 
 class UI
 {
+    public:
+        bool _hideUI;
+
+        UI( void );
+        ~UI( void );
+
+		void setPtrs( OpenGL_Manager* oglMan, Inventory* inventory, Camera* camera );
+		std::shared_ptr<Text> getTextPtr( void );
+		std::shared_ptr<Chat> getChatPtr( void );
+		void setGuiSize( int gui_size );
+		GLuint getShaderProgram( void );
+        void setupShader( void );
+		void loadTextures( void );
+		void updateWinSize( void );
+
+		void addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement = false );
+        void drawUserInterface( std::string str, int game_mode, float deltaTime );
+        void chatMessage( std::string str, unsigned color = TEXT::WHITE );
+		void inventoryMessage( std::string str );
+		void textToScreen( bool ingame );
+
     private:
         GLuint _vao, _vbo, _item_vao, _item_vbo;
 		GLuint _shaderProgram, _itemShaderProgram;
-		GLuint *_textures;
+		std::array<GLuint, 2> _textures;
         GLint _gui_size, _nb_points, _nb_points_crea, _nb_items;
 		bool _movement;
 		std::vector<int> _items;
 		t_inv_mess _inventoryMessage;
-		Text *_text;
-		Chat *_chat;
-		Inventory &_inventory;
-        Camera &_camera;
+		std::shared_ptr<Text> _text;
+		std::shared_ptr<Chat> _chat;
+		Inventory* _inventory;
+        Camera* _camera;
 		bool _vaoSet;
 
         void add_inventory_elem( int index );
@@ -52,26 +74,6 @@ class UI
         void setup_array_buffer( void );
         void setup_item_array_buffer( void );
         void display_slot_value( int index );
-
-    public:
-        bool _hideUI;
-
-        UI( Inventory & inventory, Camera &camera );
-        ~UI( void );
-
-		Text *getTextPtr( void );
-		Chat *getChatPtr( void );
-		void setGuiSize( int gui_size );
-		GLuint getShaderProgram( void );
-        void setup_shader( void );
-		void load_texture( void );
-		void updateWinSize( void );
-
-		void addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement = false );
-        void drawUserInterface( std::string str, int game_mode, float deltaTime );
-        void chatMessage( std::string str, unsigned color = TEXT::WHITE );
-		void inventoryMessage( std::string str );
-		void textToScreen( bool ingame );
 };
 
 #endif

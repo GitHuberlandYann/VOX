@@ -226,24 +226,6 @@ typedef struct s_item {
 
 class Inventory
 {
-    private:
-        std::array<t_item, 9> _content;
-		std::array<t_item, 27> _backpack;
-		std::array<t_item, 4> _icraft;
-		std::array<t_item, 9> _craft;
-		t_item _crafted;
-        int _slot;
-		bool _modif;
-		UI *_ui;
-
-		t_item *getBlockPtr( int value, int & craft_place, FurnaceInstance *furnace, ChestInstance *chest );
-		void changeCrafted( int craft );
-		void produceCraft( int craft );
-		t_item pickCrafted( int craft, t_item block );
-		int findEmptyCell( t_item block, bool hotbar_first = false );
-		int findBlockCell( int type );
-		void pickAllCrafted( int craft );
-
     public:
         Inventory( void );
         ~Inventory( void );
@@ -281,6 +263,24 @@ class Inventory
 		std::string saveString( void );
 		void setUIPtr( UI *ui );
 		void loadWorld( std::ofstream & ofs, std::ifstream & indata );
+
+    private:
+        std::array<t_item, 9> _content;
+		std::array<t_item, 27> _backpack;
+		std::array<t_item, 4> _icraft;
+		std::array<t_item, 9> _craft;
+		t_item _crafted;
+        int _slot;
+		bool _modif;
+		UI *_ui;
+
+		t_item *getBlockPtr( int value, int & craft_place, FurnaceInstance *furnace, ChestInstance *chest );
+		void changeCrafted( int craft );
+		void produceCraft( int craft );
+		t_item pickCrafted( int craft, t_item block );
+		int findEmptyCell( t_item block, bool hotbar_first = false );
+		int findBlockCell( int type );
+		void pickAllCrafted( int craft );
 };
 
 #endif

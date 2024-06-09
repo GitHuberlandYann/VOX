@@ -51,32 +51,12 @@ namespace CAMPLACEMENT {
 
 class Camera
 {
-	private:
-		glm::vec3 _position, _spawnpoint, _lastTp, _front, _bodyFront, _up, _right, _world_up;
-		glm::vec2 _front2, _right2;
-		float _yaw, _pitch;
-		float _deltaTime, _fall_time, _walk_time, _breathTime, _armAnimTime;
-		float _fov_offset;
-		float _fall_distance;
-		int _foodTickTimer, _camPlacement;
-		float _foodExhaustionLevel;
-		float _smoothCamZ, _z0, _fall_immunity;
-		bool _walking, _sprinting, _sneaking, _smoothCam, _healthUpdate, _waterHead, _waterFeet, _armAnimation, _hideUI;
-		std::mutex _mtx;
-		Chunk *_current_chunk_ptr;
-
-    	void updateCameraVectors( void );
-		void moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, GLint z );
-		void applyGravityUnderwater( void );
-		void drawHeldItem( std::vector<t_shaderInput> &arr, int item, int game_mode );
-	
 	public:
-		glm::ivec3 _current_block;
 		int _movement_speed, _health_points, _foodLevel;
 		bool _update, _fovUpdate, _inJump, _touchGround;
 		float _foodSaturationLevel;
 
-		Camera( glm::vec3 position );
+		Camera( void );
 		~Camera( void );
 
 		void drawPlayer( std::vector<t_shaderInput> &arr, int item, int game_mode );
@@ -109,6 +89,7 @@ class Camera
 		void moveFly( GLint v, GLint h, GLint z );
 		void moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z );
 		void unmoveHuman( glm::vec3 pos );
+		void updateCurrentBlock( void );
 		bool customObstacle( float minZ, float maxZ );
 		void resetFall( void );
 		void applyGravity( void );
@@ -133,6 +114,26 @@ class Camera
 		glm::vec3 getSpawnpoint( void );
 		glm::vec3 getLastTp( void );
 		void respawn( void );
+
+	private:
+		glm::vec3 _position, _spawnpoint, _lastTp, _front, _bodyFront, _up, _right, _world_up;
+		glm::vec2 _front2, _right2;
+		float _yaw, _pitch;
+		float _deltaTime, _fall_time, _walk_time, _breathTime, _armAnimTime;
+		float _fov_offset;
+		float _fall_distance;
+		glm::ivec3 _current_block;
+		int _foodTickTimer, _camPlacement;
+		float _foodExhaustionLevel;
+		float _smoothCamZ, _z0, _fall_immunity;
+		bool _walking, _sprinting, _sneaking, _smoothCam, _healthUpdate, _waterHead, _waterFeet, _armAnimation, _hideUI;
+		std::mutex _mtx;
+		Chunk *_current_chunk_ptr;
+
+    	void updateCameraVectors( void );
+		void moveHumanUnderwater( Camera_Movement direction, GLint v, GLint h, GLint z );
+		void applyGravityUnderwater( void );
+		void drawHeldItem( std::vector<t_shaderInput> &arr, int item, int game_mode );
 };
 
 #endif

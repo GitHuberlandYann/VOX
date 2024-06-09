@@ -23,6 +23,19 @@ namespace WEDIT {
 
 class WorldEdit
 {
+	public:
+		WorldEdit( WorldEdit& other ) = delete;
+		void operator=( const WorldEdit& other ) = delete;
+
+		static WorldEdit* Get( void );
+		static void Destroy( void );
+
+		void setPtrs( OpenGL_Manager* openGL_Manager, Inventory* inventory, Chat* chat );
+		void setSelectionStart( glm::ivec3 pos );
+		void setSelectionEnd( glm::ivec3 pos );
+
+		bool parseCommand( std::vector<std::string>& argv );
+
 	private:
 		static WorldEdit* _worldEditInstance;
 		static std::mutex _mtx;
@@ -43,19 +56,6 @@ class WorldEdit
 		void handleCmdPaste( bool notAirBlocks );
 		void handleCmdMove( std::vector<std::string>& argv );
 		// void handleCmdStack( void );
-
-	public:
-		WorldEdit( WorldEdit& other ) = delete;
-		void operator=( const WorldEdit& other ) = delete;
-
-		static WorldEdit *Get( void );
-		static void Destroy( void );
-
-		void setPtrs( OpenGL_Manager* openGL_Manager = NULL, Inventory* inventory = NULL, Chat* chat = NULL );
-		void setSelectionStart( glm::ivec3 pos );
-		void setSelectionEnd( glm::ivec3 pos );
-
-		bool parseCommand( std::vector<std::string>& argv );
 };
 
 #endif

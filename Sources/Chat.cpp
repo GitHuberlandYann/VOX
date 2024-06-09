@@ -4,7 +4,8 @@
 #include "WorldEdit.hpp"
 extern siv::PerlinNoise::seed_type perlin_seed;
 
-Chat::Chat( Text *text ) : _histo_cursor(0), _oglMan(NULL), _text(text)
+Chat::Chat( std::shared_ptr<Text> text )
+	: _histo_cursor(0), _oglMan(NULL), _text(text)
 {
 	_current.reserve(16);
 	_past.reserve(16);
@@ -436,7 +437,7 @@ float Chat::parseLocation( std::string &str, int coord )
 //                                Public                                      //
 // ************************************************************************** //
 
-void Chat::setOGLManPtr( OpenGL_Manager *oglMan )
+void Chat::setOGLManPtr( OpenGL_Manager* oglMan )
 {
 	_oglMan = oglMan;
 }

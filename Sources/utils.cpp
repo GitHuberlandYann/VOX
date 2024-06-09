@@ -418,7 +418,7 @@ void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks )
 	int posY = chunk_pos(pos.y);
 
 	#if 1
-	size_t size = chunks.size();
+	// size_t size = chunks.size();
 	std::vector<std::pair<int, Chunk *>> dists;
 	dists.reserve(chunks.capacity());
 	for (auto& c: chunks) {
@@ -426,21 +426,10 @@ void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks )
 	}
 	// std::cout << "in sort chunks, dists size = " << dists.size() << std::endl;
 	// b.stamp("SORT - manhattan");
-	for (size_t index = 0; index < size; index++) {
-		int minDist = dists[index].first;
-		size_t minIndex = index;
-		for (size_t jindex = index + 1; jindex < size; jindex++) {
-			if (dists[jindex].first > minDist) {
-				minIndex = jindex;
-				minDist = dists[minIndex].first;
-			}
-		}
-		if (minIndex != index) {
-			std::pair<int, Chunk *> tmp = dists[minIndex];
-			dists[minIndex] = dists[index];
-			dists[index] = tmp;
-		}
-	}
+	std::sort(dists.begin(), dists.end(), []( std::pair<int, Chunk*> a, std::pair<int, Chunk*> b )
+							{
+								return (a.first > b.first);
+							});
 	// b.stamp("SORT - chunks");
 
 	chunks.clear();
@@ -461,6 +450,7 @@ void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks )
 	// std::cout << "\tsorted " << cnt << std::endl;
 	// b.stamp("SORT - sky water");
 	dists.clear();
+	// b.stop("TOTAL");
 	#else
 	std::multimap<int, Chunk*> dists;
 	for (auto c: chunks) {
@@ -547,35 +537,15 @@ void face_vertices( std::vector<t_shaderInput> &vertices, t_shaderInput v0, t_sh
 	vertices.push_back(v2);
 }
 
-void face_water_vertices( GLint *vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::ivec4 &v2, glm::ivec4 &v3, size_t & vindex )
+void face_water_vertices( std::vector<glm::ivec4> &vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::ivec4 &v2, glm::ivec4 &v3 )
 {
-	vertices[vindex] = v0.x;
-	vertices[vindex + 1] = v0.y;
-	vertices[vindex + 2] = v0.z;
-	vertices[vindex + 3] = v0.w;
-	vertices[vindex + 4] = v1.x;
-	vertices[vindex + 5] = v1.y;
-	vertices[vindex + 6] = v1.z;
-	vertices[vindex + 7] = v1.w;
-	vertices[vindex + 8] = v2.x;
-	vertices[vindex + 9] = v2.y;
-	vertices[vindex + 10] = v2.z;
-	vertices[vindex + 11] = v2.w;
-	vindex += 12;
+	vertices.push_back(v0);
+	vertices.push_back(v1);
+	vertices.push_back(v2);
 
-	vertices[vindex] = v1.x;
-	vertices[vindex + 1] = v1.y;
-	vertices[vindex + 2] = v1.z;
-	vertices[vindex + 3] = v1.w;
-	vertices[vindex + 4] = v3.x;
-	vertices[vindex + 5] = v3.y;
-	vertices[vindex + 6] = v3.z;
-	vertices[vindex + 7] = v3.w;
-	vertices[vindex + 8] = v2.x;
-	vertices[vindex + 9] = v2.y;
-	vertices[vindex + 10] = v2.z;
-	vertices[vindex + 11] = v2.w;
-	vindex += 12;
+	vertices.push_back(v1);
+	vertices.push_back(v3);
+	vertices.push_back(v2);
 }
 
 // # include <glm/glm.hpp>
@@ -592,7 +562,8 @@ void face_water_vertices( GLint *vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::
  *
  * J. Amanatides, A. Woo. A Fast Voxel Traversal Algorithm for Ray Tracing. Eurographics '87
  */
-std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end ) {
+std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end )
+{
 	std::vector<glm::ivec3> visited_voxels;
 
 	// This id of the first/current voxel hit by the ray.

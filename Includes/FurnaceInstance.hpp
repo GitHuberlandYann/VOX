@@ -14,12 +14,6 @@ namespace furnace_state {
 
 class FurnaceInstance
 {
-	private:
-		t_item _composant;
-		t_item _fuel;
-		t_item _production;
-		float _fuel_time, _composant_time, _current_fuel_time, _current_time;
-
 	public:
 		FurnaceInstance( void );
 		~FurnaceInstance( void );
@@ -40,6 +34,11 @@ class FurnaceInstance
 
 		std::string getInfoString( void );
 
+	private:
+		t_item _composant;
+		t_item _fuel;
+		t_item _production;
+		float _fuel_time, _composant_time, _current_fuel_time, _current_time;
 };
 
 #endif

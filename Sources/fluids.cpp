@@ -218,7 +218,6 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 		return ;
 	}
 	// Bench b;
-	#if 1
 	// pos = glm::vec3(pos.x - _startX, pos.y - _startY, pos.z);
 	std::vector<std::pair<float, std::array<int, 11>>> order;
 	order.reserve(_water_count);
@@ -281,36 +280,15 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 		_hasWater = false;
 		return ;
 	}
-	if (order.size() != _water_count) {
-		// std::cerr << '[' << _startX << ", " << _startY << "] \033[31msort_water\033[0m, order size " << order.size() << ", but _water_count " << _water_count << std::endl;
-		// std::cerr << "block at 1 1 141: " << _blocks[((CHUNK_SIZE + 2) + 1) * WORLD_HEIGHT + 141] << std::endl;
-		_water_count = order.size();
-		_mtx_fluid.lock();
-		delete [] _water_vert;
-		_water_vert = new GLint[_water_count * 24];
-		_mtx_fluid.unlock();
-		// if (vip)b.stamp("alloc");
-	}
+	_water_count = order.size();
 
-	std::pair<float, std::array<int, 11>> tmp;
-	for (size_t index = 0; index < order.size() - 1; index++) {
-		float minDist = order[index].first;
-		size_t minIndex = index;
-		for (size_t jindex = index + 1; jindex < order.size(); jindex++) {
-			if (order[jindex].first > minDist) {
-				minIndex = jindex;
-				minDist = order[minIndex].first;
-			}
-		}
-		if (minIndex != index) {
-			tmp = order[minIndex];
-			order[minIndex] = order[index];
-			order[index] = tmp;
-		}
-	}
+	std::sort(order.begin(), order.end(), []( std::pair<float, std::array<int, 11>> a, std::pair<float, std::array<int, 11>> b )
+                                  {
+                                      return (a.first > b.first);
+                                  });
 	// if (vip)b.stamp("sort");
 
-	size_t vindex = 0;
+	_water_vert.clear();
 	for (auto& o: order) {
 		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], 0}, offset0, offset1, offset2, offset3;
 		if (!o.second[5]) { // top/down faces
@@ -332,87 +310,13 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 			offset2 = start + glm::ivec4(0, 0, o.second[5], (1 << 11));
 			offset3 = start + glm::ivec4(o.second[3], o.second[4], o.second[5], (1 << 10) + (1 << 11));
 		}
-		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_fluid.lock();
-		face_water_vertices(_water_vert, offset0, offset1, offset2, offset3, vindex);
+		face_water_vertices(_water_vert, offset0, offset1, offset2, offset3);
 		_mtx_fluid.unlock();
 	}
 	order.clear();
 	// if (vip)b.stamp("fill vertices");
-	#else
-	std::multimap<float, std::array<int, 10>> order;
-	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
-		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
-			for (int level = 1; level < 244; level++) { // TODO handle water when at level 255..
-				int value = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level];
-				if (value >= blocks::water) {
-					int pX = _startX + row - 1;
-					int pY = _startY + col - 1;
-					int above = _blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1];
-					std::array<int, 4> heights = water_heights(value, above, row, col, level);
-					if (_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level + 1] < blocks::water) {
-						order.insert({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level + ((8.0f - heights[0]) / 8.0f))), {pX, pY + 1, level + 1, 1, -1, 0, heights[1], heights[3], heights[0], heights[2]}});
-					}
-					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level - 1], false, false, true)) {
-						order.insert({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level)), {pX, pY, level, 1, 1, 0, 0, 0, 0, 0}});
-					}
-					if (!air_flower(_blocks[((row - 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, false, true)) {
-						order.insert({dist2(pos, glm::vec3(pX, pY + 0.5f, level + 0.5f)), {pX, pY + 1, level + 1, 0, -1, -1, heights[1], heights[0], 0, 0}});
-					}
-					if (!air_flower(_blocks[((row + 1) * (CHUNK_SIZE + 2) + col) * WORLD_HEIGHT + level], false, false, true)) {
-						order.insert({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, level + 0.5f)), {pX + 1, pY, level + 1, 0, 1, -1, heights[2], heights[3], 0, 0}});
-					}
-					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col - 1) * WORLD_HEIGHT + level], false, false, true)) {
-						order.insert({dist2(pos, glm::vec3(pX + 0.5f, pY, level + 0.5f)), {pX, pY, level + 1, 1, 0, -1, heights[0], heights[2], 0, 0}});
-					}
-					if (!air_flower(_blocks[(row * (CHUNK_SIZE + 2) + col + 1) * WORLD_HEIGHT + level], false, false, true)) {
-						order.insert({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, level + 0.5f)), {pX + 1, pY + 1, level + 1, -1, 0, -1, heights[3], heights[1], 0, 0}});
-					}
-				}
-			}
-		}
-	}
-	// if(vip)b.stop("order");
-	if (!order.size()) {
-		_water_count = 0;
-		_hasWater = false;
-		return ;
-	}
-	if (order.size() != _water_count) {
-		// std::cerr << '[' << _startX << ", " << _startY << "] \033[31msort_water\033[0m, order size " << order.size() << ", but _water_count " << _water_count << std::endl;
-		// std::cerr << "block at 1 1 141: " << _blocks[((CHUNK_SIZE + 2) + 1) * WORLD_HEIGHT + 141] << std::endl;
-		_water_count = order.size();
-		_mtx_fluid.lock();
-		delete [] _water_vert;
-		_water_vert = new GLint[_water_count * 24];
-		_mtx_fluid.unlock();
-		// if (vip)b.stamp("alloc");
-	}
 
-	size_t vindex = 0;
-	for (std::multimap<float, std::array<int, 10>>::reverse_iterator it = order.rbegin(); it != order.rend(); it++) {
-		glm::ivec4 start = {it->second[0], it->second[1], it->second[2], it->second[6]}, offset0, offset1, offset2, offset3;
-		if (!it->second[5]) { // top/down faces
-			std::array<int, 5> texcoord_offsets = compute_texcoord_offsets(it->second[6], it->second[7], it->second[8], it->second[9]);
-			offset0 = {0, 0, 0, texcoord_offsets[0]};
-			offset1 = {it->second[3], 0, 0, it->second[7] - start.w + texcoord_offsets[1]};// (1 << 10)};
-			offset2 = {0, it->second[4], 0, it->second[8] - start.w + texcoord_offsets[2]};// (1 << 11)};
-			offset3 = {it->second[3], it->second[4], 0, it->second[9] - start.w + texcoord_offsets[3]};//(1 << 10) + (1 << 11)};
-			start.w += texcoord_offsets[4];//(1 << 8); // waterStill || waterFlow
-		} else {
-			offset0 = {0, 0, 0, 0}; // TODO for now side faces' texture is "squished"
-			offset1 = {it->second[3], it->second[4], 0, it->second[7] - start.w + (1 << 10)};
-			offset2 = {0, 0, it->second[5], -start.w + (1 << 11)};
-			offset3 = {it->second[3], it->second[4], it->second[5], -start.w + (1 << 10) + (1 << 11)};
-			start.w += (1 << 8); // waterStill
-		}
-		// std::cout << "vindex " << vindex << std::endl;
-		_mtx_fluid.lock();
-		face_water_vertices(_water_vert, start + offset0, start + offset1, start + offset2, start + offset3, vindex);
-		_mtx_fluid.unlock();
-	}
-
-	#endif
 	_waterVaoReset = true;
 	if (vip) {
 		_mtx.lock();

@@ -6,12 +6,6 @@ class SignInstance;
 
 class SignInstance
 {
-	private:
-		int _value;
-		glm::vec3 _pos;
-		std::array<std::string, 4> _content;
-		Chunk *_chunk;
-
 	public:
 		SignInstance( Chunk *chunk, int value, glm::ivec3 pos );
 		~SignInstance( void );
@@ -21,6 +15,12 @@ class SignInstance
 		void setContent( std::vector<std::string> content );
 		void setChunk( Chunk *chunk );
 		void displayText( std::vector<t_shaderInput> &partArr );
+
+	private:
+		int _value;
+		glm::vec3 _pos;
+		std::array<std::string, 4> _content;
+		Chunk *_chunk;
 };
 
 #endif

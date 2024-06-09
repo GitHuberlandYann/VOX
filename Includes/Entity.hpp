@@ -62,16 +62,16 @@ class ArrowEntity : public Entity
 
 class MovingPistonEntity : public Entity
 {
-	private:
-		bool _piston_head, _retraction, _softKill;
-		int _tickStart;
-		glm::ivec3 _source, _endPos;
-	
 	public:
 		MovingPistonEntity( Chunk *chunk, glm::ivec3 source, glm::ivec3 position, glm::ivec3 dir, bool piston_head, bool retraction, int value );
 
 		virtual int pistonedBy( glm::ivec3 pos, glm::ivec3 target );
 		virtual bool update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime );
+
+	private:
+		bool _piston_head, _retraction, _softKill;
+		int _tickStart;
+		glm::ivec3 _source, _endPos;
 };
 
 #endif

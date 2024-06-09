@@ -3,21 +3,21 @@
 #include "Inventory.hpp"
 #include "callbacks.hpp"
 
-Camera *camera = NULL;
-Menu *menu = NULL;
-Inventory *scroll_inventory = NULL;
+Camera* camera = NULL;
+Menu* menu = NULL;
+Inventory* scroll_inventory = NULL;
 
 double lastX = WIN_WIDTH / 2.0f, lastY = WIN_HEIGHT / 2.0f;
 
-void set_cursor_position_callback( Camera *cam, Menu *men )
+void set_cursor_position_callback( Camera* cam, Menu* men )
 {
 	camera = cam;
 	menu = men;
 }
 
-void set_scroll_callback( void *ptr )
+void set_scroll_callback( void* ptr )
 {
-	scroll_inventory = static_cast<Inventory *>(ptr);
+	scroll_inventory = static_cast<Inventory*>(ptr);
 }
 
 void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
@@ -46,11 +46,7 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 		return ;
 	}
 
-	if (yoffset > 0) {
-		scroll_inventory->setSlot(scroll_inventory->getSlotNum() + 1);
-	} else if (yoffset < 0) {
-		scroll_inventory->setSlot(scroll_inventory->getSlotNum() - 1);
-	}
+	scroll_inventory->setSlot(scroll_inventory->getSlotNum() + ((yoffset > 0) ? 1 : -1));
 }
 
 namespace INPUT

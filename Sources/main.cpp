@@ -11,9 +11,6 @@ int main( int ac, char **av )
 	(void)av;
 	if (ac != 1) {
 		std::cerr << "Error\nFormat required: ./vox" << std::endl;
-		for (int index = 0; index < S_BLOCKS_SIZE; index++) {
-			delete s_blocks[index];
-		}
 		return (1);
 	}
 	std::cout << std::endl << " ---- Hello ----" << std::endl;
@@ -22,18 +19,15 @@ int main( int ac, char **av )
 	{
 		OpenGL_Manager render;
 
-		render.setup_window();
+		render.setupWindow();
 		std::cout << std::endl;
-		render.create_shaders();
-		render.setup_communication_shaders();
-		render.load_texture();
+		render.createShaders();
+		render.setupCommunicationShaders();
+		render.loadTextures();
 		std::cout << std::endl;
 		render.main_loop();
 	}
 
-	for (int index = 0; index < S_BLOCKS_SIZE; index++) {
-		delete s_blocks[index];
-	}
 	std::cout << std::endl << " ---- Goodbye ----" << std::endl;
 	// system("leaks vox");
 	return (0);

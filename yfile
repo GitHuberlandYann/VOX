@@ -10,7 +10,7 @@ Project Requirements:
     DONE - In the open, minimal distance render will be 160 cube
     DONE - at least 2 different textures and 2 different types of cube
     DONE - FoV must be 80 degrees
-         - set up a skybox
+	DONE - set up a skybox
 
     - camera
         DONE - mouse must be able to control it on 2 axis
@@ -71,7 +71,7 @@ SHORTTERM memory:
 	\/ - work on readme
 	\/ - rework Makefile
 	- replace glm with own small lib
-	- rework general code structure (who owns who)
+	\/ - rework general code structure (who owns who)
 	\/ - check how to update atlas texture ingame
 	\/ - make menus texts responsive
 	
@@ -341,3 +341,20 @@ Some info:
 
 	- powered blocks: (1 << 16)
 		doors, trapdoors, lever, button, redstone lamp, repeater
+
+
+Hierarchy:
+
+ Class				First created by 	Owned by					Ref by										Allocation
+OpenGL_Manager		main.cpp			main.cpp					WorldEdit									stack allocated
+Skybox				OpenGL_Manager		OpenGL_Manager															unique_ptr
+Menu				OpenGL_Manager		OpenGL_Manager															unique_ptr
+Inventory			OpenGL_Manager		OpenGL_Manager				Menu, UI, Chunk, Entity, WorldEdit			unique_ptr
+UI					OpenGL_Manager		OpenGL_Manager				Menu, Inventory								unique_ptr
+Chat				UI					UI, Menu					WorldEdit									shared_ptr
+Text				UI					UI, Chat, Menu															shared_ptr
+Camera				OpenGL_Manager		OpenGL_Manager				Menu, UI									unique_ptr
+
+DayCycle			no - Singleton
+WorldEdit			no - Singleton
+Settings			no - Singleton

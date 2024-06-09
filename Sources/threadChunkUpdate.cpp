@@ -20,7 +20,7 @@ void thread_chunk_update( OpenGL_Manager *render )
 	while (true) {
 		// std::cout << "thread chunk update" << std::endl;
 		pos = render->getCurrentChunk();
-		render_dist = settings->getInt(SETTINGS::INT::RENDER_DIST);
+		render_dist = settings->getInt(settings::ints::render_dist);
 		render->setThreadUpdate(false);
 		// Bench b;
 		std::set<std::pair<int, int>> coords;
@@ -68,7 +68,7 @@ void thread_chunk_update( OpenGL_Manager *render )
 		// b.stamp("NO");
 		for (auto& c: coords) {
 			//create new chunk where player stands
-			Chunk *newChunk = new Chunk(render->_camera, render->_inventory, c.first, c.second, &render->_chunks);
+			Chunk *newChunk = new Chunk(render->_camera.get(), render->_inventory.get(), c.first, c.second, &render->_chunks);
 			mtx_backup.lock();
 			std::map<std::pair<int, int>, s_backup>::iterator search = render->_backups.find(std::pair<int, int>(c.first, c.second));
 			if (search != render->_backups.end()) {
