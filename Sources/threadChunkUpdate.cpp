@@ -26,29 +26,29 @@ void thread_chunk_update( OpenGL_Manager *render )
 		std::set<std::pair<int, int>> coords;
 		for (int row = -render_dist; row <= render_dist; row++) {
 			for (int col = -render_dist; col <= render_dist; col++) {
-				coords.insert({pos.x + (row << CHUNK_SHIFT), pos.y + (col << CHUNK_SHIFT)});
+				coords.insert({pos.x + (row << settings::consts::chunk_shift), pos.y + (col << settings::consts::chunk_shift)});
 			}
 		}
 		// b.stamp("gen coordinates set");
 
-		std::vector<Chunk *> newperi_chunks;
+		std::vector<Chunk*> newperi_chunks;
 		newperi_chunks.reserve(render->_perimeter_chunks.capacity());
-		std::vector<Chunk *> newdel_chunks;
-		newdel_chunks.reserve(render->_deleted_chunks.capacity());
-		std::list<Chunk *>::iterator ite = render->_chunks.end();
-		std::list<Chunk *>::iterator it = render->_chunks.begin();
+		std::list<Chunk*>::iterator ite = render->_chunks.end();
+		std::list<Chunk*>::iterator it = render->_chunks.begin();
 		// std::cout << "IN THREAD UPDATE, nb chunks: " << render->_chunks.size() << std::endl;
 		for (; it != ite;) {
-			if ((*it)->inPerimeter(pos.x, pos.y, render_dist << CHUNK_SHIFT)) {
+			if ((*it)->inPerimeter(pos.x, pos.y, render_dist << settings::consts::chunk_shift)) {
 				// std::cout << "IN PERIMETER" << std::endl;
 				(*it)->checkFillVertices();
 				newperi_chunks.push_back(*it);
 				coords.erase({(*it)->getStartX(), (*it)->getStartY()});
-			} else if (!(*it)->inPerimeter(pos.x, pos.y, (render_dist << CHUNK_SHIFT) * 2)) {
+			} else if (!(*it)->inPerimeter(pos.x, pos.y, (render_dist << settings::consts::chunk_shift) * 2)) {
 				std::list<Chunk *>::iterator tmp = it;
 				--it;
 				(*tmp)->setBackup(render->_backups);
-				newdel_chunks.push_back(*tmp);
+				mtx_deleted_chunks.lock();
+				render->_deleted_chunks.push_back(*tmp);
+				mtx_deleted_chunks.unlock();
 				mtx.lock();
 				render->_chunks.erase(tmp);
 				mtx.unlock();
@@ -61,9 +61,6 @@ void thread_chunk_update( OpenGL_Manager *render )
 		mtx_perimeter.lock();
 		render->_perimeter_chunks = newperi_chunks;
 		mtx_perimeter.unlock();
-		mtx_deleted_chunks.lock();
-		render->_deleted_chunks = newdel_chunks;
-		mtx_deleted_chunks.unlock();
 
 		// b.stamp("NO");
 		for (auto& c: coords) {

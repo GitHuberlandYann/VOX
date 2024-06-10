@@ -64,7 +64,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
-	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
+	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	int value = _blocks[offset], type = value & mask::blocks::type; // TODO better handling of invis block gets deleted
 	if (type == blocks::chest) {
 		auto search = _chests.find(offset);
@@ -147,7 +147,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 {
 	// std::cout << "in chunk " << _startX << ", " << _startY << ":add block " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
 	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
-	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
+	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	int type = block_value & mask::blocks::type;
 	geometry shape = s_blocks[type]->geometry;
 	if (type == blocks::sand || type == blocks::gravel) {
@@ -271,7 +271,7 @@ void Chunk::replace_block( bool useInventory, glm::ivec3 pos, int type )
 */
 void Chunk::use_block( glm::ivec3 pos, int type )
 {
-	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
+	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	int value = _blocks[offset];
 	if ((value & mask::blocks::type) != type) {
 		std::cerr << "Chunk::regeneration type diff " << s_blocks[value & mask::blocks::type]->name << " vs " << s_blocks[type]->name << std::endl;
@@ -326,7 +326,7 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 */
 void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif )
 {
-	int previous_type = _blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z] & mask::blocks::type;
+	int previous_type = _blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z] & mask::blocks::type;
 	switch (modif) {
 		case Modif::REMOVE:
 			if (previous_type == blocks::air || previous_type == blocks::bedrock) { // can't rm bedrock
@@ -336,7 +336,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			remove_block(useInventory, pos);
 		break ;
 		case Modif::ADD:
-			if (type == blocks::wheat_crop && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z - 1] & mask::blocks::type) != blocks::farmland) { // can't place crop on something other than farmland
+			if (type == blocks::wheat_crop && (_blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z - 1] & mask::blocks::type) != blocks::farmland) { // can't place crop on something other than farmland
 				return ;
 			} else if ((previous_type != blocks::air && previous_type < blocks::water) || type == blocks::air) { // can't replace block
 				return ;
@@ -345,7 +345,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			add_block(useInventory, pos, type, previous_type);
 			break ;
 		case Modif::REPLACE:
-			if (type == blocks::dirt_path && pos.z < 254 && (_blocks[(((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z + 1] & mask::blocks::type) != blocks::air) { // can't turn dirt to dirt path if anything above it
+			if (type == blocks::dirt_path && pos.z < 254 && (_blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z + 1] & mask::blocks::type) != blocks::air) { // can't turn dirt to dirt path if anything above it
 				return ;
 			} else if ((type == blocks::dirt_path || type == blocks::farmland) && previous_type != blocks::dirt && previous_type != blocks::grass_block) {
 				return ;
@@ -385,7 +385,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 {
 	int type = (value & mask::blocks::type), prev_type = (previous & mask::blocks::type);
 	std::cout << "UPDATE_BLOCK at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << ". " << s_blocks[prev_type]->name << " -> " << s_blocks[type]->name << std::endl;
-	int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
+	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	if (type == blocks::sand || type == blocks::gravel) {
 		int type_under = (_blocks[offset - 1] & mask::blocks::type);
 		if (type_under == blocks::air) {
@@ -533,28 +533,28 @@ GLint Chunk::getBlockAt( int posX, int posY, int posZ, bool askNeighbours )
 {
 	if (posZ < 0) {
 		return (blocks::bedrock);
-	} else if (posZ >= WORLD_HEIGHT) {
+	} else if (posZ >= settings::consts::world_height) {
 		return (blocks::air);
 	}
 	int res = blocks::bedrock;
 	if (posX < 0) {
 		if (askNeighbours && _neighbours[face_dir::minus_x]) {
-			res = _neighbours[face_dir::minus_x]->getBlockAt(posX + CHUNK_SIZE, posY, posZ, askNeighbours);
+			res = _neighbours[face_dir::minus_x]->getBlockAt(posX + settings::consts::chunk_size, posY, posZ, askNeighbours);
 		}
-	} else if (posX >= CHUNK_SIZE) {
+	} else if (posX >= settings::consts::chunk_size) {
 		if (askNeighbours && _neighbours[face_dir::plus_x]) {
-			res = _neighbours[face_dir::plus_x]->getBlockAt(posX - CHUNK_SIZE, posY, posZ, askNeighbours);
+			res = _neighbours[face_dir::plus_x]->getBlockAt(posX - settings::consts::chunk_size, posY, posZ, askNeighbours);
 		}
 	} else if (posY < 0) {
 		if (askNeighbours && _neighbours[face_dir::minus_y]) {
-			res = _neighbours[face_dir::minus_y]->getBlockAt(posX, posY + CHUNK_SIZE, posZ, askNeighbours);
+			res = _neighbours[face_dir::minus_y]->getBlockAt(posX, posY + settings::consts::chunk_size, posZ, askNeighbours);
 		}
-	} else if (posY >= CHUNK_SIZE) {
+	} else if (posY >= settings::consts::chunk_size) {
 		if (askNeighbours && _neighbours[face_dir::plus_y]) {
-			res = _neighbours[face_dir::plus_y]->getBlockAt(posX, posY - CHUNK_SIZE, posZ, askNeighbours);
+			res = _neighbours[face_dir::plus_y]->getBlockAt(posX, posY - settings::consts::chunk_size, posZ, askNeighbours);
 		}
 	} else {
-		res = _blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ];
+		res = _blocks[(((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ];
 	}
 	return (res);
 }
@@ -584,31 +584,31 @@ void Chunk::setBlockAt( int value, glm::ivec3 pos, bool update, bool observer )
 */
 void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update, bool observer )
 {
-	if (posZ < 0 || posZ >= WORLD_HEIGHT) {
+	if (posZ < 0 || posZ >= settings::consts::world_height) {
 		return ;
 	}
 	if (posX < 0) {
 		if (_neighbours[face_dir::minus_x]) {
-			_neighbours[face_dir::minus_x]->setBlockAt(value, posX + CHUNK_SIZE, posY, posZ, update, observer);
+			_neighbours[face_dir::minus_x]->setBlockAt(value, posX + settings::consts::chunk_size, posY, posZ, update, observer);
 		}
-	} else if (posX >= CHUNK_SIZE) {
+	} else if (posX >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_x]) {
-			_neighbours[face_dir::plus_x]->setBlockAt(value, posX - CHUNK_SIZE, posY, posZ, update, observer);
+			_neighbours[face_dir::plus_x]->setBlockAt(value, posX - settings::consts::chunk_size, posY, posZ, update, observer);
 		}
 	} else if (posY < 0) {
 		if (_neighbours[face_dir::minus_y]) {
-			_neighbours[face_dir::minus_y]->setBlockAt(value, posX, posY + CHUNK_SIZE, posZ, update, observer);
+			_neighbours[face_dir::minus_y]->setBlockAt(value, posX, posY + settings::consts::chunk_size, posZ, update, observer);
 		}
-	} else if (posY >= CHUNK_SIZE) {
+	} else if (posY >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_y]) {
-			_neighbours[face_dir::plus_y]->setBlockAt(value, posX, posY - CHUNK_SIZE, posZ, update, observer);
+			_neighbours[face_dir::plus_y]->setBlockAt(value, posX, posY - settings::consts::chunk_size, posZ, update, observer);
 		}
 	} else {
 		int previous;
 		if (update) {
 			previous = getBlockAt(posX, posY, posZ);
 		}
-		int offset = (((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ;
+		int offset = (((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ;
 		_blocks[offset] = value;
 		if (value) {
 			_added[offset] = value;
@@ -646,27 +646,27 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update, bo
 */
 void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 {
-	if (pos.z < 0 || pos.z >= WORLD_HEIGHT) {
+	if (pos.z < 0 || pos.z >= settings::consts::world_height) {
 		return ;
 	}
 	if (pos.x < 0) {
 		if (_neighbours[face_dir::minus_x]) {
-			pos.x += CHUNK_SIZE;
+			pos.x += settings::consts::chunk_size;
 			_neighbours[face_dir::minus_x]->update_adj_block(pos, dir, source);
 		}
-	} else if (pos.x >= CHUNK_SIZE) {
+	} else if (pos.x >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_x]) {
-			pos.x -= CHUNK_SIZE;
+			pos.x -= settings::consts::chunk_size;
 			_neighbours[face_dir::plus_x]->update_adj_block(pos, dir, source);
 		}
 	} else if (pos.y < 0) {
 		if (_neighbours[face_dir::minus_y]) {
-			pos.y += CHUNK_SIZE;
+			pos.y += settings::consts::chunk_size;
 			_neighbours[face_dir::minus_y]->update_adj_block(pos, dir, source);
 		}
-	} else if (pos.y >= CHUNK_SIZE) {
+	} else if (pos.y >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_y]) {
-			pos.y -= CHUNK_SIZE;
+			pos.y -= settings::consts::chunk_size;
 			_neighbours[face_dir::plus_y]->update_adj_block(pos, dir, source);
 		}
 	} else {
@@ -677,12 +677,12 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 
 		// update light status around placed block
 		if (transparent || type == blocks::moving_piston) {
-			light_try_spread(pos.x, pos.y, pos.z, 1, true, LIGHT_RECURSE);
-			light_try_spread(pos.x, pos.y, pos.z, 1, false, LIGHT_RECURSE);
+			light_try_spread(pos.x, pos.y, pos.z, 1, true, settings::consts::light_recurse);
+			light_try_spread(pos.x, pos.y, pos.z, 1, false, settings::consts::light_recurse);
 		}
 
 		if (type >= blocks::water) {
-			_fluids.insert((((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z);
+			_fluids.insert((((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z);
 			return ;
 		} else if (type == blocks::air) {
 			return ;
@@ -741,7 +741,7 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 					entity_block(pos.x, pos.y, pos.z, value);
 				}
 				if (type == blocks::oak_sign) {
-					int offset = (((pos.x << CHUNK_SHIFT) + pos.y) << WORLD_SHIFT) + pos.z;
+					int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 					auto search = _signs.find(offset);
 					if (search != _signs.end()) {
 						delete _signs[offset];
@@ -778,7 +778,7 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 		if (_neighbours[face_dir::minus_x]) {
 			return (_neighbours[face_dir::minus_x]->handleHit(useInventory, type, pos, modif));
 		}
-	} else if (chunk_pos.x >= CHUNK_SIZE) {
+	} else if (chunk_pos.x >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_x]) {
 			return (_neighbours[face_dir::plus_x]->handleHit(useInventory, type, pos, modif));
 		}
@@ -786,7 +786,7 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 		if (_neighbours[face_dir::minus_y]) {
 			return (_neighbours[face_dir::minus_y]->handleHit(useInventory, type, pos, modif));
 		}
-	} else if (chunk_pos.y >= CHUNK_SIZE) {
+	} else if (chunk_pos.y >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_y]) {
 			return (_neighbours[face_dir::plus_y]->handleHit(useInventory, type, pos, modif));
 		}

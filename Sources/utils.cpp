@@ -227,15 +227,15 @@ void loadSubTextureArray( int layer, std::string texture_file )
 
 int chunk_pos( int pos )
 {
-	if (CHUNK_SIZE == 16) {
+	if (settings::consts::chunk_size == 16) {
 		(pos >= 0 || !(pos & 0xF))
 				? pos -= pos & 0xF
-				: pos -= CHUNK_SIZE + pos & 0xF;
+				: pos -= settings::consts::chunk_size + pos & 0xF;
 		return (pos);
 	}
-	(pos >= 0 || !(pos % CHUNK_SIZE))
-			? pos -= pos % CHUNK_SIZE
-			: pos -= CHUNK_SIZE + pos % CHUNK_SIZE;
+	(pos >= 0 || !(pos % settings::consts::chunk_size))
+			? pos -= pos % settings::consts::chunk_size
+			: pos -= settings::consts::chunk_size + pos % settings::consts::chunk_size;
 	return (pos);
 }
 
@@ -440,7 +440,7 @@ void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks )
 		Chunk *c = d.second;
 		int diffX = posX - c->getStartX();
 		int diffY = posY - c->getStartY();
-		if (!c->getSortedOnce() || (diffX <= CHUNK_SIZE && diffX >= -CHUNK_SIZE) || (diffY <= CHUNK_SIZE && diffY >= -CHUNK_SIZE)) {
+		if (!c->getSortedOnce() || (diffX <= settings::consts::chunk_size && diffX >= -settings::consts::chunk_size) || (diffY <= settings::consts::chunk_size && diffY >= -settings::consts::chunk_size)) {
 			c->sort_sky(pos, false);
 			c->sort_water(pos, false);
 			// ++cnt;
@@ -469,7 +469,7 @@ void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks )
 		Chunk *c = it->second;
 		int diffX = posX - c->getStartX();
 		int diffY = posY - c->getStartY();
-		if (!c->getSortedOnce() || (diffX <= CHUNK_SIZE && diffX >= -CHUNK_SIZE) || (diffY <= CHUNK_SIZE && diffY >= -CHUNK_SIZE)) {
+		if (!c->getSortedOnce() || (diffX <= settings::consts::chunk_size && diffX >= -settings::consts::chunk_size) || (diffY <= settings::consts::chunk_size && diffY >= -settings::consts::chunk_size)) {
 			c->sort_sky(pos, false);
 			c->sort_water(pos, false);
 			// ++cnt;

@@ -28,21 +28,21 @@ Particle::~Particle( void )
 
 bool Particle::updateFlame( std::vector<t_shaderInput> &arr, glm::vec3 camDir )
 {
-	while (_lifeTime > TICK * 4) {
-		_lifeTime -= TICK * 4;
+	while (_lifeTime > settings::consts::tick * 4) {
+		_lifeTime -= settings::consts::tick * 4;
 		++_frame;
 		if (_frame == 3 || _frame == 6 || _frame == 10) {
 			_chunk->addParticle(new Particle(_chunk, {_pos.x, _pos.y, _pos.z - 0.1f}, PARTICLES::SMOKE, 0.05f));
 		}
 	}
 
-	float size, time = _frame * TICK * 4 + _lifeTime;
+	float size, time = _frame * settings::consts::tick * 4 + _lifeTime;
 	if (_frame < 4) {
-		size = gradient(time, 0, 4 * TICK * 4, 0.125, 0.1);
+		size = gradient(time, 0, 4 * settings::consts::tick * 4, 0.125, 0.1);
 	} else if (_frame < 6) {
-		size = gradient(time, 4 * TICK * 4, 6 * TICK * 4, 0.1125, 0.1);
+		size = gradient(time, 4 * settings::consts::tick * 4, 6 * settings::consts::tick * 4, 0.1125, 0.1);
 	} else {
-		size = gradient(time, 6 * TICK * 4, 14 * TICK * 4, 0.1125, 0);
+		size = gradient(time, 6 * settings::consts::tick * 4, 14 * settings::consts::tick * 4, 0.1125, 0);
 		if (_frame > 15) {
 			_frame = 0;
 		}
@@ -69,8 +69,8 @@ bool Particle::updateFlame( std::vector<t_shaderInput> &arr, glm::vec3 camDir )
 bool Particle::updateSmoke( std::vector<t_shaderInput> &arr, glm::vec3 camDir, float deltaTime )
 {
 	_pos += _dir * deltaTime;
-	while (_lifeTime > TICK) {
-		_lifeTime -= TICK;
+	while (_lifeTime > settings::consts::tick) {
+		_lifeTime -= settings::consts::tick;
 		++_frame;
 	}
 	if (_frame > 7) {
@@ -97,8 +97,8 @@ bool Particle::updateSmoke( std::vector<t_shaderInput> &arr, glm::vec3 camDir, f
 
 bool Particle::updateExplosion( std::vector<t_shaderInput> &arr, glm::vec3 camDir )
 {
-	while (_lifeTime > TICK) {
-		_lifeTime -= TICK;
+	while (_lifeTime > settings::consts::tick) {
+		_lifeTime -= settings::consts::tick;
 		++_frame;
 	}
 	if (_frame > 15) {
@@ -128,8 +128,8 @@ bool Particle::updateBreaking( std::vector<t_shaderInput> &arr, glm::vec3 camDir
 {
 	_pos += _dir * deltaTime;
 	_dir.z -= 0.1f;
-	while (_lifeTime > TICK) {
-		_lifeTime -= TICK;
+	while (_lifeTime > settings::consts::tick) {
+		_lifeTime -= settings::consts::tick;
 		++_frame;
 	}
 	if (_frame > 15) {
@@ -164,8 +164,8 @@ bool Particle::update( std::vector<t_shaderInput> &arr, glm::vec3 camPos, glm::v
 	_lifeTime += deltaTime;
 
 	// particles not displayed if 16 blocks away from player (TODO Entity Distance in settings)
-	if (_pos.x < camPos.x - 3 * CHUNK_SIZE || _pos.x > camPos.x + 3 * CHUNK_SIZE || _pos.y < camPos.y - 3 * CHUNK_SIZE || _pos.y > camPos.y + 3 * CHUNK_SIZE
-		|| _pos.z < camPos.z - 3 * CHUNK_SIZE || _pos.z > camPos.z + 3 * CHUNK_SIZE) {
+	if (_pos.x < camPos.x - 3 * settings::consts::chunk_size || _pos.x > camPos.x + 3 * settings::consts::chunk_size || _pos.y < camPos.y - 3 * settings::consts::chunk_size || _pos.y > camPos.y + 3 * settings::consts::chunk_size
+		|| _pos.z < camPos.z - 3 * settings::consts::chunk_size || _pos.z > camPos.z + 3 * settings::consts::chunk_size) {
 		return (false);
 	}
 

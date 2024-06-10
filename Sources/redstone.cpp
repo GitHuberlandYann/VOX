@@ -980,25 +980,25 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 {
 	if (pos.x < 0) {
 		if (_neighbours[face_dir::minus_x]) {
-			pos.x += CHUNK_SIZE;
+			pos.x += settings::consts::chunk_size;
 			_neighbours[face_dir::minus_x]->updatePiston(pos, value);
 		}
 		return ;
-	} else if (pos.x >= CHUNK_SIZE) {
+	} else if (pos.x >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_x]) {
-			pos.x -= CHUNK_SIZE;
+			pos.x -= settings::consts::chunk_size;
 			_neighbours[face_dir::plus_x]->updatePiston(pos, value);
 		}
 		return ;
 	} else if (pos.y < 0) {
 		if (_neighbours[face_dir::minus_y]) {
-			pos.y += CHUNK_SIZE;
+			pos.y += settings::consts::chunk_size;
 			_neighbours[face_dir::minus_y]->updatePiston(pos, value);
 		}
 		return ;
-	} else if (pos.y >= CHUNK_SIZE) {
+	} else if (pos.y >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_y]) {
-			pos.y -= CHUNK_SIZE;
+			pos.y -= settings::consts::chunk_size;
 			_neighbours[face_dir::plus_y]->updatePiston(pos, value);
 		}
 		return ;
@@ -1145,30 +1145,30 @@ void Chunk::updateRedstone( void )
 */
 void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 {
-	if (red.pos.z < 0 || red.pos.z >= WORLD_HEIGHT) {
+	if (red.pos.z < 0 || red.pos.z >= settings::consts::world_height) {
 		return ;
 	}
 	if (red.pos.x < 0) {
 		if (_neighbours[face_dir::minus_x]) {
-			red.pos.x += CHUNK_SIZE;
+			red.pos.x += settings::consts::chunk_size;
 			_neighbours[face_dir::minus_x]->scheduleRedstoneTick(red);
 			return ;
 		}
-	} else if (red.pos.x >= CHUNK_SIZE) {
+	} else if (red.pos.x >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_x]) {
-			red.pos.x -= CHUNK_SIZE;
+			red.pos.x -= settings::consts::chunk_size;
 			_neighbours[face_dir::plus_x]->scheduleRedstoneTick(red);
 			return ;
 		}
 	} else if (red.pos.y < 0) {
 		if (_neighbours[face_dir::minus_y]) {
-			red.pos.y += CHUNK_SIZE;
+			red.pos.y += settings::consts::chunk_size;
 			_neighbours[face_dir::minus_y]->scheduleRedstoneTick(red);
 			return ;
 		}
-	} else if (red.pos.y >= CHUNK_SIZE) {
+	} else if (red.pos.y >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_y]) {
-			red.pos.y -= CHUNK_SIZE;
+			red.pos.y -= settings::consts::chunk_size;
 			_neighbours[face_dir::plus_y]->scheduleRedstoneTick(red);
 			return ;
 		}
@@ -1225,30 +1225,30 @@ void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 */
 void Chunk::abortComparatorScheduleTick( glm::ivec3 pos )
 {
-	if (pos.z < 0 || pos.z >= WORLD_HEIGHT) {
+	if (pos.z < 0 || pos.z >= settings::consts::world_height) {
 		return ;
 	}
 	if (pos.x < 0) {
 		if (_neighbours[face_dir::minus_x]) {
-			pos.x += CHUNK_SIZE;
+			pos.x += settings::consts::chunk_size;
 			_neighbours[face_dir::minus_x]->abortComparatorScheduleTick(pos);
 			return ;
 		}
-	} else if (pos.x >= CHUNK_SIZE) {
+	} else if (pos.x >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_x]) {
-			pos.x -= CHUNK_SIZE;
+			pos.x -= settings::consts::chunk_size;
 			_neighbours[face_dir::plus_x]->abortComparatorScheduleTick(pos);
 			return ;
 		}
 	} else if (pos.y < 0) {
 		if (_neighbours[face_dir::minus_y]) {
-			pos.y += CHUNK_SIZE;
+			pos.y += settings::consts::chunk_size;
 			_neighbours[face_dir::minus_y]->abortComparatorScheduleTick(pos);
 			return ;
 		}
-	} else if (pos.y >= CHUNK_SIZE) {
+	} else if (pos.y >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_y]) {
-			pos.y -= CHUNK_SIZE;
+			pos.y -= settings::consts::chunk_size;
 			_neighbours[face_dir::plus_y]->abortComparatorScheduleTick(pos);
 			return ;
 		}

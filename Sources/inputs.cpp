@@ -21,7 +21,7 @@ void OpenGL_Manager::resetInputsPtrs( void )
 t_hit OpenGL_Manager::getBlockHit( void )
 {
 	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
-	std::vector<glm::ivec3> ids = _camera->computeRayCasting((_game_mode == GAMEMODE::CREATIVE) ? CHUNK_SIZE : REACH);
+	std::vector<glm::ivec3> ids = _camera->computeRayCasting((_game_mode == settings::consts::gamemode::creative) ? settings::consts::chunk_size : REACH);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
 	Chunk *chunk = NULL;
@@ -105,7 +105,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		} else if (_hand_content == blocks::worldedit_wand) {
 			return (WorldEdit::Get()->setSelectionStart(_block_hit.pos));
 		}
-		if (_game_mode == GAMEMODE::ADVENTURE && !(_block_hit.value & mask::adventure_block)) {
+		if (_game_mode == settings::consts::gamemode::adventure && !(_block_hit.value & mask::adventure_block)) {
 			_ui->chatMessage("[Adventure mode] you can't break blocks you didn't place yourself.", TEXT::RED);
 			return ;
 		}
@@ -169,7 +169,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
 		return ;
 	}
-	if (_game_mode == GAMEMODE::ADVENTURE && type != blocks::air) {
+	if (_game_mode == settings::consts::gamemode::adventure && type != blocks::air) {
 		int dist = glm::abs(_block_hit.pos.x - _block_hit.prev_pos.x) + glm::abs(_block_hit.pos.y - _block_hit.prev_pos.y) + glm::abs(_block_hit.pos.z - _block_hit.prev_pos.z);
 		if (dist > 1) {
 			return ;
@@ -275,7 +275,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 	}
 
 	if (_block_hit.type) { // rm if statement for nice cheat
-		if (_game_mode == GAMEMODE::ADVENTURE && type != blocks::water) {
+		if (_game_mode == settings::consts::gamemode::adventure && type != blocks::water) {
 			type |= mask::adventure_block;
 		}
 		_current_chunk_ptr->handleHit(collect, type, _block_hit.prev_pos, Modif::ADD);
@@ -319,16 +319,14 @@ void OpenGL_Manager::updateAnimFrame( void )
 
 void OpenGL_Manager::updateVisibleChunks( void )
 {
-	std::vector<Chunk *> newvis_chunks;
-	newvis_chunks.reserve(_visible_chunks.capacity());
+	_visible_chunks.clear();
 	mtx_perimeter.lock();
 	for (auto& peri: _perimeter_chunks) {
 		if (_camera->chunkInFront(_current_chunk, peri->getStartX(), peri->getStartY())) {
-			newvis_chunks.push_back(peri);
+			_visible_chunks.push_back(peri);
 		}
 	}
 	mtx_perimeter.unlock();
-	_visible_chunks = newvis_chunks;
 }
 
 void OpenGL_Manager::chunkUpdate( void )
@@ -494,7 +492,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 	_camera->setDelta(deltaTime);
 	_hand_content = _inventory->getCurrentSlot();
 	if (INPUT::key_down(INPUT::BREAK)) {
-		if (_game_mode != GAMEMODE::CREATIVE) {
+		if (_game_mode != settings::consts::gamemode::creative) {
 			if (_block_hit.type == blocks::air) {
 				_camera->setArmAnimation(INPUT::key_update(INPUT::BREAK));
 			} else {
@@ -529,7 +527,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		_camera->setArmAnimation(false);
 	}
 	if (INPUT::key_down(INPUT::USE)) {
-		if (_game_mode != GAMEMODE::CREATIVE && s_blocks[_hand_content]->isFood) {
+		if (_game_mode != settings::consts::gamemode::creative && s_blocks[_hand_content]->isFood) {
 			_eat_timer += deltaTime;
 			if (_eat_timer >= 1.61f) {
 				if (_camera->canEatFood(_hand_content)) {
@@ -540,7 +538,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		} else if (_hand_content == blocks::bow) {
 			_bow_timer += deltaTime;
 		} else if (INPUT::key_update(INPUT::USE)) {
-			handleBlockModif(true, _game_mode != GAMEMODE::CREATIVE);
+			handleBlockModif(true, _game_mode != settings::consts::gamemode::creative);
 			_camera->setArmAnimation(true);
 		}
 	} else if (INPUT::key_update(INPUT::USE)) {
@@ -565,7 +563,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 	}
 	if (_block_hit.type != blocks::air
 		&& INPUT::key_down(INPUT::SAMPLE) && INPUT::key_update(INPUT::SAMPLE)) { // pick up in creative mode, or swap
-		_inventory->replaceSlot(_block_hit.type, _game_mode == GAMEMODE::CREATIVE);
+		_inventory->replaceSlot(_block_hit.type, _game_mode == settings::consts::gamemode::creative);
 	}
 
 	// toggle polygon mode fill / lines
@@ -608,14 +606,14 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		_camera->setRun(INPUT::key_down(INPUT::RUN));
 	}
 
-	if (_game_mode == GAMEMODE::CREATIVE) { // no collision check, free to move however you want
+	if (_game_mode == settings::consts::gamemode::creative) { // no collision check, free to move however you want
 		_camera->moveFly(key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown);
 	}
 
 	// we update the current chunk before we update cam view, because we check in current chunk for collision
 	// update block hit
 	if (rayCast) {
-		if (_game_mode != GAMEMODE::CREATIVE && _current_chunk_ptr) { // on first frame -> no _current_chunk_ptr
+		if (_game_mode != settings::consts::gamemode::creative && _current_chunk_ptr) { // on first frame -> no _current_chunk_ptr
 			_camera->setSneak(key_cam_zdown);
 			_camera->setJump(key_cam_zup && INPUT::key_update(INPUT::JUMP));
 			_camera->moveHuman(Z_AXIS, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement

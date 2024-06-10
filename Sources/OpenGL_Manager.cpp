@@ -10,7 +10,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_window(NULL), _shaderProgram(0), _skyShaderProgram(0), _particleShaderProgram(0),
 	_textures({NULL}), _fill(FILL), _debug_mode(true), _outline(true), _paused(true),
 	_threadUpdate(false), _threadStop(false), _break_time(0), _eat_timer(0), _bow_timer(0),
-	_game_mode(GAMEMODE::CREATIVE), _break_frame(0), _world_name("default.json"),
+	_game_mode(settings::consts::gamemode::creative), _break_frame(0), _world_name("default.json"),
 	_block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0}),
 	_ui(std::make_unique<UI>()), _menu(std::make_unique<Menu>()), _skybox(std::make_unique<Skybox>())
 {
@@ -421,10 +421,10 @@ void OpenGL_Manager::setupCommunicationShaders( void )
 
 	glUseProgram(_shaderProgram);
 	_uniFog = glGetUniformLocation(_shaderProgram, "fogDist");
-	glUniform1f(_uniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << CHUNK_SHIFT);
+	glUniform1f(_uniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
 	_skyUniFog = glGetUniformLocation(_skyShaderProgram, "fogDist");
 	glUseProgram(_skyShaderProgram);
-	glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << CHUNK_SHIFT);
+	glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
 	glUseProgram(_shaderProgram);
 
 	_uniView = glGetUniformLocation(_shaderProgram, "view");
@@ -489,17 +489,17 @@ void OpenGL_Manager::loadTextures( void )
 
 void OpenGL_Manager::setGamemode( int gamemode )
 {
-	if (gamemode < GAMEMODE::SURVIVAL || gamemode > GAMEMODE::ADVENTURE) {
+	if (gamemode < settings::consts::gamemode::survival || gamemode > settings::consts::gamemode::adventure) {
 		return ;
 	}
 	_game_mode = gamemode;
 	_camera->resetFall();
-	_ui->chatMessage("Gamemode set to " + GAMEMODE::str[gamemode]);
+	_ui->chatMessage("Gamemode set to " + settings::consts::gamemode::str[gamemode]);
 }
 
 void OpenGL_Manager::getGamemode( void )
 {
-	_ui->chatMessage("Current gamemode is " + GAMEMODE::str[_game_mode]);
+	_ui->chatMessage("Current gamemode is " + settings::consts::gamemode::str[_game_mode]);
 }
 
 size_t OpenGL_Manager::clearEntities( void )
@@ -570,10 +570,10 @@ void OpenGL_Manager::main_loop( void )
 			lastTime += 1.0;
 		}
 		glUseProgram(_shaderProgram); // must be before DayCycle tickUpdate
-		if (currentTime - lastGameTick >= TICK) {
+		if (currentTime - lastGameTick >= settings::consts::tick) {
 			tickUpdate = true;
 			++nbTicks;
-			lastGameTick += TICK;
+			lastGameTick += settings::consts::tick;
 			fluidUpdate = (nbTicks == 5 || nbTicks == 10 || nbTicks == 15 || nbTicks == 20);
 			animUpdate = (nbTicks & 0x1);
 			if (!gamePaused) {
@@ -680,7 +680,7 @@ void OpenGL_Manager::main_loop( void )
 						+ ((_block_hit.type != blocks::air) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
 						+ ((_block_hit.type) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
 						+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
-						+ ((_game_mode != GAMEMODE::CREATIVE) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
+						+ ((_game_mode != settings::consts::gamemode::creative) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
 						+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 						// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
 						+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size());
@@ -695,7 +695,7 @@ void OpenGL_Manager::main_loop( void )
 						+ "\nSky faces\t> " + std::to_string(skyFaces)
 						+ "\nWater faces\t> " + std::to_string(waterFaces)
 						+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(settings::ints::render_dist))
-						+ "\nGame mode\t\t> " + GAMEMODE::str[_game_mode];
+						+ "\nGame mode\t\t> " + settings::consts::gamemode::str[_game_mode];
 				mtx_backup.lock();
 				str += "\nBackups\t> " + std::to_string(_backups.size());
 				mtx_backup.unlock();
@@ -743,7 +743,7 @@ void OpenGL_Manager::main_loop( void )
 					_world_name = _menu->getWorldFile();
 					_camera->setSpawnpoint({0, 0, 256});
 					_camera->respawn();
-					_game_mode = GAMEMODE::SURVIVAL;
+					_game_mode = settings::consts::gamemode::survival;
 					DayCycle::Get()->setTicks(1000);
 					initWorld();
 					break ;
@@ -763,9 +763,9 @@ void OpenGL_Manager::main_loop( void )
 				case MENU::RET::RENDER_DIST_UPDATE: // render dist change
 					// _ui->chatMessage("Render distance set to " + std::to_string(render_dist));
 					glUseProgram(_skyShaderProgram);
-					glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << CHUNK_SHIFT);
+					glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
 					glUseProgram(_shaderProgram);
-					glUniform1f(_uniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << CHUNK_SHIFT);
+					glUniform1f(_uniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
 					setThreadUpdate(true);
 					break ;
 				case MENU::RET::BRIGHTNESS_UPDATE: // brightness change

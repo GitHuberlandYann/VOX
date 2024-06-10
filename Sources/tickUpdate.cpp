@@ -13,9 +13,9 @@ const int neighbour8[8][2] = {
 // make use of 1 / floor(25 / points) + 1 to update crop
 void Chunk::updateCrop( int value, int offset )
 {
-	int posZ = offset & (WORLD_HEIGHT - 1);
-	int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
+	int posZ = offset & (settings::consts::world_height - 1);
+	int posY = ((offset >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+	int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 	// std::cout << _startX << ", " << _startY << ": update crop at " << posX << ", " << posY << ", " << posZ << std::endl;
 	int light = getLightLevel(posX, posY, posZ);
 	light = maxi(light & 0xF, (light >> 8) & 0xF);
@@ -67,9 +67,9 @@ bool Chunk::watered_farmland( int posX, int posY, int posZ )
 
 void Chunk::updateFarmland( int value, int offset )
 {
-	int posZ = offset & (WORLD_HEIGHT - 1);
-	int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
+	int posZ = offset & (settings::consts::world_height - 1);
+	int posY = ((offset >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+	int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 	bool hydrated = watered_farmland(posX, posY, posZ);
 	if (!hydrated) {
 		int wetness = (value >> 10) & 0x7;
@@ -107,9 +107,9 @@ const int neighbour45[44][3] = {
 
 void Chunk::spreadGrassblock( int offset )
 {
-	int posZ = offset & (WORLD_HEIGHT - 1);
-	int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
+	int posZ = offset & (settings::consts::world_height - 1);
+	int posY = ((offset >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+	int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 	if (posZ < 254) {
 		int above = _blocks[offset + 1] & mask::blocks::type;
 		if (!s_blocks[above]->transparent || above >= blocks::water) {
@@ -163,9 +163,9 @@ bool Chunk::findLog( int posX, int posY, int posZ, int level )
 
 void Chunk::decayLeaves( int offset )
 {
-	int posZ = offset & (WORLD_HEIGHT - 1);
-	int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
+	int posZ = offset & (settings::consts::world_height - 1);
+	int posY = ((offset >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+	int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 
 	int logConnected = findLog(posX, posY, posZ, 6);
 	if (!logConnected) {
@@ -194,9 +194,9 @@ bool Chunk::spaceForTree( int posX, int posY, int posZ )
 
 void Chunk::growTree( int value, int offset )
 {
-	int posZ = offset & (WORLD_HEIGHT - 1);
-	int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-	int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
+	int posZ = offset & (settings::consts::world_height - 1);
+	int posY = ((offset >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+	int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 
 	int light = getLightLevel(posX, posY, posZ);
 	light = maxi(light & 0xF, (light >> 8) & 0xF);
@@ -224,14 +224,14 @@ void Chunk::growTree( int value, int offset )
 
 void Chunk::turnDirtToGrass( int posX, int posY, int posZ )
 {
-	if (posZ < 0 || posZ >= WORLD_HEIGHT) {
+	if (posZ < 0 || posZ >= settings::consts::world_height) {
 		return ;
 	}
 	if (posX < 0) {
 		if (_neighbours[face_dir::minus_x]) {
 			_neighbours[face_dir::minus_x]->turnDirtToGrass(posX, posY, posZ);
 		}
-	} else if (posX >= CHUNK_SIZE) {
+	} else if (posX >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_x]) {
 			_neighbours[face_dir::plus_x]->turnDirtToGrass(posX, posY, posZ);
 		}
@@ -239,13 +239,13 @@ void Chunk::turnDirtToGrass( int posX, int posY, int posZ )
 		if (_neighbours[face_dir::minus_y]) {
 			_neighbours[face_dir::minus_y]->turnDirtToGrass(posX, posY, posZ);
 		}
-	} else if (posY >= CHUNK_SIZE) {
+	} else if (posY >= settings::consts::chunk_size) {
 		if (_neighbours[face_dir::plus_y]) {
 			_neighbours[face_dir::plus_y]->turnDirtToGrass(posX, posY, posZ);
 		}
 	} else {
-		_blocks[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] = blocks::grass_block;
-		_added[(((posX << CHUNK_SHIFT) + posY) << WORLD_SHIFT) + posZ] = blocks::grass_block;
+		_blocks[(((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ] = blocks::grass_block;
+		_added[(((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ] = blocks::grass_block;
 		_vertex_update = true;
 	}
 }
@@ -257,7 +257,7 @@ void Chunk::tickUpdate( void )
 		for (int j = 0; j < 3; j++) {
 			int selected = Random::rangedNumber(_seed, i * (1 << 12), (i + 1) * (1 << 12));
 			int value = _blocks[selected], type = value & mask::blocks::type;
-				// std::cout << "updating crop in chunk " << _startX << ", " << _startY << ": " << ((selected >> WORLD_SHIFT) >> CHUNK_SHIFT) << " " << ((selected >> WORLD_SHIFT) & (CHUNK_SIZE - 1)) << ", " << (selected & (WORLD_HEIGHT - 1)) << std::endl;
+				// std::cout << "updating crop in chunk " << _startX << ", " << _startY << ": " << ((selected >> settings::consts::world_shift) >> settings::consts::chunk_shift) << " " << ((selected >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)) << ", " << (selected & (settings::consts::world_height - 1)) << std::endl;
 			if (value & mask::blocks::notVisible) { // not updated
 				continue ;
 			}
@@ -299,9 +299,9 @@ void Chunk::updateScheduledBlocks( void )
 			_scheduled_to_fall.erase(_scheduled_to_fall.begin());
 			continue ;
 		}
-		int posZ = offset & (WORLD_HEIGHT - 1);
-		int posY = ((offset >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-		int posX = ((offset >> WORLD_SHIFT) >> CHUNK_SHIFT);
+		int posZ = offset & (settings::consts::world_height - 1);
+		int posY = ((offset >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+		int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 		handleHit(false, type, {posX + _startX, posY + _startY, posZ}, Modif::REMOVE);
 		_entities.push_back(new FallingBlockEntity(this, {posX + _startX, posY + _startY, posZ}, {type, 1, {0, 0}}));
 		_scheduled_to_fall.erase(_scheduled_to_fall.begin());

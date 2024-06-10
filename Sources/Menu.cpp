@@ -1653,8 +1653,8 @@ int Menu::getState( void )
 
 void Menu::changeGuiSize( void )
 {
-	if (++_gui_size > GUI_MAX) {
-		_gui_size = GUI_MIN;
+	if (++_gui_size > settings::consts::gui_max()) {
+		_gui_size = settings::consts::gui_min;
 	}
 	_ui->setGuiSize(_gui_size + 1);
 }

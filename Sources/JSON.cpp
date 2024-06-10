@@ -26,7 +26,7 @@ void OpenGL_Manager::saveWorld( void )
 	_block_hit = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
 
 	// then store everything
-	std::string json = "{\n\t\"version\": \"" + settings::current_version
+	std::string json = "{\n\t\"version\": \"" + settings::consts::current_version
 		+ "\",\n\t\"seed\": " + std::to_string(perlin_seed)
 		+ ",\n\t\"game_mode\": " + std::to_string(_game_mode)
 		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
@@ -357,7 +357,7 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 
 static int convert( int value ) // used when I change s_blocks big time
 {
-	if (Settings::Get()->getString(settings::version) == settings::current_version) {
+	if (Settings::Get()->getString(settings::version) == settings::consts::current_version) {
 		return (value);
 	}
 	// transition from v0.0 to v1.0: 0xF00 becomes 0xF000 and 0xF000 becomes 0xF000000
@@ -546,9 +546,9 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 							for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
 						}
 						glm::ivec3 pos;
-						pos.z = skey & (WORLD_HEIGHT - 1);
-						pos.y = ((skey >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-						pos.x = ((skey >> WORLD_SHIFT) >> CHUNK_SHIFT);
+						pos.z = skey & (settings::consts::world_height - 1);
+						pos.y = ((skey >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+						pos.x = ((skey >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 						SignInstance *sign = new SignInstance(NULL, value, pos);
 						sign->setContent(content);
 						backups_value.signs[skey] = sign;

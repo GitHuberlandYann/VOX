@@ -16,13 +16,6 @@ class Camera;
 # include "Entity.hpp"
 # include "Particle.hpp"
 
-# define SEA_LEVEL 64
-# define LIGHT_RECURSE 32
-# define CHUNK_SHIFT 4
-# define WORLD_HEIGHT 256
-# define WORLD_SHIFT 8
-# define ALLOC_SIZE 1 << 16 // represents CHUNK_SIZE * CHUNK_SIZE * WORLD_HEIGHT
-
 # define XTEX (1 << 4) + (1 << 17)
 # define YTEX (1 << 12) + (1 << 18)
 
@@ -208,11 +201,11 @@ class Chunk
         GLint _startX, _startY, _nb_neighbours;
 		unsigned _seed;
 		GLint _continent;
-		std::array<GLint, ALLOC_SIZE> _blocks;
+		std::array<GLint, settings::consts::alloc_size> _blocks;
 		std::vector<glm::ivec4> _water_vert, _sky_vert;
 		std::vector<t_shaderInput> _vertices;
-		std::array<short, ALLOC_SIZE> _lights;  // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
-		std::array<GLboolean, (CHUNK_SIZE + 2) * (CHUNK_SIZE + 2)> _sky;
+		std::array<short, settings::consts::alloc_size> _lights;  // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
+		std::array<GLboolean, (settings::consts::chunk_size + 2) * (settings::consts::chunk_size + 2)> _sky;
 		GLboolean _hasWater;
 		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
 		std::array<Chunk *, 4> _neighbours;
@@ -272,7 +265,7 @@ class Chunk
 		void update_block( glm::ivec3 pos, int previous, int value );
 
 		// lights
-		void light_spread( int posX, int posY, int posZ, bool skySpread, int recurse = LIGHT_RECURSE );
+		void light_spread( int posX, int posY, int posZ, bool skySpread, int recurse = settings::consts::light_recurse );
 		void generate_lights( void );
 
 		// redstone

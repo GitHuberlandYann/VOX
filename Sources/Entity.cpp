@@ -177,8 +177,8 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	}
 
 	// items not displayed if 16 blocks away from player (TODO Entity Distance in settings)
-	if (_pos.x < camPos.x - CHUNK_SIZE || _pos.x > camPos.x + CHUNK_SIZE || _pos.y < camPos.y - CHUNK_SIZE || _pos.y > camPos.y + CHUNK_SIZE
-		|| _pos.z < camPos.z - CHUNK_SIZE || _pos.z > camPos.z + CHUNK_SIZE) {
+	if (_pos.x < camPos.x - settings::consts::chunk_size || _pos.x > camPos.x + settings::consts::chunk_size || _pos.y < camPos.y - settings::consts::chunk_size || _pos.y > camPos.y + settings::consts::chunk_size
+		|| _pos.z < camPos.z - settings::consts::chunk_size || _pos.z > camPos.z + settings::consts::chunk_size) {
 		return (false);
 	}
 
@@ -598,7 +598,7 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	int currentTick = DayCycle::Get()->getGameTicks();
 
 	int GTMul = DayCycle::Get()->getGameTimeMultiplier();
-	float percent = (GTMul == -1) ? glm::min(1.0, _lifeTime / (TICK * lifeLimit))
+	float percent = (GTMul == -1) ? glm::min(1.0, _lifeTime / (settings::consts::tick * lifeLimit))
 									: 1.0f * (currentTick - _tickStart) / lifeLimit;
 	s_blocks[_item.type & mask::blocks::type]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, _pos + _dir * percent, _item.type);
 

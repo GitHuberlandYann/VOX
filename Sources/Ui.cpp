@@ -342,7 +342,7 @@ void UI::drawUserInterface( std::string str, int game_mode, float deltaTime )
 	// Bench b;
 	glUseProgram(_shaderProgram);
     glBindVertexArray(_vao);
-	(game_mode != GAMEMODE::CREATIVE)
+	(game_mode != settings::consts::gamemode::creative)
 		? glDrawArrays(GL_TRIANGLES, 0, _nb_points)
 		: glDrawArrays(GL_TRIANGLES, 0, _nb_points_crea);
 	// b.stop("drawArrays");

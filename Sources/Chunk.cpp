@@ -15,19 +15,19 @@ Chunk::Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::lis
 	int cnt = 0;
 // std::cout << "new chunk at " << posX << ", " << posY << std::endl;
 	for (auto c : *chunks) { // TODO load backups if needed. for trees
-		if (c->isInChunk(_startX - CHUNK_SIZE, _startY)) {
+		if (c->isInChunk(_startX - settings::consts::chunk_size, _startY)) {
 			_neighbours[face_dir::minus_x] = c;
 			c->setNeighbour(this, face_dir::plus_x);
 			++cnt;
-		} else if (c->isInChunk(_startX + CHUNK_SIZE, _startY)) {
+		} else if (c->isInChunk(_startX + settings::consts::chunk_size, _startY)) {
 			_neighbours[face_dir::plus_x] = c;
 			c->setNeighbour(this, face_dir::minus_x);
 			++cnt;
-		} else if (c->isInChunk(_startX, _startY - CHUNK_SIZE)) {
+		} else if (c->isInChunk(_startX, _startY - settings::consts::chunk_size)) {
 			_neighbours[face_dir::minus_y] = c;
 			c->setNeighbour(this, face_dir::plus_y);
 			++cnt;
-		} else if (c->isInChunk(_startX, _startY + CHUNK_SIZE)) {
+		} else if (c->isInChunk(_startX, _startY + settings::consts::chunk_size)) {
 			_neighbours[face_dir::plus_y] = c;
 			c->setNeighbour(this, face_dir::minus_y);
 			++cnt;
@@ -131,13 +131,13 @@ GLint Chunk::face_count( int type, int row, int col, int level )
 void Chunk::resetDisplayedFaces( void )
 {
 	// hiding unseen blocks
-	for (int row = 0; row < CHUNK_SIZE; row++) {
-		for (int col = 0; col < CHUNK_SIZE; col++) {
-			for (int level = 0; level < WORLD_HEIGHT; level++) {
-				int offset = (((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level;
+	for (int row = 0; row < settings::consts::chunk_size; row++) {
+		for (int col = 0; col < settings::consts::chunk_size; col++) {
+			for (int level = 0; level < settings::consts::world_height; level++) {
+				int offset = (((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level;
 				GLint value = _blocks[offset], type = value & mask::blocks::type;
 				bool restore = false;
-				if ((value & mask::blocks::notVisible) && (!row || !col || row == CHUNK_SIZE - 1 || col == CHUNK_SIZE - 1)) {
+				if ((value & mask::blocks::notVisible) && (!row || !col || row == settings::consts::chunk_size - 1 || col == settings::consts::chunk_size - 1)) {
 					value -= mask::blocks::notVisible;
 					restore = true;
 				}
@@ -320,9 +320,9 @@ void Chunk::restoreBackup( s_backup &backup )
 	_chests = backup.chests;
 	for (auto &ch : _chests) {
 		// std::cout << "chest in backup of " << _startX << " " << _startY << " at " << ch.first << std::endl;
-		int posZ = ch.first & (WORLD_HEIGHT - 1);
-		int posY = ((ch.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-		int posX = ((ch.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
+		int posZ = ch.first & (settings::consts::world_height - 1);
+		int posY = ((ch.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+		int posX = ((ch.first >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 		ch.second->setChunk(this, {posX + _startX, posY + _startY, posZ});
 	}
 	_furnaces = backup.furnaces;
@@ -334,7 +334,7 @@ void Chunk::restoreBackup( s_backup &backup )
 
 void Chunk::openChest( glm::ivec3 pos )
 {
-	int key = ((((pos.x - _startX) << CHUNK_SHIFT) + pos.y - _startY) << WORLD_SHIFT) + pos.z;
+	int key = ((((pos.x - _startX) << settings::consts::chunk_shift) + pos.y - _startY) << settings::consts::world_shift) + pos.z;
 	auto search = _chests.find(key);
 	if (search != _chests.end()) {
 		search->second->setState(chest_state::OPENING);
@@ -343,7 +343,7 @@ void Chunk::openChest( glm::ivec3 pos )
 
 ChestInstance *Chunk::getChestInstance( glm::ivec3 pos )
 {
-	int key = ((((pos.x - _startX) << CHUNK_SHIFT) + pos.y - _startY) << WORLD_SHIFT) + pos.z;
+	int key = ((((pos.x - _startX) << settings::consts::chunk_shift) + pos.y - _startY) << settings::consts::world_shift) + pos.z;
 	std::map<int, ChestInstance*>::iterator search = _chests.find(key);
 	if (search != _chests.end()) {
 		return (search->second);
@@ -358,7 +358,7 @@ ChestInstance *Chunk::getChestInstance( glm::ivec3 pos )
 
 FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
 {
-	int key = ((((pos.x - _startX) << CHUNK_SHIFT) + pos.y - _startY) << WORLD_SHIFT) + pos.z;
+	int key = ((((pos.x - _startX) << settings::consts::chunk_shift) + pos.y - _startY) << settings::consts::world_shift) + pos.z;
 	std::map<int, FurnaceInstance*>::iterator search = _furnaces.find(key);
 	if (search != _furnaces.end()) {
 		return (search->second);
@@ -377,7 +377,7 @@ FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
 */
 void Chunk::setSignContent( t_sign_info sign )
 {
-	int key = ((((sign.pos.x - _startX) << CHUNK_SHIFT) + sign.pos.y - _startY) << WORLD_SHIFT) + sign.pos.z;;
+	int key = ((((sign.pos.x - _startX) << settings::consts::chunk_shift) + sign.pos.y - _startY) << settings::consts::world_shift) + sign.pos.z;;
 	auto search = _signs.find(key);
 	if (search == _signs.end()) {
 		std::cout << "Chunk::setSignContent [" << _startX << ", " << _startY << "]failed to find sign at pos " << sign.pos.x << ", " << sign.pos.y << ", " << sign.pos.z << std::endl;
@@ -409,21 +409,21 @@ void Chunk::checkFillVertices( void )
 					if ((a.second & mask::blocks::type) == blocks::redstone_torch && (a.second & mask::redstone::powered)) {
 						break ; // red torch is turned off
 					}
-					int level = a.first & (WORLD_HEIGHT - 1);
-					int col = ((a.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-					int row = ((a.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
-					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
-					_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] += s_blocks[a.second & mask::blocks::type]->light_level + (s_blocks[a.second & mask::blocks::type]->light_level << 4); // 0xF0 = light source. & 0xF = light level
+					int level = a.first & (settings::consts::world_height - 1);
+					int col = ((a.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+					int row = ((a.first >> settings::consts::world_shift) >> settings::consts::chunk_shift);
+					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
+					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] += s_blocks[a.second & mask::blocks::type]->light_level + (s_blocks[a.second & mask::blocks::type]->light_level << 4); // 0xF0 = light source. & 0xF = light level
 					light_spread(row, col, level, false);
 					break ;
 				}
 			}
 			// this time spread sky_light underground
-			for (int row = 0; row < CHUNK_SIZE; row++) {
-				for (int col = 0; col < CHUNK_SIZE; col++) {
-					for (int level = WORLD_HEIGHT - 1; level > 0; level--) {
-						if (!(_lights[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level] & 0xF000)) {
-							int value = _blocks[(((row << CHUNK_SHIFT) + col) << WORLD_SHIFT) + level];
+			for (int row = 0; row < settings::consts::chunk_size; row++) {
+				for (int col = 0; col < settings::consts::chunk_size; col++) {
+					for (int level = settings::consts::world_height - 1; level > 0; level--) {
+						if (!(_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] & 0xF000)) {
+							int value = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level];
 							if (s_blocks[value & mask::blocks::type]->transparent) { // underground hole
 								// spread_light TODO watch out for leaves and water light damping..
 								light_spread(row, col, level, true);
@@ -468,23 +468,23 @@ void Chunk::sort_sky( glm::vec3 &pos, bool vip )
 	_mtx_sky.lock();
 	std::vector<std::pair<float, std::array<int, 6>>> order;
 	order.reserve(_sky_count);
-	for (int row = 1; row < CHUNK_SIZE + 1; row++) {
-		for (int col = 1; col < CHUNK_SIZE + 1; col++) {
-			if (_sky[row * (CHUNK_SIZE + 2) + col]) {
+	for (int row = 1; row < settings::consts::chunk_size + 1; row++) {
+		for (int col = 1; col < settings::consts::chunk_size + 1; col++) {
+			if (_sky[row * (settings::consts::chunk_size + 2) + col]) {
 				int pX = _startX + row - 1;
 				int pY = _startY + col - 1;
 				order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 196.0f)), {pX, pY + 1, 196, 1, -1, 0, }});
 				order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 195.0f)), {pX, pY, 195, 1, 1, 0, }});
-				if (!_sky[(row - 1) * (CHUNK_SIZE + 2) + col]) {
+				if (!_sky[(row - 1) * (settings::consts::chunk_size + 2) + col]) {
 					order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, 195.5f)), {pX, pY + 1, 196, 0, -1, -1, }});
 				}
-				if (!_sky[(row + 1) * (CHUNK_SIZE + 2) + col]) {
+				if (!_sky[(row + 1) * (settings::consts::chunk_size + 2) + col]) {
 					order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, 195.5f)), {pX + 1, pY, 196, 0, 1, -1, }});
 				}
-				if (!_sky[row * (CHUNK_SIZE + 2) + col - 1]) {
+				if (!_sky[row * (settings::consts::chunk_size + 2) + col - 1]) {
 					order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, 195.5f)), {pX, pY, 196, 1, 0, -1, }});
 				}
-				if (!_sky[row * (CHUNK_SIZE + 2) + col + 1]) {
+				if (!_sky[row * (settings::consts::chunk_size + 2) + col + 1]) {
 					order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, 195.5f)), {pX + 1, pY + 1, 196, -1, 0, -1, }});
 				}
 			}
@@ -556,14 +556,14 @@ int Chunk::isHit( glm::ivec3 pos )
 	if (chunk_pos.z < 0 || chunk_pos.z > 255) {
 		return (blocks::air);
 	}
-	if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE) {
+	if (chunk_pos.x < 0 || chunk_pos.x >= settings::consts::chunk_size || chunk_pos.y < 0 || chunk_pos.y >= settings::consts::chunk_size) {
 		std::cout << "ERROR block out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 		return (blocks::air);
 	}
 	// if (_thread.joinable()) {
 	// 	_thread.join();
 	// }
-	int type = _blocks[(((chunk_pos.x << CHUNK_SHIFT) + chunk_pos.y) << WORLD_SHIFT) + chunk_pos.z];
+	int type = _blocks[(((chunk_pos.x << settings::consts::chunk_shift) + chunk_pos.y) << settings::consts::world_shift) + chunk_pos.z];
 	if ((type & mask::blocks::type) > blocks::water) {
 		return (blocks::air);
 	}
@@ -583,14 +583,14 @@ void Chunk::handleBlast( glm::vec3 pos, int blast_radius )
 	if (relative.x > 0 && relative.x - blast_radius < 0 && _neighbours[face_dir::minus_x]) {
 		_neighbours[face_dir::minus_x]->handleBlast(pos, blast_radius);
 	}
-	if (relative.x <= CHUNK_SIZE && relative.x + blast_radius >= CHUNK_SIZE && _neighbours[face_dir::plus_x]) {
+	if (relative.x <= settings::consts::chunk_size && relative.x + blast_radius >= settings::consts::chunk_size && _neighbours[face_dir::plus_x]) {
 		_neighbours[face_dir::plus_x]->handleBlast(pos, blast_radius);
 	}
 
 	if (relative.y > 0 && relative.y - blast_radius < 0 && _neighbours[face_dir::minus_y]) {
 		_neighbours[face_dir::minus_y]->handleBlast(pos, blast_radius);
 	}
-	if (relative.y <= CHUNK_SIZE && relative.y + blast_radius >= CHUNK_SIZE && _neighbours[face_dir::plus_y]) {
+	if (relative.y <= settings::consts::chunk_size && relative.y + blast_radius >= settings::consts::chunk_size && _neighbours[face_dir::plus_y]) {
 		_neighbours[face_dir::plus_y]->handleBlast(pos, blast_radius);
 	}
 }
@@ -648,7 +648,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit )
 		return ;
 	}
 	glm::ivec3 chunk_pos = {block_hit.x - _startX, block_hit.y - _startY, block_hit.z};
-	if (chunk_pos.x < 0 || chunk_pos.x >= CHUNK_SIZE || chunk_pos.y < 0 || chunk_pos.y >= CHUNK_SIZE || chunk_pos.z < 0 || chunk_pos.z > 255) {
+	if (chunk_pos.x < 0 || chunk_pos.x >= settings::consts::chunk_size || chunk_pos.y < 0 || chunk_pos.y >= settings::consts::chunk_size || chunk_pos.z < 0 || chunk_pos.z > 255) {
 		std::cout << "ERROR block hit out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 		return ;
 	}
@@ -706,9 +706,9 @@ void Chunk::updateFurnaces( double currentTime )
 			int value = _blocks[fur.first];
 			_blocks[fur.first] = (value & (mask::all_bits - mask::redstone::activated)) + ((state == furnace_state::ON) << offset::redstone::activated);
 			// set/unset furnace position as light source of 13 using state
-			int posZ = fur.first & (WORLD_HEIGHT - 1);
-			int posY = ((fur.first >> WORLD_SHIFT) & (CHUNK_SIZE - 1));
-			int posX = ((fur.first >> WORLD_SHIFT) >> CHUNK_SHIFT);
+			int posZ = fur.first & (settings::consts::world_height - 1);
+			int posY = ((fur.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+			int posX = ((fur.first >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 			// std::cout << "furnace at " << _startX + posX << ", " << _startY + posY << ", " << posZ << std::endl;
 			if (state == furnace_state::ON) {
 				_lights[fur.first] = 13 + (13 << 4);
@@ -717,7 +717,7 @@ void Chunk::updateFurnaces( double currentTime )
 				_lights[fur.first] = 0;
 				for (int index = 0; index < 6; index++) {
 					const glm::ivec3 delta = adj_blocks[index];
-					light_try_spread(posX + delta.x, posY + delta.y, posZ + delta.z, 0, false, LIGHT_RECURSE);
+					light_try_spread(posX + delta.x, posY + delta.y, posZ + delta.z, 0, false, settings::consts::light_recurse);
 				}
 			}
 			_light_update = true;

@@ -6,34 +6,7 @@
 # include <iostream>
 
 # include "Blocks.hpp"
-
-# define CHUNK_SIZE 16
-const double TICK = 0.05f;
-
-extern int WIN_WIDTH;
-extern int WIN_HEIGHT;
-// # if __linux__
-// #  if 0
-// #   define WIN_WIDTH 1680
-// #   define WIN_HEIGHT 1050
-// #  else
-// #   define WIN_WIDTH 1920
-// #   define WIN_HEIGHT 1080
-// #  endif
-// # else
-// #  define WIN_WIDTH 2560
-// #  define WIN_HEIGHT 1440
-// # endif
-
-# define GUI_MIN 1
-# define GUI_MAX glm::max(1, glm::min(WIN_WIDTH / 320, WIN_HEIGHT / 240))
-
-namespace GAMEMODE {
-	const int SURVIVAL = 0;
-	const int CREATIVE = 1;
-	const int ADVENTURE = 2;
-	const std::array<std::string, 3> str = {"SURVIVAL", "CREATIVE", "ADVENTURE"};
-};
+# include "Settings.hpp"
 
 class Chunk;
 typedef struct s_shaderInput t_shaderInput;

@@ -125,13 +125,13 @@ void Chat::handle_gamemode( int argc, std::vector<std::string> &argv )
 		return ;
 	} else if (argc == 2) {
 		if (!argv[1].compare("survival") || !argv[1].compare("0")) {
-			_oglMan->setGamemode(GAMEMODE::SURVIVAL);
+			_oglMan->setGamemode(settings::consts::gamemode::survival);
 			return ;	
 		} else if (!argv[1].compare("creative") || !argv[1].compare("1")) {
-			_oglMan->setGamemode(GAMEMODE::CREATIVE);
+			_oglMan->setGamemode(settings::consts::gamemode::creative);
 			return ;
 		} else if (!argv[1].compare("adventure") || !argv[1].compare("2")) {
-			_oglMan->setGamemode(GAMEMODE::ADVENTURE);
+			_oglMan->setGamemode(settings::consts::gamemode::adventure);
 			return ;
 		}
 	}

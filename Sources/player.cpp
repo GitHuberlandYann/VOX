@@ -3,7 +3,7 @@
 
 void Camera::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int game_mode )
 {
-	if (_hideUI || game_mode == GAMEMODE::CREATIVE) {
+	if (_hideUI || game_mode == settings::consts::gamemode::creative) {
 		return ;
 	}
 	glm::vec3 pos = getCamPos();

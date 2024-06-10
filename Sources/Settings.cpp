@@ -12,12 +12,12 @@ Settings::Settings( void )
 	_bools[settings::bools::smooth_lighting] = true;
 	_bools[settings::bools::flat_world] = false;
 
-	_ints[settings::ints::render_dist] = RENDER_DISTANCE;
+	_ints[settings::ints::render_dist] = settings::defaults::render_distance;
 	_ints[settings::ints::clouds] = settings::FANCY;
 	_ints[settings::ints::flat_world_block] = blocks::sand;
 
-	_floats[settings::floats::fov] = FOV_START;
-	_floats[settings::floats::brightness] = BRIGHTNESS_START;
+	_floats[settings::floats::fov] = settings::defaults::fov;
+	_floats[settings::floats::brightness] = settings::defaults::brightness;
 }
 
 Settings::~Settings( void )

@@ -6,12 +6,40 @@
 # include <vector>
 # include <string>
 
-# define RENDER_DISTANCE  10
-# define FOV_START     	  70.0f // if fov = -fov, world is upside down
-# define BRIGHTNESS_START 0.05f
-
+extern int WIN_WIDTH;
+extern int WIN_HEIGHT;
 
 namespace settings {
+	namespace consts {
+		const double tick          = 0.05f;
+
+		const int    sea_level     = 64;
+		const int    light_recurse = 32;
+		const int    chunk_shift   = 4;
+		const int    world_height  = 256;
+		const int    world_shift   = 8;
+		const int    alloc_size    = 1 << 16;  // represents CHUNK_SIZE * CHUNK_SIZE * WORLD_HEIGHT
+		const int    chunk_size    = 16;
+
+		const int    gui_min       = 1;
+		inline int   gui_max()     { return (glm::max(1, glm::min(WIN_WIDTH / 320, WIN_HEIGHT / 240))); } // TODO check this
+
+		const std::string current_version = "v1.0";
+
+		namespace gamemode {
+			const int survival  = 0;
+			const int creative  = 1;
+			const int adventure = 2;
+			const std::array<std::string, 3> str = {"SURVIVAL", "CREATIVE", "ADVENTURE"};
+		};
+	};
+
+	namespace defaults {
+		const int   render_distance = 10;
+		const float fov             = 70.0f;  // if fov = -fov, world is upside down
+		const float brightness      = 0.05f;  // [0:1]
+	};
+
 	enum bools {
 		fullscreen,
 		skybox,
@@ -70,7 +98,6 @@ namespace settings {
 
 		size_strings,
 	};
-	const std::string current_version = "v1.0";
 
 	enum {
 		FANCY,

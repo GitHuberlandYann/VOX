@@ -132,16 +132,16 @@ glm::mat4 Camera::getPerspectiveMatrix( void )
 
 bool Camera::chunkInFront( glm::ivec2 current_chunk, int posX, int posY )
 {
-	if (posX >= current_chunk.x - CHUNK_SIZE && posX <= current_chunk.x + CHUNK_SIZE
-		&& posY >= current_chunk.y - CHUNK_SIZE && posY <= current_chunk.y + CHUNK_SIZE) {
+	if (posX >= current_chunk.x - settings::consts::chunk_size && posX <= current_chunk.x + settings::consts::chunk_size
+		&& posY >= current_chunk.y - settings::consts::chunk_size && posY <= current_chunk.y + settings::consts::chunk_size) {
 		return (true);
 	}
 	if (_camPlacement == CAMPLACEMENT::FRONT) {
-		return !(glm::dot(glm::vec2(posX + CHUNK_SIZE * (-_front2.x + _right2.x) - _position.x, posY + CHUNK_SIZE * (-_front2.y + _right2.y) - _position.y), glm::vec2((-_front2.x + _right2.x), (-_front2.y + _right2.y))) < 0
-			|| glm::dot(glm::vec2(posX + CHUNK_SIZE * (-_front2.x - _right2.x) - _position.x, posY + CHUNK_SIZE * (-_front2.y - _right2.y) - _position.y), glm::vec2((-_front2.x - _right2.x), (-_front2.y - _right2.y))) < 0);
+		return !(glm::dot(glm::vec2(posX + settings::consts::chunk_size * (-_front2.x + _right2.x) - _position.x, posY + settings::consts::chunk_size * (-_front2.y + _right2.y) - _position.y), glm::vec2((-_front2.x + _right2.x), (-_front2.y + _right2.y))) < 0
+			|| glm::dot(glm::vec2(posX + settings::consts::chunk_size * (-_front2.x - _right2.x) - _position.x, posY + settings::consts::chunk_size * (-_front2.y - _right2.y) - _position.y), glm::vec2((-_front2.x - _right2.x), (-_front2.y - _right2.y))) < 0);
 	}
-	return !(glm::dot(glm::vec2(posX + CHUNK_SIZE * (_front2.x + _right2.x) - _position.x, posY + CHUNK_SIZE * (_front2.y + _right2.y) - _position.y), glm::vec2((_front2.x + _right2.x), (_front2.y + _right2.y))) < 0
-		|| glm::dot(glm::vec2(posX + CHUNK_SIZE * (_front2.x - _right2.x) - _position.x, posY + CHUNK_SIZE * (_front2.y - _right2.y) - _position.y), glm::vec2((_front2.x - _right2.x), (_front2.y - _right2.y))) < 0);
+	return !(glm::dot(glm::vec2(posX + settings::consts::chunk_size * (_front2.x + _right2.x) - _position.x, posY + settings::consts::chunk_size * (_front2.y + _right2.y) - _position.y), glm::vec2((_front2.x + _right2.x), (_front2.y + _right2.y))) < 0
+		|| glm::dot(glm::vec2(posX + settings::consts::chunk_size * (_front2.x - _right2.x) - _position.x, posY + settings::consts::chunk_size * (_front2.y - _right2.y) - _position.y), glm::vec2((_front2.x - _right2.x), (_front2.y - _right2.y))) < 0);
 }
 
 // return orientation of block we just placed 0 = -y, 1 = +y, 2 = -x, 3 = +x (it is opposite of cam dir)
@@ -472,7 +472,7 @@ std::string Camera::getCamString( int game_mode )
 	const std::string strfalse = "FALSE";
 	_mtx.lock();
 	int light = (_current_chunk_ptr) ? _current_chunk_ptr->getCamLightLevel(_current_block) : 0;
-	std::string str =  ((game_mode == GAMEMODE::CREATIVE)
+	std::string str =  ((game_mode == settings::consts::gamemode::creative)
 		? "\nPos\t\t> x: " + std::to_string(_position.x)
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 				+ "\niPos\t> x:" + std::to_string(_current_block.x) // TODO might sometimes want to use current_block instea of _position when dealing with chunks
