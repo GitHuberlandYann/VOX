@@ -236,7 +236,7 @@ class Chunk
 		int exposed_water_faces( int row, int col, int level );
 		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );
 		bool endFlow( std::set<int> *newFluids, int &value, int posX, int posY, int posZ );
-		bool addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
+		bool addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int srcWLevel );
 
 		// world gen
 		// int get_block_type_cave( int row, int col, int level, int ground_level,

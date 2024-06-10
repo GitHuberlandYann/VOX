@@ -64,7 +64,6 @@ TODOS:
 	
 TODAY:
 	- Way more blocks ?? + world file "version: " line + /respawn
-	- chests being broken by water
 	
 SHORTTERM memory:
 	\/ - work on cleanAtlas
@@ -324,6 +323,8 @@ Some info:
 	- Farmland 0x1 << 24 == WET_FARMLAND, 0x7 << 25 == moisture
 	- Leaves 0x1 << 24 == hand placed
 	- saplings 0x1 << 24 == growth stage
+	- crops 0x7 << 24 == growth stage, 7 is ripe
+	- water 0x7 << 24 == water level, 0 is water source
 	- stairs 0x7 << 9 == orientation, 0xF << 24 == corners
 	- doors 0x7 << 9 == orientation, 1 << 24 == half, 1 << 25 == hinge, 1 << 26 == open
 	- trapdoors 0x7 << 9 == orientation, 1 << 24 == half, 1 << 25 == open

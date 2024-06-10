@@ -354,7 +354,7 @@ void Chunk::generate_blocks( void )
 			for (int level = 0; level < settings::consts::world_height; level++) {
 				GLint value = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level];
 				if (value) {
-					if (value >= blocks::water) {
+					if (value == blocks::water) {
 						// do nothing
 					} else if (exposed_block(row, col, level, value != blocks::oak_leaves, value != blocks::glass)) {
 						if (value == blocks::iron_ore && Random::rangedNumber(_seed, 0, 1000) < 500) {

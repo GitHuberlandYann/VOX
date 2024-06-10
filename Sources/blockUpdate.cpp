@@ -161,7 +161,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		}
 	}
 	if (type == blocks::water) { // we place water
-		if (previous < blocks::water) {
+		if (previous != blocks::water) {
 			_hasWater = true;
 		}
 	} else if (shape == geometry::torch) {
@@ -230,7 +230,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 	} else if (type == blocks::oak_fence || type == blocks::glass_pane) {
 		handle_fence_placement(pos, block_value);
 	} else if ((shape == geometry::cross || shape == geometry::crop) && pos.z > 0) {
-		if (previous >= blocks::water) {
+		if (previous == blocks::water) {
 			return ;
 		}
 		int type_below = _blocks[offset - 1] & mask::blocks::type;
@@ -338,7 +338,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 		case Modif::ADD:
 			if (type == blocks::wheat_crop && (_blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z - 1] & mask::blocks::type) != blocks::farmland) { // can't place crop on something other than farmland
 				return ;
-			} else if ((previous_type != blocks::air && previous_type < blocks::water) || type == blocks::air) { // can't replace block
+			} else if ((previous_type != blocks::air && previous_type != blocks::water) || type == blocks::air) { // can't replace block
 				return ;
 			}
 			// std::cout << "ADD BLOCK " << s_blocks[previous_type]->name << " -> " << s_blocks[type]->name << std::endl;
@@ -398,9 +398,9 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 			return ;
 		}
 	}
-	if (prev_type >= blocks::water || type == blocks::water) {
+	if (prev_type == blocks::water || type == blocks::water) {
 		_fluids.insert(offset);
-		if (prev_type < blocks::water) { _hasWater = true; }
+		if (prev_type != blocks::water) { _hasWater = true; }
 	}
 
 	// cut recursion here
@@ -681,7 +681,7 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 			light_try_spread(pos.x, pos.y, pos.z, 1, false, settings::consts::light_recurse);
 		}
 
-		if (type >= blocks::water) {
+		if (type == blocks::water) {
 			_fluids.insert((((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z);
 			return ;
 		} else if (type == blocks::air) {

@@ -193,7 +193,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		return ;
 	} else if (type == blocks::wheat_seeds) {
 		type = blocks::wheat_crop;
-	} else if (type == blocks::air || type >= blocks::stick) {
+	} else if (s_blocks[type]->isItemOnly) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		if (type == blocks::worldedit_wand) {
 			return (WorldEdit::Get()->setSelectionEnd(_block_hit.pos));

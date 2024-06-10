@@ -363,7 +363,7 @@ void Camera::drawPlayer( std::vector<t_shaderInput> &arr, int item, int game_mod
 		p6 = itemPos - armRight * 0.25f;
 		p7 = itemPos + armFront * 0.25f - armRight * 0.25f;
 		if (item < blocks::poppy) {
-			int offset = ((item >= blocks::crafting_table && item < blocks::bedrock) ? face_dir::minus_x: 0);
+			int offset = (s_blocks[item]->oriented) ? face_dir::minus_x : 0;
 
 			spec = 16 * s_blocks[item]->texX(face_dir::minus_x, offset) + (16 * s_blocks[item]->texY(face_dir::minus_x, offset) << 8) + (itemLight << 24);
 			v0 = {spec, p4};

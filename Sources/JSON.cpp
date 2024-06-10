@@ -26,7 +26,7 @@ void OpenGL_Manager::saveWorld( void )
 	_block_hit = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
 
 	// then store everything
-	std::string json = "{\n\t\"version\": \"" + settings::consts::current_version
+	std::string json = "{\n\t\"version\": \"" + settings::consts::json::current_version
 		+ "\",\n\t\"seed\": " + std::to_string(perlin_seed)
 		+ ",\n\t\"game_mode\": " + std::to_string(_game_mode)
 		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
@@ -235,7 +235,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 		if (!indata.is_open()) {
 			throw InvalidFileException();
 		}
-		Settings::Get()->setString(settings::version, ""); // reset version
+		Settings::Get()->setString(settings::json_version, settings::consts::json::past_versions[0]); // reset version
 		std::string line;
 		while (!indata.eof()) {
 			std::getline(indata, line);
@@ -245,7 +245,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 			} else if (line == "{" || line == "}") {
 			} else if (!line.compare(0, 11, "\"version\": ")) {
 				std::string version = line.substr(12, line.size() - 14);
-				Settings::Get()->setString(settings::version, version);
+				Settings::Get()->setString(settings::json_version, version);
 				ofs << "version set to " << version << std::endl;
 			} else if (!line.compare(0, 8, "\"seed\": ")) {
 				perlin_seed = std::atoi(&line[8]);
@@ -357,14 +357,30 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 
 static int convert( int value ) // used when I change s_blocks big time
 {
-	if (Settings::Get()->getString(settings::version) == settings::consts::current_version) {
+	if (Settings::Get()->getString(settings::json_version) == settings::consts::json::current_version) {
 		return (value);
 	}
-	// transition from v0.0 to v1.0: 0xF00 becomes 0xF000 and 0xF000 becomes 0xF000000
-	if (value >= blocks::wheat_crop && value <= blocks::wheat_crop + 7) {
-		value = blocks::wheat_crop + ((value - blocks::wheat_crop) << offset::blocks::bitfield);
+	for (int i = 0; i < settings::consts::json::nbr_past_versions; ++i) {
+		if (Settings::Get()->getString(settings::json_version) == settings::consts::json::past_versions[i]) {
+			switch (i) {
+				case 0: //v0.0
+					// transition from v0.0 to v1.0: 0xF00 becomes 0xF000 and 0xF000 becomes 0xF000000
+					// got rid of wheat_crop1-7
+					if (value >= blocks::wheat_crop && value <= blocks::wheat_crop + 7) {
+						value = blocks::wheat_crop + ((value - blocks::wheat_crop) << offset::blocks::bitfield);
+					}
+					value = ((value & 0XFFFF00FF) | (((value >> 8) & 0xF) << 12) | (((value >> 12) & 0xF) << 24));
+				case 1: //v1.0
+					// transition from v1.0 to f1.1: got rid of water1-7
+					if (value >= blocks::water && value <= blocks::water + 7) {
+						value = blocks::water + ((value - blocks::water) << offset::blocks::bitfield);
+					}
+					return (value);
+			}
+		}
 	}
-	return ((value & 0XFFFF00FF) | (((value >> 8) & 0xF) << 12) | (((value >> 12) & 0xF) << 24));
+	std::cerr << "json version is " << Settings::Get()->getString(settings::json_version) << std::endl;
+	assert((0 == 1) && "unrecognised json version.");
 }
 
 void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )

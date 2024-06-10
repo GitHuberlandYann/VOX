@@ -24,7 +24,11 @@ namespace settings {
 		const int    gui_min       = 1;
 		inline int   gui_max()     { return (glm::max(1, glm::min(WIN_WIDTH / 320, WIN_HEIGHT / 240))); } // TODO check this
 
-		const std::string current_version = "v1.0";
+		namespace json {
+			const std::string current_version = "v1.1";
+			const int nbr_past_versions = 2;
+			const std::array<std::string, nbr_past_versions> past_versions = {"v0.0", "v1.0"};
+		};
 
 		namespace gamemode {
 			const int survival  = 0;
@@ -94,7 +98,7 @@ namespace settings {
 		ui_vertex_shader,
 		size_shaders = ui_vertex_shader + 1 - size_textures,
 
-		version = ui_vertex_shader + 1,
+		json_version = ui_vertex_shader + 1,
 
 		size_strings,
 	};

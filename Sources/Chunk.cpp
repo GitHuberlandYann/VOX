@@ -96,7 +96,7 @@ GLint Chunk::face_count( int type, glm::ivec3 pos )
 GLint Chunk::face_count( int type, int row, int col, int level )
 {
 	type &= mask::blocks::type;
-	if (!type || type >= blocks::water) {
+	if (!type || type == blocks::water) {
 		std::cerr << "face_count ERROR counting " << s_blocks[type]->name << std::endl;
 		return (0);
 	}
@@ -141,8 +141,7 @@ void Chunk::resetDisplayedFaces( void )
 					value -= mask::blocks::notVisible;
 					restore = true;
 				}
-				if (type == blocks::chest) {}
-				else if (type > blocks::air && type < blocks::water) {
+				if (type != blocks::air && type != blocks::chest && type != blocks::water) {
 					GLint below = ((level) ? _blocks[offset - 1] : 0) & mask::blocks::type;
 					if (!air_flower(type, false, false, true) && type < blocks::torch && below != blocks::grass_block && below != blocks::dirt && below != blocks::sand) {
 						_blocks[offset] = blocks::air;
@@ -156,7 +155,7 @@ void Chunk::resetDisplayedFaces( void )
 								_blocks[offset] = value - mask::blocks::notVisible;
 								_added[offset] = value - mask::blocks::notVisible;
 							}
-						} else if (type > blocks::air) { // hide block
+						} else { // hide block
 							_blocks[offset] = value | mask::blocks::notVisible;
 						}
 					}
@@ -563,11 +562,11 @@ int Chunk::isHit( glm::ivec3 pos )
 	// if (_thread.joinable()) {
 	// 	_thread.join();
 	// }
-	int type = _blocks[(((chunk_pos.x << settings::consts::chunk_shift) + chunk_pos.y) << settings::consts::world_shift) + chunk_pos.z];
-	if ((type & mask::blocks::type) > blocks::water) {
+	int value = _blocks[(((chunk_pos.x << settings::consts::chunk_shift) + chunk_pos.y) << settings::consts::world_shift) + chunk_pos.z];
+	if ((value & mask::blocks::type) == blocks::water && ((value >> offset::blocks::bitfield) & 0x7) > 0) {
 		return (blocks::air);
 	}
-	return (type);
+	return (value);
 }
 
 void Chunk::handleBlast( glm::vec3 pos, int blast_radius )

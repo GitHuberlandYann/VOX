@@ -79,7 +79,7 @@ void Chunk::generate_lights( void )
 					int type = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] & mask::blocks::type;
 					if (!s_blocks[type]->transparent) { // block hit
 						light_level = 0;
-					} else if (type == blocks::oak_leaves || type >= blocks::water) {
+					} else if (type == blocks::oak_leaves || type == blocks::water) {
 						--light_level;
 					}
 					if (light_level == 15) {

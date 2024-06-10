@@ -43,7 +43,7 @@ void WorldEdit::Destroy( void )
 /**
  * @brief sets respective pointers used by WorldEdit instance
 */
-void WorldEdit::setPtrs( OpenGL_Manager * openGL_Manager, Inventory * inventory, Chat *chat )
+void WorldEdit::setPtrs( OpenGL_Manager* openGL_Manager, Inventory* inventory, Chat* chat )
 {
 	_openGL_Manager = openGL_Manager;
 	_inventory = inventory;
@@ -81,28 +81,28 @@ void WorldEdit::setSelectionEnd( glm::ivec3 pos )
 // ************************************************************************** //
 
 /**
- * @brief sets blocks from selectStart to selectEnd to stone
- * will later accept arg to set blocks to specific value
+ * @brief sets blocks from selectStart to selectEnd to given type
+ * if type is not a solid block, we set to stone by default
  * will later accept -a to not set air blocks
 */
-void WorldEdit::handleCmdSet( int value )
+void WorldEdit::handleCmdSet( int type )
 {
 	Chunk * chunk = _openGL_Manager->getCurrentChunkPtr();
 	if (!chunk) {
 		return ;
 	}
-	if (value && (value >= blocks::stick || s_blocks[value]->transparent)) {
-		value = blocks::stone;
+	if (type && (s_blocks[type]->isItemOnly || s_blocks[type]->transparent)) {
+		type = blocks::stone;
 	}
 
 	glm::ivec3 start = {(_selectStart.x < _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y < _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z < _selectEnd.z) ? _selectStart.z : _selectEnd.z};
 	glm::ivec3 end = {(_selectStart.x > _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y > _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z > _selectEnd.z) ? _selectStart.z : _selectEnd.z};
 
-	_chat->chatMessage("Settings [" + std::to_string(start.x) + ", " + std::to_string(start.y) + ", " + std::to_string(start.z) + "] to [" + std::to_string(end.x) + ", " + std::to_string(end.y) + ", " + std::to_string(end.z) + "] to " + s_blocks[value]->name);
+	_chat->chatMessage("Settings [" + std::to_string(start.x) + ", " + std::to_string(start.y) + ", " + std::to_string(start.z) + "] to [" + std::to_string(end.x) + ", " + std::to_string(end.y) + ", " + std::to_string(end.z) + "] to " + s_blocks[type]->name);
 	for (int posX = start.x; posX <= end.x; ++posX) {
 		for (int posY = start.y; posY <= end.y; ++posY) {
 			for (int posZ = start.z; posZ <= end.z; ++posZ) {
-				chunk->setBlockAtAbsolute(value, posX, posY, posZ, false);
+				chunk->setBlockAtAbsolute(type, posX, posY, posZ, false);
 			}
 		}
 	}
@@ -182,7 +182,7 @@ void WorldEdit::handleCmdPaste( bool notAirBlocks )
  * @brief move selection [n] blocks towards cam direction
  * if -a is specified, air blocks are not moved
 */
-void WorldEdit::handleCmdMove( std::vector<std::string> &argv )
+void WorldEdit::handleCmdMove( std::vector<std::string>& argv )
 {
 	int argc = argv.size();
 	if (argc < 2 || argc > 3 || (argc == 3 && argv[2] != "-a")) {
@@ -220,7 +220,7 @@ void WorldEdit::handleCmdMove( std::vector<std::string> &argv )
  * @param str data_value of componant to get attached dir from
  * @return false if user input is a worldEdit command
 */
-bool WorldEdit::parseCommand( std::vector<std::string> &argv )
+bool WorldEdit::parseCommand( std::vector<std::string>& argv )
 {
 	assert((_chat && "WorldEdit::parseCommand"));
 

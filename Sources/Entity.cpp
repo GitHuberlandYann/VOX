@@ -267,7 +267,7 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	    v3 = {spec + XTEX + YTEX, p7};
 	    arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	} else if (s_blocks[_item.type]->item3D) { //(_item.type < blocks::poppy && _item.type != blocks::oak_door && _item.type != blocks::glass_pane) {
-		int offset = ((_item.type >= blocks::crafting_table && _item.type < blocks::bedrock) ? face_dir::minus_x: 0);
+		int offset = (s_blocks[_item.type]->oriented) ? face_dir::minus_x: 0;
 	    int itemLight = _chunk->computePosLight(_pos);
 		int slabOffset = (shape == geometry::slab_bottom) ? (8 << 8) : (shape == geometry::trapdoor) ? (13 << 8) : 0;
 
@@ -347,9 +347,9 @@ bool FallingBlockEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	_dir.z -= 0.1f;
 	_pos.z += _dir.z * deltaTime;
 	int type = (_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type);
-	if (type != blocks::air && type < blocks::water) {
+	if (type != blocks::air && type != blocks::water) {
 		// std::cout << "youston, we touched ground" << std::endl;
-		if (type >= blocks::poppy) { // 'drops' as entity, but is already entity, so update state is enough
+		if (!s_blocks[type]->isSolidForFluid) { // 'drops' as entity, but is already entity, so update state is enough
 	// TODO fix this;
 			// unsigned seed = type * type + type;
 			// _lifeTime = 0;

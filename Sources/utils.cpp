@@ -294,7 +294,7 @@ std::string doubleDigits( int nb )
 int air_flower( int value, bool air_leaves, bool air_glass, bool air_water )
 {
 	value &= mask::blocks::type;
-	if (air_water && value >= blocks::water) {
+	if (air_water && value == blocks::water) {
 		return (value);
 	}
 	if (value >= blocks::poppy || value == blocks::cactus

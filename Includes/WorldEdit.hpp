@@ -51,7 +51,7 @@ class WorldEdit
 		WorldEdit( void );
 		~WorldEdit( void );
 
-		void handleCmdSet( int value );
+		void handleCmdSet( int type );
 		void handleCmdCopy( void );
 		void handleCmdPaste( bool notAirBlocks );
 		void handleCmdMove( std::vector<std::string>& argv );

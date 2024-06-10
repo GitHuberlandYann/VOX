@@ -56,7 +56,7 @@ bool Chunk::watered_farmland( int posX, int posY, int posZ )
 	for (int row = posX - 4; row <= posX + 4; row++) {
 		for (int col = posY - 4; col <= posY + 4; col++) {
 			for (int level = posZ; level <= posZ + 1; level++) {
-				if ((getBlockAt(row, col, level) & mask::blocks::type) >= blocks::water) {
+				if ((getBlockAt(row, col, level) & mask::blocks::type) == blocks::water) {
 					return (true);
 				}
 			}
@@ -112,7 +112,7 @@ void Chunk::spreadGrassblock( int offset )
 	int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 	if (posZ < 254) {
 		int above = _blocks[offset + 1] & mask::blocks::type;
-		if (!s_blocks[above]->transparent || above >= blocks::water) {
+		if (!s_blocks[above]->transparent || above == blocks::water) {
 			_blocks[offset] = blocks::dirt;
 			_added[offset] = blocks::dirt;
 			_vertex_update = true;
@@ -135,7 +135,7 @@ void Chunk::spreadGrassblock( int offset )
 		int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2]);
 		if ((adj & mask::blocks::type) == blocks::dirt && !(adj & mask::blocks::notVisible)) {
 			int above_adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2] + 1) & mask::blocks::type;
-			if (s_blocks[above_adj]->transparent && above_adj < blocks::water) {
+			if (s_blocks[above_adj]->transparent && above_adj != blocks::water) {
 				turnDirtToGrass(posX + delta[0], posY + delta[1], posZ + delta[2]);
 			}
 		}

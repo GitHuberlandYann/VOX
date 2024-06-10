@@ -355,13 +355,6 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		case blocks::moving_piston:
 		case blocks::wheat_crop:
 		case blocks::water:
-		case blocks::water1:
-		case blocks::water2:
-		case blocks::water3:
-		case blocks::water4:
-		case blocks::water5:
-		case blocks::water6:
-		case blocks::water7:
 		case blocks::worldedit_wand:
 			return (chatMessage("item " + s_blocks[item]->name + " [" + std::to_string(item) + "] can't be given."));
 	}
