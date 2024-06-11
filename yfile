@@ -224,13 +224,31 @@ Controls (QWERTY):
 	- kp_* kp_/: change gui size
 
 Shaders:
-	default - used for all blocks and flowers, mixes break frame with textures, x[0:15] y[0:255] Vhalf
-	sky - used for clouds and water and glass, animation frames                                  Xhalf
-	ui - draws rectangles from given screen coord and sizes                                      Xhalf
-	text - draws character from given screen coord and sizes                                     Xhalf
-	item - used to draw 3d items in inventory, x[0:15] y[0:15]                                   Xhalf
-	particle - used to draw particles and models, x[0:255] y[0:255]                              Vhalf
+	default - used for all blocks and flowers, x[0:255] y[0:255] 		Vhalf
+	sky - used for clouds and water and glass, animation frames         Xhalf
+	skybox - used to draw atmosphere, astal bodies, doesn't use textures
+	ui - used for menus, hud                                            Xhalf
+	text - draws character                                              Xhalf
+	item - used to draw 3d items in inventory, x[0:255] y[0:255]        Xhalf
+	particle - used to draw particles and models, x[0:255] y[0:255]     Vhalf
 
+Textures:
+	0: settings::strings::block_atlas
+	1: settings::strings::ascii_atlas
+	2: array:
+		0: settings::strings::block_atlas
+		1: settings::strings::ui_atlas
+		2: settings::strings::tex_inventory
+		3: settings::strings::tex_crafting_table
+		4: settings::strings::tex_furnace
+		5: settings::strings::tex_chest
+	3: <unused>
+	4: settings::strings::water_still
+	5: settings::strings::water_flow
+	6: array:
+		0: settings::strings::block_atlas
+		1: settings::strings::particle_atlas
+		2: settings::strings::model_atlas
 
 
 Some info:

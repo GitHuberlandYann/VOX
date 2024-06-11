@@ -36,6 +36,15 @@ namespace settings {
 			const int adventure = 2;
 			const std::array<std::string, 3> str = {"SURVIVAL", "CREATIVE", "ADVENTURE"};
 		};
+
+		namespace tex {
+			const int blocks = 0;
+			const int ui = 1;
+			const int inventory = 2;
+			const int crafting_table = 3;
+			const int furnace = 4;
+			const int chest = 5;
+		};
 	};
 
 	namespace defaults {
@@ -75,7 +84,10 @@ namespace settings {
 		block_atlas,
 		ascii_atlas,
 		ui_atlas,
-		container_atlas,
+		tex_inventory,
+		tex_crafting_table,
+		tex_furnace,
+		tex_chest,
 		particle_atlas,
 		model_atlas,
 		water_still,

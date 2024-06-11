@@ -485,6 +485,7 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(1, Settings::Get()->getString(settings::strings::particle_atlas));
 	loadSubTextureArray(2, Settings::Get()->getString(settings::strings::model_atlas));
 	glUniform1i(glGetUniformLocation(_particleShaderProgram, "textures"), 6);
+	check_glstate("Successfully loaded img[6] texture array 2D", true);
 }
 
 void OpenGL_Manager::setGamemode( int gamemode )

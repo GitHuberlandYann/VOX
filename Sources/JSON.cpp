@@ -737,11 +737,26 @@ bool Settings::loadResourcePacks( void )
 					if (end == std::string::npos) throw UnclosedBracketException();
 					_strings[settings::strings::ui_atlas] = line.substr(13, end - 13);
 					check_set[settings::strings::ui_atlas] = true;
-				} else if (!line.compare(0, 19, "\"CONTAINER_ATLAS\": ")) {
-					size_t end = line.find('\"', 20);
+				} else if (!line.compare(0, 17, "\"TEX_INVENTORY\": ")) {
+					size_t end = line.find('\"', 18);
 					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::container_atlas] = line.substr(20, end - 20);
-					check_set[settings::strings::container_atlas] = true;
+					_strings[settings::strings::tex_inventory] = line.substr(18, end - 18);
+					check_set[settings::strings::tex_inventory] = true;
+				} else if (!line.compare(0, 22, "\"TEX_CRAFTING_TABLE\": ")) {
+					size_t end = line.find('\"', 23);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[settings::strings::tex_crafting_table] = line.substr(23, end - 23);
+					check_set[settings::strings::tex_crafting_table] = true;
+				} else if (!line.compare(0, 15, "\"TEX_FURNACE\": ")) {
+					size_t end = line.find('\"', 16);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[settings::strings::tex_furnace] = line.substr(16, end - 16);
+					check_set[settings::strings::tex_furnace] = true;
+				} else if (!line.compare(0, 13, "\"TEX_CHEST\": ")) {
+					size_t end = line.find('\"', 14);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[settings::strings::tex_chest] = line.substr(14, end - 14);
+					check_set[settings::strings::tex_chest] = true;
 				} else if (!line.compare(0, 18, "\"PARTICLE_ATLAS\": ")) {
 					size_t end = line.find('\"', 19);
 					if (end == std::string::npos) throw UnclosedBracketException();

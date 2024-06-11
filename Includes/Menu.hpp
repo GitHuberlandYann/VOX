@@ -16,6 +16,7 @@ namespace menu
 		main,
 		main_options,
 		main_video_settings,
+		main_controls,
 		main_resource_packs,
 		world_select,
 		world_create,
@@ -24,6 +25,7 @@ namespace menu
 		pause,
 		options,
 		video_settings,
+		controls,
 		resource_packs,
 		inventory,
 		crafting,
@@ -121,6 +123,7 @@ class Menu
 		menu::ret pause_menu( void );
 		menu::ret options_menu( void );
 		menu::ret video_menu( void );
+		menu::ret controls_menu( void );
 		menu::ret resource_packs_menu( void );
 		menu::ret ingame_inputs( void );
 		menu::ret ingame_menu( void );
@@ -136,6 +139,7 @@ class Menu
         void setup_array_buffer_pause( void );
         void setup_array_buffer_options( void );
         void setup_array_buffer_video( void );
+        void setup_array_buffer_controls( void );
         void setup_array_buffer_resource_packs( void );
         void setup_array_buffer_chat( void );
         void setup_array_buffer_sign( void );

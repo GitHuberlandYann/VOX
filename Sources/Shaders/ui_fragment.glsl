@@ -1,25 +1,14 @@
 #version 150 core
 
-flat in int Atlas;
-in vec2 TexCoords;
+in vec3 TexCoords;
 
 out vec4 outColor;
 
-uniform sampler2D blockAtlas;
-uniform sampler2D uiAtlas;
-uniform sampler2D containerAtlas;
+uniform sampler2DArray textures;
 
 void main()
 {
-	if (Atlas == 0) {
-		outColor = texture(blockAtlas, TexCoords);
-	} else if (Atlas == 1) {
-		outColor = texture(uiAtlas, TexCoords);
-	} else if (Atlas == 2) {
-		outColor = texture(containerAtlas, TexCoords);	
-	} else {
-		outColor = vec4(1.0, 0.0, 0.0, 1.0); // red means trouble
-	}
+	outColor = texture(textures, TexCoords);
 	if(outColor.a < 0.01) {
 		discard ;
 	}

@@ -191,7 +191,7 @@ void loadTextureShader( int index, GLuint texture, std::string texture_file )
 
 	SOIL_free_image_data(img.content);
 
-	check_glstate("Successfully loaded img[" + std::to_string(index) + "] " + texture_file + " to shader", true);
+	check_glstate("Successfully loaded img[" + std::to_string(index) + "] " + texture_file, true);
 }
 
 void loadSubTextureArray( int layer, std::string texture_file )
@@ -222,7 +222,7 @@ void loadSubTextureArray( int layer, std::string texture_file )
 
 	SOIL_free_image_data(img.content);
 
-	check_glstate("Succesfully loaded " + texture_file + " to subTextureArray[" + std::to_string(layer) + "]", true);
+	check_glstate("Successfully loaded subTextureArray[" + std::to_string(layer) + "] " + texture_file, true);
 }
 
 int chunk_pos( int pos )

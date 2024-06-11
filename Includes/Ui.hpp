@@ -50,7 +50,7 @@ class UI
     private:
         GLuint _vao, _vbo, _item_vao, _item_vbo;
 		GLuint _shaderProgram, _itemShaderProgram;
-		std::array<GLuint, 2> _textures;
+		GLuint _texture;
         GLint _gui_size, _nb_points, _nb_points_crea, _nb_items;
 		bool _movement;
 		std::vector<int> _items;
