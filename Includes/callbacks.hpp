@@ -2,7 +2,7 @@
 # define CALLBACKS_HPP
 
 void set_cursor_position_callback( Camera* cam, Menu* men );
-void set_scroll_callback( void* ptr );
+void set_scroll_callback( Inventory* ptr );
 void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
 void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
 
@@ -21,6 +21,7 @@ namespace inputs
 	void mouse_button_callback( GLFWwindow *window, int button, int action, int mods );
 	bool key_down( int index );
 	bool key_update( int index );
+	const char* get_key_name( int action );
 
 	enum {
 		move_forwards,
@@ -68,7 +69,6 @@ namespace inputs
 		slot_6,
 		slot_7,
 		slot_8,
-		slot_9,
 
 		key_size,
 	};

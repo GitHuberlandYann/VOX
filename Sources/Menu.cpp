@@ -7,7 +7,7 @@ extern std::mutex mtx;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Menu::Menu( void ) : _gui_size(3), _state(menu::main), _selection(0), _selected_world(0), _vaoSet(false),
-	_textBar(true), _input_world(false), _input_seed(false), _change_to_apply(false),
+	_textBar(true), _input_world(false), _input_seed(false), _change_to_apply(false), _scroll(0),
 	_inventory(NULL), _ui(NULL), _chat(NULL), _text(NULL), _chest(NULL), _furnace(NULL)
 {
 	_world_file = "";
@@ -105,6 +105,11 @@ menu::ret Menu::enter_world_select_menu( void )
 
 menu::ret Menu::world_select_menu( void )
 {
+	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
+		_state = menu::main;
+		reset_values();
+		return (main_menu());
+	}
 	if (inputs::key_down(inputs::destroy) && inputs::key_update(inputs::destroy)) {
 		if (_selection == 1) { // play selected world
 			_world_file = _worlds[_selected_world - 1];
@@ -120,7 +125,7 @@ menu::ret Menu::world_select_menu( void )
 		} else if (_selection == 6) { // cancel, go back to main menu
 			_state = menu::main;
 			reset_values();
-			return (menu::ret::no_change);
+			return (main_menu());
 		} else if (_selection > 6) {
 			_selected_world = _selection - 6;
 		}
@@ -506,16 +511,108 @@ menu::ret Menu::controls_menu( void )
 		reset_values();
 		return (options_menu());
 	}
+	if (inputs::key_down(inputs::look_down) && _scroll < 450) {
+		++_scroll;
+	}
+	if (inputs::key_down(inputs::look_up) && _scroll) {
+		--_scroll;
+	}
 
 	setup_array_buffer_controls();
 	glUseProgram(_shaderProgram);
 	glBindVertexArray(_vao);
 	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
 
-	// resource packs' texts are written in setup_array_buffer_resource_packs
-	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, "Select Resource Packs");
-    _text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Apply Changes");
-    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
+	_text->addCenteredText(WIN_WIDTH / 2, 20 * _gui_size, 0, 0, (_gui_size + 1) * 7, false, "Controls");
+
+	_text->addCenteredText(WIN_WIDTH / 2, (66.5f - _scroll) * _gui_size, 0, 0, 7 * _gui_size, false, "Gameplay");
+	{
+		_text->addText(WIN_WIDTH / 4, (91.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Attack/Destroy");
+		_text->addCenteredText(WIN_WIDTH / 2, (85 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::destroy));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (85 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (116.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Drop Item");
+		_text->addCenteredText(WIN_WIDTH / 2, (110 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::drop));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (110 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (141.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Pick Block");
+		_text->addCenteredText(WIN_WIDTH / 2, (135 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::sample));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (135 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (166.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Sprint");
+		_text->addCenteredText(WIN_WIDTH / 2, (160 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::run));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (160 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (191.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Use Item/Place Block");
+		_text->addCenteredText(WIN_WIDTH / 2, (185 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::use));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (185 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+	}
+	_text->addCenteredText(WIN_WIDTH / 2, (216.5f - _scroll) * _gui_size, 0, 0, 7 * _gui_size, false, "Inventory");
+	{
+		_text->addText(WIN_WIDTH / 4, (241.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Hotbar Slot 1");
+		_text->addCenteredText(WIN_WIDTH / 2, (235 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::slot_0));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (235 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (266.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Hotbar Slot 2");
+		_text->addCenteredText(WIN_WIDTH / 2, (260 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::slot_1));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (260 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (291.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Hotbar Slot 3");
+		_text->addCenteredText(WIN_WIDTH / 2, (285 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::slot_2));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (285 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (316.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Hotbar Slot 4");
+		_text->addCenteredText(WIN_WIDTH / 2, (310 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::slot_3));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (310 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (341.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Hotbar Slot 5");
+		_text->addCenteredText(WIN_WIDTH / 2, (335 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::slot_4));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (335 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (366.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Hotbar Slot 6");
+		_text->addCenteredText(WIN_WIDTH / 2, (360 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::slot_5));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (360 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (391.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Hotbar Slot 7");
+		_text->addCenteredText(WIN_WIDTH / 2, (385 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::slot_6));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (385 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (416.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Hotbar Slot 8");
+		_text->addCenteredText(WIN_WIDTH / 2, (410 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::slot_7));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (410 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (441.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Hotbar Slot 9");
+		_text->addCenteredText(WIN_WIDTH / 2, (435 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::slot_8));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (435 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (466.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Inventory");
+		_text->addCenteredText(WIN_WIDTH / 2, (460 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::inventory));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (460 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+	}
+	_text->addCenteredText(WIN_WIDTH / 2, (491.5f - _scroll) * _gui_size, 0, 0, 7 * _gui_size, false, "Movement");
+	{
+		_text->addText(WIN_WIDTH / 4, (516.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Jump");
+		_text->addCenteredText(WIN_WIDTH / 2, (510 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::jump));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (510 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (541.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Sneak");
+		_text->addCenteredText(WIN_WIDTH / 2, (535 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::sneak));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (535 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (566.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Strafe Left");
+		_text->addCenteredText(WIN_WIDTH / 2, (560 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::move_left));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (560 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (591.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Strafe Right");
+		_text->addCenteredText(WIN_WIDTH / 2, (585 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::move_right));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (585 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (616.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Walk Backwards");
+		_text->addCenteredText(WIN_WIDTH / 2, (610 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::move_backwards));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (610 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (641.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Walk Forwards");
+		_text->addCenteredText(WIN_WIDTH / 2, (635 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::move_forwards));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (635 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+	}
+	_text->addCenteredText(WIN_WIDTH / 2, (666.5f - _scroll) * _gui_size, 0, 0, 7 * _gui_size, false, "Multiplayer");
+	{
+		_text->addText(WIN_WIDTH / 4, (691.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "List Players");
+		_text->addCenteredText(WIN_WIDTH / 2, (685 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "TAB");
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (685 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (716.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Open Chat");
+		_text->addCenteredText(WIN_WIDTH / 2, (710 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::chat));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (710 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+		_text->addText(WIN_WIDTH / 4, (741.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, "Open Command");
+		_text->addCenteredText(WIN_WIDTH / 2, (735 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, inputs::get_key_name(inputs::command));
+    	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (735 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
+
+	}
+
+	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT - 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Done");
+    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT - 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, "Reset");
 	// _text->addText(20, 20, 30, TEXT::WHITE, "select " + std::to_string(_selection));
 	return (menu::ret::no_change);
 }
@@ -958,23 +1055,64 @@ void Menu::setup_array_buffer_video( void )
 
 void Menu::setup_array_buffer_controls( void )
 {
-	addQuads(settings::consts::tex::ui, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1); // occult window
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Render dist
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_render_gradient, 8, 32, 0, 190)) * _gui_size, WIN_HEIGHT / 2 - 84 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // render Slider
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 2) ? 111 : 91, 200, 20); // Resolution
+	addQuads(settings::consts::tex::ui, 0, 40 * _gui_size, WIN_WIDTH, WIN_HEIGHT - 40 * _gui_size, 1, 72, 1, 1); // occult central part
 
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 3) ? 111 : 91, 200, 20); // Clouds
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 5) ? 111 : 91, 200, 20); // Gui scale
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // brightness
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_brightness_gradient, 0, 1, 0, 190)) * _gui_size, WIN_HEIGHT / 2 + 6 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 7) ? 111 : 91, 200, 20); // brightness Slider
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 9) ? 111 : 91, 200, 20); // Face Culling
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (85 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // Attack/Destroy
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (85 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (110 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // Drop Item
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (110 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (135 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // Pick Block
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (135 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (160 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // Sprint
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (160 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (185 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // Use Item/Place Block
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (185 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
 
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Fullscreen
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20); // Skybox
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 8) ? 111 : 91, 200, 20); // Particles
-    // addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 10) ? 111 : 91, 200, 20); // Smooth Lighting
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (235 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // "Hotbar Slot 1"
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (235 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (260 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // "Hotbar Slot 2"
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (260 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (285 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // "Hotbar Slot 3"
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (285 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (310 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // "Hotbar Slot 4"
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (310 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (335 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // "Hotbar Slot 5"
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (335 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (360 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // "Hotbar Slot 6"
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (360 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (385 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // "Hotbar Slot 7"
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (385 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (410 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // "Hotbar Slot 8"
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (410 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (435 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // "Hotbar Slot 9"
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (435 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (460 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // "Inventory"
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (460 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
 
-    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 11) ? 111 : 91, 200, 20); // Done
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (510 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // jump
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (510 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (535 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // sneak
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (535 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (560 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // move_left
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (560 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (585 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // move_right
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (585 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (610 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // move_backwards
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (610 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (635 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // move_forwards
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (635 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (685 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // List Players
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (685 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (710 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // Open Chat
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (710 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addQuads(settings::consts::tex::ui, WIN_WIDTH / 2, (735 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // Open Command
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 110 * _gui_size, (735 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+
+    addQuads(settings::consts::tex::ui, 0, 0, WIN_WIDTH, 40 * _gui_size, 0, 91, 1, 1); // occult top part
+    addQuads(settings::consts::tex::ui, 0, WIN_HEIGHT - 40 * _gui_size, WIN_WIDTH, 40 * _gui_size, 0, 91, 1, 1); // occult bottom part
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT - 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 91, 200, 20); // Done
+    addQuads(settings::consts::tex::ui, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT - 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_change_to_apply) ? (_selection == -1) ? 111 : 91 : 71, 200, 20); // Reset
 	setup_shader();
 }
 
@@ -1372,7 +1510,7 @@ void Menu::processMouseMovement( float posX, float posY )
 			_selection = 1;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size)) {
 			_selection = 4;
-		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 82 * _gui_size, WIN_HEIGHT / 2 + 105 * _gui_size, 73 * _gui_size, 20 * _gui_size)) {
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 82 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size)) {
 			_selection = 6;
 		} else {
 			_selection = 0;
@@ -1675,6 +1813,16 @@ void Menu::setFurnaceInstance( FurnaceInstance* furnace )
 void Menu::setSignPos( glm::ivec3 pos )
 {
 	_sign_pos = pos;
+}
+
+void Menu::handleScroll( int offset )
+{
+	if (!(_state == menu::main_controls || _state == menu::controls)) {
+		return ;
+	}
+	_scroll += offset;
+	if (_scroll < 0) _scroll = 0;
+	if (_scroll > 450) _scroll = 450;
 }
 
 void Menu::setState( int state )

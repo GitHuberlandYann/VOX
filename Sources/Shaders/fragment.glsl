@@ -12,9 +12,6 @@ uniform sampler2D blockAtlas;
 
 void main()
 {
-	// if (gl_FrontFacing) // this works but doesn't gain fps
-	// 	discard ;
-
 	outColor = texture(blockAtlas, TexCoords);
 	if(outColor.a < 0.01f) {
 		//outColor = vec4(1, 0, 0, 1);

@@ -52,6 +52,7 @@ TODOS:
 	- toggle don't draw chunks behind player in Settings
     - Sound https://www.ambiera.com/irrklang/tutorials.html
 	- upon world generation, place player on ground by using continentalness
+	- add depth component to all hud elements to draw text on item on text of other item
 	- water ligth level
     - lava + nether
 	- multiplayer ? Server-Client logic on singleplayer ?

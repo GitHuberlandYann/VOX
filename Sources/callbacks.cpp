@@ -15,9 +15,9 @@ void set_cursor_position_callback( Camera* cam, Menu* men )
 	menuPtr = men;
 }
 
-void set_scroll_callback( void* ptr )
+void set_scroll_callback( Inventory* ptr )
 {
-	scroll_inventory = static_cast<Inventory*>(ptr);
+	scroll_inventory = ptr;
 }
 
 void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
@@ -41,8 +41,10 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 {
 	(void)window;
 	(void)xoffset;
-
 	if (!scroll_inventory) {
+		if (menuPtr) {
+			menuPtr->handleScroll(yoffset * 20);
+		}
 		return ;
 	}
 
@@ -52,7 +54,7 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 namespace inputs
 {
 	std::string message;
-	int cursor = 0;
+	size_t cursor = 0;
 
 	void character_callback( GLFWwindow* window, unsigned int codepoint )
 	{
@@ -61,22 +63,23 @@ namespace inputs
 			std::cout << __func__ << ": codepoint out of range: " << codepoint << std::endl;
 			return ;
 		}
-		// std::cout << "codepoint you just pressed: " << codepoint << " => " << ALPHABETA[codepoint - 32] << std::endl;
-		if (cursor == static_cast<int>(message.size())) {
-			message += ALPHABETA[codepoint - 32];
+		// std::cout << "codepoint you just pressed: " << codepoint << " => " << static_cast<char>(codepoint) << std::endl;
+		if (cursor == message.size()) {
+			message += static_cast<char>(codepoint);
 		} else {
-			message = message.substr(0, cursor) + ALPHABETA[codepoint - 32] + message.substr(cursor);
+			message = message.substr(0, cursor) + static_cast<char>(codepoint) + message.substr(cursor);
 		}
 		++cursor;
 	}
 
 	void moveCursor( bool right, bool control )
 	{
+		if (!right && !cursor) {
+			return ;
+		}
 		cursor += (right) ? 1 : -1;
-		if (cursor > static_cast<int>(message.size())) {
+		if (cursor > message.size()) {
 			cursor = message.size();
-		} else if (cursor < 0) {
-			cursor = 0;
 		} else if (control && message[cursor] != ' ') {
 			moveCursor(right, control);
 		}
@@ -212,6 +215,50 @@ namespace inputs
 		if (index < 0 || index >= key_size) return (false);
 		bool res = updated[index];
 		if (res) updated[index] = false;
+		return (res);
+	}
+
+	/**
+	 * @brief find key binded to given action and return its string representation
+	 * @param action one of enum values
+	 */
+	const char* get_key_name( int action )
+	{
+		if (action < 0 || action >= key_size) {
+			return ("Out of bounds.");
+		}
+		auto result = std::find_if(
+				key_map.begin(),
+				key_map.end(),
+				[action](auto& it) {return (it.second == action); });
+
+		if(result == key_map.end()) {
+			return ("NONE");
+		}
+		int key = result->first;
+		// std::cout << "Key found in map: " << key << " for action " << action << std::endl;
+		if (key <= GLFW_MOUSE_BUTTON_LAST) {
+			std::string tmp("BUTTON " + std::to_string(key + 1));
+			const char* res = tmp.c_str();
+			return (res);
+		}
+		const char* res = glfwGetKeyName(key, 0);
+		if (!res) {
+			switch (key) {
+				case GLFW_KEY_SPACE:
+					return ("SPACE");
+				case GLFW_KEY_LEFT_CONTROL:
+					return ("LCONTROL");
+				case GLFW_KEY_RIGHT_CONTROL:
+					return ("RCONTROL");
+				case GLFW_KEY_LEFT_SHIFT:
+					return ("LSHIFT");
+				case GLFW_KEY_RIGHT_SHIFT:
+					return ("RSHIFT");
+				default:
+					return ("NULL");
+			}
+		}
 		return (res);
 	}
 }

@@ -24,12 +24,7 @@ void main()
 	if (Atlas == 0) { // sky
 		return ;
 	}
-	// vec4 tex;
-	// if (Atlas == 1) {
-	// 	tex = texture(waterStill, TexCoord);
-	// } else if (Atlas == 2) {
-	// 	tex = texture(waterFlow, TexCoord);
-	// }
+
 	vec4 tex = (Atlas == 1) ? texture(waterStill, TexCoord)
 							: texture(waterFlow,  TexCoord);
 	// if (tex.a < 0.01) {
