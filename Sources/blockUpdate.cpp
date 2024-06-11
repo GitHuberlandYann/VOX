@@ -311,7 +311,7 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 		scheduleRedstoneTick({pos, ((type == blocks::stone_button) ? 10 : 15) * redstone::tick});
 		break ;
 	default:
-		std::cout << "ERROR Chunk::regeneration case Modif::USE defaulted on: " << s_blocks[value & mask::blocks::type]->name << std::endl;
+		std::cout << "ERROR Chunk::regeneration case Modif::use defaulted on: " << s_blocks[value & mask::blocks::type]->name << std::endl;
 		return ;
 	}
 	setBlockAt(value, pos, true);
@@ -328,14 +328,14 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 {
 	int previous_type = _blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z] & mask::blocks::type;
 	switch (modif) {
-		case Modif::REMOVE:
+		case Modif::rm:
 			if (previous_type == blocks::air || previous_type == blocks::bedrock) { // can't rm bedrock
 				return ;
 			}
 			// std::cout << "remove_block. displayed before " << _displayed_faces << std::endl;
 			remove_block(useInventory, pos);
 		break ;
-		case Modif::ADD:
+		case Modif::add:
 			if (type == blocks::wheat_crop && (_blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z - 1] & mask::blocks::type) != blocks::farmland) { // can't place crop on something other than farmland
 				return ;
 			} else if ((previous_type != blocks::air && previous_type != blocks::water) || type == blocks::air) { // can't replace block
@@ -344,7 +344,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			// std::cout << "ADD BLOCK " << s_blocks[previous_type]->name << " -> " << s_blocks[type]->name << std::endl;
 			add_block(useInventory, pos, type, previous_type);
 			break ;
-		case Modif::REPLACE:
+		case Modif::replace:
 			if (type == blocks::dirt_path && pos.z < 254 && (_blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z + 1] & mask::blocks::type) != blocks::air) { // can't turn dirt to dirt path if anything above it
 				return ;
 			} else if ((type == blocks::dirt_path || type == blocks::farmland) && previous_type != blocks::dirt && previous_type != blocks::grass_block) {
@@ -352,11 +352,11 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			}
 			replace_block(useInventory, pos, type);
 			break ;
-		case Modif::LITNT:
+		case Modif::litnt:
 			remove_block(false, pos);
 			_entities.push_back(new TNTEntity(this, {pos.x + _startX, pos.y + _startY, pos.z}, {0.2f, 0.2f, 0.4f}));
 			break ;
-		case Modif::USE:
+		case Modif::use:
 			use_block(pos, type);
 			break ;
 	}

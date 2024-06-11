@@ -10,44 +10,44 @@ class ChestInstance;
 
 # define ALPHABETA " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 
-namespace MENU
+namespace menu
 {
 	enum {
-		MAIN,
-		MAIN_OPTIONS,
-		MAIN_VIDEO_SETTINGS,
-		MAIN_RESOURCE_PACKS,
-		WORLD_SELECT,
-		WORLD_CREATE,
-		LOAD,
-		DEATH,
-		PAUSE,
-		OPTIONS,
-		VIDEO_SETTINGS,
-		RESOURCE_PACKS,
-		INVENTORY,
-		CRAFTING,
-		CHEST,
-		FURNACE,
-		CHAT,
-		COMMAND,
-		SIGN,
+		main,
+		main_options,
+		main_video_settings,
+		main_resource_packs,
+		world_select,
+		world_create,
+		load,
+		death,
+		pause,
+		options,
+		video_settings,
+		resource_packs,
+		inventory,
+		crafting,
+		chest,
+		furnace,
+		chat,
+		command,
+		sign,
 	};
 
-	enum RET {
-		QUIT = -1,
-		NO_CHANGE,
-		BACK_TO_GAME,
-		WORLD_SELECTED,
-		WORLD_CREATED,
-		SAVE_AND_QUIT,
-		RESPAWN_PLAYER,
-		RESPAWN_SAVE_QUIT,
-		FOV_UPDATE,
-		RENDER_DIST_UPDATE,
-		BRIGHTNESS_UPDATE,
-		APPLY_RESOURCE_PACKS,
-		SIGN_DONE,
+	enum ret {
+		quit = -1,
+		no_change,
+		back_to_game,
+		world_selected,
+		world_created,
+		save_and_quit,
+		respawn_player,
+		respawn_save_quit,
+		fov_update,
+		render_dist_update,
+		brightness_update,
+		apply_resource_packs,
+		sign_done,
 	};
 
 	const int resolutions_size = 7;
@@ -86,7 +86,7 @@ class Menu
 		void changeGuiSize( void );
 		std::string getWorldFile( void );
 		t_sign_info getSignContent( void );
-		MENU::RET run( bool animUpdate );
+		menu::ret run( bool animUpdate );
 
 		std::string getInfoString( void );
 
@@ -112,20 +112,20 @@ class Menu
 		FurnaceInstance* _furnace;
 
 		void reset_values( void );
-		MENU::RET main_menu( void );
-		MENU::RET enter_world_select_menu( void );
-		MENU::RET world_select_menu( void );
-		MENU::RET world_create_menu( bool animUpdate );
-		MENU::RET loading_screen_menu( void );
-		MENU::RET death_menu( void );
-		MENU::RET pause_menu( void );
-		MENU::RET options_menu( void );
-		MENU::RET video_menu( void );
-		MENU::RET resource_packs_menu( void );
-		MENU::RET ingame_inputs( void );
-		MENU::RET ingame_menu( void );
-		MENU::RET chat_menu( bool animUpdate );
-		MENU::RET sign_menu( bool animUpdate );
+		menu::ret main_menu( void );
+		menu::ret enter_world_select_menu( void );
+		menu::ret world_select_menu( void );
+		menu::ret world_create_menu( bool animUpdate );
+		menu::ret loading_screen_menu( void );
+		menu::ret death_menu( void );
+		menu::ret pause_menu( void );
+		menu::ret options_menu( void );
+		menu::ret video_menu( void );
+		menu::ret resource_packs_menu( void );
+		menu::ret ingame_inputs( void );
+		menu::ret ingame_menu( void );
+		menu::ret chat_menu( bool animUpdate );
+		menu::ret sign_menu( bool animUpdate );
 
 		void addQuads( int atlas, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
         void setup_array_buffer_main( void );

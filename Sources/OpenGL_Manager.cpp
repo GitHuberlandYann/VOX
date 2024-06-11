@@ -535,12 +535,12 @@ void OpenGL_Manager::main_loop( void )
 	glfwSwapInterval(1);
 	glClearColor(0, 0, 0, 1.0f); // start of black, will be changed in game by DayCycle
 
-	_menu->setState(MENU::MAIN);
+	_menu->setState(menu::main);
 	glfwSetCursorPosCallback(_window, cursor_position_callback);
 	glfwSetScrollCallback(_window, scroll_callback);
 
-	glfwSetKeyCallback(_window, INPUT::key_callback);
-	glfwSetMouseButtonCallback(_window, INPUT::mouse_button_callback);
+	glfwSetKeyCallback(_window, inputs::key_callback);
+	glfwSetMouseButtonCallback(_window, inputs::mouse_button_callback);
 
 	check_glstate("setup done, entering main loop\n", true);
 
@@ -559,7 +559,7 @@ void OpenGL_Manager::main_loop( void )
 		double currentTime = glfwGetTime();
 		double deltaTime = currentTime - previousFrame;
 		// if (deltaTime > 0.1f) std::cout << "\t\tPREVIOUS FRAME AT " << deltaTime << std::endl;
-		bool gamePaused = _paused && _menu->getState() < MENU::INVENTORY && _menu->getState() != MENU::DEATH;
+		bool gamePaused = _paused && _menu->getState() < menu::inventory && _menu->getState() != menu::death;
 
 		++nbFrames;
 		if (currentTime - lastTime >= 1.0) {
@@ -593,7 +593,7 @@ void OpenGL_Manager::main_loop( void )
 				userInputs(deltaTime, ++backFromMenu > 3);
 			}
 			chunkUpdate();
-		} else if (_camera->_update && _menu->getState() >= MENU::INVENTORY) {
+		} else if (_camera->_update && _menu->getState() >= menu::inventory) {
 			// _ui->chatMessage("debug time");
 			chunkUpdate();
 			updateCamView();
@@ -641,7 +641,7 @@ void OpenGL_Manager::main_loop( void )
 			drawEntities();
 		}
 
-		if (_menu->getState() >= MENU::PAUSE && Settings::Get()->getBool(settings::bools::skybox)) {
+		if (_menu->getState() >= menu::pause && Settings::Get()->getBool(settings::bools::skybox)) {
 			_skybox->render(_camera->getCamPos());
 		}
 
@@ -668,7 +668,7 @@ void OpenGL_Manager::main_loop( void )
 		#endif
 		glDisable(GL_DEPTH_TEST);
 		// Chunk *chunk_ptr = get_current_chunk_ptr();
-		if (_menu->getState() >= MENU::PAUSE) {
+		if (_menu->getState() >= menu::pause) {
 			std::string str;
 			if (_debug_mode) {
 				str = "Timer: " + std::to_string(currentTime)
@@ -711,15 +711,15 @@ void OpenGL_Manager::main_loop( void )
 		}
 		// b.stamp("UI");
 		if (_paused) {
-			if (_menu->getState() == MENU::LOAD) {
+			if (_menu->getState() == menu::load) {
 				mtx.lock();
 				_menu->setChunks(_chunks);
 				mtx.unlock();
 			}
 			switch (_menu->run(nbTicks == 1 && tickUpdate)) {
-				case MENU::RET::SIGN_DONE:
+				case menu::ret::sign_done:
 					_chunk_hit->setSignContent(_menu->getSignContent());
-				case MENU::RET::BACK_TO_GAME: // back to game
+				case menu::ret::back_to_game: // back to game
 					#if !__linux__
 						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 						if (glfwRawMouseMotionSupported()) {
@@ -733,13 +733,13 @@ void OpenGL_Manager::main_loop( void )
 					_camera->_update = true;
 					setThreadUpdate(true);
 					break ;
-				case MENU::RET::WORLD_SELECTED: // world selected, go into loading mode
+				case menu::ret::world_selected: // world selected, go into loading mode
 					_world_name = _menu->getWorldFile();
 					glUseProgram(_shaderProgram); // used by dayCycle to modif internal light
 					loadWorld("Worlds/" + _world_name);
 					initWorld();
 					break ;
-				case MENU::RET::WORLD_CREATED: // create new world, go into loading mode
+				case menu::ret::world_created: // create new world, go into loading mode
 					_world_name = _menu->getWorldFile();
 					_camera->setSpawnpoint({0, 0, 256});
 					_camera->respawn();
@@ -747,20 +747,20 @@ void OpenGL_Manager::main_loop( void )
 					DayCycle::Get()->setTicks(1000);
 					initWorld();
 					break ;
-				case MENU::RET::RESPAWN_PLAYER: // Respawn player, init world again
+				case menu::ret::respawn_player: // Respawn player, init world again
 					_camera->respawn();
 					initWorld();
 					break ;
-				case MENU::RET::RESPAWN_SAVE_QUIT: // Respawn player, then save and quit to menu
+				case menu::ret::respawn_save_quit: // Respawn player, then save and quit to menu
 					_camera->respawn();
-				case MENU::RET::SAVE_AND_QUIT: // save and quit to menu
+				case menu::ret::save_and_quit: // save and quit to menu
 					resetInputsPtrs();
 					saveWorld();
 					break ;
-				case MENU::RET::FOV_UPDATE: // fov change
+				case menu::ret::fov_update: // fov change
 					updateCamPerspective();
 					break ;
-				case MENU::RET::RENDER_DIST_UPDATE: // render dist change
+				case menu::ret::render_dist_update: // render dist change
 					// _ui->chatMessage("Render distance set to " + std::to_string(render_dist));
 					glUseProgram(_skyShaderProgram);
 					glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
@@ -768,13 +768,13 @@ void OpenGL_Manager::main_loop( void )
 					glUniform1f(_uniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
 					setThreadUpdate(true);
 					break ;
-				case MENU::RET::BRIGHTNESS_UPDATE: // brightness change
+				case menu::ret::brightness_update: // brightness change
 					glUseProgram(_particleShaderProgram);
 					glUniform1f(_partUniBrightness, Settings::Get()->getFloat(settings::floats::brightness));
 					glUseProgram(_shaderProgram);
 					glUniform1f(_uniBrightness, Settings::Get()->getFloat(settings::floats::brightness));
 					break ;
-				case MENU::RET::APPLY_RESOURCE_PACKS:
+				case menu::ret::apply_resource_packs:
 					if (!Settings::Get()->loadResourcePacks()) { // if missing field in resource packs, we don't load
 						createShaders();
 						setupCommunicationShaders();
@@ -785,7 +785,7 @@ void OpenGL_Manager::main_loop( void )
 					break ;
 			}
 		}
-		_ui->textToScreen(_menu->getState() >= MENU::PAUSE);
+		_ui->textToScreen(_menu->getState() >= menu::pause);
 		// b.stamp("textoscreen");
 		mtx_deleted_chunks.lock();
 		for (auto& todel: _deleted_chunks) {

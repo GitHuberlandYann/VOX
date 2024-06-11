@@ -110,7 +110,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			return ;
 		}
 		if (_chunk_hit) {
-			_chunk_hit->handleHit(collect, 0, _block_hit.pos, Modif::REMOVE);
+			_chunk_hit->handleHit(collect, 0, _block_hit.pos, Modif::rm);
 			return ;
 		}
 		int posX = chunk_pos(_block_hit.pos.x);
@@ -123,7 +123,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 	switch (_block_hit.type) {
 		case blocks::crafting_table:
 			_paused = true;
-			_menu->setState(MENU::CRAFTING);
+			_menu->setState(menu::crafting);
 			return ;
 		case blocks::chest:
 			if (!s_blocks[_chunk_hit->getBlockAt(_block_hit.pos.x - _chunk_hit->getStartX(), _block_hit.pos.y - _chunk_hit->getStartY(), _block_hit.pos.z + 1) & mask::blocks::type]->transparent) {
@@ -131,17 +131,17 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			}
 			_chunk_hit->openChest(_block_hit.pos);
 			_paused = true;
-			_menu->setState(MENU::CHEST);
+			_menu->setState(menu::chest);
 			_menu->setChestInstance(_chunk_hit->getChestInstance(_block_hit.pos));
 			return ;
 		case blocks::furnace:
 			_paused = true;
-			_menu->setState(MENU::FURNACE);
+			_menu->setState(menu::furnace);
 			_menu->setFurnaceInstance(_chunk_hit->getFurnaceInstance(_block_hit.pos));
 			return ;
 		case blocks::tnt:
 			if (_hand_content == blocks::flint_and_steel && _current_chunk_ptr) {
-				_current_chunk_ptr->handleHit(false, blocks::tnt, _block_hit.pos, Modif::LITNT);
+				_current_chunk_ptr->handleHit(false, blocks::tnt, _block_hit.pos, Modif::litnt);
 			}
 			break ;
 		case blocks::oak_door:
@@ -152,7 +152,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		case blocks::stone_button:
 		case blocks::oak_button:
 			if (_current_chunk_ptr) {
-				_current_chunk_ptr->handleHit(false, _block_hit.type, _block_hit.pos, Modif::USE);
+				_current_chunk_ptr->handleHit(false, _block_hit.type, _block_hit.pos, Modif::use);
 			}
 			return ;
 	}
@@ -161,12 +161,12 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 	if (type >= blocks::wooden_hoe && type <= blocks::diamond_hoe
 		&& (_block_hit.type == blocks::dirt || _block_hit.type == blocks::grass_block)) { // special case, add but change block to farmland instead
 		type = blocks::farmland;
-		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
+		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::replace);
 		return ;
 	} else if (type >= blocks::wooden_shovel && type <= blocks::diamond_shovel
 		&& (_block_hit.type == blocks::dirt || _block_hit.type == blocks::grass_block)) { // special case, add but change block to farmland instead
 		type = blocks::dirt_path;
-		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::REPLACE);
+		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::replace);
 		return ;
 	}
 	if (_game_mode == settings::consts::gamemode::adventure && type != blocks::air) {
@@ -188,7 +188,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		type = blocks::water;
 	} else if (type == blocks::bucket) { // special case, add but remove water instead
 		if (_block_hit.water_value) {
-			_current_chunk_ptr->handleHit(collect, type, _block_hit.water_pos, Modif::REMOVE);
+			_current_chunk_ptr->handleHit(collect, type, _block_hit.water_pos, Modif::rm);
 		}
 		return ;
 	} else if (type == blocks::wheat_seeds) {
@@ -216,7 +216,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			return ;
 		}
 		_paused = true;
-		_menu->setState(MENU::SIGN);
+		_menu->setState(menu::sign);
 		_menu->setSignPos(_block_hit.prev_pos);
 	} else if (type == blocks::lever || shape == geometry::button) {
 		if (s_blocks[_block_hit.type]->geometry != geometry::cube) { // TODO chnge this
@@ -278,7 +278,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		if (_game_mode == settings::consts::gamemode::adventure && type != blocks::water) {
 			type |= mask::adventure_block;
 		}
-		_current_chunk_ptr->handleHit(collect, type, _block_hit.prev_pos, Modif::ADD);
+		_current_chunk_ptr->handleHit(collect, type, _block_hit.prev_pos, Modif::add);
 	}
 }
 
@@ -395,54 +395,54 @@ float OpenGL_Manager::getBreakTime( bool canHarvest )
 void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 {
 	// open menu
-	if (INPUT::key_down(INPUT::CLOSE) && INPUT::key_update(INPUT::CLOSE)) {
+	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
 		_paused = true;
-		_menu->setState(MENU::PAUSE);
+		_menu->setState(menu::pause);
 		return ;
 	}
 	// open inventory
-	if (INPUT::key_down(INPUT::INVENTORY) && INPUT::key_update(INPUT::INVENTORY)) {
+	if (inputs::key_down(inputs::inventory) && inputs::key_update(inputs::inventory)) {
 		_paused = true;
-		_menu->setState(MENU::INVENTORY);
+		_menu->setState(menu::inventory);
 		return ;
 	}
 	// toggle chat
-	if ((INPUT::key_down(INPUT::CHAT) && INPUT::key_update(INPUT::CHAT))
-		|| (INPUT::key_down(INPUT::ENTER) && INPUT::key_update(INPUT::ENTER))) {
+	if ((inputs::key_down(inputs::chat) && inputs::key_update(inputs::chat))
+		|| (inputs::key_down(inputs::enter) && inputs::key_update(inputs::enter))) {
 		_paused = true;
-		_menu->setState(MENU::CHAT);
+		_menu->setState(menu::chat);
 		return ;
 	}
 	// toggle 'command' chat, id open chat, whit '/' already written
-	if (INPUT::key_down(INPUT::COMMAND) && INPUT::key_update(INPUT::COMMAND)) {
+	if (inputs::key_down(inputs::command) && inputs::key_update(inputs::command)) {
 		_paused = true;
-		_menu->setState(MENU::COMMAND);
+		_menu->setState(menu::command);
 		return ;
 	}
 	// quit program
-	if (INPUT::key_down(INPUT::QUIT_PROGRAM)) {
+	if (inputs::key_down(inputs::quit_program)) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return ;
 	}
 
 	// take screenshot
-	if (INPUT::key_down(INPUT::SCREENSHOT) && INPUT::key_update(INPUT::SCREENSHOT)) {
+	if (inputs::key_down(inputs::screenshot) && inputs::key_update(inputs::screenshot)) {
 		screenshot();
 	}
 	// toggle debug mode on off F3
-	if (INPUT::key_down(INPUT::DEBUG) && INPUT::key_update(INPUT::DEBUG)) {
+	if (inputs::key_down(inputs::debug) && inputs::key_update(inputs::debug)) {
 		_debug_mode = !_debug_mode;
 	}
 	// toggle game mode
-	if (INPUT::key_down(INPUT::GAMEMODE) && INPUT::key_update(INPUT::GAMEMODE)) {
-		if (INPUT::key_down(INPUT::DEBUG)) {
+	if (inputs::key_down(inputs::gamemode) && inputs::key_update(inputs::gamemode)) {
+		if (inputs::key_down(inputs::debug)) {
 			Settings::Get()->setBool(settings::bools::visible_chunk_border, !Settings::Get()->getBool(settings::bools::visible_chunk_border));
 		} else {
 			setGamemode(!_game_mode);
 		}
 	}
 	// toggle F3 + I == display full info about block hit
-	if (INPUT::key_down(INPUT::INFO) && INPUT::key_update(INPUT::INFO) && INPUT::key_down(INPUT::DEBUG)) {
+	if (inputs::key_down(inputs::info) && inputs::key_update(inputs::info) && inputs::key_down(inputs::debug)) {
 		t_hit bHit = getBlockHit();
 		_ui->chatMessage("*******************");
 		_ui->chatMessage("Info about " + s_blocks[bHit.type]->name + " at " + std::to_string(bHit.pos.x) + ", " + std::to_string(bHit.pos.y) + ", " + std::to_string(bHit.pos.z));
@@ -464,26 +464,26 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		_ui->chatMessage("*******************");
 	}
 	// toggle F5 mode
-	if (INPUT::key_down(INPUT::CAMERA) && INPUT::key_update(INPUT::CAMERA)) {
+	if (inputs::key_down(inputs::perspective) && inputs::key_update(inputs::perspective)) {
 		_camera->changeCamPlacement();
 	}
 	// toggle hotbar F1
-	if (INPUT::key_down(INPUT::HOTBAR) && INPUT::key_update(INPUT::HOTBAR)) {
+	if (inputs::key_down(inputs::hotbar) && inputs::key_update(inputs::hotbar)) {
 		_ui->_hideUI = !_ui->_hideUI;
 		_camera->setHideUI(_ui->_hideUI);
 		_ui->chatMessage(std::string("UI ") + ((_ui->_hideUI) ? "HIDDEN" : "SHOWN"));
 	}
 	// toggle outline
-	if (INPUT::key_down(INPUT::BLOCK_HIGHLIGHT) && INPUT::key_update(INPUT::BLOCK_HIGHLIGHT)) {
+	if (inputs::key_down(inputs::block_highlight) && inputs::key_update(inputs::block_highlight)) {
 		_ui->chatMessage(std::string("outlines ") + ((_outline) ? "HIDDEN" : "SHOWN"));
 		_outline = !_outline;
 		_break_frame = _outline;
 	}
 	// change time multiplier
-	if (INPUT::key_down(INPUT::DAYCYCLE_UP) && INPUT::key_update(INPUT::DAYCYCLE_UP)) {
+	if (inputs::key_down(inputs::daycycle_up) && inputs::key_update(inputs::daycycle_up)) {
 		DayCycle::Get()->updateTimeMultiplier(1);
 		loadTextureShader(0, _textures[0], "Resources/Textures/cleanAtlas.png");
-	} else if (INPUT::key_down(INPUT::DAYCYCLE_DOWN) && INPUT::key_update(INPUT::DAYCYCLE_DOWN)) {
+	} else if (inputs::key_down(inputs::daycycle_down) && inputs::key_update(inputs::daycycle_down)) {
 		DayCycle::Get()->updateTimeMultiplier(-1);
 		loadTextureShader(0, _textures[0], "Resources/Textures/blockAtlas.png");
 	}
@@ -491,10 +491,10 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 	// add and remove blocks
 	_camera->setDelta(deltaTime);
 	_hand_content = _inventory->getCurrentSlot();
-	if (INPUT::key_down(INPUT::BREAK)) {
+	if (inputs::key_down(inputs::destroy)) {
 		if (_game_mode != settings::consts::gamemode::creative) {
 			if (_block_hit.type == blocks::air) {
-				_camera->setArmAnimation(INPUT::key_update(INPUT::BREAK));
+				_camera->setArmAnimation(inputs::key_update(inputs::destroy));
 			} else {
 				_camera->setArmAnimation(true);
 				_break_time += deltaTime;
@@ -516,17 +516,17 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 					}
 				}
 			}
-		} else if (INPUT::key_update(INPUT::BREAK)) {
+		} else if (inputs::key_update(inputs::destroy)) {
 			handleBlockModif(false, false);
 		}
-	} else if (INPUT::key_update(INPUT::BREAK)) {
+	} else if (inputs::key_update(inputs::destroy)) {
 		_camera->setArmAnimation(false);
 		_break_time = 0;
 		_break_frame = _outline;
 	} else {
 		_camera->setArmAnimation(false);
 	}
-	if (INPUT::key_down(INPUT::USE)) {
+	if (inputs::key_down(inputs::use)) {
 		if (_game_mode != settings::consts::gamemode::creative && s_blocks[_hand_content]->isFood) {
 			_eat_timer += deltaTime;
 			if (_eat_timer >= 1.61f) {
@@ -537,11 +537,11 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 			}
 		} else if (_hand_content == blocks::bow) {
 			_bow_timer += deltaTime;
-		} else if (INPUT::key_update(INPUT::USE)) {
+		} else if (inputs::key_update(inputs::use)) {
 			handleBlockModif(true, _game_mode != settings::consts::gamemode::creative);
 			_camera->setArmAnimation(true);
 		}
-	} else if (INPUT::key_update(INPUT::USE)) {
+	} else if (inputs::key_update(inputs::use)) {
 		if (_hand_content == blocks::bow && _bow_timer && _current_chunk_ptr) {
 			// TODO rm arrow from inventory (once implemented)
 			_inventory->decrementDurabitilty();
@@ -551,7 +551,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		_bow_timer = 0;
 	}
 	// drop item
-	if (INPUT::key_down(INPUT::DROP)) {
+	if (inputs::key_down(inputs::drop)) {
 		if (_current_chunk_ptr) {
 			t_item details = _inventory->removeBlock(true);
 			if (details.type != blocks::air) {
@@ -562,12 +562,12 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		}
 	}
 	if (_block_hit.type != blocks::air
-		&& INPUT::key_down(INPUT::SAMPLE) && INPUT::key_update(INPUT::SAMPLE)) { // pick up in creative mode, or swap
+		&& inputs::key_down(inputs::sample) && inputs::key_update(inputs::sample)) { // pick up in creative mode, or swap
 		_inventory->replaceSlot(_block_hit.type, _game_mode == settings::consts::gamemode::creative);
 	}
 
 	// toggle polygon mode fill / lines
-	if (INPUT::key_down(INPUT::WIREFRAME) && INPUT::key_update(INPUT::WIREFRAME)) {
+	if (inputs::key_down(inputs::wireframe) && inputs::key_update(inputs::wireframe)) {
 		++_fill;
 		if (_fill == F_LAST)
 			_fill = FILL;
@@ -585,17 +585,17 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 	}
 
 	// camera work
-	GLint key_cam_v = INPUT::key_down(INPUT::MOVE_FORWARD) - INPUT::key_down(INPUT::MOVE_BACKWARD);
-	GLint key_cam_h = INPUT::key_down(INPUT::MOVE_RIGHT) - INPUT::key_down(INPUT::MOVE_LEFT);
-	bool key_cam_zup = INPUT::key_down(INPUT::JUMP);
-	bool key_cam_zdown = INPUT::key_down(INPUT::SNEAK);
+	GLint key_cam_v = inputs::key_down(inputs::move_forwards) - inputs::key_down(inputs::move_backwards);
+	GLint key_cam_h = inputs::key_down(inputs::move_right) - inputs::key_down(inputs::move_left);
+	bool key_cam_zup = inputs::key_down(inputs::jump);
+	bool key_cam_zdown = inputs::key_down(inputs::sneak);
 
 	// this will be commented at some point
-	GLint key_cam_yaw = INPUT::key_down(INPUT::LOOK_LEFT) - INPUT::key_down(INPUT::LOOK_RIGHT);
+	GLint key_cam_yaw = inputs::key_down(inputs::look_left) - inputs::key_down(inputs::look_right);
 	if (key_cam_yaw) {
 		_camera->processYaw(key_cam_yaw * 5);
 	}
-	GLint key_cam_pitch = INPUT::key_down(INPUT::LOOK_UP) - INPUT::key_down(INPUT::LOOK_DOWN);
+	GLint key_cam_pitch = inputs::key_down(inputs::look_up) - inputs::key_down(inputs::look_down);
 	if (key_cam_pitch) {
 		_camera->processPitch(key_cam_pitch * 5);
 	}
@@ -603,7 +603,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 	if (!key_cam_v && !key_cam_h) {
 		_camera->setRun(false);
 	} else {
-		_camera->setRun(INPUT::key_down(INPUT::RUN));
+		_camera->setRun(inputs::key_down(inputs::run));
 	}
 
 	if (_game_mode == settings::consts::gamemode::creative) { // no collision check, free to move however you want
@@ -615,7 +615,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 	if (rayCast) {
 		if (_game_mode != settings::consts::gamemode::creative && _current_chunk_ptr) { // on first frame -> no _current_chunk_ptr
 			_camera->setSneak(key_cam_zdown);
-			_camera->setJump(key_cam_zup && INPUT::key_update(INPUT::JUMP));
+			_camera->setJump(key_cam_zup && inputs::key_update(inputs::jump));
 			_camera->moveHuman(Z_AXIS, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement
 			glm::vec3 originalPos = _camera->getPos();
 			_camera->moveHuman(X_AXIS, key_cam_v, key_cam_h, 0); // move on X_AXIS
@@ -658,7 +658,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		if (!_camera->_health_points && _current_chunk_ptr) { // dead
 			_inventory->spillInventory(_current_chunk_ptr);
 			_paused = true;
-			_menu->setState(MENU::DEATH);
+			_menu->setState(menu::death);
 			return ;
 		}
 	}
@@ -673,37 +673,37 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		updateVisibleChunks();
 	}
 
-	GLint key_cam_speed = INPUT::key_down(INPUT::FLY_SPEED_UP) - INPUT::key_down(INPUT::FLY_SPEED_DOWN);
+	GLint key_cam_speed = inputs::key_down(inputs::fly_speed_up) - inputs::key_down(inputs::fly_speed_down);
 	if (key_cam_speed) {
 		_camera->update_movement_speed(key_cam_speed);
 	}
 
 	// inventory slot selection
-	if (INPUT::key_down(INPUT::SLOT_0) && INPUT::key_update(INPUT::SLOT_0)) {
+	if (inputs::key_down(inputs::slot_0) && inputs::key_update(inputs::slot_0)) {
 		_inventory->setSlot(0);
 	}
-	if (INPUT::key_down(INPUT::SLOT_1) && INPUT::key_update(INPUT::SLOT_1)) {
+	if (inputs::key_down(inputs::slot_1) && inputs::key_update(inputs::slot_1)) {
 		_inventory->setSlot(1);
 	}
-	if (INPUT::key_down(INPUT::SLOT_2) && INPUT::key_update(INPUT::SLOT_2)) {
+	if (inputs::key_down(inputs::slot_2) && inputs::key_update(inputs::slot_2)) {
 		_inventory->setSlot(2);
 	}
-	if (INPUT::key_down(INPUT::SLOT_3) && INPUT::key_update(INPUT::SLOT_3)) {
+	if (inputs::key_down(inputs::slot_3) && inputs::key_update(inputs::slot_3)) {
 		_inventory->setSlot(3);
 	}
-	if (INPUT::key_down(INPUT::SLOT_4) && INPUT::key_update(INPUT::SLOT_4)) {
+	if (inputs::key_down(inputs::slot_4) && inputs::key_update(inputs::slot_4)) {
 		_inventory->setSlot(4);
 	}
-	if (INPUT::key_down(INPUT::SLOT_5) && INPUT::key_update(INPUT::SLOT_5)) {
+	if (inputs::key_down(inputs::slot_5) && inputs::key_update(inputs::slot_5)) {
 		_inventory->setSlot(5);
 	}
-	if (INPUT::key_down(INPUT::SLOT_6) && INPUT::key_update(INPUT::SLOT_6)) {
+	if (inputs::key_down(inputs::slot_6) && inputs::key_update(inputs::slot_6)) {
 		_inventory->setSlot(6);
 	}
-	if (INPUT::key_down(INPUT::SLOT_7) && INPUT::key_update(INPUT::SLOT_7)) {
+	if (inputs::key_down(inputs::slot_7) && inputs::key_update(inputs::slot_7)) {
 		_inventory->setSlot(7);
 	}
-	if (INPUT::key_down(INPUT::SLOT_8) && INPUT::key_update(INPUT::SLOT_8)) {
+	if (inputs::key_down(inputs::slot_8) && inputs::key_update(inputs::slot_8)) {
 		_inventory->setSlot(8);
 	}
 }

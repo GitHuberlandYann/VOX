@@ -615,14 +615,14 @@ void Chunk::explosion( glm::vec3 pos, int power )
 						if (intensity < 0) {
 							break ;
 						} else if (type == blocks::tnt) {
-							handleHit(false, type, p, Modif::LITNT);
+							handleHit(false, type, p, Modif::litnt);
 							_entities.back()->setLifetime(3.5 - Random::randomFloat(_seed)); // tnt lit by explosion has lifetime in [0.5;1.5] sec
 							// TODO better particles spawning
 							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, PARTICLES::EXPLOSION, Random::randomFloat(_seed)));
 						} else if (type != blocks::air) {
 							// std::cout << "block " << s_blocks[type]->name << " removed" << std::endl;
-							handleHit(true, type, p, Modif::REMOVE);
-							// handleHit(false, type, p, Modif::REMOVE);
+							handleHit(true, type, p, Modif::rm);
+							// handleHit(false, type, p, Modif::rm);
 							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, PARTICLES::EXPLOSION, Random::randomFloat(_seed)));
 						}
 					}

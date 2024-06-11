@@ -510,7 +510,7 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 			break ;
 		case blocks::tnt:
 			if (state == redstone::on) {
-				handleHit(false, blocks::tnt, pos + glm::ivec3(_startX, _startY, 0), Modif::LITNT);
+				handleHit(false, blocks::tnt, pos + glm::ivec3(_startX, _startY, 0), Modif::litnt);
 			}
 			break ;
 	}

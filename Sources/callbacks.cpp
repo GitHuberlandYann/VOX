@@ -3,16 +3,16 @@
 #include "Inventory.hpp"
 #include "callbacks.hpp"
 
-Camera* camera = NULL;
-Menu* menu = NULL;
+Camera* cameraPtr = NULL;
+Menu* menuPtr = NULL;
 Inventory* scroll_inventory = NULL;
 
 double lastX = WIN_WIDTH / 2.0f, lastY = WIN_HEIGHT / 2.0f;
 
 void set_cursor_position_callback( Camera* cam, Menu* men )
 {
-	camera = cam;
-	menu = men;
+	cameraPtr = cam;
+	menuPtr = men;
 }
 
 void set_scroll_callback( void* ptr )
@@ -30,10 +30,10 @@ void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
     lastX = xpos;
     lastY = ypos;
 
-	if (camera) {
-		camera->processMouseMovement(x_offset / 10, y_offset / 10);
-	} else if (menu) {
-		menu->processMouseMovement(xpos, ypos);
+	if (cameraPtr) {
+		cameraPtr->processMouseMovement(x_offset / 10, y_offset / 10);
+	} else if (menuPtr) {
+		menuPtr->processMouseMovement(xpos, ypos);
 	}
 }
 
@@ -49,7 +49,7 @@ void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
 	scroll_inventory->setSlot(scroll_inventory->getSlotNum() + ((yoffset > 0) ? 1 : -1));
 }
 
-namespace INPUT
+namespace inputs
 {
 	std::string message;
 	int cursor = 0;
@@ -115,52 +115,52 @@ namespace INPUT
 	//                               Key inputs                                   //
 	// ************************************************************************** //
 
-	std::array<bool, KEY_SIZE> down = {false};
-	std::array<bool, KEY_SIZE> updated = {false};
+	std::array<bool, key_size> down = {false};
+	std::array<bool, key_size> updated = {false};
 	std::map<int, int> key_map = {
-		{GLFW_KEY_BACKSPACE, QUIT_PROGRAM},
-		{GLFW_KEY_ENTER, ENTER},
-		{GLFW_KEY_ESCAPE, CLOSE},
-		{GLFW_KEY_E, INVENTORY},
-		{GLFW_KEY_T, CHAT},
-		{GLFW_KEY_SLASH, COMMAND},
-		{GLFW_KEY_F2, SCREENSHOT},
-		{GLFW_KEY_F3, DEBUG},
-		{GLFW_KEY_G, GAMEMODE},
-		{GLFW_KEY_F5, CAMERA},
-		{GLFW_KEY_F1, HOTBAR},
-		{GLFW_KEY_O, BLOCK_HIGHLIGHT},
-		{GLFW_KEY_I, INFO},
-		{GLFW_KEY_RIGHT_BRACKET, DAYCYCLE_UP},
-		{GLFW_KEY_LEFT_BRACKET, DAYCYCLE_DOWN},
-		{GLFW_MOUSE_BUTTON_LEFT, BREAK},
-		{GLFW_MOUSE_BUTTON_MIDDLE, SAMPLE},
-		{GLFW_MOUSE_BUTTON_RIGHT, USE},
-		{GLFW_KEY_Q, DROP},
-		{GLFW_KEY_F, WIREFRAME},
-		{GLFW_KEY_W, MOVE_FORWARD},
-		{GLFW_KEY_S, MOVE_BACKWARD},
-		{GLFW_KEY_D, MOVE_RIGHT},
-		{GLFW_KEY_A, MOVE_LEFT},
-		{GLFW_KEY_SPACE, JUMP},
-		{GLFW_KEY_LEFT_SHIFT, SNEAK},
-		{GLFW_KEY_UP, LOOK_UP},
-		{GLFW_KEY_DOWN, LOOK_DOWN},
-		{GLFW_KEY_RIGHT, LOOK_RIGHT},
-		{GLFW_KEY_LEFT, LOOK_LEFT},
-		{GLFW_KEY_LEFT_CONTROL, RUN},
-		{GLFW_KEY_SPACE, JUMP},
-		{GLFW_KEY_KP_ADD, FLY_SPEED_UP},
-		{GLFW_KEY_KP_SUBTRACT, FLY_SPEED_DOWN},
-		{GLFW_KEY_1, SLOT_0},
-		{GLFW_KEY_2, SLOT_1},
-		{GLFW_KEY_3, SLOT_2},
-		{GLFW_KEY_4, SLOT_3},
-		{GLFW_KEY_5, SLOT_4},
-		{GLFW_KEY_6, SLOT_5},
-		{GLFW_KEY_7, SLOT_6},
-		{GLFW_KEY_8, SLOT_7},
-		{GLFW_KEY_9, SLOT_8},
+		{GLFW_KEY_BACKSPACE, quit_program},
+		{GLFW_KEY_ENTER, enter},
+		{GLFW_KEY_ESCAPE, close},
+		{GLFW_KEY_E, inventory},
+		{GLFW_KEY_T, chat},
+		{GLFW_KEY_SLASH, command},
+		{GLFW_KEY_F2, screenshot},
+		{GLFW_KEY_F3, debug},
+		{GLFW_KEY_G, gamemode},
+		{GLFW_KEY_F5, perspective},
+		{GLFW_KEY_F1, hotbar},
+		{GLFW_KEY_O, block_highlight},
+		{GLFW_KEY_I, info},
+		{GLFW_KEY_RIGHT_BRACKET, daycycle_up},
+		{GLFW_KEY_LEFT_BRACKET, daycycle_down},
+		{GLFW_MOUSE_BUTTON_LEFT, destroy},
+		{GLFW_MOUSE_BUTTON_MIDDLE, sample},
+		{GLFW_MOUSE_BUTTON_RIGHT, use},
+		{GLFW_KEY_Q, drop},
+		{GLFW_KEY_F, wireframe},
+		{GLFW_KEY_W, move_forwards},
+		{GLFW_KEY_S, move_backwards},
+		{GLFW_KEY_D, move_right},
+		{GLFW_KEY_A, move_left},
+		{GLFW_KEY_SPACE, jump},
+		{GLFW_KEY_LEFT_SHIFT, sneak},
+		{GLFW_KEY_UP, look_up},
+		{GLFW_KEY_DOWN, look_down},
+		{GLFW_KEY_RIGHT, look_right},
+		{GLFW_KEY_LEFT, look_left},
+		{GLFW_KEY_LEFT_CONTROL, run},
+		{GLFW_KEY_SPACE, jump},
+		{GLFW_KEY_KP_ADD, fly_speed_up},
+		{GLFW_KEY_KP_SUBTRACT, fly_speed_down},
+		{GLFW_KEY_1, slot_0},
+		{GLFW_KEY_2, slot_1},
+		{GLFW_KEY_3, slot_2},
+		{GLFW_KEY_4, slot_3},
+		{GLFW_KEY_5, slot_4},
+		{GLFW_KEY_6, slot_5},
+		{GLFW_KEY_7, slot_6},
+		{GLFW_KEY_8, slot_7},
+		{GLFW_KEY_9, slot_8},
 	};
 
 	void key_callback( GLFWwindow* window, int key, int scancode, int action, int mods )
@@ -197,7 +197,7 @@ namespace INPUT
 	*/
 	bool key_down( int index )
 	{
-		if (index < 0 || index >= KEY_SIZE) return (false);
+		if (index < 0 || index >= key_size) return (false);
 		return (down[index]);
 	}
 
@@ -209,7 +209,7 @@ namespace INPUT
 	*/
 	bool key_update( int index )
 	{
-		if (index < 0 || index >= KEY_SIZE) return (false);
+		if (index < 0 || index >= key_size) return (false);
 		bool res = updated[index];
 		if (res) updated[index] = false;
 		return (res);

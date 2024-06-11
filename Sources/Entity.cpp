@@ -358,7 +358,7 @@ bool FallingBlockEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 			// _dir = {Random::randomFloat(seed), Random::randomFloat(seed), 2};
 			return (false);
 		}
-		_chunk->handleHit(false, _item.type, {glm::floor(_pos.x), glm::floor(_pos.y), glm::floor(_pos.z + 1)}, Modif::ADD);
+		_chunk->handleHit(false, _item.type, {glm::floor(_pos.x), glm::floor(_pos.y), glm::floor(_pos.z + 1)}, Modif::add);
 		return (true);
 	}
 	glm::vec3 p0 = {_pos.x + 0, _pos.y + 0, _pos.z + 1};

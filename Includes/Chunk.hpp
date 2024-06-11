@@ -35,11 +35,11 @@ enum {
 };
 
 enum Modif {
-	REMOVE,
-	ADD,
-	REPLACE,
-	LITNT,
-	USE
+	rm,
+	add,
+	replace,
+	litnt,
+	use
 };
 
 const std::array<glm::ivec3, 6> adj_blocks = {{
