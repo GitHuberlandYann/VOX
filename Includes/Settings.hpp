@@ -45,6 +45,42 @@ namespace settings {
 			const int furnace = 4;
 			const int chest = 5;
 		};
+
+		namespace depth {
+			const int chat_back = 210;
+			const int debug = 140;
+			const int chat = 200;
+			const int inv_back = 190;
+			const int dura_back = 178;
+			const int dura = 176;
+			const int inv_str = 170;
+			const int inv_select = 160;
+			
+			namespace menu {
+				const int occlusion = 150;
+				const int occlusion_bis = 140;
+				const int bars = 130;
+				const int slider = 125;
+				const int str = 120;
+				const int container = 130;
+				const int selection = 125;
+				const int dura_back = 118;
+				const int dura = 116;
+				const int item_str = 110;
+				const int held_str = 50;
+
+				namespace controls {
+					const int occlusion = 100;
+					const int bars = 90;
+					const int str = 80;
+				};
+			};
+			namespace item {
+				const int inv = 3; // * 60 = 180
+				const int menu = 2; // * 60 = 120
+				const int held = 1; // * 60 = 60
+			};
+		};
 	};
 
 	namespace defaults {

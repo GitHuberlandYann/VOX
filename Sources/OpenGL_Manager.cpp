@@ -527,6 +527,7 @@ void OpenGL_Manager::main_loop( void )
 		glEnable(GL_CULL_FACE);
 	}
 	glCullFace(GL_FRONT);
+	glEnable(GL_DEPTH_TEST);
 
 	// glLineWidth(2);
 	glEnable(GL_LINE_SMOOTH); // anti-aliasing
@@ -605,7 +606,6 @@ void OpenGL_Manager::main_loop( void )
 			}
 		}
 		// b.stamp("user inputs");
-		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
@@ -667,7 +667,6 @@ void OpenGL_Manager::main_loop( void )
 		}
 		// b.stamp("display water sky");
 		#endif
-		glDisable(GL_DEPTH_TEST);
 		// Chunk *chunk_ptr = get_current_chunk_ptr();
 		if (_menu->getState() >= menu::pause) {
 			std::string str;
@@ -733,6 +732,7 @@ void OpenGL_Manager::main_loop( void )
 					backFromMenu = 0;
 					_camera->_update = true;
 					setThreadUpdate(true);
+					_ui->textToScreen(_menu->getState() >= menu::pause);
 					break ;
 				case menu::ret::world_selected: // world selected, go into loading mode
 					_world_name = _menu->getWorldFile();
@@ -785,8 +785,9 @@ void OpenGL_Manager::main_loop( void )
 				default:
 					break ;
 			}
+		} else {
+			_ui->textToScreen(_menu->getState() >= menu::pause); // called from menu->run to draw in correct order
 		}
-		_ui->textToScreen(_menu->getState() >= menu::pause);
 		// b.stamp("textoscreen");
 		mtx_deleted_chunks.lock();
 		for (auto& todel: _deleted_chunks) {

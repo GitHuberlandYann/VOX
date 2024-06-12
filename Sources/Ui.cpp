@@ -35,19 +35,19 @@ void UI::add_inventory_elem( int index )
 	}
 	int x = (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 4;
 	int y = WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 4;
-	s_blocks[type]->addItem(this, x, y, _gui_size, 15, false, false);
+	s_blocks[type]->addItem(this, x, y, _gui_size, 15, settings::consts::depth::item::inv, false, false);
 }
 
-void UI::addQuads( std::vector<std::array<int, 3>> &vertices, int atlas, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight )
+void UI::addQuads( std::vector<std::array<int, 3>> &vertices, int atlas, int depth, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight )
 {
 	--texWidth;--texHeight;
-	vertices.push_back({texX + 0        + ((texY + 0        ) << 8) + (0 << 16) + (0 << 17) + (atlas << 18), posX,         posY});
-	vertices.push_back({texX + texWidth + ((texY + 0        ) << 8) + (1 << 16) + (0 << 17) + (atlas << 18), posX + width, posY});
-	vertices.push_back({texX + 0        + ((texY + texHeight) << 8) + (0 << 16) + (1 << 17) + (atlas << 18), posX,         posY + height});
+	vertices.push_back({texX + 0        + ((texY + 0        ) << 8) + (0 << 16) + (0 << 17) + (atlas << 18) + (depth << 24), posX,         posY});
+	vertices.push_back({texX + texWidth + ((texY + 0        ) << 8) + (1 << 16) + (0 << 17) + (atlas << 18) + (depth << 24), posX + width, posY});
+	vertices.push_back({texX + 0        + ((texY + texHeight) << 8) + (0 << 16) + (1 << 17) + (atlas << 18) + (depth << 24), posX,         posY + height});
 
-	vertices.push_back({texX + texWidth + ((texY + 0        ) << 8) + (1 << 16) + (0 << 17) + (atlas << 18), posX + width, posY});
-	vertices.push_back({texX + texWidth + ((texY + texHeight) << 8) + (1 << 16) + (1 << 17) + (atlas << 18), posX + width, posY + height});
-	vertices.push_back({texX + 0        + ((texY + texHeight) << 8) + (0 << 16) + (1 << 17) + (atlas << 18), posX,         posY + height});
+	vertices.push_back({texX + texWidth + ((texY + 0        ) << 8) + (1 << 16) + (0 << 17) + (atlas << 18) + (depth << 24), posX + width, posY});
+	vertices.push_back({texX + texWidth + ((texY + texHeight) << 8) + (1 << 16) + (1 << 17) + (atlas << 18) + (depth << 24), posX + width, posY + height});
+	vertices.push_back({texX + 0        + ((texY + texHeight) << 8) + (0 << 16) + (1 << 17) + (atlas << 18) + (depth << 24), posX,         posY + height});
 }
 
 void UI::add_dura_value( std::vector<std::array<int, 3>> &vertices, int index )
@@ -57,55 +57,55 @@ void UI::add_dura_value( std::vector<std::array<int, 3>> &vertices, int index )
 		return ;
 	}
 	// adding grey bar first
-	addQuads(vertices, settings::consts::tex::blocks, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1);
+	addQuads(vertices, settings::consts::tex::blocks, settings::consts::depth::dura_back, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1);
 	// adding progress bar second
 	float percent = 1.0f * dura.x / dura.y;
-	addQuads(vertices, settings::consts::tex::blocks, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1);
+	addQuads(vertices, settings::consts::tex::blocks, settings::consts::depth::dura, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1);
 }
 
 void UI::add_hearts_holder( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, settings::consts::tex::ui, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 0, 16, 9, 9);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura_back, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 0, 16, 9, 9);
 }
 
 void UI::add_hearts( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, settings::consts::tex::ui, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 18 * (_camera->_health_points == (1 + 2 * index)) + 9 * (_camera->_health_points > (1 + 2 * index)), 16, 9, 9);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 18 * (_camera->_health_points == (1 + 2 * index)) + 9 * (_camera->_health_points > (1 + 2 * index)), 16, 9, 9);
 }
 
 void UI::add_armor_holder( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, settings::consts::tex::ui, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 27, 16, 9, 9);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura_back, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 27, 16, 9, 9);
 }
 
 void UI::add_armor( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, settings::consts::tex::ui, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 36 + 9 * (index == 3), 16, 9, 9);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 36 + 9 * (index == 3), 16, 9, 9);
 }
 
 void UI::add_food_holder( std::vector<std::array<int, 3>> &vertices, int index, int saturation )
 {
-	addQuads(vertices, settings::consts::tex::ui, (WIN_WIDTH + (182 * _gui_size)) / 2 - 10 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, ((saturation > 2 * index) ? ((saturation == 2 * index + 1) ? 54 + 18 : 54 + 9): 54), 16, 9, 9);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura_back, (WIN_WIDTH + (182 * _gui_size)) / 2 - 10 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, ((saturation > 2 * index) ? ((saturation == 2 * index + 1) ? 54 + 18 : 54 + 9): 54), 16, 9, 9);
 }
 
 void UI::add_food( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, settings::consts::tex::ui, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 82 + 9 * (_camera->_foodLevel == (1 + 2 * index)), 16, 9, 9);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 82 + 9 * (_camera->_foodLevel == (1 + 2 * index)), 16, 9, 9);
 }
 
 void UI::add_bubbles( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, settings::consts::tex::ui, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 99 + 9 * (_camera->getWaterStatus() == (1 + 2 * index)), 16, 9, 9);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 99 + 9 * (_camera->getWaterStatus() == (1 + 2 * index)), 16, 9, 9);
 }
 
 void UI::setup_array_buffer( void )
 {
 	std::vector<std::array<int, 3>> vertices;
 
-	addQuads(vertices, settings::consts::tex::ui, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16); // crosshair
-	addQuads(vertices, settings::consts::tex::ui, (WIN_WIDTH - (182 * _gui_size)) / 2, WIN_HEIGHT - (22 * _gui_size) * 2, 182 * _gui_size, 22 * _gui_size, 0, 25, 182, 22); // hot bar
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::inv_back, WIN_WIDTH / 2 - 16, WIN_HEIGHT / 2 - 16, 32, 32, 0, 0, 16, 16); // crosshair
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::inv_back, (WIN_WIDTH - (182 * _gui_size)) / 2, WIN_HEIGHT - (22 * _gui_size) * 2, 182 * _gui_size, 22 * _gui_size, 0, 25, 182, 22); // hot bar
 	int slotNum = _inventory->getSlotNum();
-	addQuads(vertices, settings::consts::tex::ui, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * slotNum * _gui_size) - _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 - _gui_size, 24 * _gui_size, 24 * _gui_size, 0, 47, 24, 24); // slot select
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::inv_select, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * slotNum * _gui_size) - _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 - _gui_size, 24 * _gui_size, 24 * _gui_size, 0, 47, 24, 24); // slot select
 
 	for (int index = 0; index < 9; index++) {
 		add_dura_value(vertices, index);
@@ -173,11 +173,11 @@ void UI::display_slot_value( int index )
 	int value = _inventory->getSlotBlock(index).amount;
 	if (value > 1) {
 		if (value > 9) {
-			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, TEXT::BLACK, std::to_string(value / 10));
-			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12, 8 * _gui_size, TEXT::WHITE, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, TEXT::BLACK, settings::consts::depth::inv_str + 1, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12, 8 * _gui_size, TEXT::WHITE, settings::consts::depth::inv_str, std::to_string(value / 10));
 		}
-		_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, TEXT::BLACK, std::to_string(value % 10));
-		_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12, 8 * _gui_size, TEXT::WHITE, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, TEXT::BLACK, settings::consts::depth::inv_str + 1, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12, 8 * _gui_size, TEXT::WHITE, settings::consts::depth::inv_str, std::to_string(value % 10));
 	}
 }
 
@@ -330,10 +330,10 @@ void UI::drawUserInterface( std::string str, int game_mode, float deltaTime )
 {
 	if (_inventoryMessage.timer > 0) {
 		_inventoryMessage.timer -= deltaTime;
-		_text->addText((WIN_WIDTH - Utils::Text::textWidth(_gui_size * 3, _inventoryMessage.str)) / 2, WIN_HEIGHT - (35 * _gui_size) * 2, _gui_size * 3, TEXT::WHITE, _inventoryMessage.str);
+		_text->addText((WIN_WIDTH - Utils::Text::textWidth(_gui_size * 3, _inventoryMessage.str)) / 2, WIN_HEIGHT - (35 * _gui_size) * 2, _gui_size * 3, TEXT::WHITE, settings::consts::depth::debug, _inventoryMessage.str);
 	}
 	_chat->blitMessages(deltaTime);
-	_text->addText(12, 24, _gui_size * 3, TEXT::WHITE, str);
+	_text->addText(12, 24, _gui_size * 3, TEXT::WHITE, settings::consts::depth::debug, str);
 	if (_hideUI) {
 		return ;
 	}

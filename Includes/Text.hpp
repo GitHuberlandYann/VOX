@@ -32,8 +32,8 @@ class Text
 		void loadTexture( void );
 		void updateWinSize( void );
 
-        void addText( int posX, int posY, int font_size, unsigned color, std::string str );
-		void addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, std::string str );
+        void addText( int posX, int posY, int font_size, unsigned color, int depth, std::string str );
+		void addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, int depth, std::string str );
 		void toScreen( void );
 
 	private:
@@ -42,7 +42,7 @@ class Text
 		GLuint _texture;
 		std::vector<t_text_shader_input> _texts;
 
-		void addQuads( int spec, int posX, int posY, int width, int height, unsigned color );
+		void addQuads( int spec, int posX, int posY, int width, int height, unsigned color, int depth );
 };
 
 #endif

@@ -65,9 +65,8 @@ TODOS:
 	TODAY:
 	- Way more blocks ?? + world file "version: " line + /respawn
 	- add menus to json to reduce in-code hardcoding
-	- add depth component to all hud elements to draw text on item on text of other item
 	
-SHORTTERM memory:
+	SHORTTERM memory:
 	\/ - work on cleanAtlas
 	\/ - work on readme
 	\/ - rework Makefile
@@ -76,7 +75,7 @@ SHORTTERM memory:
 	\/ - check how to update atlas texture ingame
 	\/ - make menus texts responsive
 	
-DONE:
+	DONE:
 	- pthread chunk creation
     - skybox
     - only display chunks in fieldview + little offset
@@ -172,18 +171,19 @@ DONE:
 	- water flow
 	- custom resolution in settings + original resolution by using opengl
 	- settings fullScreen on off, ie call glfwSetWindowMonitor(glfwGetPrimaryMonitor/NULL)
+	- add depth component to all hud elements to draw text on item on text of other item
 	- settings particles on off
 	- clouds
 	- gui size
 	- centralize settings and save/load them in file
 	- resource packs
 	- Game modes:
-		- survival
-		- creative
-		- adventure
+	- survival
+	- creative
+	- adventure
 	- Menus:
-		- main menu
-		- world selection menu
+	- main menu
+	- world selection menu
 		- world creation menu
 		- load menu
 		- pause menu
@@ -327,7 +327,7 @@ Some info:
     - nm vox | grep <function>
     - export MallocStackLogging=1 into system("leaks vox");
 
-- _blocks
+_blocks:
 	- all - reserved bits:
 		- 0xFFF  type ==> 4096 possible blocks
 		- 0x1000 NotVisible (1 << 12)
@@ -380,3 +380,27 @@ Camera				OpenGL_Manager		OpenGL_Manager				Menu, UI									unique_ptr
 DayCycle			no - Singleton
 WorldEdit			no - Singleton
 Settings			no - Singleton
+
+HUD depth: [0:255] 255 being furthest, 0 closest. mapped to [0:0.001] in shaders
+	- debug str                     200
+	- back chat msgs                210
+	- chat msgs                     200
+	- inventory at bottom
+		- back                      190
+		- items                     180 (3 in item_vertex shader)
+		- item str                  170
+	- menu occlusion                150
+	- menu bars                     130
+	- menu str                      120
+	- menu ingame
+		- back                      130
+		- item                      120 (2 in item_vertex shader)
+		- item str                  110
+		- held item                 60 (1 in item_vertex shader)
+		- held item str             50
+	- controls menu
+		- binds bars                130
+		- binds str                 120
+		- top and bottom occlusion  100
+		- top and bottom bars       90
+		- top and bottom text       80

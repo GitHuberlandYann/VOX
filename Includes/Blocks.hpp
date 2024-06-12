@@ -376,7 +376,7 @@ struct Block {
 			(void)pos;
 			(void)value;
 		}
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 		virtual bool isTransparent( int value ) const {
 			(void)value;
 			return (transparent);
@@ -390,7 +390,7 @@ struct Cube : Block {
 			geometry = geometry::cube;
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct Cross : Block {
@@ -423,7 +423,7 @@ struct SlabBottom : Block {
 			transparent = true;
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct SlabTop : Block {
@@ -527,7 +527,7 @@ struct StairsBottom : Block {
 			}
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct StairsTop : Block {
@@ -663,7 +663,7 @@ struct Fence : Block {
 			}
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct Door : Block {
@@ -766,7 +766,7 @@ struct Trapdoor : Block {
 			}
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct Crop : Block {
@@ -845,7 +845,7 @@ struct Button : Block {
 			}
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 
@@ -926,7 +926,7 @@ struct OakLog : Cube {
 			}
 			return (0);
 		}
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct Cactus : Cube {
@@ -1565,7 +1565,7 @@ struct Glass : Block {
 			textureX = 4;
 			textureY = 11;
 		}
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct GlassPane : Block {
@@ -1997,7 +1997,7 @@ struct Piston : Block {
 			return (0);
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct StickyPiston : Piston {
@@ -2063,7 +2063,7 @@ struct Observer : Block {
 			return (!!(dir & 0x4));
 		}
 		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct Poppy : Cross {
@@ -2337,7 +2337,7 @@ struct Chest : Block {
 			textureX = 0;
 			textureY = 15;
 		}
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, bool alien, bool movement ) const;
+		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct WheatCrop : Crop {

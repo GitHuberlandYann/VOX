@@ -129,7 +129,7 @@ class Menu
 		menu::ret chat_menu( bool animUpdate );
 		menu::ret sign_menu( bool animUpdate );
 
-		void addQuads( int atlas, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
+		void addQuads( int atlas, int depth, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
         void setup_array_buffer_main( void );
         void setup_array_buffer_select( void );
         void setup_array_buffer_create( void );
@@ -144,9 +144,9 @@ class Menu
         void setup_array_buffer_sign( void );
 
 		void occult_selection( void );
-		void display_item_value( int x, int y, int amount );
+		void display_item_value( int x, int y, int amount, int depth );
 		void add_dura_value( glm::ivec2 dura, int x, int y );
-		void add_item_value( t_item item, int x, int y, bool movement = false );
+		void add_item_value( t_item item, int x, int y, int depth, bool movement = false );
 	
 		void add_slot_value( int index );
 		void add_backpack_value( int index );

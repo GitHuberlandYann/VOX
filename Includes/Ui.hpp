@@ -62,7 +62,7 @@ class UI
 		bool _vaoSet;
 
         void add_inventory_elem( int index );
-		void addQuads( std::vector<std::array<int, 3>> &vertices, int atlas, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
+		void addQuads( std::vector<std::array<int, 3>> &vertices, int atlas, int depth, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
         void add_dura_value( std::vector<std::array<int, 3>> &vertices, int index );
         void add_hearts_holder( std::vector<std::array<int, 3>> &vertices, int index );
         void add_hearts( std::vector<std::array<int, 3>> &vertices, int index );

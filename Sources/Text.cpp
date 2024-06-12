@@ -24,15 +24,15 @@ Text::~Text( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-void Text::addQuads( int spec, int posX, int posY, int width, int height, unsigned color )
+void Text::addQuads( int spec, int posX, int posY, int width, int height, unsigned color, int depth )
 {
-	_texts.push_back({spec + (0 << 8) + (0 << 9), color, posX,         posY});
-	_texts.push_back({spec + (1 << 8) + (0 << 9), color, posX + width, posY});
-	_texts.push_back({spec + (0 << 8) + (1 << 9), color, posX,         posY + height});
+	_texts.push_back({spec + (0 << 8) + (0 << 9) + (depth << 24), color, posX,         posY});
+	_texts.push_back({spec + (1 << 8) + (0 << 9) + (depth << 24), color, posX + width, posY});
+	_texts.push_back({spec + (0 << 8) + (1 << 9) + (depth << 24), color, posX,         posY + height});
 
-	_texts.push_back({spec + (1 << 8) + (0 << 9), color, posX + width, posY});
-	_texts.push_back({spec + (1 << 8) + (1 << 9), color, posX + width, posY + height});
-	_texts.push_back({spec + (0 << 8) + (1 << 9), color, posX,         posY + height});
+	_texts.push_back({spec + (1 << 8) + (0 << 9) + (depth << 24), color, posX + width, posY});
+	_texts.push_back({spec + (1 << 8) + (1 << 9) + (depth << 24), color, posX + width, posY + height});
+	_texts.push_back({spec + (0 << 8) + (1 << 9) + (depth << 24), color, posX,         posY + height});
 }
 
 // ************************************************************************** //
@@ -131,7 +131,7 @@ int Utils::Text::textWidth( int font_size, std::string str, int limit )
 	return (res);
 }
 
-void Text::addText( int posX, int posY, int font_size, unsigned color, std::string str )
+void Text::addText( int posX, int posY, int font_size, unsigned color, int depth, std::string str )
 {
 	int startX = posX;
 	char c;
@@ -148,7 +148,7 @@ void Text::addText( int posX, int posY, int font_size, unsigned color, std::stri
 			charLine += 4 - (charLine & 3);
 			posX = startX + charLine * font_size;
 		} else {
-			addQuads(c, posX, posY, font_size, font_size, color);
+			addQuads(c, posX, posY, font_size, font_size, color, depth);
 			if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') {
 				posX += font_size * 0.5f;
 			} else if (c == 'I' || c == '[' || c == ']' || c == '"' || c == '*') {
@@ -163,14 +163,14 @@ void Text::addText( int posX, int posY, int font_size, unsigned color, std::stri
 	}
 }
 
-void Text::addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, std::string str )
+void Text::addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, int depth, std::string str )
 {
 	int text_width = Utils::Text::textWidth(font_size, str);
 	if (shadow) {
 		int offset = font_size / 8;
-		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, TEXT::BLACK, str);
+		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, TEXT::BLACK, depth + 1, str);
 	}
-	addText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, TEXT::WHITE, str);
+	addText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, TEXT::WHITE, depth, str);
 }
 
 void Text::toScreen( void )

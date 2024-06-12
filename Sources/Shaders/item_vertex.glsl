@@ -3,8 +3,9 @@
 /* specifications is packed
  * 0xFF = x coord in texture atlas
  * 0xFF00 = y coord in texture atlas
- * 0xF00 = y offset in texture atlas
+ * 0x7 << 16 depth / 60
  * 0x7 << 19 faceLight [0=100, 1=92, 2=88, 3=84, 4=80, 5=76]
+ * 0x3 << 22 <unused>
  * 0xF000000 block light
  * 0xF0000000 sky light
 */
@@ -18,9 +19,11 @@ uniform int win_height;
 out vec2 Texcoord;
 out float FaceShadow;
 
+const float one256th = 0.00390625f;
+
 void main()
 {
-	gl_Position = vec4((2.0 * position.x) / win_width - 1.0, -((2.0 * position.y) / win_height - 1.0), 0.0, 1.0);
+	gl_Position = vec4((2.0 * position.x) / win_width - 1.0, -((2.0 * position.y) / win_height - 1.0), ((specifications >> 16) & 0x3) * 60 * one256th * 0.01f, 1.0);
 	Texcoord = vec2((specifications & 0xFF) / 256.0f, ((specifications >> 8) & 0xFF) / 256.0f);
 	int blockLight = ((specifications >> 24) & 0xF);
 	int skyLight = internal_light - (15 - ((specifications >> 28) & 0xF));
