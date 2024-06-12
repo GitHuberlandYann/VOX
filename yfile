@@ -52,7 +52,6 @@ TODOS:
 	- toggle don't draw chunks behind player in Settings
     - Sound https://www.ambiera.com/irrklang/tutorials.html
 	- upon world generation, place player on ground by using continentalness
-	- add depth component to all hud elements to draw text on item on text of other item
 	- water ligth level
     - lava + nether
 	- multiplayer ? Server-Client logic on singleplayer ?
@@ -63,9 +62,10 @@ TODOS:
 	- bow and arrow
 	- universal use of tps instead of deltatimes
 	
-TODAY:
+	TODAY:
 	- Way more blocks ?? + world file "version: " line + /respawn
-	- Controls Menu
+	- add menus to json to reduce in-code hardcoding
+	- add depth component to all hud elements to draw text on item on text of other item
 	
 SHORTTERM memory:
 	\/ - work on cleanAtlas
@@ -189,6 +189,7 @@ DONE:
 		- pause menu
 		- options menu
 		- video settings menu
+		- Controls Menu
 		- resource packs menu
 		- inventory menu
 		- crafting menu

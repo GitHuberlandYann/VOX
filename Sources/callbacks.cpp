@@ -118,6 +118,7 @@ namespace inputs
 	//                               Key inputs                                   //
 	// ************************************************************************** //
 
+	int last_input = -1;
 	std::array<bool, key_size> down = {false};
 	std::array<bool, key_size> updated = {false};
 	std::map<int, int> key_map = {
@@ -171,6 +172,9 @@ namespace inputs
 		(void)window;(void)scancode;(void)mods;
 		if (action == GLFW_REPEAT) return ;
 
+		if (action == GLFW_PRESS) {
+			last_input = key;
+		}
 		auto search = key_map.find(key);
 		if (search == key_map.end()) {
 			// std::cout << "couldn't find key " << key << " in key_map" << std::endl;
@@ -178,7 +182,7 @@ namespace inputs
 		}
 		// std::cout << "found key " << key << " in key_map" << std::endl;
 
-		down[search->second] = action == GLFW_PRESS;
+		down[search->second] = (action == GLFW_PRESS);
 		updated[search->second] = true;
 	}
 
@@ -186,10 +190,21 @@ namespace inputs
 	{
 		(void)window;(void)mods;
 
+		if (action == GLFW_PRESS) {
+			last_input = button;
+		}
+		if (button == GLFW_MOUSE_BUTTON_1) {
+			down[left_click] = (action == GLFW_PRESS);
+			updated[left_click] = true;
+		} else if (button == GLFW_MOUSE_BUTTON_2) {
+			down[right_click] = (action == GLFW_PRESS);
+			updated[right_click] = true;
+		}
+
 		auto search = key_map.find(button);
 		if (search == key_map.end()) return ;
 
-		down[search->second] = action == GLFW_PRESS;
+		down[search->second] = (action == GLFW_PRESS);
 		updated[search->second] = true;
 	}
 
@@ -260,5 +275,41 @@ namespace inputs
 			}
 		}
 		return (res);
+	}
+
+	/**
+	 * @brief update key_map to pair key and action
+	 * if key already used for another action, this does nothing
+	 */
+	void set_key_bind( int key, int action )
+	{
+		if (action < 0 || action > key_size) return ;
+
+		auto search = key_map.find(key);
+		if (search != key_map.end()) return ; // key already being used
+
+		auto result = std::find_if(key_map.begin(), key_map.end(),
+				[action](auto& it) {return (it.second == action); });
+		if(result != key_map.end()) { // unset previous bind
+			key_map.erase(result);
+		}
+
+		key_map[key] = action; // bind new key
+	}
+
+	/**
+	 * @brief set last_input to -1, used to change key binds from controls menu
+	 */
+	void reset_last_input( void )
+	{
+		last_input = -1;
+	}
+
+	/**
+	 * @brief return last_input, used to change key binds from controls menu
+	 */
+	int get_last_input( void )
+	{
+		return (last_input);
 	}
 }

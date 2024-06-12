@@ -94,10 +94,9 @@ class Menu
 	private:
 	    GLuint _vao, _vbo;
 		GLuint _shaderProgram;
-        GLint _gui_size, _nb_points, _state, _selection, _selected_world;
+        GLint _gui_size, _nb_points, _state, _selection, _selected_world, _scroll;
 		t_item _selected_block;
 		bool _vaoSet, _textBar, _input_world, _input_seed, _moving_slider, _change_to_apply, _drop_down_menu;
-		int _scroll;
 		float _fov_gradient, _render_gradient, _brightness_gradient;
 		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs, _sign_content;
 		glm::ivec3 _sign_pos;

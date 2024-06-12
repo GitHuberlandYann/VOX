@@ -22,6 +22,9 @@ namespace inputs
 	bool key_down( int index );
 	bool key_update( int index );
 	const char* get_key_name( int action );
+	void set_key_bind( int key, int action );
+	void reset_last_input( void );
+	int get_last_input( void );
 
 	enum {
 		move_forwards,
@@ -69,6 +72,8 @@ namespace inputs
 		slot_6,
 		slot_7,
 		slot_8,
+		left_click,
+		right_click,
 
 		key_size,
 	};
