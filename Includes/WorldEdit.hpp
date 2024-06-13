@@ -16,9 +16,10 @@ namespace WEDIT {
 		PASTE,
 		MOVE,
 		STACK,
+		PATHFIND,
 		NBR_CMDS
 	};
-	const std::array<std::string, cmds::NBR_CMDS> commands = {"//wand", "//set", "//copy", "//cut", "//paste", "//move", "//stack"};
+	const std::array<std::string, cmds::NBR_CMDS> commands = {"//wand", "//set", "//copy", "//cut", "//paste", "//move", "//stack", "//path"};
 };
 
 class WorldEdit
@@ -56,6 +57,7 @@ class WorldEdit
 		void handleCmdPaste( bool notAirBlocks );
 		void handleCmdMove( std::vector<std::string>& argv );
 		// void handleCmdStack( void );
+		void handleCmdPathfind( void );
 };
 
 #endif

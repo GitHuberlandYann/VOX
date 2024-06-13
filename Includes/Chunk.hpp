@@ -94,6 +94,14 @@ typedef struct s_redstone {
 	// what happens if schedule redstone tick, then piston moves block, and now the thing being ticked is not what was expected?
 }				t_redstoneTick;
 
+typedef struct s_pathfinding_node {
+	s_pathfinding_node( int dist, glm::ivec3 position )
+		: f_dist(dist), pos(position), parent(NULL) {}
+	int f_dist = 0;
+	glm::ivec3 pos = {0, 0, 0};
+	std::shared_ptr<s_pathfinding_node> parent = NULL;
+}				t_pathfinding_node;
+
 namespace SCHEDULE {
 	const int REPEAT_DIODE = 0; // priority == -3 if repeater outputs in back or side of other diode
 	const int REPEAT_OFF = 1; // priority == -2 if repeater turns off
@@ -140,12 +148,15 @@ class Chunk
 		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
 		void setSignContent( t_sign_info sign );
 
+		GLint getBlockAtAbsolute( glm::ivec3 pos );
 		GLint getBlockAtAbsolute( int posX, int posY, int posZ );
 		GLint getBlockAt( glm::ivec3 pos, bool askNeighbours = true );
 		GLint getBlockAt( int posX, int posY, int posZ, bool askNeighbours = true );
+		void setBlockAtAbsolute( int value, glm::ivec3 pos, bool update );
 		void setBlockAtAbsolute( int value, int posX, int posY, int posZ, bool update );
 		void setBlockAt( int value, glm::ivec3 pos, bool update, bool observer = true );
 		void setBlockAt( int value, int posX, int posY, int posZ, bool update, bool observer = true );
+		std::pair<std::vector<glm::ivec3>, int> computePathfinding( glm::ivec3 start, glm::ivec3 end );
 		void update_adj_block( glm::ivec3 pos, int dir, int source );
 		void turnDirtToGrass( int posX, int posY, int posZ );
 
@@ -286,6 +297,11 @@ class Chunk
 		void extendPiston( glm::ivec3 pos, int value, int count );
 		void retractPiston( glm::ivec3 pos, int value );
 		void connectRedstoneDust( glm::ivec3 pos, int &value, bool placed );
+
+		// pathfinding
+		void checkNodePathfinding( std::list<std::shared_ptr<t_pathfinding_node>>& open_nodes,
+			std::list<std::shared_ptr<t_pathfinding_node>>& visited_nodes, glm::ivec3 pos, bool* trav,
+			std::shared_ptr<t_pathfinding_node> current, glm::ivec3 start, glm::ivec3 end );
 
 		// block update (20/sec)
 		void updateCrop( int value, int offset );

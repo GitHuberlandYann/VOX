@@ -510,6 +510,14 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 /**
  * @brief calls Chunk::getBlockAt after substracting _startX and _startY from posX and posY.
  */
+GLint Chunk::getBlockAtAbsolute( glm::ivec3 pos )
+{
+	return (getBlockAt(pos.x - _startX, pos.y - _startY, pos.z));
+}
+
+/**
+ * @brief calls Chunk::getBlockAt after substracting _startX and _startY from posX and posY.
+ */
 GLint Chunk::getBlockAtAbsolute( int posX, int posY, int posZ )
 {
 	return (getBlockAt(posX - _startX, posY - _startY, posZ));
@@ -557,6 +565,14 @@ GLint Chunk::getBlockAt( int posX, int posY, int posZ, bool askNeighbours )
 		res = _blocks[(((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ];
 	}
 	return (res);
+}
+
+/**
+ * @brief calls Chunk::setBlockAt after substracting _startX and _startY from posX and posY.
+ */
+void Chunk::setBlockAtAbsolute( int value, glm::ivec3 pos, bool update )
+{
+	setBlockAt(value, pos.x - _startX, pos.y - _startY, pos.z, update, false);
 }
 
 /**

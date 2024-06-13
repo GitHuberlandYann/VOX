@@ -211,6 +211,28 @@ void WorldEdit::handleCmdMove( std::vector<std::string>& argv )
 	handleCmdPaste(argc == 3);
 }
 
+/**
+ * @brief check if path possible between 2 selected blocks and transform
+ * found path to diamond blocks
+*/
+void WorldEdit::handleCmdPathfind( void )
+{
+	Chunk* chunk = _openGL_Manager->getCurrentChunkPtr();
+	if (!chunk) {
+		return (_chat->chatMessage("Missing current_chunk_ptr, abort.", TEXT::RED));
+	}
+	
+	std::pair<std::vector<glm::ivec3>, int> path = chunk->computePathfinding(_selectStart + glm::ivec3(0, 0, 1), _selectEnd + glm::ivec3(0, 0, 1));
+	if (!path.first.size()) {
+		return (_chat->chatMessage("Couldn't find path, nbr iter: " + std::to_string(path.second) + ".", TEXT::RED));
+	}
+
+	for (auto pos : path.first) {
+		chunk->setBlockAtAbsolute(blocks::diamond_block, pos, false);
+	}
+	return (_chat->chatMessage("Path of size " + std::to_string(path.first.size()) + " found in " + std::to_string(path.second) + " iterations."));
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -265,6 +287,9 @@ bool WorldEdit::parseCommand( std::vector<std::string>& argv )
 					handleCmdMove(argv);
 					break ;
 				case WEDIT::cmds::STACK:
+					break ;
+				case WEDIT::cmds::PATHFIND:
+					handleCmdPathfind();
 					break ;
 			}
 			return (false);
