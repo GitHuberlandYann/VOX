@@ -194,7 +194,7 @@ void loadTextureShader( int index, GLuint texture, std::string texture_file )
 	check_glstate("Successfully loaded img[" + std::to_string(index) + "] " + texture_file, true);
 }
 
-void loadSubTextureArray( int layer, std::string texture_file )
+void loadSubTextureArray( int width, int height, int layer, std::string texture_file )
 {
 	// load image
 	t_tex img;
@@ -204,8 +204,8 @@ void loadSubTextureArray( int layer, std::string texture_file )
 		exit(1);
 	}
 
-	if (img.width != 256 || img.height != 256) {
-		std::cerr << texture_file << ": image size not 256x256 but " << img.width << "x" << img.height << std::endl;
+	if (img.width != width || img.height != height) {
+		std::cerr << texture_file << ": image size not " << width << "x" << height << " but " << img.width << "x" << img.height << std::endl;
 		exit(1);
 	}
 	// Upload pixel data.

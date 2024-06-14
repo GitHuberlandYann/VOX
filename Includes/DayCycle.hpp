@@ -24,7 +24,7 @@ class DayCycle
 		double _gameTime;
 		int _ticks, _gameTicks, _day, _hour, _minute, _internal_light, _time_multiplier, _game_time_multiplier;
 		bool _forceReset;
-		Shader* _shader, *_particleShader;
+		Shader* _shader, *_particleShader, *_modelShader;
 
 		DayCycle( void );
 		~DayCycle( void );
@@ -38,7 +38,7 @@ class DayCycle
 		static DayCycle *Get( void );
 		static void Destroy( void );
 
-		void setShaderPtrs( Shader* shader, Shader* particleShader );
+		void setShaderPtrs( Shader* shader, Shader* particleShader, Shader* modelShader );
 		void setCloudsColor( GLint uniform_location );
 		bool tickUpdate( void );
 		int getTicks( void );

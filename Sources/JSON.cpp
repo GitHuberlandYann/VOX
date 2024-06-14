@@ -757,6 +757,11 @@ bool Settings::loadResourcePacks( void )
 					if (end == std::string::npos) throw UnclosedBracketException();
 					_strings[settings::strings::tex_chest] = line.substr(14, end - 14);
 					check_set[settings::strings::tex_chest] = true;
+				} else if (!line.compare(0, 14, "\"TEX_ZOMBIE\": ")) {
+					size_t end = line.find('\"', 15);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[settings::strings::tex_zombie] = line.substr(15, end - 15);
+					check_set[settings::strings::tex_zombie] = true;
 				} else if (!line.compare(0, 18, "\"PARTICLE_ATLAS\": ")) {
 					size_t end = line.find('\"', 19);
 					if (end == std::string::npos) throw UnclosedBracketException();
@@ -793,6 +798,14 @@ bool Settings::loadResourcePacks( void )
 					size_t end = line.find('\"', 23);
 					if (end == std::string::npos) throw UnclosedBracketException();
 					_strings[::settings::strings::item_vertex_shader] = line.substr(23, end - 23);
+				} else if (!line.compare(0, 25, "\"MODEL_FRAGMENT_SHADER\": ")) {
+					size_t end = line.find('\"', 26);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[settings::strings::model_fragment_shader] = line.substr(26, end - 26);
+				} else if (!line.compare(0, 23, "\"MODEL_VERTEX_SHADER\": ")) {
+					size_t end = line.find('\"', 24);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[settings::strings::model_vertex_shader] = line.substr(24, end - 24);
 				} else if (!line.compare(0, 28, "\"PARTICLE_FRAGMENT_SHADER\": ")) {
 					size_t end = line.find('\"', 29);
 					if (end == std::string::npos) throw UnclosedBracketException();

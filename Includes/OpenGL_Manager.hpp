@@ -60,10 +60,10 @@ class OpenGL_Manager
 
 	private:
 		GLFWwindow* _window;
-		Shader _shader, _skyShader, _particleShader;
-		GLuint _vaoEntities, _vboEntities, _vaoParticles, _vboParticles;
+		Shader _shader, _skyShader, _particleShader, _modelShader;
+		GLuint _vaoEntities, _vboEntities, _vaoParticles, _vboParticles, _vaoModels, _vboModels;
 		glm::ivec2 _current_chunk;
-		std::array<GLuint, 4> _textures;
+		std::array<GLuint, 5> _textures;
 		GLint _fill;
 		bool _debug_mode, _outline, _paused, _threadUpdate, _threadStop;
 		float _break_time, _eat_timer, _bow_timer;
@@ -72,6 +72,7 @@ class OpenGL_Manager
 		std::vector<Chunk*> _visible_chunks;
 		std::vector<t_shaderInput> _entities;
 		std::vector<t_shaderInput> _particles;
+		std::vector<t_shaderInput> _models;
 		std::thread _thread;
 		std::mutex _mtx;
 		t_hit _block_hit;
@@ -100,6 +101,7 @@ class OpenGL_Manager
 		void addLine( glm::vec3 a, glm::vec3 b );
 		void drawEntities( void );
 		void drawParticles( void );
+		void drawModels( void );
 
 		void startThread( void );
 		void stopThread( void );

@@ -1,7 +1,7 @@
 #ifndef ZOMBIE_HPP
 # define ZOMBIE_HPP
 
-# include "AMobs.hpp"
+# include "AMob.hpp"
 
 namespace state_machine {
     namespace zombie {
@@ -10,14 +10,18 @@ namespace state_machine {
     };
 };
 
-class Zombie : AMobs
+class Zombie : AMob
 {
     public:
-        Zombie( void );
-        ~Zombie( void );
+        Zombie( Chunk* chunk, glm::ivec3 position );
+        virtual ~Zombie( void );
+
+        virtual void update( std::vector<t_shaderInput>& modArr, double deltaTime );
 
     private:
         short _state;
+
+        void draw( std::vector<t_shaderInput>& modArr, double deltaTime );
 };
 
 #endif

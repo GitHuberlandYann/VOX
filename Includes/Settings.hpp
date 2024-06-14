@@ -83,13 +83,16 @@ namespace settings {
 		};
 		namespace shader {
 			namespace uniform {
-			const size_t fog = 0;
-			const size_t view = 1;
-			const size_t proj = 2;
-			const size_t internal_light = 3;
-			const size_t brightness = 4;
-			const size_t color = 5;
-			const size_t animation = 6;
+				const size_t fog = 0;
+				const size_t view = 1;
+				const size_t proj = 2;
+				const size_t internal_light = 3;
+				const size_t brightness = 4;
+				const size_t color = 5;
+				const size_t animation = 6;
+			};
+			namespace texture {
+				const int zombie = 0;
 			};
 		};
 	};
@@ -135,6 +138,7 @@ namespace settings {
 		tex_crafting_table,
 		tex_furnace,
 		tex_chest,
+		tex_zombie,
 		particle_atlas,
 		model_atlas,
 		water_still,
@@ -145,6 +149,8 @@ namespace settings {
 		main_vertex_shader,
 		item_fragment_shader,
 		item_vertex_shader,
+		model_fragment_shader,
+		model_vertex_shader,
 		particle_fragment_shader,
 		particle_vertex_shader,
 		sky_fragment_shader,

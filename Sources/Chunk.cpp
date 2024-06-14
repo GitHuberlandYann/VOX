@@ -727,9 +727,11 @@ void Chunk::updateFurnaces( double currentTime )
 /**
  * @brief loops through all mobs, update and draw them
  */
-void Chunk::updateMobs( std::vector<t_shaderInput>& _models, double deltaTime )
+void Chunk::updateMobs( std::vector<t_shaderInput>& modArr, double deltaTime )
 {
-	(void)_models;(void)deltaTime;
+	for (auto m : _mobs) {
+		m->update(modArr, deltaTime);
+	}
 }
 
 void Chunk::updateEntities( std::vector<t_shaderInput>& arr,  std::vector<t_shaderInput>& partArr, double deltaTime )

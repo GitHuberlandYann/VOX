@@ -60,6 +60,7 @@ void DayCycle::setInternals( void )
 	} else {
 		return ;
 	}
+	glUniform1i(_modelShader->getUniform(settings::consts::shader::uniform::internal_light), _internal_light);
 	glUniform1i(_particleShader->getUniform(settings::consts::shader::uniform::internal_light), _internal_light);
 	glUniform1i(_shader->getUniform(settings::consts::shader::uniform::internal_light), _internal_light);
 }
@@ -87,12 +88,14 @@ void DayCycle::Destroy( void )
 	_dayCycleInstance = NULL;
 }
 
-void DayCycle::setShaderPtrs( Shader* shader, Shader* particleShader )
+void DayCycle::setShaderPtrs( Shader* shader, Shader* particleShader, Shader* modelShader )
 {
 	_shader = shader;
 	glUniform1i(_shader->getUniform(settings::consts::shader::uniform::internal_light), _internal_light);
 	_particleShader = particleShader;
 	glUniform1i(_particleShader->getUniform(settings::consts::shader::uniform::internal_light), _internal_light);
+	_modelShader = modelShader;
+	glUniform1i(_modelShader->getUniform(settings::consts::shader::uniform::internal_light), _internal_light);
 }
 
 void DayCycle::setCloudsColor( GLint uniform_location )

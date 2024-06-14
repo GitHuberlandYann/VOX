@@ -275,12 +275,12 @@ void UI::loadTextures( void )
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _texture);
 
 	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 6);
-	loadSubTextureArray(settings::consts::tex::blocks, Settings::Get()->getString(settings::strings::block_atlas));
-	loadSubTextureArray(settings::consts::tex::ui, Settings::Get()->getString(settings::strings::ui_atlas));
-	loadSubTextureArray(settings::consts::tex::inventory, Settings::Get()->getString(settings::strings::tex_inventory));
-	loadSubTextureArray(settings::consts::tex::crafting_table, Settings::Get()->getString(settings::strings::tex_crafting_table));
-	loadSubTextureArray(settings::consts::tex::furnace, Settings::Get()->getString(settings::strings::tex_furnace));
-	loadSubTextureArray(settings::consts::tex::chest, Settings::Get()->getString(settings::strings::tex_chest));
+	loadSubTextureArray(256, 256, settings::consts::tex::blocks, Settings::Get()->getString(settings::strings::block_atlas));
+	loadSubTextureArray(256, 256, settings::consts::tex::ui, Settings::Get()->getString(settings::strings::ui_atlas));
+	loadSubTextureArray(256, 256, settings::consts::tex::inventory, Settings::Get()->getString(settings::strings::tex_inventory));
+	loadSubTextureArray(256, 256, settings::consts::tex::crafting_table, Settings::Get()->getString(settings::strings::tex_crafting_table));
+	loadSubTextureArray(256, 256, settings::consts::tex::furnace, Settings::Get()->getString(settings::strings::tex_furnace));
+	loadSubTextureArray(256, 256, settings::consts::tex::chest, Settings::Get()->getString(settings::strings::tex_chest));
 	glUniform1i(glGetUniformLocation(_shaderProgram, "textures"), 2);
 	check_glstate("Successfully loaded img[2] texture array 2D", true);
 }

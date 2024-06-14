@@ -5,12 +5,12 @@
 
 typedef struct s_item t_item;
 
-class AMobs {
+class AMob {
 	public:
-		AMobs( void );
-		~AMobs( void );
+		AMob( void );
+		virtual ~AMob( void );
 
-		virtual void update( void ) = 0;
+		virtual void update( std::vector<t_shaderInput>& modArr, double deltaTime ) = 0;
 
 	private:
 		std::string _name;      // tag above head.
@@ -24,6 +24,7 @@ class AMobs {
 		// glm::vec3 _motion;   // velocity of entity in meters per tick
 		glm::vec3 _position;    // position of entity.
 		glm::vec2 _rotation;    // rotation of entity. yaw [-180:180] pitch [-90:90]
+		glm::ivec3 _right, _front, _up;
 		// std::array<t_item, 2> _holding; // main hand and off hand content.
 		// std::vector<AMobs*> _passengers; // data of the entity(s) that is riding this entity.
 		// bool _visibleName;      // if true, name is displayed even if cursor not on entities head.
@@ -34,6 +35,7 @@ class AMobs {
 		// bool _hasVisualFire; // if true, the entity visually appears on fire.
 		bool _noAI;             // setting to true disables the mob's AI.
 		bool _persistenceRequired; // true if the mob must not despawn naturally.
+		Chunk* _chunk;
 };
 
 #endif

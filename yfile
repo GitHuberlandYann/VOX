@@ -245,7 +245,8 @@ Textures:
 		3: settings::strings::tex_crafting_table
 		4: settings::strings::tex_furnace
 		5: settings::strings::tex_chest
-	3: <unused>
+	3: array:
+		0: settings::strings::tex_zombie
 	4: settings::strings::water_still
 	5: settings::strings::water_flow
 	6: array:

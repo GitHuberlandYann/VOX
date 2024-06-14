@@ -199,7 +199,7 @@ class Chunk
 		void updateFluids( void );
 		void tickUpdate( void );
 		void updateScheduledBlocks( void );
-		void updateMobs( std::vector<t_shaderInput>& _models, double deltaTime );
+		void updateMobs( std::vector<t_shaderInput>& modArr, double deltaTime );
 		void updateEntities( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, double deltaTime );
 		size_t clearEntities( void );
 		void updateParticles( std::vector<t_shaderInput>& arr, double deltaTime );
@@ -232,7 +232,7 @@ class Chunk
 		std::map<int, FurnaceInstance*> _furnaces;
 		std::map<int, SignInstance*> _signs;
 		std::vector<Entity*> _entities;
-		std::vector<std::unique_ptr<AMobs*>> _mobs;
+		std::vector<std::unique_ptr<AMob>> _mobs;
 		std::vector<Particle*> _particles;
 		std::map<int, Particle*> _flames;
 		std::thread _thread;

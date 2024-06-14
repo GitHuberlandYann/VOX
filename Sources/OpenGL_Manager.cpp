@@ -34,12 +34,14 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_shader.deleteProgram();
 	_skyShader.deleteProgram();
 	_particleShader.deleteProgram();
+	_modelShader.deleteProgram();
 
 	glDeleteBuffers(1, &_vboEntities);
 	glDeleteVertexArrays(1, &_vaoEntities);
-
 	glDeleteBuffers(1, &_vboParticles);
 	glDeleteVertexArrays(1, &_vaoParticles);
+	glDeleteBuffers(1, &_vboModels);
+	glDeleteVertexArrays(1, &_vaoModels);
 
 	set_cursor_position_callback(NULL, NULL);
 	set_scroll_callback(NULL);
@@ -272,6 +274,34 @@ void OpenGL_Manager::drawParticles( void )
 	_particles.reserve(psize);
 }
 
+void OpenGL_Manager::drawModels( void )
+{
+	size_t msize = _models.size();
+
+	if (!msize) {
+		return ;
+	}
+
+	_modelShader.useProgram();
+	glBindVertexArray(_vaoModels);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _vboModels);
+	glBufferData(GL_ARRAY_BUFFER, msize * 4 * sizeof(GLint), &(_models[0].spec), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(SPECATTRIB);
+	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
+
+	glEnableVertexAttribArray(POSATTRIB);
+	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(1 * sizeof(GLint)));
+
+	check_glstate("OpenGL_Manager::drawModels", false);
+
+	glDrawArrays(GL_TRIANGLES, 0, msize);
+
+	_models.clear();
+	_models.reserve(msize);
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -346,6 +376,9 @@ void OpenGL_Manager::setupWindow( void )
 	glGenVertexArrays(1, &_vaoParticles);
 	glGenBuffers(1, &_vboParticles);
 	check_glstate("VAO and VBO for particles", false);
+	glGenVertexArrays(1, &_vaoModels);
+	glGenBuffers(1, &_vboModels);
+	check_glstate("VAO and VBO for particles", false);
 }
 
 void OpenGL_Manager::initWorld( void )
@@ -387,6 +420,20 @@ void OpenGL_Manager::createShaders( void )
 
 	check_glstate("particleShader program successfully created", true);
 
+	// then setup model shader
+	GLuint modelProgram = _modelShader.createProgram(Settings::Get()->getString(settings::strings::model_vertex_shader), "",
+										Settings::Get()->getString(settings::strings::model_fragment_shader));
+
+	glBindFragDataLocation(modelProgram, 0, "outColor");
+
+	glBindAttribLocation(modelProgram, SPECATTRIB, "specifications");
+	glBindAttribLocation(modelProgram, POSATTRIB, "position");
+
+	glLinkProgram(modelProgram);
+	glUseProgram(modelProgram);
+
+	check_glstate("modelShader program successfully created", true);
+
 	// then setup the skybox shader
 	_skybox->createShader();
 	
@@ -417,17 +464,22 @@ void OpenGL_Manager::setupCommunicationShaders( void )
 	_shader.setUniformLocation(settings::consts::shader::uniform::view, "view");
 	_skyShader.setUniformLocation(settings::consts::shader::uniform::view, "view");
 	_particleShader.setUniformLocation(settings::consts::shader::uniform::view, "view");
+	_modelShader.setUniformLocation(settings::consts::shader::uniform::view, "view");
 	updateCamView();
 
 	_shader.setUniformLocation(settings::consts::shader::uniform::proj, "proj");
 	_skyShader.setUniformLocation(settings::consts::shader::uniform::proj, "proj");
 	_particleShader.setUniformLocation(settings::consts::shader::uniform::proj, "proj");
+	_modelShader.setUniformLocation(settings::consts::shader::uniform::proj, "proj");
 	updateCamPerspective();
 
 	_shader.setUniformLocation(settings::consts::shader::uniform::internal_light, "internal_light");
 	_particleShader.setUniformLocation(settings::consts::shader::uniform::internal_light, "internal_light");
-	DayCycle::Get()->setShaderPtrs(&_shader, &_particleShader);
+	_modelShader.setUniformLocation(settings::consts::shader::uniform::internal_light, "internal_light");
+	DayCycle::Get()->setShaderPtrs(&_shader, &_particleShader, &_modelShader);
 
+	_modelShader.setUniformLocation(settings::consts::shader::uniform::brightness, "min_brightness");
+	glUniform1f(_modelShader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
 	_particleShader.setUniformLocation(settings::consts::shader::uniform::brightness, "min_brightness");
 	glUniform1f(_particleShader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
 	_shader.setUniformLocation(settings::consts::shader::uniform::brightness, "min_brightness");
@@ -447,7 +499,7 @@ void OpenGL_Manager::loadTextures( void )
 		glDeleteTextures(_textures.size(), &_textures[0]);
 		_textures[0] = 0;
 	}
-	glGenTextures(4, &_textures[0]);
+	glGenTextures(_textures.size(), &_textures[0]);
 
 	_shader.useProgram();
 	loadTextureShader(0, _textures[0], Settings::Get()->getString(settings::strings::block_atlas));
@@ -467,10 +519,19 @@ void OpenGL_Manager::loadTextures( void )
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _textures[3]);
 
 	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 3);
-	loadSubTextureArray(0, Settings::Get()->getString(settings::strings::block_atlas));
-	loadSubTextureArray(1, Settings::Get()->getString(settings::strings::particle_atlas));
-	loadSubTextureArray(2, Settings::Get()->getString(settings::strings::model_atlas));
+	loadSubTextureArray(256, 256, 0, Settings::Get()->getString(settings::strings::block_atlas));
+	loadSubTextureArray(256, 256, 1, Settings::Get()->getString(settings::strings::particle_atlas));
+	loadSubTextureArray(256, 256, 2, Settings::Get()->getString(settings::strings::model_atlas));
 	glUniform1i(glGetUniformLocation(_particleShader.getProgram(), "textures"), 6);
+	check_glstate("Successfully loaded img[6] texture array 2D", true);
+
+	_modelShader.useProgram();
+	glActiveTexture(GL_TEXTURE0 + 3);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, _textures[4]);
+
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 64, 64, 1);
+	loadSubTextureArray(64, 64, settings::consts::shader::texture::zombie, Settings::Get()->getString(settings::strings::tex_zombie));
+	glUniform1i(glGetUniformLocation(_modelShader.getProgram(), "textures"), 6);
 	check_glstate("Successfully loaded img[6] texture array 2D", true);
 }
 
@@ -609,7 +670,7 @@ void OpenGL_Manager::main_loop( void )
 					}
 					c->tickUpdate(); // random ticks
 				}
-				// c->updateMobs(_models, deltaTime);
+				c->updateMobs(_models, deltaTime);
 				c->updateEntities(_entities, _particles, deltaTime);
 				if (Settings::Get()->getBool(settings::bools::particles)) {
 					c->updateParticles(_particles, deltaTime);
@@ -624,6 +685,7 @@ void OpenGL_Manager::main_loop( void )
 		if (!gamePaused) {
 			_camera->drawPlayer(_particles, _hand_content, _game_mode);
 			drawParticles();
+			drawModels();
 			_shader.useProgram();
 			addBreakingAnim();
 			drawEntities();

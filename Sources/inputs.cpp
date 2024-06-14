@@ -289,8 +289,9 @@ void OpenGL_Manager::updateCamView( void )
 {
 	glm::mat4 view = _camera->getViewMatrix();
 	_skybox->updateCamView(view);
-	glUniformMatrix4fv(_skyShader.getUniform(settings::consts::shader::uniform::view), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(_modelShader.getUniform(settings::consts::shader::uniform::view), 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(_particleShader.getUniform(settings::consts::shader::uniform::view), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(_skyShader.getUniform(settings::consts::shader::uniform::view), 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(_shader.getUniform(settings::consts::shader::uniform::view), 1, GL_FALSE, glm::value_ptr(view));
 
 	// glUniform3fv(_uniCamPos, 1, glm::value_ptr(_camera->getPos()));
@@ -300,8 +301,9 @@ void OpenGL_Manager::updateCamPerspective( void )
 {
 	glm::mat4 proj = _camera->getPerspectiveMatrix();
 	_skybox->updateCamPerspective(proj);
-	glUniformMatrix4fv(_skyShader.getUniform(settings::consts::shader::uniform::proj), 1, GL_FALSE, glm::value_ptr(proj));
+	glUniformMatrix4fv(_modelShader.getUniform(settings::consts::shader::uniform::proj), 1, GL_FALSE, glm::value_ptr(proj));
 	glUniformMatrix4fv(_particleShader.getUniform(settings::consts::shader::uniform::proj), 1, GL_FALSE, glm::value_ptr(proj));
+	glUniformMatrix4fv(_skyShader.getUniform(settings::consts::shader::uniform::proj), 1, GL_FALSE, glm::value_ptr(proj));
 	glUniformMatrix4fv(_shader.getUniform(settings::consts::shader::uniform::proj), 1, GL_FALSE, glm::value_ptr(proj));
 }
 
