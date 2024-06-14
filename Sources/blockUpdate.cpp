@@ -310,6 +310,10 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 		weaklyPower(pos, {0, 0, 0}, redstone::on, false);
 		scheduleRedstoneTick({pos, ((type == blocks::stone_button) ? 10 : 15) * redstone::tick});
 		break ;
+	case blocks::zombie_egg:
+		std::cout << "zombie egg placed" << std::endl;
+		// _mobs->push_back(std::make_unique<Zombie*>(pos + glm::ivec2(_startX, _startY)));
+		break ;
 	default:
 		std::cout << "ERROR Chunk::regeneration case Modif::use defaulted on: " << s_blocks[value & mask::blocks::type]->name << std::endl;
 		return ;

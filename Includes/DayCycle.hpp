@@ -2,6 +2,7 @@
 # define DAYCYCLE_HPP
 
 # include <mutex>
+# include "Shader.hpp"
 
 # define MINECRAFT_MINUTE 16.6
 
@@ -23,8 +24,7 @@ class DayCycle
 		double _gameTime;
 		int _ticks, _gameTicks, _day, _hour, _minute, _internal_light, _time_multiplier, _game_time_multiplier;
 		bool _forceReset;
-		GLuint _shaderProgram, _particleShaderProgram;
-		GLint _uniInternalLight, _uniPartInternalLight;
+		Shader* _shader, *_particleShader;
 
 		DayCycle( void );
 		~DayCycle( void );
@@ -38,8 +38,7 @@ class DayCycle
 		static DayCycle *Get( void );
 		static void Destroy( void );
 
-		void setUniInternalLight( GLuint shaderProgram, GLuint particleShaderProgram,
-			GLint internal_light, GLint partice_internal_light );
+		void setShaderPtrs( Shader* shader, Shader* particleShader );
 		void setCloudsColor( GLint uniform_location );
 		bool tickUpdate( void );
 		int getTicks( void );

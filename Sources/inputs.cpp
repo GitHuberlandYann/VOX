@@ -168,6 +168,9 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		type = blocks::dirt_path;
 		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::replace);
 		return ;
+	} else if (type == blocks::zombie_egg) {
+		_chunk_hit->handleHit(collect, type, _block_hit.prev_pos, Modif::use);
+		return ;
 	}
 	if (_game_mode == settings::consts::gamemode::adventure && type != blocks::air) {
 		int dist = glm::abs(_block_hit.pos.x - _block_hit.prev_pos.x) + glm::abs(_block_hit.pos.y - _block_hit.prev_pos.y) + glm::abs(_block_hit.pos.z - _block_hit.prev_pos.z);
@@ -286,12 +289,9 @@ void OpenGL_Manager::updateCamView( void )
 {
 	glm::mat4 view = _camera->getViewMatrix();
 	_skybox->updateCamView(view);
-	glUseProgram(_skyShaderProgram);
-	glUniformMatrix4fv(_skyUniView, 1, GL_FALSE, glm::value_ptr(view));
-	glUseProgram(_particleShaderProgram);
-	glUniformMatrix4fv(_partUniView, 1, GL_FALSE, glm::value_ptr(view));
-	glUseProgram(_shaderProgram);
-	glUniformMatrix4fv(_uniView, 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(_skyShader.getUniform(settings::consts::shader::uniform::view), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(_particleShader.getUniform(settings::consts::shader::uniform::view), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(_shader.getUniform(settings::consts::shader::uniform::view), 1, GL_FALSE, glm::value_ptr(view));
 
 	// glUniform3fv(_uniCamPos, 1, glm::value_ptr(_camera->getPos()));
 }
@@ -300,18 +300,15 @@ void OpenGL_Manager::updateCamPerspective( void )
 {
 	glm::mat4 proj = _camera->getPerspectiveMatrix();
 	_skybox->updateCamPerspective(proj);
-	glUseProgram(_skyShaderProgram);
-	glUniformMatrix4fv(_skyUniProj, 1, GL_FALSE, glm::value_ptr(proj));
-	glUseProgram(_particleShaderProgram);
-	glUniformMatrix4fv(_partUniProj, 1, GL_FALSE, glm::value_ptr(proj));
-	glUseProgram(_shaderProgram);
-	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
+	glUniformMatrix4fv(_skyShader.getUniform(settings::consts::shader::uniform::proj), 1, GL_FALSE, glm::value_ptr(proj));
+	glUniformMatrix4fv(_particleShader.getUniform(settings::consts::shader::uniform::proj), 1, GL_FALSE, glm::value_ptr(proj));
+	glUniformMatrix4fv(_shader.getUniform(settings::consts::shader::uniform::proj), 1, GL_FALSE, glm::value_ptr(proj));
 }
 
 void OpenGL_Manager::updateAnimFrame( void )
 {
 	static int current_frame;
-	glUniform1i(_skyUniAnim, current_frame);
+	glUniform1i(_skyShader.getUniform(settings::consts::shader::uniform::animation), current_frame);
 	if (++current_frame == 31) {
 		current_frame = 0;
 	}

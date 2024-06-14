@@ -82,13 +82,6 @@ void Chunk::checkNodePathfinding( std::list<std::shared_ptr<t_pathfinding_node>>
 	std::list<std::shared_ptr<t_pathfinding_node>>& visited_nodes, glm::ivec3 pos, bool* trav,
 	std::shared_ptr<t_pathfinding_node> current, glm::ivec3 start, glm::ivec3 end )
 {
-	auto search_vis = std::find_if(visited_nodes.begin(), visited_nodes.end(),
-		[pos]( std::shared_ptr<t_pathfinding_node> node ) { return (node->pos == pos); });
-			
-	if (search_vis != visited_nodes.end()) { // node is already in visited nodes
-		return ;
-	}
-
 	// check if traversable
 	int adj_type = getBlockAtAbsolute(pos) & mask::blocks::type;
 	int above_type = getBlockAtAbsolute(pos.x, pos.y, pos.z + 1) & mask::blocks::type;
@@ -117,6 +110,15 @@ void Chunk::checkNodePathfinding( std::list<std::shared_ptr<t_pathfinding_node>>
 		return ;
 	}
 
+	// check if cell already visited
+	auto search_vis = std::find_if(visited_nodes.begin(), visited_nodes.end(),
+		[pos]( std::shared_ptr<t_pathfinding_node> node ) { return (node->pos == pos); });
+			
+	if (search_vis != visited_nodes.end()) { // node is already in visited nodes
+		return ;
+	}
+
+	// check if cell already evaluated
 	auto search = std::find_if(open_nodes.begin(), open_nodes.end(),
 		[pos]( std::shared_ptr<t_pathfinding_node> node ) { return (node->pos == pos); });
 

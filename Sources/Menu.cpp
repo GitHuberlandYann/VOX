@@ -24,6 +24,14 @@ Menu::~Menu( void )
 //                                Private                                     //
 // ************************************************************************** //
 
+void Menu::blit_to_screen( void )
+{
+	_ui->textToScreen(_state >= menu::pause);
+	glUseProgram(_shaderProgram);
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+}
+
 void Menu::reset_values( void )
 {
 	_selection = 0;
@@ -77,11 +85,7 @@ menu::ret Menu::main_menu( void )
    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 8 * _gui_size, true, settings::consts::depth::menu::str, "Quit Game");
 
 	setup_array_buffer_main();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (menu::ret::no_change);
 }
 
@@ -149,11 +153,7 @@ menu::ret Menu::world_select_menu( void )
 	}
 
 	setup_array_buffer_select();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (menu::ret::no_change);
 }
 
@@ -251,11 +251,7 @@ menu::ret Menu::world_create_menu( bool animUpdate )
 	_text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Cancel");
 
 	setup_array_buffer_create();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (menu::ret::no_change);
 }
 
@@ -281,11 +277,7 @@ menu::ret Menu::loading_screen_menu( void )
 	_text->addText(WIN_WIDTH / 2 - 24 * str.length() / 2, WIN_HEIGHT / 2 - 150, 24, TEXT::WHITE, settings::consts::depth::menu::str, str);
 
 	setup_array_buffer_load(percentage * 10);
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (menu::ret::no_change);
 }
 
@@ -308,11 +300,7 @@ menu::ret Menu::death_menu( void )
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Title Screen");
 
 	setup_array_buffer_death();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (menu::ret::no_change);
 }
 
@@ -347,11 +335,7 @@ menu::ret Menu::pause_menu( void )
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Save and Quit to Title");
 
 	setup_array_buffer_pause();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (menu::ret::no_change);
 }
 
@@ -422,11 +406,7 @@ menu::ret Menu::options_menu( void )
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
 
 	setup_array_buffer_options();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (_moving_slider ? menu::ret::fov_update : menu::ret::no_change);
 }
 
@@ -506,11 +486,7 @@ menu::ret Menu::video_menu( void )
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
 
 	setup_array_buffer_video();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return ((_moving_slider && _state == menu::video_settings)
 		? ((_selection == 1) ? menu::ret::render_dist_update : menu::ret::brightness_update)
 		: menu::ret::no_change);
@@ -656,11 +632,7 @@ menu::ret Menu::controls_menu( void )
 	// _text->addText(20, 20, 30, TEXT::WHITE, settings::consts::depth::menu::controls::str, "select " + std::to_string(_selection) + " | key " + std::to_string(inputs::get_last_input()) + " | modif " + std::to_string(_selected_world));
 
 	setup_array_buffer_controls();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (menu::ret::no_change);
 }
 
@@ -697,11 +669,7 @@ menu::ret Menu::resource_packs_menu( void )
 	// _text->addText(20, 20, 30, TEXT::WHITE, "select " + std::to_string(_selection));
 
 	setup_array_buffer_resource_packs();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (ret);
 }
 
@@ -813,11 +781,7 @@ menu::ret Menu::ingame_menu( void )
 			break ;
 	}
 
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (menu::ret::no_change);
 }
 
@@ -861,11 +825,7 @@ menu::ret Menu::chat_menu( bool animUpdate )
 	_text->addText(36, WIN_HEIGHT - 48 - 12, 12, TEXT::WHITE, settings::consts::depth::chat, inputs::getCurrentInputStr((_textBar) ? '|' : '.'));
 
 	setup_array_buffer_chat();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (menu::ret::no_change);
 }
 
@@ -923,11 +883,7 @@ menu::ret Menu::sign_menu( bool animUpdate )
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
 
 	setup_array_buffer_sign();
-
-	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
+	blit_to_screen();
 	return (menu::ret::no_change);
 }
 

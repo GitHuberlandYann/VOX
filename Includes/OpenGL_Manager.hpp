@@ -8,6 +8,7 @@
 # include "Ui.hpp"
 # include "Menu.hpp"
 # include "Skybox.hpp"
+# include "Shader.hpp"
 
 extern std::mutex mtx;
 extern std::mutex mtx_perimeter;
@@ -59,8 +60,8 @@ class OpenGL_Manager
 
 	private:
 		GLFWwindow* _window;
-		GLuint _vaoEntities, _vboEntities, _vaoParticles, _vboParticles, _shaderProgram, _skyShaderProgram, _particleShaderProgram;
-		GLint _uniFog, _uniView, _uniProj, _uniBrightness, _skyUniFog, _skyUniView, _skyUniProj, _skyUniColor, _skyUniAnim, _partUniView, _partUniProj, _partUniBrightness;
+		Shader _shader, _skyShader, _particleShader;
+		GLuint _vaoEntities, _vboEntities, _vaoParticles, _vboParticles;
 		glm::ivec2 _current_chunk;
 		std::array<GLuint, 4> _textures;
 		GLint _fill;

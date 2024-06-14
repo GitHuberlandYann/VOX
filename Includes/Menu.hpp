@@ -112,6 +112,8 @@ class Menu
 		ChestInstance* _chest;
 		FurnaceInstance* _furnace;
 
+		void blit_to_screen( void );
+
 		void reset_values( void );
 		menu::ret main_menu( void );
 		menu::ret enter_world_select_menu( void );

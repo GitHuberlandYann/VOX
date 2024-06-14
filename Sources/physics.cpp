@@ -340,7 +340,9 @@ void Camera::updateCurrentBlock( void )
 	if (current_block != _current_block) {
 		_current_block = current_block;
 		if (_current_chunk_ptr) {
-			_current_chunk_ptr->sort_sky(camPos, true);
+			if (Settings::Get()->getInt(settings::ints::clouds) != settings::OFF) {
+				_current_chunk_ptr->sort_sky(camPos, true);
+			}
 			_current_chunk_ptr->sort_water(camPos, true);
 		}
 	}

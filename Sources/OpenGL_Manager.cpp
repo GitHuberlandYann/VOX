@@ -7,8 +7,7 @@ void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _camera(std::make_unique<Camera>()), _inventory(std::make_unique<Inventory>()),
-	_window(NULL), _shaderProgram(0), _skyShaderProgram(0), _particleShaderProgram(0),
-	_textures({NULL}), _fill(FILL), _debug_mode(true), _outline(true), _paused(true),
+	_window(NULL), _textures({NULL}), _fill(FILL), _debug_mode(true), _outline(true), _paused(true),
 	_threadUpdate(false), _threadStop(false), _break_time(0), _eat_timer(0), _bow_timer(0),
 	_game_mode(settings::consts::gamemode::creative), _break_frame(0), _world_name("default.json"),
 	_block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0}),
@@ -32,9 +31,9 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	if (_textures[0]) {
 		glDeleteTextures(_textures.size(), &_textures[0]);
 	}
-	glDeleteProgram(_shaderProgram);
-	glDeleteProgram(_skyShaderProgram);
-	glDeleteProgram(_particleShaderProgram);
+	_shader.deleteProgram();
+	_skyShader.deleteProgram();
+	_particleShader.deleteProgram();
 
 	glDeleteBuffers(1, &_vboEntities);
 	glDeleteVertexArrays(1, &_vaoEntities);
@@ -253,7 +252,7 @@ void OpenGL_Manager::drawParticles( void )
 		return ;
 	}
 
-	glUseProgram(_particleShaderProgram);
+	_particleShader.useProgram();
 	glBindVertexArray(_vaoParticles);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vboParticles);
@@ -362,35 +361,29 @@ void OpenGL_Manager::createShaders( void )
 	_menu->setShaderProgram(_ui->getShaderProgram());
 
 	// then setup the sky/water shader
-	if (_skyShaderProgram) {
-		glDeleteProgram(_skyShaderProgram);
-	}
-	_skyShaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::sky_vertex_shader), "",
+	GLuint skyProgram = _skyShader.createProgram(Settings::Get()->getString(settings::strings::sky_vertex_shader), "",
 										Settings::Get()->getString(settings::strings::sky_fragment_shader));
 
-	glBindFragDataLocation(_skyShaderProgram, 0, "outColor");
+	glBindFragDataLocation(skyProgram, 0, "outColor");
 
-	glBindAttribLocation(_skyShaderProgram, 0, "position");
+	glBindAttribLocation(skyProgram, 0, "position");
 
-	glLinkProgram(_skyShaderProgram);
-	glUseProgram(_skyShaderProgram);
+	glLinkProgram(skyProgram);
+	glUseProgram(skyProgram);
 
 	check_glstate("skyShader program successfully created", true);
 
 	// then setup particles shader
-	if (_particleShaderProgram) {
-		glDeleteProgram(_particleShaderProgram);
-	}
-	_particleShaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::particle_vertex_shader), "",
+	GLuint particleProgram = _particleShader.createProgram(Settings::Get()->getString(settings::strings::particle_vertex_shader), "",
 										Settings::Get()->getString(settings::strings::particle_fragment_shader));
 
-	glBindFragDataLocation(_particleShaderProgram, 0, "outColor");
+	glBindFragDataLocation(particleProgram, 0, "outColor");
 
-	glBindAttribLocation(_particleShaderProgram, SPECATTRIB, "specifications");
-	glBindAttribLocation(_particleShaderProgram, POSATTRIB, "position");
+	glBindAttribLocation(particleProgram, SPECATTRIB, "specifications");
+	glBindAttribLocation(particleProgram, POSATTRIB, "position");
 
-	glLinkProgram(_particleShaderProgram);
-	glUseProgram(_particleShaderProgram);
+	glLinkProgram(particleProgram);
+	glUseProgram(particleProgram);
 
 	check_glstate("particleShader program successfully created", true);
 
@@ -398,19 +391,16 @@ void OpenGL_Manager::createShaders( void )
 	_skybox->createShader();
 	
 	// then setup the main shader
-	if (_shaderProgram) {
-		glDeleteProgram(_shaderProgram);
-	}
-	_shaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::main_vertex_shader), "",
+	GLuint program = _shader.createProgram(Settings::Get()->getString(settings::strings::main_vertex_shader), "",
 										Settings::Get()->getString(settings::strings::main_fragment_shader));
 
-	glBindFragDataLocation(_shaderProgram, 0, "outColor");
+	glBindFragDataLocation(program, 0, "outColor");
 
-	glBindAttribLocation(_shaderProgram, SPECATTRIB, "specifications");
-	glBindAttribLocation(_shaderProgram, POSATTRIB, "position");
+	glBindAttribLocation(program, SPECATTRIB, "specifications");
+	glBindAttribLocation(program, POSATTRIB, "position");
 
-	glLinkProgram(_shaderProgram);
-	glUseProgram(_shaderProgram);
+	glLinkProgram(program);
+	glUseProgram(program);
 
 	check_glstate("Shader program successfully created", true);
 }
@@ -419,36 +409,32 @@ void OpenGL_Manager::setupCommunicationShaders( void )
 {
 	_skybox->setupCommunicationShaders();
 
-	glUseProgram(_shaderProgram);
-	_uniFog = glGetUniformLocation(_shaderProgram, "fogDist");
-	glUniform1f(_uniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
-	_skyUniFog = glGetUniformLocation(_skyShaderProgram, "fogDist");
-	glUseProgram(_skyShaderProgram);
-	glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
-	glUseProgram(_shaderProgram);
+	_shader.setUniformLocation(settings::consts::shader::uniform::fog, "fogDist");
+	glUniform1f(_shader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
+	_skyShader.setUniformLocation(settings::consts::shader::uniform::fog, "fogDist");
+	glUniform1f(_skyShader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
 
-	_uniView = glGetUniformLocation(_shaderProgram, "view");
-	_skyUniView = glGetUniformLocation(_skyShaderProgram, "view");
-	_partUniView = glGetUniformLocation(_particleShaderProgram, "view");
+	_shader.setUniformLocation(settings::consts::shader::uniform::view, "view");
+	_skyShader.setUniformLocation(settings::consts::shader::uniform::view, "view");
+	_particleShader.setUniformLocation(settings::consts::shader::uniform::view, "view");
 	updateCamView();
 
-	_uniProj = glGetUniformLocation(_shaderProgram, "proj");
-	_skyUniProj = glGetUniformLocation(_skyShaderProgram, "proj");
-	_partUniProj = glGetUniformLocation(_particleShaderProgram, "proj");
+	_shader.setUniformLocation(settings::consts::shader::uniform::proj, "proj");
+	_skyShader.setUniformLocation(settings::consts::shader::uniform::proj, "proj");
+	_particleShader.setUniformLocation(settings::consts::shader::uniform::proj, "proj");
 	updateCamPerspective();
 
-	DayCycle::Get()->setUniInternalLight(_shaderProgram, _particleShaderProgram,
-		glGetUniformLocation(_shaderProgram, "internal_light"), glGetUniformLocation(_particleShaderProgram, "internal_light"));
+	_shader.setUniformLocation(settings::consts::shader::uniform::internal_light, "internal_light");
+	_particleShader.setUniformLocation(settings::consts::shader::uniform::internal_light, "internal_light");
+	DayCycle::Get()->setShaderPtrs(&_shader, &_particleShader);
 
-	_uniBrightness = glGetUniformLocation(_shaderProgram, "min_brightness");
-	_partUniBrightness = glGetUniformLocation(_particleShaderProgram, "min_brightness");
-	glUseProgram(_particleShaderProgram);
-	glUniform1f(_partUniBrightness, Settings::Get()->getFloat(settings::floats::brightness));
-	glUseProgram(_shaderProgram);
-	glUniform1f(_uniBrightness, Settings::Get()->getFloat(settings::floats::brightness));
+	_particleShader.setUniformLocation(settings::consts::shader::uniform::brightness, "min_brightness");
+	glUniform1f(_particleShader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
+	_shader.setUniformLocation(settings::consts::shader::uniform::brightness, "min_brightness");
+	glUniform1f(_shader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
 
-	_skyUniColor = glGetUniformLocation(_skyShaderProgram, "color");
-	_skyUniAnim = glGetUniformLocation(_skyShaderProgram, "animFrame");
+	_skyShader.setUniformLocation(settings::consts::shader::uniform::color, "color");
+	_skyShader.setUniformLocation(settings::consts::shader::uniform::animation, "animFrame");
 
 	check_glstate("\nCommunication with shader program successfully established", true);
 }
@@ -463,20 +449,20 @@ void OpenGL_Manager::loadTextures( void )
 	}
 	glGenTextures(4, &_textures[0]);
 
-	glUseProgram(_shaderProgram);
+	_shader.useProgram();
 	loadTextureShader(0, _textures[0], Settings::Get()->getString(settings::strings::block_atlas));
-	glUniform1i(glGetUniformLocation(_shaderProgram, "blockAtlas"), 0); // sampler2D #index in fragment shader
+	glUniform1i(glGetUniformLocation(_shader.getProgram(), "blockAtlas"), 0); // sampler2D #index in fragment shader
 
-	glUseProgram(_skyShaderProgram);
-	glUniform1i(glGetUniformLocation(_skyShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
+	_skyShader.useProgram();
+	glUniform1i(glGetUniformLocation(_skyShader.getProgram(), "blockAtlas"), 0); // we reuse texture from main shader
 
 	loadTextureShader(4, _textures[1], Settings::Get()->getString(settings::strings::water_still));
-	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterStill"), 4);
+	glUniform1i(glGetUniformLocation(_skyShader.getProgram(), "waterStill"), 4);
 
 	loadTextureShader(5, _textures[2], Settings::Get()->getString(settings::strings::water_flow));
-	glUniform1i(glGetUniformLocation(_skyShaderProgram, "waterFlow"), 5);
+	glUniform1i(glGetUniformLocation(_skyShader.getProgram(), "waterFlow"), 5);
 
-	glUseProgram(_particleShaderProgram);
+	_particleShader.useProgram();
 	glActiveTexture(GL_TEXTURE0 + 6);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _textures[3]);
 
@@ -484,7 +470,7 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(0, Settings::Get()->getString(settings::strings::block_atlas));
 	loadSubTextureArray(1, Settings::Get()->getString(settings::strings::particle_atlas));
 	loadSubTextureArray(2, Settings::Get()->getString(settings::strings::model_atlas));
-	glUniform1i(glGetUniformLocation(_particleShaderProgram, "textures"), 6);
+	glUniform1i(glGetUniformLocation(_particleShader.getProgram(), "textures"), 6);
 	check_glstate("Successfully loaded img[6] texture array 2D", true);
 }
 
@@ -571,7 +557,7 @@ void OpenGL_Manager::main_loop( void )
 			nbTicks = 0;
 			lastTime += 1.0;
 		}
-		glUseProgram(_shaderProgram); // must be before DayCycle tickUpdate
+		_shader.useProgram(); // must be before DayCycle tickUpdate
 		if (currentTime - lastGameTick >= settings::consts::tick) {
 			tickUpdate = true;
 			++nbTicks;
@@ -623,6 +609,7 @@ void OpenGL_Manager::main_loop( void )
 					}
 					c->tickUpdate(); // random ticks
 				}
+				// c->updateMobs(_models, deltaTime);
 				c->updateEntities(_entities, _particles, deltaTime);
 				if (Settings::Get()->getBool(settings::bools::particles)) {
 					c->updateParticles(_particles, deltaTime);
@@ -637,7 +624,7 @@ void OpenGL_Manager::main_loop( void )
 		if (!gamePaused) {
 			_camera->drawPlayer(_particles, _hand_content, _game_mode);
 			drawParticles();
-			glUseProgram(_shaderProgram);
+			_shader.useProgram();
 			addBreakingAnim();
 			drawEntities();
 		}
@@ -647,18 +634,18 @@ void OpenGL_Manager::main_loop( void )
 		}
 
 		#if 1
-		glUseProgram(_skyShaderProgram);
+		_skyShader.useProgram();
 		if (animUpdate) {
 			updateAnimFrame();
 		}
 		glDisable(GL_CULL_FACE);
-		DayCycle::Get()->setCloudsColor(_skyUniColor);
+		DayCycle::Get()->setCloudsColor(_skyShader.getUniform(settings::consts::shader::uniform::color));
 		if (Settings::Get()->getInt(settings::ints::clouds) != settings::OFF) {
 			for (auto& c: _visible_chunks) {
 				c->drawSky(newVaoCounter, skyFaces);
 			}
 		}
-		glUniform3f(_skyUniColor, 0.24705882f, 0.4627451f, 0.89411765f); // water color
+		glUniform3f(_skyShader.getUniform(settings::consts::shader::uniform::color), 0.24705882f, 0.4627451f, 0.89411765f); // water color
 		for (auto&c: _visible_chunks) {
 			c->drawWater(newVaoCounter, waterFaces);
 		}
@@ -736,7 +723,7 @@ void OpenGL_Manager::main_loop( void )
 					break ;
 				case menu::ret::world_selected: // world selected, go into loading mode
 					_world_name = _menu->getWorldFile();
-					glUseProgram(_shaderProgram); // used by dayCycle to modif internal light
+					_shader.useProgram(); // used by dayCycle to modif internal light
 					loadWorld("Worlds/" + _world_name);
 					initWorld();
 					break ;
@@ -763,17 +750,13 @@ void OpenGL_Manager::main_loop( void )
 					break ;
 				case menu::ret::render_dist_update: // render dist change
 					// _ui->chatMessage("Render distance set to " + std::to_string(render_dist));
-					glUseProgram(_skyShaderProgram);
-					glUniform1f(_skyUniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
-					glUseProgram(_shaderProgram);
-					glUniform1f(_uniFog, (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
+					glUniform1f(_skyShader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
+					glUniform1f(_shader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
 					setThreadUpdate(true);
 					break ;
 				case menu::ret::brightness_update: // brightness change
-					glUseProgram(_particleShaderProgram);
-					glUniform1f(_partUniBrightness, Settings::Get()->getFloat(settings::floats::brightness));
-					glUseProgram(_shaderProgram);
-					glUniform1f(_uniBrightness, Settings::Get()->getFloat(settings::floats::brightness));
+					glUniform1f(_particleShader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
+					glUniform1f(_shader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
 					break ;
 				case menu::ret::apply_resource_packs:
 					if (!Settings::Get()->loadResourcePacks()) { // if missing field in resource packs, we don't load

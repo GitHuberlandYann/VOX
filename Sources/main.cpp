@@ -5,7 +5,7 @@
 std::mutex mtx, mtx_perimeter, mtx_deleted_chunks, mtx_backup; // TODO declare those elsewhere
 siv::PerlinNoise::seed_type perlin_seed = 123456u;
 int WIN_WIDTH = 0, WIN_HEIGHT = 0;
-#include "Settings.hpp"
+// #include "Settings.hpp"
 
 int main( int ac, char **av )
 {

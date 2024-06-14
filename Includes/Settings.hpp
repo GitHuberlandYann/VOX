@@ -81,6 +81,17 @@ namespace settings {
 				const int held = 1; // * 60 = 60
 			};
 		};
+		namespace shader {
+			namespace uniform {
+			const size_t fog = 0;
+			const size_t view = 1;
+			const size_t proj = 2;
+			const size_t internal_light = 3;
+			const size_t brightness = 4;
+			const size_t color = 5;
+			const size_t animation = 6;
+			};
+		};
 	};
 
 	namespace defaults {

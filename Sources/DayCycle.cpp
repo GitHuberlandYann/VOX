@@ -8,7 +8,7 @@
 
 DayCycle::DayCycle( void )
 	: _gameTime(0), _ticks(0), _gameTicks(0), _day(0), _hour(6), _minute(0), _internal_light(15),
-		_time_multiplier(1), _game_time_multiplier(-1), _forceReset(false)
+		_time_multiplier(1), _game_time_multiplier(-1), _forceReset(false), _shader(NULL)
 {
 
 }
@@ -60,10 +60,8 @@ void DayCycle::setInternals( void )
 	} else {
 		return ;
 	}
-	glUniform1i(_uniInternalLight, _internal_light);
-	glUseProgram(_particleShaderProgram);
-	glUniform1i(_uniPartInternalLight, _internal_light);
-	glUseProgram(_shaderProgram);
+	glUniform1i(_particleShader->getUniform(settings::consts::shader::uniform::internal_light), _internal_light);
+	glUniform1i(_shader->getUniform(settings::consts::shader::uniform::internal_light), _internal_light);
 }
 
 // ************************************************************************** //
@@ -89,18 +87,12 @@ void DayCycle::Destroy( void )
 	_dayCycleInstance = NULL;
 }
 
-void DayCycle::setUniInternalLight( GLuint shaderProgram, GLuint particleShaderProgram,
-	GLint internal_light, GLint partice_internal_light )
+void DayCycle::setShaderPtrs( Shader* shader, Shader* particleShader )
 {
-	_shaderProgram = shaderProgram;
-	_uniInternalLight = internal_light;
-	glUniform1i(_uniInternalLight, _internal_light);
-	_particleShaderProgram = particleShaderProgram;
-	_uniPartInternalLight = partice_internal_light;
-	glUseProgram(particleShaderProgram);
-	glUniform1i(_uniPartInternalLight, _internal_light);
-	glUseProgram(shaderProgram);
-
+	_shader = shader;
+	glUniform1i(_shader->getUniform(settings::consts::shader::uniform::internal_light), _internal_light);
+	_particleShader = particleShader;
+	glUniform1i(_particleShader->getUniform(settings::consts::shader::uniform::internal_light), _internal_light);
 }
 
 void DayCycle::setCloudsColor( GLint uniform_location )

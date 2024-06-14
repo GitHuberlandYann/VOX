@@ -289,7 +289,7 @@ void Chunk::waitGenDone( void )
 	while (!_genDone);
 }
 
-void Chunk::setNeighbour( Chunk *neighbour, int index )
+void Chunk::setNeighbour( Chunk* neighbour, int index )
 {
 	if (_neighbours[index] && neighbour) {
 		std::cerr << "setNeighbour ERROR DUPLICATE " << neighbour->getStartX() << ", " << neighbour->getStartY() << " vs " << _neighbours[index]->getStartX() << ", " << _neighbours[index]->getStartY() << std::endl;
@@ -300,7 +300,7 @@ void Chunk::setNeighbour( Chunk *neighbour, int index )
 	_neighbours[index] = neighbour;
 }
 
-void Chunk::setBackup( std::map<std::pair<int, int>, s_backup> &backups )
+void Chunk::setBackup( std::map<std::pair<int, int>, s_backup>& backups )
 {
 	if (_added.size() || _removed.size()) {
 		for (auto &sign : _signs) {
@@ -312,7 +312,7 @@ void Chunk::setBackup( std::map<std::pair<int, int>, s_backup> &backups )
 	}
 }
 
-void Chunk::restoreBackup( s_backup &backup )
+void Chunk::restoreBackup( s_backup& backup )
 {
 	_added = backup.added;
 	_removed = backup.removed;
@@ -452,12 +452,12 @@ void Chunk::dropEntity( glm::vec3 dir, t_item item )
 	_entities.push_back(new Entity(this, _inventory, camPos, dir, true, item));
 }
 
-void Chunk::addParticle( Particle *particle )
+void Chunk::addParticle( Particle* particle )
 {
 	_particles.push_back(particle);
 }
 
-void Chunk::sort_sky( glm::vec3 &pos, bool vip )
+void Chunk::sort_sky( glm::vec3& pos, bool vip )
 {
 	// std::cout << "in sort sky" << std::endl;
 	if (!_sky_count) {
@@ -657,7 +657,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit )
 	}
 }
 
-int Chunk::isLoaded( GLint &counter )
+int Chunk::isLoaded( GLint& counter )
 {
 	_mtx.lock();
 	if (!_vaoSet) {
@@ -672,7 +672,7 @@ int Chunk::isLoaded( GLint &counter )
 	return (1);
 }
 
-void Chunk::drawArray( GLint & counter, GLint &face_counter )
+void Chunk::drawArray( GLint& counter, GLint& face_counter )
 {
 	if (_light_update && _nb_neighbours == 4) {
 		std::cout << _startX << ", " << _startY << " light update" << std::endl;
@@ -724,7 +724,15 @@ void Chunk::updateFurnaces( double currentTime )
 	}
 }
 
-void Chunk::updateEntities( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, double deltaTime )
+/**
+ * @brief loops through all mobs, update and draw them
+ */
+void Chunk::updateMobs( std::vector<t_shaderInput>& _models, double deltaTime )
+{
+	(void)_models;(void)deltaTime;
+}
+
+void Chunk::updateEntities( std::vector<t_shaderInput>& arr,  std::vector<t_shaderInput>& partArr, double deltaTime )
 {
 	// TODO merge identical close(3/4 of a block) stackable items together
 	// 			on merge, item timer set to longest of 2
@@ -765,7 +773,7 @@ size_t Chunk::clearEntities( void )
 	return (res);
 }
 
-void Chunk::updateParticles( std::vector<t_shaderInput> &arr, double deltaTime )
+void Chunk::updateParticles( std::vector<t_shaderInput>& arr, double deltaTime )
 {
 	glm::vec3 camPos = _camera->getPos(), camDir = _camera->getDir();
 	size_t size = _particles.size();
@@ -796,7 +804,7 @@ size_t Chunk::clearParticles( void )
 	return (res);
 }
 
-void Chunk::drawSky( GLint & counter, GLint &face_counter )
+void Chunk::drawSky( GLint& counter, GLint& face_counter )
 {
 	if (!_sky_count) {
 		return ;
@@ -816,7 +824,7 @@ void Chunk::drawSky( GLint & counter, GLint &face_counter )
 	face_counter += _sky_count;
 }
 
-void Chunk::drawWater( GLint & counter, GLint &face_counter )
+void Chunk::drawWater( GLint& counter, GLint& face_counter )
 {
 	if (!_water_count) {
 		return ;

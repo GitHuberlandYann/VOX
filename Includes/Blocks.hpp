@@ -18,7 +18,7 @@ typedef struct s_shaderInput t_shaderInput;
 
 const float one16th = 0.0625f;
 
-# define S_BLOCKS_SIZE 128
+# define S_BLOCKS_SIZE 144
 
 namespace face_dir {
 	enum {
@@ -311,6 +311,7 @@ namespace blocks {
 		apple,
 		flint,
 		flint_and_steel,
+		zombie_egg = 128,
 	};
 	const int item = 1942;
 }
@@ -2777,6 +2778,17 @@ struct FlintAndSteel : Block {
 			item3D = false;
 			textureX = 10;
 			textureY = 1;
+		}
+};
+
+struct ZombieEgg : Block {
+	public:
+		ZombieEgg() {
+			name = "ZOMBIE_EGG";
+			isItemOnly = true;
+			item3D = false;
+			textureX = 9;
+			textureY = 9;
 		}
 };
 

@@ -15,6 +15,7 @@ class Camera;
 # include "Inventory.hpp"
 # include "Entity.hpp"
 # include "Particle.hpp"
+# include "Zombie.hpp"
 
 # define XTEX (1 << 4) + (1 << 17)
 # define YTEX (1 << 12) + (1 << 18)
@@ -122,7 +123,7 @@ struct s_backup { // TODO add fluids and entities to backups
 class Chunk
 {
     public:
-        Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::list<Chunk *> *chunks );
+        Chunk( Camera* camera, Inventory* inventory, int posX, int posY, std::list<Chunk *>* chunks );
         ~Chunk( void );
 
 		GLint getStartX( void );
@@ -140,12 +141,12 @@ class Chunk
 		int computeSmoothLight( int basefaceLight, int row, int col, int level, std::array<int, 9> offsets );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
 
-		void setNeighbour( Chunk *neighbour, int index );
-		void setBackup( std::map<std::pair<int, int>, s_backup> &backups );
-		void restoreBackup( s_backup &backup);
+		void setNeighbour( Chunk* neighbour, int index );
+		void setBackup( std::map<std::pair<int, int>, s_backup>& backups );
+		void restoreBackup( s_backup& backup);
 		void openChest( glm::ivec3 pos );
-		ChestInstance *getChestInstance( glm::ivec3 pos );
-		FurnaceInstance *getFurnaceInstance( glm::ivec3 pos );
+		ChestInstance* getChestInstance( glm::ivec3 pos );
+		FurnaceInstance* getFurnaceInstance( glm::ivec3 pos );
 		void setSignContent( t_sign_info sign );
 
 		GLint getBlockAtAbsolute( glm::ivec3 pos );
@@ -164,8 +165,8 @@ class Chunk
 		void checkFillVertices( void );
 		void generate_chunk( void );
 		void dropEntity( glm::vec3 dir, t_item item );
-		void addParticle( Particle *particle );
-		void sort_sky( glm::vec3 &pos, bool vip );
+		void addParticle( Particle* particle );
+		void sort_sky( glm::vec3& pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
 	
 		bool inPerimeter( int posX, int posY, GLint render_dist );
@@ -179,16 +180,16 @@ class Chunk
 		void shootArrow( float timer );
 		void updateBreak( glm::ivec4 block_hit );
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread, int recurse );
-		bool try_addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int level );
-		void insertFluidAt( std::set<int> *newFluids, int posX, int posY, int posZ );
+		bool try_addFlow( std::set<int>* newFluids, int posX, int posY, int posZ, int level );
+		void insertFluidAt( std::set<int>* newFluids, int posX, int posY, int posZ );
 		t_collision collisionBox( glm::vec3 pos, float width, float height, float originalHeight );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( void );
 
-		int isLoaded( GLint &counter );
-        void drawArray( GLint & counter, GLint &face_counter );
-		void drawSky( GLint & counter, GLint &face_counter );
-		void drawWater( GLint & counter, GLint &face_counter );
+		int isLoaded( GLint& counter );
+        void drawArray( GLint& counter, GLint& face_counter );
+		void drawSky( GLint& counter, GLint& face_counter );
+		void drawWater( GLint& counter, GLint& face_counter );
 
 		void updateRedstone( void );
 		void updatePiston( glm::ivec3 pos, int value );
@@ -198,9 +199,10 @@ class Chunk
 		void updateFluids( void );
 		void tickUpdate( void );
 		void updateScheduledBlocks( void );
-		void updateEntities( std::vector<t_shaderInput> &arr, std::vector<t_shaderInput> &partArr, double deltaTime );
+		void updateMobs( std::vector<t_shaderInput>& _models, double deltaTime );
+		void updateEntities( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, double deltaTime );
 		size_t clearEntities( void );
-		void updateParticles( std::vector<t_shaderInput> &arr, double deltaTime );
+		void updateParticles( std::vector<t_shaderInput>& arr, double deltaTime );
 		size_t clearParticles( void );
 
 		std::string getAddsRmsString( void );
@@ -219,9 +221,9 @@ class Chunk
 		std::array<GLboolean, (settings::consts::chunk_size + 2) * (settings::consts::chunk_size + 2)> _sky;
 		GLboolean _hasWater;
 		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
-		std::array<Chunk *, 4> _neighbours;
-		Camera *_camera;
-		Inventory *_inventory;
+		std::array<Chunk*, 4> _neighbours;
+		Camera* _camera;
+		Inventory* _inventory;
 		std::map<int,int> _added;
 		std::set<int> _removed, _fluids;
 		std::vector<int> _scheduled_to_fall;
@@ -230,6 +232,7 @@ class Chunk
 		std::map<int, FurnaceInstance*> _furnaces;
 		std::map<int, SignInstance*> _signs;
 		std::vector<Entity*> _entities;
+		std::vector<std::unique_ptr<AMobs*>> _mobs;
 		std::vector<Particle*> _particles;
 		std::map<int, Particle*> _flames;
 		std::thread _thread;
@@ -246,8 +249,8 @@ class Chunk
 		// fluids
 		int exposed_water_faces( int row, int col, int level );
 		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );
-		bool endFlow( std::set<int> *newFluids, int &value, int posX, int posY, int posZ );
-		bool addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int srcWLevel );
+		bool endFlow( std::set<int>* newFluids, int &value, int posX, int posY, int posZ );
+		bool addFlow( std::set<int>* newFluids, int posX, int posY, int posZ, int srcWLevel );
 
 		// world gen
 		// int get_block_type_cave( int row, int col, int level, int ground_level,
@@ -266,9 +269,9 @@ class Chunk
 		void regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
-		void handle_stair_corners( glm::ivec3 pos, int &type );
-		void handle_door_placement( glm::ivec3 pos, int &type );
-		void handle_fence_placement( glm::ivec3 pos, int &type );
+		void handle_stair_corners( glm::ivec3 pos, int& type );
+		void handle_door_placement( glm::ivec3 pos, int& type );
+		void handle_fence_placement( glm::ivec3 pos, int& type );
 		void addFlame( int offset, glm::vec3 pos, int source, int orientation );
 		void add_block( bool useInventory, glm::ivec3 pos, int block_value, int previous );
 		void replace_block( bool useInventory, glm::ivec3 pos, int type );
@@ -291,7 +294,7 @@ class Chunk
 		void flickLever( glm::ivec3 pos, int value, bool state );
 		void updateRedstoneTorch( glm::ivec3 pos, int value );
 		void updateRedstoneDust( glm::ivec3 pos );
-		void initRepeater( glm::ivec3 pos, int &value, bool init );
+		void initRepeater( glm::ivec3 pos, int& value, bool init );
 		void updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate );
 		int pistonExtendCount( glm::ivec3 pos, int value );
 		void extendPiston( glm::ivec3 pos, int value, int count );
