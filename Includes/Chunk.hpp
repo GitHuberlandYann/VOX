@@ -232,7 +232,7 @@ class Chunk
 		std::map<int, FurnaceInstance*> _furnaces;
 		std::map<int, SignInstance*> _signs;
 		std::vector<Entity*> _entities;
-		std::vector<std::unique_ptr<AMob>> _mobs;
+		std::vector<std::shared_ptr<AMob>> _mobs;
 		std::vector<Particle*> _particles;
 		std::map<int, Particle*> _flames;
 		std::thread _thread;

@@ -81,6 +81,7 @@ namespace settings {
 				const int held = 1; // * 60 = 60
 			};
 		};
+
 		namespace shader {
 			namespace uniform {
 				const size_t fog = 0;
@@ -94,6 +95,10 @@ namespace settings {
 			namespace texture {
 				const int zombie = 0;
 			};
+		};
+
+		namespace math {
+			const glm::vec3 world_up = {0, 0, 1};
 		};
 	};
 

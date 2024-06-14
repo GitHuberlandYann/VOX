@@ -531,8 +531,8 @@ void OpenGL_Manager::loadTextures( void )
 
 	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 64, 64, 1);
 	loadSubTextureArray(64, 64, settings::consts::shader::texture::zombie, Settings::Get()->getString(settings::strings::tex_zombie));
-	glUniform1i(glGetUniformLocation(_modelShader.getProgram(), "textures"), 6);
-	check_glstate("Successfully loaded img[6] texture array 2D", true);
+	glUniform1i(glGetUniformLocation(_modelShader.getProgram(), "textures"), 3);
+	check_glstate("Successfully loaded img[3] texture array 2D", true);
 }
 
 void OpenGL_Manager::setGamemode( int gamemode )

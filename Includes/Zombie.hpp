@@ -10,7 +10,7 @@ namespace state_machine {
     };
 };
 
-class Zombie : AMob
+class Zombie : public AMob
 {
     public:
         Zombie( Chunk* chunk, glm::ivec3 position );
@@ -19,9 +19,9 @@ class Zombie : AMob
         virtual void update( std::vector<t_shaderInput>& modArr, double deltaTime );
 
     private:
-        short _state;
+        // short _state;
 
-        void draw( std::vector<t_shaderInput>& modArr, double deltaTime );
+        void draw( std::vector<t_shaderInput>& arr );
 };
 
 #endif

@@ -1,9 +1,10 @@
 #include "Zombie.hpp"
+#include "Chunk.hpp"
 
 Zombie::Zombie( Chunk* chunk, glm::ivec3 position )
-    : _position(position), _chunk(chunk)
 {
-    
+    _position = position;
+    _chunk = chunk;
 }
 
 Zombie::~Zombie( void )
@@ -22,18 +23,17 @@ void Zombie::update( std::vector<t_shaderInput>& modArr, double deltaTime )
         return ;
     }
     // update position
-
-    // ..
+	_walkTime += deltaTime;
 
     // draw
-    draw(modArr, deltaTime);
+    draw(modArr);
 }
 
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
 
-void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
+void Zombie::draw( std::vector<t_shaderInput>& arr )
 {
     // 1 model texture pxl is 0.057857142857142864 meters
 	const float scale = 0.057857142857142864;
@@ -50,11 +50,11 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	glm::vec3 p3 = p1 - _up * 8.0f * scale;
 
 	int itemLight = _chunk->computePosLight(pos);
-	int spec = speco + (2 << 19) + 8 + (8 << 8) + (itemLight << 24);
+	int spec = (2 << 19) + 8 + (8 << 6) + (itemLight << 24);
 	t_shaderInput v0 = {spec, p0};
 	t_shaderInput v1 = {spec + 8 + (1 << 17), p1};
-	t_shaderInput v2 = {spec + (8 << 8) + (1 << 18), p2};
-	t_shaderInput v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p3};
+	t_shaderInput v2 = {spec + (8 << 6) + (1 << 18), p2};
+	t_shaderInput v3 = {spec + 8 + (1 << 17) + (8 << 6) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	// draw neck
@@ -63,20 +63,50 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	glm::vec3 p6 = p3 - _front * 8.0f * scale;
 	glm::vec3 p7 = p2 - _front * 8.0f * scale;
 
-	spec = speco + (2 << 19) + 24 + (8 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 24 + (8 << 6) + (itemLight << 24);
 	v0 = {spec, p4};
 	v1 = {spec + 8 + (1 << 17), p5};
-	v2 = {spec + (8 << 8) + (1 << 18), p6};
-	v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p7};
+	v2 = {spec + (8 << 6) + (1 << 18), p6};
+	v3 = {spec + 8 + (1 << 17) + (8 << 6) + (1 << 18), p7};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	
+	// left cheek
+	spec -= 8;
+	v0 = {spec, p1};
+	v1 = {spec + 8 + (1 << 17), p4};
+	v2 = {spec + (8 << 6) + (1 << 18), p3};
+	v3 = {spec + 8 + (1 << 17) + (8 << 6) + (1 << 18), p6};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	// right cheek
+	spec -= 16;
+	v0 = {spec, p5};
+	v1 = {spec + 8 + (1 << 17), p0};
+	v2 = {spec + (8 << 6) + (1 << 18), p7};
+	v3 = {spec + 8 + (1 << 17) + (8 << 6) + (1 << 18), p2};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+
+	//top
+	spec += 8 - (8 << 6);
+	v0 = {spec, p5};
+	v1 = {spec + 8 + (1 << 17), p4};
+	v2 = {spec + (8 << 6) + (1 << 18), p0};
+	v3 = {spec + 8 + (1 << 17) + (8 << 6) + (1 << 18), p1};
+	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	//bottom
+	spec += 8;
+	v0 = {spec, p6};
+	v1 = {spec + 8 + (1 << 17), p7};
+	v2 = {spec + (8 << 6) + (1 << 18), p3};
+	v3 = {spec + 8 + (1 << 17) + (8 << 6) + (1 << 18), p2};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 	// cheecks, top and bottom of head don't need to be displayed as there's no way to see them right now
 	// will get a chance to look at them from inventory once implemented
 
 // draw torso
-	glm::vec3 bodyFront = {glm::normalize(glm::vec2(_bodyFront)), 0};
-	const glm::vec3 bodyRight = glm::normalize(glm::cross(_bodyFront, _world_up));
-	const glm::vec3 bodyUp = (_sneaking) ? glm::normalize(bodyFront * 0.2558539123988453f + _world_up * 0.3f) : _world_up;
+	glm::vec3 bodyFront = {glm::normalize(_bodyFront), 0};
+	const glm::vec3 bodyRight = glm::normalize(glm::cross(bodyFront, settings::consts::math::world_up));
+	const glm::vec3 bodyUp = settings::consts::math::world_up;
 	bodyFront = glm::normalize(glm::cross(bodyUp, bodyRight));
 	pos.z -= 4.0f * scale;
 	// up
@@ -84,11 +114,11 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	p1 = p0 - bodyRight * 8.0f * scale;
 	p2 = p0 + bodyFront * 4.0f * scale;
 	p3 = p1 + bodyFront * 4.0f * scale;
-	spec = speco + (2 << 19) + 20 + (16 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 20 + (16 << 6) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 8 + (1 << 17), p1};
-	v2 = {spec + (4 << 8) + (1 << 18), p2};
-	v3 = {spec + 8 + (1 << 17) + (4 << 8) + (1 << 18), p3};
+	v2 = {spec + (4 << 6) + (1 << 18), p2};
+	v3 = {spec + 8 + (1 << 17) + (4 << 6) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// down
 	p4 = p2 - bodyUp * 12.0f * scale;
@@ -98,49 +128,43 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	spec += 8;
 	v0 = {spec, p4};
 	v1 = {spec + 8 + (1 << 17), p5};
-	v2 = {spec + (4 << 8) + (1 << 18), p6};
-	v3 = {spec + 8 + (1 << 17) + (4 << 8) + (1 << 18), p7};
+	v2 = {spec + (4 << 6) + (1 << 18), p6};
+	v3 = {spec + 8 + (1 << 17) + (4 << 6) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// front 2345
-	spec = speco + (2 << 19) + 20 + (20 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 20 + (20 << 6) + (itemLight << 24);
 	v0 = {spec, p2};
 	v1 = {spec + 8 + (1 << 17), p3};
-	v2 = {spec + (12 << 8) + (1 << 18), p4};
-	v3 = {spec + 8 + (1 << 17) + (12 << 8) + (1 << 18), p5};
+	v2 = {spec + (12 << 6) + (1 << 18), p4};
+	v3 = {spec + 8 + (1 << 17) + (12 << 6) + (1 << 18), p5};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// back 1076
 	spec += 12;
 	v0 = {spec, p1};
 	v1 = {spec + 8 + (1 << 17), p0};
-	v2 = {spec + (12 << 8) + (1 << 18), p7};
-	v3 = {spec + 8 + (1 << 17) + (12 << 8) + (1 << 18), p6};
+	v2 = {spec + (12 << 6) + (1 << 18), p7};
+	v3 = {spec + 8 + (1 << 17) + (12 << 6) + (1 << 18), p6};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// right 0264
-	spec = speco + (2 << 19) + 16 + (20 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 16 + (20 << 6) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p2};
-	v2 = {spec + (12 << 8) + (1 << 18), p6};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p4};
+	v2 = {spec + (12 << 6) + (1 << 18), p6};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p4};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// left 3157
 	spec += 12;
 	v0 = {spec, p3};
 	v1 = {spec + 4 + (1 << 17), p1};
-	v2 = {spec + (12 << 8) + (1 << 18), p5};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p7};
+	v2 = {spec + (12 << 6) + (1 << 18), p5};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 // draw arms and legs
-	float sina = glm::sin(_walk_time * 5) * ((_sprinting) ? 1.5f : 0.5f);
-	glm::vec3 armFront = glm::normalize(bodyFront + _world_up * sina);
+	float sina = glm::sin(_walkTime * 5) * 0.5f;
+	glm::vec3 armFront = glm::normalize(bodyFront + settings::consts::math::world_up * sina);
 	glm::vec3 armUp = glm::normalize(glm::cross(bodyRight, armFront));
 	glm::vec3 armRight = bodyRight;
-	if (_armAnimation) {
-		float sinaright = glm::sin(_armAnimTime * 2.857142857142857 * 3.14159265358979323);
-		armFront = glm::normalize(_front - bodyRight * 6.0f * scale + _world_up * sinaright * 3.0f);
-		armRight = glm::normalize(glm::cross(armFront, _world_up));
-		armUp = glm::normalize(glm::cross(armRight, armFront));
-	}
 
 // draw right arm
 	pos += armRight * 6.0f * scale;
@@ -149,11 +173,11 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	p1 = p0 - armRight * 4.0f * scale;
 	p2 = p0 + armFront * 4.0f * scale;
 	p3 = p1 + armFront * 4.0f * scale;
-	spec = speco + (2 << 19) + 44 + (16 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 44 + (16 << 6) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p1};
-	v2 = {spec + (4 << 8) + (1 << 18), p2};
-	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p3};
+	v2 = {spec + (4 << 6) + (1 << 18), p2};
+	v3 = {spec + 4 + (1 << 17) + (4 << 6) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// down
 	p4 = p2 - armUp * 12.0f * scale;
@@ -163,117 +187,41 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	spec += 4;
 	v0 = {spec, p4};
 	v1 = {spec + 4 + (1 << 17), p5};
-	v2 = {spec + (4 << 8) + (1 << 18), p6};
-	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p7};
+	v2 = {spec + (4 << 6) + (1 << 18), p6};
+	v3 = {spec + 4 + (1 << 17) + (4 << 6) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// front 2345
-	spec = speco + (2 << 19) + 44 + (20 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 44 + (20 << 6) + (itemLight << 24);
 	v0 = {spec, p2};
 	v1 = {spec + 4 + (1 << 17), p3};
-	v2 = {spec + (12 << 8) + (1 << 18), p4};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p5};
+	v2 = {spec + (12 << 6) + (1 << 18), p4};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p5};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// back 1076
 	spec += 8;
 	v0 = {spec, p1};
 	v1 = {spec + 4 + (1 << 17), p0};
-	v2 = {spec + (12 << 8) + (1 << 18), p7};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p6};
+	v2 = {spec + (12 << 6) + (1 << 18), p7};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p6};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// right 0264
-	spec = speco + (2 << 19) + 40 + (20 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 40 + (20 << 6) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p2};
-	v2 = {spec + (12 << 8) + (1 << 18), p6};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p4};
+	v2 = {spec + (12 << 6) + (1 << 18), p6};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p4};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// left 3157
 	spec += 8;
 	v0 = {spec, p3};
 	v1 = {spec + 4 + (1 << 17), p1};
-	v2 = {spec + (12 << 8) + (1 << 18), p5};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p7};
+	v2 = {spec + (12 << 6) + (1 << 18), p5};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
-// draw held item
-	if (item != blocks::air) {
-		glm::vec3 itemPos = pos - armUp * 12.0f * scale;
-		p0 = itemPos + armUp * 0.25f;
-		p1 = itemPos + armFront * 0.25f + armUp * 0.25f;
-		p2 = itemPos;
-		p3 = itemPos + armFront * 0.25f;
-
-		p4 = itemPos - armRight * 0.25f + armUp * 0.25f;
-		p5 = itemPos + armFront * 0.25f - armRight * 0.25f + armUp * 0.25f;
-		p6 = itemPos - armRight * 0.25f;
-		p7 = itemPos + armFront * 0.25f - armRight * 0.25f;
-		if (item < blocks::poppy) {
-			int offset = (s_blocks[item]->oriented) ? face_dir::minus_x : 0;
-
-			spec = 16 * s_blocks[item]->texX(face_dir::minus_x, offset) + (16 * s_blocks[item]->texY(face_dir::minus_x, offset) << 8) + (itemLight << 24);
-			v0 = {spec, p4};
-			v1 = {spec + 16 + (1 << 17), p0};
-			v2 = {spec + (16 << 8) + (1 << 18), p6};
-			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p2};
-			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-
-			spec = 16 * s_blocks[item]->texX(face_dir::plus_x, offset) + (16 * s_blocks[item]->texY(face_dir::plus_x, offset) << 8) + (itemLight << 24);
-			v0 = {spec, p1};
-			v1 = {spec + 16 + (1 << 17), p5};
-			v2 = {spec + (16 << 8) + (1 << 18), p3};
-			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p7};
-			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-
-			spec = 16 * s_blocks[item]->texX(face_dir::minus_y, offset) + (16 * s_blocks[item]->texY(face_dir::minus_y, offset) << 8) + (itemLight << 24);
-			v0 = {spec, p0};
-			v1 = {spec + 16 + (1 << 17), p1};
-			v2 = {spec + (16 << 8) + (1 << 18), p2};
-			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p3};
-			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-
-			spec = 16 * s_blocks[item]->texX(face_dir::plus_y, offset) + (16 * s_blocks[item]->texY(face_dir::plus_y, offset) << 8) + (itemLight << 24);
-			v0 = {spec, p5};
-			v1 = {spec + 16 + (1 << 17), p4};
-			v2 = {spec + (16 << 8) + (1 << 18), p7};
-			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p6};
-			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-
-			spec = 16 * s_blocks[item]->texX(face_dir::plus_z, offset) + (16 * s_blocks[item]->texY(face_dir::plus_z, offset) << 8) + (itemLight << 24);
-			v0 = {spec, p4};
-			v1 = {spec + 16 + (1 << 17), p5};
-			v2 = {spec + (16 << 8) + (1 << 18), p0};
-			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p1};
-			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-
-			spec = 16 * s_blocks[item]->texX(face_dir::minus_z, offset) + (16 * s_blocks[item]->texY(face_dir::minus_z, offset) << 8) + (itemLight << 24);
-			v0 = {spec, p2};
-			v1 = {spec + 16 + (1 << 17), p3};
-			v2 = {spec + (16 << 8) + (1 << 18), p6};
-			v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p7};
-			arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-		} else { // flowers
-			if (1 && EXTRUSION::drawItem3D(arr, item, itemLight, p1 + armFront * 0.25f, -armRight, -armUp, armFront, 0.5f)) { // TODO replace 1 by var toggle fancy_item
-
-			} else {
-				spec = 16 * s_blocks[item]->texX() + (16 * s_blocks[item]->texY() << 8) + (itemLight << 24);
-				v0 = {spec, p0};
-				v1 = {spec + 16 + (1 << 17), p5};
-				v2 = {spec + (16 << 8) + (1 << 18), p2};
-				v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p7};
-				arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-
-				v0 = {spec, p1};
-				v1 = {spec + 16 + (1 << 17), p4};
-				v2 = {spec + (16 << 8) + (1 << 18), p3};
-				v3 = {spec + 16 + (1 << 17) + (16 << 8) + (1 << 18), p6};
-				arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
-			}
-		}
-	}
-
 	pos -= armRight * 6.0f * scale;
-// draw left leg // which movement is in synch with right arm
-	glm::vec3 legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + _world_up * sina);
+// draw left leg // whose movement is in synch with right arm
+	glm::vec3 legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + settings::consts::math::world_up * sina);
 	glm::vec3 legUp = glm::normalize(glm::cross(bodyRight, legFront));
 	pos -= bodyRight * 2.0f * scale;
 	pos -= bodyUp * 12.0f * scale;
@@ -282,11 +230,11 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	p1 = p0 - bodyRight * 4.0f * scale;
 	p2 = p0 + legFront * 4.0f * scale;
 	p3 = p1 + legFront * 4.0f * scale;
-	spec = speco + (2 << 19) + 20 + (48 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 4 + (16 << 6) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p1};
-	v2 = {spec + (4 << 8) + (1 << 18), p2};
-	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p3};
+	v2 = {spec + (4 << 6) + (1 << 18), p2};
+	v3 = {spec + 4 + (1 << 17) + (4 << 6) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// down
 	p4 = p2 - legUp * 12.0f * scale;
@@ -296,41 +244,41 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	spec += 4;
 	v0 = {spec, p4};
 	v1 = {spec + 4 + (1 << 17), p5};
-	v2 = {spec + (4 << 8) + (1 << 18), p6};
-	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p7};
+	v2 = {spec + (4 << 6) + (1 << 18), p6};
+	v3 = {spec + 4 + (1 << 17) + (4 << 6) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// front 2345
-	spec = speco + (2 << 19) + 20 + (52 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 4 + (20 << 6) + (itemLight << 24);
 	v0 = {spec, p2};
 	v1 = {spec + 4 + (1 << 17), p3};
-	v2 = {spec + (12 << 8) + (1 << 18), p4};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p5};
+	v2 = {spec + (12 << 6) + (1 << 18), p4};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p5};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// back 1076
 	spec += 8;
 	v0 = {spec, p1};
 	v1 = {spec + 4 + (1 << 17), p0};
-	v2 = {spec + (12 << 8) + (1 << 18), p7};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p6};
+	v2 = {spec + (12 << 6) + (1 << 18), p7};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p6};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// right 0264
-	spec = speco + (2 << 19) + 16 + (52 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 0 + (20 << 6) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p2};
-	v2 = {spec + (12 << 8) + (1 << 18), p6};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p4};
+	v2 = {spec + (12 << 6) + (1 << 18), p6};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p4};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// left 3157
 	spec += 8;
 	v0 = {spec, p3};
 	v1 = {spec + 4 + (1 << 17), p1};
-	v2 = {spec + (12 << 8) + (1 << 18), p5};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p7};
+	v2 = {spec + (12 << 6) + (1 << 18), p5};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 // draw left arm
 	sina = -sina;
-	armFront = glm::normalize(bodyFront + _world_up * sina);
+	armFront = glm::normalize(bodyFront + settings::consts::math::world_up * sina);
 	armUp = glm::normalize(glm::cross(bodyRight, armFront));
 	pos -= bodyRight * 4.0f * scale;
 	pos += bodyUp * 12.0f * scale;
@@ -339,11 +287,11 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	p1 = p0 - bodyRight * 4.0f * scale;
 	p2 = p0 + armFront * 4.0f * scale;
 	p3 = p1 + armFront * 4.0f * scale;
-	spec = speco + (2 << 19) + 36 + (48 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 44 + (16 << 6) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p1};
-	v2 = {spec + (4 << 8) + (1 << 18), p2};
-	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p3};
+	v2 = {spec + (4 << 6) + (1 << 18), p2};
+	v3 = {spec + 4 + (1 << 17) + (4 << 6) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// down
 	p4 = p2 - armUp * 12.0f * scale;
@@ -353,40 +301,40 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	spec += 4;
 	v0 = {spec, p4};
 	v1 = {spec + 4 + (1 << 17), p5};
-	v2 = {spec + (4 << 8) + (1 << 18), p6};
-	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p7};
+	v2 = {spec + (4 << 6) + (1 << 18), p6};
+	v3 = {spec + 4 + (1 << 17) + (4 << 6) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// front 2345
-	spec = speco + (2 << 19) + 36 + (52 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 44 + (20 << 6) + (itemLight << 24);
 	v0 = {spec, p2};
 	v1 = {spec + 4 + (1 << 17), p3};
-	v2 = {spec + (12 << 8) + (1 << 18), p4};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p5};
+	v2 = {spec + (12 << 6) + (1 << 18), p4};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p5};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// back 1076
 	spec += 8;
 	v0 = {spec, p1};
 	v1 = {spec + 4 + (1 << 17), p0};
-	v2 = {spec + (12 << 8) + (1 << 18), p7};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p6};
+	v2 = {spec + (12 << 6) + (1 << 18), p7};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p6};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// right 0264
-	spec = speco + (2 << 19) + 32 + (52 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 40 + (20 << 6) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p2};
-	v2 = {spec + (12 << 8) + (1 << 18), p6};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p4};
+	v2 = {spec + (12 << 6) + (1 << 18), p6};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p4};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// left 3157
 	spec += 8;
 	v0 = {spec, p3};
 	v1 = {spec + 4 + (1 << 17), p1};
-	v2 = {spec + (12 << 8) + (1 << 18), p5};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p7};
+	v2 = {spec + (12 << 6) + (1 << 18), p5};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 
 // draw right leg
-	legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + _world_up * sina);
+	legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + settings::consts::math::world_up * sina);
 	legUp = glm::normalize(glm::cross(bodyRight, legFront));
 	pos += bodyRight * 8.0f * scale;
 	pos -= bodyUp * 12.0f * scale;
@@ -395,11 +343,11 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	p1 = p0 - bodyRight * 4.0f * scale;
 	p2 = p0 + legFront * 4.0f * scale;
 	p3 = p1 + legFront * 4.0f * scale;
-	spec = speco + (2 << 19) + 4 + (16 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 4 + (16 << 6) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p1};
-	v2 = {spec + (4 << 8) + (1 << 18), p2};
-	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p3};
+	v2 = {spec + (4 << 6) + (1 << 18), p2};
+	v3 = {spec + 4 + (1 << 17) + (4 << 6) + (1 << 18), p3};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// down
 	p4 = p2 - legUp * 12.0f * scale;
@@ -409,35 +357,35 @@ void Zombie::draw( std::vector<t_shaderInput>& modArr, double deltaTime )
 	spec += 4;
 	v0 = {spec, p4};
 	v1 = {spec + 4 + (1 << 17), p5};
-	v2 = {spec + (4 << 8) + (1 << 18), p6};
-	v3 = {spec + 4 + (1 << 17) + (4 << 8) + (1 << 18), p7};
+	v2 = {spec + (4 << 6) + (1 << 18), p6};
+	v3 = {spec + 4 + (1 << 17) + (4 << 6) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// front 2345
-	spec = speco + (2 << 19) + 4 + (20 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 4 + (20 << 6) + (itemLight << 24);
 	v0 = {spec, p2};
 	v1 = {spec + 4 + (1 << 17), p3};
-	v2 = {spec + (12 << 8) + (1 << 18), p4};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p5};
+	v2 = {spec + (12 << 6) + (1 << 18), p4};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p5};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// back 1076
 	spec += 8;
 	v0 = {spec, p1};
 	v1 = {spec + 4 + (1 << 17), p0};
-	v2 = {spec + (12 << 8) + (1 << 18), p7};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p6};
+	v2 = {spec + (12 << 6) + (1 << 18), p7};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p6};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// right 0264
-	spec = speco + (2 << 19) + 0 + (20 << 8) + (itemLight << 24);
+	spec = (2 << 19) + 0 + (20 << 6) + (itemLight << 24);
 	v0 = {spec, p0};
 	v1 = {spec + 4 + (1 << 17), p2};
-	v2 = {spec + (12 << 8) + (1 << 18), p6};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p4};
+	v2 = {spec + (12 << 6) + (1 << 18), p6};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p4};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 	// left 3157
 	spec += 8;
 	v0 = {spec, p3};
 	v1 = {spec + 4 + (1 << 17), p1};
-	v2 = {spec + (12 << 8) + (1 << 18), p5};
-	v3 = {spec + 4 + (1 << 17) + (12 << 8) + (1 << 18), p7};
+	v2 = {spec + (12 << 6) + (1 << 18), p5};
+	v3 = {spec + 4 + (1 << 17) + (12 << 6) + (1 << 18), p7};
 	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
 }

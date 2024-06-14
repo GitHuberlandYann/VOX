@@ -22,7 +22,7 @@ uniform float min_brightness;
 out vec3 TexCoords;
 out float FaceShadow;
 
-const float one256th = 0.00390625f;
+const float one64th = 0.015625f;
 
 void main()
 {
@@ -30,7 +30,7 @@ void main()
 
 	float x_half = (((specifications & (1 << 17)) == 0) ? 0.0001220703125 : -0.0001220703125);
 	float y_half = (((specifications & (1 << 18)) == 0) ? 0.0001220703125 : -0.0001220703125);
-	TexCoords = vec3((specifications & 0x3F) * one256th + x_half, ((specifications >> 6) & 0x3F) * one256th + y_half, (specifications >> 12) & 0x1F);
+	TexCoords = vec3((specifications & 0x3F) * one64th + x_half, ((specifications >> 6) & 0x3F) * one64th + y_half, (specifications >> 12) & 0x1F);
 
 	int blockLight = ((specifications >> 24) & 0xF);
 	int skyLight = internal_light - (15 - ((specifications >> 28) & 0xF));
