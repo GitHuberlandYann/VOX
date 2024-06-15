@@ -235,7 +235,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 		if (!indata.is_open()) {
 			throw InvalidFileException();
 		}
-		Settings::Get()->setString(settings::json_version, settings::consts::json::past_versions[0]); // reset version
+		Settings::Get()->setString(settings::strings::json_version, settings::consts::json::past_versions[0]); // reset version
 		std::string line;
 		while (!indata.eof()) {
 			std::getline(indata, line);
@@ -245,7 +245,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 			} else if (line == "{" || line == "}") {
 			} else if (!line.compare(0, 11, "\"version\": ")) {
 				std::string version = line.substr(12, line.size() - 14);
-				Settings::Get()->setString(settings::json_version, version);
+				Settings::Get()->setString(settings::strings::json_version, version);
 				ofs << "version set to " << version << std::endl;
 			} else if (!line.compare(0, 8, "\"seed\": ")) {
 				perlin_seed = std::atoi(&line[8]);
@@ -357,11 +357,11 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 
 static int convert( int value ) // used when I change s_blocks big time
 {
-	if (Settings::Get()->getString(settings::json_version) == settings::consts::json::current_version) {
+	if (Settings::Get()->getString(settings::strings::json_version) == settings::consts::json::current_version) {
 		return (value);
 	}
 	for (int i = 0; i < settings::consts::json::nbr_past_versions; ++i) {
-		if (Settings::Get()->getString(settings::json_version) == settings::consts::json::past_versions[i]) {
+		if (Settings::Get()->getString(settings::strings::json_version) == settings::consts::json::past_versions[i]) {
 			switch (i) {
 				case 0: //v0.0
 					// transition from v0.0 to v1.0: 0xF00 becomes 0xF000 and 0xF000 becomes 0xF000000
@@ -379,7 +379,7 @@ static int convert( int value ) // used when I change s_blocks big time
 			}
 		}
 	}
-	std::cerr << "json version is " << Settings::Get()->getString(settings::json_version) << std::endl;
+	std::cerr << "json version is " << Settings::Get()->getString(settings::strings::json_version) << std::endl;
 	assert((0 == 1) && "unrecognised json version.");
 }
 

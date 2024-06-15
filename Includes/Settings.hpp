@@ -99,8 +99,25 @@ namespace settings {
 
 		namespace math {
 			const glm::vec3 world_up = {0, 0, 1};
+			const float standard_gravity = -9.81f;
+		};
+
+		namespace speed {
+			const float initial_jump = 9.317f;
+			const float initial_fall = -6.605f;
+			const float zombie = 2.28378822f;
+		};
+
+		namespace hitbox { // https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
+			const float zombie = 1.95f;
 		};
 	};
+
+	namespace state_machine {
+		const short idle = 0;
+		const short wandle = 1;
+		const short chase = 2;
+	}
 
 	namespace defaults {
 		const int   render_distance = 10;
@@ -108,69 +125,78 @@ namespace settings {
 		const float brightness      = 0.05f;  // [0:1]
 	};
 
-	enum bools {
-		fullscreen,
-		skybox,
-		particles,
-		face_culling,
-		visible_chunk_border,
-		smooth_lighting,
-		flat_world,
-		size_bools
+	namespace bools {
+		enum {
+			fullscreen,
+			skybox,
+			particles,
+			face_culling,
+			visible_chunk_border,
+			smooth_lighting,
+			flat_world,
+			mobAI,
+			size
+		};
 	};
 
-	enum ints {
-		render_dist,
-		clouds,
-		monitor_width,
-		monitor_height,
-		available_res,
-		flat_world_block,
-		size_ints
+	namespace ints {
+		enum {
+			render_dist,
+			clouds,
+			monitor_width,
+			monitor_height,
+			available_res,
+			flat_world_block,
+			size
+		};
 	};
 
-	enum floats {
-		fov,
-		brightness,
-		size_floats
+	namespace floats {
+		enum {
+			fov,
+			brightness,
+			size
+		};
 	};
 
-	enum strings {
-		block_atlas,
-		ascii_atlas,
-		ui_atlas,
-		tex_inventory,
-		tex_crafting_table,
-		tex_furnace,
-		tex_chest,
-		tex_zombie,
-		particle_atlas,
-		model_atlas,
-		water_still,
-		water_flow,
-		size_textures,
+	namespace strings {
+		enum {
+			block_atlas,
+			ascii_atlas,
+			ui_atlas,
+			tex_inventory,
+			tex_crafting_table,
+			tex_furnace,
+			tex_chest,
+			tex_zombie,
+			particle_atlas,
+			model_atlas,
+			water_still,
+			water_flow,
+			size_textures,
 
-		main_fragment_shader = size_textures,
-		main_vertex_shader,
-		item_fragment_shader,
-		item_vertex_shader,
-		model_fragment_shader,
-		model_vertex_shader,
-		particle_fragment_shader,
-		particle_vertex_shader,
-		sky_fragment_shader,
-		sky_vertex_shader,
-		skybox_fragment_shader,
-		skybox_vertex_shader,
-		text_fragment_shader,
-		text_vertex_shader,
-		ui_fragment_shader,
-		ui_vertex_shader,
-		size_shaders = ui_vertex_shader + 1 - size_textures,
+			main_fragment_shader = size_textures,
+			main_vertex_shader,
+			item_fragment_shader,
+			item_vertex_shader,
+			model_fragment_shader,
+			model_vertex_shader,
+			particle_fragment_shader,
+			particle_vertex_shader,
+			sky_fragment_shader,
+			sky_vertex_shader,
+			skybox_fragment_shader,
+			skybox_vertex_shader,
+			text_fragment_shader,
+			text_vertex_shader,
+			ui_fragment_shader,
+			ui_vertex_shader,
+			size_shaders = ui_vertex_shader + 1 - size_textures,
 
-		json_version = ui_vertex_shader + 1,
+			json_version = ui_vertex_shader + 1,
 
-		size_strings,
+			size,
+		};
 	};
 
 	enum {
@@ -211,10 +237,10 @@ class Settings
 		static Settings *_settingsInstance;
 		static std::mutex _mtx;
 
-		std::array<bool, settings::bools::size_bools> _bools;
-		std::array<int, settings::ints::size_ints> _ints;
-		std::array<float, settings::floats::size_floats> _floats;
-		std::array<std::string, settings::strings::size_strings> _strings;
+		std::array<bool, settings::bools::size> _bools;
+		std::array<int, settings::ints::size> _ints;
+		std::array<float, settings::floats::size> _floats;
+		std::array<std::string, settings::strings::size> _strings;
 		std::vector<std::string> _packs;
 
 		Settings( void );

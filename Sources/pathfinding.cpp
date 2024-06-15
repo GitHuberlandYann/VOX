@@ -140,16 +140,18 @@ void Chunk::checkNodePathfinding( std::list<std::shared_ptr<t_pathfinding_node>>
 std::pair<std::vector<glm::ivec3>, int> Chunk::computePathfinding( glm::ivec3 start, glm::ivec3 end )
 {
 	std::list<std::shared_ptr<t_pathfinding_node>> open_nodes, visited_nodes;
-	std::shared_ptr<t_pathfinding_node> current;
+	std::shared_ptr<t_pathfinding_node> current, closest;
 
 	open_nodes.push_back(std::make_shared<t_pathfinding_node>(
 		computePathfindDist(start, start) + computePathfindDist(start, end), start));
+	closest = NULL;
 	
 	int count = 0;
 	while (true) {
-		if (open_nodes.empty() || ++count > 1024) {
+		if (open_nodes.empty() || ++count > 512) {
 			LOG("pathfinding failure with count " << count << " and open size " << open_nodes.size());
-			return {{}, count}; // failure
+			// return {{}, count}; // failure
+			return {genPathFromNode(closest), count}; // failure
 		}
 
 		open_nodes.sort([]( auto a, auto b ) { return (a->f_dist < b->f_dist); });
@@ -160,6 +162,8 @@ std::pair<std::vector<glm::ivec3>, int> Chunk::computePathfinding( glm::ivec3 st
 
 		if (current->pos == end) { // path has been found
 			return {genPathFromNode(current), count};
+		} else if (!closest || current->f_dist <= closest->f_dist) {
+			closest = current;
 		}
 
 		std::array<bool, 4> adj_trav = {false};

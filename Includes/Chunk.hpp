@@ -185,6 +185,7 @@ class Chunk
 		t_collision collisionBox( glm::vec3 pos, float width, float height, float originalHeight );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( void );
+		void applyGravity( AMob* mob );
 
 		int isLoaded( GLint& counter );
         void drawArray( GLint& counter, GLint& face_counter );

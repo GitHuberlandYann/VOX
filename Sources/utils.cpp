@@ -562,7 +562,7 @@ void face_water_vertices( std::vector<glm::ivec4> &vertices, glm::ivec4 &v0, glm
  *
  * J. Amanatides, A. Woo. A Fast Voxel Traversal Algorithm for Ray Tracing. Eurographics '87
  */
-std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end )
+std::vector<glm::ivec3> voxel_traversal( const glm::vec3 ray_start, const glm::vec3 ray_end )
 {
 	std::vector<glm::ivec3> visited_voxels;
 
@@ -574,17 +574,17 @@ std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end
 								std::floor(ray_start.z));
 
 	// The id of the last voxel hit by the ray.
-	glm::ivec3 last_voxel(std::floor(ray_end.x),
+	const glm::ivec3 last_voxel(std::floor(ray_end.x),
 								std::floor(ray_end.y),
 								std::floor(ray_end.z));
 
 	// Compute ray direction.
-	glm::vec3 ray = ray_end - ray_start;
+	const glm::vec3 ray = ray_end - ray_start;
 
 	// In which direction the voxel ids are incremented.
-	int stepX = (ray.x >= 0) ? 1 : -1;
-	int stepY = (ray.y >= 0) ? 1 : -1;
-	int stepZ = (ray.z >= 0) ? 1 : -1;
+	const int stepX = (ray.x >= 0) ? 1 : -1;
+	const int stepY = (ray.y >= 0) ? 1 : -1;
+	const int stepZ = (ray.z >= 0) ? 1 : -1;
 
 	// Distance along the ray to the next voxel border from the current position.
 	float next_voxel_boundary_x = current_voxel.x + stepX;
@@ -605,9 +605,9 @@ std::vector<glm::ivec3> voxel_traversal( glm::vec3 &ray_start, glm::vec3 ray_end
 	// tDeltaX, tDeltaY, tDeltaZ --
 	// time it takes to travel a distance of 1! voxel in a given direction
 	// can only be FLT_MAX if we never go in that direction
-	float tDeltaX = (ray.x != 0) ? 1.0f / ray.x * stepX : FLT_MAX;
-	float tDeltaY = (ray.y != 0) ? 1.0f / ray.y * stepY : FLT_MAX;
-	float tDeltaZ = (ray.z != 0) ? 1.0f / ray.z * stepZ : FLT_MAX;
+	const float tDeltaX = (ray.x != 0) ? 1.0f / ray.x * stepX : FLT_MAX;
+	const float tDeltaY = (ray.y != 0) ? 1.0f / ray.y * stepY : FLT_MAX;
+	const float tDeltaZ = (ray.z != 0) ? 1.0f / ray.z * stepZ : FLT_MAX;
 
 	visited_voxels.push_back(current_voxel);
 	while (last_voxel != current_voxel) {

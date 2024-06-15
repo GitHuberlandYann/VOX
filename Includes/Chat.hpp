@@ -11,21 +11,32 @@ class OpenGL_Manager;
 # define CHAT_BOX_WIDTH 700
 # define CHAT_BOX_OFFSET 6
 
-namespace CHAT {
-	enum cmds {
-		HELP,
-		SEED,
-		GAMEMODE,
-		TIME,
-		CLEAR,
-		TP,
-		TELEPORT,
-		SP,
-		SPAWNPOINT,
-		GIVE,
+namespace chat {
+	namespace cmds {
+		enum {
+			help,
+			seed,
+			gamemode,
+			gamerule,
+			time,
+			clear,
+			tp,
+			teleport,
+			sp,
+			spawnpoint,
+			give,
+			size
+		};
 	};
-	const int NBR_CMDS = 10;
-	const std::array<std::string, NBR_CMDS> commands = {"/help", "/seed", "/gamemode", "/time", "/clear", "/tp", "/teleport", "/sp", "/spawnpoint", "/give"};
+	const std::array<std::string, cmds::size> commands = {"/help", "/seed", "/gamemode", "/gamerule", "/time", "/clear", "/tp", "/teleport", "/sp", "/spawnpoint", "/give"};
+
+	namespace rule {
+		enum {
+			mobAI,
+			size
+		};
+	};
+	const std::array<std::string, rule::size> rules = {"domobai"};
 }
 
 # define NBR_ARG_TIME 4
@@ -72,6 +83,7 @@ class Chat
 
 		void handle_help( int argc, std::vector<std::string>& argv );
 		void handle_gamemode( int argc, std::vector<std::string>& argv );
+		void handle_gamerule( int argc, std::vector<std::string>& argv );
 		void handle_time( int argc, std::vector<std::string>& argv );
 		void handle_clear( int argc, std::vector<std::string>& argv );
 		void handle_teleport( int argc, std::vector<std::string>& argv );

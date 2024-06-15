@@ -24,27 +24,27 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 {
 	if (argc == 1) {
 		chatMessage("List of commands:");
-		for (int i = 0; i < CHAT::NBR_CMDS; ++i) {
-			chatMessage("\t" + CHAT::commands[i]);
+		for (int i = 0; i < chat::cmds::size; ++i) {
+			chatMessage("\t" + chat::commands[i]);
 		}
 		chatMessage("Try /help <command> to see what they do.");
 	} else if (argc == 2) {
-		for (int index = 0; index < CHAT::NBR_CMDS; ++index) {
-			if (!CHAT::commands[index].compare(1, CHAT::commands[index].size(), argv[1])) {
+		for (int index = 0; index < chat::cmds::size; ++index) {
+			if (!chat::commands[index].compare(1, chat::commands[index].size(), argv[1])) {
 				switch (index) {
-					case CHAT::cmds::HELP:
+					case chat::cmds::help:
 						chatMessage("/help help");
 						chatMessage("\t/help");
 						chatMessage("\t\tLists all commands.");
 						chatMessage("\t/help <command>");
 						chatMessage("\t\tShows usages for one command.");
 						break ;
-					case CHAT::cmds::SEED:
+					case chat::cmds::seed:
 						chatMessage("/help seed");
 						chatMessage("\t/seed");
 						chatMessage("\t\tDisplays the world seed.");
 						break ;
-					case CHAT::cmds::GAMEMODE:
+					case chat::cmds::gamemode:
 						chatMessage("/help gamemode");
 						chatMessage("\t/gamemode");
 						chatMessage("\t\tDisplays current gamemode.");
@@ -55,7 +55,7 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t\t\tcreative for Creative mode");
 						chatMessage("\t\t\tadventure for Adventure mode");
 						break ;
-					case CHAT::cmds::TIME:
+					case chat::cmds::time:
 						chatMessage("/help time");
 						chatMessage("\tChanges or queries the world's game time.");
 						chatMessage("\t/time add <time>");
@@ -68,7 +68,7 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\ttime set <time>");
 						chatMessage("\t\tSets the internal daytime.");
 						break ;
-					case CHAT::cmds::CLEAR:
+					case chat::cmds::clear:
 						chatMessage("/help clear");
 						chatMessage("\t/clear");
 						chatMessage("\t\tClears chat history.");
@@ -82,8 +82,8 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t/clear i");
 						chatMessage("\t\tClears your inventory.");
 						break ;
-					case CHAT::cmds::TP:
-					case CHAT::cmds::TELEPORT:
+					case chat::cmds::tp:
+					case chat::cmds::teleport:
 						chatMessage("/help teleport");
 						chatMessage("\t/teleport <location>");
 						chatMessage("\t\tTeleports the executor to a certain position.");
@@ -92,15 +92,15 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 						chatMessage("\t/teleport -");
 						chatMessage("\t\tTeleports the executor to the last point he tped from.");
 						break ;
-					case CHAT::cmds::SP:
-					case CHAT::cmds::SPAWNPOINT:
+					case chat::cmds::sp:
+					case chat::cmds::spawnpoint:
 						chatMessage("/help spawnpoint");
 						chatMessage("\t/spawnpoint");
 						chatMessage("\t\tSets your spawn point to your current location.");
 						chatMessage("\t/spawnpoint <location>");
 						chatMessage("\t\tSets your spawn point to a certain location.");
 						break ;
-					case CHAT::cmds::GIVE:
+					case chat::cmds::give:
 						chatMessage("/give <player> <item>");
 						chatMessage("\tgive selected item to selected player.");
 						chatMessage("\tfor now, only 'me' accepted as player.");
@@ -136,6 +136,35 @@ void Chat::handle_gamemode( int argc, std::vector<std::string> &argv )
 		}
 	}
 	chatMessage("Wrong usage of /gamemode <gamemode>");
+}
+
+void Chat::handle_gamerule( int argc, std::vector<std::string>& argv )
+{
+	if (argc != 3) {
+		return (chatMessage("Wrong usage of /gamerule <rule> <status>"));
+	}
+	bool state;
+	if (argv[2] == "true" || argv[2] == "1") {
+		state = true;
+	} else if (argv[2] == "false" || argv[2] == "0") {
+		state = false;
+	} else {
+		return (chatMessage("Wrong usage of /gamerule <rule> <status>"));
+	}
+	for (int index = 0; index < chat::rule::size; ++index) {
+		if (!chat::rules[index].compare(argv[1])) {
+			switch (index) {
+				case chat::rule::mobAI:
+					Settings::Get()->setBool(settings::bools::mobAI, state);
+					chatMessage("Rule mobAI set to " + std::string((state) ? "true" : "false"));
+					break ;
+				default:
+					chatMessage("Rule recognised but no behavior coded yet.");
+			}
+			return ;
+		}
+	}
+	chatMessage("Error /gamerule: rule not recognised.");
 }
 
 void Chat::handle_time( int argc, std::vector<std::string> &argv )
@@ -506,33 +535,36 @@ bool Chat::sendMessage( std::string str )
 				return (true);
 			}
 		} else {
-			for (int index = 0; index < CHAT::NBR_CMDS; ++index) {
-				if (!CHAT::commands[index].compare(parstr[0])) {
+			for (int index = 0; index < chat::cmds::size; ++index) {
+				if (!chat::commands[index].compare(parstr[0])) {
 					switch (index) {
-						case CHAT::cmds::HELP:
+						case chat::cmds::help:
 							handle_help(parstr.size(), parstr);
 							break ;
-						case CHAT::cmds::SEED:
+						case chat::cmds::seed:
 							chatMessage("World seed is " + std::to_string(perlin_seed));
 							break ;
-						case CHAT::cmds::GAMEMODE:
+						case chat::cmds::gamemode:
 							handle_gamemode(parstr.size(), parstr);
 							break ;
-						case CHAT::cmds::TIME:
+						case chat::cmds::gamerule:
+							handle_gamerule(parstr.size(), parstr);
+							break ;
+						case chat::cmds::time:
 							handle_time(parstr.size(), parstr);
 							break ;
-						case CHAT::cmds::CLEAR:
+						case chat::cmds::clear:
 							handle_clear(parstr.size(), parstr);
 							break ;
-						case CHAT::cmds::TP:
-						case CHAT::cmds::TELEPORT:
+						case chat::cmds::tp:
+						case chat::cmds::teleport:
 							handle_teleport(parstr.size(), parstr);
 							break ;
-						case CHAT::cmds::SP:
-						case CHAT::cmds::SPAWNPOINT:
+						case chat::cmds::sp:
+						case chat::cmds::spawnpoint:
 							handle_spawnpoint(parstr.size(), parstr);
 							break ;
-						case CHAT::cmds::GIVE:
+						case chat::cmds::give:
 							handle_give(parstr.size(), parstr);
 							break ;
 						default:

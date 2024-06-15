@@ -33,7 +33,6 @@ TODOS:
 	- fire
 	- lantern
 	- campfire
-	- mobs
 	- item frame
 	- ladder
 	- stone wall
@@ -62,11 +61,12 @@ TODOS:
 	IN PROGRES:
 	- bow and arrow
 	- universal use of tps instead of deltatimes
+	- mobs
 	
 	TODAY:
 	- Way more blocks ?? + world file "version: " line + /respawn
-	- A* Pathfinding algo to be used by mobs
-
+	- Zombies
+	
 	SHORTTERM memory:
 	\/ - work on cleanAtlas
 	\/ - work on readme
@@ -95,7 +95,7 @@ TODOS:
 	- furnace
     - better caves
     - obstacle detection for physics + game mode
-    - hide faces not oriented towards us // face culling .. only on mac, gains no fps
+    - hide faces not oriented towards us
     - save block changed into backup map
 	- smooth partial collision instead of teleportation
 	- fix <slab to slab transition makes you go up 1 full block>
@@ -176,6 +176,8 @@ TODOS:
 	- settings particles on off
 	- clouds
 	- gui size
+	- Worldedit mod
+	- A* Pathfinding algo to be used by mobs
 	- centralize settings and save/load them in file
 	- resource packs
 	- Game modes:
@@ -233,7 +235,8 @@ Shaders:
 	ui - used for menus, hud                                            Xhalf
 	text - draws character                                              Xhalf
 	item - used to draw 3d items in inventory, x[0:255] y[0:255]        Xhalf
-	particle - used to draw particles and models, x[0:255] y[0:255]     Vhalf
+	particle - used to draw particles, x[0:255] y[0:255]                Vhalf
+	model - used to draw models (for mobs and player)
 
 Textures:
 	0: settings::strings::block_atlas

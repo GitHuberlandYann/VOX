@@ -383,3 +383,182 @@ void Camera::resetFall( void )
 	_fall_time = 0;
 	_inJump = false;
 }
+
+// ************************************************************************** //
+//                               AMobs                                        //
+// ************************************************************************** //
+
+/**
+ * @brief update mobs's position
+ * @param direction movement's axis
+*/
+void AMob::move( int direction, bool move )
+{
+	// if (_waterFeet || _waterHead) {
+	// 	return (moveHumanUnderwater(direction, v, h, z));
+	if (!move) {
+		_walking = false;
+		return ;
+	}
+	_walking = true;
+	_bodyFront = _front;
+
+	const float speed_frame = _deltaTime * settings::consts::speed::zombie;
+	if (direction == face_dir::plus_x) {
+		_position.x += _front.x * speed_frame;
+	} else if (direction == face_dir::plus_y) {
+		_position.y += _front.y * speed_frame;
+	}
+}
+
+/**
+ * @brief called to undo movement after collision detected
+ */
+void AMob::restorePos( glm::vec3 position )
+{
+	_position = position;
+}
+
+/**
+ * @brief adjust position.z to given obstacle, if player can't pass obstacle return false
+ * @param minZ, maxZ computed obstacle dimensions
+ * @return false to cancel player movement
+*/
+bool AMob::customObstacle( float minZ, float maxZ )
+{
+	(void)minZ;
+	if (!_touchGround) return (false);
+
+	// std::cout << "DEBUG customObstacle " << _position.z << " vs " << maxZ << std::endl;
+	if (_position.z < maxZ && _position.z + 0.6f > maxZ) {
+		// set smoothcam to true to have smoother transition upon climbing stairs
+		// ie player will teleport, but cam will follow smoothly to enhance user experience
+		// _smoothCam = true;
+		// _smoothCamZ = _position.z + 1 + ((_sneaking) ? SNEAK_EYE_LEVEL : EYE_LEVEL);
+		_position.z = maxZ;
+		return (true);
+	}
+	return (false);
+}
+
+/**
+ * @brief applies gravity to mob and check if he touches ground or ceiling to restrict his movements
+*/
+void Chunk::applyGravity( AMob* mob )
+{
+	float saved_posZ = mob->getPos().z;
+	mob->applyGravity();
+	glm::vec3 pos = mob->getPos();
+	float distZ = saved_posZ - pos.z;
+	t_collision coll;
+	if (distZ < 0) { // jumping
+		mob->setTouchGround(false);
+		float hitboxHeight = mob->getHitBox();
+		coll = collisionBox({pos.x, pos.y, pos.z + hitboxHeight}, 0.3f, -distZ, -distZ);
+		if (coll.type == COLLISION::TOTAL) {
+			mob->touchCeiling(glm::floor(pos.z) + 2.0f - hitboxHeight);
+			// std::cout << "hit roof, " << pos.z << " -> " << error->getPos().z << std::endl;
+			return ;
+		} else if (coll.type == COLLISION::PARTIAL) {
+			mob->touchCeiling(coll.minZ - hitboxHeight);
+			return ;
+		}
+	} else { // falling
+		coll = collisionBox(pos, 0.3f, distZ, distZ);
+		if (coll.type != COLLISION::NONE) {
+			mob->touchGround(coll.maxZ);
+			return ;
+		}
+	}
+	mob->setTouchGround(false);
+}
+
+/**
+ * @brief applies equation z = z0 + vt + at² / 2 to mob's z coordinate
+ * 
+*/
+void AMob::applyGravity( void )
+{
+	// if (_waterFeet || _waterHead) {
+	// 	return (applyGravityUnderwater());
+	// }
+	// std::cout << "Gravity applied" << std::endl;
+	_fallTime += _deltaTime;
+	const float initial_speed = ((_inJump) ? settings::consts::speed::initial_jump : settings::consts::speed::initial_fall);
+
+	_position.z = _z0 + initial_speed * _fallTime + 3 * settings::consts::math::standard_gravity * _fallTime * _fallTime * 0.5f; // TODO this '3' is a bit random ...
+}
+
+/**
+ * @brief head bump, sets/resets mob's info accordingly
+*/
+void AMob::touchCeiling( float value )
+{
+	_position.z = value;
+	_z0 = value;
+	_fallTime = 0;
+	_inJump = false;
+}
+
+/**
+ * @brief Youston, mob touched ground. sets/resets mob's info accordingly
+*/
+void AMob::touchGround( float value )
+{
+	_position.z = value;
+	_fallDistance = _z0 - _position.z;
+	// std::cout << "TOUCH GROUND AT " << _fall_distance << std::endl;
+	// if (_inJump && _fall_distance < 0) {
+	// 	return ;
+	// }
+	if (_invulnerable) {
+	// } else if (_waterFeet || _waterHead) {
+	} else if (_fallDistance > 3) { // TODO call this function AFTER setting waterFeet
+		_health -= glm::max(0.0f, _fallDistance - 3);
+		if (_health < 0) {
+			_health = 0;
+		}
+	}
+	_fallTime = 0;
+	_z0 = _position.z;
+	_touchGround = true;
+	_inJump = false;
+}
+
+/**
+ * @brief if current block pos different from last recorded, we update path to player
+*/
+void AHostileMob::updateCurrentBlock( void )
+{
+	glm::ivec3 currentBlock = glm::floor(_position);
+	if (currentBlock != _currentBlock) {
+		if (_currentBlock.z != currentBlock.z) {
+			_currentBlock = currentBlock;
+			return ;
+		}
+		_currentBlock = currentBlock;
+		if (_state == settings::state_machine::chase) { // update path
+			_path = _chunk->computePathfinding(_currentBlock, _player->getPos()).first;
+			if (_path.size() < 2) {
+				_state = settings::state_machine::idle;
+				_stateTime = 0;
+			}
+		} else if (glm::distance(_position, _player->getPos()) < 32) {
+			const std::vector<glm::ivec3> ids = voxel_traversal(_position, _player->getPos());
+
+			for (auto i : ids) {
+				int value = _chunk->getBlockAtAbsolute(i);
+
+				if (!s_blocks[value & mask::blocks::type]->transparent) {
+					return ; // no direct line of view from mob to player
+				}
+			}
+
+			// mob views player
+			_path = _chunk->computePathfinding(_currentBlock, _player->getPos()).first;
+			_state = settings::state_machine::chase;
+			_stateTime = 0;
+		}
+	}
+}
+
