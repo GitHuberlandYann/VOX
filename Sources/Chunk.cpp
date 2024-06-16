@@ -274,6 +274,23 @@ GLint Chunk::getStartY( void )
 	return (_startY);
 }
 
+/**
+ * @brief get ptr to neighbour whose _startX and _startY are those given
+ */
+Chunk* Chunk::getChunkAt( int startX, int startY )
+{
+	if (startX < _startX) {
+		return (_neighbours[face_dir::minus_x]);
+	} else if (startX > _startX) {
+		return (_neighbours[face_dir::plus_x]);
+	} else if (startY < _startY) {
+		return (_neighbours[face_dir::minus_y]);
+	} else if (startY > _startY) {
+		return (_neighbours[face_dir::plus_y]);
+	}
+	return (NULL);
+}
+
 unsigned Chunk::getSeed( void )
 {
 	return (_seed);
@@ -721,6 +738,19 @@ void Chunk::updateFurnaces( double currentTime )
 			}
 			_light_update = true;
 		}
+	}
+}
+
+void Chunk::addMob( const AMob& mob, int mobType )
+{
+	switch (mobType) {
+		case settings::consts::mob::zombie:
+			_mobs.push_back(std::make_shared<Zombie>(static_cast<const Zombie&>(mob)));
+			std::cout << _startX << ", " << _startY << ": new zombie added from neighbouring chunk." << std::endl;
+			break ;
+		default:
+			std::cout << "ERROR Chunk::addMob invalid mobType " << mobType << std::endl;
+			break ;
 	}
 }
 

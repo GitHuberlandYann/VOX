@@ -7,6 +7,7 @@
 Zombie::Zombie( Chunk* chunk, Camera* player, glm::vec3 position ) : AHostileMob(player, position)
 {
     _chunk = chunk;
+	_type = settings::consts::mob::zombie;
 
 	LOG("new zombie at " << POS(_position));
 }
@@ -26,6 +27,8 @@ bool Zombie::update( std::vector<t_shaderInput>& modArr, float deltaTime )
         std::cout << "zombie is missing a _chunk" << std::endl;
         return (true);
     }
+	bool changeOwner = false;
+
     // update position
 	if (!_noAI && Settings::Get()->getBool(settings::bools::mobAI) && _health > 0) {
 		_deltaTime = deltaTime;
@@ -98,11 +101,11 @@ bool Zombie::update( std::vector<t_shaderInput>& modArr, float deltaTime )
 
 			if (_state == settings::state_machine::chase
 				&& cube_cube_intersection(_player->getPos(), {0.3f, 0.3f, settings::consts::hitbox::player},
-										_position + glm::vec3(0, 0, settings::consts::hitbox::zombie * 0.5f), {0.3f, 0.3f, settings::consts::hitbox::zombie * 0.5f})) {
+										_position + glm::vec3(0, 0, settings::consts::hitbox::zombie * 0.5f), {0.6f, 0.6f, settings::consts::hitbox::zombie * 0.5f})) {
 				_player->receiveDamage(2.0f, getEyePos());
 			}
 
-			updateCurrentBlock();
+			changeOwner = updateCurrentBlock();
 		}
 		_chunk->applyGravity(this);
 	}
@@ -125,7 +128,7 @@ bool Zombie::update( std::vector<t_shaderInput>& modArr, float deltaTime )
 
     // draw
     draw(modArr);
-	return (false);
+	return (changeOwner);
 }
 
 bool Zombie::getHitBox( void )

@@ -18,7 +18,7 @@ class AHostileMob : public AMob
 		std::vector<glm::ivec3> _path;
 		Camera* _player;
 
-		void updateCurrentBlock( void );
+		bool updateCurrentBlock( void );
 		void setState( const short state );
 };
 

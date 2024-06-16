@@ -108,6 +108,10 @@ namespace settings {
 			const float zombie = 2.28378822f;
 		};
 
+		namespace mob {
+			const int zombie = 0;
+		};
+
 		namespace hitbox { // https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
 			const float player = 1.8f;
 			const float zombie = 1.95f;

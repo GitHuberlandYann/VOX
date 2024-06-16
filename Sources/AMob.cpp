@@ -1,7 +1,7 @@
 #include "OpenGL_Manager.hpp"
 
 AMob::AMob( glm::vec3 position )
-    : _air(0), _deathTime(0.0f), _hurtTime(0.0f), _fallDistance(0.0f), _fallTime(0.0f), _z0(position.z), _walkTime(0.0f), _health(20.0f), _position(position),
+    : _type(0), _air(0), _deathTime(0.0f), _hurtTime(0.0f), _fallDistance(0.0f), _fallTime(0.0f), _z0(position.z), _walkTime(0.0f), _health(20.0f), _position(position),
     _rotation(0, 0), _front(0, -1, 0), _right(glm::normalize(glm::cross(_front, settings::consts::math::world_up))), _up(0, 0, 1), _bodyFront(0, -1),
     _invulnerable(false), _touchGround(true), _walking(false), _inJump(false), _noAI(false), _persistenceRequired(false), _chunk(NULL)
 {
@@ -103,9 +103,22 @@ AMob* Chunk::mobHit( t_hit blockHit )
 		glm::vec3 hitBoxCenter = mob->getPos(), hitBoxHalfSize = {0.3f, 0.3f, mob->getHitBox()};
 		hitBoxCenter.z += hitBoxHalfSize.z;
 		if (segment_cube_intersection(segStart, segEnd, hitBoxCenter, hitBoxHalfSize)) {
-			(void)blockHit;
-			// TODO determine if mob in front of blockHit or not
-			return (mob.get());
+			if (blockHit.value & mask::blocks::type) {
+				// compute which of block hit and mob is hit first
+				const glm::ivec3 mobFeet = glm::floor(hitBoxCenter);
+				const glm::ivec3 mobWaist = mobFeet + glm::ivec3(0, 0, 1);
+				const glm::ivec3 mobHead = mobFeet + glm::ivec3(0, 0, 2);
+				std::vector<glm::ivec3> ids = _camera->computeRayCasting(3.0f);
+				for (auto block : ids) {
+					if (block == blockHit.pos) {
+						break ;
+					} else if (block == mobFeet || block == mobWaist || block == mobHead) {
+						return (mob.get());
+					}
+				}
+			} else {
+				return (mob.get());
+			}
 		}
 	}
 	return (NULL);

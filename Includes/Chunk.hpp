@@ -129,6 +129,7 @@ class Chunk
 
 		GLint getStartX( void );
 		GLint getStartY( void );
+		Chunk* getChunkAt( int startX, int startY );
 		unsigned getSeed( void );
 		bool getSortedOnce( void );
 		GLint getCamLightLevel( glm::ivec3 location );
@@ -202,6 +203,7 @@ class Chunk
 		void updateFluids( void );
 		void tickUpdate( void );
 		void updateScheduledBlocks( void );
+		void addMob( const AMob& mob, int mobType );
 		void updateMobs( std::vector<t_shaderInput>& modArr, double deltaTime );
 		void updateEntities( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, double deltaTime );
 		size_t clearEntities( void );

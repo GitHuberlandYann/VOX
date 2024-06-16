@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include "logs.hpp"
 
 // ************************************************************************** //
 //                          HitBox Collisions                                 //
@@ -528,17 +529,31 @@ void AMob::touchGround( float value )
 
 /**
  * @brief if current block pos different from last recorded, we update path to player
+ * @return true if mob went from one chunk to another
 */
-void AHostileMob::updateCurrentBlock( void )
+bool AHostileMob::updateCurrentBlock( void )
 {
+	bool changeOwner = false;
 	glm::ivec3 currentBlock = glm::floor(_position);
 	if (currentBlock != _currentBlock) {
 		if (_currentBlock.z != currentBlock.z) {
 			_currentBlock = currentBlock;
-			return ;
+			return (false);
 		}
-		_blockTime = 0.0f;
-		_currentBlock = currentBlock;
+		
+		if (chunk_pos(currentBlock.x) != chunk_pos(_currentBlock.x) || chunk_pos(currentBlock.y) != chunk_pos(_currentBlock.y)) {
+			Chunk* newOwner = _chunk->getChunkAt(chunk_pos(currentBlock.x), chunk_pos(currentBlock.y));
+			if (!newOwner) { return (true); } // just kill mob if out of generated chunks
+			_chunk = newOwner;
+			_blockTime = 0.0f;
+			_currentBlock = currentBlock;
+			_chunk->addMob(*this, _type);
+			changeOwner = true;
+		} else {
+			_blockTime = 0.0f;
+			_currentBlock = currentBlock;
+		}
+
 		if (_state == settings::state_machine::chase) { // update path
 			_path = _chunk->computePathfinding(_currentBlock, _player->getPos()).first;
 			if (_path.size() < 2) {
@@ -551,7 +566,7 @@ void AHostileMob::updateCurrentBlock( void )
 				int value = _chunk->getBlockAtAbsolute(i);
 
 				if (!s_blocks[value & mask::blocks::type]->transparent) {
-					return ; // no direct line of view from mob to player
+					return (changeOwner); // no direct line of view from mob to player
 				}
 			}
 
@@ -560,5 +575,6 @@ void AHostileMob::updateCurrentBlock( void )
 			setState(settings::state_machine::chase);
 		}
 	}
+	return (changeOwner);
 }
 

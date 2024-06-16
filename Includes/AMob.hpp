@@ -22,6 +22,7 @@ class AMob {
 
 	protected:
 		std::string _name;      // tag above head.
+		short _type;            // mob type, used to generate appropriate ptr to AMob
 		short _air;             // how much air the entity has, in ticks. Decreases by 1 per tick when unable to breathe. Increase by 1 per tick when it can breathe. If -20 while still unable to breathe, the entity loses 1 health and its air is reset to 0.
 		// short _fire;            // Number of ticks until the fire is put out. Negative values reflect how long the entity can stand in fire before burning. Default -20 when not on fire.
 		float _deathTime;       // number of seconds the mob has been dead for. Controls death animations. 0 when alive.
