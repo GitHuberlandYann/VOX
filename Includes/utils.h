@@ -47,9 +47,10 @@ std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 );
 void face_vertices( std::vector<t_shaderInput> &vertices, t_shaderInput v0, t_shaderInput v1, t_shaderInput v2, t_shaderInput v3 );
 void face_water_vertices( std::vector<glm::ivec4> &vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::ivec4 &v2, glm::ivec4 &v3 );
 std::vector<glm::ivec3> voxel_traversal( const glm::vec3 ray_start, const glm::vec3 ray_end );
-glm::vec3 line_plane_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 p0, glm::vec3 cross );
-bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeCenter, glm::vec3 cubeHalfSize );
-bool cube_cube_intersection( glm::vec3 posA, glm::vec3 sizeA, glm::vec3 posB, glm::vec3 sizeB );
+glm::vec3 line_plane_intersection( const glm::vec3 camPos, const glm::vec3 camDir, const glm::vec3 p0, const glm::vec3 cross );
+bool line_cube_intersection( const glm::vec3 camPos, const glm::vec3 camDir, const glm::vec3 cubeCenter, const glm::vec3 cubeHalfSize );
+bool cube_cube_intersection( const glm::vec3 posA, const glm::vec3 sizeA, const glm::vec3 posB, const glm::vec3 sizeB );
+bool segment_cube_intersection( const glm::vec3 segStart, const glm::vec3 segEnd, const glm::vec3 cubeCenter, const glm::vec3 cubeHalfSize );
 
 namespace EXTRUSION {
 	bool drawItem3D( std::vector<t_shaderInput> &arr, int type, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size );

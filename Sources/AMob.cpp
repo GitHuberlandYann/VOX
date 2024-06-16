@@ -1,9 +1,9 @@
-#include "Chunk.hpp"
+#include "OpenGL_Manager.hpp"
 
 AMob::AMob( glm::vec3 position )
-    : _air(0), _deathTime(0), _hurtTime(0), _fallDistance(0), _fallTime(0), _z0(position.z), _walkTime(0), _health(20), _position(position),
+    : _air(0), _deathTime(0.0f), _hurtTime(0.0f), _fallDistance(0.0f), _fallTime(0.0f), _z0(position.z), _walkTime(0.0f), _health(20.0f), _position(position),
     _rotation(0, 0), _front(0, -1, 0), _right(glm::normalize(glm::cross(_front, settings::consts::math::world_up))), _up(0, 0, 1), _bodyFront(0, -1),
-    _invulnerable(true), _touchGround(true), _walking(false), _inJump(false), _noAI(false), _persistenceRequired(false), _chunk(NULL)
+    _invulnerable(false), _touchGround(true), _walking(false), _inJump(false), _noAI(false), _persistenceRequired(false), _chunk(NULL)
 {
 
 }
@@ -53,4 +53,60 @@ glm::vec3 AMob::getPos( void )
 void AMob::setTouchGround( bool state )
 {
 	_touchGround = state;
+}
+
+void AMob::receiveDamage( const float damage, const glm::vec3 source)
+{
+	(void)source; // will be used to generate knockback
+	if (_health < 0) { // stop! it's already dead
+		return ;
+	}
+
+	_health -= damage;
+	_hurtTime = -0.5f;
+	_invulnerable = true;
+	if (_health < 0) {
+		_deathTime = -2.0f;
+	}
+}
+
+// this is temporarily here
+void Camera::receiveDamage( const float damage, const glm::vec3 source)
+{
+	(void)source;
+	if (_health_points < 0) { // stop! it's already dead
+		return ;
+	}
+
+	_health_points -= damage;
+	if (_health_points < 0) {
+		_health_points = 0;
+	}
+	_healthUpdate = true;
+}
+
+// ************************************************************************** //
+//                                Extern                                      //
+// ************************************************************************** //
+
+/**
+ * @brief loop through AMob part of chunk and return ptr to mob being hit or NULL
+ */
+AMob* Chunk::mobHit( t_hit blockHit )
+{
+	if (!_mobs.size()) {
+		return (NULL);
+	}
+
+	const glm::vec3 segStart = _camera->getEyePos(), segEnd = segStart + _camera->getDir() * 3.0f;
+	for (auto& mob : _mobs) {
+		glm::vec3 hitBoxCenter = mob->getPos(), hitBoxHalfSize = {0.3f, 0.3f, mob->getHitBox()};
+		hitBoxCenter.z += hitBoxHalfSize.z;
+		if (segment_cube_intersection(segStart, segEnd, hitBoxCenter, hitBoxHalfSize)) {
+			(void)blockHit;
+			// TODO determine if mob in front of blockHit or not
+			return (mob.get());
+		}
+	}
+	return (NULL);
 }

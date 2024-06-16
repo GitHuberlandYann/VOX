@@ -2,7 +2,7 @@
 #include "Settings.hpp"
 
 AHostileMob::AHostileMob( Camera* player, glm::vec3 position )
-	: AMob(position), _state(settings::state_machine::idle), _stateTime(0), _currentBlock(glm::floor(position)), _player(player)
+	: AMob(position), _state(settings::state_machine::idle), _stateTime(0.0f), _blockTime(0.0f), _currentBlock(glm::floor(position)), _player(player)
 {
 
 }
@@ -10,4 +10,11 @@ AHostileMob::AHostileMob( Camera* player, glm::vec3 position )
 AHostileMob::~AHostileMob( void )
 {
 
+}
+
+void AHostileMob::setState( const short state )
+{
+	_state = state;
+	_stateTime = 0.0f;
+	_blockTime = 0.0f;
 }

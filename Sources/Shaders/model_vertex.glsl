@@ -6,7 +6,8 @@
  * 0x1F << 12 texture Atlas
  * 0x1 << 17 x texture half-pixel correction
  * 0x1 << 18 y texture half-pixel correction
- * 0x7 << 19
+ * 0x1 << 19 if entity is hurt
+ * 0x3 << 20
  * 0x3 << 22
  * 0xF000000 block light
  * 0xF0000000 sky light
@@ -21,6 +22,7 @@ uniform float min_brightness;
 
 out vec3 TexCoords;
 out float FaceShadow;
+out float hurt;
 
 const float one64th = 0.015625f;
 
@@ -37,4 +39,6 @@ void main()
 	int shadow = 15 - max(blockLight, skyLight);
 	FaceShadow = max(0, (100 - 7 * shadow) * 0.01f);
 	FaceShadow = mix(min_brightness, 1, FaceShadow);
+
+	hurt = (((specifications & (1 << 19)) == 0) ? 1.0f : 0.7f);
 }

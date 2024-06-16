@@ -76,6 +76,7 @@ enum COLLISION {
 };
 
 typedef struct s_sign_info t_sign_info;
+typedef struct s_hit t_hit;
 
 typedef struct s_collision {
 	int type;
@@ -174,6 +175,7 @@ class Chunk
         bool isInChunk( int posX, int posY );
 
 		int isHit( glm::ivec3 pos );
+		AMob* mobHit( t_hit blockHit );
 		void handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void handleBlast( glm::vec3 pos, int blast_radius );
 		void explosion( glm::vec3 pos, int power );

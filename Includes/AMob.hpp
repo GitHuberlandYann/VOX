@@ -10,20 +10,22 @@ class AMob {
 		AMob( glm::vec3 position );
 		virtual ~AMob( void );
 
-		virtual void update( std::vector<t_shaderInput>& modArr, float deltaTime ) = 0;
+		virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime ) = 0;
 		glm::vec3 getPos( void );
+		virtual glm::vec3 getEyePos( void ) = 0;
 		void applyGravity( void );
 		void touchCeiling( float value );
 		void touchGround( float value );
 		void setTouchGround( bool state );
 		virtual bool getHitBox( void ) = 0;
+		void receiveDamage( const float damage, const glm::vec3 source);
 
 	protected:
 		std::string _name;      // tag above head.
 		short _air;             // how much air the entity has, in ticks. Decreases by 1 per tick when unable to breathe. Increase by 1 per tick when it can breathe. If -20 while still unable to breathe, the entity loses 1 health and its air is reset to 0.
 		// short _fire;            // Number of ticks until the fire is put out. Negative values reflect how long the entity can stand in fire before burning. Default -20 when not on fire.
-		short _deathTime;       // number of ticks the mob has been dead for. Controls death animations. 0 when alive.
-		short _hurtTime;        // number of ticks the mob turns red for after being hit. 0 when not recently hit.
+		float _deathTime;       // number of seconds the mob has been dead for. Controls death animations. 0 when alive.
+		float _hurtTime;        // number of seconds the mob turns red for after being hit. >= 0 when not recently hit.
 		// short _portalCooldown; // number of ticks before which the entity may be teleported back through a nether portal. Initially starts at 300 ticks (15 seconds) after teleportation and counts down to 0.
 		float _fallDistance;    // distance entity has fallen.
 		float _fallTime;        // seconds entity has been falling.

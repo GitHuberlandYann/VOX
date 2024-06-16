@@ -148,10 +148,10 @@ std::pair<std::vector<glm::ivec3>, int> Chunk::computePathfinding( glm::ivec3 st
 	
 	int count = 0;
 	while (true) {
-		if (open_nodes.empty() || ++count > 512) {
-			LOG("pathfinding failure with count " << count << " and open size " << open_nodes.size());
+		if (open_nodes.empty() || ++count > 128) {
+			// LOG("pathfinding failure with count " << count << " and open size " << open_nodes.size());
 			// return {{}, count}; // failure
-			return {genPathFromNode(closest), count}; // failure
+			return {genPathFromNode(closest), count}; // failure, but return closest path found
 		}
 
 		open_nodes.sort([]( auto a, auto b ) { return (a->f_dist < b->f_dist); });

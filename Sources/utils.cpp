@@ -636,7 +636,7 @@ std::vector<glm::ivec3> voxel_traversal( const glm::vec3 ray_start, const glm::v
  *
  * https://en.wikipedia.org/wiki/Line-plane_intersection
  */
-glm::vec3 line_plane_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 p0, glm::vec3 cross ) {
+glm::vec3 line_plane_intersection( const glm::vec3 camPos, const glm::vec3 camDir, const glm::vec3 p0, const glm::vec3 cross ) {
 	float determinant = -glm::dot(camDir, cross);
 	if (!determinant) { // div zero -> line parallel to plane -> no intersection
 		return {FLT_MIN, FLT_MIN, FLT_MIN};
@@ -645,7 +645,7 @@ glm::vec3 line_plane_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3
 	return {camPos.x + camDir.x * t, camPos.y + camDir.y * t, camPos.z + camDir.z * t};
 }
 
-static bool line_rectangle_intersection( glm::vec3 &camPos, glm::vec3 &camDir, glm::vec3 p0, glm::vec3 size )
+static bool line_rectangle_intersection( const glm::vec3 camPos, const glm::vec3 camDir, const glm::vec3 p0, const glm::vec3 size )
 {
 	glm::vec3 res;
 	if (size.z) {
@@ -659,7 +659,7 @@ static bool line_rectangle_intersection( glm::vec3 &camPos, glm::vec3 &camDir, g
 }
 
 // 'cube' but actually parallelepiped rectangle
-bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeCenter, glm::vec3 cubeHalfSize )
+bool line_cube_intersection( const glm::vec3 camPos, const glm::vec3 camDir, const glm::vec3 cubeCenter, const glm::vec3 cubeHalfSize )
 {
 	// std::cout << "line_cube_intersection: " << camPos.x << ", " << camPos.y << ", " << camPos.z << " -> " << camDir.x << ", " << camDir.y << ", " << camDir.z << " and " << cubeCenter.x << ", " << cubeCenter.y << ", " << cubeCenter.z << " -> " << cubeHalfSize.x << ", " << cubeHalfSize.y << ", " << cubeHalfSize.z << std::endl;
 	return (line_rectangle_intersection(camPos, camDir, cubeCenter - cubeHalfSize, {2 * cubeHalfSize.x, 0, 2 * cubeHalfSize.z}) // face_dir::minus_y
@@ -671,12 +671,48 @@ bool line_cube_intersection( glm::vec3 camPos, glm::vec3 camDir, glm::vec3 cubeC
 			);
 }
 
+/**
+ * @brief return whether point is between segStart and segEnd, we already know point is part of line seg is part of
+ */
+static bool point_within_segment( const glm::vec3 segStart, const glm::vec3 segEnd, const glm::vec3 point )
+{
+	return ((segStart.x != segEnd.x) ? (segStart.x <= point.x && point.x <= segEnd.x) || (segEnd.x <= point.x && point.x <= segStart.x)
+									: (segStart.y <= point.y && point.y <= segEnd.y) || (segEnd.y <= point.y && point.y <= segStart.y));
+}
+
+/**
+ * @brief same as line_regtangle_intersection, but also check if intersection is between segment start and end
+ */
+static bool segment_rectangle_intersection( const glm::vec3 segStart, const glm::vec3 segEnd, const glm::vec3 p0, const glm::vec3 size )
+{
+	glm::vec3 res = (size.z) ? line_plane_intersection(segStart, glm::normalize(segEnd - segStart), p0, glm::cross(glm::vec3(size.x, size.y, 0), glm::vec3(0, 0, size.z)))
+							: line_plane_intersection(segStart, glm::normalize(segEnd - segStart), p0, glm::cross(glm::vec3(size.x, 0, 0), glm::vec3(0, size.y, 0)));
+
+	return (res.x >= p0.x && res.x <= p0.x + size.x
+			&& res.y >= p0.y && res.y <= p0.y + size.y
+			&& res.z >= p0.z && res.z <= p0.z + size.z
+			&& point_within_segment(segStart, segEnd, res));
+}
+
+/**
+ * @brief same as line_cube_intersection, but also check if intersection is between segment start and end
+ */
+bool segment_cube_intersection( const glm::vec3 segStart, const glm::vec3 segEnd, const glm::vec3 cubeCenter, const glm::vec3 cubeHalfSize )
+{
+	return (segment_rectangle_intersection(segStart, segEnd, cubeCenter - cubeHalfSize, {2 * cubeHalfSize.x, 0, 2 * cubeHalfSize.z}) // face_dir::minus_y
+			|| segment_rectangle_intersection(segStart, segEnd, cubeCenter - cubeHalfSize, {0, 2 * cubeHalfSize.y, 2 * cubeHalfSize.z}) // face_dir::minus_x
+			|| segment_rectangle_intersection(segStart, segEnd, {cubeCenter.x + cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {0, 2 * cubeHalfSize.y, 2 * cubeHalfSize.z}) // face_dir::plus_x
+			|| segment_rectangle_intersection(segStart, segEnd, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y + cubeHalfSize.y, cubeCenter.z - cubeHalfSize.z}, {2 * cubeHalfSize.x, 0, 2 * cubeHalfSize.z}) // face_dir::plus_y
+			|| segment_rectangle_intersection(segStart, segEnd, {cubeCenter.x - cubeHalfSize.x, cubeCenter.y - cubeHalfSize.y, cubeCenter.z + cubeHalfSize.z}, {2 * cubeHalfSize.x, 2 * cubeHalfSize.y, 0}) // face_dir::plus_z
+			);
+}
+
 // returns if cubes a and b intersect
 // posA, posB are center points of cubes
 // WATCHOUT posA.z is bottom of cube a
 // sizeA, sizeB are halfSizes of cubes
 // WATCHOUT sizeA.z is fullHeight of cube a
-bool cube_cube_intersection( glm::vec3 posA, glm::vec3 sizeA, glm::vec3 posB, glm::vec3 sizeB )
+bool cube_cube_intersection( const glm::vec3 posA, const glm::vec3 sizeA, const glm::vec3 posB, const glm::vec3 sizeB )
 {
 	return (posA.x - sizeA.x < posB.x + sizeB.x && posA.x + sizeA.x > posB.x - sizeB.x
 			&& posA.y - sizeA.y < posB.y + sizeB.y && posA.y + sizeA.y > posB.y - sizeB.y

@@ -491,9 +491,18 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 	_camera->setDelta(deltaTime);
 	_hand_content = _inventory->getCurrentSlot();
 	if (inputs::key_down(inputs::destroy)) {
-		if (_game_mode != settings::consts::gamemode::creative) {
+		bool firstFrame = inputs::key_update(inputs::destroy);
+		AMob* mobHit = NULL;
+		if (firstFrame && _current_chunk_ptr) { // check if mob hit by punch
+			mobHit = _current_chunk_ptr->mobHit(_block_hit);
+		}
+		if (mobHit) {
+			_camera->setArmAnimation(true);
+			mobHit->receiveDamage(15.0f, _camera->getEyePos());
+			// TODO set _punch to true to avoid breaking block behind mob
+		} else if (_game_mode != settings::consts::gamemode::creative) {
 			if (_block_hit.type == blocks::air) {
-				_camera->setArmAnimation(inputs::key_update(inputs::destroy));
+				_camera->setArmAnimation(firstFrame);
 			} else {
 				_camera->setArmAnimation(true);
 				_break_time += deltaTime;
@@ -515,7 +524,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 					}
 				}
 			}
-		} else if (inputs::key_update(inputs::destroy)) {
+		} else if (firstFrame) {
 			handleBlockModif(false, false);
 		}
 	} else if (inputs::key_update(inputs::destroy)) {

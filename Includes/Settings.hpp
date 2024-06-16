@@ -109,8 +109,14 @@ namespace settings {
 		};
 
 		namespace hitbox { // https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
+			const float player = 1.8f;
 			const float zombie = 1.95f;
 		};
+
+		namespace eyeLevel { // meaning eye level = hitbox / 32 * 28.8
+			const float player = 0.62f;
+			const float zombie = 0.755f;
+		}
 	};
 
 	namespace state_machine {

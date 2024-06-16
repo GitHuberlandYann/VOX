@@ -65,7 +65,6 @@ TODOS:
 	
 	TODAY:
 	- Way more blocks ?? + world file "version: " line + /respawn
-	- Zombies
 	
 	SHORTTERM memory:
 	\/ - work on cleanAtlas
@@ -178,28 +177,29 @@ TODOS:
 	- gui size
 	- Worldedit mod
 	- A* Pathfinding algo to be used by mobs
+	- Zombies
 	- centralize settings and save/load them in file
 	- resource packs
 	- Game modes:
-	- survival
-	- creative
-	- adventure
+		- survival
+		- creative
+		- adventure
 	- Menus:
-	- main menu
-	- world selection menu
+		- main menu
+		- world selection menu
 		- world creation menu
-		- load menu
-		- pause menu
-		- options menu
-		- video settings menu
-		- Controls Menu
-		- resource packs menu
-		- inventory menu
-		- crafting menu
-		- chest menu
-		- furnace menu
-		- chat menu
-		- death menu
+			- load menu
+			- pause menu
+			- options menu
+			- video settings menu
+			- Controls Menu
+			- resource packs menu
+			- inventory menu
+			- crafting menu
+			- chest menu
+			- furnace menu
+			- chat menu
+			- death menu
 
 
 Controls (QWERTY):

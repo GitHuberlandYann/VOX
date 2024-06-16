@@ -2787,8 +2787,8 @@ struct ZombieEgg : Block {
 			name = "ZOMBIE_EGG";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 9;
+			textureX = 10;
+			textureY = 2;
 		}
 };
 

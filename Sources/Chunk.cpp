@@ -729,8 +729,16 @@ void Chunk::updateFurnaces( double currentTime )
  */
 void Chunk::updateMobs( std::vector<t_shaderInput>& modArr, double deltaTime )
 {
-	for (auto m : _mobs) {
-		m->update(modArr, deltaTime);
+	size_t mSize = _mobs.size();
+	if (!mSize) {
+		return ;
+	}
+
+	for (size_t index = 0, delCount = 0; index < mSize; ++index) {
+		if (_mobs[index - delCount]->update(modArr, deltaTime)) {
+			_mobs.erase(_mobs.begin() + index - delCount);
+			++delCount;
+		}
 	}
 }
 

@@ -16,7 +16,8 @@ class Zombie : public AHostileMob
         Zombie( Chunk* chunk, Camera* player, glm::vec3 position );
         virtual ~Zombie( void );
 
-        virtual void update( std::vector<t_shaderInput>& modArr, float deltaTime );
+        virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime );
+		virtual glm::vec3 getEyePos( void );
 		virtual bool getHitBox( void );
 
     private:

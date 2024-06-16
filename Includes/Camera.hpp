@@ -95,6 +95,7 @@ class Camera
 		void applyGravity( void );
 		void touchGround( float value );
 		void touchCeiling( float value );
+		void receiveDamage( const float damage, const glm::vec3 source);
 
 		void tickUpdate( void );
 		void updateExhaustion( float level );

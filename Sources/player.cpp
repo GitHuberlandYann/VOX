@@ -189,8 +189,8 @@ void Camera::drawPlayer( std::vector<t_shaderInput> &arr, int item, int game_mod
 		return (drawHeldItem(arr, item, game_mode));
 	}
 
-	// 1 model texture pxl is 0.057857142857142864 meters
-	const float scale = 0.057857142857142864;
+	// 1 model texture pxl is [1.8 / 32 =] 0.05625 meters
+	const float scale = 0.05625f;
 	const int speco = 0; // 64 for second skin
 
 // draw head

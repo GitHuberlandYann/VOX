@@ -401,13 +401,12 @@ void AMob::move( int direction, bool move )
 		return ;
 	}
 	_walking = true;
-	_bodyFront = _front;
 
 	const float speed_frame = _deltaTime * settings::consts::speed::zombie;
 	if (direction == face_dir::plus_x) {
-		_position.x += _front.x * speed_frame;
+		_position.x += _bodyFront.x * speed_frame;
 	} else if (direction == face_dir::plus_y) {
-		_position.y += _front.y * speed_frame;
+		_position.y += _bodyFront.y * speed_frame;
 	}
 }
 
@@ -515,6 +514,8 @@ void AMob::touchGround( float value )
 	// } else if (_waterFeet || _waterHead) {
 	} else if (_fallDistance > 3) { // TODO call this function AFTER setting waterFeet
 		_health -= glm::max(0.0f, _fallDistance - 3);
+		_invulnerable = true;
+		_hurtTime = -0.5f;
 		if (_health < 0) {
 			_health = 0;
 		}
@@ -536,15 +537,15 @@ void AHostileMob::updateCurrentBlock( void )
 			_currentBlock = currentBlock;
 			return ;
 		}
+		_blockTime = 0.0f;
 		_currentBlock = currentBlock;
 		if (_state == settings::state_machine::chase) { // update path
 			_path = _chunk->computePathfinding(_currentBlock, _player->getPos()).first;
 			if (_path.size() < 2) {
-				_state = settings::state_machine::idle;
-				_stateTime = 0;
+				setState(settings::state_machine::idle);
 			}
 		} else if (glm::distance(_position, _player->getPos()) < 32) {
-			const std::vector<glm::ivec3> ids = voxel_traversal(_position, _player->getPos());
+			const std::vector<glm::ivec3> ids = voxel_traversal(getEyePos(), _player->getEyePos());
 
 			for (auto i : ids) {
 				int value = _chunk->getBlockAtAbsolute(i);
@@ -556,8 +557,7 @@ void AHostileMob::updateCurrentBlock( void )
 
 			// mob views player
 			_path = _chunk->computePathfinding(_currentBlock, _player->getPos()).first;
-			_state = settings::state_machine::chase;
-			_stateTime = 0;
+			setState(settings::state_machine::chase);
 		}
 	}
 }
