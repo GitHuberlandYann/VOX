@@ -132,7 +132,7 @@ void WorldEdit::handleCmdCopy( void )
 		}
 	}
 	// rm player pos from clipStart and End to have relative position of clipped area in memory
-	glm::ivec3 pos = _openGL_Manager->_camera->getPos();
+	glm::ivec3 pos = _openGL_Manager->_player->getPos();
 	_clipStart -= pos;
 	_clipEnd -= pos;
 	_absoluteClipboard = true;
@@ -158,7 +158,7 @@ void WorldEdit::handleCmdPaste( bool notAirBlocks )
 	glm::ivec3 end = _clipEnd;
 	// add player pos to clipStart and End to have absolute position of paste area
 	if (_absoluteClipboard) {
-		glm::ivec3 pos = _openGL_Manager->_camera->getPos();
+		glm::ivec3 pos = _openGL_Manager->_player->getPos();
 		start += pos;
 		end += pos;
 	}
@@ -203,7 +203,7 @@ void WorldEdit::handleCmdMove( std::vector<std::string>& argv )
 		return ;
 	}
 
-	const glm::ivec3 dir = ((argv[1][0] == '-') ? 1 : -1) * adj_blocks[_openGL_Manager->_camera->getOrientation6()];
+	const glm::ivec3 dir = ((argv[1][0] == '-') ? 1 : -1) * adj_blocks[_openGL_Manager->_player->getOrientation6()];
 	handleCmdCopy();
 	handleCmdSet(blocks::air);
 	_clipStart += distance * dir;

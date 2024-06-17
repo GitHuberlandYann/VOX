@@ -10,12 +10,19 @@ class AMob {
 		AMob( glm::vec3 position );
 		virtual ~AMob( void );
 
-		virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime ) = 0;
+		virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime ) { (void)modArr;(void)deltaTime; return (true); };
 		glm::vec3 getPos( void );
 		virtual glm::vec3 getEyePos( void ) = 0;
-		void applyGravity( void );
-		void touchCeiling( float value );
-		void touchGround( float value );
+		virtual glm::vec3 getCamPos( bool update );
+		glm::vec3 getDir( void );
+		virtual void setCamUpdate( bool state ) { (void) state; };
+		virtual float getFovOffset( void ) { return (0.0f); };
+
+		virtual void applyGravity( void );
+		virtual void touchGround( float value );
+		virtual void touchCeiling( float value );
+		int getHealth( void );
+		bool getTouchGround( void );
 		void setTouchGround( bool state );
 		virtual bool getHitBox( void ) = 0;
 		void receiveDamage( const float damage, const glm::vec3 sourceDir );
@@ -23,7 +30,7 @@ class AMob {
 	protected:
 		std::string _name;      // tag above head.
 		short _type;            // mob type, used to generate appropriate ptr to AMob
-		short _air;             // how much air the entity has, in ticks. Decreases by 1 per tick when unable to breathe. Increase by 1 per tick when it can breathe. If -20 while still unable to breathe, the entity loses 1 health and its air is reset to 0.
+		// short _air;             // how much air the entity has, in ticks. Decreases by 1 per tick when unable to breathe. Increase by 1 per tick when it can breathe. If -20 while still unable to breathe, the entity loses 1 health and its air is reset to 0.
 		// short _fire;            // Number of ticks until the fire is put out. Negative values reflect how long the entity can stand in fire before burning. Default -20 when not on fire.
 		float _deathTime;       // number of seconds the mob has been dead for. Controls death animations. 0 when alive.
 		float _hurtTime;        // number of seconds the mob turns red for after being hit. >= 0 when not recently hit.
@@ -34,6 +41,7 @@ class AMob {
 		float _walkTime;        // used to animate arms and legs
 		float _health;          // amount of health the entity has.
 		float _deltaTime;       // used to compute movement
+		glm::ivec3 _currentBlock;
 		// glm::vec3 _motion;   // velocity of entity in meters per tick
 		glm::vec3 _position;    // position of entity.
 		// glm::vec2 _rotation;    // rotation of entity. yaw [-180:180] pitch [-90:90]
@@ -55,9 +63,10 @@ class AMob {
 
 		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy );
 
+		virtual bool updateCurrentBlock( void ) = 0;
 		void move( int direction, bool move );
-		void restorePos( glm::vec3 position );
-		bool customObstacle( float minZ, float maxZ );
+		virtual void restorePos( glm::vec3 position );
+		virtual bool customObstacle( float minZ, float maxZ );
 };
 
 #endif

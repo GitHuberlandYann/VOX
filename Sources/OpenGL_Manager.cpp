@@ -6,16 +6,17 @@
 void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
-	: _camera(std::make_unique<Camera>()), _inventory(std::make_unique<Inventory>()),
+	: _player(std::make_unique<Player>()), _inventory(std::make_unique<Inventory>()),
 	_window(NULL), _textures({NULL}), _fill(FILL), _debug_mode(true), _outline(true), _paused(true),
 	_threadUpdate(false), _threadStop(false), _break_time(0), _eat_timer(0), _bow_timer(0),
 	_game_mode(settings::consts::gamemode::creative), _break_frame(0), _world_name("default.json"),
-	_block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0}),
+	_block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0}), _camera(std::make_unique<Camera>()),
 	_ui(std::make_unique<UI>()), _menu(std::make_unique<Menu>()), _skybox(std::make_unique<Skybox>())
 {
 	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
 	_inventory->setUIPtr(_ui.get());
-	_ui->setPtrs(this, _inventory.get(), _camera.get());
+	_camera->setTarget(_player.get());
+	_ui->setPtrs(this, _inventory.get(), _player.get());
 	_menu->setPtrs(_inventory.get(), _ui.get());
 	WorldEdit::Get()->setPtrs(this, _inventory.get(), _ui->getChatPtr().get());
 
@@ -46,6 +47,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	set_cursor_position_callback(NULL, NULL);
 	set_scroll_callback(NULL);
 	_inventory->setUIPtr(NULL);
+	_camera->setTarget(NULL);
 	_ui->setPtrs(NULL, NULL, NULL);
 	_menu->setPtrs(NULL, NULL);
 	WorldEdit::Get()->setPtrs(NULL, NULL, NULL);
@@ -210,7 +212,7 @@ void OpenGL_Manager::drawEntities( void )
 			addLine(glm::vec3(_current_chunk.x + i,  _current_chunk.y + 16, 0), glm::vec3(_current_chunk.x + i,  _current_chunk.y + 16, 256));
 			addLine(glm::vec3(_current_chunk.x,      _current_chunk.y + i,  0), glm::vec3(_current_chunk.x,      _current_chunk.y + i, 256));
 		}
-		int eye = _camera->getEyePos().z;
+		int eye = _player->getEyePos().z;
 		eye &= 0xF8;
 		for (int i = 0; i < 13; i += 4) {
 			addLine(glm::vec3(_current_chunk.x,      _current_chunk.y,      eye + i), glm::vec3(_current_chunk.x + 16, _current_chunk.y,      eye + i));
@@ -541,7 +543,7 @@ void OpenGL_Manager::setGamemode( int gamemode )
 		return ;
 	}
 	_game_mode = gamemode;
-	_camera->resetFall();
+	_player->resetFall();
 	_ui->chatMessage("Gamemode set to " + settings::consts::gamemode::str[gamemode]);
 }
 
@@ -626,7 +628,7 @@ void OpenGL_Manager::main_loop( void )
 			fluidUpdate = (nbTicks == 5 || nbTicks == 10 || nbTicks == 15 || nbTicks == 20);
 			animUpdate = (nbTicks & 0x1);
 			if (!gamePaused) {
-				_camera->tickUpdate();
+				_player->tickUpdate();
 				redTickUpdate = DayCycle::Get()->tickUpdate();
 			}
 		} else {
@@ -642,14 +644,14 @@ void OpenGL_Manager::main_loop( void )
 				userInputs(deltaTime, ++backFromMenu > 3);
 			}
 			chunkUpdate();
-		} else if (_camera->_update && _menu->getState() >= menu::inventory) {
+		} else if (_player->getCamUpdate() && _menu->getState() >= menu::inventory) {
 			// _ui->chatMessage("debug time");
 			chunkUpdate();
 			updateCamView();
 			updateVisibleChunks();
 			if (!_visible_chunks.size()) {
 				_current_chunk.x += 32; // we want chunk_update to call thread on next loop
-				_camera->_update = true;
+				_player->setCamUpdate(true);
 			}
 		}
 		// b.stamp("user inputs");
@@ -683,7 +685,7 @@ void OpenGL_Manager::main_loop( void )
 		// b.stamp("solids");
 
 		if (!gamePaused) {
-			_camera->drawPlayer(_particles, _hand_content, _game_mode);
+			_player->drawPlayer(_particles, _hand_content, _game_mode);
 			drawParticles();
 			drawModels();
 			_shader.useProgram();
@@ -724,7 +726,7 @@ void OpenGL_Manager::main_loop( void )
 						+ '\n' + DayCycle::Get()->getInfos()
 						+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
 						+ "\nTPS: " + std::to_string(nbTicksLastSecond)
-						+ '\n' + _camera->getCamString(_game_mode)
+						+ '\n' + _player->getString(_game_mode)
 						+ "\nBlock\t> " + s_blocks[_block_hit.type]->name
 						+ ((_block_hit.type != blocks::air) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
 						+ ((_block_hit.type) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
@@ -775,11 +777,11 @@ void OpenGL_Manager::main_loop( void )
 							glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 						}
 					#endif
-					set_cursor_position_callback(_camera.get(), NULL);
+					set_cursor_position_callback(_player.get(), NULL);
 					set_scroll_callback(_inventory.get());
 					_paused = false;
 					backFromMenu = 0;
-					_camera->_update = true;
+					_player->setCamUpdate(true);
 					setThreadUpdate(true);
 					_ui->textToScreen(_menu->getState() >= menu::pause);
 					break ;
@@ -791,18 +793,18 @@ void OpenGL_Manager::main_loop( void )
 					break ;
 				case menu::ret::world_created: // create new world, go into loading mode
 					_world_name = _menu->getWorldFile();
-					_camera->setSpawnpoint({0, 0, 256});
-					_camera->respawn();
+					_player->setSpawnpoint({0, 0, 256});
+					_player->respawn();
 					_game_mode = settings::consts::gamemode::survival;
 					DayCycle::Get()->setTicks(1000);
 					initWorld();
 					break ;
 				case menu::ret::respawn_player: // Respawn player, init world again
-					_camera->respawn();
+					_player->respawn();
 					initWorld();
 					break ;
 				case menu::ret::respawn_save_quit: // Respawn player, then save and quit to menu
-					_camera->respawn();
+					_player->respawn();
 				case menu::ret::save_and_quit: // save and quit to menu
 					resetInputsPtrs();
 					saveWorld();

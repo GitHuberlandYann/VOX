@@ -1,10 +1,10 @@
-#include "Camera.hpp"
+#include "Player.hpp"
 #include "Zombie.hpp"
 #include "Chunk.hpp"
 #include "logs.hpp"
 #include "random.hpp"
 
-Zombie::Zombie( Chunk* chunk, Camera* player, glm::vec3 position ) : AHostileMob(player, position)
+Zombie::Zombie( Chunk* chunk, Player* player, glm::vec3 position ) : AHostileMob(player, position)
 {
     _chunk = chunk;
 	_type = settings::consts::mob::zombie;
@@ -51,7 +51,7 @@ bool Zombie::update( std::vector<t_shaderInput>& modArr, float deltaTime )
 		} else {
 			_walkTime = (_walking) ? _walkTime + deltaTime : 0;
 			_blockTime += deltaTime;
-			if (_blockTime > 3.0f) { // if stuck on same block for 3 sec while trying to move, revert to idle
+			if (_blockTime > 2.5f) { // if stuck on same block for 3 sec while trying to move, revert to idle
 				setState(settings::state_machine::idle);
 			}
 

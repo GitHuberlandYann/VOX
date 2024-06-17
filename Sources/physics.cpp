@@ -1,4 +1,5 @@
-#include "Camera.hpp"
+#include "Player.hpp"
+#include "callbacks.hpp"
 #include "logs.hpp"
 
 // ************************************************************************** //
@@ -150,101 +151,98 @@ bool Chunk::collisionBoxWater( glm::vec3 pos, float width, float height )
 	return (false);
 }
 
-/**
- * @brief compute player's hitBox height from his state
- * @return float = hitbox's height
-*/
-float Camera::getHitBox( void )
-{
-	return ((_sneaking) ? 1.5f : 1.8f);
-}
-
 // ************************************************************************** //
 //                               Gravity                                      //
 // ************************************************************************** //
 
 /**
- * @brief applies gravity to player and check if he touches ground or ceiling to restrict his movements
+ * @brief applies gravity to mob and check if he touches ground or ceiling to restrict his movements
 */
-void Chunk::applyGravity( void )
+void Chunk::applyGravity( AMob* mob )
 {
-	float saved_posZ = _camera->getPos().z;
-	_camera->applyGravity();
-	glm::vec3 pos = _camera->getPos();
+	float saved_posZ = mob->getPos().z;
+	mob->applyGravity();
+	glm::vec3 pos = mob->getPos();
 	float distZ = saved_posZ - pos.z;
 	t_collision coll;
 	if (distZ < 0) { // jumping
-		_camera->_touchGround = false;
-		float hitboxHeight = _camera->getHitBox();
+		mob->setTouchGround(false);
+		float hitboxHeight = mob->getHitBox();
 		coll = collisionBox({pos.x, pos.y, pos.z + hitboxHeight}, 0.3f, -distZ, -distZ);
 		if (coll.type == COLLISION::TOTAL) {
-			_camera->touchCeiling(glm::floor(pos.z) + 0.19f);
-			// std::cout << "hit roof, " << pos.z << " -> " << _camera->getPos().z << std::endl;
+			mob->touchCeiling(glm::floor(pos.z) + 2.0f - hitboxHeight);
+			// std::cout << "hit roof, " << pos.z << " -> " << error->getPos().z << std::endl;
 			return ;
 		} else if (coll.type == COLLISION::PARTIAL) {
-			_camera->touchCeiling(coll.minZ - hitboxHeight);
+			mob->touchCeiling(coll.minZ - hitboxHeight);
 			return ;
 		}
 	} else { // falling
 		coll = collisionBox(pos, 0.3f, distZ, distZ);
 		if (coll.type != COLLISION::NONE) {
-			_camera->touchGround(coll.maxZ);
-			if (saved_posZ != _camera->getPos().z) {
-				_camera->_update = true;
-			}
+			mob->touchGround(coll.maxZ);
 			return ;
 		}
 	}
-	_camera->_update = true;
-	_camera->_touchGround = false;
+	mob->setTouchGround(false);
 }
-
 
 /**
  * @brief applies equation z = z0 + vt + at² / 2 to players z coordinate
  * 
 */
-void Camera::applyGravity( void )
+void Player::applyGravity( void )
 {
 	if (_waterFeet || _waterHead) {
 		return (applyGravityUnderwater());
 	}
 	// std::cout << "Gravity applied" << std::endl;
-	_fall_time += _deltaTime;
-	float initial_speed = ((_inJump) ? INITIAL_JUMP : INITIAL_FALL);
+	_fallTime += _deltaTime;
+	// const float initial_speed = ((_inJump) ? (_knockback.z > 0.1f) ? _knockback.z : settings::consts::speed::initial_jump : settings::consts::speed::initial_fall);
+	const float initial_speed = ((_inJump) ? settings::consts::speed::initial_jump : settings::consts::speed::initial_fall);
 
-	_mtx.lock();
-	_position.z = _z0 + initial_speed * _fall_time + 3 * STANDARD_GRAVITY * _fall_time * _fall_time * 0.5f; // TODO this '3' is a bit random ...
-	_mtx.unlock();
+	_position.z = _z0 + initial_speed * _fallTime + 3 * settings::consts::math::standard_gravity * _fallTime * _fallTime * 0.5f; // TODO this '3' is a bit random ...
+}
+
+void Player::applyGravityUnderwater( void )
+{
+	float speed_frame = _deltaTime * ((_inJump) ? ((_waterHead) ? settings::consts::speed::swim_up : settings::consts::speed::swim_down)
+												: ((_sneaking) ? -settings::consts::speed::swim_down : -settings::consts::speed::swim_up));
+
+	_position.z += speed_frame;
+	_z0 = _position.z;
+	_fallTime = 0;
+	// std::cout << "gravity underwater " << speed_frame << ", " << _inJump << ", " << _sneaking << std::endl;
 }
 
 /**
  * @brief Youston, player touched ground. sets/resets player's info accordingly
 */
-void Camera::touchGround( float value )
+void Player::touchGround( float value )
 {
-	_mtx.lock();
 	_position.z = value;
-	_mtx.unlock();
-	_fall_distance = _z0 - _position.z;
-	// std::cout << "TOUCH GROUND AT " << _fall_distance << std::endl;
-	// if (_inJump && _fall_distance < 0) {
+	_fallDistance = _z0 - _position.z;
+	// std::cout << "TOUCH GROUND AT " << _fallDistance << std::endl;
+	// if (_inJump && _fallDistance < 0) {
 	// 	return ;
 	// }
 	if (!_touchGround) {
-		_update = true;
+		_updateCam = true;
 	}
-	if (_fall_immunity) {
-		_fall_immunity = false;
+	if (_invulnerable) {
+	} else if (_fallImmunity) {
+		_fallImmunity = false;
 	} else if (_waterFeet || _waterHead) {
-	} else if (_fall_distance > 3) { // TODO call this function AFTER setting waterFeet
-		_healthUpdate = (glm::max(0.0f, _fall_distance - 3) != 0);
-		_health_points -= glm::max(0.0f, _fall_distance - 3);
-		if (_health_points < 0) {
-			_health_points = 0;
+	} else if (_fallDistance > 3) { // TODO call this function AFTER setting waterFeet
+		_updateUI = (glm::max(0.0f, _fallDistance - 3) != 0);
+		_health -= glm::max(0.0f, _fallDistance - 3);
+		_invulnerable = true;
+		_hurtTime = -0.5f;
+		if (_health < 0) {
+			_health = 0;
 		}
 	}
-	_fall_time = 0;
+	_fallTime = 0;
 	_z0 = _position.z;
 	_touchGround = true;
 	_inJump = false;
@@ -253,135 +251,23 @@ void Camera::touchGround( float value )
 /**
  * @brief head bump, sets/resets player's info accordingly
 */
-void Camera::touchCeiling( float value )
+void Player::touchCeiling( float value )
 {
-	_mtx.lock();
 	_position.z = value;
-	_mtx.unlock();
 	_z0 = value;
-	_fall_time = 0;
-	_update = true;
+	_fallTime = 0;
+	_updateCam = true;
 	_inJump = false;
-}
-
-/**
- * @brief move player by using user inputs
- * @param v, h, z user inputs
-*/
-void Camera::moveFly( GLint v, GLint h, GLint z )
-{
-	if (!v && !h && !z) {
-		return ;
-	}
-	_update = true;
-	float speed_frame = _deltaTime * _movement_speed * ((_sprinting) ? 2 : 1);
-	glm::vec3 norm = glm::normalize(glm::vec3(v * _front.x + h * _right.x,
-												v * _front.y + h * _right.y,
-												v * _front.z + h * _right.z + z));
-	_mtx.lock();
-	_position += norm * speed_frame;
-	_mtx.unlock();
-}
-
-/**
- * @brief update player's position from user's inputs
- * @param direction movement's axis
- * @param v, h, z user's inputs forwards, sideways, and upwards
-*/
-void Camera::moveHuman( Camera_Movement direction, GLint v, GLint h, GLint z )
-{
-	if (_waterFeet || _waterHead) {
-		return (moveHumanUnderwater(direction, v, h, z));
-	} else if (direction == Z_AXIS) {
-		return ;
-	} else if (!v && !h) {
-		_walking = false;
-		return ;
-	}
-	_update = true;
-	_walking = true;
-	_bodyFront = _front;
-
-	float speed_frame = _deltaTime * ((_sneaking) ? ((_sprinting) ? SNEAK_SPRINT_SPEED : SNEAK_SPEED) : ((_sprinting) ?  ((_touchGround) ? SPRINT_SPEED : SPRINT_JUMP_SPEED ) : WALK_SPEED));
-	float movement = 0;
-	_mtx.lock();
-	if (direction == X_AXIS) {
-		movement = glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).x * speed_frame;
-		_position.x += movement;
-	}
-	else if (direction == Y_AXIS) {
-		movement = glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).y * speed_frame;
-		_position.y += movement;
-	}
-	_mtx.unlock();
-	if (_sprinting && movement != 0) {
-		updateExhaustion(glm::abs(movement * EXHAUSTION_SPRINTING));
-	}
-}
-
-/**
- * @brief called to restore position after collision in survival mode
- * @param pos absolute position to set player's pos to
-*/
-void Camera::unmoveHuman( glm::vec3 pos )
-{
-	_mtx.lock();
-	_position = pos;
-	_mtx.unlock();
-	setRun(false);
-}
-
-/**
- * @brief if current block pos different from last recorded, we sort water and sky vertices
-*/
-void Camera::updateCurrentBlock( void )
-{
-	glm::vec3 camPos = getEyePos();
-	glm::ivec3 current_block = {glm::floor(camPos.x), glm::floor(camPos.y), glm::floor(camPos.z)};
-	if (current_block != _current_block) {
-		_current_block = current_block;
-		if (_current_chunk_ptr) {
-			if (Settings::Get()->getInt(settings::ints::clouds) != settings::OFF) {
-				_current_chunk_ptr->sort_sky(camPos, true);
-			}
-			_current_chunk_ptr->sort_water(camPos, true);
-		}
-	}
-}
-
-/**
- * @brief adjust position.z to given obstacle, if player can't pass obstacle return false
- * @param minZ, maxZ computed obstacle dimensions
- * @return false to cancel player movement
-*/
-bool Camera::customObstacle( float minZ, float maxZ )
-{
-	(void)minZ;
-	if (!_touchGround) return (false);
-
-	_mtx.lock();
-	// std::cout << "DEBUG customObstacle " << _position.z << " vs " << maxZ << std::endl;
-	if (_position.z < maxZ && _position.z + 0.6f > maxZ) {
-		// set smoothcam to true to have smoother transition upon climbing stairs
-		// ie player will teleport, but cam will follow smoothly to enhance user experience
-		_smoothCam = true;
-		_smoothCamZ = _position.z + 1 + ((_sneaking) ? SNEAK_EYE_LEVEL : EYE_LEVEL);
-		_position.z = maxZ;
-		_mtx.unlock();
-		return (true);
-	}
-	_mtx.unlock();
-	return (false);
 }
 
 /**
  * @brief called when gamemode is changed, allows to avoid taking damage upon landing from creative mode
 */
-void Camera::resetFall( void )
+void Player::resetFall( void )
 {
-	_fall_immunity = true;
-	_z0 = getPos().z;
-	_fall_time = 0;
+	_fallImmunity = true;
+	_z0 = _position.z;
+	_fallTime = 0;
 	_inJump = false;
 }
 
@@ -453,49 +339,13 @@ bool AMob::customObstacle( float minZ, float maxZ )
 }
 
 /**
- * @brief applies gravity to mob and check if he touches ground or ceiling to restrict his movements
-*/
-void Chunk::applyGravity( AMob* mob )
-{
-	float saved_posZ = mob->getPos().z;
-	mob->applyGravity();
-	glm::vec3 pos = mob->getPos();
-	float distZ = saved_posZ - pos.z;
-	t_collision coll;
-	if (distZ < 0) { // jumping
-		mob->setTouchGround(false);
-		float hitboxHeight = mob->getHitBox();
-		coll = collisionBox({pos.x, pos.y, pos.z + hitboxHeight}, 0.3f, -distZ, -distZ);
-		if (coll.type == COLLISION::TOTAL) {
-			mob->touchCeiling(glm::floor(pos.z) + 2.0f - hitboxHeight);
-			// std::cout << "hit roof, " << pos.z << " -> " << error->getPos().z << std::endl;
-			return ;
-		} else if (coll.type == COLLISION::PARTIAL) {
-			mob->touchCeiling(coll.minZ - hitboxHeight);
-			return ;
-		}
-	} else { // falling
-		coll = collisionBox(pos, 0.3f, distZ, distZ);
-		if (coll.type != COLLISION::NONE) {
-			mob->touchGround(coll.maxZ);
-			return ;
-		}
-	}
-	mob->setTouchGround(false);
-}
-
-/**
  * @brief applies equation z = z0 + vt + at² / 2 to mob's z coordinate
  * 
 */
 void AMob::applyGravity( void )
 {
-	// if (_waterFeet || _waterHead) {
-	// 	return (applyGravityUnderwater());
-	// }
 	_fallTime += _deltaTime;
 	const float initial_speed = ((_inJump) ? (_knockback.z > 0.1f) ? _knockback.z : settings::consts::speed::initial_jump : settings::consts::speed::initial_fall);
-	std::cout << "Gravity applied on mob, initial speed is " << initial_speed << ", knockback z is " << _knockback.z << std::endl;
 
 	_position.z = _z0 + initial_speed * _fallTime + 3 * settings::consts::math::standard_gravity * _fallTime * _fallTime * 0.5f; // TODO this '3' is a bit random ...
 }
@@ -589,3 +439,223 @@ bool AHostileMob::updateCurrentBlock( void )
 	return (changeOwner);
 }
 
+// ************************************************************************** //
+//                               AMobs                                        //
+// ************************************************************************** //
+
+/**
+ * @brief move player by using user inputs
+ * @param v, h, z user inputs
+*/
+void Player::moveFly( GLint v, GLint h, GLint z )
+{
+	if (!v && !h && !z) {
+		return ;
+	}
+	_updateCam = true;
+	float speed_frame = _deltaTime * _flySpeed * ((_sprinting) ? 2 : 1);
+	glm::vec3 norm = glm::normalize(glm::vec3(v * _front.x + h * _right.x,
+												v * _front.y + h * _right.y,
+												v * _front.z + h * _right.z + z));
+	_position += norm * speed_frame;
+}
+
+void Player::moveUnderwater( int direction, GLint v, GLint h, GLint z )
+{
+	if (!v && !h) {
+		if (direction == face_dir::plus_z) {
+			_inJump = (z == 1);
+			_sneaking = (z == -1);
+		}
+		return ;
+	}
+	_updateCam = true;
+
+	float speed_frame = _deltaTime * ((_sprinting) ?  settings::consts::speed::sprint : settings::consts::speed::swim);
+	float movement = 0;
+	if (direction == face_dir::plus_x) {
+		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).x * speed_frame;
+		_position.x += movement;
+	}
+	else if (direction == face_dir::plus_y) {
+		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).y * speed_frame;
+		_position.y += movement;
+	} else {
+		_inJump = (z == 1);
+		_sneaking = (z == -1);
+		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).z * speed_frame;
+		_position.z += movement;
+		if (_chunk->collisionBox(_position, 0.3f, getHitBox(), getHitBox()).type == COLLISION::TOTAL) { // TODO handle partial collision underwater
+			_position.z -= movement;
+		}
+	}
+	updateExhaustion(glm::abs(movement * settings::consts::exhaustion::swim));
+	if (_sprinting && movement != 0) {
+		updateExhaustion(glm::abs(movement * settings::consts::exhaustion::sprint));
+	}
+}
+
+/**
+ * @brief update player's on x OR y axis
+ * @param direction movement's axis
+ * @param v, h, z user's inputs forwards, sideways, and upwards
+*/
+void Player::move( int direction, GLint v, GLint h, GLint z )
+{
+	if (_waterFeet || _waterHead) {
+		return (moveUnderwater(direction, v, h, z));
+	} else if (direction == face_dir::plus_z) {
+		return ;
+	} else if (!v && !h) {
+		_walking = false;
+		return ;
+	}
+	_updateCam = true;
+	_walking = true;
+	_bodyFront = _front;
+
+	float speed_frame = _deltaTime * ((_sneaking) ? ((_sprinting) ? settings::consts::speed::sneak_sprint : settings::consts::speed::sneak)
+												: ((_sprinting) ?  ((_touchGround) ? settings::consts::speed::sprint : settings::consts::speed::sprint_jump )
+																: settings::consts::speed::walk));
+	float movement = 0;
+	if (direction == face_dir::plus_x) {
+		movement = glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).x * speed_frame;
+		_position.x += movement;
+	}
+	else if (direction == face_dir::plus_y) {
+		movement = glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).y * speed_frame;
+		_position.y += movement;
+	}
+	if (_sprinting && movement != 0) {
+		updateExhaustion(glm::abs(movement * settings::consts::exhaustion::sprint));
+	}
+}
+
+/**
+ * @brief adjust position.z to given obstacle, if player can't pass obstacle return false
+ * @param minZ, maxZ computed obstacle dimensions
+ * @return false to cancel player movement
+*/
+bool Player::customObstacle( float minZ, float maxZ )
+{
+	(void)minZ;
+	if (!_touchGround) return (false);
+
+	// std::cout << "DEBUG customObstacle " << _position.z << " vs " << maxZ << std::endl;
+	if (_position.z < maxZ && _position.z + 0.6f > maxZ) {
+		// set smoothcam to true to have smoother transition upon climbing stairs
+		// ie player will teleport, but cam will follow smoothly to enhance user experience
+		_smoothCam = true;
+		_smoothCamZ = _position.z + 1 + ((_sneaking) ? settings::consts::eyeLevel::player_sneak : settings::consts::eyeLevel::player);
+		_position.z = maxZ;
+		return (true);
+	}
+	return (false);
+}
+
+/**
+ * @brief called to restore position after collision in survival mode
+ * @param pos absolute position to set player's pos to
+*/
+void Player::restorePos( glm::vec3 pos )
+{
+	_position = pos;
+	setRun(false);
+}
+
+/**
+ * @brief if current block pos different from last recorded, we sort water and sky vertices
+*/
+bool Player::updateCurrentBlock( void )
+{
+	glm::ivec3 current_block = glm::floor(_position);
+	if (current_block != _currentBlock) {
+		_currentBlock = current_block;
+		if (_chunk) {
+			glm::vec3 camPos = getEyePos();
+			if (Settings::Get()->getInt(settings::ints::clouds) != settings::OFF) {
+				_chunk->sort_sky(camPos, true);
+			}
+			_chunk->sort_water(camPos, true);
+		}
+		return (true);
+	}
+	return (false);
+}
+
+/**
+ * @brief use user input to update player's position and handle collision
+ */
+void Player::inputUpdate( bool rayCast, int gameMode )
+{
+	GLint key_cam_v = inputs::key_down(inputs::move_forwards) - inputs::key_down(inputs::move_backwards);
+	GLint key_cam_h = inputs::key_down(inputs::move_right) - inputs::key_down(inputs::move_left);
+	bool key_cam_zup = inputs::key_down(inputs::jump);
+	bool key_cam_zdown = inputs::key_down(inputs::sneak);
+
+	// this will be commented at some point
+	GLint key_cam_yaw = inputs::key_down(inputs::look_left) - inputs::key_down(inputs::look_right);
+	if (key_cam_yaw) {
+		processYaw(key_cam_yaw * 5);
+	}
+	GLint key_cam_pitch = inputs::key_down(inputs::look_up) - inputs::key_down(inputs::look_down);
+	if (key_cam_pitch) {
+		processPitch(key_cam_pitch * 5);
+	}
+
+	if (!key_cam_v && !key_cam_h) {
+		setRun(false);
+	} else {
+		setRun(inputs::key_down(inputs::run));
+	}
+
+	if (gameMode == settings::consts::gamemode::creative) { // no collision check, free to move however you want
+		moveFly(key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown);
+	}
+
+	if (rayCast) {
+		if (gameMode != settings::consts::gamemode::creative && _chunk) { // on first frame -> no _chunk
+			setSneak(key_cam_zdown);
+			setJump(key_cam_zup && inputs::key_update(inputs::jump));
+			move(face_dir::plus_z, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement
+			glm::vec3 originalPos = _position;
+			move(face_dir::plus_x, key_cam_v, key_cam_h, 0); // move on X_AXIS
+			float hitBoxHeight = getHitBox();
+			t_collision coll = _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight);
+			if (coll.type != COLLISION::NONE) {
+				// _ui->chatMessage("xcoll " + std::to_string(coll.type) + ", " + std::to_string(coll.minZ) + " ~ " + std::to_string(coll.maxZ) + " h " + std::to_string(hitBoxHeight));
+				if (!customObstacle(coll.minZ, coll.maxZ)
+					|| _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
+					restorePos(originalPos); // if collision after movement, undo movement + setRun(false)
+				}
+			} else if (key_cam_zdown && _touchGround && _chunk->collisionBox(_position - glm::vec3(0, 0, 0.6f), 0.3f, 0.7f, 0.7f).type == COLLISION::NONE) {
+				// if sneaking and touch ground and after move we have gap of more than 0.6 under our feet, undo movement
+				restorePos(originalPos);
+			}
+			originalPos = _position;
+			move(face_dir::plus_y, key_cam_v, key_cam_h, 0); // move on Y_AXIS
+			coll = _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight);
+			if (coll.type != COLLISION::NONE) {
+				if (!customObstacle(coll.minZ, coll.maxZ)
+					|| _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
+					restorePos(originalPos);
+				}
+			} else if (key_cam_zdown && _touchGround && _chunk->collisionBox(_position - glm::vec3(0, 0, 0.6f), 0.3f, 0.7f, 0.7f).type == COLLISION::NONE) {
+				restorePos(originalPos);
+			}
+			_chunk->applyGravity(this); // move on Z_AXIS
+			setWaterStatus(false, _chunk->collisionBoxWater(_position, 0.3f, 0));
+			setWaterStatus(true, _chunk->collisionBoxWater(getEyePos(), 0.05f, 0));
+			if (!_touchGround) {
+				_updateCam = true;
+			}
+		}
+	}
+
+	updateCurrentBlock();
+
+	GLint key_cam_speed = inputs::key_down(inputs::fly_speed_up) - inputs::key_down(inputs::fly_speed_down);
+	if (key_cam_speed) {
+		updateFlySpeed(key_cam_speed);
+	}
+}

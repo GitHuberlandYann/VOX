@@ -1,4 +1,4 @@
-#include "Camera.hpp"
+#include "Player.hpp"
 #include "random.hpp"
 
 // ************************************************************************** //
@@ -195,12 +195,12 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			addFlame(offset, pos, blocks::torch, (block_value >> offset::blocks::orientation) & 0x7);
 		}
 	} else if (shape == geometry::piston) {
-		block_value += (_camera->getOrientation6() << offset::blocks::orientation);
+		block_value += (_player->getOrientation6() << offset::blocks::orientation);
 	} else if (type == blocks::observer) {
-		block_value += (opposite_dir(_camera->getOrientation6()) << offset::blocks::orientation);
+		block_value += (opposite_dir(_player->getOrientation6()) << offset::blocks::orientation);
 	} else if (s_blocks[type]->oriented) {
 		if ((type != blocks::lever && shape != geometry::button) || ((block_value >> offset::blocks::bitfield) & 0x3) != placement::wall) {
-			block_value += (_camera->getOrientation() << offset::blocks::orientation);
+			block_value += (_player->getOrientation() << offset::blocks::orientation);
 		}
 		switch (shape) {
 			case geometry::stairs_bottom:
@@ -312,7 +312,7 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 		break ;
 	case blocks::zombie_egg:
 		std::cout << "zombie egg placed" << std::endl;
-		_mobs.push_back(std::make_shared<Zombie>(this, _camera, pos + glm::ivec3(_startX, _startY, 0)));
+		_mobs.push_back(std::make_shared<Zombie>(this, _player, pos + glm::ivec3(_startX, _startY, 0)));
 		return ;
 	default:
 		std::cout << "ERROR Chunk::regeneration case Modif::use defaulted on: " << s_blocks[value & mask::blocks::type]->name << std::endl;
@@ -369,7 +369,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 		// std::cout << "water count before " << waterSave << ", after " << _water_count << std::endl;
 		return ;
 	} else if (type == blocks::glass || previous_type == blocks::glass) {
-		sort_water(_camera->getPos(), true);
+		sort_water(_player->getEyePos(), true);
 		return ;
 	}
 	// std::cout << "_displayed_faces after modif " << _displayed_faces << " at " << _startX << ", " << _startY << std::endl;
@@ -445,7 +445,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 
 	// specific updates
 	if (type == blocks::chest) {
-		_chests.emplace(offset, new ChestInstance(this, {pos.x + _startX, pos.y + _startY, pos.z}, _camera->getOrientation()));
+		_chests.emplace(offset, new ChestInstance(this, {pos.x + _startX, pos.y + _startY, pos.z}, _player->getOrientation()));
 	} else if (type == blocks::furnace) {
 		_furnaces.emplace(offset, new FurnaceInstance());
 	} else if (type == blocks::oak_sign) {

@@ -11,7 +11,7 @@
 # include "ChestInstance.hpp"
 # include "FurnaceInstance.hpp"
 # include "SignInstance.hpp"
-class Camera;
+class Player;
 # include "Inventory.hpp"
 # include "Entity.hpp"
 # include "Particle.hpp"
@@ -124,7 +124,7 @@ struct s_backup { // TODO add fluids and entities to backups
 class Chunk
 {
     public:
-        Chunk( Camera* camera, Inventory* inventory, int posX, int posY, std::list<Chunk *>* chunks );
+        Chunk( Player* player, Inventory* inventory, int posX, int posY, std::list<Chunk *>* chunks );
         ~Chunk( void );
 
 		GLint getStartX( void );
@@ -187,7 +187,6 @@ class Chunk
 		void insertFluidAt( std::set<int>* newFluids, int posX, int posY, int posZ );
 		t_collision collisionBox( glm::vec3 pos, float width, float height, float originalHeight );
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
-		void applyGravity( void );
 		void applyGravity( AMob* mob );
 
 		int isLoaded( GLint& counter );
@@ -227,7 +226,7 @@ class Chunk
 		GLboolean _hasWater;
 		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
 		std::array<Chunk*, 4> _neighbours;
-		Camera* _camera;
+		Player* _player;
 		Inventory* _inventory;
 		std::map<int,int> _added;
 		std::set<int> _removed, _fluids;

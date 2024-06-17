@@ -56,7 +56,7 @@ void thread_chunk_update( OpenGL_Manager *render )
 			++it;
 		}
 		// b.stamp("delperi");
-		sort_chunks(render->_camera->getPos(), newperi_chunks);
+		sort_chunks(render->_player->getPos(), newperi_chunks);
 		// b.stamp("sort chunks");
 		mtx_perimeter.lock();
 		render->_perimeter_chunks = newperi_chunks;
@@ -65,7 +65,7 @@ void thread_chunk_update( OpenGL_Manager *render )
 		// b.stamp("NO");
 		for (auto& c: coords) {
 			//create new chunk where player stands
-			Chunk *newChunk = new Chunk(render->_camera.get(), render->_inventory.get(), c.first, c.second, &render->_chunks);
+			Chunk *newChunk = new Chunk(render->_player.get(), render->_inventory.get(), c.first, c.second, &render->_chunks);
 			mtx_backup.lock();
 			std::map<std::pair<int, int>, s_backup>::iterator search = render->_backups.find(std::pair<int, int>(c.first, c.second));
 			if (search != render->_backups.end()) {

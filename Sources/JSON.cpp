@@ -22,7 +22,7 @@ void OpenGL_Manager::saveWorld( void )
 	}
 	_chunks.clear();
 	mtx.unlock();
-	_camera->setCurrentChunkPtr(NULL);
+	_player->setChunkPtr(NULL);
 	_block_hit = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
 
 	// then store everything
@@ -34,7 +34,7 @@ void OpenGL_Manager::saveWorld( void )
 		+ ",\n\t\"outline\": " + ((_outline) ? "true" : "false")
 		+ ",\n\t\"flat_world\": " + std::to_string(Settings::Get()->getInt(settings::ints::flat_world_block))
 		+ DayCycle::Get()->saveString()
-		+ _camera->saveString()
+		+ _player->saveString()
 		+ _inventory->saveString()
 		+ saveBackupString()
 		+ "\n}";
@@ -57,21 +57,19 @@ std::string DayCycle::saveString( void )
 	return (res);
 }
 
-std::string Camera::saveString( void )
+std::string Player::saveString( void )
 {
-	_mtx.lock();
 	std::string res = "\"camera\": {\n\t\t\"pos\": {\"x\": "
 		+ std::to_string(_position.x) + ", \"y\": " + std::to_string(_position.y) + ", \"z\": " + std::to_string(_position.z)
 		+ "},\n\t\t\"spawnpoint\": {\"x\": "
 		+ std::to_string(_spawnpoint.x) + ", \"y\": " + std::to_string(_spawnpoint.y) + ", \"z\": " + std::to_string(_spawnpoint.z)
 		+ "},\n\t\t\"yaw\": " + std::to_string(_yaw)
 		+ ",\n\t\t\"pitch\": " + std::to_string(_pitch)
-		+ ",\n\t\t\"health_points\": " + std::to_string(_health_points)
+		+ ",\n\t\t\"health_points\": " + std::to_string(_health)
 		+ ",\n\t\t\"foodLevel\": " + std::to_string(_foodLevel)
 		+ ",\n\t\t\"foodSaturation\": " + std::to_string(_foodSaturationLevel)
 		+ ",\n\t\t\"touch_ground\": " + ((_touchGround) ? "true" : "false")
 		+ "\n\t},\n\t";
-	_mtx.unlock();
 	return (res);
 }
 
@@ -258,6 +256,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 				ofs << "debug mode set to " << _debug_mode << std::endl;
 			} else if (!line.compare(0, 11, "\"f5_mode\": ")) {
 				_ui->_hideUI = line.substr(11, 4) == "true";
+				Settings::Get()->setBool(settings::bools::hide_ui, _ui->_hideUI);
 				ofs << "f5 mode set to " << _ui->_hideUI << std::endl;
 			} else if (!line.compare(0, 11, "\"outline\": ")) {
 				_outline = line.substr(11, 4) == "true";
@@ -270,7 +269,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 			} else if (!line.compare(0, 12, "\"dayCycle\": ")) {
 				DayCycle::Get()->loadWorld(ofs, line);
 			} else if (!line.compare(0, 10, "\"camera\": ")) {
-				_camera->loadWorld(ofs, indata);
+				_player->loadWorld(ofs, indata);
 			} else if (!line.compare(0, 13, "\"inventory\": ")) {
 				_inventory->loadWorld(ofs, indata);
 			} else if (!line.compare(0, 11, "\"backups\": ")) {
@@ -300,7 +299,7 @@ void DayCycle::loadWorld( std::ofstream & ofs, std::string line )
 	ofs << "dayCycle " << _ticks << " set to day " << _day << " " << _hour << ":" << _minute << " (light " << _internal_light << ")" << std::endl;
 }
 
-void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
+void Player::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 {
 	_lastTp = {0, 0, 0};
 	int index;
@@ -311,7 +310,6 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 		if (line.empty() || line[0] == '#') {
 			continue ;
 		} else if (!line.compare(0, 7, "\"pos\": ")) {
-			_mtx.lock();
 			_position.x = std::stof(&line[13]);
 			for (index = 13; line[index] && line[index] != ':'; index++);
 			_position.y = std::stof(&line[index + 2]);
@@ -319,7 +317,6 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			_position.z = std::stof(&line[index + 2]);
 			_z0 = _position.z;
 			ofs << "camera pos set to " << _position.x << ", " << _position.y << ", " << _position.z << std::endl;
-			_mtx.unlock();
 		} else if (!line.compare(0, 14, "\"spawnpoint\": ")) {
 			_spawnpoint.x = std::stof(&line[20]);
 			for (index = 20; line[index] && line[index] != ':'; index++);
@@ -334,8 +331,8 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			_pitch = std::stof(&line[9]);
 			ofs << "camera pitch set to " << _pitch << std::endl;
 		} else if (!line.compare(0, 17, "\"health_points\": ")) {
-			_health_points = std::atoi(&line[17]);
-			ofs << "camera health points set to " << _health_points << std::endl;
+			_health = std::atoi(&line[17]);
+			ofs << "camera health points set to " << _health << std::endl;
 		} else if (!line.compare(0, 13, "\"foodLevel\": ")) {
 			_foodLevel = std::atoi(&line[13]);
 			ofs << "camera food level set to " << _foodLevel << std::endl;
@@ -346,7 +343,7 @@ void Camera::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			_touchGround = line.substr(16, 4) == "true";
 			ofs << "camera touch ground set to " << _touchGround << std::endl;
 		} else if (line == "},") {
-			updateCameraVectors();
+			updateVectors();
 			return ;
 		} else {
 			std::cerr << "foreigh line in camera: " << line << std::endl;

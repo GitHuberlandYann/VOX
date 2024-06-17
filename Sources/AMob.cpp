@@ -1,7 +1,7 @@
 #include "OpenGL_Manager.hpp"
 
 AMob::AMob( glm::vec3 position )
-    : _type(0), _air(0), _deathTime(0.0f), _hurtTime(0.0f), _fallDistance(0.0f), _fallTime(0.0f), _z0(position.z), _walkTime(0.0f), _health(20.0f), _position(position),
+    : _type(0), _deathTime(0.0f), _hurtTime(0.0f), _fallDistance(0.0f), _fallTime(0.0f), _z0(position.z), _walkTime(0.0f), _health(20.0f), _currentBlock(glm::floor(position)), _position(position),
     _front(0, -1, 0), _right(glm::normalize(glm::cross(_front, settings::consts::math::world_up))), _up(0.0f, 0.0f, 1.0f), _knockback(0.0f), _bodyFront(0.0f, -1.0f),
     _invulnerable(false), _touchGround(true), _walking(false), _inJump(false), _noAI(false), _persistenceRequired(false), _chunk(NULL)
 {
@@ -50,6 +50,27 @@ glm::vec3 AMob::getPos( void )
 	return (_position);
 }
 
+glm::vec3 AMob::getCamPos( bool update )
+{
+	(void)update;
+	return (getEyePos());
+}
+
+glm::vec3 AMob::getDir( void )
+{
+	return (_front);
+}
+
+int AMob::getHealth( void )
+{
+	return (_health);
+}
+
+bool AMob::getTouchGround( void )
+{
+	return (_touchGround);
+}
+
 void AMob::setTouchGround( bool state )
 {
 	_touchGround = state;
@@ -74,21 +95,6 @@ void AMob::receiveDamage( const float damage, const glm::vec3 sourceDir )
 	_inJump = true;
 }
 
-// this is temporarily here
-void Camera::receiveDamage( const float damage, const glm::vec3 source )
-{
-	(void)source;
-	if (_health_points < 0) { // stop! it's already dead
-		return ;
-	}
-
-	_health_points -= damage;
-	if (_health_points < 0) {
-		_health_points = 0;
-	}
-	_healthUpdate = true;
-}
-
 // ************************************************************************** //
 //                                Extern                                      //
 // ************************************************************************** //
@@ -102,7 +108,7 @@ AMob* Chunk::mobHit( t_hit blockHit )
 		return (NULL);
 	}
 
-	const glm::vec3 segStart = _camera->getEyePos(), segEnd = segStart + _camera->getDir() * 3.0f;
+	const glm::vec3 segStart = _player->getEyePos(), segEnd = segStart + _player->getDir() * settings::consts::reach::attack;
 	for (auto& mob : _mobs) {
 		glm::vec3 hitBoxCenter = mob->getPos(), hitBoxHalfSize = {0.3f, 0.3f, mob->getHitBox()};
 		hitBoxCenter.z += hitBoxHalfSize.z;
@@ -112,7 +118,7 @@ AMob* Chunk::mobHit( t_hit blockHit )
 				const glm::ivec3 mobFeet = glm::floor(hitBoxCenter);
 				const glm::ivec3 mobWaist = mobFeet + glm::ivec3(0, 0, 1);
 				const glm::ivec3 mobHead = mobFeet + glm::ivec3(0, 0, 2);
-				std::vector<glm::ivec3> ids = _camera->computeRayCasting(3.0f);
+				std::vector<glm::ivec3> ids = _player->computeRayCasting(settings::consts::reach::attack);
 				for (auto block : ids) {
 					if (block == blockHit.pos) {
 						break ;

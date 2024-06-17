@@ -1,17 +1,17 @@
-#include "Camera.hpp"
+#include "Player.hpp"
 #include "Menu.hpp"
 #include "Inventory.hpp"
 #include "callbacks.hpp"
 
-Camera* cameraPtr = NULL;
+Player* playerPtr = NULL;
 Menu* menuPtr = NULL;
 Inventory* scroll_inventory = NULL;
 
 double lastX = WIN_WIDTH / 2.0f, lastY = WIN_HEIGHT / 2.0f;
 
-void set_cursor_position_callback( Camera* cam, Menu* men )
+void set_cursor_position_callback( Player* player, Menu* men )
 {
-	cameraPtr = cam;
+	playerPtr = player;
 	menuPtr = men;
 }
 
@@ -30,8 +30,8 @@ void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
     lastX = xpos;
     lastY = ypos;
 
-	if (cameraPtr) {
-		cameraPtr->processMouseMovement(x_offset / 10, y_offset / 10);
+	if (playerPtr) {
+		playerPtr->processMouseMovement(x_offset / 10, y_offset / 10);
 	} else if (menuPtr) {
 		menuPtr->processMouseMovement(xpos, ypos);
 	}

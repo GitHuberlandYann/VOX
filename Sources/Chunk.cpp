@@ -1,16 +1,16 @@
-#include "Camera.hpp"
+#include "Player.hpp"
 #include "random.hpp"
 #include "Menu.hpp"
 
 extern std::mutex mtx_backup;
 
-Chunk::Chunk( Camera *camera, Inventory *inventory, int posX, int posY, std::list<Chunk *> *chunks )
+Chunk::Chunk( Player *player, Inventory *inventory, int posX, int posY, std::list<Chunk *> *chunks )
 	: _vaoSet(false), _waterVaoSet(false), _waterVaoVIP(false),
 	_skyVaoSet(false), _skyVaoVIP(false), _genDone(false), _light_update(false), _vertex_update(false),
 	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
 	_hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
-	_neighbours({NULL, NULL, NULL, NULL}), _camera(camera), _inventory(inventory)
+	_neighbours({NULL, NULL, NULL, NULL}), _player(player), _inventory(inventory)
 {
 	int cnt = 0;
 // std::cout << "new chunk at " << posX << ", " << posY << std::endl;
@@ -463,7 +463,7 @@ void Chunk::checkFillVertices( void )
 
 void Chunk::dropEntity( glm::vec3 dir, t_item item )
 {
-	glm::vec3 camPos = _camera->getPos();
+	glm::vec3 camPos = _player->getPos();
 	camPos.z += 1;
 	camPos += dir;
 	_entities.push_back(new Entity(this, _inventory, camPos, dir, true, item));
@@ -653,7 +653,7 @@ void Chunk::explosion( glm::vec3 pos, int power )
 void Chunk::shootArrow( float timer )
 {
 	timer = (timer > 1.0f) ? 20.0f : timer * 20.0f;
-	glm::vec3 camPos = _camera->getEyePos(), camDir = _camera->getDir();
+	glm::vec3 camPos = _player->getEyePos(), camDir = _player->getDir();
 	camPos += camDir;
 	_entities.push_back(new ArrowEntity(this, camPos, camDir * timer));
 }
@@ -784,7 +784,7 @@ void Chunk::updateEntities( std::vector<t_shaderInput>& arr,  std::vector<t_shad
 		goto CHESTS;
 	}
 
-	camPos = _camera->getPos();
+	camPos = _player->getPos();
 	for (size_t index = 0, delCount = 0; index < eSize; ++index) {
 		if (_entities[index - delCount]->update(arr, partArr, camPos, deltaTime)) {
 			delete _entities[index - delCount];
@@ -815,7 +815,7 @@ size_t Chunk::clearEntities( void )
 
 void Chunk::updateParticles( std::vector<t_shaderInput>& arr, double deltaTime )
 {
-	glm::vec3 camPos = _camera->getPos(), camDir = _camera->getDir();
+	glm::vec3 camPos = _player->getEyePos(), camDir = _player->getDir();
 	size_t size = _particles.size();
 	if (!size) {
 		goto FLAMES;

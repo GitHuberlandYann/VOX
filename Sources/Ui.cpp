@@ -1,11 +1,11 @@
-#include "Camera.hpp"
+#include "Player.hpp"
 #include "Ui.hpp"
 #include "Settings.hpp"
 
 UI::UI( void )
 	: _hideUI(false), _shaderProgram(0), _itemShaderProgram(0), _texture(), _gui_size(4), _nb_items(0),
 	_movement(false), _text(std::make_shared<Text>()), _chat(std::make_shared<Chat>(_text)), _inventory(NULL),
-	_camera(NULL), _vaoSet(false)
+	_player(NULL), _vaoSet(false)
 {
 
 }
@@ -70,7 +70,7 @@ void UI::add_hearts_holder( std::vector<std::array<int, 3>> &vertices, int index
 
 void UI::add_hearts( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 18 * (_camera->_health_points == (1 + 2 * index)) + 9 * (_camera->_health_points > (1 + 2 * index)), 16, 9, 9);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH - (182 * _gui_size)) / 2 + _gui_size + (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 18 * (_player->getHealth() == (1 + 2 * index)) + 9 * (_player->getHealth() > (1 + 2 * index)), 16, 9, 9);
 }
 
 void UI::add_armor_holder( std::vector<std::array<int, 3>> &vertices, int index )
@@ -90,12 +90,12 @@ void UI::add_food_holder( std::vector<std::array<int, 3>> &vertices, int index, 
 
 void UI::add_food( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 82 + 9 * (_camera->_foodLevel == (1 + 2 * index)), 16, 9, 9);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (8 * _gui_size) - (2 * _gui_size), 8 * _gui_size, 8 * _gui_size, 82 + 9 * (_player->getFoodLevel() == (1 + 2 * index)), 16, 9, 9);
 }
 
 void UI::add_bubbles( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 99 + 9 * (_camera->getWaterStatus() == (1 + 2 * index)), 16, 9, 9);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH + (182 * _gui_size)) / 2 - 9 * _gui_size - (index * 8 * _gui_size), WIN_HEIGHT - (22 * _gui_size) * 2 - (2 * 8 * _gui_size) - (_gui_size * 3), 8 * _gui_size, 8 * _gui_size, 99 + 9 * (_player->getWaterStatus() == (1 + 2 * index)), 16, 9, 9);
 }
 
 void UI::setup_array_buffer( void )
@@ -114,7 +114,7 @@ void UI::setup_array_buffer( void )
 	for (int index = 0; index < 10; index++) {
 		add_hearts_holder(vertices, index);
 	}
-	for (int index = 0; index < (_camera->_health_points >> 1) + (_camera->_health_points & 1); index++) {
+	for (int index = 0; index < (_player->getHealth() >> 1) + (_player->getHealth() & 1); index++) {
 		add_hearts(vertices, index);
 	}
 	for (int index = 0; index < 10; index++) {
@@ -123,14 +123,14 @@ void UI::setup_array_buffer( void )
 	for (int index = 0; index < 4; index++) {
 		add_armor(vertices, index);
 	}
-	int saturation = glm::floor(_camera->_foodSaturationLevel);
+	int saturation = glm::floor(_player->getFoodSaturationLevel());
 	for (int index = 0; index < 10; index++) {
 		add_food_holder(vertices, index, saturation);
 	}
-	for (int index = 0; index < (_camera->_foodLevel >> 1) + (_camera->_foodLevel & 1); index++) {
+	for (int index = 0; index < (_player->getFoodLevel() >> 1) + (_player->getFoodLevel() & 1); index++) {
 		add_food(vertices, index);
 	}
-	for (int index = 0; index < (_camera->getWaterStatus() >> 1) + (_camera->getWaterStatus() & 1); index++) {
+	for (int index = 0; index < (_player->getWaterStatus() >> 1) + (_player->getWaterStatus() & 1); index++) {
 		add_bubbles(vertices, index);
 	}
 
@@ -185,11 +185,11 @@ void UI::display_slot_value( int index )
 //                                Public                                      //
 // ************************************************************************** //
 
-void UI::setPtrs( OpenGL_Manager* oglMan, Inventory* inventory, Camera* camera )
+void UI::setPtrs( OpenGL_Manager* oglMan, Inventory* inventory, Player* player )
 {
 	_chat->setOGLManPtr(oglMan);
 	_inventory = inventory;
-	_camera = camera;
+	_player = player;
 }
 
 std::shared_ptr<Text> UI::getTextPtr( void )
@@ -337,7 +337,7 @@ void UI::drawUserInterface( std::string str, int game_mode, float deltaTime )
 	if (_hideUI) {
 		return ;
 	}
-	if (!_vaoSet || _inventory->getModif() || _camera->getModif()) {
+	if (!_vaoSet || _inventory->getModif() || _player->getResetUIUpdate()) {
 		setup_array_buffer();
 		setup_item_array_buffer();
 		_inventory->setModif(false);

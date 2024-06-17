@@ -13,7 +13,7 @@ namespace state_machine {
 class Zombie : public AHostileMob
 {
     public:
-        Zombie( Chunk* chunk, Camera* player, glm::vec3 position );
+        Zombie( Chunk* chunk, Player* player, glm::vec3 position );
         virtual ~Zombie( void );
 
         virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime );

@@ -252,14 +252,14 @@ void Chat::handle_clear( int argc, std::vector<std::string> &argv )
 void Chat::handle_teleport( int argc, std::vector<std::string> &argv )
 {
 	if (argc == 2 && !argv[1].compare("spawn")) {
-		glm::vec3 pos = _oglMan->_camera->getSpawnpoint();
-		_oglMan->_camera->setPos(pos);
+		glm::vec3 pos = _oglMan->_player->getSpawnpoint();
+		_oglMan->_player->setPos(pos);
 		_oglMan->resetInputsPtrs();
 		chatMessage("Player pos set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));
 		return ;
 	} else if (argc == 2 && !argv[1].compare("-")) {
-		glm::vec3 pos = _oglMan->_camera->getLastTp();
-		_oglMan->_camera->setPos(pos);
+		glm::vec3 pos = _oglMan->_player->getLastTp();
+		_oglMan->_player->setPos(pos);
 		_oglMan->resetInputsPtrs();
 		chatMessage("Player pos set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));
 		return ;
@@ -269,7 +269,7 @@ void Chat::handle_teleport( int argc, std::vector<std::string> &argv )
 			pos.x = parseLocation(argv[1], 0);
 			pos.y = parseLocation(argv[2], 1);
 			pos.z = parseLocation(argv[3], 2);
-			_oglMan->_camera->setPos(pos);
+			_oglMan->_player->setPos(pos);
 			_oglMan->resetInputsPtrs();
 			chatMessage("Player pos set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));
 			return ;
@@ -284,8 +284,8 @@ void Chat::handle_teleport( int argc, std::vector<std::string> &argv )
 void Chat::handle_spawnpoint( int argc, std::vector<std::string> &argv )
 {
 	if (argc == 1) {
-		glm::vec3 pos = _oglMan->_camera->getPos();
-		_oglMan->_camera->setSpawnpoint(pos);
+		glm::vec3 pos = _oglMan->_player->getPos();
+		_oglMan->_player->setSpawnpoint(pos);
 		chatMessage("Your spawnpoint was set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));
 		return ;
 	} else if (argc == 4) {
@@ -294,7 +294,7 @@ void Chat::handle_spawnpoint( int argc, std::vector<std::string> &argv )
 			pos.x = parseLocation(argv[1], 0);
 			pos.y = parseLocation(argv[2], 1);
 			pos.z = parseLocation(argv[3], 2);
-			_oglMan->_camera->setSpawnpoint(pos);
+			_oglMan->_player->setSpawnpoint(pos);
 			chatMessage("Your spawnpoint was set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z));
 			return ;
 		} catch (std::exception & e) {
@@ -437,7 +437,7 @@ float Chat::parseLocation( std::string &str, int coord )
 	float res = 0;
 	int index = 0;
 	if (str[0] == '~') {
-		res = _oglMan->_camera->getPos()[coord];
+		res = _oglMan->_player->getPos()[coord];
 		++index;
 	}
 	int sign = 1;

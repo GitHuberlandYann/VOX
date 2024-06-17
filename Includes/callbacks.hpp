@@ -1,7 +1,9 @@
 #ifndef CALLBACKS_HPP
 # define CALLBACKS_HPP
 
-void set_cursor_position_callback( Camera* cam, Menu* men );
+class Menu;
+
+void set_cursor_position_callback( Player* player, Menu* men );
 void set_scroll_callback( Inventory* ptr );
 void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
 void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );

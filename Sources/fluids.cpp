@@ -1,4 +1,4 @@
-#include "Camera.hpp"
+#include "Player.hpp"
 #include "utils.h"
 
 // ************************************************************************** //
@@ -413,6 +413,6 @@ void Chunk::updateFluids( void )
 	_fluids = newFluids;
 	if (fluid_modif) {
 		// std::cout << "s" << std::endl;
-		sort_water(_camera->getPos(), true);
+		sort_water(_player->getEyePos(), true);
 	}
 }

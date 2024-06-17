@@ -17,7 +17,7 @@ enum {
 
 class OpenGL_Manager;
 class Inventory;
-class Camera;
+class Player;
 
 typedef struct s_inv_mess {
 	std::string str = "";
@@ -32,7 +32,7 @@ class UI
         UI( void );
         ~UI( void );
 
-		void setPtrs( OpenGL_Manager* oglMan, Inventory* inventory, Camera* camera );
+		void setPtrs( OpenGL_Manager* oglMan, Inventory* inventory, Player* camera );
 		std::shared_ptr<Text> getTextPtr( void );
 		std::shared_ptr<Chat> getChatPtr( void );
 		void setGuiSize( int gui_size );
@@ -58,7 +58,7 @@ class UI
 		std::shared_ptr<Text> _text;
 		std::shared_ptr<Chat> _chat;
 		Inventory* _inventory;
-        Camera* _camera;
+        Player* _player;
 		bool _vaoSet;
 
         void add_inventory_elem( int index );

@@ -3,6 +3,7 @@
 
 # include "Chunk.hpp"
 # include "DayCycle.hpp"
+# include "Player.hpp"
 # include "Camera.hpp"
 # include "Text.hpp"
 # include "Ui.hpp"
@@ -33,7 +34,7 @@ class OpenGL_Manager
 		std::list<Chunk*> _chunks;
 		std::vector<Chunk*> _perimeter_chunks, _deleted_chunks;
 		std::map<std::pair<int, int>, s_backup> _backups;
-		std::unique_ptr<Camera> _camera;
+		std::unique_ptr<Player> _player;
 		std::unique_ptr<Inventory> _inventory;
 
 		OpenGL_Manager( void );
@@ -77,6 +78,7 @@ class OpenGL_Manager
 		std::mutex _mtx;
 		t_hit _block_hit;
 		Chunk *_current_chunk_ptr = NULL, *_chunk_hit = NULL;
+		std::unique_ptr<Camera> _camera;
 		std::unique_ptr<UI> _ui;
 		std::unique_ptr<Menu> _menu;
 		std::unique_ptr<Skybox> _skybox;
