@@ -13,7 +13,6 @@ class AMob {
 		virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime ) { (void)modArr;(void)deltaTime; return (true); };
 		glm::vec3 getPos( void );
 		virtual glm::vec3 getEyePos( void ) = 0;
-		virtual glm::vec3 getCamPos( bool update );
 		glm::vec3 getDir( void );
 		virtual void setCamUpdate( bool state ) { (void) state; };
 		virtual float getFovOffset( void ) { return (0.0f); };

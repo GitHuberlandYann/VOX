@@ -1,8 +1,7 @@
 #ifndef CAMERA_H
 # define CAMERA_H
 
-# include <mutex>
-# include "Chunk.hpp"
+# include "AMob.hpp"
 
 enum Camera_Movement {
 	X_AXIS,
@@ -31,6 +30,7 @@ class Camera
 		void setTarget( AMob* mob );
 
 		glm::vec3 getCamPos( void );
+		int getCamPlacement( void );
 		void changeCamPlacement( void );
 
 	private:

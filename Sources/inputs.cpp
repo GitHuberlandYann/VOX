@@ -321,7 +321,7 @@ void OpenGL_Manager::updateVisibleChunks( void )
 	_visible_chunks.clear();
 	mtx_perimeter.lock();
 	for (auto& peri: _perimeter_chunks) {
-		if (_player->chunkInFront(_current_chunk, peri->getStartX(), peri->getStartY())) {
+		if (_player->chunkInFront(_camera->getCamPlacement(), _current_chunk, peri->getStartX(), peri->getStartY())) {
 			_visible_chunks.push_back(peri);
 		}
 	}

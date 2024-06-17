@@ -1,7 +1,6 @@
 #include "Camera.hpp"
 #include "Settings.hpp"
 #include "utils.h"
-extern std::mutex mtx;
 
 Camera::Camera( void )
 	: _camPlacement(CAMPLACEMENT::DEFAULT)
@@ -27,7 +26,7 @@ glm::mat4 Camera::getViewMatrix( void )
 	if (!_target) {
 		return (glm::lookAt(glm::vec3(0), glm::vec3(1), settings::consts::math::world_up));
 	}
-	glm::vec3 pos = _target->getCamPos(true);
+	glm::vec3 pos = _target->getEyePos();
 	switch (_camPlacement) {
 	case CAMPLACEMENT::DEFAULT:
 		return (glm::lookAt(pos, pos + _target->getDir(), settings::consts::math::world_up));
@@ -54,7 +53,7 @@ glm::vec3 Camera::getCamPos( void )
 	if (!_target) {
 		return {0.0f, 0.0f, 0.0f};
 	}
-	glm::vec3 pos = _target->getCamPos(false);
+	glm::vec3 pos = _target->getEyePos();
 	switch (_camPlacement) {
 	case CAMPLACEMENT::DEFAULT:
 		return (pos);
@@ -64,6 +63,11 @@ glm::vec3 Camera::getCamPos( void )
 		return (pos + _target->getDir() * 5.0f);
 	}
 	return (pos);
+}
+
+int Camera::getCamPlacement( void )
+{
+	return (_camPlacement);
 }
 
 void Camera::changeCamPlacement( void )

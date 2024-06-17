@@ -1,4 +1,5 @@
 #include "Player.hpp"
+#include "Camera.hpp"
 
 Player::Player( void )
     : AMob({0.0f, 0.0f, 0.0f}), _flySpeed(settings::consts::speed::fly), _foodLevel(20), _foodTickTimer(0),
@@ -7,13 +8,6 @@ Player::Player( void )
     _spawnpoint(0.0f, 0.0f, 0.0f), _lastTp(0.0f, 0.0f, 0.0f),
     _smoothCam(false), _armAnimation(false), _fallImmunity(false), _sprinting(false), _sneaking(false), _waterHead(false), _waterFeet(false),
     _updateCam(false), _updateFov(false), _updateUI(false)
-
-    // _movement_speed(FLY_SPEED), _health(20), _foodLevel(20),
-	// _inJump(false), _touchGround(false), _foodSaturationLevel(20),
-	// _fallTime(0), _walkTime(0), _breathTime(0), _armAnimTime(0), _fov_offset(0), _fallDistance(0),
-	// _foodTickTimer(0), _camPlacement(CAMPLACEMENT::DEFAULT), _foodExhaustionLevel(0), _z0(255), _fall_immunity(true),
-	// _walking(false), _sprinting(false), _updateUI(false),
-	// _waterHead(false), _waterFeet(false), _armAnimation(false)
 {
 
 }
@@ -27,13 +21,13 @@ Player::~Player( void )
 //                                Public                                      //
 // ************************************************************************** //
 
-bool Player::chunkInFront( glm::ivec2 current_chunk, int posX, int posY )
+bool Player::chunkInFront( int camPlacement, glm::ivec2 current_chunk, int posX, int posY )
 {
 	if (posX >= current_chunk.x - settings::consts::chunk_size && posX <= current_chunk.x + settings::consts::chunk_size
 		&& posY >= current_chunk.y - settings::consts::chunk_size && posY <= current_chunk.y + settings::consts::chunk_size) {
 		return (true);
 	}
-	if (0) { // TODO _camPlacement == CAMPLACEMENT::FRONT) {
+	if (camPlacement == CAMPLACEMENT::FRONT) {
 		return !(glm::dot(glm::vec2(posX + settings::consts::chunk_size * (-_front2.x + _right2.x) - _position.x, posY + settings::consts::chunk_size * (-_front2.y + _right2.y) - _position.y), glm::vec2((-_front2.x + _right2.x), (-_front2.y + _right2.y))) < 0
 			|| glm::dot(glm::vec2(posX + settings::consts::chunk_size * (-_front2.x - _right2.x) - _position.x, posY + settings::consts::chunk_size * (-_front2.y - _right2.y) - _position.y), glm::vec2((-_front2.x - _right2.x), (-_front2.y - _right2.y))) < 0);
 	}
@@ -51,29 +45,8 @@ glm::vec3 Player::getEyePos( void )
 {
 	glm::vec3 res = _position;
     if (_smoothCam) {
-		res.z = _smoothCamZ - _deltaTime * settings::consts::speed::smooth_cam;
+		res.z = _smoothCamZ;
 	}
-	res.z += 1 + ((_sneaking) ? settings::consts::eyeLevel::player_sneak : settings::consts::eyeLevel::player);
-	return (res);
-}
-
-glm::vec3 Player::getCamPos( bool update )
-{
-	glm::vec3 res = _position;
-    if (_smoothCam) {
-		res.z = _smoothCamZ - _deltaTime * settings::consts::speed::smooth_cam;
-        if (update) {
-            if (_smoothCamZ < res.z) {
-                res.z = _smoothCamZ;
-                _smoothCamZ += _deltaTime * settings::consts::speed::smooth_cam;
-                _updateCam = true;
-            } else {
-                _smoothCam = false;
-            }
-        }
-	} else if (update) {
-        _updateCam = false;
-    }
 	res.z += 1 + ((_sneaking) ? settings::consts::eyeLevel::player_sneak : settings::consts::eyeLevel::player);
 	return (res);
 }

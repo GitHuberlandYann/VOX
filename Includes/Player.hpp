@@ -9,12 +9,12 @@ class Player : public AMob
         Player( void );
         virtual ~Player( void );
 
-        bool chunkInFront( glm::ivec2 current_chunk, int posX, int posY );
+        bool chunkInFront( int camPlacement, glm::ivec2 current_chunk, int posX, int posY );
         std::vector<glm::ivec3> computeRayCasting( GLfloat radius );
-		void drawPlayer( std::vector<t_shaderInput> &arr, int item, int gameMode );
+		void drawHeldItem( std::vector<t_shaderInput> &arr, int item, int gameMode );
+		void drawPlayer( std::vector<t_shaderInput> &arr, int item );
 
         virtual glm::vec3 getEyePos( void );
-        virtual glm::vec3 getCamPos( bool update );
         virtual bool getHitBox( void );
         int getOrientation( void );
 		int getOrientation6( void );
@@ -85,8 +85,6 @@ class Player : public AMob
         virtual void restorePos( glm::vec3 position );
         virtual bool customObstacle( float minZ, float maxZ );
         void updateFlySpeed( GLint key_cam_speed );
-
-		void drawHeldItem( std::vector<t_shaderInput> &arr, int item, int gameMode );
 };
 
 #endif

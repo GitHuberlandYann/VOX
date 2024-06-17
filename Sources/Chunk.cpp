@@ -815,7 +815,7 @@ size_t Chunk::clearEntities( void )
 
 void Chunk::updateParticles( std::vector<t_shaderInput>& arr, double deltaTime )
 {
-	glm::vec3 camPos = _player->getEyePos(), camDir = _player->getDir();
+	glm::vec3 camPos = _player->getPos(), camDir = _player->getDir();
 	size_t size = _particles.size();
 	if (!size) {
 		goto FLAMES;

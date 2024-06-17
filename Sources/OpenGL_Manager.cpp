@@ -685,7 +685,9 @@ void OpenGL_Manager::main_loop( void )
 		// b.stamp("solids");
 
 		if (!gamePaused) {
-			_player->drawPlayer(_particles, _hand_content, _game_mode);
+			(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
+				? _player->drawHeldItem(_particles, _hand_content, _game_mode)
+				: _player->drawPlayer(_particles, _hand_content);
 			drawParticles();
 			drawModels();
 			_shader.useProgram();

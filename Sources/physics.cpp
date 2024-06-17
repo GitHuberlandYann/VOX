@@ -546,7 +546,7 @@ bool Player::customObstacle( float minZ, float maxZ )
 		// set smoothcam to true to have smoother transition upon climbing stairs
 		// ie player will teleport, but cam will follow smoothly to enhance user experience
 		_smoothCam = true;
-		_smoothCamZ = _position.z + 1 + ((_sneaking) ? settings::consts::eyeLevel::player_sneak : settings::consts::eyeLevel::player);
+		_smoothCamZ = _position.z;
 		_position.z = maxZ;
 		return (true);
 	}
@@ -615,6 +615,14 @@ void Player::inputUpdate( bool rayCast, int gameMode )
 
 	if (rayCast) {
 		if (gameMode != settings::consts::gamemode::creative && _chunk) { // on first frame -> no _chunk
+			if (_smoothCam) {
+				if (_smoothCamZ < _position.z) {
+					_smoothCamZ += _deltaTime * settings::consts::speed::smooth_cam;
+					_updateCam = true;
+				} else {
+					_smoothCam = false;
+				}
+			}
 			setSneak(key_cam_zdown);
 			setJump(key_cam_zup && inputs::key_update(inputs::jump));
 			move(face_dir::plus_z, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement

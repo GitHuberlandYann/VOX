@@ -50,12 +50,6 @@ glm::vec3 AMob::getPos( void )
 	return (_position);
 }
 
-glm::vec3 AMob::getCamPos( bool update )
-{
-	(void)update;
-	return (getEyePos());
-}
-
 glm::vec3 AMob::getDir( void )
 {
 	return (_front);
