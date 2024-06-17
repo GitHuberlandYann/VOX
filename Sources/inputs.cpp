@@ -498,7 +498,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		}
 		if (mobHit) {
 			_camera->setArmAnimation(true);
-			mobHit->receiveDamage(15.0f, _camera->getEyePos());
+			mobHit->receiveDamage(6.0f, _camera->getDir());
 			// TODO set _punch to true to avoid breaking block behind mob
 		} else if (_game_mode != settings::consts::gamemode::creative) {
 			if (_block_hit.type == blocks::air) {

@@ -2,7 +2,7 @@
 
 AMob::AMob( glm::vec3 position )
     : _type(0), _air(0), _deathTime(0.0f), _hurtTime(0.0f), _fallDistance(0.0f), _fallTime(0.0f), _z0(position.z), _walkTime(0.0f), _health(20.0f), _position(position),
-    _rotation(0, 0), _front(0, -1, 0), _right(glm::normalize(glm::cross(_front, settings::consts::math::world_up))), _up(0, 0, 1), _bodyFront(0, -1),
+    _front(0, -1, 0), _right(glm::normalize(glm::cross(_front, settings::consts::math::world_up))), _up(0.0f, 0.0f, 1.0f), _knockback(0.0f), _bodyFront(0.0f, -1.0f),
     _invulnerable(false), _touchGround(true), _walking(false), _inJump(false), _noAI(false), _persistenceRequired(false), _chunk(NULL)
 {
 
@@ -55,10 +55,11 @@ void AMob::setTouchGround( bool state )
 	_touchGround = state;
 }
 
-void AMob::receiveDamage( const float damage, const glm::vec3 source)
+void AMob::receiveDamage( const float damage, const glm::vec3 sourceDir )
 {
-	(void)source; // will be used to generate knockback
 	if (_health < 0) { // stop! it's already dead
+		return ;
+	} else if (_invulnerable) {
 		return ;
 	}
 
@@ -68,10 +69,13 @@ void AMob::receiveDamage( const float damage, const glm::vec3 source)
 	if (_health < 0) {
 		_deathTime = -2.0f;
 	}
+	_knockback = sourceDir;
+	_knockback.z = glm::max(0.4f, _knockback.z) * 10.0f;
+	_inJump = true;
 }
 
 // this is temporarily here
-void Camera::receiveDamage( const float damage, const glm::vec3 source)
+void Camera::receiveDamage( const float damage, const glm::vec3 source )
 {
 	(void)source;
 	if (_health_points < 0) { // stop! it's already dead

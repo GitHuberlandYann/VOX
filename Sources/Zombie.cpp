@@ -56,9 +56,13 @@ bool Zombie::update( std::vector<t_shaderInput>& modArr, float deltaTime )
 			}
 
 			if (_state == settings::state_machine::chase) {
-				if (_path.size() > 1) {
+				if (_path.size()) {
 					// set _front according to computed path
-					glm::vec2 computedFront = _path[1] - _path[0];
+					glm::vec3 pathDiff = (_path.size() > 1) ? _path[1] - _path[0] : _path[0] - _currentBlock;
+					if (pathDiff.z > 0.1f) {
+						_inJump = true;
+					}
+					glm::vec2 computedFront = pathDiff;
 					if (!computedFront.x) { computedFront.x = (_currentBlock.x + 0.5f) - _position.x; }
 					if (!computedFront.y) { computedFront.y = (_currentBlock.y + 0.5f) - _position.y; }
 					computedFront = glm::normalize(computedFront);
@@ -67,9 +71,6 @@ bool Zombie::update( std::vector<t_shaderInput>& modArr, float deltaTime )
 					_front = glm::normalize(_front + (computedHeadFront - _front) * 7.0f * deltaTime);
 					_right = glm::normalize(glm::cross(_front, settings::consts::math::world_up));
 					_up = glm::normalize(glm::cross(_right, _front));
-					if (_path[1].z > _path[0].z) {
-						_inJump = true;
-					}
 				}
 			} else if (_stateTime > 6.0f) {
 				setState(settings::state_machine::idle);

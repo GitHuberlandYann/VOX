@@ -18,7 +18,7 @@ class AMob {
 		void touchGround( float value );
 		void setTouchGround( bool state );
 		virtual bool getHitBox( void ) = 0;
-		void receiveDamage( const float damage, const glm::vec3 source);
+		void receiveDamage( const float damage, const glm::vec3 sourceDir );
 
 	protected:
 		std::string _name;      // tag above head.
@@ -36,8 +36,8 @@ class AMob {
 		float _deltaTime;       // used to compute movement
 		// glm::vec3 _motion;   // velocity of entity in meters per tick
 		glm::vec3 _position;    // position of entity.
-		glm::vec2 _rotation;    // rotation of entity. yaw [-180:180] pitch [-90:90]
-		glm::vec3 _front, _right, _up;
+		// glm::vec2 _rotation;    // rotation of entity. yaw [-180:180] pitch [-90:90]
+		glm::vec3 _front, _right, _up, _knockback;
 		glm::vec2 _bodyFront;
 		// std::array<t_item, 2> _holding; // main hand and off hand content.
 		// std::vector<AMobs*> _passengers; // data of the entity(s) that is riding this entity.

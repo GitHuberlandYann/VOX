@@ -403,11 +403,22 @@ void AMob::move( int direction, bool move )
 	}
 	_walking = true;
 
-	const float speed_frame = _deltaTime * settings::consts::speed::zombie;
+	const float speedFrame = _deltaTime * settings::consts::speed::zombie;
 	if (direction == face_dir::plus_x) {
-		_position.x += _bodyFront.x * speed_frame;
+		if (glm::abs(_knockback.x + _knockback.y) > 0.01f) {
+			_position.x += _knockback.x * speedFrame;
+			_knockback.x = glm::sign(_knockback.x) * (glm::abs(_knockback.x) - _deltaTime);
+		} else {
+			_position.x += _bodyFront.x * speedFrame;
+			_knockback.z = 0.0f;
+		}
 	} else if (direction == face_dir::plus_y) {
-		_position.y += _bodyFront.y * speed_frame;
+		if (glm::abs(_knockback.x + _knockback.y) > 0.01f) {
+			_position.y += _knockback.y * speedFrame;
+			_knockback.y = glm::sign(_knockback.y) * (glm::abs(_knockback.y) - _deltaTime);
+		} else {
+			_position.y += _bodyFront.y * speedFrame;
+		}
 	}
 }
 
@@ -482,9 +493,9 @@ void AMob::applyGravity( void )
 	// if (_waterFeet || _waterHead) {
 	// 	return (applyGravityUnderwater());
 	// }
-	// std::cout << "Gravity applied" << std::endl;
 	_fallTime += _deltaTime;
-	const float initial_speed = ((_inJump) ? settings::consts::speed::initial_jump : settings::consts::speed::initial_fall);
+	const float initial_speed = ((_inJump) ? (_knockback.z > 0.1f) ? _knockback.z : settings::consts::speed::initial_jump : settings::consts::speed::initial_fall);
+	std::cout << "Gravity applied on mob, initial speed is " << initial_speed << ", knockback z is " << _knockback.z << std::endl;
 
 	_position.z = _z0 + initial_speed * _fallTime + 3 * settings::consts::math::standard_gravity * _fallTime * _fallTime * 0.5f; // TODO this '3' is a bit random ...
 }
