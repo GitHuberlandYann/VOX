@@ -20,6 +20,11 @@ Menu::~Menu( void )
 	_selection_list.clear();
 }
 
+void Menu::deleteBuffers( void )
+{
+	_vabo.deleteBuffers();
+}
+
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
@@ -27,8 +32,8 @@ Menu::~Menu( void )
 void Menu::blit_to_screen( void )
 {
 	_ui->textToScreen(_state >= menu::pause);
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
+	_ui->useShader();
+	_vabo.bindVertexArray();
 	glDrawArrays(GL_TRIANGLES, 0, _nb_points);
 }
 
@@ -694,7 +699,7 @@ menu::ret Menu::ingame_inputs( void )
 				}
 			} else {
 				_selected_block = _inventory->putBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
-				_ui->addFace({0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, false, true); // TODO better way to update ui than this
+				_ui->addFace({0,{0,0}}, {0,{0,0}}, {0,{0,0}}, {0,{0,0}}, false, true); // TODO better way to update ui than this
 			}
 		}
 	}
@@ -722,7 +727,7 @@ menu::ret Menu::ingame_inputs( void )
 					if (_selected_block.amount < count) {
 						_selection_list.push_back(_selection);
 					}
-					_ui->addFace({0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, false, true);
+					_ui->addFace({0,{0,0}}, {0,{0,0}}, {0,{0,0}}, {0,{0,0}}, false, true);
 				}
 			}
 		}
@@ -1431,19 +1436,8 @@ void Menu::setup_shader( void )
 		return ;
 	}
 
-	glGenVertexArrays(1, &_vao);
-	glBindVertexArray(_vao);
 	_vaoSet = true;
-
-	glGenBuffers(1, &_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _nb_points * 3 * sizeof(GLint), &_vertices[0][0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(ITEM_SPECATTRIB);
-	glVertexAttribIPointer(ITEM_SPECATTRIB, 1, GL_INT, 3 * sizeof(GLint), 0);
-
-	glEnableVertexAttribArray(ITEM_POSATTRIB);
-	glVertexAttribIPointer(ITEM_POSATTRIB, 2, GL_INT, 3 * sizeof(GLint), (void *)(sizeof(GLint)));
+	_vabo.uploadData(_nb_points, &_vertices[0][0]);
 
 	check_glstate("Menu::setup_shader", false);
 
@@ -1772,11 +1766,10 @@ void Menu::setWindow( GLFWwindow *window )
 		}
 	}
 	loadSettings();
-}
 
-void Menu::setShaderProgram( GLuint shaderProgram )
-{
-	_shaderProgram = shaderProgram;
+	_vabo.genBuffers();
+	_vabo.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
+	_vabo.addAttribute(settings::consts::shader::attributes::position, 2, GL_INT);
 }
 
 void Menu::setPtrs( Inventory* inventory, UI* ui )

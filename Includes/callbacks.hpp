@@ -23,6 +23,7 @@ namespace inputs
 	void mouse_button_callback( GLFWwindow *window, int button, int action, int mods );
 	bool key_down( int index );
 	bool key_update( int index );
+	void force_reset_key_update( int key );
 	const char* get_key_name( int action );
 	void set_key_bind( int key, int action );
 	void reset_last_input( void );

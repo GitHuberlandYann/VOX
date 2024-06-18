@@ -37,12 +37,12 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_particleShader.deleteProgram();
 	_modelShader.deleteProgram();
 
-	glDeleteBuffers(1, &_vboEntities);
-	glDeleteVertexArrays(1, &_vaoEntities);
-	glDeleteBuffers(1, &_vboParticles);
-	glDeleteVertexArrays(1, &_vaoParticles);
-	glDeleteBuffers(1, &_vboModels);
-	glDeleteVertexArrays(1, &_vaoModels);
+	_vaboEntities.deleteBuffers();
+	_vaboParticles.deleteBuffers();
+	_vaboModels.deleteBuffers();
+	_ui->deleteBuffers();
+	_menu->deleteBuffers();
+	_skybox->deleteBuffers();
 
 	set_cursor_position_callback(NULL, NULL);
 	set_scroll_callback(NULL);
@@ -52,9 +52,6 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_menu->setPtrs(NULL, NULL);
 	WorldEdit::Get()->setPtrs(NULL, NULL, NULL);
 
-	glfwMakeContextCurrent(NULL);
-    glfwTerminate();
-
 	mtx.lock();
 	for (auto& c: _chunks) {
 		c->setBackup(_backups);
@@ -62,6 +59,10 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	}
 	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
 	mtx.unlock();
+
+	glfwMakeContextCurrent(NULL);
+    glfwTerminate();
+
 	mtx_backup.lock();
 	for (auto &b : _backups) {
 		for (auto ch : b.second.chests) {
@@ -88,7 +89,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 
 void OpenGL_Manager::addBreakingAnim( void )
 {
-	if (_block_hit.type == blocks::air) {
+	if (_block_hit.type == blocks::air || (_block_hit.value & mask::blocks::notVisible)) {
 		return ;
 	}
 
@@ -222,17 +223,8 @@ void OpenGL_Manager::drawEntities( void )
 		}
 	}
 
-	glBindVertexArray(_vaoEntities);
-
-	glBindBuffer(GL_ARRAY_BUFFER, _vboEntities);
 	size_t bufSize = esize + ((hitBox) ? 24 : 0) + ((borders) ? 64 : 0);
-	glBufferData(GL_ARRAY_BUFFER, bufSize * 4 * sizeof(GLint), &(_entities[0].spec), GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(SPECATTRIB);
-	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
-
-	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(1 * sizeof(GLint)));
+	_vaboEntities.uploadData(bufSize, &(_entities[0].spec));
 
 	check_glstate("OpenGL_Manager::drawEntities", false);
 
@@ -257,16 +249,7 @@ void OpenGL_Manager::drawParticles( void )
 	}
 
 	_particleShader.useProgram();
-	glBindVertexArray(_vaoParticles);
-
-	glBindBuffer(GL_ARRAY_BUFFER, _vboParticles);
-	glBufferData(GL_ARRAY_BUFFER, psize * 4 * sizeof(GLint), &(_particles[0].spec), GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(SPECATTRIB);
-	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
-
-	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(1 * sizeof(GLint)));
+	_vaboParticles.uploadData(psize, &(_particles[0].spec));
 
 	check_glstate("OpenGL_Manager::drawParticles", false);
 
@@ -285,16 +268,7 @@ void OpenGL_Manager::drawModels( void )
 	}
 
 	_modelShader.useProgram();
-	glBindVertexArray(_vaoModels);
-
-	glBindBuffer(GL_ARRAY_BUFFER, _vboModels);
-	glBufferData(GL_ARRAY_BUFFER, msize * 4 * sizeof(GLint), &(_models[0].spec), GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(SPECATTRIB);
-	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
-
-	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(1 * sizeof(GLint)));
+	_vaboModels.uploadData(msize, &(_models[0].spec));
 
 	check_glstate("OpenGL_Manager::drawModels", false);
 
@@ -354,8 +328,6 @@ void OpenGL_Manager::setupWindow( void )
         glfwTerminate();
         exit (1);
     }
-	_menu->setWindow(_window);
-
 	// int width, height;
 	// glfwGetWindowSize(_window, &width, &height);
 	// std::cout << "window size is " << width << ", " << height << std::endl;
@@ -368,19 +340,10 @@ void OpenGL_Manager::setupWindow( void )
 	glewExperimental = GL_TRUE;
 	glewInit();
 
+	_menu->setWindow(_window);
 	Settings::Get()->loadResourcePacks();
 
 	check_glstate("Window successfully created", true);
-
-	glGenVertexArrays(1, &_vaoEntities);
-	glGenBuffers(1, &_vboEntities);
-	check_glstate("VAO and VBO for entities", false);
-	glGenVertexArrays(1, &_vaoParticles);
-	glGenBuffers(1, &_vboParticles);
-	check_glstate("VAO and VBO for particles", false);
-	glGenVertexArrays(1, &_vaoModels);
-	glGenBuffers(1, &_vboModels);
-	check_glstate("VAO and VBO for particles", false);
 }
 
 void OpenGL_Manager::initWorld( void )
@@ -393,46 +356,36 @@ void OpenGL_Manager::createShaders( void )
 {
 	// first setup the ui and text shaders
 	_ui->setupShader();
-	_menu->setShaderProgram(_ui->getShaderProgram());
 
 	// then setup the sky/water shader
-	GLuint skyProgram = _skyShader.createProgram(Settings::Get()->getString(settings::strings::sky_vertex_shader), "",
-										Settings::Get()->getString(settings::strings::sky_fragment_shader));
+	_skyShader.createProgram(Settings::Get()->getString(settings::strings::sky_vertex_shader), "",
+							Settings::Get()->getString(settings::strings::sky_fragment_shader));
 
-	glBindFragDataLocation(skyProgram, 0, "outColor");
-
-	glBindAttribLocation(skyProgram, 0, "position");
-
-	glLinkProgram(skyProgram);
-	glUseProgram(skyProgram);
+	_skyShader.bindFragData(settings::consts::shader::outColor, "outColor");
+	_skyShader.bindAttribute(settings::consts::shader::attributes::position, "position");
+	_skyShader.linkProgram();
 
 	check_glstate("skyShader program successfully created", true);
 
 	// then setup particles shader
-	GLuint particleProgram = _particleShader.createProgram(Settings::Get()->getString(settings::strings::particle_vertex_shader), "",
-										Settings::Get()->getString(settings::strings::particle_fragment_shader));
+	_particleShader.createProgram(Settings::Get()->getString(settings::strings::particle_vertex_shader), "",
+								Settings::Get()->getString(settings::strings::particle_fragment_shader));
 
-	glBindFragDataLocation(particleProgram, 0, "outColor");
-
-	glBindAttribLocation(particleProgram, SPECATTRIB, "specifications");
-	glBindAttribLocation(particleProgram, POSATTRIB, "position");
-
-	glLinkProgram(particleProgram);
-	glUseProgram(particleProgram);
+	_particleShader.bindFragData(settings::consts::shader::outColor, "outColor");
+	_particleShader.bindAttribute(settings::consts::shader::attributes::specifications, "specifications");
+	_particleShader.bindAttribute(settings::consts::shader::attributes::position, "position");
+	_particleShader.linkProgram();
 
 	check_glstate("particleShader program successfully created", true);
 
 	// then setup model shader
-	GLuint modelProgram = _modelShader.createProgram(Settings::Get()->getString(settings::strings::model_vertex_shader), "",
-										Settings::Get()->getString(settings::strings::model_fragment_shader));
+	_modelShader.createProgram(Settings::Get()->getString(settings::strings::model_vertex_shader), "",
+							Settings::Get()->getString(settings::strings::model_fragment_shader));
 
-	glBindFragDataLocation(modelProgram, 0, "outColor");
-
-	glBindAttribLocation(modelProgram, SPECATTRIB, "specifications");
-	glBindAttribLocation(modelProgram, POSATTRIB, "position");
-
-	glLinkProgram(modelProgram);
-	glUseProgram(modelProgram);
+	_modelShader.bindFragData(settings::consts::shader::outColor, "outColor");
+	_modelShader.bindAttribute(settings::consts::shader::attributes::specifications, "specifications");
+	_modelShader.bindAttribute(settings::consts::shader::attributes::position, "position");
+	_modelShader.linkProgram();
 
 	check_glstate("modelShader program successfully created", true);
 
@@ -440,18 +393,26 @@ void OpenGL_Manager::createShaders( void )
 	_skybox->createShader();
 	
 	// then setup the main shader
-	GLuint program = _shader.createProgram(Settings::Get()->getString(settings::strings::main_vertex_shader), "",
-										Settings::Get()->getString(settings::strings::main_fragment_shader));
+	_shader.createProgram(Settings::Get()->getString(settings::strings::main_vertex_shader), "",
+						Settings::Get()->getString(settings::strings::main_fragment_shader));
 
-	glBindFragDataLocation(program, 0, "outColor");
-
-	glBindAttribLocation(program, SPECATTRIB, "specifications");
-	glBindAttribLocation(program, POSATTRIB, "position");
-
-	glLinkProgram(program);
-	glUseProgram(program);
+	_shader.bindFragData(settings::consts::shader::outColor, "outColor");
+	_shader.bindAttribute(settings::consts::shader::attributes::specifications, "specifications");
+	_shader.bindAttribute(settings::consts::shader::attributes::position, "position");
+	_shader.linkProgram();
 
 	check_glstate("Shader program successfully created", true);
+
+	_vaboParticles.genBuffers();
+	_vaboParticles.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
+	_vaboParticles.addAttribute(settings::consts::shader::attributes::position, 3, GL_FLOAT);
+	_vaboEntities.genBuffers();
+	_vaboEntities.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
+	_vaboEntities.addAttribute(settings::consts::shader::attributes::position, 3, GL_FLOAT);
+	_vaboModels.genBuffers();
+	_vaboModels.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
+	_vaboModels.addAttribute(settings::consts::shader::attributes::position, 3, GL_FLOAT);
+	check_glstate("Gen and setup buffers", false);
 }
 
 void OpenGL_Manager::setupCommunicationShaders( void )
@@ -787,6 +748,7 @@ void OpenGL_Manager::main_loop( void )
 					_player->setCamUpdate(true);
 					setThreadUpdate(true);
 					_ui->textToScreen(_menu->getState() >= menu::pause);
+					inputs::force_reset_key_update(GLFW_MOUSE_BUTTON_1);
 					break ;
 				case menu::ret::world_selected: // world selected, go into loading mode
 					_world_name = _menu->getWorldFile();

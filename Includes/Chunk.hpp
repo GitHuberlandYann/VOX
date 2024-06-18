@@ -17,6 +17,7 @@ class Player;
 # include "Particle.hpp"
 # include "Zombie.hpp"
 # include "Skeleton.hpp"
+# include "Buffer.hpp"
 
 # define XTEX (1 << 4) + (1 << 17)
 # define YTEX (1 << 12) + (1 << 18)
@@ -29,11 +30,6 @@ enum cont {
 	CONT_NEAR_INLAND,
 	CONT_MID_INLAND,
 	CONT_FAR_INLAND
-};
-
-enum {
-	SPECATTRIB,
-	POSATTRIB
 };
 
 enum Modif {
@@ -214,7 +210,7 @@ class Chunk
 		std::string getAddsRmsString( void );
 
     private:
-        GLuint _vao, _vbo, _waterVao, _waterVbo, _skyVao, _skyVbo;
+		Buffer _vabo, _vaboWater, _vaboSky;
         bool _vaoSet, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
 		std::atomic_bool _genDone, _light_update, _vertex_update, _vaoReset, _vaoVIP, _waterVaoReset, _skyVaoReset, _sortedOnce;
         GLint _startX, _startY, _nb_neighbours;

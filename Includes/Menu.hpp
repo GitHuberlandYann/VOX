@@ -72,10 +72,10 @@ class Menu
 	public:
 		Menu( void );
 		~Menu( void );
+		void deleteBuffers( void );
 
 		void processMouseMovement( float posX, float posY );
 		void setWindow( GLFWwindow *window );
-		void setShaderProgram( GLuint shaderProgram );
 		void setPtrs( Inventory* inventory, UI* ui );
 		void setChunks( std::list<Chunk *>& chunks );
 		void setChestInstance( ChestInstance* chest );
@@ -92,8 +92,7 @@ class Menu
 		std::string getInfoString( void );
 
 	private:
-	    GLuint _vao, _vbo;
-		GLuint _shaderProgram;
+		Buffer _vabo;
         GLint _gui_size, _nb_points, _state, _selection, _selected_world, _scroll;
 		t_item _selected_block;
 		bool _vaoSet, _textBar, _input_world, _input_seed, _moving_slider, _change_to_apply, _drop_down_menu;

@@ -1,18 +1,15 @@
 #ifndef TEXT_HPP
 # define TEXT_HPP
 
+# include "Shader.hpp"
+# include "Buffer.hpp"
+
 namespace TEXT
 {
 	const unsigned WHITE = 0xFFFFFFFF;
 	const unsigned BLACK = 0xFF000000;
 	const unsigned GREEN = 0xFF00FF00;
 	const unsigned RED = 0xFFFF0000;
-
-	enum {
-		SPECATTRIB,
-		COLATTRIB,
-		POSATTRIB
-	};
 }
 
 typedef struct s_text_shader_input {
@@ -37,8 +34,8 @@ class Text
 		void toScreen( void );
 
 	private:
-        GLuint _vao, _vbo;
-		GLuint _shaderProgram;
+		Shader _shader;
+		Buffer _vabo;
 		GLuint _texture;
 		std::vector<t_text_shader_input> _texts;
 

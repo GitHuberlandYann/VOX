@@ -2,11 +2,14 @@
 # define SKYBOX_HPP
 
 # include "utils.h"
+# include "Shader.hpp"
+# include "Buffer.hpp"
 
 class Skybox {
 	public:
 		Skybox( void );
 		~Skybox( void );
+		void deleteBuffers( void );
 
 		void createShader( void );
 		void setupCommunicationShaders( void );
@@ -15,8 +18,8 @@ class Skybox {
 		void render( glm::vec3 camPos );
 
 	private:
-		GLuint _vao, _vbo, _shaderProgram;
-		GLint _uniView, _uniProj, _uniCamPos, _uniTicks;
+		Shader _shader;
+		Buffer _vabo;
 };
 
 #endif

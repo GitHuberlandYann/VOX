@@ -3,7 +3,7 @@
 #include "Settings.hpp"
 
 UI::UI( void )
-	: _hideUI(false), _shaderProgram(0), _itemShaderProgram(0), _texture(), _gui_size(4), _nb_items(0),
+	: _hideUI(false), _texture(0), _gui_size(4), _nb_items(0),
 	_movement(false), _text(std::make_shared<Text>()), _chat(std::make_shared<Chat>(_text)), _inventory(NULL),
 	_player(NULL), _vaoSet(false)
 {
@@ -12,15 +12,20 @@ UI::UI( void )
 
 UI::~UI( void )
 {
-	std::cout << "Destructor of UI called" << std::endl;
-    glDeleteBuffers(1, &_vbo);
-	glDeleteVertexArrays(1, &_vao);
-	
+	std::cout << "Destructor of UI called" << std::endl;	
+}
+
+void UI::deleteBuffers( void )
+{
 	if (_texture) {
 		glDeleteTextures(1, &_texture);
 	}
 	
-	glDeleteProgram(_shaderProgram);
+	_itemShader.deleteProgram();
+	_shader.deleteProgram();
+
+	_vabo.deleteBuffers();
+	_vaboItem.deleteBuffers();
 }
 
 // ************************************************************************** //
@@ -139,19 +144,8 @@ void UI::setup_array_buffer( void )
 		return ;
 	}
 
-	glGenVertexArrays(1, &_vao);
-    glBindVertexArray(_vao);
 	_vaoSet = true;
-
-	glGenBuffers(1, &_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _nb_points * 3 * sizeof(GLint), &vertices[0][0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(ITEM_SPECATTRIB);
-	glVertexAttribIPointer(ITEM_SPECATTRIB, 1, GL_INT, 3 * sizeof(GLint), 0);
-
-	glEnableVertexAttribArray(ITEM_POSATTRIB);
-	glVertexAttribIPointer(ITEM_POSATTRIB, 2, GL_INT, 3 * sizeof(GLint), (void *)(sizeof(GLint)));
+	_vabo.uploadData(_nb_points, &vertices[0][0]);
 
 	check_glstate("UI::setup_array_buffer", false);
 }
@@ -208,9 +202,9 @@ void UI::setGuiSize( int gui_size )
 	_vaoSet = false;
 }
 
-GLuint UI::getShaderProgram( void )
+void UI::useShader( void )
 {
-	return (_shaderProgram);
+	_shader.useProgram();
 }
 
 void UI::setupShader( void )
@@ -218,59 +212,54 @@ void UI::setupShader( void )
 	_text->setupShader();
 
 	// setup item shader program
-	if (_itemShaderProgram) {
-		glDeleteProgram(_itemShaderProgram);
-	}
-	_itemShaderProgram = createShaderProgram(Settings::Get()->getString(::settings::strings::item_vertex_shader), "",
-										Settings::Get()->getString(::settings::strings::item_fragment_shader));
+	_itemShader.createProgram(Settings::Get()->getString(::settings::strings::item_vertex_shader), "",
+							Settings::Get()->getString(::settings::strings::item_fragment_shader));
 
-	glBindFragDataLocation(_itemShaderProgram, 0, "outColor");
+	_itemShader.bindFragData(settings::consts::shader::outColor, "outColor");
+	_itemShader.bindAttribute(settings::consts::shader::attributes::specifications, "specifications");
+	_itemShader.bindAttribute(settings::consts::shader::attributes::position, "position");
+	_itemShader.linkProgram();
 
-	glBindAttribLocation(_itemShaderProgram, ITEM_SPECATTRIB, "specifications");
-	glBindAttribLocation(_itemShaderProgram, ITEM_POSATTRIB, "position");
-
-	glLinkProgram(_itemShaderProgram);
-	glUseProgram(_itemShaderProgram);
-
-	glUniform1i(glGetUniformLocation(_itemShaderProgram, "win_width"), WIN_WIDTH);
-	glUniform1i(glGetUniformLocation(_itemShaderProgram, "win_height"), WIN_HEIGHT);
+	glUniform1i(glGetUniformLocation(_itemShader.getProgram(), "win_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_itemShader.getProgram(), "win_height"), WIN_HEIGHT);
 
 	check_glstate("Item_Shader program successfully created\n", true);
 
 	// then setup ui shader program
-	if (_shaderProgram) {
-		glDeleteProgram(_shaderProgram);
-	}
-	_shaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::ui_vertex_shader), "",
-										Settings::Get()->getString(settings::strings::ui_fragment_shader));
+	_shader.createProgram(Settings::Get()->getString(settings::strings::ui_vertex_shader), "",
+						Settings::Get()->getString(settings::strings::ui_fragment_shader));
 
-	glBindFragDataLocation(_shaderProgram, 0, "outColor");
+	_shader.bindFragData(settings::consts::shader::outColor, "outColor");
+	_shader.bindAttribute(settings::consts::shader::attributes::specifications, "specifications");
+	_shader.bindAttribute(settings::consts::shader::attributes::position, "position");
+	_shader.linkProgram();
 
-	glBindAttribLocation(_shaderProgram, ITEM_SPECATTRIB, "specifications");
-	glBindAttribLocation(_shaderProgram, ITEM_POSATTRIB, "position");
-
-	glLinkProgram(_shaderProgram);
-	glUseProgram(_shaderProgram);
-
-	glUniform1i(glGetUniformLocation(_shaderProgram, "win_width"), WIN_WIDTH);
-	glUniform1i(glGetUniformLocation(_shaderProgram, "win_height"), WIN_HEIGHT);
+	glUniform1i(glGetUniformLocation(_shader.getProgram(), "win_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_shader.getProgram(), "win_height"), WIN_HEIGHT);
 
 	check_glstate("UI_Shader program successfully created\n", true);
+
+	_vabo.genBuffers();
+	_vabo.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
+	_vabo.addAttribute(settings::consts::shader::attributes::position, 2, GL_INT);
+	_vaboItem.genBuffers();
+	_vaboItem.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
+	_vaboItem.addAttribute(settings::consts::shader::attributes::position, 2, GL_INT);
 }
 
 void UI::loadTextures( void )
 {
 	_text->loadTexture();
 
-	glUseProgram(_itemShaderProgram);
-	glUniform1i(glGetUniformLocation(_itemShaderProgram, "blockAtlas"), 0); // we reuse texture from main shader
+	_itemShader.useProgram();
+	glUniform1i(glGetUniformLocation(_itemShader.getProgram(), "blockAtlas"), 0); // we reuse texture from main shader
 
 	if (_texture) {
 		glDeleteTextures(1, &_texture);
 	}
 	glGenTextures(1, &_texture);
 
-	glUseProgram(_shaderProgram);
+	_shader.useProgram();
 	glActiveTexture(GL_TEXTURE0 + 2);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _texture);
 
@@ -281,21 +270,21 @@ void UI::loadTextures( void )
 	loadSubTextureArray(256, 256, settings::consts::tex::crafting_table, Settings::Get()->getString(settings::strings::tex_crafting_table));
 	loadSubTextureArray(256, 256, settings::consts::tex::furnace, Settings::Get()->getString(settings::strings::tex_furnace));
 	loadSubTextureArray(256, 256, settings::consts::tex::chest, Settings::Get()->getString(settings::strings::tex_chest));
-	glUniform1i(glGetUniformLocation(_shaderProgram, "textures"), 2);
+	glUniform1i(glGetUniformLocation(_shader.getProgram(), "textures"), 2);
 	check_glstate("Successfully loaded img[2] texture array 2D", true);
 }
 
 void UI::updateWinSize( void )
 {
-	glUseProgram(_itemShaderProgram);
-	glUniform1i(glGetUniformLocation(_itemShaderProgram, "win_width"), WIN_WIDTH);
-	glUniform1i(glGetUniformLocation(_itemShaderProgram, "win_height"), WIN_HEIGHT);
-	glUseProgram(_shaderProgram);
-	glUniform1i(glGetUniformLocation(_shaderProgram, "win_width"), WIN_WIDTH);
-	glUniform1i(glGetUniformLocation(_shaderProgram, "win_height"), WIN_HEIGHT);
+	_itemShader.useProgram();
+	glUniform1i(glGetUniformLocation(_itemShader.getProgram(), "win_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_itemShader.getProgram(), "win_height"), WIN_HEIGHT);
+	_shader.useProgram();
+	glUniform1i(glGetUniformLocation(_shader.getProgram(), "win_width"), WIN_WIDTH);
+	glUniform1i(glGetUniformLocation(_shader.getProgram(), "win_height"), WIN_HEIGHT);
 }
 
-void UI::addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement )
+void UI::addFace( t_shaderInputItem v0, t_shaderInputItem v1, t_shaderInputItem v2, t_shaderInputItem v3, bool alien, bool movement )
 {
 	if (alien) {
 		_vaoSet = false;
@@ -305,25 +294,13 @@ void UI::addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bo
 		if (!alien) return ;
 	}
 
-	_items.push_back(v0[0]);
-	_items.push_back(v0[1]);
-	_items.push_back(v0[2]);
-	_items.push_back(v1[0]);
-	_items.push_back(v1[1]);
-	_items.push_back(v1[2]);
-	_items.push_back(v2[0]);
-	_items.push_back(v2[1]);
-	_items.push_back(v2[2]);
+	_items.push_back(v0);
+	_items.push_back(v1);
+	_items.push_back(v2);
 
-	_items.push_back(v1[0]);
-	_items.push_back(v1[1]);
-	_items.push_back(v1[2]);
-	_items.push_back(v3[0]);
-	_items.push_back(v3[1]);
-	_items.push_back(v3[2]);
-	_items.push_back(v2[0]);
-	_items.push_back(v2[1]);
-	_items.push_back(v2[2]);
+	_items.push_back(v1);
+	_items.push_back(v3);
+	_items.push_back(v2);
 }
 
 void UI::drawUserInterface( std::string str, int game_mode, float deltaTime )
@@ -345,8 +322,8 @@ void UI::drawUserInterface( std::string str, int game_mode, float deltaTime )
 	}
 
 	// Bench b;
-	glUseProgram(_shaderProgram);
-    glBindVertexArray(_vao);
+	_shader.useProgram();
+    _vabo.bindVertexArray();
 	(game_mode != settings::consts::gamemode::creative)
 		? glDrawArrays(GL_TRIANGLES, 0, _nb_points)
 		: glDrawArrays(GL_TRIANGLES, 0, _nb_points_crea);
@@ -379,32 +356,22 @@ void UI::textToScreen( bool ingame )
 		return (_text->toScreen());
 	}
 
-	int nb_items = _items.size();
+	size_t nb_items = _items.size();
 	if (nb_items) {
+		_itemShader.useProgram();
+
 		if (_nb_items != nb_items || _movement) {
 			_nb_items = nb_items;
 			_movement = false;
 			// std::cout << "debug: iSize is " << nb_items << std::endl;
 
-			glGenVertexArrays(1, &_item_vao);
-			glBindVertexArray(_item_vao);
-
-			glGenBuffers(1, &_item_vbo);
-			glBindBuffer(GL_ARRAY_BUFFER, _item_vbo);
-			glBufferData(GL_ARRAY_BUFFER, nb_items * sizeof(GLint), &_items[0], GL_STATIC_DRAW);
-
-			glEnableVertexAttribArray(ITEM_SPECATTRIB);
-			glVertexAttribIPointer(ITEM_SPECATTRIB, 1, GL_INT, 3 * sizeof(GLint), 0);
-
-			glEnableVertexAttribArray(ITEM_POSATTRIB);
-			glVertexAttribIPointer(ITEM_POSATTRIB, 2, GL_INT, 3 * sizeof(GLint), (void *)(sizeof(GLint)));
+			_vaboItem.uploadData(nb_items, &_items[0].spec);
 			
 			check_glstate("UI::setup_item_array_buffer", false);
 		}
 
-		glUseProgram(_itemShaderProgram);
-		glBindVertexArray(_item_vao);
-		glDrawArrays(GL_TRIANGLES, 0, nb_items / 3);
+		_vaboItem.bindVertexArray();
+		glDrawArrays(GL_TRIANGLES, 0, nb_items);
 	}
 
 	// Bench b;

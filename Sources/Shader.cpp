@@ -68,6 +68,22 @@ GLuint Shader::createProgram( std::string vertex, std::string geometry, std::str
     return (_program);
 }
 
+void Shader::bindFragData( int index, const char* location )
+{
+	glBindFragDataLocation(_program, index, location);
+}
+
+void Shader::bindAttribute( int index, const char* location )
+{
+	glBindAttribLocation(_program, index, location);
+}
+
+void Shader::linkProgram( void )
+{
+	glLinkProgram(_program);
+	glUseProgram(_program);
+}
+
 void Shader::deleteProgram( void )
 {
     if (_program) {

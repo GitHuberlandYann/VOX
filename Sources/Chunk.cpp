@@ -62,10 +62,9 @@ Chunk::~Chunk( void )
 		_neighbours[face_dir::plus_y] = NULL;
 	}
 
-	glDeleteBuffers(1, &_vbo);
-	glDeleteVertexArrays(1, &_vao);
-	glDeleteBuffers(1, &_skyVbo);
-	glDeleteVertexArrays(1, &_skyVao);
+	_vabo.deleteBuffers();
+	_vaboSky.deleteBuffers();
+	_vaboWater.deleteBuffers();
 
 	// chests and furnaces are deleted in OpenGl_Manager when deleting backups
 	for (auto e : _entities) {
@@ -174,26 +173,19 @@ void Chunk::setup_array_buffer( void )
 	// }
 
 	if (!_vaoSet) {
-		glGenVertexArrays(1, &_vao);
-		glGenBuffers(1, &_vbo);
+		_vabo.genBuffers();
+		_vabo.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
+		_vabo.addAttribute(settings::consts::shader::attributes::position, 3, GL_FLOAT);
 		_vaoSet = true;
 	}
-	glBindVertexArray(_vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	_displayed_faces = _vertices.size() / 6;
 	_mtx.lock();
-	glBufferData(GL_ARRAY_BUFFER, _displayed_faces * 4 * 6 * sizeof(GLint), &_vertices[0].spec, GL_STATIC_DRAW);
+	_vabo.uploadData(_vertices.size(), &_vertices[0].spec);
 	_mtx.unlock();
 
 	_vaoReset = true;
 	_vaoVIP = false;
-
-	glEnableVertexAttribArray(SPECATTRIB);
-	glVertexAttribIPointer(SPECATTRIB, 1, GL_INT, 4 * sizeof(GLint), 0);
-
-	glEnableVertexAttribArray(POSATTRIB);
-	glVertexAttribPointer(POSATTRIB, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(1 * sizeof(GLint)));
 
 	check_glstate("Chunk::setup_array_buffer", false);
 }
@@ -206,8 +198,8 @@ void Chunk::setup_sky_array_buffer( void )
 
 	// check_glstate("BEFORE Chunk::setup_sky_array_buffer", false);
 	if (!_skyVaoSet) {
-		glGenVertexArrays(1, &_skyVao);
-		glGenBuffers(1, &_skyVbo);
+		_vaboSky.genBuffers();
+		_vaboSky.addAttribute(settings::consts::shader::attributes::position, 4, GL_INT);
 		_skyVaoSet = true;
 		// check_glstate("GEN Chunk::setup_sky_array_buffer", false);
 	// glBindVertexArray(_skyVao);
@@ -215,20 +207,16 @@ void Chunk::setup_sky_array_buffer( void )
 	// glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
 	// check_glstate("BIND GEN Chunk::setup_sky_array_buffer", false);
 	}//else{
-	glBindVertexArray(_skyVao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
 	// check_glstate("BIND Chunk::setup_sky_array_buffer", false);}
 	_mtx_sky.lock();
-	glBufferData(GL_ARRAY_BUFFER, _sky_count * 24 * sizeof(GLint), &_sky_vert[0][0], GL_STATIC_DRAW);
+	_vaboSky.uploadData(_sky_count * 6, &_sky_vert[0][0]);
+	// glBufferData(GL_ARRAY_BUFFER, _sky_count * 24 * sizeof(GLint), &_sky_vert[0][0], GL_STATIC_DRAW);
 	_mtx_sky.unlock();
 
 	// check_glstate("BUFFERDATA Chunk::setup_sky_array_buffer", false);
 	_skyVaoReset = false;
 	_skyVaoVIP = false;
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribIPointer(0, 4, GL_INT, 4 * sizeof(GLint), 0);
 
 	check_glstate("Chunk::setup_sky_array_buffer", false);
 }
@@ -240,22 +228,18 @@ void Chunk::setup_water_array_buffer( void )
 	// }
 
 	if (!_waterVaoSet) {
-		glGenVertexArrays(1, &_waterVao);
-		glGenBuffers(1, &_waterVbo);
+		_vaboWater.genBuffers();
+		_vaboWater.addAttribute(settings::consts::shader::attributes::position, 4, GL_INT);
 		_waterVaoSet = true;
 	}
-	glBindVertexArray(_waterVao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _waterVbo);
 	_mtx_fluid.lock();
-	glBufferData(GL_ARRAY_BUFFER, _water_count * 24 * sizeof(GLint), &_water_vert[0][0], GL_STATIC_DRAW);
+	_vaboWater.uploadData(_water_count * 6, &_water_vert[0][0]);
+	// glBufferData(GL_ARRAY_BUFFER, _water_count * 24 * sizeof(GLint), &_water_vert[0][0], GL_STATIC_DRAW);
 	_mtx_fluid.unlock();
 
 	_waterVaoReset = false;
 	_waterVaoVIP = false;
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribIPointer(0, 4, GL_INT, 4 * sizeof(GLint), 0);
 
 	check_glstate("Chunk::setup_water_array_buffer", false);
 }
@@ -729,7 +713,7 @@ void Chunk::drawArray( GLint& counter, GLint& face_counter )
 		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		setup_array_buffer();
 	}
-    glBindVertexArray(_vao); // this is the costly operation, chunk_size up == fps down
+    _vabo.bindVertexArray(); // this is the costly operation, chunk_size up == fps down
 	glDrawArrays(GL_TRIANGLES, 0, _displayed_faces * 6);
 	face_counter += _displayed_faces;
 }
@@ -882,7 +866,7 @@ void Chunk::drawSky( GLint& counter, GLint& face_counter )
 			setup_sky_array_buffer();
 		}
 	}
-    glBindVertexArray(_skyVao);
+    _vaboSky.bindVertexArray();
 	glDrawArrays(GL_TRIANGLES, 0, _sky_count * 6); // 6 points/face
 	// std::cout << "draw sky" << std::endl;
 	face_counter += _sky_count;
@@ -902,7 +886,7 @@ void Chunk::drawWater( GLint& counter, GLint& face_counter )
 			setup_water_array_buffer();
 		}
 	}
-    glBindVertexArray(_waterVao);
+    _vaboWater.bindVertexArray();
 	glDrawArrays(GL_TRIANGLES, 0, _water_count * 6); // 6 points/face
 	// std::cout << "draw water" << std::endl;
 	face_counter += _water_count;

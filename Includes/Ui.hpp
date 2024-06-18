@@ -4,17 +4,6 @@
 # include "Text.hpp"
 # include "Chat.hpp"
 
-enum {
-	ITEM_SPECATTRIB,
-	ITEM_POSATTRIB
-};
-
-enum {
-    UI_ATLASATTRIB,
-    UI_POSATTRIB,
-    UI_TEXATTRIB
-};
-
 class OpenGL_Manager;
 class Inventory;
 class Player;
@@ -24,6 +13,11 @@ typedef struct s_inv_mess {
 	float timer = 2;
 }				t_inv_mess;
 
+typedef struct s_shaderInputItem {
+	int spec;
+	glm::ivec2 pos;
+}				t_shaderInputItem;
+
 class UI
 {
     public:
@@ -31,29 +25,31 @@ class UI
 
         UI( void );
         ~UI( void );
+		void deleteBuffers( void );
 
 		void setPtrs( OpenGL_Manager* oglMan, Inventory* inventory, Player* camera );
 		std::shared_ptr<Text> getTextPtr( void );
 		std::shared_ptr<Chat> getChatPtr( void );
 		void setGuiSize( int gui_size );
-		GLuint getShaderProgram( void );
+		void useShader( void );
         void setupShader( void );
 		void loadTextures( void );
 		void updateWinSize( void );
 
-		void addFace( glm::ivec3 v0, glm::ivec3 v1, glm::ivec3 v2, glm::ivec3 v3, bool alien, bool movement = false );
+		void addFace( t_shaderInputItem v0, t_shaderInputItem v1, t_shaderInputItem v2, t_shaderInputItem v3, bool alien, bool movement = false );
         void drawUserInterface( std::string str, int game_mode, float deltaTime );
         void chatMessage( std::string str, unsigned color = TEXT::WHITE );
 		void inventoryMessage( std::string str );
 		void textToScreen( bool ingame );
 
     private:
-        GLuint _vao, _vbo, _item_vao, _item_vbo;
-		GLuint _shaderProgram, _itemShaderProgram;
+		Shader _shader, _itemShader;
+		Buffer _vabo, _vaboItem;
 		GLuint _texture;
-        GLint _gui_size, _nb_points, _nb_points_crea, _nb_items;
+        GLint _gui_size, _nb_points, _nb_points_crea;
+		size_t _nb_items;
 		bool _movement;
-		std::vector<int> _items;
+		std::vector<t_shaderInputItem> _items;
 		t_inv_mess _inventoryMessage;
 		std::shared_ptr<Text> _text;
 		std::shared_ptr<Chat> _chat;

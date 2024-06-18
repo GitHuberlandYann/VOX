@@ -2,11 +2,7 @@
 #include "DayCycle.hpp"
 #include "Settings.hpp"
 
-namespace SHADERS {
-	const int POSATTRIB = 0;
-};
-
-Skybox::Skybox( void ) : _shaderProgram(0)
+Skybox::Skybox( void )
 {
 
 }
@@ -14,11 +10,13 @@ Skybox::Skybox( void ) : _shaderProgram(0)
 Skybox::~Skybox( void )
 {
 	std::cout << "Destructor of Skybox called" << std::endl;
+}
 
-	glDeleteProgram(_shaderProgram);
+void Skybox::deleteBuffers( void )
+{
+	_shader.deleteProgram();
 
-	glDeleteBuffers(1, &_vbo);
-	glDeleteVertexArrays(1, &_vao);
+	_vabo.deleteBuffers();
 }
 
 // ************************************************************************** //
@@ -31,28 +29,25 @@ Skybox::~Skybox( void )
 
 void Skybox::createShader( void )
 {
-	if (_shaderProgram) {
-		glDeleteProgram(_shaderProgram);
-	}
-	_shaderProgram = createShaderProgram(Settings::Get()->getString(settings::strings::skybox_vertex_shader), "",
-										Settings::Get()->getString(settings::strings::skybox_fragment_shader));
+	_shader.createProgram(Settings::Get()->getString(settings::strings::skybox_vertex_shader), "",
+						Settings::Get()->getString(settings::strings::skybox_fragment_shader));
 
-	glBindFragDataLocation(_shaderProgram, 0, "outColor");
-
-	glBindAttribLocation(_shaderProgram, SHADERS::POSATTRIB, "position");
-
-	glLinkProgram(_shaderProgram);
-	glUseProgram(_shaderProgram);
+	_shader.bindFragData(settings::consts::shader::outColor, "outColor");
+	_shader.bindAttribute(settings::consts::shader::attributes::position, "position");
+	_shader.linkProgram();
 
 	check_glstate("Skybox shader program successfully created", true);
+
+	_vabo.genBuffers();
+	_vabo.addAttribute(settings::consts::shader::attributes::position, 3, GL_FLOAT);
 }
 
 void Skybox::setupCommunicationShaders( void )
 {
-	_uniView = glGetUniformLocation(_shaderProgram, "view");
-	_uniProj = glGetUniformLocation(_shaderProgram, "proj");
-	_uniCamPos = glGetUniformLocation(_shaderProgram, "camPos");
-	_uniTicks = glGetUniformLocation(_shaderProgram, "ticks");
+	_shader.setUniformLocation(settings::consts::shader::uniform::view, "view");
+	_shader.setUniformLocation(settings::consts::shader::uniform::proj, "proj");
+	_shader.setUniformLocation(settings::consts::shader::uniform::camPos, "camPos");
+	_shader.setUniformLocation(settings::consts::shader::uniform::ticks, "ticks");
 
 	const glm::vec3 p0 = {-1.0f, -1.0f,  1.0f};
 	const glm::vec3 p1 = { 1.0f, -1.0f,  1.0f};
@@ -73,31 +68,20 @@ void Skybox::setupCommunicationShaders( void )
 		p5, p4, p1,   p4, p0, p1, // plusz
 	};
 
-	glGenVertexArrays(1, &_vao);
-	glGenBuffers(1, &_vbo);
-
-	glUseProgram(_shaderProgram);
-	glBindVertexArray(_vao);
-
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, 3 * vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(SHADERS::POSATTRIB);
-	glVertexAttribPointer(SHADERS::POSATTRIB, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void *)(0 * sizeof(GLfloat)));
+	_shader.useProgram();
+	_vabo.uploadData(vertices.size(), &vertices[0]);
 
 	check_glstate("Skybox::setup_communication_shaders", false);
 }
 
 void Skybox::updateCamView( glm::mat4 view )
 {
-	glUseProgram(_shaderProgram);
-	glUniformMatrix4fv(_uniView, 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(_shader.getUniform(settings::consts::shader::uniform::view), 1, GL_FALSE, glm::value_ptr(view));
 }
 
 void Skybox::updateCamPerspective( glm::mat4 proj )
 {
-	glUseProgram(_shaderProgram);
-	glUniformMatrix4fv(_uniProj, 1, GL_FALSE, glm::value_ptr(proj));
+	glUniformMatrix4fv(_shader.getUniform(settings::consts::shader::uniform::proj), 1, GL_FALSE, glm::value_ptr(proj));
 }
 
 void Skybox::render( glm::vec3 camPos )
@@ -106,12 +90,10 @@ void Skybox::render( glm::vec3 camPos )
     glGetIntegerv(GL_DEPTH_FUNC, &OldDepthFuncMode);
     glDepthFunc(GL_LEQUAL);
 
-	glUseProgram(_shaderProgram);
+	glUniform3fv(_shader.getUniform(settings::consts::shader::uniform::camPos), 1, &camPos.x);
+	glUniform1i(_shader.getUniform(settings::consts::shader::uniform::ticks), DayCycle::Get()->getTicks());
 
-	glUniform3fv(_uniCamPos, 1, &camPos.x);
-	glUniform1i(_uniTicks, DayCycle::Get()->getTicks());
-
-	glBindVertexArray(_vao);
+	_vabo.bindVertexArray();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	glDepthFunc(OldDepthFuncMode);

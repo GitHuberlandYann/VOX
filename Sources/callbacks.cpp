@@ -234,6 +234,17 @@ namespace inputs
 	}
 
 	/**
+	 * @brief find action connected to key and forcefully reset its update status
+	 */
+	void force_reset_key_update( int key )
+	{
+		auto search = key_map.find(key);
+		if (search == key_map.end()) return ;
+
+		updated[search->second] = false;
+	}
+
+	/**
 	 * @brief find key binded to given action and return its string representation
 	 * @param action one of enum values
 	 */

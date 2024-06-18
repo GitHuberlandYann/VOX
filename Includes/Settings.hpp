@@ -83,6 +83,8 @@ namespace settings {
 		};
 
 		namespace shader {
+			const int outColor = 0; // location of outColor fragData in fragment shaders
+
 			namespace uniform {
 				const size_t fog = 0;
 				const size_t view = 1;
@@ -91,10 +93,19 @@ namespace settings {
 				const size_t brightness = 4;
 				const size_t color = 5;
 				const size_t animation = 6;
+				const size_t camPos = 7;
+				const size_t ticks = 8;
 			};
+
 			namespace texture {
 				const int zombie = 0;
 				const int skeleton = 1;
+			};
+
+			namespace attributes {
+				const int specifications = 0;
+				const int color = 1;
+				const int position = 2;
 			};
 		};
 

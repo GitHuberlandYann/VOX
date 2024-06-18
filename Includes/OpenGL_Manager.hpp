@@ -10,6 +10,7 @@
 # include "Menu.hpp"
 # include "Skybox.hpp"
 # include "Shader.hpp"
+# include "Buffer.hpp"
 
 extern std::mutex mtx;
 extern std::mutex mtx_perimeter;
@@ -62,7 +63,7 @@ class OpenGL_Manager
 	private:
 		GLFWwindow* _window;
 		Shader _shader, _skyShader, _particleShader, _modelShader;
-		GLuint _vaoEntities, _vboEntities, _vaoParticles, _vboParticles, _vaoModels, _vboModels;
+		Buffer _vaboEntities, _vaboParticles, _vaboModels;
 		glm::ivec2 _current_chunk;
 		std::array<GLuint, 5> _textures;
 		GLint _fill;
