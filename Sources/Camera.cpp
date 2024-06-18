@@ -1,6 +1,7 @@
 #include "Camera.hpp"
 #include "Settings.hpp"
 #include "utils.h"
+#include "Player.hpp"
 
 Camera::Camera( void )
 	: _camPlacement(CAMPLACEMENT::DEFAULT)
@@ -74,7 +75,7 @@ void Camera::changeCamPlacement( void )
 {
 	const int next[3] = {CAMPLACEMENT::BEHIND, CAMPLACEMENT::FRONT, CAMPLACEMENT::DEFAULT};
 	_camPlacement = next[_camPlacement];
-	if (_target) {
-		_target->setCamUpdate(true);
+	if (_target->getType() == settings::consts::mob::player) {
+		static_cast<Player*>(_target)->setCamUpdate(true);
 	}
 }

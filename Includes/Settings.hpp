@@ -94,6 +94,7 @@ namespace settings {
 			};
 			namespace texture {
 				const int zombie = 0;
+				const int skeleton = 1;
 			};
 		};
 
@@ -101,61 +102,7 @@ namespace settings {
 			const glm::vec3 world_up = {0.0f, 0.0f, 1.0f};
 			const float standard_gravity = -9.81f;
 		};
-
-		namespace speed {
-			const float fly = 20.0f;
-			const float walk = 4.317f;
-			const float sneak = 1.295f;
-			const float sneak_sprint = 1.684f;
-			const float sprint = 5.612f;
-			const float sprint_jump = 7.127f;
-			const float swim = 1.97f;
-			const float swim_up = 0.39f;
-			const float swim_down = 1.81f;
-
-			const float initial_jump = 9.317f;
-			const float initial_fall = -6.605f;
-			const float zombie = 2.28378822f;
-			const float smooth_cam = 5.0f;
-		};
-
-		namespace exhaustion {
-			const float swim = 0.01f;
-			const float breaking_block = 0.005f;
-			const float sprint = 0.1f;
-			const float jump = 0.05f;
-			const float sprint_jump = 0.2f;
-			const float regen = 6.0f;
-		};
-
-		namespace reach {
-			const float survival = 4.5f;
-			const float creative = chunk_size;
-			const float attack = 3.0f;
-		};
-
-		namespace mob {
-			const int zombie = 0;
-		};
-
-		namespace hitbox { // https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
-			const float player = 1.8f;
-			const float player_sneak = 1.5f;
-			const float zombie = 1.95f;
-		};
-
-		namespace eyeLevel { // meaning eye level = hitbox / 32 * 28.8
-			const float player = 0.62f;
-			const float player_sneak = 0.32f;
-			const float zombie = 0.755f;
-		}
 	};
-
-	namespace state_machine {
-		const short idle = 0;
-		const short wandle = 1;
-		const short chase = 2;
-	}
 
 	namespace defaults {
 		const int   render_distance = 10;
@@ -210,6 +157,7 @@ namespace settings {
 			tex_furnace,
 			tex_chest,
 			tex_zombie,
+			tex_skeleton,
 			particle_atlas,
 			model_atlas,
 			water_still,

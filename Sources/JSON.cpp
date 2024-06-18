@@ -759,6 +759,11 @@ bool Settings::loadResourcePacks( void )
 					if (end == std::string::npos) throw UnclosedBracketException();
 					_strings[settings::strings::tex_zombie] = line.substr(15, end - 15);
 					check_set[settings::strings::tex_zombie] = true;
+				} else if (!line.compare(0, 16, "\"TEX_SKELETON\": ")) {
+					size_t end = line.find('\"', 17);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[settings::strings::tex_skeleton] = line.substr(17, end - 17);
+					check_set[settings::strings::tex_skeleton] = true;
 				} else if (!line.compare(0, 18, "\"PARTICLE_ATLAS\": ")) {
 					size_t end = line.find('\"', 19);
 					if (end == std::string::npos) throw UnclosedBracketException();

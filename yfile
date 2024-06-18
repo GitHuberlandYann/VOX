@@ -178,6 +178,7 @@ TODOS:
 	- Worldedit mod
 	- A* Pathfinding algo to be used by mobs
 	- Zombies
+	- Skeletons
 	- centralize settings and save/load them in file
 	- resource packs
 	- Game modes:
@@ -464,3 +465,9 @@ HUD depth: [0:255] 255 being furthest, 0 closest. mapped to [0:0.001] in shaders
 				and has no colliding entities or blocks, at which to spawn the reinforcement.
 				Both the damaged zombie and the new zombie has a 5 percentage point penalty to their "likeliness to call reinforcement" stat,
 				preventing infinite zombies from spawning this way.
+		- Skeleton:
+			- pursue player if on sight from 16 blocks away
+			- sprint if more than 14 blocks away
+			- if clear line of sight and 15 blocks away or less from player, takes aim
+			- shoots one arrow every 2 sec on easy and normal, 1/sec on hard
+			- if less than 4 blocks away from player, strafe to dodge

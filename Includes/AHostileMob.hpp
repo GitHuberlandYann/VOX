@@ -4,10 +4,17 @@
 # include "AMob.hpp"
 class Player;
 
+namespace settings {
+	namespace state_machine {
+		const short idle = 0;
+		const short wandle = 1;
+		const short chase = 2;
+	};
+};
+
 class AHostileMob : public AMob
 {
 	public:
-		AHostileMob( Player* player, glm::vec3 position );
 		virtual ~AHostileMob( void );
 
 	protected:
@@ -17,6 +24,9 @@ class AHostileMob : public AMob
 		std::vector<glm::ivec3> _path;
 		Player* _player;
 
+		AHostileMob( Player* player, glm::vec3 position );
+
+		virtual void updatePath( void ) = 0;
 		virtual bool updateCurrentBlock( void );
 		void setState( const short state );
 };

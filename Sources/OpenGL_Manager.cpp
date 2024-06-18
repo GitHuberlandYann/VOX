@@ -531,8 +531,9 @@ void OpenGL_Manager::loadTextures( void )
 	glActiveTexture(GL_TEXTURE0 + 3);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _textures[4]);
 
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 64, 64, 1);
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 64, 64, 2);
 	loadSubTextureArray(64, 64, settings::consts::shader::texture::zombie, Settings::Get()->getString(settings::strings::tex_zombie));
+	loadSubTextureArray(64, 64, settings::consts::shader::texture::skeleton, Settings::Get()->getString(settings::strings::tex_skeleton));
 	glUniform1i(glGetUniformLocation(_modelShader.getProgram(), "textures"), 3);
 	check_glstate("Successfully loaded img[3] texture array 2D", true);
 }

@@ -546,6 +546,27 @@ void Chunk::sort_sky( glm::vec3& pos, bool vip )
 	}
 }
 
+/**
+ * @brief return whether there is a clear line of sight between to 3d points
+ * A line of sight is 'clear' as long as there are no solid blocks between the points
+ * @param src start of line segment
+ * @param dst end of line segment
+ */
+bool Chunk::lineOfSight( const glm::vec3 src, const glm::vec3 dst )
+{
+	const std::vector<glm::ivec3> ids = voxel_traversal(src, dst);
+
+	for (auto i : ids) {
+		int value = getBlockAtAbsolute(i);
+
+		if (!s_blocks[value & mask::blocks::type]->transparent) {
+			return (false);
+		}
+	}
+
+	return (true);
+}
+
 bool Chunk::inPerimeter( int posX, int posY, GLint render_dist )
 {
 	while (!_genDone); // wait for generation taking place in another thread to be done
@@ -746,7 +767,10 @@ void Chunk::addMob( const AMob& mob, int mobType )
 	switch (mobType) {
 		case settings::consts::mob::zombie:
 			_mobs.push_back(std::make_shared<Zombie>(static_cast<const Zombie&>(mob)));
-			std::cout << _startX << ", " << _startY << ": new zombie added from neighbouring chunk." << std::endl;
+			// std::cout << _startX << ", " << _startY << ": new zombie added from neighbouring chunk." << std::endl;
+			break ;
+		case settings::consts::mob::skeleton:
+			_mobs.push_back(std::make_shared<Skeleton>(static_cast<const Skeleton&>(mob)));
 			break ;
 		default:
 			std::cout << "ERROR Chunk::addMob invalid mobType " << mobType << std::endl;

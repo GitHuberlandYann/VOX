@@ -168,7 +168,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		type = blocks::dirt_path;
 		_chunk_hit->handleHit(true, type, _block_hit.pos, Modif::replace);
 		return ;
-	} else if (type == blocks::zombie_egg) {
+	} else if (type == blocks::zombie_egg || type == blocks::skeleton_egg) {
 		_chunk_hit->handleHit(collect, type, _block_hit.prev_pos, Modif::use);
 		return ;
 	}

@@ -3,6 +3,43 @@
 
 # include "Chunk.hpp"
 
+namespace settings {
+	namespace consts {
+		namespace speed {
+			const float fly = 20.0f;
+			const float walk = 4.317f;
+			const float sneak = 1.295f;
+			const float sneak_sprint = 1.684f;
+			const float sprint = 5.612f;
+			const float sprint_jump = 7.127f;
+			const float swim = 1.97f;
+			const float swim_up = 0.39f;
+			const float swim_down = 1.81f;
+
+			const float initial_jump = 9.317f;
+			const float initial_fall = -6.605f;
+			const float zombie = 2.28378822f;
+			const float skeleton = 3.1642862f;
+			const float smooth_cam = 5.0f;
+		};
+
+		namespace exhaustion {
+			const float swim = 0.01f;
+			const float breaking_block = 0.005f;
+			const float sprint = 0.1f;
+			const float jump = 0.05f;
+			const float sprint_jump = 0.2f;
+			const float regen = 6.0f;
+		};
+		
+		namespace reach {
+			const float survival = 4.5f;
+			const float creative = chunk_size;
+			const float attack = 3.0f;
+		};
+	};
+};
+
 class Player : public AMob
 {
     public:
@@ -30,6 +67,7 @@ class Player : public AMob
 		void setDelta( float deltaTime );
         void setArmAnimation( bool state );
         virtual void setCamUpdate( bool state );
+        virtual void setUIUpdate( bool state );
 
         virtual float getFovOffset( void );
         int getFoodLevel( void );
@@ -58,6 +96,8 @@ class Player : public AMob
 		virtual void touchGround( float value );
 		virtual void touchCeiling( float value );
         void resetFall( void );
+
+		virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime );
         void inputUpdate( bool rayCast, int gameMode );
     
     private:
@@ -81,6 +121,7 @@ class Player : public AMob
         virtual bool updateCurrentBlock( void );
         void moveFly( GLint v, GLint h, GLint z );
         void moveUnderwater( int direction, GLint v, GLint h, GLint z );
+		virtual float getSpeed( void );
         void move( int direction, GLint v, GLint h, GLint z );
         virtual void restorePos( glm::vec3 position );
         virtual bool customObstacle( float minZ, float maxZ );

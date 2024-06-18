@@ -3,19 +3,43 @@
 
 #include "Blocks.hpp"
 
+namespace settings {
+	namespace consts {
+		namespace mob {
+			const short unset = 0;
+			const short player = 1;
+			const short zombie = 2;
+			const short skeleton = 3;
+		};
+
+		namespace hitbox { // https://minecraft.fandom.com/wiki/Hitbox#List_of_entity_hitboxes
+			const float player = 1.8f;
+			const float player_sneak = 1.5f;
+			const float zombie = 1.95f;
+			const float skeleton = 1.99f;
+		};
+
+		namespace eyeLevel { // meaning eye level = hitbox / 32 * 28.8
+			const float player = 0.62f;
+			const float player_sneak = 0.32f;
+			const float zombie = 0.755f;
+			const float skeleton = 0.791f;
+		}
+	};
+};
+
 typedef struct s_item t_item;
 
 class AMob {
 	public:
-		AMob( glm::vec3 position );
 		virtual ~AMob( void );
 
-		virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime ) { (void)modArr;(void)deltaTime; return (true); };
+		virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime ) = 0;
 		glm::vec3 getPos( void );
 		virtual glm::vec3 getEyePos( void ) = 0;
 		glm::vec3 getDir( void );
-		virtual void setCamUpdate( bool state ) { (void) state; };
-		virtual float getFovOffset( void ) { return (0.0f); };
+		short getType( void );
+		virtual float getFovOffset( void );
 
 		virtual void applyGravity( void );
 		virtual void touchGround( float value );
@@ -60,9 +84,12 @@ class AMob {
 		bool _persistenceRequired; // true if the mob must not despawn naturally.
 		Chunk* _chunk;
 
+		AMob( glm::vec3 position );
+
 		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy );
 
 		virtual bool updateCurrentBlock( void ) = 0;
+		virtual float getSpeed( void ) = 0;
 		void move( int direction, bool move );
 		virtual void restorePos( glm::vec3 position );
 		virtual bool customObstacle( float minZ, float maxZ );

@@ -16,6 +16,7 @@ class Player;
 # include "Entity.hpp"
 # include "Particle.hpp"
 # include "Zombie.hpp"
+# include "Skeleton.hpp"
 
 # define XTEX (1 << 4) + (1 << 17)
 # define YTEX (1 << 12) + (1 << 18)
@@ -170,7 +171,8 @@ class Chunk
 		void addParticle( Particle* particle );
 		void sort_sky( glm::vec3& pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
-	
+
+		bool lineOfSight( const glm::vec3 src, const glm::vec3 dst );
 		bool inPerimeter( int posX, int posY, GLint render_dist );
 		int manhattanDist( int posX, int posY );
         bool isInChunk( int posX, int posY );

@@ -9,7 +9,7 @@ Player::Player( void )
     _smoothCam(false), _armAnimation(false), _fallImmunity(false), _sprinting(false), _sneaking(false), _waterHead(false), _waterFeet(false),
     _updateCam(false), _updateFov(false), _updateUI(false)
 {
-
+	_type = settings::consts::mob::player;
 }
 
 Player::~Player( void )
@@ -214,6 +214,11 @@ void Player::setArmAnimation( bool state )
 void Player::setCamUpdate( bool state )
 {
     _updateCam = state;
+}
+
+void Player::setUIUpdate( bool state )
+{
+	_updateUI = state;
 }
 
 float Player::getFovOffset( void )

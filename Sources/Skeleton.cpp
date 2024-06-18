@@ -1,18 +1,18 @@
 #include "Player.hpp"
-#include "Zombie.hpp"
+#include "Skeleton.hpp"
 #include "Chunk.hpp"
 #include "logs.hpp"
 #include "random.hpp"
 
-Zombie::Zombie( Chunk* chunk, Player* player, glm::vec3 position ) : AHostileMob(player, position)
+Skeleton::Skeleton( Chunk* chunk, Player* player, glm::vec3 position ) : AHostileMob(player, position)
 {
     _chunk = chunk;
-	_type = settings::consts::mob::zombie;
+	_type = settings::consts::mob::skeleton;
 
-	LOG("new zombie at " << POS(_position));
+	LOG("new skeleton at " << POS(_position));
 }
 
-Zombie::~Zombie( void )
+Skeleton::~Skeleton( void )
 {
 
 }
@@ -21,10 +21,10 @@ Zombie::~Zombie( void )
 //                                Public                                      //
 // ************************************************************************** //
 
-bool Zombie::update( std::vector<t_shaderInput>& modArr, float deltaTime )
+bool Skeleton::update( std::vector<t_shaderInput>& modArr, float deltaTime )
 {
     if (!_chunk) {
-        std::cout << "zombie is missing a _chunk" << std::endl;
+        std::cout << "skeleton is missing a _chunk" << std::endl;
         return (true);
     }
 	bool changeOwner = false;
@@ -132,15 +132,15 @@ bool Zombie::update( std::vector<t_shaderInput>& modArr, float deltaTime )
 	return (changeOwner);
 }
 
-bool Zombie::getHitBox( void )
+bool Skeleton::getHitBox( void )
 {
-	return (settings::consts::hitbox::zombie);
+	return (settings::consts::hitbox::skeleton);
 }
 
-glm::vec3 Zombie::getEyePos( void )
+glm::vec3 Skeleton::getEyePos( void )
 {
 	glm::vec3 res = _position;
-	res.z += 1 + settings::consts::eyeLevel::zombie;
+	res.z += 1 + settings::consts::eyeLevel::skeleton;
 	return (res);
 }
 
@@ -149,16 +149,16 @@ glm::vec3 Zombie::getEyePos( void )
 // ************************************************************************** //
 
 /**
- * @brief called when zombie goes from one block to another, used to update its path and state
+ * @brief called when Skeleton goes from one block to another, used to update its path and state
  */
-void Zombie::updatePath( void )
+void Skeleton::updatePath( void )
 {
-	if (_state == settings::state_machine::chase) { // update path
+	if (_state == settings::state_machine::chase) { // update path, or TODO take aim if close enough and clear line of sight
 		_path = _chunk->computePathfinding(_currentBlock, _player->getPos()).first;
 		if (!_path.size()) {
 			setState(settings::state_machine::idle);
 		}
-	} else if (glm::distance(_position, _player->getPos()) < 32.0f) {
+	} else if (glm::distance(_position, _player->getPos()) < 16.0f) {
 		if (!_chunk->lineOfSight(getEyePos(), _player->getEyePos())) {
 			return ; // no direct line of sight from mob to player
 		}
@@ -169,11 +169,11 @@ void Zombie::updatePath( void )
 	}
 }
 
-void Zombie::draw( std::vector<t_shaderInput>& arr )
+void Skeleton::draw( std::vector<t_shaderInput>& arr )
 {
     // 1 model texture pxl is 0.0609375 meters
-	const float scale = (_deathTime < 0) ? settings::consts::hitbox::zombie * (glm::abs(_deathTime) * 0.5f) / 32.0f
-										: settings::consts::hitbox::zombie / 32.0f;
+	const float scale = (_deathTime < 0) ? settings::consts::hitbox::skeleton * (glm::abs(_deathTime) * 0.5f) / 32.0f
+										: settings::consts::hitbox::skeleton / 32.0f;
 
 // draw head
 	// draw face
@@ -188,7 +188,7 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 
 	int itemLight = _chunk->computePosLight(pos);
 	int hurtColor = (_hurtTime < 0) ? (1 << 19) : 0;
-	int modelAltas = (settings::consts::shader::texture::zombie << 12);
+	int modelAltas = (settings::consts::shader::texture::skeleton << 12);
 	int spec = (2 << 19) + 8 + (8 << 6) + (itemLight << 24) + hurtColor + modelAltas;
 	addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8);
 
@@ -230,7 +230,7 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	p2 = p0 + bodyFront * 4.0f * scale;
 	p3 = p1 + bodyFront * 4.0f * scale;
 	spec = (2 << 19) + 20 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 8, 4);
+	// addQuads(arr, {p0, p1, p2, p3}, spec, 8, 4); // not drawn
 	// down
 	p4 = p2 - bodyUp * 12.0f * scale;
 	p5 = p3 - bodyUp * 12.0f * scale;
@@ -240,10 +240,12 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	addQuads(arr, {p4, p5, p6, p7}, spec, 8, 4);
 	// front 2345
 	spec = (2 << 19) + 20 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p2, p3, p4, p5}, spec, 8, 12);
+	addQuads(arr, {p2, p3, p4, p5}, spec, 8, 12); // recto
+	addQuads(arr, {p3, p2, p5, p4}, spec, 8, 12); // verso
 	// back 1076
 	spec += 12;
-	addQuads(arr, {p1, p0, p7, p6}, spec, 8, 12);
+	addQuads(arr, {p1, p0, p7, p6}, spec, 8, 12); // recto
+	addQuads(arr, {p0, p1, p6, p7}, spec, 8, 12); // verso
 	// right 0264
 	spec = (2 << 19) + 16 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
 	addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12);
@@ -258,99 +260,99 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	glm::vec3 armRight = bodyRight;
 
 // draw right arm
-	pos += armRight * 6.0f * scale;
+	pos += armRight * 5.0f * scale;
 	// up
-	p0 = pos + armRight * 2.0f * scale - armFront * 2.0f * scale;
-	p1 = p0 - armRight * 4.0f * scale;
-	p2 = p0 + armFront * 4.0f * scale;
-	p3 = p1 + armFront * 4.0f * scale;
-	spec = (2 << 19) + 44 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4);
+	p0 = pos + armRight * 1.0f * scale - armFront * 1.0f * scale;
+	p1 = p0 - armRight * 2.0f * scale;
+	p2 = p0 + armFront * 2.0f * scale;
+	p3 = p1 + armFront * 2.0f * scale;
+	spec = (2 << 19) + 42 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p0, p1, p2, p3}, spec, 2, 2);
 	// down
 	p4 = p2 - armUp * 12.0f * scale;
 	p5 = p3 - armUp * 12.0f * scale;
 	p6 = p0 - armUp * 12.0f * scale;
 	p7 = p1 - armUp * 12.0f * scale;
-	spec += 4;
-	addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4);
+	spec += 2;
+	addQuads(arr, {p4, p5, p6, p7}, spec, 2, 2);
 	// front 2345
-	spec = (2 << 19) + 44 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12);
+	spec = (2 << 19) + 42 + (18 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p2, p3, p4, p5}, spec, 2, 12);
 	// back 1076
-	spec += 8;
-	addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12);
+	spec += 4;
+	addQuads(arr, {p1, p0, p7, p6}, spec, 2, 12);
 	// right 0264
-	spec = (2 << 19) + 40 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12);
+	spec = (2 << 19) + 40 + (18 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p0, p2, p6, p4}, spec, 2, 12);
 	// left 3157
-	spec += 8;
-	addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12);
+	spec += 4;
+	addQuads(arr, {p3, p1, p5, p7}, spec, 2, 12);
 
-	pos -= armRight * 6.0f * scale;
+	pos -= armRight * 5.0f * scale;
 // draw left leg // whose movement is in synch with right arm
 	glm::vec3 legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + settings::consts::math::world_up * sina);
 	glm::vec3 legUp = glm::normalize(glm::cross(bodyRight, legFront));
 	pos -= bodyRight * 2.0f * scale;
 	pos -= bodyUp * 12.0f * scale;
 	// up
-	p0 = pos + bodyRight * 2.0f * scale - legFront * 2.0f * scale;
-	p1 = p0 - bodyRight * 4.0f * scale;
-	p2 = p0 + legFront * 4.0f * scale;
-	p3 = p1 + legFront * 4.0f * scale;
-	spec = (2 << 19) + 4 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4);
+	p0 = pos + bodyRight * 1.0f * scale - legFront * 1.0f * scale;
+	p1 = p0 - bodyRight * 2.0f * scale;
+	p2 = p0 + legFront * 2.0f * scale;
+	p3 = p1 + legFront * 2.0f * scale;
+	spec = (2 << 19) + 2 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p0, p1, p2, p3}, spec, 2, 2);
 	// down
 	p4 = p2 - legUp * 12.0f * scale;
 	p5 = p3 - legUp * 12.0f * scale;
 	p6 = p0 - legUp * 12.0f * scale;
 	p7 = p1 - legUp * 12.0f * scale;
-	spec += 4;
-	addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4);
+	spec += 2;
+	addQuads(arr, {p4, p5, p6, p7}, spec, 2, 2);
 	// front 2345
-	spec = (2 << 19) + 4 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12);
+	spec = (2 << 19) + 2 + (18 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p2, p3, p4, p5}, spec, 2, 12);
 	// back 1076
-	spec += 8;
-	addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12);
+	spec += 4;
+	addQuads(arr, {p1, p0, p7, p6}, spec, 2, 12);
 	// right 0264
-	spec = (2 << 19) + 0 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12);
+	spec = (2 << 19) + 0 + (18 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p0, p2, p6, p4}, spec, 2, 12);
 	// left 3157
-	spec += 8;
-	addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12);
+	spec += 4;
+	addQuads(arr, {p3, p1, p5, p7}, spec, 2, 12);
 
 // draw left arm
 	sina = -sina;
 	armFront = (_state == settings::state_machine::chase) ? glm::normalize(bodyUp + bodyFront * sina * 0.2f) : glm::normalize(bodyFront + settings::consts::math::world_up * sina);
 	armUp = glm::normalize(glm::cross(bodyRight, armFront));
-	pos -= bodyRight * 4.0f * scale;
+	pos -= bodyRight * 3.0f * scale;
 	pos += bodyUp * 12.0f * scale;
 	// up
-	p0 = pos + bodyRight * 2.0f * scale - armFront * 2.0f * scale;
-	p1 = p0 - bodyRight * 4.0f * scale;
-	p2 = p0 + armFront * 4.0f * scale;
-	p3 = p1 + armFront * 4.0f * scale;
-	spec = (2 << 19) + 44 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4);
+	p0 = pos + bodyRight * 1.0f * scale - armFront * 1.0f * scale;
+	p1 = p0 - bodyRight * 2.0f * scale;
+	p2 = p0 + armFront * 2.0f * scale;
+	p3 = p1 + armFront * 2.0f * scale;
+	spec = (2 << 19) + 42 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p0, p1, p2, p3}, spec, 2, 2);
 	// down
 	p4 = p2 - armUp * 12.0f * scale;
 	p5 = p3 - armUp * 12.0f * scale;
 	p6 = p0 - armUp * 12.0f * scale;
 	p7 = p1 - armUp * 12.0f * scale;
-	spec += 4;
-	addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4);
+	spec += 2;
+	addQuads(arr, {p4, p5, p6, p7}, spec, 2, 2);
 	// front 2345
-	spec = (2 << 19) + 44 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12);
+	spec = (2 << 19) + 42 + (18 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p2, p3, p4, p5}, spec, 2, 12);
 	// back 1076
-	spec += 8;
-	addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12);
+	spec += 4;
+	addQuads(arr, {p1, p0, p7, p6}, spec, 2, 12);
 	// right 0264
-	spec = (2 << 19) + 40 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12);
+	spec = (2 << 19) + 40 + (18 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p0, p2, p6, p4}, spec, 2, 12);
 	// left 3157
-	spec += 8;
-	addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12);
+	spec += 4;
+	addQuads(arr, {p3, p1, p5, p7}, spec, 2, 12);
 
 // draw right leg
 	legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + settings::consts::math::world_up * sina);
@@ -358,29 +360,29 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	pos += bodyRight * 8.0f * scale;
 	pos -= bodyUp * 12.0f * scale;
 	// up
-	p0 = pos + bodyRight * 2.0f * scale - legFront * 2.0f * scale;
-	p1 = p0 - bodyRight * 4.0f * scale;
-	p2 = p0 + legFront * 4.0f * scale;
-	p3 = p1 + legFront * 4.0f * scale;
-	spec = (2 << 19) + 4 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4);
+	p0 = pos + bodyRight * 1.0f * scale - legFront * 1.0f * scale;
+	p1 = p0 - bodyRight * 2.0f * scale;
+	p2 = p0 + legFront * 2.0f * scale;
+	p3 = p1 + legFront * 2.0f * scale;
+	spec = (2 << 19) + 2 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p0, p1, p2, p3}, spec, 2, 2);
 	// down
 	p4 = p2 - legUp * 12.0f * scale;
 	p5 = p3 - legUp * 12.0f * scale;
 	p6 = p0 - legUp * 12.0f * scale;
 	p7 = p1 - legUp * 12.0f * scale;
-	spec += 4;
-	addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4);
+	spec += 2;
+	addQuads(arr, {p4, p5, p6, p7}, spec, 2, 2);
 	// front 2345
-	spec = (2 << 19) + 4 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12);
+	spec = (2 << 19) + 2 + (18 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p2, p3, p4, p5}, spec, 2, 12);
 	// back 1076
-	spec += 8;
-	addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12);
+	spec += 4;
+	addQuads(arr, {p1, p0, p7, p6}, spec, 2, 12);
 	// right 0264
-	spec = (2 << 19) + 0 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12);
+	spec = (2 << 19) + 0 + (18 << 6) + (itemLight << 24) + hurtColor + modelAltas;
+	addQuads(arr, {p0, p2, p6, p4}, spec, 2, 12);
 	// left 3157
-	spec += 8;
-	addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12);
+	spec += 4;
+	addQuads(arr, {p3, p1, p5, p7}, spec, 2, 12);
 }

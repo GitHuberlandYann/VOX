@@ -1,13 +1,13 @@
-#ifndef ZOMBIE_HPP
-# define ZOMBIE_HPP
+#ifndef SKELETON_HPP
+# define SKELETON_HPP
 
 # include "AHostileMob.hpp"
 
-class Zombie : public AHostileMob
+class Skeleton : public AHostileMob
 {
     public:
-        Zombie( Chunk* chunk, Player* player, glm::vec3 position );
-        virtual ~Zombie( void );
+        Skeleton( Chunk* chunk, Player* player, glm::vec3 position );
+        virtual ~Skeleton( void );
 
         virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime );
 		virtual glm::vec3 getEyePos( void );

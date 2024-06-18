@@ -244,6 +244,7 @@ void Player::touchGround( float value )
 	}
 	_fallTime = 0;
 	_z0 = _position.z;
+	_knockback = {0.0f, 0.0f, 0.0f};
 	_touchGround = true;
 	_inJump = false;
 }
@@ -275,6 +276,16 @@ void Player::resetFall( void )
 //                               AMobs                                        //
 // ************************************************************************** //
 
+float Zombie::getSpeed( void )
+{
+	return (settings::consts::speed::zombie);
+}
+
+float Skeleton::getSpeed( void )
+{
+	return (settings::consts::speed::skeleton);
+}
+
 /**
  * @brief update mobs's position
  * @param direction movement's axis
@@ -289,9 +300,9 @@ void AMob::move( int direction, bool move )
 	}
 	_walking = true;
 
-	const float speedFrame = _deltaTime * settings::consts::speed::zombie;
+	const float speedFrame = _deltaTime * getSpeed();
 	if (direction == face_dir::plus_x) {
-		if (glm::abs(_knockback.x + _knockback.y) > 0.01f) {
+		if (glm::abs(_knockback.x) + glm::abs(_knockback.y) > 0.01f) {
 			_position.x += _knockback.x * speedFrame;
 			_knockback.x = glm::sign(_knockback.x) * (glm::abs(_knockback.x) - _deltaTime);
 		} else {
@@ -299,7 +310,7 @@ void AMob::move( int direction, bool move )
 			_knockback.z = 0.0f;
 		}
 	} else if (direction == face_dir::plus_y) {
-		if (glm::abs(_knockback.x + _knockback.y) > 0.01f) {
+		if (glm::abs(_knockback.x) + glm::abs(_knockback.y) > 0.01f) {
 			_position.y += _knockback.y * speedFrame;
 			_knockback.y = glm::sign(_knockback.y) * (glm::abs(_knockback.y) - _deltaTime);
 		} else {
@@ -384,6 +395,7 @@ void AMob::touchGround( float value )
 	}
 	_fallTime = 0;
 	_z0 = _position.z;
+	_knockback = {0.0f, 0.0f, 0.0f};
 	_touchGround = true;
 	_inJump = false;
 }
@@ -415,26 +427,7 @@ bool AHostileMob::updateCurrentBlock( void )
 			_currentBlock = currentBlock;
 		}
 
-		if (_state == settings::state_machine::chase) { // update path
-			_path = _chunk->computePathfinding(_currentBlock, _player->getPos()).first;
-			if (_path.size() < 2) {
-				setState(settings::state_machine::idle);
-			}
-		} else if (glm::distance(_position, _player->getPos()) < 32) {
-			const std::vector<glm::ivec3> ids = voxel_traversal(getEyePos(), _player->getEyePos());
-
-			for (auto i : ids) {
-				int value = _chunk->getBlockAtAbsolute(i);
-
-				if (!s_blocks[value & mask::blocks::type]->transparent) {
-					return (changeOwner); // no direct line of view from mob to player
-				}
-			}
-
-			// mob views player
-			_path = _chunk->computePathfinding(_currentBlock, _player->getPos()).first;
-			setState(settings::state_machine::chase);
-		}
+		updatePath();
 	}
 	return (changeOwner);
 }
@@ -495,6 +488,16 @@ void Player::moveUnderwater( int direction, GLint v, GLint h, GLint z )
 	}
 }
 
+float Player::getSpeed( void )
+{
+	return ((_sneaking)
+				? ((_sprinting) ? settings::consts::speed::sneak_sprint
+								: settings::consts::speed::sneak)
+				: ((_sprinting) ?  ((_touchGround) ? settings::consts::speed::sprint
+													: settings::consts::speed::sprint_jump )
+								: settings::consts::speed::walk));
+}
+
 /**
  * @brief update player's on x OR y axis
  * @param direction movement's axis
@@ -508,23 +511,33 @@ void Player::move( int direction, GLint v, GLint h, GLint z )
 		return ;
 	} else if (!v && !h) {
 		_walking = false;
-		return ;
+		// return ;
+	} else {
+		_updateCam = true;
+		_walking = true;
+		_bodyFront = _front;
 	}
-	_updateCam = true;
-	_walking = true;
-	_bodyFront = _front;
 
-	float speed_frame = _deltaTime * ((_sneaking) ? ((_sprinting) ? settings::consts::speed::sneak_sprint : settings::consts::speed::sneak)
-												: ((_sprinting) ?  ((_touchGround) ? settings::consts::speed::sprint : settings::consts::speed::sprint_jump )
-																: settings::consts::speed::walk));
+	const float speedFrame = _deltaTime * getSpeed();
 	float movement = 0;
 	if (direction == face_dir::plus_x) {
-		movement = glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).x * speed_frame;
-		_position.x += movement;
+		if (glm::abs(_knockback.x) + glm::abs(_knockback.y) > 0.01f) {
+			_position.x += _knockback.x * speedFrame;
+			_knockback.x = glm::sign(_knockback.x) * (glm::max(0.0f, glm::abs(_knockback.x) - _deltaTime));
+		} else {
+			movement = glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).x * speedFrame;
+			_position.x += movement;
+			_knockback.z = 0.0f;
+		}
 	}
 	else if (direction == face_dir::plus_y) {
-		movement = glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).y * speed_frame;
-		_position.y += movement;
+		if (glm::abs(_knockback.x) + glm::abs(_knockback.y) > 0.01f) {
+			_position.y += _knockback.y * speedFrame;
+			_knockback.y = glm::sign(_knockback.y) * (glm::max(0.0f, glm::abs(_knockback.y) - _deltaTime));
+		} else {
+			movement = glm::normalize(glm::vec2(v * _front.x + h * _right.x, v * _front.y + h * _right.y)).y * speedFrame;
+			_position.y += movement;
+		}
 	}
 	if (_sprinting && movement != 0) {
 		updateExhaustion(glm::abs(movement * settings::consts::exhaustion::sprint));
@@ -583,6 +596,13 @@ bool Player::updateCurrentBlock( void )
 	return (false);
 }
 
+bool Player::update( std::vector<t_shaderInput>& modArr, float deltaTime )
+{
+	(void)modArr, (void)deltaTime;
+	std::cout << "ERROR Player::update called." << std::endl;
+	return (false);
+}
+
 /**
  * @brief use user input to update player's position and handle collision
  */
@@ -623,6 +643,13 @@ void Player::inputUpdate( bool rayCast, int gameMode )
 					_smoothCam = false;
 				}
 			}
+			if (_hurtTime < 0) {
+				_hurtTime += _deltaTime;
+				if (_hurtTime >= 0) {
+					_invulnerable = false;
+				}
+			}
+
 			setSneak(key_cam_zdown);
 			setJump(key_cam_zup && inputs::key_update(inputs::jump));
 			move(face_dir::plus_z, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement

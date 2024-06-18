@@ -247,7 +247,7 @@ namespace inputs
 				key_map.end(),
 				[action](auto& it) {return (it.second == action); });
 
-		if(result == key_map.end()) {
+		if (result == key_map.end()) {
 			return ("NONE");
 		}
 		int key = result->first;
@@ -262,6 +262,8 @@ namespace inputs
 			switch (key) {
 				case GLFW_KEY_SPACE:
 					return ("SPACE");
+				case GLFW_KEY_DELETE:
+					return ("DELETE");
 				case GLFW_KEY_LEFT_CONTROL:
 					return ("LCONTROL");
 				case GLFW_KEY_RIGHT_CONTROL:
@@ -270,6 +272,26 @@ namespace inputs
 					return ("LSHIFT");
 				case GLFW_KEY_RIGHT_SHIFT:
 					return ("RSHIFT");
+				case GLFW_KEY_LEFT_ALT:
+					return ("LALT");
+				case GLFW_KEY_RIGHT_ALT:
+					return ("RALT");
+				case GLFW_KEY_TAB:
+					return ("TAB");
+				case GLFW_KEY_CAPS_LOCK:
+					return ("CAPS_LOCK");
+				case GLFW_KEY_NUM_LOCK:
+					return ("NUM_LOCK");
+				case GLFW_KEY_HOME:
+					return ("HOME");
+				case GLFW_KEY_END:
+					return ("END");
+				case GLFW_KEY_PAGE_UP:
+					return ("PAGE_UP");
+				case GLFW_KEY_PAGE_DOWN:
+					return ("PAGE_DOWN");
+				case GLFW_KEY_KP_ENTER:
+					return ("KP_ENTER");
 				default:
 					return ("NULL");
 			}

@@ -312,6 +312,7 @@ namespace blocks {
 		flint,
 		flint_and_steel,
 		zombie_egg = 128,
+		skeleton_egg,
 	};
 	const int item = 1942;
 }
@@ -2789,6 +2790,17 @@ struct ZombieEgg : Block {
 			item3D = false;
 			textureX = 10;
 			textureY = 2;
+		}
+};
+
+struct SkeletonEgg : Block {
+	public:
+		SkeletonEgg() {
+			name = "SKELETON_EGG";
+			isItemOnly = true;
+			item3D = false;
+			textureX = 10;
+			textureY = 3;
 		}
 };
 

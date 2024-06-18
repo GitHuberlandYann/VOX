@@ -1,7 +1,8 @@
 #include "OpenGL_Manager.hpp"
 
 AMob::AMob( glm::vec3 position )
-    : _type(0), _deathTime(0.0f), _hurtTime(0.0f), _fallDistance(0.0f), _fallTime(0.0f), _z0(position.z), _walkTime(0.0f), _health(20.0f), _currentBlock(glm::floor(position)), _position(position),
+    : _type(settings::consts::mob::unset), _deathTime(0.0f), _hurtTime(0.0f), _fallDistance(0.0f), _fallTime(0.0f), _z0(position.z), _walkTime(0.0f), _health(20.0f),
+	_currentBlock(glm::floor(position)), _position(position),
     _front(0, -1, 0), _right(glm::normalize(glm::cross(_front, settings::consts::math::world_up))), _up(0.0f, 0.0f, 1.0f), _knockback(0.0f), _bodyFront(0.0f, -1.0f),
     _invulnerable(false), _touchGround(true), _walking(false), _inJump(false), _noAI(false), _persistenceRequired(false), _chunk(NULL)
 {
@@ -55,6 +56,16 @@ glm::vec3 AMob::getDir( void )
 	return (_front);
 }
 
+short AMob::getType( void )
+{
+	return (_type);
+}
+
+float AMob::getFovOffset( void )
+{
+	return (0.0f);
+}
+
 int AMob::getHealth( void )
 {
 	return (_health);
@@ -78,11 +89,15 @@ void AMob::receiveDamage( const float damage, const glm::vec3 sourceDir )
 		return ;
 	}
 
+	if (_type == settings::consts::mob::player) {
+		static_cast<Player*>(this)->setUIUpdate(true);
+	}
 	_health -= damage;
 	_hurtTime = -0.5f;
 	_invulnerable = true;
-	if (_health < 0) {
+	if (_health < 0.0f) {
 		_deathTime = -2.0f;
+		_health = 0.0f;
 	}
 	_knockback = sourceDir;
 	_knockback.z = glm::max(0.4f, _knockback.z) * 10.0f;

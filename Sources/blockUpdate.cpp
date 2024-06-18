@@ -314,6 +314,10 @@ void Chunk::use_block( glm::ivec3 pos, int type )
 		std::cout << "zombie egg placed" << std::endl;
 		_mobs.push_back(std::make_shared<Zombie>(this, _player, pos + glm::ivec3(_startX, _startY, 0)));
 		return ;
+	case blocks::skeleton_egg:
+		std::cout << "skeleton egg placed" << std::endl;
+		_mobs.push_back(std::make_shared<Skeleton>(this, _player, pos + glm::ivec3(_startX, _startY, 0)));
+		return ;
 	default:
 		std::cout << "ERROR Chunk::regeneration case Modif::use defaulted on: " << s_blocks[value & mask::blocks::type]->name << std::endl;
 		return ;
