@@ -9,6 +9,7 @@ namespace settings {
 		const short idle = 0;
 		const short wandle = 1;
 		const short chase = 2;
+		const short aim = 3;
 	};
 };
 

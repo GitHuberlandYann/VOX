@@ -190,7 +190,7 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	int hurtColor = (_hurtTime < 0) ? (1 << 19) : 0;
 	int modelAltas = (settings::consts::shader::texture::zombie << 12);
 	int spec = (2 << 19) + 8 + (8 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8 << 6);
 
 	// draw neck
 	glm::vec3 p4 = p1 - _front * 8.0f * scale;
@@ -199,21 +199,21 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	glm::vec3 p7 = p2 - _front * 8.0f * scale;
 
 	spec = (2 << 19) + 24 + (8 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p4, p5, p6, p7}, spec, 8, 8);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 8, 8 << 6);
 	
 	// left cheek
 	spec -= 8;
-	addQuads(arr, {p1, p4, p3, p6}, spec, 8, 8);
+	utils::shader::addQuads(arr, {p1, p4, p3, p6}, spec, 8, 8 << 6);
 	// right cheek
 	spec -= 16;
-	addQuads(arr, {p5, p0, p7, p2}, spec, 8, 8);
+	utils::shader::addQuads(arr, {p5, p0, p7, p2}, spec, 8, 8 << 6);
 
 	//top
 	spec += 8 - (8 << 6);
-	addQuads(arr, {p5, p4, p0, p1}, spec, 8, 8);
+	utils::shader::addQuads(arr, {p5, p4, p0, p1}, spec, 8, 8 << 6);
 	//bottom
 	spec += 8;
-	addQuads(arr, {p6, p7, p3, p2}, spec, 8, 8);
+	utils::shader::addQuads(arr, {p6, p7, p3, p2}, spec, 8, 8 << 6);
 
 	// cheecks, top and bottom of head don't need to be displayed as there's no way to see them right now
 	// will get a chance to look at them from inventory once implemented
@@ -230,26 +230,26 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	p2 = p0 + bodyFront * 4.0f * scale;
 	p3 = p1 + bodyFront * 4.0f * scale;
 	spec = (2 << 19) + 20 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 8, 4);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 4 << 6);
 	// down
 	p4 = p2 - bodyUp * 12.0f * scale;
 	p5 = p3 - bodyUp * 12.0f * scale;
 	p6 = p0 - bodyUp * 12.0f * scale;
 	p7 = p1 - bodyUp * 12.0f * scale;
 	spec += 8;
-	addQuads(arr, {p4, p5, p6, p7}, spec, 8, 4);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 8, 4 << 6);
 	// front 2345
 	spec = (2 << 19) + 20 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p2, p3, p4, p5}, spec, 8, 12);
+	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 8, 12 << 6);
 	// back 1076
 	spec += 12;
-	addQuads(arr, {p1, p0, p7, p6}, spec, 8, 12);
+	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 8, 12 << 6);
 	// right 0264
 	spec = (2 << 19) + 16 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12 << 6);
 	// left 3157
 	spec += 12;
-	addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12 << 6);
 
 // draw arms and legs
 	float sina = glm::sin(_walkTime * 5) * 0.5f;
@@ -265,26 +265,26 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	p2 = p0 + armFront * 4.0f * scale;
 	p3 = p1 + armFront * 4.0f * scale;
 	spec = (2 << 19) + 44 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4 << 6);
 	// down
 	p4 = p2 - armUp * 12.0f * scale;
 	p5 = p3 - armUp * 12.0f * scale;
 	p6 = p0 - armUp * 12.0f * scale;
 	p7 = p1 - armUp * 12.0f * scale;
 	spec += 4;
-	addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4 << 6);
 	// front 2345
 	spec = (2 << 19) + 44 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12 << 6);
 	// back 1076
 	spec += 8;
-	addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12 << 6);
 	// right 0264
 	spec = (2 << 19) + 40 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12 << 6);
 	// left 3157
 	spec += 8;
-	addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12 << 6);
 
 	pos -= armRight * 6.0f * scale;
 // draw left leg // whose movement is in synch with right arm
@@ -298,26 +298,26 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	p2 = p0 + legFront * 4.0f * scale;
 	p3 = p1 + legFront * 4.0f * scale;
 	spec = (2 << 19) + 4 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4 << 6);
 	// down
 	p4 = p2 - legUp * 12.0f * scale;
 	p5 = p3 - legUp * 12.0f * scale;
 	p6 = p0 - legUp * 12.0f * scale;
 	p7 = p1 - legUp * 12.0f * scale;
 	spec += 4;
-	addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4 << 6);
 	// front 2345
 	spec = (2 << 19) + 4 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12 << 6);
 	// back 1076
 	spec += 8;
-	addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12 << 6);
 	// right 0264
 	spec = (2 << 19) + 0 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12 << 6);
 	// left 3157
 	spec += 8;
-	addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12 << 6);
 
 // draw left arm
 	sina = -sina;
@@ -331,26 +331,26 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	p2 = p0 + armFront * 4.0f * scale;
 	p3 = p1 + armFront * 4.0f * scale;
 	spec = (2 << 19) + 44 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4 << 6);
 	// down
 	p4 = p2 - armUp * 12.0f * scale;
 	p5 = p3 - armUp * 12.0f * scale;
 	p6 = p0 - armUp * 12.0f * scale;
 	p7 = p1 - armUp * 12.0f * scale;
 	spec += 4;
-	addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4 << 6);
 	// front 2345
 	spec = (2 << 19) + 44 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12 << 6);
 	// back 1076
 	spec += 8;
-	addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12 << 6);
 	// right 0264
 	spec = (2 << 19) + 40 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12 << 6);
 	// left 3157
 	spec += 8;
-	addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12 << 6);
 
 // draw right leg
 	legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + settings::consts::math::world_up * sina);
@@ -363,24 +363,24 @@ void Zombie::draw( std::vector<t_shaderInput>& arr )
 	p2 = p0 + legFront * 4.0f * scale;
 	p3 = p1 + legFront * 4.0f * scale;
 	spec = (2 << 19) + 4 + (16 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4 << 6);
 	// down
 	p4 = p2 - legUp * 12.0f * scale;
 	p5 = p3 - legUp * 12.0f * scale;
 	p6 = p0 - legUp * 12.0f * scale;
 	p7 = p1 - legUp * 12.0f * scale;
 	spec += 4;
-	addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4 << 6);
 	// front 2345
 	spec = (2 << 19) + 4 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12 << 6);
 	// back 1076
 	spec += 8;
-	addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12 << 6);
 	// right 0264
 	spec = (2 << 19) + 0 + (20 << 6) + (itemLight << 24) + hurtColor + modelAltas;
-	addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12 << 6);
 	// left 3157
 	spec += 8;
-	addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12);
+	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12 << 6);
 }

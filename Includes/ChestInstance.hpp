@@ -41,6 +41,10 @@ class ChestInstance
 		std::array<t_item, 27> _content;
 		Chunk *_chunk;
 
+		void displayBottomBox( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int itemLight );
+		void displayTopBox( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int itemLight );
+		void displayLock( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int itemLight );
+
 		void display_open( std::vector<t_shaderInput> &arr );
 		void display_moving( std::vector<t_shaderInput> &arr );
 		void display_closed( std::vector<t_shaderInput> &arr );

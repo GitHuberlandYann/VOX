@@ -416,7 +416,7 @@ bool AHostileMob::updateCurrentBlock( void )
 		
 		if (chunk_pos(currentBlock.x) != chunk_pos(_currentBlock.x) || chunk_pos(currentBlock.y) != chunk_pos(_currentBlock.y)) {
 			Chunk* newOwner = _chunk->getChunkAt(chunk_pos(currentBlock.x), chunk_pos(currentBlock.y));
-			if (!newOwner) { return (true); } // just kill mob if out of generated chunks
+			if (!newOwner || newOwner == _chunk) { return (true); } // just kill mob if out of generated chunks
 			_chunk = newOwner;
 			_blockTime = 0.0f;
 			_currentBlock = currentBlock;

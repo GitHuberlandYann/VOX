@@ -35,6 +35,13 @@ namespace Utils {
 	};
 };
 
+namespace utils {
+	namespace shader {
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy );
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, std::array<int, 4> deltas );
+	};
+};
+
 std::string doubleDigits( int nb );
 
 int air_flower( int value, bool air_leaves, bool air_glass, bool air_water );

@@ -86,8 +86,6 @@ class AMob {
 
 		AMob( glm::vec3 position );
 
-		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy );
-
 		virtual bool updateCurrentBlock( void ) = 0;
 		virtual float getSpeed( void ) = 0;
 		void move( int direction, bool move );

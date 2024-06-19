@@ -58,11 +58,7 @@ bool Particle::updateFlame( std::vector<t_shaderInput> &arr, glm::vec3 camDir )
 
 	int itemLight = 15;
 	int spec = (1 << 19) + (160 << 8) + (itemLight << 24);
-	t_shaderInput v0 = {spec, p0};
-	t_shaderInput v1 = {spec + 8 + (1 << 17), p1};
-	t_shaderInput v2 = {spec + (8 << 8) + (1 << 18), p2};
-	t_shaderInput v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p3};
-	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8 << 8);
 	return (false);
 }
 
@@ -87,11 +83,7 @@ bool Particle::updateSmoke( std::vector<t_shaderInput> &arr, glm::vec3 camDir, f
 
 	int itemLight = 0;
 	int spec = (1 << 19) + (7 - _frame) * 8 + (168 << 8) + (itemLight << 24);
-	t_shaderInput v0 = {spec, p0};
-	t_shaderInput v1 = {spec + 8 + (1 << 17), p1};
-	t_shaderInput v2 = {spec + (8 << 8) + (1 << 18), p2};
-	t_shaderInput v3 = {spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), p3};
-	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8 << 8);
 	return (false);
 }
 
@@ -116,11 +108,7 @@ bool Particle::updateExplosion( std::vector<t_shaderInput> &arr, glm::vec3 camDi
 	int itemLight = _chunk->computePosLight(_pos);
 	itemLight = (static_cast<int>((itemLight >> 4) * _shade) << 4) + (static_cast<int>((itemLight & 0xF) * _shade));
 	int spec = (1 << 19) + ((_frame & 0x3) * 32) + (((_frame >> 2) * 32) << 8) + (itemLight << 24);
-	t_shaderInput v0 = {spec, p0};
-	t_shaderInput v1 = {spec + 32 + (1 << 17), p1};
-	t_shaderInput v2 = {spec + (32 << 8) + (1 << 18), p2};
-	t_shaderInput v3 = {spec + 32 + (1 << 17) + (32 << 8) + (1 << 18), p3};
-	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 32, 32 << 8);
 	return (false);
 }
 
@@ -147,11 +135,7 @@ bool Particle::updateBreaking( std::vector<t_shaderInput> &arr, glm::vec3 camDir
 
 	int itemLight = _chunk->computePosLight(_pos);
 	int spec = (0 << 16) +  s_blocks[_block]->texX() * 16 + _texOffset.x + ((s_blocks[_block]->texY() * 16 + _texOffset.y) << 8) + (itemLight << 24);
-	t_shaderInput v0 = {spec, p0};
-	t_shaderInput v1 = {spec + 2 + (1 << 17), p1};
-	t_shaderInput v2 = {spec + (2 << 8) + (1 << 18), p2};
-	t_shaderInput v3 = {spec + 2 + (1 << 17) + (2 << 8) + (1 << 18), p3};
-	arr.push_back(v0);arr.push_back(v1);arr.push_back(v2);arr.push_back(v1);arr.push_back(v3);arr.push_back(v2);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 2, 2 << 8);
 	return (false);
 }
 

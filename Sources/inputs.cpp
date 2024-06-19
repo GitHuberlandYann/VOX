@@ -553,7 +553,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		if (_hand_content == blocks::bow && _bow_timer && _current_chunk_ptr) {
 			// TODO rm arrow from inventory (once implemented)
 			_inventory->decrementDurabitilty();
-			_current_chunk_ptr->shootArrow(_bow_timer);
+			_current_chunk_ptr->shootArrow(_player->getEyePos(), _player->getDir(), _bow_timer);
 		}
 		_eat_timer = 0;
 		_bow_timer = 0;

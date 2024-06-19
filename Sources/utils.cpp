@@ -525,6 +525,52 @@ std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 )
 	return {6 << 10, 8 << 10, 9 << 10, 4 << 10, 1 << 9}; // -x +y
 }
 
+namespace utils {
+	namespace shader {
+		/**
+		 * @brief push back rectangle made out of 4 given pts to arr, (1 << 17) and (1 << 18) are added
+		 * @param arr vector containing vertices
+		 * @param pts 4 corners of rectangle, in clockwise order
+		 * @param spec specifications of top left corner
+		 * @param dx offset in x coord of texture for right pts
+		 * @param dy offset in y coord of texture for bottom pts
+		 */
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy )
+		{
+			t_shaderInput v0 = {spec, pts[0]};
+			t_shaderInput v1 = {spec + dx + (1 << 17), pts[1]};
+			t_shaderInput v2 = {spec + dy + (1 << 18), pts[2]};
+			t_shaderInput v3 = {spec + dx + (1 << 17) + dy + (1 << 18), pts[3]};
+			
+			arr.push_back(v0);
+			arr.push_back(v1);
+			arr.push_back(v2);
+
+			arr.push_back(v1);
+			arr.push_back(v3);
+			arr.push_back(v2);
+		}
+
+		/**
+		 * @brief same as other addQuads, but deltas are used instead of (1 << 17) | (1 << 18)
+		 */
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, std::array<int, 4> deltas )
+		{
+			t_shaderInput v0 = {spec + deltas[0], pts[0]};
+			t_shaderInput v1 = {spec + deltas[1], pts[1]};
+			t_shaderInput v2 = {spec + deltas[2], pts[2]};
+			t_shaderInput v3 = {spec + deltas[3], pts[3]};
+			
+			arr.push_back(v0);
+			arr.push_back(v1);
+			arr.push_back(v2);
+
+			arr.push_back(v1);
+			arr.push_back(v3);
+			arr.push_back(v2);
+		}
+	};
+};
 
 void face_vertices( std::vector<t_shaderInput> &vertices, t_shaderInput v0, t_shaderInput v1, t_shaderInput v2, t_shaderInput v3 )
 {

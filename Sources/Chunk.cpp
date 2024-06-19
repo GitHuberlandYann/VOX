@@ -272,7 +272,7 @@ Chunk* Chunk::getChunkAt( int startX, int startY )
 	} else if (startY > _startY) {
 		return (_neighbours[face_dir::plus_y]);
 	}
-	return (NULL);
+	return (this);
 }
 
 unsigned Chunk::getSeed( void )
@@ -655,12 +655,10 @@ void Chunk::explosion( glm::vec3 pos, int power )
 	// std::cout << "EXPLOSION OVER" << std::endl;
 }
 
-void Chunk::shootArrow( float timer )
+void Chunk::shootArrow( const glm::vec3 start, const glm::vec3 dir, float timer )
 {
 	timer = (timer > 1.0f) ? 20.0f : timer * 20.0f;
-	glm::vec3 camPos = _player->getEyePos(), camDir = _player->getDir();
-	camPos += camDir;
-	_entities.push_back(new ArrowEntity(this, camPos, camDir * timer));
+	_entities.push_back(new ArrowEntity(this, start + dir, dir * timer));
 }
 
 void Chunk::updateBreak( glm::ivec4 block_hit )
