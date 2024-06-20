@@ -116,36 +116,12 @@ void OpenGL_Manager::addBreakingAnim( void )
 	// }
 
 	int spec = (14 << 4) + ((_block_hit.type == blocks::glass && _break_frame == 1) ? 0 : (_break_frame << 12));
-	t_shaderInput v0 = {spec, p4};
-	t_shaderInput v1 = {spec + XTEX, p0};
-	t_shaderInput v2 = {spec + YTEX, p6};
-	t_shaderInput v3 = {spec + XTEX + YTEX, p2};
-	face_vertices(_entities, v0, v1, v2, v3);
-	v0 = {spec, p1};
-	v1 = {spec + XTEX, p5};
-	v2 = {spec + YTEX, p3};
-	v3 = {spec + XTEX + YTEX, p7};
-	face_vertices(_entities, v0, v1, v2, v3);
-	v0 = {spec, p0};
-	v1 = {spec + XTEX, p1};
-	v2 = {spec + YTEX, p2};
-	v3 = {spec + XTEX + YTEX, p3};
-	face_vertices(_entities, v0, v1, v2, v3);
-	v0 = {spec, p5};
-	v1 = {spec + XTEX, p4};
-	v2 = {spec + YTEX, p7};
-	v3 = {spec + XTEX + YTEX, p6};
-	face_vertices(_entities, v0, v1, v2, v3);
-	v0 = {spec, p4};
-	v1 = {spec + XTEX, p5};
-	v2 = {spec + YTEX, p0};
-	v3 = {spec + XTEX + YTEX, p1};
-	face_vertices(_entities, v0, v1, v2, v3);
-	v0 = {spec, p2};
-	v1 = {spec + XTEX, p3};
-	v2 = {spec + YTEX, p6};
-	v3 = {spec + XTEX + YTEX, p7};
-	face_vertices(_entities, v0, v1, v2, v3);
+	utils::shader::addQuads(_entities, {p4, p0, p6, p2}, spec, 16, 16, 0, 8);
+	utils::shader::addQuads(_entities, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
+	utils::shader::addQuads(_entities, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
+	utils::shader::addQuads(_entities, {p5, p4, p7, p6}, spec, 16, 16, 0, 8);
+	utils::shader::addQuads(_entities, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
+	utils::shader::addQuads(_entities, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
 }
 
 void OpenGL_Manager::addLine( glm::vec3 a, glm::vec3 b )
@@ -481,10 +457,9 @@ void OpenGL_Manager::loadTextures( void )
 	glActiveTexture(GL_TEXTURE0 + 6);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _textures[3]);
 
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 3);
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 2);
 	loadSubTextureArray(256, 256, 0, Settings::Get()->getString(settings::strings::block_atlas));
 	loadSubTextureArray(256, 256, 1, Settings::Get()->getString(settings::strings::particle_atlas));
-	loadSubTextureArray(256, 256, 2, Settings::Get()->getString(settings::strings::model_atlas));
 	glUniform1i(glGetUniformLocation(_particleShader.getProgram(), "textures"), 6);
 	check_glstate("Successfully loaded img[6] texture array 2D", true);
 
@@ -492,9 +467,10 @@ void OpenGL_Manager::loadTextures( void )
 	glActiveTexture(GL_TEXTURE0 + 3);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _textures[4]);
 
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 64, 64, 2);
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 64, 64, 3);
 	loadSubTextureArray(64, 64, settings::consts::shader::texture::zombie, Settings::Get()->getString(settings::strings::tex_zombie));
 	loadSubTextureArray(64, 64, settings::consts::shader::texture::skeleton, Settings::Get()->getString(settings::strings::tex_skeleton));
+	loadSubTextureArray(64, 64, settings::consts::shader::texture::player, Settings::Get()->getString(settings::strings::tex_player));
 	glUniform1i(glGetUniformLocation(_modelShader.getProgram(), "textures"), 3);
 	check_glstate("Successfully loaded img[3] texture array 2D", true);
 }
@@ -648,8 +624,8 @@ void OpenGL_Manager::main_loop( void )
 
 		if (!gamePaused) {
 			(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
-				? _player->drawHeldItem(_particles, _hand_content, _game_mode)
-				: _player->drawPlayer(_particles, _hand_content);
+				? _player->drawHeldItem(_models, _particles, _hand_content, _game_mode)
+				: _player->drawPlayer(_models, _particles, _hand_content);
 			drawParticles();
 			drawModels();
 			_shader.useProgram();

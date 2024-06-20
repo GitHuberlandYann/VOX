@@ -90,7 +90,7 @@ class AMob {
 		virtual float getSpeed( void ) = 0;
 		void move( int direction, bool move );
 		virtual void restorePos( glm::vec3 position );
-		virtual bool customObstacle( float minZ, float maxZ );
+		virtual bool customObstacle( int dir, float maxZ ) = 0;
 };
 
 #endif

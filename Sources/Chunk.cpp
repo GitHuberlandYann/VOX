@@ -275,7 +275,7 @@ Chunk* Chunk::getChunkAt( int startX, int startY )
 	return (this);
 }
 
-unsigned Chunk::getSeed( void )
+unsigned& Chunk::getSeed( void )
 {
 	return (_seed);
 }

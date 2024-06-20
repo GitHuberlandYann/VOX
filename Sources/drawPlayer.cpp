@@ -1,7 +1,7 @@
 #include "Player.hpp"
 #include "utils.h"
 
-void Player::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int gameMode )
+void Player::drawHeldItem( std::vector<t_shaderInput> &arr, std::vector<t_shaderInput>& partArr, int item, int gameMode )
 {
 	if (!_chunk || gameMode == settings::consts::gamemode::creative || Settings::Get()->getBool(settings::bools::hide_ui)) {
 		return ;
@@ -13,7 +13,7 @@ void Player::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int gameMo
 
 	pos += _right * 8.0f * scale - settings::consts::math::world_up * 9.0f * scale + settings::consts::math::world_up * glm::sin(_walkTime * 7) * 0.03f + _right * glm::cos(_walkTime * 4) * 0.03f;
 	if (item == blocks::air) { // draw arm, only the two visible faces
-		const int speco = 0; // 64 for second skin
+		const int speco = settings::consts::shader::texture::player << 12;
 		glm::vec3 armFront = glm::normalize(_front + settings::consts::math::world_up * 0.3f);
 		glm::vec3 armRight = glm::normalize(glm::cross(armFront, settings::consts::math::world_up) - settings::consts::math::world_up * 0.3f);
 		if (_armAnimation) {
@@ -30,16 +30,16 @@ void Player::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int gameMo
 		glm::vec3 p2 = p0 - armFront * 12.0f * scale;
 		glm::vec3 p3 = p1 - armFront * 12.0f * scale;
 
-		int spec = speco + (2 << 19) + 48 + (32 << 8) + itemLight;
-		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, {(1 << 17) + (1 << 18), -4 + (1 << 18), (1 << 17) - (12 << 8), -4 - (12 << 8)});
+		int spec = speco + 48 + (32 << 6) + itemLight;
+		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, {(1 << 17) + (1 << 18), -4 + (1 << 18), (1 << 17) - (12 << 6), -4 - (12 << 6)}, {1 + (1 << 6), (1 << 6), 1, 0});
 
 		// left
 		p1 = p0;
 		p0 -= armUp * 3.0f * scale;
 		p3 = p2;
 		p2 -= armUp * 3.0f * scale;
-		spec = speco + (2 << 19) + 52 + (32 << 8) + itemLight;
-		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, {(1 << 17) + (1 << 18), -4 + (1 << 18), (1 << 17) - (12 << 8), -4 - (12 << 8)});
+		spec = speco + 52 + (32 << 6) + itemLight;
+		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, {(1 << 17) + (1 << 18), -4 + (1 << 18), (1 << 17) - (12 << 6), -4 - (12 << 6)}, {1 + (1 << 6), (1 << 6), 1, 0});
 	} else if (s_blocks[item]->item3D) { //(item < blocks::poppy && item != blocks::oak_door && item != blocks::glass_pane) { // draw block
 		glm::vec3 itemFront = glm::normalize(glm::vec3(glm::vec2(_front + _right * 0.5f), 0));
 		glm::vec3 itemRight = glm::normalize(glm::cross(itemFront, settings::consts::math::world_up));
@@ -60,39 +60,39 @@ void Player::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int gameMo
 			glm::vec3 p3 = p1 - itemFront * 0.125f;
 
 			int spec = s_blocks[item]->texX() * 16 + ((s_blocks[item]->texY() * 16) << 8) + itemLight;
-			utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 8 << 8);
+			utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, 16, 8, 0, 8);
 
 			// left
 			p1 = p2;
 			p2 = p0 - itemUp * 0.125f;
 			p3 = p1 - itemUp * 0.125f;
-			utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8 << 8);
+			utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, 8, 8, 0, 8);
 			p0 = p2;
 			p1 = p3 - itemFront * 0.125f;
 			p2 = p0 - itemUp * 0.125f;
 			p3 = p1 - itemUp * 0.125f;
-			utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, {8 << 8, 16 + (1 << 17) + (8 << 8), (16 << 8) + (1 << 18), 16 + (1 << 17) + (16 << 8) + (1 << 18)});
+			utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, {8 << 8, 16 + (1 << 17) + (8 << 8), (16 << 8) + (1 << 18), 16 + (1 << 17) + (16 << 8) + (1 << 18)}, {0, 1, (1 << 8), 1 + (1 << 8)});
 
 			// front
 			p0 = p1;
 			p1 = p0 + itemRight * 0.25f;
 			p2 = p3;
 			p3 = p2 + itemRight * 0.25f;
-			utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 8 << 8);
+			utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, 16, 8, 0, 8);
 
 			// up first stair
 			p2 = p0;
 			p3 = p1;
 			p0 += itemFront * 0.125f;
 			p1 += itemFront * 0.125f;
-			utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 8 << 8);
+			utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, 16, 8, 0, 8);
 
 			// front second stair
 			p2 = p0;
 			p3 = p1;
 			p0 += itemUp * 0.125f;
 			p1 += itemUp * 0.125f;
-			utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 8 << 8);
+			utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, 16, 8, 0, 8);
 			return ;
 		}
 
@@ -103,7 +103,7 @@ void Player::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int gameMo
 		glm::vec3 p3 = p1 - itemFront * 0.25f;
 
 		int spec = s_blocks[item]->texX(face_dir::plus_z) * 16 + ((s_blocks[item]->texY(face_dir::plus_z) * 16) << 8) + itemLight;
-		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 16 << 8);
+		utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
 
 		geometry shape = s_blocks[item]->geometry;
 		float height = (shape == geometry::slab_bottom) ? 0.125f : (shape == geometry::trapdoor) ? 0.046875f : 0.25f;
@@ -113,14 +113,14 @@ void Player::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int gameMo
 		p2 = p0 - itemUp * height;
 		p3 = p1 - itemUp * height;
 		spec = s_blocks[item]->texX(face_dir::minus_x) * 16 + ((s_blocks[item]->texY(face_dir::minus_x) * 16) << 8) + itemLight;
-		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, yoff << 8);
+		utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, 16, yoff, 0, 8);
 
 		// back
 		p0 = p1;
 		p1 = p0 + itemRight * 0.25f;
 		p2 = p3;
 		p3 = p2 + itemRight * 0.25f;
-		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, yoff << 8);
+		utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, 16, yoff, 0, 8);
 	} else {
 		pos += _front * 0.7f + settings::consts::math::world_up * 0.2f;
 		glm::vec3 right = glm::normalize(-_front + _right * 0.3f + settings::consts::math::world_up * 0.2f);
@@ -133,11 +133,11 @@ void Player::drawHeldItem( std::vector<t_shaderInput> &arr, int item, int gameMo
 			front = glm::normalize(glm::cross(settings::consts::math::world_up, right));
 		}
 		glm::vec3 up = glm::normalize(glm::cross(right, front));
-		EXTRUSION::drawItem3D(arr, item, itemLight >> 24, pos, front, right, up, 0.5f);
+		EXTRUSION::drawItem3D(partArr, item, itemLight >> 24, pos, front, right, up, 0.5f);
 	}
 }
 
-void Player::drawPlayer( std::vector<t_shaderInput> &arr, int item )
+void Player::drawPlayer( std::vector<t_shaderInput> &arr, std::vector<t_shaderInput>& partArr, int item )
 {
 	if (!_chunk) {
 		return ;
@@ -145,7 +145,7 @@ void Player::drawPlayer( std::vector<t_shaderInput> &arr, int item )
 
 	// 1 model texture pxl is [1.8 / 32 =] 0.05625 meters
 	const float scale = 0.05625f;
-	const int speco = 0; // 64 for second skin
+	const int speco = settings::consts::shader::texture::player << 12;
 
 // draw head
 	// draw face
@@ -157,8 +157,8 @@ void Player::drawPlayer( std::vector<t_shaderInput> &arr, int item )
 	glm::vec3 p3 = p1 - _up * 8.0f * scale;
 
 	int itemLight = _chunk->computePosLight(pos);
-	int spec = speco + (2 << 19) + 8 + (8 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8 << 8);
+	int spec = speco + 8 + (8 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8, 0, 6);
 
 	// draw neck
 	glm::vec3 p4 = p1 - _front * 8.0f * scale;
@@ -166,8 +166,8 @@ void Player::drawPlayer( std::vector<t_shaderInput> &arr, int item )
 	glm::vec3 p6 = p3 - _front * 8.0f * scale;
 	glm::vec3 p7 = p2 - _front * 8.0f * scale;
 
-	spec = speco + (2 << 19) + 24 + (8 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 8, 8 << 8);
+	spec = speco + 24 + (8 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 8, 8, 0, 6);
 
 	// cheecks, top and bottom of head don't need to be displayed as there's no way to see them right now
 	// will get a chance to look at them from inventory once implemented
@@ -183,27 +183,27 @@ void Player::drawPlayer( std::vector<t_shaderInput> &arr, int item )
 	p1 = p0 - bodyRight * 8.0f * scale;
 	p2 = p0 + bodyFront * 4.0f * scale;
 	p3 = p1 + bodyFront * 4.0f * scale;
-	spec = speco + (2 << 19) + 20 + (16 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 4 << 8);
+	spec = speco + 20 + (16 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 4, 0, 6);
 	// down
 	p4 = p2 - bodyUp * 12.0f * scale;
 	p5 = p3 - bodyUp * 12.0f * scale;
 	p6 = p0 - bodyUp * 12.0f * scale;
 	p7 = p1 - bodyUp * 12.0f * scale;
 	spec += 8;
-	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 8, 4 << 8);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 8, 4, 0, 6);
 	// front 2345
-	spec = speco + (2 << 19) + 20 + (20 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 8, 12 << 8);
+	spec = speco + 20 + (20 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 8, 12, 0, 6);
 	// back 1076
 	spec += 12;
-	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 8, 12 << 8);
+	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 8, 12, 0, 6);
 	// right 0264
-	spec = speco + (2 << 19) + 16 + (20 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12 << 8);
+	spec = speco + 16 + (20 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12, 0, 6);
 	// left 3157
 	spec += 12;
-	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12 << 8);
+	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12, 0, 6);
 
 // draw arms and legs
 	float sina = glm::sin(_walkTime * 5) * ((_sprinting) ? 1.5f : 0.5f);
@@ -224,27 +224,27 @@ void Player::drawPlayer( std::vector<t_shaderInput> &arr, int item )
 	p1 = p0 - armRight * 4.0f * scale;
 	p2 = p0 + armFront * 4.0f * scale;
 	p3 = p1 + armFront * 4.0f * scale;
-	spec = speco + (2 << 19) + 44 + (16 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4 << 8);
+	spec = speco + 44 + (16 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4, 0, 6);
 	// down
 	p4 = p2 - armUp * 12.0f * scale;
 	p5 = p3 - armUp * 12.0f * scale;
 	p6 = p0 - armUp * 12.0f * scale;
 	p7 = p1 - armUp * 12.0f * scale;
 	spec += 4;
-	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4 << 8);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4, 0, 6);
 	// front 2345
-	spec = speco + (2 << 19) + 44 + (20 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12 << 8);
+	spec = speco + 44 + (20 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12, 0, 6);
 	// back 1076
 	spec += 8;
-	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12 << 8);
+	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12, 0, 6);
 	// right 0264
-	spec = speco + (2 << 19) + 40 + (20 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12 << 8);
+	spec = speco + 40 + (20 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12, 0, 6);
 	// left 3157
 	spec += 8;
-	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12 << 8);
+	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12, 0, 6);
 
 // draw held item
 	if (item != blocks::air) {
@@ -262,30 +262,30 @@ void Player::drawPlayer( std::vector<t_shaderInput> &arr, int item )
 			int offset = (s_blocks[item]->oriented) ? face_dir::minus_x : 0;
 
 			spec = 16 * s_blocks[item]->texX(face_dir::minus_x, offset) + (16 * s_blocks[item]->texY(face_dir::minus_x, offset) << 8) + (itemLight << 24);
-			utils::shader::addQuads(arr, {p4, p0, p6, p2}, spec, 16, 16 << 8);
+			utils::shader::addQuads(partArr, {p4, p0, p6, p2}, spec, 16, 16, 0, 8);
 
 			spec = 16 * s_blocks[item]->texX(face_dir::plus_x, offset) + (16 * s_blocks[item]->texY(face_dir::plus_x, offset) << 8) + (itemLight << 24);
-			utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec, 16, 16 << 8);
+			utils::shader::addQuads(partArr, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
 
 			spec = 16 * s_blocks[item]->texX(face_dir::minus_y, offset) + (16 * s_blocks[item]->texY(face_dir::minus_y, offset) << 8) + (itemLight << 24);
-			utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 16 << 8);
+			utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
 
 			spec = 16 * s_blocks[item]->texX(face_dir::plus_y, offset) + (16 * s_blocks[item]->texY(face_dir::plus_y, offset) << 8) + (itemLight << 24);
-			utils::shader::addQuads(arr, {p5, p4, p7, p6}, spec, 16, 16 << 8);
+			utils::shader::addQuads(partArr, {p5, p4, p7, p6}, spec, 16, 16, 0, 8);
 
 			spec = 16 * s_blocks[item]->texX(face_dir::plus_z, offset) + (16 * s_blocks[item]->texY(face_dir::plus_z, offset) << 8) + (itemLight << 24);
-			utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, 16, 16 << 8);
+			utils::shader::addQuads(partArr, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
 
 			spec = 16 * s_blocks[item]->texX(face_dir::minus_z, offset) + (16 * s_blocks[item]->texY(face_dir::minus_z, offset) << 8) + (itemLight << 24);
-			utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16 << 8);
+			utils::shader::addQuads(partArr, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
 		} else { // flowers
-			if (1 && EXTRUSION::drawItem3D(arr, item, itemLight, p1 + armFront * 0.25f, -armRight, -armUp, armFront, 0.5f)) { // TODO replace 1 by var toggle fancy_item
+			if (1 && EXTRUSION::drawItem3D(partArr, item, itemLight, p1 + armFront * 0.25f, -armRight, -armUp, armFront, 0.5f)) { // TODO replace 1 by var toggle fancy_item
 
 			} else {
 				spec = 16 * s_blocks[item]->texX() + (16 * s_blocks[item]->texY() << 8) + (itemLight << 24);
-				utils::shader::addQuads(arr, {p0, p5, p2, p7}, spec, 16, 16 << 8);
+				utils::shader::addQuads(partArr, {p0, p5, p2, p7}, spec, 16, 16, 0, 8);
 
-				utils::shader::addQuads(arr, {p1, p4, p3, p6}, spec, 16, 16 << 8);
+				utils::shader::addQuads(partArr, {p1, p4, p3, p6}, spec, 16, 16, 0, 8);
 			}
 		}
 	}
@@ -301,27 +301,27 @@ void Player::drawPlayer( std::vector<t_shaderInput> &arr, int item )
 	p1 = p0 - bodyRight * 4.0f * scale;
 	p2 = p0 + legFront * 4.0f * scale;
 	p3 = p1 + legFront * 4.0f * scale;
-	spec = speco + (2 << 19) + 20 + (48 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4 << 8);
+	spec = speco + 20 + (48 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4, 0, 6);
 	// down
 	p4 = p2 - legUp * 12.0f * scale;
 	p5 = p3 - legUp * 12.0f * scale;
 	p6 = p0 - legUp * 12.0f * scale;
 	p7 = p1 - legUp * 12.0f * scale;
 	spec += 4;
-	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4 << 8);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4, 0, 6);
 	// front 2345
-	spec = speco + (2 << 19) + 20 + (52 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 4 << 8);
+	spec = speco + 20 + (52 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12, 0, 6);
 	// back 1076
 	spec += 8;
-	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12 << 8);
+	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12, 0, 6);
 	// right 0264
-	spec = speco + (2 << 19) + 16 + (52 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12 << 8);
+	spec = speco + 16 + (52 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12, 0, 6);
 	// left 3157
 	spec += 8;
-	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12 << 8);
+	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12, 0, 6);
 
 // draw left arm
 	sina = -sina;
@@ -334,27 +334,27 @@ void Player::drawPlayer( std::vector<t_shaderInput> &arr, int item )
 	p1 = p0 - bodyRight * 4.0f * scale;
 	p2 = p0 + armFront * 4.0f * scale;
 	p3 = p1 + armFront * 4.0f * scale;
-	spec = speco + (2 << 19) + 36 + (48 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4 << 8);
+	spec = speco + 36 + (48 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4, 0, 6);
 	// down
 	p4 = p2 - armUp * 12.0f * scale;
 	p5 = p3 - armUp * 12.0f * scale;
 	p6 = p0 - armUp * 12.0f * scale;
 	p7 = p1 - armUp * 12.0f * scale;
 	spec += 4;
-	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4 << 8);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4, 0, 6);
 	// front 2345
-	spec = speco + (2 << 19) + 36 + (52 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12 << 8);
+	spec = speco + 36 + (52 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12, 0, 6);
 	// back 1076
 	spec += 8;
-	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12 << 8);
+	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12, 0, 6);
 	// right 0264
-	spec = speco + (2 << 19) + 32 + (52 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12 << 8);
+	spec = speco + 32 + (52 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12, 0, 6);
 	// left 3157
 	spec += 8;
-	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12 << 8);
+	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12, 0, 6);
 
 // draw right leg
 	legFront = glm::normalize(glm::vec3(glm::normalize(glm::vec2(_bodyFront)), 0) + settings::consts::math::world_up * sina);
@@ -366,25 +366,25 @@ void Player::drawPlayer( std::vector<t_shaderInput> &arr, int item )
 	p1 = p0 - bodyRight * 4.0f * scale;
 	p2 = p0 + legFront * 4.0f * scale;
 	p3 = p1 + legFront * 4.0f * scale;
-	spec = speco + (2 << 19) + 4 + (16 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4 << 8);
+	spec = speco + 4 + (16 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 4, 4, 0, 6);
 	// down
 	p4 = p2 - legUp * 12.0f * scale;
 	p5 = p3 - legUp * 12.0f * scale;
 	p6 = p0 - legUp * 12.0f * scale;
 	p7 = p1 - legUp * 12.0f * scale;
 	spec += 4;
-	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4 << 8);
+	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 4, 4, 0, 6);
 	// front 2345
-	spec = speco + (2 << 19) + 4 + (20 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12 << 8);
+	spec = speco + 4 + (20 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p2, p3, p4, p5}, spec, 4, 12, 0, 6);
 	// back 1076
 	spec += 8;
-	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12 << 8);
+	utils::shader::addQuads(arr, {p1, p0, p7, p6}, spec, 4, 12, 0, 6);
 	// right 0264
-	spec = speco + (2 << 19) + 0 + (20 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12 << 8);
+	spec = speco + 0 + (20 << 6) + (itemLight << 24);
+	utils::shader::addQuads(arr, {p0, p2, p6, p4}, spec, 4, 12, 0, 6);
 	// left 3157
 	spec += 8;
-	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12 << 8);
+	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12, 0, 6);
 }

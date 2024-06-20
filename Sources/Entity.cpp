@@ -202,62 +202,62 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	    int itemLight = _chunk->computePosLight(_pos);
 
 	    int spec = (s_blocks[_item.type]->texX() << 4) + (s_blocks[_item.type]->texY() << 12) + (3 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p4 - glm::vec3(0.0f, 0.0f, 0.125f), p0 - glm::vec3(0.0f, 0.0f, 0.125f), p6, p2}, spec + (8 << 8), 16, 8 << 8);
+		utils::shader::addQuads(arr, {p4 - glm::vec3(0.0f, 0.0f, 0.125f), p0 - glm::vec3(0.0f, 0.0f, 0.125f), p6, p2}, spec + (8 << 8), 16, 8, 0, 8);
 
 		spec += (1 << 19);
-		utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec, 16, 16 << 8);
+		utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
 
 		spec -= (3 << 19);
-		utils::shader::addQuads(arr, {(p0 + p1) * 0.5f, p1, (p0 + p3) * 0.5f, p1 - glm::vec3(0.0f, 0.0f, 0.125f)}, spec + 8, 8, 8 << 8); //-y top right corner
-		utils::shader::addQuads(arr, {p0 - glm::vec3(0.0f, 0.0f, 0.125f), p1 - glm::vec3(0.0f, 0.0f, 0.125f), p2, p3}, spec + (8 << 8), 16, 8 << 8); //-y bottom slice
+		utils::shader::addQuads(arr, {(p0 + p1) * 0.5f, p1, (p0 + p3) * 0.5f, p1 - glm::vec3(0.0f, 0.0f, 0.125f)}, spec + 8, 8, 8, 0, 8); //-y top right corner
+		utils::shader::addQuads(arr, {p0 - glm::vec3(0.0f, 0.0f, 0.125f), p1 - glm::vec3(0.0f, 0.0f, 0.125f), p2, p3}, spec + (8 << 8), 16, 8, 0, 8); //-y bottom slice
 
 		spec += (1 << 19);
-		utils::shader::addQuads(arr, {p5, (p5 + p4) * 0.5f, p5 - glm::vec3(0.0f, 0.0f, 0.125f), (p5 + p6) * 0.5f}, spec, 8, 8 << 8); //+y top left corner
-		utils::shader::addQuads(arr, {p5 - glm::vec3(0.0f, 0.0f, 0.125f), p4 - glm::vec3(0.0f, 0.0f, 0.125f), p7, p6}, spec + (8 << 8), 16, 8 << 8); //+y bottom slice
+		utils::shader::addQuads(arr, {p5, (p5 + p4) * 0.5f, p5 - glm::vec3(0.0f, 0.0f, 0.125f), (p5 + p6) * 0.5f}, spec, 8, 8, 0, 8); //+y top left corner
+		utils::shader::addQuads(arr, {p5 - glm::vec3(0.0f, 0.0f, 0.125f), p4 - glm::vec3(0.0f, 0.0f, 0.125f), p7, p6}, spec + (8 << 8), 16, 8, 0, 8); //+y bottom slice
 
 		// top of second step
 		spec -= (2 << 19);
-		utils::shader::addQuads(arr, {p1, p5, (p0 + p1) * 0.5f, (p4 + p5) * 0.5f}, spec + (8 << 8), 16, 8 << 8);
+		utils::shader::addQuads(arr, {p1, p5, (p0 + p1) * 0.5f, (p4 + p5) * 0.5f}, spec + (8 << 8), 16, 8, 0, 8);
 	    // top of first step
-		utils::shader::addQuads(arr, {(p0 + p1) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f), (p4 + p5) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f), p0 - glm::vec3(0.0f, 0.0f, 0.125f), p4 + glm::vec3(0.0f, 0.0f, 0.125f)}, spec + (8 << 8), 16, 8 << 8);
+		utils::shader::addQuads(arr, {(p0 + p1) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f), (p4 + p5) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f), p0 - glm::vec3(0.0f, 0.0f, 0.125f), p4 + glm::vec3(0.0f, 0.0f, 0.125f)}, spec + (8 << 8), 16, 8, 0, 8);
 	    // front of second step
 		spec += (3 << 19);
-		utils::shader::addQuads(arr, {(p0 + p1) * 0.5f, (p4 + p5) * 0.5f, (p0 + p1) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f), (p4 + p5) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f)}, spec + (8 << 8), 16, 8 << 8);
+		utils::shader::addQuads(arr, {(p0 + p1) * 0.5f, (p4 + p5) * 0.5f, (p0 + p1) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f), (p4 + p5) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f)}, spec + (8 << 8), 16, 8, 0, 8);
 
 		spec += (2 << 19);
-		utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16 << 8);
+		utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
 	} else if (s_blocks[_item.type]->item3D) { //(_item.type < blocks::poppy && _item.type != blocks::oak_door && _item.type != blocks::glass_pane) {
 		int offset = (s_blocks[_item.type]->oriented) ? face_dir::minus_x: 0;
 	    int itemLight = _chunk->computePosLight(_pos);
-		int slabOffset = (shape == geometry::slab_bottom) ? (8 << 8) : (shape == geometry::trapdoor) ? (13 << 8) : 0;
+		int slabOffset = (shape == geometry::slab_bottom) ? 8 : (shape == geometry::trapdoor) ? 13 : 0;
 
 	    int spec = (s_blocks[_item.type]->texX(face_dir::minus_x, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::minus_x, offset) << 12) + (3 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p4, p0, p6, p2}, spec + slabOffset, 16, (16 << 8) - slabOffset);
+		utils::shader::addQuads(arr, {p4, p0, p6, p2}, spec + (slabOffset << 8), 16, 16 - slabOffset, 0, 8);
 
 		spec = (s_blocks[_item.type]->texX(face_dir::plus_x, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::plus_x, offset) << 12) + (4 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec + slabOffset, 16, (16 << 8) - slabOffset);
+		utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec + (slabOffset << 8), 16, 16 - slabOffset, 0, 8);
 
 		spec = (s_blocks[_item.type]->texX(face_dir::minus_y, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::minus_y, offset) << 12) + (1 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec + slabOffset, 16, (16 << 8) - slabOffset);
+		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec + (slabOffset << 8), 16, 16 - slabOffset, 0, 8);
 
 		spec = (s_blocks[_item.type]->texX(face_dir::plus_y, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::plus_y, offset) << 12) + (2 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p5, p4, p7, p6}, spec + slabOffset, 16, (16 << 8) - slabOffset);
+		utils::shader::addQuads(arr, {p5, p4, p7, p6}, spec + (slabOffset << 8), 16, 16 - slabOffset, 0, 8);
 
 		spec = (s_blocks[_item.type]->texX(face_dir::plus_z, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::plus_z, offset) << 12) + (0 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, 16, 16 << 8);
+		utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
 
 		spec = (s_blocks[_item.type]->texX(face_dir::minus_z, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::minus_z, offset) << 12) + (5 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16 << 8);
+		utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
 	} else { // flowers
 	    int itemLight = _chunk->computePosLight(_pos);
 		if (1 && EXTRUSION::drawItem3D(partArr, _item.type, itemLight, p0 + glm::vec3(0, 0, 0.25f), glm::normalize(glm::vec3(-0.176777f * sinRot, 0.176777f * cosRot, 0)), glm::normalize(glm::vec3(0.176777f * cosRot, 0.176777f * sinRot, 0)), {0, 0, 1}, 0.5f)) { // TODO replace 1 by var toggle fancy_item
 
 		} else {
 			int spec = (s_blocks[_item.type]->texX() << 4) + (s_blocks[_item.type]->texY() << 12) + (0 << 19) + (itemLight << 24);
-			utils::shader::addQuads(arr, {p0, p5, p2, p7}, spec, 16, 16 << 8); // recto
-			utils::shader::addQuads(arr, {p1, p4, p3, p6}, spec, 16, 16 << 8);
-			utils::shader::addQuads(arr, {p5, p0, p7, p2}, spec, 16, 16 << 8); // verso
-			utils::shader::addQuads(arr, {p4, p1, p6, p3}, spec, 16, 16 << 8);
+			utils::shader::addQuads(arr, {p0, p5, p2, p7}, spec, 16, 16, 0, 8); // recto
+			utils::shader::addQuads(arr, {p1, p4, p3, p6}, spec, 16, 16, 0, 8);
+			utils::shader::addQuads(arr, {p5, p0, p7, p2}, spec, 16, 16, 0, 8, true); // verso
+			utils::shader::addQuads(arr, {p4, p1, p6, p3}, spec, 16, 16, 0, 8, true);
 		}
 	}
     return (false);
@@ -304,22 +304,22 @@ bool FallingBlockEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	int faceLight = _chunk->computePosLight(_pos);
 	int spec = texture + (3 << 19) + (faceLight << 24);
 
-	utils::shader::addQuads(arr, {p4, p0, p6, p2}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p4, p0, p6, p2}, spec, 16, 16, 0, 8);
 
 	spec += (1 << 19);
-	utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
 
 	spec -= (3 << 19);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
 
 	spec += (1 << 19);
-	utils::shader::addQuads(arr, {p5, p4, p7, p6}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p5, p4, p7, p6}, spec, 16, 16, 0, 8);
 
 	spec -= (2 << 19);
-	utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
 
 	spec += (5 << 19);
-	utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
 	return (false);
 }
 
@@ -373,22 +373,22 @@ bool TNTEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderIn
 	int saturation = (static_cast<int>(_lifeTime * 10) / 3) & 0x2;
 
 	int spec = (s_blocks[_item.type]->texX(face_dir::minus_x) << 4) + ((s_blocks[_item.type]->texY(face_dir::minus_x) - saturation) << 12) + (3 << 19) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p4, p0, p6, p2}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p4, p0, p6, p2}, spec, 16, 16, 0, 8);
 
 	spec = (s_blocks[_item.type]->texX(face_dir::plus_x) << 4) + ((s_blocks[_item.type]->texY(face_dir::plus_x) - saturation) << 12) + (4 << 19) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
 
 	spec = (s_blocks[_item.type]->texX(face_dir::minus_y) << 4) + ((s_blocks[_item.type]->texY(face_dir::minus_y) - saturation) << 12) + (1 << 19) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
 
 	spec = (s_blocks[_item.type]->texX(face_dir::plus_y) << 4) + ((s_blocks[_item.type]->texY(face_dir::plus_y) - saturation) << 12) + (2 << 19) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p5, p4, p7, p6}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p5, p4, p7, p6}, spec, 16, 16, 0, 8);
 
 	spec = (s_blocks[_item.type]->texX(face_dir::plus_z) << 4) + ((s_blocks[_item.type]->texY(face_dir::plus_z) - saturation) << 12) + (0 << 19) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
 
 	spec = (s_blocks[_item.type]->texX(face_dir::minus_z) << 4) + ((s_blocks[_item.type]->texY(face_dir::minus_z) - saturation) << 12) + (5 << 19) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16 << 8);
+	utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
 	return (false);
 }
 
@@ -425,8 +425,8 @@ bool ArrowEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shader
 
 	int itemLight = _chunk->computePosLight(_pos - _dir * 0.25f);
     int spec = (s_blocks[blocks::arrow]->texX() << 4) + ((s_blocks[blocks::arrow]->texY() + 1) << 12) + (0 << 19) + (itemLight << 24);
-    utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 5 << 8); // recto
-    utils::shader::addQuads(arr, {p1, p0, p3, p2}, spec, 16, 5 << 8); // verso
+    utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 5, 0, 8); // recto
+    utils::shader::addQuads(arr, {p1, p0, p3, p2}, spec, 16, 5, 0, 8, true); // verso
 
 	// then vertical plane
 	glm::vec3 vnormal = glm::normalize(glm::cross(dir, p1 - _pos));
@@ -435,8 +435,8 @@ bool ArrowEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shader
 	p0 = _pos - dir * 0.5f + vnormal * (1.25f / 16);
 	p2 = _pos - dir * 0.5f - vnormal * (1.25f / 16);
 
-    utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 5 << 8); // recto
-    utils::shader::addQuads(arr, {p1, p0, p3, p2}, spec, 16, 5 << 8); // verso
+    utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 16, 5, 0, 8); // recto
+    utils::shader::addQuads(arr, {p1, p0, p3, p2}, spec, 16, 5, 0, 8, true); // verso
 
 	// then arrow's butt
 	p0 = _pos - dir * 0.5f * (15.0f / 16) + vnormal * (1.25f / 16) - hnormal * (1.25f / 16);
@@ -444,8 +444,8 @@ bool ArrowEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shader
 	p2 = _pos - dir * 0.5f * (15.0f / 16) - vnormal * (1.25f / 16) - hnormal * (1.25f / 16);
 	p3 = _pos - dir * 0.5f * (15.0f / 16) - vnormal * (1.25f / 16) + hnormal * (1.25f / 16);
 
-    utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec + (5 << 8), 5, 5 << 8); // recto
-    utils::shader::addQuads(arr, {p1, p0, p3, p2}, spec + (5 << 8), 5, 5 << 8); // verso
+    utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec + (5 << 8), 5, 5, 0, 8); // recto
+    utils::shader::addQuads(arr, {p1, p0, p3, p2}, spec + (5 << 8), 5, 5, 0, 8, true); // verso
 	return (false);
 }
 

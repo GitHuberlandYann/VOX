@@ -329,22 +329,27 @@ void AMob::restorePos( glm::vec3 position )
 
 /**
  * @brief adjust position.z to given obstacle, if player can't pass obstacle return false
- * @param minZ, maxZ computed obstacle dimensions
+ * @param dir one of face_dir::plus_x and face_dir::plus_y representing movement mob was trying to do
+ * @param maxZ computed obstacle max z, used to jump it if possible
  * @return false to cancel player movement
 */
-bool AMob::customObstacle( float minZ, float maxZ )
+bool AHostileMob::customObstacle( int dir, float maxZ )
 {
-	(void)minZ;
 	if (!_touchGround) return (false);
 
 	// std::cout << "DEBUG customObstacle " << _position.z << " vs " << maxZ << std::endl;
-	if (_position.z < maxZ && _position.z + 0.6f > maxZ) {
-		// set smoothcam to true to have smoother transition upon climbing stairs
-		// ie player will teleport, but cam will follow smoothly to enhance user experience
-		// _smoothCam = true;
-		// _smoothCamZ = _position.z + 1 + ((_sneaking) ? SNEAK_EYE_LEVEL : EYE_LEVEL);
-		_position.z = maxZ;
-		return (true);
+	if (_position.z < maxZ) {
+		if (_position.z + 0.6f > maxZ) {
+			_position.z = maxZ;
+			return (true);
+		} else if (_position.z + 1.1f > maxZ) {
+			_inJump = true;
+		} else if (_state == settings::state_machine::wandle) {
+			(dir == face_dir::plus_x)
+				? _bodyFront.y += 5.0f * ((_bodyFront.y > 0) ? _deltaTime : -_deltaTime)
+				: _bodyFront.x += 5.0f * ((_bodyFront.x > 0) ? _deltaTime : -_deltaTime);
+			_bodyFront = glm::normalize(_bodyFront);
+			_stateTime += _deltaTime;		}
 	}
 	return (false);
 }
@@ -546,12 +551,12 @@ void Player::move( int direction, GLint v, GLint h, GLint z )
 
 /**
  * @brief adjust position.z to given obstacle, if player can't pass obstacle return false
- * @param minZ, maxZ computed obstacle dimensions
+ * @param maxZ computed obstacle dimensions
  * @return false to cancel player movement
 */
-bool Player::customObstacle( float minZ, float maxZ )
+bool Player::customObstacle( int dir, float maxZ )
 {
-	(void)minZ;
+	(void)dir;
 	if (!_touchGround) return (false);
 
 	// std::cout << "DEBUG customObstacle " << _position.z << " vs " << maxZ << std::endl;
@@ -659,7 +664,7 @@ void Player::inputUpdate( bool rayCast, int gameMode )
 			t_collision coll = _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight);
 			if (coll.type != COLLISION::NONE) {
 				// _ui->chatMessage("xcoll " + std::to_string(coll.type) + ", " + std::to_string(coll.minZ) + " ~ " + std::to_string(coll.maxZ) + " h " + std::to_string(hitBoxHeight));
-				if (!customObstacle(coll.minZ, coll.maxZ)
+				if (!customObstacle(face_dir::plus_x, coll.maxZ)
 					|| _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
 					restorePos(originalPos); // if collision after movement, undo movement + setRun(false)
 				}
@@ -671,7 +676,7 @@ void Player::inputUpdate( bool rayCast, int gameMode )
 			move(face_dir::plus_y, key_cam_v, key_cam_h, 0); // move on Y_AXIS
 			coll = _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight);
 			if (coll.type != COLLISION::NONE) {
-				if (!customObstacle(coll.minZ, coll.maxZ)
+				if (!customObstacle(face_dir::plus_y, coll.maxZ)
 					|| _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
 					restorePos(originalPos);
 				}

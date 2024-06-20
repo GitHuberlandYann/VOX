@@ -10,7 +10,7 @@ Particle::Particle( Chunk *chunk, glm::vec3 pos, int type, float shade, int bloc
 		case PARTICLES::BREAKING:
 			_texOffset = {(pos.x - glm::floor(pos.x)) * 14, (pos.y - glm::floor(pos.y)) * 14};
 		case PARTICLES::SMOKE:
-			unsigned seed = _chunk->getSeed();
+			unsigned& seed = _chunk->getSeed();
 			_dir = {Random::randomFloat(seed), Random::randomFloat(seed), 2};
 			_dir = glm::normalize(_dir);
 		break ;
@@ -58,7 +58,7 @@ bool Particle::updateFlame( std::vector<t_shaderInput> &arr, glm::vec3 camDir )
 
 	int itemLight = 15;
 	int spec = (1 << 19) + (160 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8 << 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8, 0, 8);
 	return (false);
 }
 
@@ -83,7 +83,7 @@ bool Particle::updateSmoke( std::vector<t_shaderInput> &arr, glm::vec3 camDir, f
 
 	int itemLight = 0;
 	int spec = (1 << 19) + (7 - _frame) * 8 + (168 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8 << 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8, 0, 8);
 	return (false);
 }
 
@@ -108,7 +108,7 @@ bool Particle::updateExplosion( std::vector<t_shaderInput> &arr, glm::vec3 camDi
 	int itemLight = _chunk->computePosLight(_pos);
 	itemLight = (static_cast<int>((itemLight >> 4) * _shade) << 4) + (static_cast<int>((itemLight & 0xF) * _shade));
 	int spec = (1 << 19) + ((_frame & 0x3) * 32) + (((_frame >> 2) * 32) << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 32, 32 << 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 32, 32, 0, 8);
 	return (false);
 }
 
@@ -135,7 +135,7 @@ bool Particle::updateBreaking( std::vector<t_shaderInput> &arr, glm::vec3 camDir
 
 	int itemLight = _chunk->computePosLight(_pos);
 	int spec = (0 << 16) +  s_blocks[_block]->texX() * 16 + _texOffset.x + ((s_blocks[_block]->texY() * 16 + _texOffset.y) << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 2, 2 << 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 2, 2, 0, 8);
 	return (false);
 }
 

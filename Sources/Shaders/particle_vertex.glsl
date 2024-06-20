@@ -28,8 +28,8 @@ void main()
 {
 	gl_Position = proj * view * vec4(position, 1.0);
 
-	float x_half = (((specifications & (1 << 17)) == 0) ? 0.0001220703125 : -0.0001220703125);
-	float y_half = (((specifications & (1 << 18)) == 0) ? 0.0001220703125 : -0.0001220703125);
+	float x_half = (((specifications & (1 << 17)) == 0) ? 0.0001220703125 : one256th - 0.0001220703125);
+	float y_half = (((specifications & (1 << 18)) == 0) ? 0.0001220703125 : one256th - 0.0001220703125);
 	TexCoords = vec3((specifications & 0xFF) * one256th + x_half, ((specifications >> 8) & 0xFF) * one256th + y_half, (specifications >> 19) & 0x7);
 
 	int blockLight = ((specifications >> 24) & 0xF);

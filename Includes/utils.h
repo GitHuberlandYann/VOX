@@ -37,8 +37,8 @@ namespace Utils {
 
 namespace utils {
 	namespace shader {
-		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy );
-		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, std::array<int, 4> deltas );
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy, int offx, int offy, bool xflip = false, bool yflip = false );
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, std::array<int, 4> deltas, std::array<int, 4> sub );
 	};
 };
 
@@ -51,7 +51,6 @@ bool visible_face( int value, int next, int dir );
 void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks );
 
 std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 );
-void face_vertices( std::vector<t_shaderInput> &vertices, t_shaderInput v0, t_shaderInput v1, t_shaderInput v2, t_shaderInput v3 );
 void face_water_vertices( std::vector<glm::ivec4> &vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::ivec4 &v2, glm::ivec4 &v3 );
 std::vector<glm::ivec3> voxel_traversal( const glm::vec3 ray_start, const glm::vec3 ray_end );
 glm::vec3 line_plane_intersection( const glm::vec3 camPos, const glm::vec3 camDir, const glm::vec3 p0, const glm::vec3 cross );

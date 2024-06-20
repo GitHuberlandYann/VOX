@@ -534,13 +534,28 @@ namespace utils {
 		 * @param spec specifications of top left corner
 		 * @param dx offset in x coord of texture for right pts
 		 * @param dy offset in y coord of texture for bottom pts
+		 * @param offx bitshift needed by dx
+		 * @param offy bitshift needed by dy
+		 * @param xflip [optional] if true, texture is flipped along the x axis
+		 * @param yflip [optional] if true, texture is flipped along the y axis
 		 */
-		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy )
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy, int offx, int offy, bool xflip, bool yflip )
 		{
-			t_shaderInput v0 = {spec, pts[0]};
-			t_shaderInput v1 = {spec + dx + (1 << 17), pts[1]};
-			t_shaderInput v2 = {spec + dy + (1 << 18), pts[2]};
-			t_shaderInput v3 = {spec + dx + (1 << 17) + dy + (1 << 18), pts[3]};
+			dx = ((dx - 1) << offx) + (1 << 17);
+			dy = ((dy - 1) << offy) + (1 << 18);
+			int adx = 0, ady = 0;
+			if (xflip) {
+				adx = dx;
+				dx = 0;
+			}
+			if (yflip) {
+				ady = dy;
+				dy = 0;
+			}
+			t_shaderInput v0 = {spec + adx + ady, pts[0]};
+			t_shaderInput v1 = {spec + dx  + ady, pts[1]};
+			t_shaderInput v2 = {spec + adx + dy, pts[2]};
+			t_shaderInput v3 = {spec + dx  + dy, pts[3]};
 			
 			arr.push_back(v0);
 			arr.push_back(v1);
@@ -554,12 +569,12 @@ namespace utils {
 		/**
 		 * @brief same as other addQuads, but deltas are used instead of (1 << 17) | (1 << 18)
 		 */
-		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, std::array<int, 4> deltas )
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, std::array<int, 4> deltas, std::array<int, 4> sub )
 		{
-			t_shaderInput v0 = {spec + deltas[0], pts[0]};
-			t_shaderInput v1 = {spec + deltas[1], pts[1]};
-			t_shaderInput v2 = {spec + deltas[2], pts[2]};
-			t_shaderInput v3 = {spec + deltas[3], pts[3]};
+			t_shaderInput v0 = {spec + deltas[0] - sub[0], pts[0]};
+			t_shaderInput v1 = {spec + deltas[1] - sub[1], pts[1]};
+			t_shaderInput v2 = {spec + deltas[2] - sub[2], pts[2]};
+			t_shaderInput v3 = {spec + deltas[3] - sub[3], pts[3]};
 			
 			arr.push_back(v0);
 			arr.push_back(v1);
@@ -571,17 +586,6 @@ namespace utils {
 		}
 	};
 };
-
-void face_vertices( std::vector<t_shaderInput> &vertices, t_shaderInput v0, t_shaderInput v1, t_shaderInput v2, t_shaderInput v3 )
-{
-	vertices.push_back(v0);
-	vertices.push_back(v1);
-	vertices.push_back(v2);
-
-	vertices.push_back(v1);
-	vertices.push_back(v3);
-	vertices.push_back(v2);
-}
 
 void face_water_vertices( std::vector<glm::ivec4> &vertices, glm::ivec4 &v0, glm::ivec4 &v1, glm::ivec4 &v2, glm::ivec4 &v3 )
 {

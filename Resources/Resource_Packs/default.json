@@ -8,8 +8,8 @@
 	"TEX_CHEST": "Resources/Textures/Gui/chest.png",
 	"TEX_ZOMBIE": "Resources/Textures/Models/zombie.png",
 	"TEX_SKELETON": "Resources/Textures/Models/skeleton.png",
+	"TEX_PLAYER": "Resources/Textures/Models/player.png",
 	"PARTICLE_ATLAS": "Resources/Textures/particleAtlas.png",
-	"MODEL_ATLAS": "Resources/Textures/modelAtlas.png",
 	"WATER_STILL": "Resources/Textures/waterStill.png",
 	"WATER_FLOW": "Resources/Textures/waterFlow.png",
 

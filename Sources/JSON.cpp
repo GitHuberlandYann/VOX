@@ -764,16 +764,16 @@ bool Settings::loadResourcePacks( void )
 					if (end == std::string::npos) throw UnclosedBracketException();
 					_strings[settings::strings::tex_skeleton] = line.substr(17, end - 17);
 					check_set[settings::strings::tex_skeleton] = true;
+				} else if (!line.compare(0, 14, "\"TEX_PLAYER\": ")) {
+					size_t end = line.find('\"', 15);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[settings::strings::tex_player] = line.substr(15, end - 15);
+					check_set[settings::strings::tex_player] = true;
 				} else if (!line.compare(0, 18, "\"PARTICLE_ATLAS\": ")) {
 					size_t end = line.find('\"', 19);
 					if (end == std::string::npos) throw UnclosedBracketException();
 					_strings[settings::strings::particle_atlas] = line.substr(19, end - 19);
 					check_set[settings::strings::particle_atlas] = true;
-				} else if (!line.compare(0, 15, "\"MODEL_ATLAS\": ")) {
-					size_t end = line.find('\"', 16);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::model_atlas] = line.substr(16, end - 16);
-					check_set[settings::strings::model_atlas] = true;
 				} else if (!line.compare(0, 15, "\"WATER_STILL\": ")) {
 					size_t end = line.find('\"', 16);
 					if (end == std::string::npos) throw UnclosedBracketException();

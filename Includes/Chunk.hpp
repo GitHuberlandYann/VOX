@@ -82,8 +82,8 @@ typedef struct s_collision {
 }				t_collision;
 
 typedef struct s_shaderInput {
-	int spec = 0;
-	glm::vec3 pos = {0, 0, 0};
+	int spec;
+	glm::vec3 pos;
 }				t_shaderInput;
 
 typedef struct s_redstone {
@@ -127,7 +127,7 @@ class Chunk
 		GLint getStartX( void );
 		GLint getStartY( void );
 		Chunk* getChunkAt( int startX, int startY );
-		unsigned getSeed( void );
+		unsigned& getSeed( void );
 		bool getSortedOnce( void );
 		GLint getCamLightLevel( glm::ivec3 location );
 		int computePosLight( glm::vec3 pos );

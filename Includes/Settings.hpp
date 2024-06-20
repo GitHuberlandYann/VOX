@@ -100,6 +100,7 @@ namespace settings {
 			namespace texture {
 				const int zombie = 0;
 				const int skeleton = 1;
+				const int player = 2;
 			};
 
 			namespace attributes {
@@ -169,8 +170,8 @@ namespace settings {
 			tex_chest,
 			tex_zombie,
 			tex_skeleton,
+			tex_player,
 			particle_atlas,
-			model_atlas,
 			water_still,
 			water_flow,
 			size_textures,

@@ -28,6 +28,7 @@ class AHostileMob : public AMob
 		AHostileMob( Player* player, glm::vec3 position );
 
 		virtual void updatePath( void ) = 0;
+		virtual bool customObstacle( int dir, float maxZ );
 		virtual bool updateCurrentBlock( void );
 		void setState( const short state );
 };
