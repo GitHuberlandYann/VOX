@@ -106,6 +106,9 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			return (WorldEdit::Get()->setSelectionStart(_block_hit.pos));
 		}
 		if (_game_mode == settings::consts::gamemode::adventure && !(_block_hit.value & mask::adventure_block)) {
+			if ((_block_hit.value & mask::blocks::type) == blocks::item_frame && !(_block_hit.value & mask::frame::locked)) {
+				_chunk_hit->handleHit(true, 0, _block_hit.pos, Modif::popItem);
+			}
 			_ui->chatMessage("[Adventure mode] you can't break blocks you didn't place yourself.", TEXT::RED);
 			return ;
 		}
@@ -181,11 +184,8 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			return ;
 		}
 		if (_block_hit.type != s_blocks[type]->adventure_block) {
-			if (type == blocks::bucket || type == blocks::water_bucket) {
-				_ui->chatMessage("[Adventure mode] you can only use " + s_blocks[type]->name + " on " + s_blocks[s_blocks[type]->adventure_block]->name + ".", TEXT::RED);
-				return ;
-			}
-			_ui->chatMessage("[Adventure mode] you can only place " + s_blocks[type]->name + " on " + s_blocks[s_blocks[type]->adventure_block]->name + ".", TEXT::RED);
+			_ui->chatMessage(((type == blocks::bucket || type == blocks::water_bucket) ? "[Adventure mode] you can only use " : "[Adventure mode] you can only place ")
+							+ s_blocks[type]->name + " on " + s_blocks[s_blocks[type]->adventure_block]->name + ".", TEXT::RED);
 			return ;
 		}
 	}

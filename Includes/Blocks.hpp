@@ -170,6 +170,11 @@ namespace mask {
 		const int wet = (1 << 24);
 		const int moisture = (0x7 << offset::farmland::moisture);
 	};
+
+	namespace frame {
+		const int locked = (1 << 26);
+		const int notVisible = (1 << 27);
+	};
 };
 
 enum class geometry {

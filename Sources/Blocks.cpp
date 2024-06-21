@@ -1697,6 +1697,10 @@ void Crop::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 
 void ItemFrame::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
+	if (value & mask::frame::notVisible) {
+		return ;
+	}
+
 	glm::vec3 front, right, up;
 	pos += glm::vec3(start.x + .5f, start.y + .5f, .5f);
 

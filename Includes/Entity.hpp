@@ -79,6 +79,7 @@ class ItemFrameEntity : public Entity
 		void setContent( int type );
 		int getContent( void );
 		bool rotate( int type );
+		int getRotation( void );
 		virtual bool isAt( glm::ivec3 pos );
 
 		virtual bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime );

@@ -186,6 +186,33 @@ int Chunk::getWeakdyState( glm::ivec3 pos, glm::ivec3 except )
 }
 
 /**
+ * @brief called by comparator rear
+ * check if item frame attached to block and compute its output power
+ */
+int Chunk::getRedstoneSignalItemFrame( glm::ivec3 pos, glm::ivec3 except )
+{
+	int res = 0;
+	for (int index = 0; index < 6; ++index) {
+		const glm::ivec3 delta = adj_blocks[index];
+		if (delta == except) continue ;
+
+		int value = getBlockAt(pos + delta);
+	// std::cout << "\tredstone item frame check " << s_blocks[value & mask::blocks::type]->name << std::endl;
+	// std::cout << "\tredstone item frame dir " << POS(getAttachedDir(value)) << " vs " << POS(-delta) << std::endl;
+		if ((value & mask::blocks::type) == blocks::item_frame && getAttachedDir(value) == -delta) {
+			auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos, delta](auto e) { return (e->isAt(pos + delta + glm::ivec3(_startX, _startY, .0f))); });
+			if (search != _entities.end()) {
+				res = glm::max(res, static_cast<ItemFrameEntity*>(search->get())->getRotation());
+			} else {
+				std::cout << "404 item frame not found" << std::endl;
+			}
+		}
+	}
+	// std::cout << "computed redstone item frame at " << POS(pos) << ": " << res << std::endl;
+	return (res);
+}
+
+/**
  * @brief get exact signal [0:15] pos outputs towards target diode
  * this is only called by comparators and repeaters
  * @param pos block to get output from
@@ -196,6 +223,7 @@ int Chunk::getWeakdyState( glm::ivec3 pos, glm::ivec3 except )
 */
 int Chunk::getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side, bool repeater )
 {
+	int res = redstone::off;
 	int adj = getBlockAt(pos.x, pos.y, pos.z);
 	// std::cout << "\tcompChecking " << s_blocks[adj & mask::blocks::type]->name << " at " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;	
 	switch (adj & mask::blocks::type) {
@@ -229,11 +257,14 @@ int Chunk::getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side
 		case blocks::redstone_block:
 			return ((repeater & side) ? 0 : 0xF);
 		default:
+			if (!side && !repeater && !s_blocks[adj & mask::blocks::type]->transparent) { // fun called by comparator rear
+				res = getRedstoneSignalItemFrame(pos, target);
+			}
 			if (!side && (adj & (mask::redstone::powered | mask::redstone::weakdy_powered))) {
-				return ((adj >>offset::redstone::strength) & 0xF);
+				return (glm::max(res, ((adj >>offset::redstone::strength) & 0xF)));
 			}
 	}
-	return (redstone::off);
+	return (res);
 }
 
 /**
@@ -769,6 +800,20 @@ void Chunk::updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate )
 			setBlockAt(value & (mask::all_bits - mask::redstone::powered - mask::redstone::strength), pos.x, pos.y, pos.z, false);
 			stronglyPower(pos + front, -front, redstone::off);
 			weaklyPowerTarget(pos + front, -front, redstone::off, false);
+		}
+	}
+}
+
+/**
+ * @brief called when item frame's content is updated, check if comparators are reading attachement block and update them
+ */
+void Chunk::updateItemFrame( glm::ivec3 pos )
+{
+	for (int index = 0; index < 6; ++index) {
+		const glm::ivec3 delta = adj_blocks[index];
+		int value = getBlockAt(pos + delta);
+		if ((value & mask::blocks::type) == blocks::comparator && delta == adj_blocks[(value >> offset::blocks::orientation) & 0x7]) {
+			updateComparator(pos + delta, value, false);
 		}
 	}
 }

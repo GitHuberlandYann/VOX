@@ -127,27 +127,27 @@ void Fence::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 p
 void StairsBottom::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
 {
 	int spec = (textureX << 4) + (textureY << 12) + (3 << 19) + (light << 24);
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right * .5f + up) * size, pos + up * .5f * size, pos + (right + up) * .5f * size}, spec, 8, 8, 0, 8); // top left corner
 	utils::shader::addQuads(arr, {pos + up * .5f * size, pos + (right + up * .5f) * size, pos, pos + right * size}, spec + (8 << 8), 16, 8, 0, 8);
 
 	spec += (1 << 19);
-	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec, 16, 16, 0, 8);
+	utils::shader::addQuads(arr, {pos + (front + right * .5f + up) * size, pos + (front + up) * size, pos + (front + (right + up) * .5f) * size, pos + (front + up * .5f) * size}, spec + 8, 8, 8, 0, 8); // top right corner
+	utils::shader::addQuads(arr, {pos + (front + right + up * .5f) * size, pos + (front + up * .5f) * size, pos + (front + right) * size, pos + front * size}, spec + (8 << 8), 16, 8, 0, 8);
 
 	spec -= (3 << 19);
-	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front * .5f + up) * size, pos + (front + up * .5f) * size, pos + (front + up) * .5f * size}, spec, 8, 8, 0, 8); // -y top left corner
-	utils::shader::addQuads(arr, {pos + (front + up * .5f) * size, pos + up * .5f * size, pos + front * size, pos}, spec + (8 << 8), 16, 8, 0, 8); // -y bottom slice
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec, 16, 16, 0, 8);
 
 	spec += (1 << 19);
-	utils::shader::addQuads(arr, {pos + (front * .5f + right + up) * size, pos + (front + right + up) * size, pos + (front * .5f + right + up * .5f) * size, pos + (front + right + up * .5f) * size}, spec + 8, 8, 8, 0, 8); // +y top right corner
-	utils::shader::addQuads(arr, {pos + (right + up * .5f) * size, pos + (front + right + up * .5f) * size, pos + right * size, pos + (front + right) * size}, spec + (8 << 8), 16, 8, 0, 8); // +y bottom slice
+	utils::shader::addQuads(arr, {pos + (right + up * .5f) * size, pos + (front + right + up * .5f) * size, pos + right * size, pos + (front + right) * size}, spec + (8 << 8), 16, 8, 0, 8);
 
 	// top of second step
 	spec -= (2 << 19);
-	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front + right + up) * size, pos + (front * .5f + up) * size, pos + (front * .5f + right + up) * size}, spec, 16, 8, 0, 8);
+	utils::shader::addQuads(arr, {pos + up * size, pos + (front + up) * size, pos + (right * .5f + up) * size, pos + (front + right * .5f + up) * size}, spec, 16, 8, 0, 8);
     // top of first step
-	utils::shader::addQuads(arr, {pos + (front + up) * .5f * size, pos + (front * .5f + right + up * .5f) * size, pos + up * .5f * size, pos + (right + up * .5f) * size}, spec + (8 << 8), 16, 8, 0, 8);
+	utils::shader::addQuads(arr, {pos + (right + up) * .5f * size, pos + (front + (right + up) * .5f) * size, pos + (right + up * .5f) * size, pos + (front + right + up * .5f) * size}, spec + (8 << 8), 16, 8, 0, 8);
     // front of second step
 	spec += (3 << 19);
-	utils::shader::addQuads(arr, {pos + (front * .5f + up) * size, pos + (front * .5f + right + up) * size, pos + (front + up) * .5f * size, pos + (front * .5f + right + up * .5f) * size}, spec + (8 << 8), 16, 8, 0, 8);
+	utils::shader::addQuads(arr, {pos + (right * .5f + up) * size, pos + (front + right * .5f + up) * size, pos + (right + up) * .5f * size, pos + (front + (right + up) * .5f) * size}, spec, 16, 8, 0, 8);
 
 	spec += (2 << 19);
 	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, 16, 16, 0, 8);
@@ -188,5 +188,5 @@ void ItemFrame::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::ve
 	// draw frame background
 	pos += front * .5f * one16th;
 	spec = (texX() << 4) + (textureY << 12) + (3 << 19) + (light << 24);
-	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec, 16, 16, 0, 8);
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec + 2 + (2 << 8), 12, 12, 0, 8);
 }

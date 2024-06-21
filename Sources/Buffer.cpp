@@ -24,6 +24,9 @@ void Buffer::genBuffers( void )
 {
 	glGenVertexArrays(1, &_vao);
 	glGenBuffers(1, &_vbo);
+
+	_attributes.clear();
+	_size = 0;
 }
 
 void Buffer::addAttribute( int index, size_t size, GLenum type )

@@ -518,6 +518,15 @@ bool ItemFrameEntity::rotate( int type )
 	return (false);
 }
 
+int ItemFrameEntity::getRotation( void )
+{
+	// std::cout << "item getRotation, type is " << s_blocks[_item.type]->name << ", rotation is " << _rotation << std::endl;
+	if (_item.type == blocks::air) {
+		return (0);
+	}
+	return (_rotation + 1);
+}
+
 bool ItemFrameEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime )
 {
 	(void)deltaTime;

@@ -345,6 +345,7 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		_oglMan->_inventory->absorbItem({blocks::redstone_block});
 		_oglMan->_inventory->absorbItem({blocks::iron_ore});
 		_oglMan->_inventory->absorbItem({blocks::target});
+		_oglMan->_inventory->absorbItem({blocks::item_frame});
 		return ;
 	} else if (!argv[2].compare(0, 8, "blocks::")) {
 		int i = 0;

@@ -33,7 +33,6 @@ TODOS:
 	- fire
 	- lantern
 	- campfire
-	- item frame
 	- ladder
 	- stone wall
 	- bed
@@ -115,7 +114,10 @@ TODOS:
 	- redstone torch
 	- redstone dust
 	- repeater
+	- comparator
+	- item frame
 	- pistons
+	- observers
 	- fences
     - items on ground after break
 	- item number color/placement/size in ingame menus
@@ -359,6 +361,7 @@ _blocks:
 	- glass panes 0xF << 24 == 'arms'
 	- lever 0x7 << 9 == orientation, 0x3 << 24 == placement(wall, ceiling, floor)
 	- button 0x7 << 9 == orientation, 0x3 << 24 == placement(wall, ceiling, floor)
+	- item frame 0x7 << 9 == orientation, 0x3 << 24 == placement(wall, ceiling, floor), 1 << 26 locked, 1 << 27 notVisible
 	- redstone lamp 1 << 18 lit
 	- redstone dust 0xF << 20 strength 0xFF << 24 'arms'
 	- repeater 0x7 << 9 orientation, 0x3 << 24 delay, 1 << 27 locked, 1 << 16 lit

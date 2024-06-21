@@ -34,7 +34,8 @@ enum Modif {
 	add,
 	replace,
 	litnt,
-	use
+	use,
+	popItem,
 };
 
 const std::array<glm::ivec3, 6> adj_blocks = {{
@@ -284,6 +285,7 @@ class Chunk
 		// redstone
 		glm::ivec3 getAttachedDir( int value );
 		int getWeakdyState( glm::ivec3 pos, glm::ivec3 except );
+		int getRedstoneSignalItemFrame( glm::ivec3 pos, glm::ivec3 except );
 		int getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side, bool repeater );
 		int getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bool weak );
 		int getDustStrength( glm::ivec3 pos );
@@ -295,6 +297,7 @@ class Chunk
 		void updateRedstoneDust( glm::ivec3 pos );
 		void initRepeater( glm::ivec3 pos, int& value, bool init );
 		void updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate );
+		void updateItemFrame( glm::ivec3 pos );
 		int pistonExtendCount( glm::ivec3 pos, int value );
 		void extendPiston( glm::ivec3 pos, int value, int count );
 		void retractPiston( glm::ivec3 pos, int value );
