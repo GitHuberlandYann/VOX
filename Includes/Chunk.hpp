@@ -19,9 +19,6 @@ class Player;
 # include "Skeleton.hpp"
 # include "Buffer.hpp"
 
-# define XTEX (1 << 4) + (1 << 17)
-# define YTEX (1 << 12) + (1 << 18)
-
 enum cont {
 	CONT_MUSHROOM_FIELDS,
 	CONT_DEEP_OCEAN,
@@ -233,7 +230,7 @@ class Chunk
 		std::map<int, ChestInstance*> _chests;
 		std::map<int, FurnaceInstance*> _furnaces;
 		std::map<int, SignInstance*> _signs;
-		std::vector<Entity*> _entities;
+		std::vector<std::shared_ptr<Entity>> _entities;
 		std::vector<std::shared_ptr<AMob>> _mobs;
 		std::vector<Particle*> _particles;
 		std::map<int, Particle*> _flames;
@@ -277,7 +274,7 @@ class Chunk
 		void addFlame( int offset, glm::vec3 pos, int source, int orientation );
 		void add_block( bool useInventory, glm::ivec3 pos, int block_value, int previous );
 		void replace_block( bool useInventory, glm::ivec3 pos, int type );
-		void use_block( glm::ivec3 pos, int type );
+		void use_block( bool useInventory, glm::ivec3 pos, int type );
 		void update_block( glm::ivec3 pos, int previous, int value );
 
 		// lights

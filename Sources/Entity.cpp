@@ -2,8 +2,8 @@
 #include "random.hpp"
 #include "DayCycle.hpp"
 
-Entity::Entity( Chunk *chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool thrown, t_item item )
-    : _thrown(thrown), _item(item), _lifeTime(0), _pos(position), _dir(dir), _chunk(chunk), _inventory(inventory)
+Entity::Entity( Chunk* chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool thrown, t_item item )
+    : _item(item), _lifeTime(0.), _pos(position), _dir(dir), _chunk(chunk), _inventory(inventory), _thrown(thrown)
 {
     // std::cout << "new Entity at " << position.x << ", " << position.y << ", " << position.z << ": " << s_blocks[value]->name << std::endl;
 	_chunk_pos = {chunk->getStartX(), chunk->getStartY()};
@@ -14,29 +14,75 @@ Entity::~Entity( void )
 
 }
 
-FallingBlockEntity::FallingBlockEntity( Chunk *chunk, glm::vec3 position, t_item item)
+FallingBlockEntity::FallingBlockEntity( Chunk* chunk, glm::vec3 position, t_item item)
 	: Entity(chunk, NULL, position, {0, 0, 0}, false, item)
 {
 
 }
 
-TNTEntity::TNTEntity( Chunk *chunk, glm::vec3 position, glm::vec3 dir )
+TNTEntity::TNTEntity( Chunk* chunk, glm::vec3 position, glm::vec3 dir )
 	: Entity(chunk, NULL, position, dir, false, {0})
 {
 
 }
 
-ArrowEntity::ArrowEntity( Chunk *chunk, glm::vec3 position, glm::vec3 dir )
+ArrowEntity::ArrowEntity( Chunk* chunk, glm::vec3 position, glm::vec3 dir )
 	: Entity(chunk, NULL, position, dir, false, {0}), _stuck(false)
 {
 
 }
 
-MovingPistonEntity::MovingPistonEntity( Chunk *chunk, glm::ivec3 source, glm::ivec3 position, glm::ivec3 dir, bool piston_head, bool retraction, int value )
+MovingPistonEntity::MovingPistonEntity( Chunk* chunk, glm::ivec3 source, glm::ivec3 position, glm::ivec3 dir, bool piston_head, bool retraction, int value )
 	: Entity(chunk, NULL, position, dir, false, {value, 1}), _piston_head(piston_head), _retraction(retraction), _softKill(false),
 	_tickStart(DayCycle::Get()->getGameTicks()), _source(source), _endPos(position + dir)
 {
 	// std::cout << "MovingPistonEntity init movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] from " << _chunk->getStartX() + _pos.x << ", " << _chunk->getStartY() + _pos.y << ", " << _pos.z << " to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
+}
+
+ItemFrameEntity::ItemFrameEntity( Chunk* chunk, glm::ivec3 position, int value )
+	: Entity(chunk, NULL, {0, 0, 0}, {0, 0, 0}, false, {0}), _rotation(0)
+{
+	_pos = glm::vec3(position.x + .5f, position.y + .5f, position.z + .5f);
+
+	int placement = (value >> offset::blocks::bitfield) & 0x3;
+	switch (placement) {
+		case placement::floor:
+			_front = { .0f, .0f, -1.f};
+			_right = { 1.f, .0f, .0f};
+			_up    = { .0f, 1.f, .0f};
+			break ;
+		case placement::ceiling:
+			_front = { .0f, .0f, 1.f};
+			_right = { 1.f, .0f, .0f};
+			_up    = { .0f,-1.f, .0f};
+			break ;
+		case placement::wall:
+			int orientation = (value >> offset::blocks::orientation) & 0x7;
+			switch (orientation) {
+				case face_dir::minus_x:
+					_front = { 1.f, .0f, .0f};
+					_right = { .0f,-1.f, .0f};
+					_up    = { .0f, .0f, 1.f};
+					break ;
+				case face_dir::plus_x:
+					_front = {-1.f, .0f, .0f};
+					_right = { .0f, 1.f, .0f};
+					_up    = { .0f, .0f, 1.f};
+					break ;
+				case face_dir::minus_y:
+					_front = { 0.f, 1.f, .0f};
+					_right = { 1.f, .0f, .0f};
+					_up    = { .0f, .0f, 1.f};
+					break ;
+				case face_dir::plus_y:
+					_front = { .0f, -1.f, .0f};
+					_right = { -1.f, .0f, .0f};
+					_up    = { .0f, .0f, 1.f};
+					break ;
+			}
+			break ;
+	}
+	_pos += _front * (7.5f * one16th - .125f);
 }
 
 // ************************************************************************** //
@@ -50,6 +96,17 @@ MovingPistonEntity::MovingPistonEntity( Chunk *chunk, glm::ivec3 source, glm::iv
 void Entity::setLifetime( double lifetime )
 {
 	_lifeTime = lifetime;
+}
+
+bool Entity::isAt( glm::ivec3 pos )
+{
+	(void)pos;
+	return (false);
+}
+bool ItemFrameEntity::isAt( glm::ivec3 pos )
+{
+	glm::ivec3 mpos = glm::floor(_pos);
+	return (pos == mpos);
 }
 
 void Entity::getBlasted( glm::vec3 pos, float blast_radius )
@@ -134,7 +191,7 @@ int MovingPistonEntity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
  * @brief update entity's position and push_back arr with new pos
  * @return true if entity despawns this frame
 */
-bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime )
+bool Entity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime )
 {
 	_lifeTime += deltaTime;
     if (_lifeTime > 300 || _pos.z < 0) {
@@ -177,7 +234,8 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
 	}
 
 	// items not displayed if 16 blocks away from player (TODO Entity Distance in settings)
-	if (_pos.x < camPos.x - settings::consts::chunk_size || _pos.x > camPos.x + settings::consts::chunk_size || _pos.y < camPos.y - settings::consts::chunk_size || _pos.y > camPos.y + settings::consts::chunk_size
+	if (_pos.x < camPos.x - settings::consts::chunk_size || _pos.x > camPos.x + settings::consts::chunk_size
+		|| _pos.y < camPos.y - settings::consts::chunk_size || _pos.y > camPos.y + settings::consts::chunk_size
 		|| _pos.z < camPos.z - settings::consts::chunk_size || _pos.z > camPos.z + settings::consts::chunk_size) {
 		return (false);
 	}
@@ -185,87 +243,22 @@ bool Entity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput
     float cosRot = glm::cos(_lifeTime);
     float sinRot = glm::sin(_lifeTime);
 
-	geometry shape = s_blocks[_item.type]->geometry;
-	float zSize = (shape == geometry::slab_bottom) ? 0.125f : (shape == geometry::trapdoor) ? 0.046875f : 0.25f;
+	glm::vec3 front = glm::normalize(glm::vec3(-sinRot, cosRot, .0f));
+	glm::vec3 right = glm::normalize(glm::vec3(cosRot, sinRot, .0f));
+	int itemLight = _chunk->computePosLight(_pos);
 
-	glm::vec3 p0 = {_pos.x - 0.176777f * cosRot, _pos.y - 0.176777f * sinRot, _pos.z + zSize + (cosRot + 1) / 4};
-	glm::vec3 p1 = {_pos.x + 0.176777f * sinRot, _pos.y - 0.176777f * cosRot, _pos.z + zSize + (cosRot + 1) / 4};
-	glm::vec3 p2 = {_pos.x - 0.176777f * cosRot, _pos.y - 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
-	glm::vec3 p3 = {_pos.x + 0.176777f * sinRot, _pos.y - 0.176777f * cosRot, _pos.z + (cosRot + 1) / 4};
-
-	glm::vec3 p4 = {_pos.x - 0.176777f * sinRot, _pos.y + 0.176777f * cosRot, _pos.z + zSize + (cosRot + 1) / 4};
-	glm::vec3 p5 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + zSize + (cosRot + 1) / 4};
-	glm::vec3 p6 = {_pos.x - 0.176777f * sinRot, _pos.y + 0.176777f * cosRot, _pos.z + (cosRot + 1) / 4};
-	glm::vec3 p7 = {_pos.x + 0.176777f * cosRot, _pos.y + 0.176777f * sinRot, _pos.z + (cosRot + 1) / 4};
-
-	if (shape == geometry::stairs_bottom) {
-	    int itemLight = _chunk->computePosLight(_pos);
-
-	    int spec = (s_blocks[_item.type]->texX() << 4) + (s_blocks[_item.type]->texY() << 12) + (3 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p4 - glm::vec3(0.0f, 0.0f, 0.125f), p0 - glm::vec3(0.0f, 0.0f, 0.125f), p6, p2}, spec + (8 << 8), 16, 8, 0, 8);
-
-		spec += (1 << 19);
-		utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
-
-		spec -= (3 << 19);
-		utils::shader::addQuads(arr, {(p0 + p1) * 0.5f, p1, (p0 + p3) * 0.5f, p1 - glm::vec3(0.0f, 0.0f, 0.125f)}, spec + 8, 8, 8, 0, 8); //-y top right corner
-		utils::shader::addQuads(arr, {p0 - glm::vec3(0.0f, 0.0f, 0.125f), p1 - glm::vec3(0.0f, 0.0f, 0.125f), p2, p3}, spec + (8 << 8), 16, 8, 0, 8); //-y bottom slice
-
-		spec += (1 << 19);
-		utils::shader::addQuads(arr, {p5, (p5 + p4) * 0.5f, p5 - glm::vec3(0.0f, 0.0f, 0.125f), (p5 + p6) * 0.5f}, spec, 8, 8, 0, 8); //+y top left corner
-		utils::shader::addQuads(arr, {p5 - glm::vec3(0.0f, 0.0f, 0.125f), p4 - glm::vec3(0.0f, 0.0f, 0.125f), p7, p6}, spec + (8 << 8), 16, 8, 0, 8); //+y bottom slice
-
-		// top of second step
-		spec -= (2 << 19);
-		utils::shader::addQuads(arr, {p1, p5, (p0 + p1) * 0.5f, (p4 + p5) * 0.5f}, spec + (8 << 8), 16, 8, 0, 8);
-	    // top of first step
-		utils::shader::addQuads(arr, {(p0 + p1) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f), (p4 + p5) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f), p0 - glm::vec3(0.0f, 0.0f, 0.125f), p4 + glm::vec3(0.0f, 0.0f, 0.125f)}, spec + (8 << 8), 16, 8, 0, 8);
-	    // front of second step
-		spec += (3 << 19);
-		utils::shader::addQuads(arr, {(p0 + p1) * 0.5f, (p4 + p5) * 0.5f, (p0 + p1) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f), (p4 + p5) * 0.5f - glm::vec3(0.0f, 0.0f, 0.125f)}, spec + (8 << 8), 16, 8, 0, 8);
-
-		spec += (2 << 19);
-		utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
-	} else if (s_blocks[_item.type]->item3D) { //(_item.type < blocks::poppy && _item.type != blocks::oak_door && _item.type != blocks::glass_pane) {
-		int offset = (s_blocks[_item.type]->oriented) ? face_dir::minus_x: 0;
-	    int itemLight = _chunk->computePosLight(_pos);
-		int slabOffset = (shape == geometry::slab_bottom) ? 8 : (shape == geometry::trapdoor) ? 13 : 0;
-
-	    int spec = (s_blocks[_item.type]->texX(face_dir::minus_x, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::minus_x, offset) << 12) + (3 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p4, p0, p6, p2}, spec + (slabOffset << 8), 16, 16 - slabOffset, 0, 8);
-
-		spec = (s_blocks[_item.type]->texX(face_dir::plus_x, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::plus_x, offset) << 12) + (4 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec + (slabOffset << 8), 16, 16 - slabOffset, 0, 8);
-
-		spec = (s_blocks[_item.type]->texX(face_dir::minus_y, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::minus_y, offset) << 12) + (1 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec + (slabOffset << 8), 16, 16 - slabOffset, 0, 8);
-
-		spec = (s_blocks[_item.type]->texX(face_dir::plus_y, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::plus_y, offset) << 12) + (2 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p5, p4, p7, p6}, spec + (slabOffset << 8), 16, 16 - slabOffset, 0, 8);
-
-		spec = (s_blocks[_item.type]->texX(face_dir::plus_z, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::plus_z, offset) << 12) + (0 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
-
-		spec = (s_blocks[_item.type]->texX(face_dir::minus_z, offset) << 4) + (s_blocks[_item.type]->texY(face_dir::minus_z, offset) << 12) + (5 << 19) + (itemLight << 24);
-		utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
-	} else { // flowers
-	    int itemLight = _chunk->computePosLight(_pos);
-		if (1 && EXTRUSION::drawItem3D(partArr, _item.type, itemLight, p0 + glm::vec3(0, 0, 0.25f), glm::normalize(glm::vec3(-0.176777f * sinRot, 0.176777f * cosRot, 0)), glm::normalize(glm::vec3(0.176777f * cosRot, 0.176777f * sinRot, 0)), {0, 0, 1}, 0.5f)) { // TODO replace 1 by var toggle fancy_item
-
-		} else {
-			int spec = (s_blocks[_item.type]->texX() << 4) + (s_blocks[_item.type]->texY() << 12) + (0 << 19) + (itemLight << 24);
-			utils::shader::addQuads(arr, {p0, p5, p2, p7}, spec, 16, 16, 0, 8); // recto
-			utils::shader::addQuads(arr, {p1, p4, p3, p6}, spec, 16, 16, 0, 8);
-			utils::shader::addQuads(arr, {p5, p0, p7, p2}, spec, 16, 16, 0, 8, true); // verso
-			utils::shader::addQuads(arr, {p4, p1, p6, p3}, spec, 16, 16, 0, 8, true);
-		}
+	if (s_blocks[_item.type]->item3D) {
+		glm::vec3 pos = _pos - front * .125f - right * .125f + settings::consts::math::world_up * (cosRot + 1) * 0.25f;
+		s_blocks[_item.type]->addMeshItem(arr, itemLight, pos, front, right, settings::consts::math::world_up, 0.25f);
+	} else {
+		glm::vec3 pos = _pos - front * .25f * one16th - right * .25f + settings::consts::math::world_up * (0.5f + (cosRot + 1) * 0.25f);
+		EXTRUSION::drawItem3D(arr, _item.type, itemLight, pos, front, right, settings::consts::math::world_up, 0.5f);
 	}
     return (false);
 }
 
-bool FallingBlockEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime )
+bool FallingBlockEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime )
 {
-	(void)partArr;
 	(void)camPos;
 	_lifeTime += deltaTime;
     if (_lifeTime > 300 || _pos.z < 0) {
@@ -323,9 +316,8 @@ bool FallingBlockEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 	return (false);
 }
 
-bool TNTEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime )
+bool TNTEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime )
 {
-	(void)partArr;
 	(void)camPos;
 	_lifeTime += deltaTime;
 
@@ -392,9 +384,8 @@ bool TNTEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderIn
 	return (false);
 }
 
-bool ArrowEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime )
+bool ArrowEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime )
 {
-	(void)partArr;
 	(void)camPos;
 	_lifeTime += deltaTime;
     if (_lifeTime > 60 || _pos.z < 0) {
@@ -449,7 +440,7 @@ bool ArrowEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shader
 	return (false);
 }
 
-bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t_shaderInput> &partArr, glm::vec3 camPos, double deltaTime )
+bool MovingPistonEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime )
 {
 	if (_softKill) {
 		// _entities vector can be updated by pistons while looping through it from Chunk::updateEntities,
@@ -457,7 +448,6 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
 		return (true);
 	}
 
-	(void)partArr;
 	(void)camPos;
 	_lifeTime += deltaTime;
 	int lifeLimit = (_retraction) ? 2 : 3;
@@ -495,4 +485,61 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput> &arr,  std::vector<t
         return (true);
     }
 	return (false);
+}
+
+// ************************************************************************** //
+//                              Item Frame                                    //
+// ************************************************************************** //
+
+void ItemFrameEntity::setContent( int type )
+{
+	_item.type = type;
+}
+
+int ItemFrameEntity::getContent( void )
+{
+	return (_item.type);
+}
+
+/**
+ * @brief tries to rotate entity in item frame, if entity is air, place give type in item frame
+ */
+bool ItemFrameEntity::rotate( int type )
+{
+	if (_item.type == blocks::air) {
+		_item.type = type;
+		return (type != blocks::air);
+	}
+
+	++_rotation;
+	_rotation &= 0x7;
+	_up = glm::normalize(_right + _up);
+	_right = glm::normalize(glm::cross(_front, _up));
+	return (false);
+}
+
+bool ItemFrameEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime )
+{
+	(void)deltaTime;
+	if (_item.type == blocks::air) {
+		return (false);
+	}
+
+	// item not displayed if 16 blocks away from player (TODO Entity Distance in settings)
+	if (_pos.x < camPos.x - settings::consts::chunk_size || _pos.x > camPos.x + settings::consts::chunk_size
+		|| _pos.y < camPos.y - settings::consts::chunk_size || _pos.y > camPos.y + settings::consts::chunk_size
+		|| _pos.z < camPos.z - settings::consts::chunk_size || _pos.z > camPos.z + settings::consts::chunk_size) {
+		return (false);
+	}
+
+	int itemLight = _chunk->computePosLight(_pos);
+
+	if (s_blocks[_item.type]->item3D) {
+		glm::vec3 pos = _pos - (_right + _up) * .125f;
+		s_blocks[_item.type]->addMeshItem(arr, itemLight, pos, _front, _right, _up, 0.25f);
+	} else {
+		glm::vec3 pos = _pos - (_right - _up) * .25f + _front * (0.125f - one16th);
+		EXTRUSION::drawItem3D(arr, _item.type, itemLight, pos, _front, _right, _up, 0.5f);
+	}
+    return (false);
 }

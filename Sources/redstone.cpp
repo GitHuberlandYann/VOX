@@ -89,6 +89,7 @@ glm::ivec3 Chunk::getAttachedDir( int value )
 		case blocks::lever:
 		case blocks::stone_button:
 		case blocks::oak_button:
+		case blocks::item_frame:
 			switch (placement) {
 				case placement::ceiling:
 					target = glm::ivec3(0, 0, 1);
@@ -804,8 +805,7 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 					size_t eSize = _entities.size(), delCount = 0;
 					int res = 0;
 					for (size_t index = 0; index < eSize; ++index) {
-						Entity *entity = _entities[index];
-						int status = entity->pistonedBy(pos, pos + front);
+						int status = _entities[index]->pistonedBy(pos, pos + front);
 						if (status == redstone::piston::force_retraction) { // another piston pushed a block in front of this one before it finished retracting
 							std::cout << "(void)FORCE FINISH RETRACTION BY OTHER PISTON" << std::endl;
 							res = 13;
@@ -829,8 +829,7 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 						size_t eSize = _entities.size(), delCount = 0;
 						int res = 0;
 						for (size_t index = 0; index < eSize; ++index) {
-							Entity *entity = _entities[index];
-							int status = entity->pistonedBy(pos, pos + front);
+							int status = _entities[index]->pistonedBy(pos, pos + front);
 							if (status == redstone::piston::force_retraction) { // another piston pushed a block in front of this one before it finished retracting
 								std::cout << "FORCE FINISH RETRACTION BY OTHER PISTON" << std::endl;
 								res = 13;
@@ -885,13 +884,13 @@ void Chunk::extendPiston( glm::ivec3 pos, int value, int count )
 		int adj = getBlockAt(pos + front * (i + 1));
 		// creates moving entity for the blocks being pushed
 		std::cout << s_blocks[adj & mask::blocks::type]->name << " turned into entity at " << pos.x + front.x * (i + 1) << ", " << pos.y + front.y * (i + 1) << ", " << pos.z + front.z * (i + 1) << std::endl;
-		_entities.push_back(new MovingPistonEntity(this, pos, pos + front * (i + 1), front, false, false, adj));
+		_entities.push_back(std::make_shared<MovingPistonEntity>(this, pos, pos + front * (i + 1), front, false, false, adj));
 		setBlockAt(blocks::moving_piston, pos + front * (i + 2), true);
 		// TODO block update neighbours
 	}
 	// this one is for the piston head
 	std::cout << "piston head at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
-	_entities.push_back(new MovingPistonEntity(this, pos, pos, front, false, false, blocks::piston_head | (value & (0x7 << offset::blocks::orientation)) | (((value & mask::blocks::type) == blocks::sticky_piston) ? mask::redstone::piston::sticky : 0)));
+	_entities.push_back(std::make_shared<MovingPistonEntity>(this, pos, pos, front, false, false, blocks::piston_head | (value & (0x7 << offset::blocks::orientation)) | (((value & mask::blocks::type) == blocks::sticky_piston) ? mask::redstone::piston::sticky : 0)));
 	setBlockAt(blocks::moving_piston, pos + front, true);
 }
 
@@ -941,8 +940,7 @@ void Chunk::retractPiston( glm::ivec3 pos, int value )
 	if ((front_value & mask::blocks::type) == blocks::moving_piston) { // force finish extension
 		size_t eSize = _entities.size();
 		for (size_t index = 0; index < eSize; ++index) {
-			Entity *entity = _entities[index];
-			if (entity->pistonedBy(pos, {0, 0, -1000})) { // if true, pistonedBy places back the moving blocks, _softKill set to true
+			if (_entities[index]->pistonedBy(pos, {0, 0, -1000})) { // if true, pistonedBy places back the moving blocks, _softKill set to true
 				std::cout << "FORCE FINISH EXTENSION" << std::endl;
 				++delCount;
 			}
@@ -960,14 +958,14 @@ void Chunk::retractPiston( glm::ivec3 pos, int value )
 		// 	|| (((front2_value & mask::blocks::type) == blocks::piston || (front2_value & mask::blocks::type) == blocks::sticky_piston) && !(front2_value & mask::redstone::piston::moving))) {
 			setBlockAt(blocks::air, pos + front * 2, true);
 			setBlockAt(blocks::moving_piston | mask::redstone::piston::retracting, pos + front, true);
-			_entities.push_back(new MovingPistonEntity(this, pos, pos + front * 2, -front, false, true, front2_value));
+			_entities.push_back(std::make_shared<MovingPistonEntity>(this, pos, pos + front * 2, -front, false, true, front2_value));
 		} else {
 			setBlockAt(blocks::air, pos + front, true);
 		}
 	} else {
 		setBlockAt(blocks::air, pos + front, true);
 	}
-	_entities.push_back(new MovingPistonEntity(this, pos, pos + front, -front, true, true, blocks::piston_head | (value & (0x7 << offset::blocks::orientation))| (((value & mask::blocks::type) == blocks::sticky_piston) ? mask::redstone::piston::sticky : 0)));
+	_entities.push_back(std::make_shared<MovingPistonEntity>(this, pos, pos + front, -front, true, true, blocks::piston_head | (value & (0x7 << offset::blocks::orientation))| (((value & mask::blocks::type) == blocks::sticky_piston) ? mask::redstone::piston::sticky : 0)));
 }
 
 /**
@@ -1281,7 +1279,7 @@ void Chunk::connectRedstoneDust( glm::ivec3 pos, int &value, bool placed )
 	int connect_mx = 0, connect_px = 0, connect_my = 0, connect_py = 0;
 	int value_mx = getBlockAt(pos.x - 1, pos.y, pos.z), tmx = (value_mx & mask::blocks::type);
 	if (tmx == blocks::lever || tmx == blocks::redstone_dust || tmx == blocks::redstone_torch || tmx == blocks::target
-		|| tmx == blocks::comparator || (tmx == blocks::repeater && ((value_mx >> 10) & 0x1))) {
+		|| tmx == blocks::comparator || (tmx == blocks::repeater && ((value_mx >> offset::blocks::orientation) & 0x2))) {
 		connect_mx |= redstone::dust::side;
 		if (placed && tmx == blocks::redstone_dust && !(value_mx & (redstone::dust::side << offset::redstone::dust::px))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(-1, 0, 0), value_mx, false);
@@ -1315,7 +1313,7 @@ GLASS_MX:
 
 	int value_px = getBlockAt(pos.x + 1, pos.y, pos.z), tpx = (value_px & mask::blocks::type);
 	if (tpx == blocks::lever || tpx == blocks::redstone_dust || tpx == blocks::redstone_torch || tpx == blocks::target
-		|| tpx == blocks::comparator || (tpx == blocks::repeater && ((value_px >> 10) & 0x1))) {
+		|| tpx == blocks::comparator || (tpx == blocks::repeater && ((value_px >> offset::blocks::orientation) & 0x2))) {
 		connect_px |= redstone::dust::side;
 		if (placed && tpx == blocks::redstone_dust && !(value_px & (redstone::dust::side << offset::redstone::dust::mx))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(1, 0, 0), value_px, false);
@@ -1349,7 +1347,7 @@ GLASS_PX:
 
 	int value_my = getBlockAt(pos.x, pos.y - 1, pos.z), tmy = (value_my & mask::blocks::type);
 	if (tmy == blocks::lever || tmy == blocks::redstone_dust || tmy == blocks::redstone_torch || tmy == blocks::target
-		|| tmy == blocks::comparator || (tmy == blocks::repeater && !((value_my >> 10) & 0x1))) {
+		|| tmy == blocks::comparator || (tmy == blocks::repeater && !((value_my >> offset::blocks::orientation) & 0x2))) {
 		connect_my |= redstone::dust::side;
 		if (placed && tmy == blocks::redstone_dust && !(value_my & (redstone::dust::side << offset::redstone::dust::py))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(0, -1, 0), value_my, false);
@@ -1383,7 +1381,7 @@ GLASS_MY:
 
 	int value_py = getBlockAt(pos.x, pos.y + 1, pos.z), tpy = (value_py & mask::blocks::type);
 	if (tpy == blocks::lever || tpy == blocks::redstone_dust || tpy == blocks::redstone_torch || tpy == blocks::target
-		|| tpy == blocks::comparator || (tpy == blocks::repeater && !((value_py >> 10) & 0x1))) {
+		|| tpy == blocks::comparator || (tpy == blocks::repeater && !((value_py >> offset::blocks::orientation) & 0x2))) {
 		connect_py |= redstone::dust::side;
 		if (placed && tpy == blocks::redstone_dust && !(value_py & (redstone::dust::side << offset::redstone::dust::my))) { // adj dust not linked towards new dust
 			connectRedstoneDust(pos + glm::ivec3(0, 1, 0), value_py, false);

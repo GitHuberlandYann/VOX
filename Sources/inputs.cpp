@@ -24,7 +24,7 @@ t_hit OpenGL_Manager::getBlockHit( void )
 	std::vector<glm::ivec3> ids = _player->computeRayCasting((_game_mode == settings::consts::gamemode::creative) ? settings::consts::reach::creative : settings::consts::reach::survival);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
-	Chunk *chunk = NULL;
+	Chunk* chunk = NULL;
 	bool first_loop = true;
 	for (auto& i : ids) {
 		// std::cout << "checking > " << i.x << ", " << i.y << ", " << i.z << std::endl;
@@ -144,6 +144,9 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 				_current_chunk_ptr->handleHit(false, blocks::tnt, _block_hit.pos, Modif::litnt);
 			}
 			break ;
+		case blocks::item_frame:
+			_current_chunk_ptr->handleHit(collect, _hand_content, _block_hit.pos, Modif::use);
+			return ;
 		case blocks::oak_door:
 		case blocks::oak_trapdoor:
 		case blocks::lever:
@@ -221,7 +224,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		_paused = true;
 		_menu->setState(menu::sign);
 		_menu->setSignPos(_block_hit.prev_pos);
-	} else if (type == blocks::lever || shape == geometry::button) {
+	} else if (type == blocks::lever || shape == geometry::button || type == blocks::item_frame) {
 		if (s_blocks[_block_hit.type]->geometry != geometry::cube) { // TODO chnge this
 			return ;
 		}
@@ -501,7 +504,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 			mobHit->receiveDamage(6.0f, _player->getDir());
 			// TODO set _punch to true to avoid breaking block behind mob
 		} else if (_game_mode != settings::consts::gamemode::creative) {
-			if (_block_hit.type == blocks::air) {
+			if (_block_hit.type == blocks::air || (!firstFrame && (_block_hit.type & mask::blocks::type) == blocks::item_frame)) {
 				_player->setArmAnimation(firstFrame);
 			} else {
 				_player->setArmAnimation(true);

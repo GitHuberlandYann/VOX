@@ -3,7 +3,7 @@
 #include "Chunk.hpp"
 #include "random.hpp"
 
-Particle::Particle( Chunk *chunk, glm::vec3 pos, int type, float shade, int block )
+Particle::Particle( Chunk* chunk, glm::vec3 pos, int type, float shade, int block )
 	: _pos(pos), _lifeTime(0), _shade(shade), _type(type), _frame(0), _block(block), _chunk(chunk)
 {
 	switch (type) {
@@ -26,7 +26,7 @@ Particle::~Particle( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-bool Particle::updateFlame( std::vector<t_shaderInput> &arr, glm::vec3 camDir )
+bool Particle::updateFlame( std::vector<t_shaderInput>& arr, glm::vec3 camDir )
 {
 	while (_lifeTime > settings::consts::tick * 4) {
 		_lifeTime -= settings::consts::tick * 4;
@@ -62,7 +62,7 @@ bool Particle::updateFlame( std::vector<t_shaderInput> &arr, glm::vec3 camDir )
 	return (false);
 }
 
-bool Particle::updateSmoke( std::vector<t_shaderInput> &arr, glm::vec3 camDir, float deltaTime )
+bool Particle::updateSmoke( std::vector<t_shaderInput>& arr, glm::vec3 camDir, float deltaTime )
 {
 	_pos += _dir * deltaTime;
 	while (_lifeTime > settings::consts::tick) {
@@ -87,7 +87,7 @@ bool Particle::updateSmoke( std::vector<t_shaderInput> &arr, glm::vec3 camDir, f
 	return (false);
 }
 
-bool Particle::updateExplosion( std::vector<t_shaderInput> &arr, glm::vec3 camDir )
+bool Particle::updateExplosion( std::vector<t_shaderInput>& arr, glm::vec3 camDir )
 {
 	while (_lifeTime > settings::consts::tick) {
 		_lifeTime -= settings::consts::tick;
@@ -112,7 +112,7 @@ bool Particle::updateExplosion( std::vector<t_shaderInput> &arr, glm::vec3 camDi
 	return (false);
 }
 
-bool Particle::updateBreaking( std::vector<t_shaderInput> &arr, glm::vec3 camDir, float deltaTime )
+bool Particle::updateBreaking( std::vector<t_shaderInput>& arr, glm::vec3 camDir, float deltaTime )
 {
 	_pos += _dir * deltaTime;
 	_dir.z -= 0.1f;
@@ -143,7 +143,7 @@ bool Particle::updateBreaking( std::vector<t_shaderInput> &arr, glm::vec3 camDir
 //                                Public                                      //
 // ************************************************************************** //
 
-bool Particle::update( std::vector<t_shaderInput> &arr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime )
+bool Particle::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime )
 {
 	_lifeTime += deltaTime;
 

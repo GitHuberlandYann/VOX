@@ -352,6 +352,10 @@ menu::ret Menu::options_menu( void )
 			_moving_slider = true;
 			Settings::Get()->setFloat(settings::floats::fov, _fov_gradient);
 		} else if (!inputs::key_update(inputs::left_click)) {
+		} else if (_selection == 3) { // skin_customization
+			_state = (_state == menu::options) ? menu::skin_customization : menu::main_skin_customization;
+			reset_values();
+			return (skin_customization_menu());
 		} else if (_selection == 5) { // video_settings
 			_state = (_state == menu::options) ? menu::video_settings : menu::main_video_settings;
 			reset_values();
@@ -413,6 +417,29 @@ menu::ret Menu::options_menu( void )
 	setup_array_buffer_options();
 	blit_to_screen();
 	return (_moving_slider ? menu::ret::fov_update : menu::ret::no_change);
+}
+
+menu::ret Menu::skin_customization_menu( void )
+{
+	if (inputs::key_down(inputs::left_click)) {
+		if (!inputs::key_update(inputs::left_click)) {
+		} else if (_selection == 11) { // Done
+			_state = (_state == menu::skin_customization) ? menu::options : menu::main_options;
+			reset_values();
+			return (options_menu());
+		}
+	}
+	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
+		_state = (_state == menu::skin_customization) ? menu::options : menu::main_options;
+		reset_values();
+		return (options_menu());
+	}
+
+	_text->addCenteredText(WIN_WIDTH / 2, 20 * _gui_size, 0, 0, (_gui_size + 1) * 7, false, settings::consts::depth::menu::controls::str, "Skin Customization");
+
+	setup_array_buffer_skin();
+	blit_to_screen();
+	return (menu::ret::no_change);
 }
 
 menu::ret Menu::video_menu( void )
@@ -1026,7 +1053,7 @@ void Menu::setup_array_buffer_options( void )
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_fov_gradient, 50, 110, 0, 190)) * _gui_size, WIN_HEIGHT / 2 - 84 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // FOV Slider
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Realms Notifications
 
-    addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Skin Customization...
+    addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 3) ? 111 : 91, 200, 20); // Skin Customization...
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 5) ? 111 : 91, 200, 20); // Video Settings...
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Language...
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 9) ? 111 : 91, 200, 20); // Resource Packs...
@@ -1038,6 +1065,19 @@ void Menu::setup_array_buffer_options( void )
 
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 11) ? 111 : 91, 200, 20); // Done
 
+	setup_shader();
+}
+
+void Menu::setup_array_buffer_skin( void )
+{
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 40 * _gui_size, WIN_WIDTH, WIN_HEIGHT - 40 * _gui_size, 1, 72, 1, 1); // occult central part
+
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2, (85) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // List Players currently disabled
+
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, 0, WIN_WIDTH, 40 * _gui_size, 0, 91, 1, 1); // occult top part
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, WIN_HEIGHT - 40 * _gui_size, WIN_WIDTH, 40 * _gui_size, 0, 91, 1, 1); // occult bottom part
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT - 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // Done
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT - 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_change_to_apply) ? (_selection == 2) ? 111 : 91 : 71, 200, 20); // Reset
 	setup_shader();
 }
 
@@ -1527,6 +1567,8 @@ void Menu::processMouseMovement( float posX, float posY )
 			_fov_gradient = gradient(posX, WIN_WIDTH / 2 - 200 * _gui_size, WIN_WIDTH / 2 - 10 * _gui_size, 50, 110);
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 3;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 5;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
@@ -1887,6 +1929,9 @@ menu::ret Menu::run( bool animUpdate )
 		case menu::main_options:
 		case menu::options:
 			return (options_menu());
+		case menu::main_skin_customization:
+		case menu::skin_customization:
+			return (skin_customization_menu());
 		case menu::main_video_settings:
 		case menu::video_settings:
 			return (video_menu());
@@ -1909,6 +1954,7 @@ menu::ret Menu::run( bool animUpdate )
 		case menu::sign:
 			return (sign_menu(animUpdate));
 		default:
+			std::cout << "ERROR defaulting on Menu::run" << std::endl;
 			return (menu::ret::back_to_game);
 	}
 	return (menu::ret::no_change);

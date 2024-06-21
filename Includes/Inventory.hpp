@@ -218,9 +218,10 @@ namespace CELLS {
 };
 
 typedef struct s_item {
-	int type = blocks::air;
-	int amount = 0;
-	glm::ivec2 dura = {0, 0};
+	s_item( int t = blocks::air, int a = 0, glm::ivec2 d = {0, 0} ) : type(t), amount(a), dura(d) {}
+	int type;
+	int amount;
+	glm::ivec2 dura;
 	// enchantements will come here
 }			t_item;
 
@@ -256,7 +257,7 @@ class Inventory
 		void swapCells( int slot, int location );
 		void decrementDurabitilty( void );
 
-		void spillInventory( Chunk *chunk );
+		void spillInventory( Chunk* chunk );
 
         std::string getInventoryString( void );
 		std::string getSlotString( void );

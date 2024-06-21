@@ -1,7 +1,7 @@
 #include "Player.hpp"
 #include "utils.h"
 
-void Player::drawHeldItem( std::vector<t_shaderInput> &arr, std::vector<t_shaderInput>& partArr, int item, int gameMode )
+void Player::drawHeldItem( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, int item, int gameMode )
 {
 	if (!_chunk || gameMode == settings::consts::gamemode::creative || Settings::Get()->getBool(settings::bools::hide_ui)) {
 		return ;
@@ -137,7 +137,7 @@ void Player::drawHeldItem( std::vector<t_shaderInput> &arr, std::vector<t_shader
 	}
 }
 
-void Player::drawPlayer( std::vector<t_shaderInput> &arr, std::vector<t_shaderInput>& partArr, int item )
+void Player::drawPlayer( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, int item )
 {
 	if (!_chunk) {
 		return ;

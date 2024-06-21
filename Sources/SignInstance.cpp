@@ -1,7 +1,7 @@
 #include "SignInstance.hpp"
 #include <cassert>
 
-SignInstance::SignInstance( Chunk *chunk, int value, glm::ivec3 pos )
+SignInstance::SignInstance( Chunk* chunk, int value, glm::ivec3 pos )
 	: _value(value), _pos(pos), _chunk(chunk)
 {
 
@@ -36,7 +36,7 @@ void SignInstance::setContent( std::vector<std::string> content )
 	}
 }
 
-void SignInstance::setChunk( Chunk *chunk )
+void SignInstance::setChunk( Chunk* chunk )
 {
 	_chunk = chunk;
 }

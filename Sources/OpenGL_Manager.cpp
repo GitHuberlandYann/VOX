@@ -658,7 +658,7 @@ void OpenGL_Manager::main_loop( void )
 		}
 		// b.stamp("display water sky");
 		#endif
-		// Chunk *chunk_ptr = get_current_chunk_ptr();
+		// Chunk* chunk_ptr = get_current_chunk_ptr();
 		if (_menu->getState() >= menu::pause) {
 			std::string str;
 			if (_debug_mode) {

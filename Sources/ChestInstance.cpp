@@ -1,6 +1,6 @@
 #include "Chunk.hpp"
 
-ChestInstance::ChestInstance( Chunk *chunk, glm::ivec3 pos, int orientation )
+ChestInstance::ChestInstance( Chunk* chunk, glm::ivec3 pos, int orientation )
 	: _orientation(orientation), _state(chest_state::CLOSED), _timer(0), _pos(pos), _chunk(chunk)
 {
 	if (chunk) {
@@ -156,7 +156,7 @@ void ChestInstance::display_open( std::vector<t_shaderInput>& arr )
 	displayLock(arr, {p0, p1, p2, p3, p4, p5, p6, p7}, itemLight);
 }
 
-void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
+void ChestInstance::display_moving( std::vector<t_shaderInput>& arr )
 {
 	int itemLight = _chunk->computePosLight(_pos);
 
@@ -235,7 +235,7 @@ void ChestInstance::display_moving( std::vector<t_shaderInput> &arr )
     displayLock(arr, {p0, p1, p2, p3, p4, p5, p6, p7}, itemLight);
 }
 
-void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
+void ChestInstance::display_closed( std::vector<t_shaderInput>& arr )
 {
 	glm::vec3 pos, right, back;
 	switch (_orientation) {
@@ -314,7 +314,7 @@ void ChestInstance::display_closed( std::vector<t_shaderInput> &arr )
 //                                Public                                      //
 // ************************************************************************** //
 
-void ChestInstance::setChunk( Chunk *chunk, glm::ivec3 pos )
+void ChestInstance::setChunk( Chunk* chunk, glm::ivec3 pos )
 {
 	// std::cout << "CHUNK RESET IN CHESTINSANCE" << std::endl;
 	_chunk = chunk;
@@ -341,7 +341,7 @@ t_item *ChestInstance::getItem( int index )
 	return (&_content[index]);
 }
 
-void ChestInstance::update( std::vector<t_shaderInput> &arr, float deltaTime )
+void ChestInstance::update( std::vector<t_shaderInput>& arr, float deltaTime )
 {
 	if (!_chunk) {
 		std::cout << "chestInstance with NULL chunk" << std::endl;

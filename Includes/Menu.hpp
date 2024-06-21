@@ -13,6 +13,7 @@ namespace menu
 	enum {
 		main,
 		main_options,
+		main_skin_customization,
 		main_video_settings,
 		main_controls,
 		main_resource_packs,
@@ -22,6 +23,7 @@ namespace menu
 		death,
 		pause,
 		options,
+		skin_customization,
 		video_settings,
 		controls,
 		resource_packs,
@@ -122,6 +124,7 @@ class Menu
 		menu::ret death_menu( void );
 		menu::ret pause_menu( void );
 		menu::ret options_menu( void );
+		menu::ret skin_customization_menu( void );
 		menu::ret video_menu( void );
 		menu::ret controls_menu( void );
 		menu::ret resource_packs_menu( void );
@@ -138,6 +141,7 @@ class Menu
 		void setup_array_buffer_death( void );
         void setup_array_buffer_pause( void );
         void setup_array_buffer_options( void );
+        void setup_array_buffer_skin( void );
         void setup_array_buffer_video( void );
         void setup_array_buffer_controls( void );
         void setup_array_buffer_resource_packs( void );

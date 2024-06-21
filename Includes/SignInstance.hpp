@@ -7,13 +7,13 @@ class SignInstance;
 class SignInstance
 {
 	public:
-		SignInstance( Chunk *chunk, int value, glm::ivec3 pos );
+		SignInstance( Chunk* chunk, int value, glm::ivec3 pos );
 		~SignInstance( void );
 
 		int getValue( void );
 		std::string getContent( int index );
 		void setContent( std::vector<std::string> content );
-		void setChunk( Chunk *chunk );
+		void setChunk( Chunk* chunk );
 		void displayText( std::vector<t_shaderInput> &partArr );
 
 	private:

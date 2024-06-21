@@ -11,7 +11,7 @@ const std::array<std::unique_ptr<Block>, S_BLOCKS_SIZE> s_blocks = {
 	std::make_unique<CobbleStoneSlabTop>(), std::make_unique<StoneBricksSlabBottom>(), std::make_unique<StoneBricksSlabTop>(), std::make_unique<Piston>(), std::make_unique<StickyPiston>(), std::make_unique<PistonHead>(), std::make_unique<MovingPiston>(), std::make_unique<Observer>(),
 	std::make_unique<Poppy>(), std::make_unique<Dandelion>(), std::make_unique<BlueOrchid>(), std::make_unique<Allium>(), std::make_unique<CornFlower>(), std::make_unique<PinkTulip>(), std::make_unique<Grass>(), std::make_unique<SugarCane>(),
 	std::make_unique<DeadBush>(), std::make_unique<OakSapling>(), std::make_unique<Torch>(), std::make_unique<RedstoneTorch>(), std::make_unique<RedstoneDust>(), std::make_unique<Repeater>(), std::make_unique<Comparator>(), std::make_unique<Chest>(),
-	std::make_unique<WheatCrop>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
+	std::make_unique<WheatCrop>(), std::make_unique<ItemFrame>(), std::make_unique<BirchPlanks>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
 	std::make_unique<Water>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
 	std::make_unique<Stick>(), std::make_unique<WoodenShovel>(), std::make_unique<StoneShovel>(), std::make_unique<IronShovel>(), std::make_unique<DiamondShovel>(), std::make_unique<WoodenAxe>(), std::make_unique<StoneAxe>(), std::make_unique<IronAxe>(),
 	std::make_unique<DiamondAxe>(), std::make_unique<WoodenPickaxe>(), std::make_unique<StonePickaxe>(), std::make_unique<IronPickaxe>(), std::make_unique<DiamondPickaxe>(), std::make_unique<Bow>(), std::make_unique<Arrow>(), std::make_unique<WorldEditWand>(),
@@ -1693,6 +1693,54 @@ void Crop::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 	utils::shader::addQuads(vertices, {p0 + glm::vec3(13.0f * one16th, 0.0f, 0.0f), {p4.x + 13.0f * one16th, p4.y, p4.z}, {p2.x + 13.0f * one16th, p2.y, p2.z}, {p6.x + 13.0f * one16th, p6.y, p6.z}}, spec, 16, 16, 0, 8); // +x
 	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 3.0f * one16th, 0.0f), {p1.x, p1.y + 3.0f * one16th, p1.z}, {p2.x, p2.y + 3.0f * one16th, p2.z}, {p3.x, p3.y + 3.0f * one16th, p3.z}}, spec, 16, 16, 0, 8); // -y
 	utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 13.0f * one16th, 0.0f), {p4.x, p4.y + 13.0f * one16th, p4.z}, {p2.x, p2.y + 13.0f * one16th, p2.z}, {p6.x, p6.y + 13.0f * one16th, p6.z}}, spec, 16, 16, 0, 8); // +y
+}
+
+void ItemFrame::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
+{
+	glm::vec3 front, right, up;
+	pos += glm::vec3(start.x + .5f, start.y + .5f, .5f);
+
+	int placement = (value >> offset::blocks::bitfield) & 0x3;
+	int orientation = (value >> offset::blocks::orientation) & 0x7;
+	switch (placement) {
+		case placement::wall:
+			switch (orientation) {
+				case face_dir::minus_x:
+					front = { 1.f, .0f, .0f};
+					right = { .0f,-1.f, .0f};
+					up    = { .0f, .0f, 1.f};
+					break ;
+				case face_dir::plus_x:
+					front = {-1.f, .0f, .0f};
+					right = { .0f, 1.f, .0f};
+					up    = { .0f, .0f, 1.f};
+					break ;
+				case face_dir::minus_y:
+					front = { 0.f, 1.f, .0f};
+					right = { 1.f, .0f, .0f};
+					up    = { .0f, .0f, 1.f};
+					break ;
+				case face_dir::plus_y:
+					front = { .0f, -1.f, .0f};
+					right = { -1.f, .0f, .0f};
+					up    = { .0f, .0f, 1.f};
+					break ;
+			}
+			break ;
+		case placement::floor:
+			front = { .0f, .0f, -1.f};
+			right = { 1.f, .0f, .0f};
+			up    = { .0f, 1.f, .0f};
+			break ;
+		case placement::ceiling:
+			front = { .0f, .0f, 1.f};
+			right = { 1.f, .0f, .0f};
+			up    = { .0f,-1.f, .0f};
+			break ;
+	}
+	pos += front * 7.f * one16th - (right + up) * .5f;
+	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
+	addMeshItem(vertices, faceLight, pos, front, right, up, 1.f);
 }
 
 void Lever::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const

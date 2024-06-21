@@ -59,7 +59,7 @@ bool cube_cube_intersection( const glm::vec3 posA, const glm::vec3 sizeA, const 
 bool segment_cube_intersection( const glm::vec3 segStart, const glm::vec3 segEnd, const glm::vec3 cubeCenter, const glm::vec3 cubeHalfSize );
 
 namespace EXTRUSION {
-	bool drawItem3D( std::vector<t_shaderInput> &arr, int type, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size );
+	bool drawItem3D( std::vector<t_shaderInput>& arr, int type, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size );
 }
 
 #endif

@@ -48,8 +48,8 @@ class Player : public AMob
 
         bool chunkInFront( int camPlacement, glm::ivec2 current_chunk, int posX, int posY );
         std::vector<glm::ivec3> computeRayCasting( GLfloat radius );
-		void drawHeldItem( std::vector<t_shaderInput> &arr, std::vector<t_shaderInput>& partArr, int item, int gameMode );
-		void drawPlayer( std::vector<t_shaderInput> &arr, std::vector<t_shaderInput>& partArr, int item );
+		void drawHeldItem( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, int item, int gameMode );
+		void drawPlayer( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, int item );
 
         virtual glm::vec3 getEyePos( void );
         virtual bool getHitBox( void );

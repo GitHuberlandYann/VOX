@@ -210,7 +210,7 @@ int Inventory::getCurrentSlot( void )
 t_item Inventory::getSlotBlock( int slot )
 {
 	if (slot < 0 || slot >= 9) {
-		return (t_item({0}));
+		return (t_item());
 	}
 	return (_content[slot]);
 }
@@ -218,7 +218,7 @@ t_item Inventory::getSlotBlock( int slot )
 t_item Inventory::getBackpackBlock( int slot )
 {
 	if (slot < 0 || slot >= 27) {
-		return (t_item({0}));
+		return (t_item());
 	}
 	return (_backpack[slot]);
 }
@@ -226,7 +226,7 @@ t_item Inventory::getBackpackBlock( int slot )
 t_item Inventory::getiCraftBlock( int slot )
 {
 	if (slot < 0 || slot >= 4) {
-		return (t_item({0}));
+		return (t_item());
 	}
 	return (_icraft[slot]);
 }
@@ -234,7 +234,7 @@ t_item Inventory::getiCraftBlock( int slot )
 t_item Inventory::getCraftBlock( int slot )
 {
 	if (slot < 0 || slot >= 9) {
-		return (t_item({0}));
+		return (t_item());
 	}
 	return (_craft[slot]);
 }
@@ -360,21 +360,21 @@ t_item Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace, C
 		if (furnace) {
 			return (furnace->pickProduction());
 		}
-		return (pickCrafted(craft, t_item({0})));
+		return (pickCrafted(craft, t_item()));
 	}
 	int craft_place = 0;
 	t_item *bat = getBlockPtr(value, craft_place, furnace, chest);
 	if (!bat) {
-		return (t_item({0}));
+		return (t_item());
 	}
 	if (bat->type != blocks::air) {
 		t_item res = *bat;
-		*bat = t_item({0});
+		*bat = t_item();
 		changeCrafted(craft);
 		return (res);
 	}
 	changeCrafted(craft_place);
-	return (t_item({0}));
+	return (t_item());
 }
 
 t_item Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
@@ -383,12 +383,12 @@ t_item Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *furnac
 		if (!furnace) { // for now does nothing if in furnace
 			pickAllCrafted(craft);
 		}
-		return (t_item({0}));
+		return (t_item());
 	}
 	int craft_place = 0;
 	t_item *bat = getBlockPtr(value, craft_place, furnace, chest);
 	if (!bat) {
-		return (t_item({0}));
+		return (t_item());
 	}
 	if (bat->type != blocks::air) {
 		t_item res = *bat;
@@ -401,7 +401,7 @@ t_item Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *furnac
 		return (res);
 	}
 	changeCrafted(craft_place);
-	return (t_item({0}));
+	return (t_item());
 }
 
 t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest, bool swap )
@@ -429,12 +429,12 @@ t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstanc
 		}
 		*bat = res;
 		changeCrafted(craft_place);
-		return (t_item({0}));
+		return (t_item());
 	}
 	if (!swap) {
 		if (bat->type == blocks::air) {
 			*bat = block;
-			return (t_item({0}));
+			return (t_item());
 		}
 		return (block);
 	}
@@ -468,7 +468,7 @@ t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceIns
 	}
 	changeCrafted(craft_place);
 	if (--block.amount == 0) {
-		return (t_item({0}));
+		return (t_item());
 	}
 	return (block);
 }
@@ -664,7 +664,7 @@ void Inventory::decrementDurabitilty( void )
 	}
 }
 
-void Inventory::spillInventory( Chunk *chunk )
+void Inventory::spillInventory( Chunk* chunk )
 {
 	t_item details;
 

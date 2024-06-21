@@ -67,9 +67,6 @@ Chunk::~Chunk( void )
 	_vaboWater.deleteBuffers();
 
 	// chests and furnaces are deleted in OpenGl_Manager when deleting backups
-	for (auto e : _entities) {
-		delete e;
-	}
 	for (auto p : _particles) {
 		delete p;
 	}
@@ -450,7 +447,7 @@ void Chunk::dropEntity( glm::vec3 dir, t_item item )
 	glm::vec3 camPos = _player->getPos();
 	camPos.z += 1;
 	camPos += dir;
-	_entities.push_back(new Entity(this, _inventory, camPos, dir, true, item));
+	_entities.push_back(std::make_shared<Entity>(this, _inventory, camPos, dir, true, item));
 }
 
 void Chunk::addParticle( Particle* particle )
@@ -658,7 +655,7 @@ void Chunk::explosion( glm::vec3 pos, int power )
 void Chunk::shootArrow( const glm::vec3 start, const glm::vec3 dir, float timer )
 {
 	timer = (timer > 1.0f) ? 20.0f : timer * 20.0f;
-	_entities.push_back(new ArrowEntity(this, start + dir, dir * timer));
+	_entities.push_back(std::make_shared<ArrowEntity>(this, start + dir, dir * timer));
 }
 
 void Chunk::updateBreak( glm::ivec4 block_hit )
@@ -778,7 +775,7 @@ void Chunk::updateMobs( std::vector<t_shaderInput>& modArr, double deltaTime )
 	}
 }
 
-void Chunk::updateEntities( std::vector<t_shaderInput>& arr,  std::vector<t_shaderInput>& partArr, double deltaTime )
+void Chunk::updateEntities( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, double deltaTime )
 {
 	// TODO merge identical close(3/4 of a block) stackable items together
 	// 			on merge, item timer set to longest of 2
@@ -792,8 +789,7 @@ void Chunk::updateEntities( std::vector<t_shaderInput>& arr,  std::vector<t_shad
 
 	camPos = _player->getPos();
 	for (size_t index = 0, delCount = 0; index < eSize; ++index) {
-		if (_entities[index - delCount]->update(arr, partArr, camPos, deltaTime)) {
-			delete _entities[index - delCount];
+		if (_entities[index - delCount]->update(arr, camPos, deltaTime)) {
 			_entities.erase(_entities.begin() + index - delCount);
 			++delCount;
 		}
@@ -812,9 +808,6 @@ void Chunk::updateEntities( std::vector<t_shaderInput>& arr,  std::vector<t_shad
 size_t Chunk::clearEntities( void )
 {
 	size_t res = _entities.size();
-	for (auto e : _entities) {
-		delete e;
-	}
 	_entities.clear();
 	return (res);
 }

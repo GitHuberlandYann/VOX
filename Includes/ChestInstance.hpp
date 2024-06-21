@@ -21,14 +21,14 @@ typedef struct s_shaderInput t_shaderInput;
 class ChestInstance
 {
 	public:
-		ChestInstance( Chunk *chunk, glm::ivec3 pos, int orientation );
+		ChestInstance( Chunk* chunk, glm::ivec3 pos, int orientation );
 		~ChestInstance( void );
 
-		void setChunk( Chunk *chunk, glm::ivec3 pos );
+		void setChunk( Chunk* chunk, glm::ivec3 pos );
 		void setState( int state );
 		int getOrientation( void );
 		t_item *getItem( int index );
-		void update( std::vector<t_shaderInput> &arr, float deltaTime );
+		void update( std::vector<t_shaderInput>& arr, float deltaTime );
 
 		// std::string getInfoString( void );
 		void loadContent( std::ofstream & ofs, std::string &line, int &index );
@@ -45,9 +45,9 @@ class ChestInstance
 		void displayTopBox( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int itemLight );
 		void displayLock( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int itemLight );
 
-		void display_open( std::vector<t_shaderInput> &arr );
-		void display_moving( std::vector<t_shaderInput> &arr );
-		void display_closed( std::vector<t_shaderInput> &arr );
+		void display_open( std::vector<t_shaderInput>& arr );
+		void display_moving( std::vector<t_shaderInput>& arr );
+		void display_closed( std::vector<t_shaderInput>& arr );
 };
 
 #endif

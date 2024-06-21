@@ -15,48 +15,48 @@ void Chunk::entity_block( int posX, int posY, int posZ, int value )
 	case blocks::grass:
 		random = Random::randomFloat(_seed);
 		if (random <= 0.125f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat_seeds, 1, {0, 0}}));
+			_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(blocks::wheat_seeds, 1, {0, 0})));
 		}
 		break ;
 	case blocks::oak_leaves:
 		random = Random::randomFloat(_seed);
 		if (random <= 0.05f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::oak_sapling, 1, {0, 0}}));
+			_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(blocks::oak_sapling, 1, {0, 0})));
 		}
 		random = Random::randomFloat(_seed);
 		if (random <= 0.02f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::stick, 2, {0, 0}}));
+			_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(blocks::stick, 2, {0, 0})));
 		}
 		random = Random::randomFloat(_seed);
 		if (random <= 0.005f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::apple, 1, {0, 0}}));
+			_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(blocks::apple, 1, {0, 0})));
 		}
 		break ;
 	case blocks::wheat_crop:
 		if ((value >> offset::blocks::bitfield) < 7) { // not fully grown
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {s_blocks[type]->mined, 1, {0, 0}}));
+			_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(s_blocks[type]->mined, 1, {0, 0})));
 			return ;
 		}
-		_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat, 1, {0, 0}}));
+		_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(blocks::wheat, 1, {0, 0})));
 		random = Random::randomFloat(_seed);
 		if (random <= 0.0787f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat_seeds, 1, {0, 0}}));
+			_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(blocks::wheat_seeds, 1, {0, 0})));
 		} else if (random <= 0.0787f + 0.3149f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat_seeds, 2, {0, 0}}));
+			_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(blocks::wheat_seeds, 2, {0, 0})));
 		} else if (random <= 0.0787f + 0.3149f + 0.4198f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat_seeds, 3, {0, 0}}));
+			_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(blocks::wheat_seeds, 3, {0, 0})));
 		} else {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::wheat_seeds, 4, {0, 0}}));
+			_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(blocks::wheat_seeds, 4, {0, 0})));
 		}
 		break ;
 	case blocks::gravel:
 		random = Random::randomFloat(_seed);
 		if (random < 0.1f) {
-			_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {blocks::flint, 1, {0, 0}}));
+			_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(blocks::flint, 1, {0, 0})));
 			return ;
 		} // no break on gravel so it drops a gravel block
 	default:
-		_entities.push_back(new Entity(this, _inventory, {posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, {s_blocks[type]->mined, 1, {0, 0}}));
+		_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(posX + _startX + 0.5f, posY + _startY + 0.5f, posZ + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(s_blocks[type]->mined, 1, {0, 0})));
 	}
 }
 
@@ -73,7 +73,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			for (int index = 0; index < 27; ++index) {
 				item = search->second->getItem(index);
 				if (item->amount) {
-					_entities.push_back(new Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f}, false, *item));
+					_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, *item));
 				}
 			}
 			delete _chests[offset]; // TODO what happens if chest explodes while we use it ? prob heap use after free in Menu.cpp
@@ -84,15 +84,15 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		if (search != _furnaces.end()) {
 			t_item items = search->second->getComposant();
 			if (items.amount) {
-				_entities.push_back(new Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-1, -1)), 1.0f}, false, items));
+				_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(-1, -1)), 1.0f), false, items));
 			}
 			items = search->second->getFuel();
 			if (items.amount) {
-				_entities.push_back(new Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(1, 9)), 1.0f}, false, items));
+				_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(1, 9)), 1.0f), false, items));
 			}
 			items = search->second->getProduction();
 			if (items.amount) {
-				_entities.push_back(new Entity(this, _inventory, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f}, {glm::normalize(glm::vec2(-4, 5)), 1.0f}, false, items));
+				_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(-4, 5)), 1.0f), false, items));
 			}
 			delete _furnaces[offset];
 			_furnaces.erase(offset);
@@ -102,6 +102,20 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		if (search != _signs.end()) {
 			delete _signs[offset];
 			_signs.erase(offset);
+		}
+	} else if (type == blocks::item_frame) {
+		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
+		if (search != _entities.end()) {
+			type = static_cast<ItemFrameEntity*>(search->get())->getContent();
+			if (type != blocks::air) { // pop item from frame instead of destroying frame
+				static_cast<ItemFrameEntity*>(search->get())->setContent(blocks::air);
+				_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(type, 1, {0, 0})));
+				return ;
+			}
+			type = blocks::item_frame; // restore type
+			_entities.erase(search);
+		} else {
+			std::cout << "Item frame not found when trying to destroy item frame" << std::endl;
 		}
 	} else if (type == blocks::oak_door) {
 		// break other part of door
@@ -156,7 +170,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			if (useInventory) {
 				_inventory->removeBlock(false);
 			}
-			_entities.push_back(new FallingBlockEntity(this, {pos.x + _startX, pos.y + _startY, pos.z}, {type, 1, {0, 0}}));
+			_entities.push_back(std::make_shared<FallingBlockEntity>(this, glm::vec3(pos.x + _startX, pos.y + _startY, pos.z), t_item(type, 1, {0, 0})));
 			return ;
 		}
 	}
@@ -199,7 +213,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 	} else if (type == blocks::observer) {
 		block_value += (opposite_dir(_player->getOrientation6()) << offset::blocks::orientation);
 	} else if (s_blocks[type]->oriented) {
-		if ((type != blocks::lever && shape != geometry::button) || ((block_value >> offset::blocks::bitfield) & 0x3) != placement::wall) {
+		if ((type != blocks::lever && shape != geometry::button && type != blocks::item_frame) || ((block_value >> offset::blocks::bitfield) & 0x3) != placement::wall) {
 			block_value += (_player->getOrientation() << offset::blocks::orientation);
 		}
 		switch (shape) {
@@ -269,12 +283,23 @@ void Chunk::replace_block( bool useInventory, glm::ivec3 pos, int type )
  * @brief update block at given pos depending of block type
  * @param pos relative position of block being used
 */
-void Chunk::use_block( glm::ivec3 pos, int type )
+void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 {
 	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	int value = _blocks[offset];
+	if ((value & mask::blocks::type) == blocks::item_frame) {
+		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
+		if (search != _entities.end()) {
+			if (static_cast<ItemFrameEntity*>(search->get())->rotate(type) && useInventory) {
+				_inventory->removeBlock(false);
+			}
+		} else {
+			std::cout << "Item frame not found when trying to rotate/place item" << std::endl;
+		}
+		return ;
+	}
 	if (!s_blocks[type]->isItemOnly && (value & mask::blocks::type) != type) {
-		std::cerr << "Chunk::regeneration type diff " << s_blocks[value & mask::blocks::type]->name << " vs " << s_blocks[type]->name << std::endl;
+		std::cerr << "Chunk::use_block type diff " << s_blocks[value & mask::blocks::type]->name << " vs " << s_blocks[type]->name << std::endl;
 		return ;
 	}
 	switch (type) {
@@ -362,10 +387,10 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			break ;
 		case Modif::litnt:
 			remove_block(false, pos);
-			_entities.push_back(new TNTEntity(this, {pos.x + _startX, pos.y + _startY, pos.z}, {0.2f, 0.2f, 0.4f}));
+			_entities.push_back(std::make_shared<TNTEntity>(this, glm::vec3(pos.x + _startX, pos.y + _startY, pos.z), glm::vec3(0.2f, 0.2f, 0.4f)));
 			break ;
 		case Modif::use:
-			use_block(pos, type);
+			use_block(useInventory, pos, type);
 			break ;
 	}
 	if (type == blocks::water || type == blocks::bucket) {
@@ -398,7 +423,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		int type_under = (_blocks[offset - 1] & mask::blocks::type);
 		if (type_under == blocks::air) {
 			if (previous == blocks::air) {
-				_entities.push_back(new FallingBlockEntity(this, {pos.x + _startX, pos.y + _startY, pos.z}, {type, 1, {0, 0}}));
+				_entities.push_back(std::make_shared<FallingBlockEntity>(this, glm::vec3(pos.x + _startX, pos.y + _startY, pos.z), t_item(type, 1, {0, 0})));
 				setBlockAt(blocks::air, pos, false);
 			} else {
 				_scheduled_to_fall.push_back(offset);
@@ -454,6 +479,8 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		_furnaces.emplace(offset, new FurnaceInstance());
 	} else if (type == blocks::oak_sign) {
 		_signs.emplace(offset, new SignInstance(this, value, pos));
+	} else if (type == blocks::item_frame) {
+		_entities.push_back(std::make_shared<ItemFrameEntity>(this, glm::ivec3(pos.x + _startX, pos.y + _startY, pos.z), value));
 	} else if (type == blocks::torch || type == blocks::redstone_torch) {
 		if (type == blocks::redstone_torch) {
 			updateRedstoneTorch(pos, value);

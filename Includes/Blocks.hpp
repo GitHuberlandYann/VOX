@@ -213,7 +213,7 @@ namespace blocks {
 		oak_trapdoor,
 		stone_stairs_bottom,
 		stone_stairs_top,
-		smooth_stone_stairs_bottom,
+		smooth_stone_stairs_bottom = 16,
 		smooth_stone_stairs_top,
 		cobblestone_stairs_bottom,
 		cobblestone_stairs_top,
@@ -229,7 +229,7 @@ namespace blocks {
 		stone_bricks,
 		cracked_stone_bricks,
 		sand,
-		gravel,
+		gravel = 32,
 		oak_leaves,
 		oak_planks,
 		glass,
@@ -253,7 +253,7 @@ namespace blocks {
 		smooth_stone_slab_bottom,
 		smooth_stone_slab_top,
 		cobblestone_slab_bottom,
-		cobblestone_slab_top,
+		cobblestone_slab_top = 56,
 		stone_bricks_slab_bottom,
 		stone_bricks_slab_top,
 		piston,
@@ -269,7 +269,7 @@ namespace blocks {
 		pink_tulip,
 		grass,
 		sugar_cane,
-		dead_bush,
+		dead_bush = 72,
 		oak_sapling,
 		torch,
 		redstone_torch,
@@ -278,6 +278,8 @@ namespace blocks {
 		comparator,
 		chest,
 		wheat_crop = 80,
+		item_frame,
+		birch_planks,
 		water = 88,
 		stick = 96,
 		wooden_shovel,
@@ -287,7 +289,7 @@ namespace blocks {
 		wooden_axe,
 		stone_axe,
 		iron_axe,
-		diamond_axe,
+		diamond_axe = 104,
 		wooden_pickaxe,
 		stone_pickaxe,
 		iron_pickaxe,
@@ -303,7 +305,7 @@ namespace blocks {
 		water_bucket,
 		wooden_hoe,
 		stone_hoe,
-		iron_hoe,
+		iron_hoe = 120,
 		diamond_hoe,
 		wheat_seeds,
 		wheat,
@@ -368,17 +370,18 @@ struct Block {
 			(void)dir;(void)value;
 			return (textureY);
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int corners ) const {
 			(void)hitbox;(void)orientation;(void)corners;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const {
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const {
 			(void)chunk;
 			(void)vertices;
 			(void)start;
 			(void)pos;
 			(void)value;
 		}
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 		virtual bool isTransparent( int value ) const {
 			(void)value;
 			return (transparent);
@@ -391,8 +394,8 @@ struct Cube : Block {
 		Cube() {
 			geometry = geometry::cube;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct Cross : Block {
@@ -410,7 +413,7 @@ struct Cross : Block {
 			isSolidForFluid = false;
 			item3D = false;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct SlabBottom : Block {
@@ -424,8 +427,9 @@ struct SlabBottom : Block {
 			geometry = geometry::slab_bottom;
 			transparent = true;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct SlabTop : Block {
@@ -439,7 +443,7 @@ struct SlabTop : Block {
 			geometry = geometry::slab_top;
 			transparent = true;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct StairsBottom : Block {
@@ -456,7 +460,7 @@ struct StairsBottom : Block {
 			geometry = geometry::stairs_bottom;
 			transparent = true;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int corners ) const {
 			switch (corners) {
 				case corners::mm | corners::mp:
 					hitbox[0] = {0.25f, 0.5f, 0.75f}; // hitboxCenter
@@ -528,8 +532,9 @@ struct StairsBottom : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct StairsTop : Block {
@@ -546,7 +551,7 @@ struct StairsTop : Block {
 			geometry = geometry::stairs_top;
 			transparent = true;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int corners ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int corners ) const {
 			switch (corners) {
 				case corners::mm | corners::mp:
 					hitbox[0] = {0.25f, 0.5f, 0.25f}; // hitboxCenter
@@ -618,7 +623,7 @@ struct StairsTop : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Fence : Block {
@@ -633,7 +638,7 @@ struct Fence : Block {
 			geometry = geometry::fence;
 			transparent = true;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const {
 			(void)orientation;
 			hitbox[0] = {0.5f, 0.5f, 0.5f};
 			hitbox[1] = {0.125f, 0.125f, 0.5f};
@@ -664,8 +669,9 @@ struct Fence : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct Door : Block {
@@ -683,7 +689,7 @@ struct Door : Block {
 			redstoneComponant = true;
 			item3D = false;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const {
 			bool open = !!(bitfield & door::open) ^ !!((bitfield << 12) & mask::redstone::powered);
 			switch (orientation) {
 				case face_dir::minus_x:
@@ -724,7 +730,7 @@ struct Door : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Trapdoor : Block {
@@ -741,7 +747,7 @@ struct Trapdoor : Block {
 			transparent = true;
 			redstoneComponant = true;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const {
 			bool open = !!(bitfield & door::open) ^ !!((bitfield << 12) & mask::redstone::powered);
 			if (!open) {
 				hitbox[0] = {0.5f, 0.5f, (bitfield & door::upper_half) ? 0.90625f : 0.09375f};
@@ -767,8 +773,9 @@ struct Trapdoor : Block {
 				}
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct Crop : Block {
@@ -786,7 +793,7 @@ struct Crop : Block {
 			isSolidForFluid = false;
 			item3D = false;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Button : Block {
@@ -804,7 +811,7 @@ struct Button : Block {
 			isSolidForFluid = false;
 			item3D = true;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const {
 			hitbox[0] = {0.5f, 0.5f, 1.5f * one16th};
 			hitbox[1] = {0,    0,    1.5f * one16th};
 			switch (bitfield & 0x3) {
@@ -846,8 +853,9 @@ struct Button : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 
@@ -928,7 +936,7 @@ struct OakLog : Cube {
 			}
 			return (0);
 		}
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct Cactus : Cube {
@@ -977,7 +985,7 @@ struct Farmland : Block {
 			}
 			return (4);
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct DirtPath : Farmland {
@@ -1309,7 +1317,7 @@ struct Lever : Block {
 			textureX = 7;
 			textureY = 10;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const {
 			hitbox[0] = {0.5f, 0.5f, 1.5f * one16th};
 			hitbox[1] = {0,    0,    1.5f * one16th};
 			switch (bitfield & 0x3) {
@@ -1351,7 +1359,7 @@ struct Lever : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct OakSign : Block {
@@ -1373,7 +1381,7 @@ struct OakSign : Block {
 			textureX = 1;
 			textureY = 11;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const {
 			(void)bitfield;
 			switch (orientation) {
 				case face_dir::minus_x:
@@ -1394,7 +1402,7 @@ struct OakSign : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Bedrock : Cube {
@@ -1567,7 +1575,7 @@ struct Glass : Block {
 			textureX = 4;
 			textureY = 11;
 		}
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct GlassPane : Block {
@@ -1599,7 +1607,7 @@ struct GlassPane : Block {
 			}
 			return (4);
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const {
 			(void)orientation;
 			hitbox[0] = {0.5f, 0.5f, 0.5f};
 			hitbox[1] = {0.0625, 0.0625, 0.5f};
@@ -1630,7 +1638,7 @@ struct GlassPane : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct RedstoneLamp : Cube {
@@ -1998,8 +2006,8 @@ struct Piston : Block {
 			}
 			return (0);
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct StickyPiston : Piston {
@@ -2024,7 +2032,7 @@ struct PistonHead : Block {
 			textureX = 4;
 			textureY = 5;
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct MovingPiston : Block {
@@ -2064,8 +2072,8 @@ struct Observer : Block {
 			}
 			return (!!(dir & 0x4));
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct Poppy : Cross {
@@ -2193,7 +2201,7 @@ struct Torch : Block {
 			textureX = 6;
 			textureY = 10;
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const {
 			(void)bitfield;
 			switch (orientation) {
 				case face_dir::minus_x:
@@ -2218,7 +2226,7 @@ struct Torch : Block {
 					break ;
 			}
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct RedstoneTorch : Torch {
@@ -2261,7 +2269,7 @@ struct RedstoneDust : Block {
 			(void)dir;
 			return ((value == blocks::item) ? 8 : 12);
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Repeater : Block {
@@ -2289,7 +2297,7 @@ struct Repeater : Block {
 			(void)dir;
 			return ((value == blocks::item) ? 7 : 6 - value);
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Comparator : Block {
@@ -2317,7 +2325,7 @@ struct Comparator : Block {
 			(void)dir;
 			return ((value == blocks::item) ? 7 : 6 - value);
 		}
-		virtual void addMesh( Chunk *chunk, std::vector<t_shaderInput> &vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
 
 struct Chest : Block {
@@ -2339,7 +2347,7 @@ struct Chest : Block {
 			textureX = 0;
 			textureY = 15;
 		}
-		virtual void addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
 struct WheatCrop : Crop {
@@ -2353,10 +2361,82 @@ struct WheatCrop : Crop {
 			(void)dir;
 			return (value >> offset::blocks::bitfield);
 		}
-		virtual void getSecondaryHitbox( glm::vec3 *hitbox, int orientation, int bitfield ) const {
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const {
 			(void)orientation;
 			hitbox[0] = {0.5f, 0.5f, (1 + bitfield * 2) / 32.0f};
 			hitbox[1] = {0.4f, 0.4f, (1 + bitfield * 2) / 32.0f};
+		}
+};
+
+struct ItemFrame : Block {
+	public:
+		ItemFrame() {
+			name = "ITEM_FRAME";
+			mined = blocks::item_frame;
+			blast_resistance = 0.0f;
+			hasHitbox = true;
+			hasOrientedHitbox = true;
+			collisionHitbox_1x1x1 = false;
+			oriented = true;
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			geometry = geometry::none;
+			byHand = true;
+			hardness = 0.0f;
+			transparent = true;
+			isSolidForFluid = false;
+			item3D = false;
+			textureY = 14;
+		}
+		virtual int texX( int dir = face_dir::minus_y, int value = 0 ) const {
+			(void)dir;
+			return ((value == blocks::item) ? 10 : 4);
+		}
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const {
+			switch (bitfield & 0x3) {
+				case placement::wall:
+					switch (orientation) {
+						case face_dir::minus_x:
+							hitbox[0] = {15.5f * one16th, .4f,           .4f};
+							hitbox[1] = {  .5f * one16th, .4f, 4.0f * one16th};
+							break ;
+						case face_dir::plus_x:
+							hitbox[0] = { .5f * one16th, .4f,           .4f};
+							hitbox[1] = { .5f * one16th, .4f, 4.0f * one16th};
+							break ;
+						case face_dir::minus_y:
+							hitbox[0] = {.4f, 15.5f * one16th, .4f};
+							hitbox[1] = {.4f,   .5f * one16th, 4.0f * one16th};
+							break ;
+						case face_dir::plus_y:
+							hitbox[0] = {.4f, .5f * one16th, .4f};
+							hitbox[1] = {.4f, .5f * one16th, 4.0f * one16th};
+							break ;
+					}
+					break ;
+				case placement::floor:
+				case placement::ceiling:
+					hitbox[0] = {.4f, .4f, ((bitfield & 0x3) == placement::floor) ? .5f * one16th : 15.5f * one16th};
+					hitbox[1] = {.4f, .4f, one16th};
+					break ;
+			}
+		}
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const;
+};
+
+struct BirchPlanks : Cube {
+	public:
+		BirchPlanks() {
+			name = "BIRCH_PLANKS";
+			mined = blocks::birch_planks;
+			isFuel = true;
+			fuel_time = 15;
+			blast_resistance = 3.0f;
+			byHand = true;
+			needed_tool = blocks::wooden_axe;
+			hardness = 2.0f;
+			textureX = 5;
+			textureY = 10;
 		}
 };
 
