@@ -94,7 +94,7 @@ GLint Chunk::face_count( int type, int row, int col, int level )
 {
 	type &= mask::blocks::type;
 	if (!type || type == blocks::water) {
-		std::cerr << "face_count ERROR counting " << s_blocks[type]->name << std::endl;
+		LOGERROR("face_count ERROR counting " << s_blocks[type]->name);
 		return (0);
 	}
 	if (type == blocks::glass || type == blocks::chest) {
@@ -291,9 +291,9 @@ void Chunk::waitGenDone( void )
 void Chunk::setNeighbour( Chunk* neighbour, int index )
 {
 	if (_neighbours[index] && neighbour) {
-		std::cerr << "setNeighbour ERROR DUPLICATE " << neighbour->getStartX() << ", " << neighbour->getStartY() << " vs " << _neighbours[index]->getStartX() << ", " << _neighbours[index]->getStartY() << std::endl;
+		LOGERROR("setNeighbour ERROR DUPLICATE " << neighbour->getStartX() << ", " << neighbour->getStartY() << " vs " << _neighbours[index]->getStartX() << ", " << _neighbours[index]->getStartY());
 		if (_neighbours[index] == neighbour) {
-			std::cerr << "but they are the same.." << std::endl;
+			LOGERROR("but they are the same..");
 		}
 	}
 	_neighbours[index] = neighbour;
@@ -438,7 +438,7 @@ void Chunk::checkFillVertices( void )
 	} else if (cnt < _nb_neighbours) {
 		_nb_neighbours = cnt;
 	} else if (!cnt) {
-		std::cerr << "ERROR chunk has no neighbours" << std::endl;
+		LOGERROR("ERROR chunk has no neighbours");
 	}
 }
 
@@ -493,7 +493,7 @@ void Chunk::sort_sky( glm::vec3& pos, bool vip )
 	// 	std::cout << "order size " << order.size() << std::endl;
 	
 	if (order.size() != _sky_count) {
-		std::cerr << "sort_sky, order size " << order.size() << ", but _sky_count " << _sky_count << std::endl;
+		LOGERROR("sort_sky, order size " << order.size() << ", but _sky_count " << _sky_count);
 		return ;
 	}
 

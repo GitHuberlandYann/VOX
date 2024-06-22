@@ -101,7 +101,7 @@ menu::ret Menu::enter_world_select_menu( void )
 	reset_values();			
 	DIR *dir = opendir("Worlds");
 	if (dir == NULL) {
-		std::cerr << "failed to open dir Worlds/" << std::endl;
+		LOGERROR("failed to open dir Worlds/");
 		return (menu::ret::no_change);
 	}
 	struct dirent *dent;
@@ -371,7 +371,7 @@ menu::ret Menu::options_menu( void )
 			_active_resource_packs = Settings::Get()->getResourcePacks();
 			DIR *dir = opendir("Resources/Resource_Packs");
 			if (dir == NULL) {
-				std::cerr << "failed to open dir Resource/Resource_Packs" << std::endl;
+				LOGERROR("failed to open dir Resource/Resource_Packs");
 				_state = (_state == menu::resource_packs) ? menu::options : menu::main_options;
 				return (menu::ret::no_change);
 			}

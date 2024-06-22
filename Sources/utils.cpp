@@ -13,7 +13,7 @@ std::string get_file_content( std::string file_name )
 {
 	std::ifstream indata (file_name.c_str());
 	if (!indata.is_open()) {
-		std::cerr << "Error\nCould not open " << file_name << std::endl;
+		LOGERROR("Error\nCould not open " << file_name);
 		exit(1);
 	}
 	std::string data;
@@ -176,7 +176,7 @@ void loadTextureShader( int index, GLuint texture, std::string texture_file )
 	t_tex img;
 	img.content = SOIL_load_image(texture_file.c_str(), &img.width, &img.height, 0, SOIL_LOAD_RGBA);
 	if (!img.content) {
-		std::cerr << "failed to load image " << texture_file << " because:" << std::endl << SOIL_last_result() << std::endl;
+		LOGERROR("failed to load image " << texture_file << " because:\n" << SOIL_last_result());
 		exit(1);
 	}
 
@@ -201,12 +201,12 @@ void loadSubTextureArray( int width, int height, int layer, std::string texture_
 	t_tex img;
 	img.content = SOIL_load_image(texture_file.c_str(), &img.width, &img.height, 0, SOIL_LOAD_RGBA);
 	if (!img.content) {
-		std::cerr << "failed to load image " << texture_file << " because:" << std::endl << SOIL_last_result() << std::endl;
+		LOGERROR("failed to load image " << texture_file << " because:\n" << SOIL_last_result());
 		exit(1);
 	}
 
 	if (img.width != width || img.height != height) {
-		std::cerr << texture_file << ": image size not " << width << "x" << height << " but " << img.width << "x" << img.height << std::endl;
+		LOGERROR(texture_file << ": image size not " << width << "x" << height << " but " << img.width << "x" << img.height);
 		exit(1);
 	}
 	// Upload pixel data.

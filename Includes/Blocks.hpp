@@ -2012,6 +2012,7 @@ struct Piston : Block {
 			return (0);
 		}
 		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		virtual void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const;
 		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 
@@ -2352,6 +2353,7 @@ struct Chest : Block {
 			textureX = 0;
 			textureY = 15;
 		}
+		virtual void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const;
 		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 };
 

@@ -1,5 +1,6 @@
 #include "OpenGL_Manager.hpp"
 #include "Settings.hpp"
+#include "logs.hpp"
 #include <fstream>
 extern siv::PerlinNoise::seed_type perlin_seed;
 
@@ -44,7 +45,7 @@ void OpenGL_Manager::saveWorld( void )
 		ofs.close();
 	}
 	catch (std::exception & e) {
-		std::cerr << e.what() << std::endl << "world save on Worlds/" << _world_name << " failure .. hope you did some snapshot" << std::endl;
+		LOGERROR(e.what() << "\nworld save on Worlds/" << _world_name << " failure .. hope you did some snapshot");
 	}
 	glClearColor(0, 0, 0, 1);
 	startThread();
@@ -282,7 +283,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 		ofs.close();
 	}
 	catch (std::exception & e) {
-		std::cerr << e.what() << std::endl;
+		LOGERROR(e.what());
 		exit (1); // TODO might want to return to main menu instead
 	}
 }
@@ -346,7 +347,7 @@ void Player::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			updateVectors();
 			return ;
 		} else {
-			std::cerr << "foreigh line in camera: " << line << std::endl;
+			LOGERROR("foreigh line in camera: " << line);
 		}
 	}
 	throw UnclosedBracketException();
@@ -376,7 +377,7 @@ static int convert( int value ) // used when I change s_blocks big time
 			}
 		}
 	}
-	std::cerr << "json version is " << Settings::Get()->getString(settings::strings::json_version) << std::endl;
+	LOGERROR("json version is " << Settings::Get()->getString(settings::strings::json_version));
 	assert((0 == 1) && "unrecognised json version.");
 }
 
@@ -422,7 +423,7 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 		} else if (line == "},") {
 			return ;
 		} else {
-			std::cerr << "foreigh line in inventory: " << line << std::endl;
+			LOGERROR("foreigh line in inventory: " << line);
 		}
 	}
 	throw UnclosedBracketException();
@@ -569,7 +570,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						for (;line[index + 1] && line[index + 1] != '{'; ++index);
 					}
 				} else {
-					std::cerr << "foreigh line in backup: " << line << std::endl;
+					LOGERROR("foreigh line in backup: " << line);
 				}
 				if (line.size() > 1 && (!line.compare(line.size() - 2, 2, "},") || line[line.size() - 1] == '}')) {
 					// std::cerr << "breaking on line " << line << std::endl;
@@ -582,7 +583,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 		} else if (line == "]") {
 			return ;
 		} else {
-			std::cerr << "foreigh line in backups: " << line << std::endl;
+			LOGERROR("foreigh line in backups: " << line);
 		}
 	}
 	throw UnclosedBracketException();
@@ -665,7 +666,7 @@ void Menu::loadSettings( void )
 		}
 	}
 	catch (std::exception & e) {
-		std::cerr << e.what() << std::endl;
+		LOGERROR(e.what());
 		exit (1);
 	}
 }
@@ -698,7 +699,7 @@ void Menu::saveSettings( void )
 		ofs.close();
 	}
 	catch (std::exception & e) {
-		std::cerr << e.what() << std::endl << "Settings save on Resources/settings.json failure." << std::endl;
+		LOGERROR(e.what() << "\nSettings save on Resources/settings.json failure.");
 	}
 }
 
@@ -852,12 +853,12 @@ bool Settings::loadResourcePacks( void )
 			}
 		}
 		catch (std::exception & e) {
-			std::cerr << e.what() << std::endl << "Settings::loadResourcePacks" << std::endl;
+			LOGERROR(e.what() << "\nSettings::loadResourcePacks");
 		}
 	}
 	for (int i = 0; i < settings::strings::size_textures; ++i) {
 		if (!check_set[i]) {
-			std::cerr << "missing field " << i << " in check_set" << std::endl;
+			LOGERROR("missing field " << i << " in check_set");
 			return (1);
 		}
 	}

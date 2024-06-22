@@ -807,13 +807,13 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 					auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
 					if (search != _entities.end()) {
 						type = static_cast<ItemFrameEntity*>(search->get())->getContent();
+						_entities.erase(search); // erase before push_back to avoid obsolete iterator
 						if (type != blocks::air) { // pop item from frame instead of destroying frame
 							_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(type, 1, {0, 0})));
 						} else {
 							entity_block(pos.x, pos.y, pos.z, value);
 						}
 						type = blocks::item_frame; // restore type
-						_entities.erase(search);
 						updateItemFrame(pos + getAttachedDir(value));
 					}
 				} else if (s_blocks[type]->byHand) {

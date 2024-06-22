@@ -260,16 +260,16 @@ void OpenGL_Manager::drawModels( void )
 // ************************************************************************** //
 
 void error_callback( int error, const char *msg ) {
-    std::string s;
-    s = " [" + std::to_string(error) + "] " + msg + '\n';
-    std::cerr << s << std::endl;
+    std::string str;
+    str = " [" + std::to_string(error) + "] " + msg + '\n';
+    LOGERROR(str);
 }
 
 void OpenGL_Manager::setupWindow( void )
 {
 	glfwSetErrorCallback( error_callback );
 	if (!glfwInit()) {
-    	std::cerr << "glfwInit failure" << std::endl;
+    	LOGERROR("glfwInit failure");
         exit(1);
     }
 
@@ -301,7 +301,7 @@ void OpenGL_Manager::setupWindow( void )
 	// 	: _window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", nullptr, nullptr);
 	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "MineGraphed", monitor, nullptr);
 	if (_window == NULL) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
+        LOGERROR("Failed to create GLFW window");
         glfwTerminate();
         exit (1);
     }

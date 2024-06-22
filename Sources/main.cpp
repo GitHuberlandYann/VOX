@@ -11,7 +11,7 @@ int main( int ac, char **av )
 {
 	(void)av;
 	if (ac != 1) {
-		std::cerr << "Error\nFormat required: ./vox" << std::endl;
+		LOGERROR("Error\nFormat required: ./vox");
 		return (1);
 	}
 

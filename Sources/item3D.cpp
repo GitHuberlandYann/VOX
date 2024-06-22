@@ -8,22 +8,22 @@
  */
 void Block::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
 {
-	int spec = (texX(face_dir::minus_x, face_dir::minus_x) << 4) + (texY(face_dir::minus_x, face_dir::minus_x) << 12) + (3 << 19) + (light << 24);
+	int spec = (texX(face_dir::minus_x, face_dir::minus_x << offset::blocks::orientation) << 4) + (texY(face_dir::minus_x, face_dir::minus_x << offset::blocks::orientation) << 12) + (3 << 19) + (light << 24);
 	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec, 16, 16, 0, 8);
 
-	spec = (texX(face_dir::plus_x, face_dir::minus_x) << 4) + (texY(face_dir::plus_x, face_dir::minus_x) << 12) + (4 << 19) + (light << 24);
+	spec = (texX(face_dir::plus_x, face_dir::minus_x << offset::blocks::orientation) << 4) + (texY(face_dir::plus_x, face_dir::minus_x << offset::blocks::orientation) << 12) + (4 << 19) + (light << 24);
 	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec, 16, 16, 0, 8);
 
-	spec = (texX(face_dir::minus_y, face_dir::minus_x) << 4) + (texY(face_dir::minus_y, face_dir::minus_x) << 12) + (1 << 19) + (light << 24);
+	spec = (texX(face_dir::minus_y, face_dir::minus_x << offset::blocks::orientation) << 4) + (texY(face_dir::minus_y, face_dir::minus_x << offset::blocks::orientation) << 12) + (1 << 19) + (light << 24);
 	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec, 16, 16, 0, 8);
 
-	spec = (texX(face_dir::plus_y, face_dir::minus_x) << 4) + (texY(face_dir::plus_y, face_dir::minus_x) << 12) + (2 << 19) + (light << 24);
+	spec = (texX(face_dir::plus_y, face_dir::minus_x << offset::blocks::orientation) << 4) + (texY(face_dir::plus_y, face_dir::minus_x << offset::blocks::orientation) << 12) + (2 << 19) + (light << 24);
 	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec, 16, 16, 0, 8);
 
-	spec = (texX(face_dir::plus_z, face_dir::minus_x) << 4) + (texY(face_dir::plus_z, face_dir::minus_x) << 12) + (0 << 19) + (light << 24);
+	spec = (texX(face_dir::plus_z, face_dir::minus_x << offset::blocks::orientation) << 4) + (texY(face_dir::plus_z, face_dir::minus_x << offset::blocks::orientation) << 12) + (0 << 19) + (light << 24);
 	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front + right + up) * size, pos + up * size, pos + (right + up) * size}, spec, 16, 16, 0, 8);
 
-	spec = (texX(face_dir::minus_z, face_dir::minus_x) << 4) + (texY(face_dir::minus_z, face_dir::minus_x) << 12) + (5 << 19) + (light << 24);
+	spec = (texX(face_dir::minus_z, face_dir::minus_x << offset::blocks::orientation) << 4) + (texY(face_dir::minus_z, face_dir::minus_x << offset::blocks::orientation) << 12) + (5 << 19) + (light << 24);
 	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, 16, 16, 0, 8);
 }
 
@@ -150,6 +150,68 @@ void StairsBottom::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm:
 	utils::shader::addQuads(arr, {pos + (right * .5f + up) * size, pos + (front + right * .5f + up) * size, pos + (right + up) * .5f * size, pos + (front + (right + up) * .5f) * size}, spec, 16, 8, 0, 8);
 
 	spec += (2 << 19);
+	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, 16, 16, 0, 8);
+}
+
+void Chest::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
+{
+	int spec = (1 << 4) + 1 + (15 << 12) + (3 << 19) + (light << 24);
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec, 14, 15, 0, 8);
+
+	spec = spec - (1 << 4) + (1 << 19);
+	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec, 14, 15, 0, 8);
+
+	spec -= (3 << 19);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec, 14, 15, 0, 8);
+
+	spec += (1 << 19);
+	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec, 14, 15, 0, 8);
+
+	spec = spec + (2 << 4) - (2 << 19);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front + right + up) * size, pos + up * size, pos + (right + up) * size}, spec, 14, 14, 0, 8);
+
+	spec += (5 << 19);
+	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, 14, 14, 0, 8);
+
+	// display lock
+	const float one15th = 1.f / 15.f;
+	const float one14th = 1.f / 14.f;
+	pos += (right * 6.f * one14th + up * 8.f * one15th) * size - front * one14th * size;
+	size *= 4.f * one15th;
+	spec = (5 << 4) + (15 << 12) + (3 << 19) + (light << 24);
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right * .5f + up) * size, pos, pos + right * .5f * size}, spec, 2, 4, 0, 8);
+
+	spec -= (2 << 19);
+	utils::shader::addQuads(arr, {pos + (front * .25f + up) * size, pos + up * size, pos + front * .25f * size, pos}, spec, 1, 4, 0, 8);
+
+	spec += (1 << 19);
+	utils::shader::addQuads(arr, {pos + (right * .5f + up) * size, pos + (front * .25f + right * .5f + up) * size, pos + right * .5f * size, pos + (front * .5f + right) * .5f * size}, spec + 1, 1, 4, 0, 8);
+
+	spec -= (2 << 19);
+	utils::shader::addQuads(arr, {pos + (front * .25f + up) * size, pos + (front * .25f + right * .5f + up) * size, pos + up * size, pos + (right * .5f + up) * size}, spec, 2, 1, 0, 8);
+
+	spec += (5 << 19);
+	utils::shader::addQuads(arr, {pos, pos + right * .5f * size, pos + front * .25f * size, pos + (front * .5f + right) * .5f * size}, spec + (3 << 8), 2, 1, 0, 8);
+}
+
+void Piston::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
+{
+	int spec = (texX(face_dir::minus_x, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::minus_x, face_dir::plus_z << offset::blocks::orientation) << 12) + (3 << 19) + (light << 24);
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec, 16, 16, 0, 8);
+
+	spec = (texX(face_dir::plus_x, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::plus_x, face_dir::plus_z << offset::blocks::orientation) << 12) + (4 << 19) + (light << 24);
+	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec, 16, 16, 0, 8);
+
+	spec = (texX(face_dir::minus_y, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::minus_y, face_dir::plus_z << offset::blocks::orientation) << 12) + (1 << 19) + (light << 24);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec, 16, 16, 0, 8);
+
+	spec = (texX(face_dir::plus_y, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::plus_y, face_dir::plus_z << offset::blocks::orientation) << 12) + (2 << 19) + (light << 24);
+	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec, 16, 16, 0, 8);
+
+	spec = (texX(face_dir::plus_z, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::plus_z, face_dir::plus_z << offset::blocks::orientation) << 12) + (0 << 19) + (light << 24);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front + right + up) * size, pos + up * size, pos + (right + up) * size}, spec, 16, 16, 0, 8);
+
+	spec = (texX(face_dir::minus_z, face_dir::plus_z << offset::blocks::orientation) << 4) + (texY(face_dir::minus_z, face_dir::plus_z << offset::blocks::orientation) << 12) + (5 << 19) + (light << 24);
 	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, 16, 16, 0, 8);
 }
 

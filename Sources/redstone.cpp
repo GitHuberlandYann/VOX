@@ -257,11 +257,16 @@ int Chunk::getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side
 		case blocks::redstone_block:
 			return ((repeater & side) ? 0 : 0xF);
 		default:
-			if (!side && !repeater && !s_blocks[adj & mask::blocks::type]->transparent) { // fun called by comparator rear
-				res = getRedstoneSignalItemFrame(pos, target);
-			}
-			if (!side && (adj & (mask::redstone::powered | mask::redstone::weakdy_powered))) {
-				return (glm::max(res, ((adj >>offset::redstone::strength) & 0xF)));
+			if (!side) {
+				if (!repeater && !s_blocks[adj & mask::blocks::type]->transparent) { // fun called by comparator rear
+					res = getRedstoneSignalItemFrame(pos, target);
+				}
+				if (adj & mask::redstone::powered) {
+					res = glm::max(res, ((adj >>offset::redstone::strength) & 0xF));
+				}
+				if (adj & mask::redstone::weakdy_powered) {
+					res = glm::max(res, getWeakdyState(pos, target));
+				}
 			}
 	}
 	return (res);
@@ -395,8 +400,8 @@ int Chunk::getDustStrength( glm::ivec3 pos )
 					return (0xF);
 				}
 			default:
-				if (adj & mask::redstone::powered) {
-					return ((adj >> offset::redstone::strength) & 0xF);
+				if ((adj & mask::redstone::powered) && ((adj >> offset::redstone::strength) & 0xF) > res) {
+					res = ((adj >> offset::redstone::strength) & 0xF);
 				}
 				break ;
 		}
@@ -438,7 +443,7 @@ void Chunk::stronglyPower( glm::ivec3 pos, glm::ivec3 source, int state )
 		if (strongly_powered) { value |= mask::redstone::powered; }
 		int weakdy_powered = getWeakdyState(pos, {0, 0, 0});
 		if (weakdy_powered)   { value |= mask::redstone::weakdy_powered; }
-		value |= (glm::max(strongly_powered, weakdy_powered) << offset::redstone::strength);
+		value |= (strongly_powered << offset::redstone::strength);
 		if ((value & mask::blocks::type) == blocks::redstone_lamp) {
 			if (value == previous) {
 				return ;
@@ -637,14 +642,14 @@ void Chunk::updateRedstoneTorch( glm::ivec3 pos, int value )
 		}
 	}
 
-// std::cout << "addRedstoneTorch " << !state << std::endl;
+	REDUPLOG(LOG("addRedstoneTorch " << !state));
 	// strongly power block directly above torch
 	stronglyPower(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, (!state) ? 0xF : redstone::off);
 
 	// also, adjacent redstone componants are weakly powered, but not attachement block
 	glm::ivec3 attachement = getAttachedDir(value);
 	weaklyPower(pos, attachement, !state, false);
-// std::cout << "END addRestone " << !state << std::endl;
+	REDUPLOG(LOG("END addRestone " << !state));
 }
 
 /**
@@ -654,7 +659,7 @@ void Chunk::updateRedstoneTorch( glm::ivec3 pos, int value )
 void Chunk::updateRedstoneDust( glm::ivec3 pos )
 {
 	int actual_value = getBlockAt(pos.x, pos.y, pos.z), strength, signal_received = 0;
-// std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z << " connect: " << (actual_value >> offset::redstone::dust::my) << std::endl;
+	// std::cout << "updateRestoneDust at " << pos.x << ", " << pos.y << ", " << pos.z << " connect: " << (actual_value >> offset::redstone::dust::my) << std::endl;
 	if ((actual_value & mask::blocks::type) != blocks::redstone_dust) {
 		strength = 0;
 		actual_value |= (mask::redstone::dust::connect << offset::redstone::dust::mx) | (mask::redstone::dust::connect << offset::redstone::dust::px)
@@ -683,7 +688,7 @@ void Chunk::updateRedstoneDust( glm::ivec3 pos )
 		}
 	}
 
-// std::cout << "\tupdateRestoneDust strength " << strength << ", at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
+	// std::cout << "\tupdateRestoneDust strength " << strength << ", at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
 	// use dust's connection to set/unset connected blocks as WEAKLY_POWERED, which is used by red_torches and red_componants
 	if ((actual_value >> offset::redstone::dust::mx) & redstone::dust::up) {
 		weaklyPowerTarget(pos + glm::ivec3(-1, 0, 1), {1, 0, -1}, (actual_value >> offset::redstone::strength) & 0xF, false);
@@ -723,7 +728,7 @@ void Chunk::updateRedstoneDust( glm::ivec3 pos )
 	}
 	stronglyPower(pos + glm::ivec3(0, 0, -1), {0, 0, 1}, redstone::off);
 	weaklyPowerTarget(pos + glm::ivec3(0, 0, -1), {0, 0, 1}, (actual_value >> offset::redstone::strength) & 0xF, false);
-// std::cout << "END updateRestoneDust " << strength << " at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
+	// std::cout << "END updateRestoneDust " << strength << " at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
 
 	if (!strength && signal_received) { // turn dust back on if needed despite of the shortcut
 		if (getDustStrength(pos)) {
