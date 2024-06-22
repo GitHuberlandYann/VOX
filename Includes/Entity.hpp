@@ -9,6 +9,7 @@ class Entity
 		Entity( Chunk* chunk, Inventory* inventory, glm::vec3 position, glm::vec3 dir, bool thrown, t_item item );
 		virtual ~Entity( void );
 
+		void setChunk( Chunk* chunk );
 		void setLifetime( double lifetime );
 		virtual bool isAt( glm::ivec3 pos );
 		virtual void getBlasted( glm::vec3 pos, float blast_radius );
@@ -83,6 +84,8 @@ class ItemFrameEntity : public Entity
 		virtual bool isAt( glm::ivec3 pos );
 
 		virtual bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime );
+
+		void saveString( std::string& str );
 
 	private:
 		short _rotation;

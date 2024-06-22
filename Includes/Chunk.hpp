@@ -108,12 +108,13 @@ namespace SCHEDULE {
 	const int SIZE = 5;
 };
 
-struct s_backup { // TODO add fluids and entities to backups
+struct s_backup { // TODO add fluids and entities and mobs to backups
 	std::map<int, int> added;
 	std::set<int> removed;
 	std::map<int, ChestInstance*> chests;
 	std::map<int, FurnaceInstance*> furnaces;
 	std::map<int, SignInstance*> signs;
+	std::vector<std::shared_ptr<Entity>> item_frames;
 };
 
 class Chunk

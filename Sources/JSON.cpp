@@ -194,12 +194,32 @@ std::string OpenGL_Manager::saveBackupString( void )
 				delete sign.second;
 			}
 		}
+		if (bup.second.item_frames.size()) {
+			res += "],\n\t\t\"item_frames\": [";
+			bool fstart = true;
+			for (auto& frame: bup.second.item_frames) {
+				if (!fstart) {
+					res += ", ";
+				}
+				fstart = false;
+				static_cast<ItemFrameEntity*>(frame.get())->saveString(res);
+			}
+		}
 		res += "]}";
 	}
 	_backups.clear();
 	mtx_backup.unlock();
 	res += "\n\t]";
 	return (res);
+}
+
+void ItemFrameEntity::saveString( std::string& str )
+{
+	int value = ((_front.z > .5f) ? placement::ceiling : (_front.z < -.5f) ? placement::floor : placement::wall) << offset::blocks::bitfield;
+	value |= (((_front.x < -.5f) ? face_dir::plus_x : (_front.x > .5f) ? face_dir::minus_x
+				: (_front.y < -.5f) ? face_dir::plus_y : (_front.y > .5f) ? face_dir::minus_y : 0) << offset::blocks::orientation);
+	str += "{\"pos\": [" + std::to_string(static_cast<int>(glm::floor(_pos.x))) + ", " + std::to_string(static_cast<int>(glm::floor(_pos.y))) + ", " + std::to_string(static_cast<int>(glm::floor(_pos.z)))
+		+ "], \"value\": " + std::to_string(value) + ", \"type\": " + std::to_string(_item.type) + ", \"rotation\": " + std::to_string(_rotation) + "}";
 }
 
 // ************************************************************************** //
@@ -567,6 +587,31 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						sign->setContent(content);
 						backups_value.signs[skey] = sign;
 						ofs << "one more sign at " << skey << " with content \"" << content[0] << "\", \"" << content[1] << "\", \"" << content[2] << "\", \"" << content[3] << '\"' << std::endl;
+						for (;line[index + 1] && line[index + 1] != '{'; ++index);
+					}
+				} else if (!line.compare(0, 15, "\"item_frames\": ")) {
+					index = 15;
+					while (line[index + 1] == '{') {
+						glm::ivec3 pos;
+						pos.x = std::atoi(&line[index + 10]);
+						for (index = index + 10; line[index] && line[index] != ','; index++);
+						pos.y = std::atoi(&line[index + 2]);
+						for (index = index + 2; line[index] && line[index] != ','; index++);
+						pos.z = std::atoi(&line[index + 2]);
+						for (index = index + 2; line[index] && line[index] != ':'; index++);
+						int value = std::atoi(&line[index + 2]);
+						for (index = index + 2; line[index] && line[index] != ':'; index++);
+						int type = std::atoi(&line[index + 2]);
+						for (index = index + 2; line[index] && line[index] != ':'; index++);
+						int rotation = std::atoi(&line[index + 2]);
+						auto frame = std::make_shared<ItemFrameEntity>(nullptr, pos, value);
+						frame->setContent(1); // random content other than air to make sure rotations go through
+						for (int i = 0; i < rotation; ++i) {
+							frame->rotate(blocks::air);
+						}
+						frame->setContent(type);
+						backups_value.item_frames.push_back(frame);
+						ofs << "one more item frame at " << POS(pos) << " with value " << value << ", type " << type << ", and rotation " << rotation << std::endl;
 						for (;line[index + 1] && line[index + 1] != '{'; ++index);
 					}
 				} else {

@@ -7,7 +7,9 @@ Entity::Entity( Chunk* chunk, Inventory *inventory, glm::vec3 position, glm::vec
     : _item(item), _lifeTime(0.), _pos(position), _dir(dir), _chunk(chunk), _inventory(inventory), _thrown(thrown)
 {
     // std::cout << "new Entity at " << position.x << ", " << position.y << ", " << position.z << ": " << s_blocks[value]->name << std::endl;
-	_chunk_pos = {chunk->getStartX(), chunk->getStartY()};
+	if (chunk) {
+		_chunk_pos = {chunk->getStartX(), chunk->getStartY()};
+	}
 }
 
 Entity::~Entity( void )
@@ -93,6 +95,14 @@ ItemFrameEntity::ItemFrameEntity( Chunk* chunk, glm::ivec3 position, int value )
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
+
+void Entity::setChunk( Chunk* chunk )
+{
+	_chunk = chunk;
+	if (chunk) {
+		_chunk_pos = {chunk->getStartX(), chunk->getStartY()};
+	}
+}
 
 void Entity::setLifetime( double lifetime )
 {

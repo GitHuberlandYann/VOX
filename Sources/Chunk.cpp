@@ -299,14 +299,19 @@ void Chunk::setNeighbour( Chunk* neighbour, int index )
 	_neighbours[index] = neighbour;
 }
 
+/**
+ * @brief load own information on backup before being destroyed
+ */
 void Chunk::setBackup( std::map<std::pair<int, int>, s_backup>& backups )
 {
 	if (_added.size() || _removed.size()) {
 		for (auto &sign : _signs) {
 			sign.second->setChunk(NULL);
 		}
+		std::remove_if(_entities.begin(), _entities.end(),
+			[]( auto e ) { return (dynamic_cast<ItemFrameEntity*>(e.get()) == nullptr); }); // rm all entities which are not ItemFrameEntities
 		mtx_backup.lock();
-		backups[std::pair<int, int>(_startX, _startY)] = {_added, _removed, _chests, _furnaces, _signs};
+		backups[std::pair<int, int>(_startX, _startY)] = {_added, _removed, _chests, _furnaces, _signs, _entities};
 		mtx_backup.unlock();
 	}
 }
@@ -327,6 +332,10 @@ void Chunk::restoreBackup( s_backup& backup )
 	_signs = backup.signs;
 	for (auto &sign : _signs) {
 		sign.second->setChunk(this);
+	}
+	_entities = backup.item_frames;
+	for (auto &e : _entities) {
+		e->setChunk(this);
 	}
 }
 
