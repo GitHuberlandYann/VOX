@@ -51,6 +51,7 @@ class OpenGL_Manager
 		void resetInputsPtrs( void );
 		void setGamemode( int gamemode );
 		void getGamemode( void );
+		void setItemFrame( bool visible, bool lock );
 		size_t clearEntities( void );
 		size_t clearParticles( void );
 		void main_loop( void );

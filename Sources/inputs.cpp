@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "Settings.hpp"
 #include "WorldEdit.hpp"
-#include <iostream>
+#include "logs.hpp"
 
 Chunk *OpenGL_Manager::getCurrentChunkPtr( void )
 {
@@ -44,7 +44,7 @@ t_hit OpenGL_Manager::getBlockHit( void )
 				if (!_visible_chunks.size()) {
 					updateVisibleChunks();
 				} else {
-					std::cout << "chunk out of bound at " << posX << ", " << posY << std::endl;
+					LOGERROR("chunk out of bound at " << posX << ", " << posY);
 				}
 				return (res);
 			}
@@ -116,10 +116,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			_chunk_hit->handleHit(collect, 0, _block_hit.pos, Modif::rm);
 			return ;
 		}
-		int posX = chunk_pos(_block_hit.pos.x);
-		int posY = chunk_pos(_block_hit.pos.y);
-
-		std::cout << "rm: chunk out of bound at " << posX << ", " << posY << std::endl;
+		LOGERROR("rm: chunk out of bound at " << chunk_pos(_block_hit.pos.x) << ", " << chunk_pos(_block_hit.pos.y));
 		return ;
 	}
 	// from now on adding = true
@@ -286,6 +283,25 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		}
 		_current_chunk_ptr->handleHit(collect, type, _block_hit.prev_pos, Modif::add);
 	}
+}
+
+void OpenGL_Manager::setItemFrame( bool visible, bool lock )
+{
+	if ((_block_hit.value & mask::blocks::type) != blocks::item_frame) {
+		return (_ui->chatMessage("Block hit is not an item frame.", TEXT::RED));
+	}
+	if (!_chunk_hit) {
+		return (_ui->chatMessage("Cmd failure: missing chunk ptr.", TEXT::RED));
+	}
+	if (visible) {
+		_block_hit.value ^= mask::frame::notVisible;
+		_ui->chatMessage("Item frame set as " + std::string((_block_hit.value & mask::frame::notVisible) ? "invisible." : "visible."));
+	}
+	if (lock) {
+		_block_hit.value ^= mask::frame::locked;
+		_ui->chatMessage("Item frame set as " + std::string((_block_hit.value & mask::frame::locked) ? "locked." : "unlocked."));
+	}
+	_chunk_hit->setBlockAtAbsolute(_block_hit.value, _block_hit.pos, false);
 }
 
 void OpenGL_Manager::updateCamView( void )

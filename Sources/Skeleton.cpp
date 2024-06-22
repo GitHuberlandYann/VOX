@@ -24,7 +24,7 @@ Skeleton::~Skeleton( void )
 bool Skeleton::update( std::vector<t_shaderInput>& modArr, float deltaTime )
 {
     if (!_chunk) {
-        std::cout << "skeleton is missing a _chunk" << std::endl;
+        LOGERROR("skeleton is missing a _chunk");
         return (true);
     }
 	bool changeOwner = false;

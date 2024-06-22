@@ -2,6 +2,7 @@
 #include "ChestInstance.hpp"
 #include "FurnaceInstance.hpp"
 #include "OpenGL_Manager.hpp"
+#include "logs.hpp"
 
 Inventory::Inventory( void ) : _slot(0), _modif(false)
 {
@@ -9,7 +10,7 @@ Inventory::Inventory( void ) : _slot(0), _modif(false)
 
 Inventory::~Inventory( void )
 {
-	std::cout << "Destructor of Inventory called" << std::endl;
+	MAINLOG(LOG("Destructor of Inventory called"));
 }
 
 // ************************************************************************** //

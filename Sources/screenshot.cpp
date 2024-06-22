@@ -1,4 +1,5 @@
 #include "OpenGL_Manager.hpp"
+#include "logs.hpp"
 #include <fstream>
 
 #if __linux__
@@ -28,9 +29,9 @@ void OpenGL_Manager::screenshot( void )
 		}
 		ofs.close();
 		_ui->chatMessage("Screenshot saved under " + file);
-		std::cout << "Screenshot saved under " << file << std::endl;
+		MAINLOG(LOG("Screenshot saved under " << file));
 	}
 	catch (std::exception & e) {
-		std::cerr << e.what() << std::endl << "Screenshot to " << _world_name << ".ppm failure" << std::endl;
+		LOGERROR(e.what() << std::endl << "Screenshot to " << _world_name << ".ppm failure");
 	}
 }

@@ -204,7 +204,7 @@ int Chunk::getRedstoneSignalItemFrame( glm::ivec3 pos, glm::ivec3 except )
 			if (search != _entities.end()) {
 				res = glm::max(res, static_cast<ItemFrameEntity*>(search->get())->getRotation());
 			} else {
-				std::cout << "404 item frame not found" << std::endl;
+				LOGERROR("404 item frame not found");
 			}
 		}
 	}
@@ -552,7 +552,7 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 	// quasi-connectivity
 	int below = getBlockAt(pos.x, pos.y, pos.z - 1, true);
 	if ((below & mask::blocks::type) == blocks::piston || (below & mask::blocks::type) == blocks::sticky_piston) {
-		std::cout << "\t\tquasi-connectivity at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z - 1 << std::endl;
+		PISTONLOG(LOG("\t\tquasi-connectivity at " << POSXYZ(pos, _startX, _startY, - 1)));
 		updatePiston(pos + glm::ivec3(0, 0, -1), below);
 	}
 }
@@ -599,7 +599,7 @@ void Chunk::weaklyPower( glm::ivec3 pos, glm::ivec3 except, bool state, bool wea
 */
 void Chunk::flickLever( glm::ivec3 pos, int value, bool state )
 {
-std::cout << "flick lever " << state << std::endl;
+	REDUPLOG(LOG("flick lever " << state));
 	// DayCycle::Get()->setTicks(0); // for debuging purposes
 	// strongly power block the lever is attached to
 	glm::ivec3 target = getAttachedDir(value);
@@ -607,7 +607,7 @@ std::cout << "flick lever " << state << std::endl;
 
 	// also, adjacent redstone componants are weakly powered
 	weaklyPower(pos, {0, 0, 0}, state, false);
-std::cout << "END flick lever " << state << std::endl;
+	REDUPLOG(LOG("END flick lever " << state));
 }
 
 /**
@@ -754,10 +754,10 @@ void Chunk::initRepeater( glm::ivec3 pos, int &value, bool init )
 	} else {
 		if (value & mask::redstone::repeater::lock) { value &= (mask::all_bits - mask::redstone::repeater::lock); }
 		if (rear && !(value & mask::redstone::powered)) {
-			// std::cout << "initRepeater ON" << std::endl;
+			REPEATLOG(LOG("initRepeater ON"));
 			scheduleRedstoneTick({pos, redstone::tick * (((value >> offset::redstone::repeater::ticks) & 0x3) + 1), (init) ? redstone::on : redstone::on | mask::redstone::repeater::lock});
 		} else if (!rear && (value & mask::redstone::powered)) {
-			// std::cout << "initRepeater OFF" << std::endl;
+			REPEATLOG(LOG("initRepeater OFF"));
 			scheduleRedstoneTick({pos, redstone::tick * (((value >> offset::redstone::repeater::ticks) & 0x3) + 1), (init) ? redstone::off : redstone::off | mask::redstone::repeater::lock});
 		}
 	}
@@ -781,7 +781,7 @@ void Chunk::updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate )
 	bool mode = value & mask::redstone::comparator::mode;
 	int output = (mode == redstone::comparator::compare) ? rear * (left <= rear && right <= rear)
 											: glm::max(0, rear - glm::max(left, right));
-	std::cout << "updateComparator mode " << mode << ": rear " << rear << ", left " << left << ", right " << right << " -> ouput " << output << " vs " << ((value >> offset::redstone::strength) & 0xF) << std::endl;
+	COMPLOG(LOG("updateComparator mode " << mode << ": rear " << rear << ", left " << left << ", right " << right << " -> ouput " << output << " vs " << ((value >> offset::redstone::strength) & 0xF)));
 	
 	if (!scheduledUpdate) {
 		if (output != ((value >> offset::redstone::strength) & 0xF)) {
@@ -830,7 +830,7 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 	int count = 0;
 	for (int i = 0; i < 13; ++i) {
 		int adj = getBlockAt(pos.x + front.x * (i + 1), pos.y + front.y * (i + 1), pos.z + front.z * (i + 1));
-		std::cout << "counting " << s_blocks[adj & mask::blocks::type]->name << " at " << pos.x + front.x * (i + 1) << ", " << pos.y + front.y * (i + 1) << ", " << pos.z + front.z * (i + 1) << std::endl;
+		PISTONLOG(LOG("counting " << s_blocks[adj & mask::blocks::type]->name << " at " << POSXYZ(pos, front.x * (i + 1), front.y * (i + 1), front.z * (i + 1))));
 		switch (s_blocks[adj & mask::blocks::type]->geometry) {
 			case geometry::none:
 				if ((adj & mask::blocks::type) == blocks::chest) {
@@ -852,11 +852,11 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 					for (size_t index = 0; index < eSize; ++index) {
 						int status = _entities[index]->pistonedBy(pos, pos + front);
 						if (status == redstone::piston::force_retraction) { // another piston pushed a block in front of this one before it finished retracting
-							std::cout << "(void)FORCE FINISH RETRACTION BY OTHER PISTON" << std::endl;
+							PISTONLOG(LOG("(void)FORCE FINISH RETRACTION BY OTHER PISTON"));
 							res = 13;
 							++delCount;
 						} else if (status) { // if true, pistonedBy places back the moving blocks, _softKill set to true
-							std::cout << "(void)FORCE FINISH RETRACTION" << std::endl;
+							PISTONLOG(LOG("(void)FORCE FINISH RETRACTION"));
 							++delCount;
 							if (status == redstone::piston::cancel_retraction) {
 								res = (res == 13) ? 13 : status;
@@ -876,11 +876,11 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 						for (size_t index = 0; index < eSize; ++index) {
 							int status = _entities[index]->pistonedBy(pos, pos + front);
 							if (status == redstone::piston::force_retraction) { // another piston pushed a block in front of this one before it finished retracting
-								std::cout << "FORCE FINISH RETRACTION BY OTHER PISTON" << std::endl;
+								PISTONLOG(LOG("FORCE FINISH RETRACTION BY OTHER PISTON"));
 								res = 13;
 								++delCount;
 							} else if (status) { // if true, pistonedBy places back the moving blocks, _softKill set to true
-								std::cout << "FORCE FINISH RETRACTION" << std::endl;
+								PISTONLOG(LOG("FORCE FINISH RETRACTION"));
 								++delCount;
 								if (status == redstone::piston::cancel_retraction) {
 									res = (res == 13) ? 13 : status;
@@ -923,18 +923,18 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 void Chunk::extendPiston( glm::ivec3 pos, int value, int count )
 {
 	const glm::ivec3 front = adj_blocks[(value >> offset::blocks::orientation) & 0x7];
-	std::cout << "extend piston, front is " << front.x << ", " << front.y << ", " << front.z << std::endl;
+	PISTONLOG(LOG("extend piston, front is " << POS(front)));
 
 	for (int i = count - 1; i >= 0; --i) {
 		int adj = getBlockAt(pos + front * (i + 1));
 		// creates moving entity for the blocks being pushed
-		std::cout << s_blocks[adj & mask::blocks::type]->name << " turned into entity at " << pos.x + front.x * (i + 1) << ", " << pos.y + front.y * (i + 1) << ", " << pos.z + front.z * (i + 1) << std::endl;
+		PISTONLOG(LOG(s_blocks[adj & mask::blocks::type]->name << " turned into entity at " << POSXYZ(pos, front.x * (i + 1),  front.y * (i + 1), front.z * (i + 1))));
 		_entities.push_back(std::make_shared<MovingPistonEntity>(this, pos, pos + front * (i + 1), front, false, false, adj));
 		setBlockAt(blocks::moving_piston, pos + front * (i + 2), true);
 		// TODO block update neighbours
 	}
 	// this one is for the piston head
-	std::cout << "piston head at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
+	PISTONLOG(LOG("piston head at " << POSXYZ(pos, _startX, _startY, 0)));
 	_entities.push_back(std::make_shared<MovingPistonEntity>(this, pos, pos, front, false, false, blocks::piston_head | (value & (0x7 << offset::blocks::orientation)) | (((value & mask::blocks::type) == blocks::sticky_piston) ? mask::redstone::piston::sticky : 0)));
 	setBlockAt(blocks::moving_piston, pos + front, true);
 }
@@ -986,13 +986,13 @@ void Chunk::retractPiston( glm::ivec3 pos, int value )
 		size_t eSize = _entities.size();
 		for (size_t index = 0; index < eSize; ++index) {
 			if (_entities[index]->pistonedBy(pos, {0, 0, -1000})) { // if true, pistonedBy places back the moving blocks, _softKill set to true
-				std::cout << "FORCE FINISH EXTENSION" << std::endl;
+				PISTONLOG(LOG("FORCE FINISH EXTENSION"));
 				++delCount;
 			}
 		}
 	} else if ((front_value & mask::blocks::type) != blocks::piston_head) { // retract called before extend could even begin
 		setBlockAt(value, pos, false, false); // restore value
-		std::cout << "\t.. no change (after double change)" << std::endl;
+		PISTONLOG(LOG("\t.. no change (after double change)"));
 		return ;
 	}
 	if ((value & mask::blocks::type) == blocks::sticky_piston && delCount < 2) { // retract block only if had time to finish push or didn't push block in the first place
@@ -1054,11 +1054,11 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 		powered = getRedstoneStrength(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, redstone::off, true);
 		// if (powered) std::cout << "\tbtw, piston on next line powered by block above" << std::endl;
 	}
-	std::cout << "piston update " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << " [" << DayCycle::Get()->getGameTicks() << "] powered: " << powered << std::endl;
+	PISTONLOG(LOG("piston update " << POSXYZ(pos, _startX, _startY, 0) << " [" << DayCycle::Get()->getGameTicks() << "] powered: " << powered));
 	if (powered && !(value & mask::redstone::activated)) {
 		// check if extension possible
 		int count = pistonExtendCount(pos, value);
-	std::cout << "count is " << count << std::endl;
+	PISTONLOG(LOG("count is " << count));
 		if (count <= 12) {
 			setBlockAt(value | mask::redstone::activated | mask::redstone::piston::moving, pos, false);
 			extendPiston(pos, value, count);
@@ -1069,7 +1069,7 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 		setBlockAt((value & (mask::all_bits - mask::redstone::activated)) | mask::redstone::piston::moving, pos, false, false);
 		retractPiston(pos, value);
 	} else {
-		std::cout << "\t.. no change" << std::endl;
+		PISTONLOG(LOG("\t.. no change"));
 	}
 }
 
@@ -1094,7 +1094,7 @@ void Chunk::updateRedstone( void )
 			if (--redRef.ticks == 0) {
 				t_redstoneTick red = redRef;
 				int value = getBlockAt(red.pos.x, red.pos.y, red.pos.z);
-				std::cout << "(" << (-3 + schedIndex) <<  ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " schedule " << s_blocks[value & mask::blocks::type]->name << " at " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << ": " << (red.state & 0xF) << std::endl;
+				REDUPLOG(LOG("(" << (-3 + schedIndex) <<  ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " schedule " << s_blocks[value & mask::blocks::type]->name << " at " << POSXYZ(red.pos, _startX, _startY, 0) << ": " << (red.state & 0xF)));;
 
 				switch (value & mask::blocks::type) {
 					case blocks::redstone_lamp: // only scheduled to be turned off
@@ -1145,15 +1145,15 @@ void Chunk::updateRedstone( void )
 						break ;
 					case blocks::observer:
 						front = adj_blocks[(value >> offset::blocks::orientation) & 0x7];
-						REDLOG("observer front " << POS(front));
+						REDUPLOG(REDLOG("observer front " << POS(front)));
 						if (red.state && !(value & mask::redstone::activated)) {
-							REDLOG("observer activation");
+							REDUPLOG(REDLOG("observer activation"));
 							setBlockAt(value | mask::redstone::activated, red.pos, false);
 							stronglyPower(red.pos - front, front, 0xF);
 							weaklyPowerTarget(red.pos - front, front, redstone::on, false);
 							scheduleRedstoneTick({red.pos, redstone::tick, redstone::off});
 						} else if (value & mask::redstone::activated) {
-							REDLOG("observer shut down");
+							REDUPLOG(REDLOG("observer shut down"));
 							setBlockAt(value & (mask::all_bits - mask::redstone::activated), red.pos, false);
 							stronglyPower(red.pos - front, front, redstone::off);
 							weaklyPowerTarget(red.pos - front, front, redstone::off, false);
@@ -1170,10 +1170,10 @@ void Chunk::updateRedstone( void )
 						weaklyPower(red.pos, {0, 0, 0}, redstone::off, false);
 						break ;
 					default:
-						std::cout << "Chunk::updateRedstone updated: " << s_blocks[value & mask::blocks::type]->name << std::endl;
+						REDUPLOG(LOG("Chunk::updateRedstone updated: " << s_blocks[value & mask::blocks::type]->name));
 						break ;
 				}
-				std::cout << "\t\t" << s_blocks[value & mask::blocks::type]->name << " schedule over." << std::endl;
+				REDUPLOG(LOG("\t\t" << s_blocks[value & mask::blocks::type]->name << " schedule over."));
 
 				_redstone_schedule[schedIndex].erase(_redstone_schedule[schedIndex].begin() + (index - delCount));
 				++delCount;
@@ -1228,10 +1228,10 @@ void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 				t_redstoneTick sched = _redstone_schedule[other][index];
 				if (sched.pos == red.pos && sched.ticks == red.ticks) {
 					if (sched.state & mask::redstone::repeater::lock) {
-						std::cout << "abort because lock/unlock schedule this frame." << std::endl;
+						REDUPLOG(LOG("abort because lock/unlock schedule this frame."));
 						return ;
 					} else {
-						std::cout << "[next new schedule:] abort previous instruction of priority (" << (-3 + other) << ") " << sched.state << std::endl;
+						REDUPLOG(LOG("[next new schedule:] abort previous instruction of priority (" << (-3 + other) << ") " << sched.state));
 						_redstone_schedule[other].erase(_redstone_schedule[other].begin() + index);
 					}
 					break ;
@@ -1240,19 +1240,19 @@ void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 		} else if ((target & mask::blocks::type) == blocks::comparator) {
 			priority = SCHEDULE::COMPARATOR; // comparator always has priority -1 (but I do -0.5f instead to prioretize repeaters)
 		}
-		std::cout << "new schedule " << s_blocks[target & mask::blocks::type]->name << " (" << (-3 + priority) << ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " pos " << _startX + red.pos.x << ", " << _startY + red.pos.y << ", " << red.pos.z << " ticks: " << red.ticks << " state " << (red.state & 0xF) << ((red.state & mask::redstone::repeater::lock) ? " lock" : "") << std::endl;
+		REDUPLOG(LOG("new schedule " << s_blocks[target & mask::blocks::type]->name << " (" << (-3 + priority) << ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " pos " << POSXYZ(red.pos, _startX, _startY, 0) << " ticks: " << red.ticks << " state " << (red.state & 0xF) << ((red.state & mask::redstone::repeater::lock) ? " lock" : "")));
 		for (auto &sched : _redstone_schedule[priority]) {
 			if (sched.pos == red.pos) {
 				if (sched.ticks == red.ticks) {
 					if (sched.state == red.state) {
-						std::cout << "aborted." << std::endl;
+						REDUPLOG(LOG("aborted."));
 					} else if ((target & mask::blocks::type) == blocks::comparator) {
 						sched.state = red.state;
-						std::cout << "abort previous state." << std::endl;
+						REDUPLOG(LOG("abort previous state."));
 					}
 					return ;
 				} else if ((target & mask::blocks::type) == blocks::observer && sched.state == redstone::off) {
-					REDLOG("observer aborted.");
+					REDUPLOG(REDLOG("observer aborted."));
 					return ;
 				}
 			}
@@ -1298,9 +1298,9 @@ void Chunk::abortComparatorScheduleTick( glm::ivec3 pos )
 	} else {
 		int index = 0;
 		for (auto &sched : _redstone_schedule[SCHEDULE::REPEAT_ON]) {
-			// std::cout << "abortComparatorScheduleTick checking " << sched.pos.x << ", " << sched.pos.y << ", " << sched.pos.z << " ticks " << sched.ticks << std::endl;
+			REDUPLOG(LOG("abortComparatorScheduleTick checking " << sched.pos.x << ", " << sched.pos.y << ", " << sched.pos.z << " ticks " << sched.ticks));
 			if (sched.pos == pos && sched.ticks == redstone::tick) {
-				// std::cout << "abort previous comparator schedule " << sched.state << "." << std::endl;
+				REDUPLOG(LOG("abort previous comparator schedule " << sched.state << "."));
 				_redstone_schedule[SCHEDULE::REPEAT_ON].erase(_redstone_schedule[SCHEDULE::REPEAT_ON].begin() + index);
 				return ;
 			}

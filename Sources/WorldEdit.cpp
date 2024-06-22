@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "WorldEdit.hpp"
+#include "logs.hpp"
 #include <cassert>
 
 WorldEdit::WorldEdit( void )
@@ -10,7 +11,7 @@ WorldEdit::WorldEdit( void )
 
 WorldEdit::~WorldEdit( void )
 {
-	std::cout << "Destructor of WorldEdit called" << std::endl;
+	MAINLOG(LOG("Destructor of WorldEdit called"));
 }
 
 // ************************************************************************** //

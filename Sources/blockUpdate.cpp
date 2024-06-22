@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include "random.hpp"
+#include "logs.hpp"
 
 // ************************************************************************** //
 //                                Private                                     //
@@ -9,7 +10,7 @@
 void Chunk::entity_block( int posX, int posY, int posZ, int value )
 {
 	int type = (value & mask::blocks::type);
-	std::cout << "breaking " << s_blocks[type]->name << std::endl;
+	BLOCKLOG(LOG("breaking " << s_blocks[type]->name));
 	float random;
 	switch (type) {
 	case blocks::grass:
@@ -62,8 +63,6 @@ void Chunk::entity_block( int posX, int posY, int posZ, int value )
 
 void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 {
-	// std::cout << "in chunk " << _startX << ", " << _startY << ":rm block " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	int value = _blocks[offset], type = value & mask::blocks::type; // TODO better handling of invis block gets deleted
 	if (type == blocks::chest) {
@@ -119,7 +118,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			type = blocks::item_frame; // restore type
 			_entities.erase(search);
 		} else {
-			std::cout << "Item frame not found when trying to destroy item frame" << std::endl;
+			LOGERROR("Item frame not found when trying to destroy item frame");
 		}
 	} else if (type == blocks::oak_door) {
 		// break other part of door
@@ -163,8 +162,6 @@ void Chunk::addFlame( int offset, glm::vec3 pos, int source, int orientation )
 
 void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int previous )
 {
-	// std::cout << "in chunk " << _startX << ", " << _startY << ":add block " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << std::endl;
-	// std::cout << "nb displayed blocks before: " << _displayed_blocks << std::endl;
 	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	int type = block_value & mask::blocks::type;
 	geometry shape = s_blocks[type]->geometry;
@@ -274,7 +271,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 
 void Chunk::replace_block( bool useInventory, glm::ivec3 pos, int type )
 {
-	// std::cout << "replace_block " << useInventory << std::endl;
+	BLOCKLOG(LOG("replace_block " << useInventory));
 	if (useInventory) {
 		_inventory->decrementDurabitilty();
 	}
@@ -302,12 +299,12 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 			}
 			updateItemFrame(pos + getAttachedDir(value));
 		} else {
-			std::cout << "Item frame not found when trying to rotate/place item" << std::endl;
+			LOGERROR("Item frame not found when trying to rotate/place item");
 		}
 		return ;
 	}
 	if (!s_blocks[type]->isItemOnly && (value & mask::blocks::type) != type) {
-		std::cerr << "Chunk::use_block type diff " << s_blocks[value & mask::blocks::type]->name << " vs " << s_blocks[type]->name << std::endl;
+		LOGERROR("Chunk::use_block type diff " << s_blocks[value & mask::blocks::type]->name << " vs " << s_blocks[type]->name);
 		return ;
 	}
 	switch (type) {
@@ -336,7 +333,7 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 		break ;
 	case blocks::stone_button:
 	case blocks::oak_button:
-		std::cout << "button pressed" << std::endl;
+		BLOCKLOG(LOG("button pressed"));
 		value |= mask::redstone::powered | mask::redstone::strength;
 		_blocks[offset] = value; // used by adj dust
 		stronglyPower(pos + getAttachedDir(value), -getAttachedDir(value), 0xF);
@@ -344,15 +341,15 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 		scheduleRedstoneTick({pos, ((type == blocks::stone_button) ? 10 : 15) * redstone::tick});
 		break ;
 	case blocks::zombie_egg:
-		std::cout << "zombie egg placed" << std::endl;
+		BLOCKLOG(LOG("zombie egg placed"));
 		_mobs.push_back(std::make_shared<Zombie>(this, _player, pos + glm::ivec3(_startX, _startY, 0)));
 		return ;
 	case blocks::skeleton_egg:
-		std::cout << "skeleton egg placed" << std::endl;
+		BLOCKLOG(LOG("skeleton egg placed"));
 		_mobs.push_back(std::make_shared<Skeleton>(this, _player, pos + glm::ivec3(_startX, _startY, 0)));
 		return ;
 	default:
-		std::cout << "ERROR Chunk::regeneration case Modif::use defaulted on: " << s_blocks[value & mask::blocks::type]->name << std::endl;
+		LOGERROR("ERROR Chunk::regeneration case Modif::use defaulted on: " << s_blocks[value & mask::blocks::type]->name);
 		return ;
 	}
 	setBlockAt(value, pos, true);
@@ -373,7 +370,6 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			if (previous_type == blocks::air || previous_type == blocks::bedrock) { // can't rm bedrock
 				return ;
 			}
-			// std::cout << "remove_block. displayed before " << _displayed_faces << std::endl;
 			remove_block(useInventory, pos);
 		break ;
 		case Modif::add:
@@ -382,7 +378,6 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			} else if ((previous_type != blocks::air && previous_type != blocks::water) || type == blocks::air) { // can't replace block
 				return ;
 			}
-			// std::cout << "ADD BLOCK " << s_blocks[previous_type]->name << " -> " << s_blocks[type]->name << std::endl;
 			add_block(useInventory, pos, type, previous_type);
 			break ;
 		case Modif::replace:
@@ -412,18 +407,15 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 					return ;
 				}
 				updateItemFrame(pos + getAttachedDir(value));
-			} else { std::cout << "Item frame not found when trying to destroy item frame" << std::endl; }
+			} else { LOGERROR("Item frame not found when trying to destroy item frame"); }
 			break ;
 	}
 	if (type == blocks::water || type == blocks::bucket) {
-		// std::cout << "modif to water with " << ((type == blocks::water) ? "water" : "bucket") << std::endl;
-		// std::cout << "water count before " << waterSave << ", after " << _water_count << std::endl;
 		return ;
 	} else if (type == blocks::glass || previous_type == blocks::glass) {
 		sort_water(_player->getEyePos(), true);
 		return ;
 	}
-	// std::cout << "_displayed_faces after modif " << _displayed_faces << " at " << _startX << ", " << _startY << std::endl;
 	if (!_light_update) {
 		fill_vertex_array();
 	}
@@ -439,7 +431,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 {
 	int type = (value & mask::blocks::type), prev_type = (previous & mask::blocks::type);
-	std::cout << "UPDATE_BLOCK at " << _startX + pos.x << ", " << _startY + pos.y << ", " << pos.z << ". " << s_blocks[prev_type]->name << " -> " << s_blocks[type]->name << std::endl;
+	BLOCKLOG(LOG("UPDATE_BLOCK at " << POSXYZ(pos, _startX, _startY, 0) << ". " << s_blocks[prev_type]->name << " -> " << s_blocks[type]->name));
 	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	if (type == blocks::sand || type == blocks::gravel) {
 		int type_under = (_blocks[offset - 1] & mask::blocks::type);
@@ -507,12 +499,12 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		if (type == blocks::redstone_torch) {
 			updateRedstoneTorch(pos, value);
 		}
-		std::cout << "add light" << std::endl;
+		BLOCKLOG(LOG("add light"));
 		_lights[offset] &= 0xFF00;
 		_lights[offset] += s_blocks[type]->light_level + (s_blocks[type]->light_level << 4);
 		light_spread(pos.x, pos.y, pos.z, false);
 		_light_update = false;
-		std::cout << "over" << std::endl;
+		BLOCKLOG(LOG("over"));
 	} else if (type == blocks::glass) {
 		_hasWater = true; // glass considered as invis block
 	} else if (type == blocks::redstone_dust) {
@@ -523,7 +515,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		updateRedstoneDust(pos);
 	} else if (type == blocks::air) { // rm block
 		if (s_blocks[prev_type]->light_level) {
-			std::cout << "rm light" << std::endl;
+			BLOCKLOG(LOG("rm light"));
 			if (prev_type == blocks::torch) {
 				delete _flames[offset];
 				_flames.erase(offset);
@@ -533,7 +525,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 			_lights[offset] &= 0xFF00;
 			// light_spread(pos.x, pos.y, pos.z, false); // spread block light
 			// _light_update = false;
-			std::cout << "over" << std::endl;
+			BLOCKLOG(LOG("over"));
 		} else if (prev_type == blocks::oak_leaves) {
 			_lights[offset] &= 0xFF;
 		} else if (prev_type == blocks::lever) {
@@ -878,12 +870,11 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 			return (_neighbours[face_dir::plus_y]->handleHit(useInventory, type, pos, modif));
 		}
 	} else {
-		// std::cout << _startX << " " << _startY << ": handle hit at pos " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
 		regeneration(useInventory, type, chunk_pos, modif);
 		return ;
 	}
 	
-	std::cout << _startX << ", " << _startY << " ERROR BLOCK OUT OF CHUNK " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
+	LOGERROR(_startX << ", " << _startY << " ERROR BLOCK OUT OF CHUNK " << POS(chunk_pos));
 }
 
 

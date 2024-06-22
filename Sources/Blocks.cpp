@@ -1,4 +1,5 @@
 #include "Chunk.hpp"
+#include "logs.hpp"
 
 const std::array<std::unique_ptr<Block>, S_BLOCKS_SIZE> s_blocks = {
 	std::make_unique<Air>(), std::make_unique<GrassBlock>(), std::make_unique<OakLog>(), std::make_unique<Cactus>(), std::make_unique<Farmland>(), std::make_unique<DirtPath>(), std::make_unique<TNT>(), std::make_unique<Target>(),
@@ -2718,7 +2719,7 @@ void OakSign::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::
 			up    = glm::vec3(0, 0, 1);
 			break ;
 		default:
-			std::cout << "ERROR oakSign::addMesh orientation" << std::endl;
+			LOGERROR("ERROR oakSign::addMesh orientation");
 			return ;
 	}
 	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front) * 0.5f + up * 0.25f;

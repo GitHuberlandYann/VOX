@@ -1,6 +1,7 @@
 #include "Skybox.hpp"
 #include "DayCycle.hpp"
 #include "Settings.hpp"
+#include "logs.hpp"
 
 Skybox::Skybox( void )
 {
@@ -9,7 +10,7 @@ Skybox::Skybox( void )
 
 Skybox::~Skybox( void )
 {
-	std::cout << "Destructor of Skybox called" << std::endl;
+	MAINLOG(LOG("Destructor of Skybox called"));
 }
 
 void Skybox::deleteBuffers( void )

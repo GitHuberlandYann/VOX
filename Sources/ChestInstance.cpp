@@ -1,4 +1,5 @@
 #include "Chunk.hpp"
+#include "logs.hpp"
 
 ChestInstance::ChestInstance( Chunk* chunk, glm::ivec3 pos, int orientation )
 	: _orientation(orientation), _state(chest_state::CLOSED), _timer(0), _pos(pos), _chunk(chunk)
@@ -111,7 +112,7 @@ void ChestInstance::display_open( std::vector<t_shaderInput>& arr )
 			back  = {14.0f * one16th,        0,                        0};
 			break ;
 		default:
-			std::cout << "ERROR DISPLAY OPEN CHEST" << std::endl;
+			LOGERROR("ERROR DISPLAY OPEN CHEST");
 			return ;
 	}
 	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f * one16th};
@@ -184,7 +185,7 @@ void ChestInstance::display_moving( std::vector<t_shaderInput>& arr )
 			back  = {14.0f * one16th,        0,                        0};
 			break ;
 		default:
-			std::cout << "ERROR DISPLAY OPEN CHEST" << std::endl;
+			LOGERROR("ERROR DISPLAY MOVING CHEST");
 			return ;
 	}
 	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f * one16th};
@@ -260,7 +261,7 @@ void ChestInstance::display_closed( std::vector<t_shaderInput>& arr )
 			back  = {14.0f * one16th,        0,                        0};
 			break ;
 		default:
-			std::cout << "ERROR DISPLAY CLOSED CHEST" << std::endl;
+			LOGERROR("ERROR DISPLAY CLOSED CHEST");
 			return ;
 	}
 	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 15.0f * one16th};
@@ -344,7 +345,7 @@ t_item *ChestInstance::getItem( int index )
 void ChestInstance::update( std::vector<t_shaderInput>& arr, float deltaTime )
 {
 	if (!_chunk) {
-		std::cout << "chestInstance with NULL chunk" << std::endl;
+		LOGERROR("chestInstance with NULL chunk");
 		return ;
 	}
 	switch (_state) {

@@ -3,6 +3,7 @@
 #include "callbacks.hpp"
 #include "Settings.hpp"
 #include <dirent.h>
+#include "logs.hpp"
 extern std::mutex mtx;
 extern siv::PerlinNoise::seed_type perlin_seed;
 
@@ -15,7 +16,7 @@ Menu::Menu( void ) : _gui_size(3), _state(menu::main), _selection(0), _selected_
 
 Menu::~Menu( void )
 {
-	std::cout << "Destructor of Menu called" << std::endl;
+	MAINLOG(LOG("Destructor of Menu called"));
 	_worlds.clear();
 	_selection_list.clear();
 }
@@ -1954,7 +1955,7 @@ menu::ret Menu::run( bool animUpdate )
 		case menu::sign:
 			return (sign_menu(animUpdate));
 		default:
-			std::cout << "ERROR defaulting on Menu::run" << std::endl;
+			LOGERROR("ERROR defaulting on Menu::run");
 			return (menu::ret::back_to_game);
 	}
 	return (menu::ret::no_change);

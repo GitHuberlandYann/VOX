@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "Text.hpp"
 #include "Settings.hpp"
+#include "logs.hpp"
 
 Text::Text( void ) : _texture(0)
 {
@@ -8,7 +9,7 @@ Text::Text( void ) : _texture(0)
 
 Text::~Text( void )
 {
-	std::cout << "Destructor of Text called" << std::endl;
+	MAINLOG(LOG("Destructor of Text called"));
 
 	if (_texture) {
 		glDeleteTextures(1, &_texture);

@@ -1,6 +1,7 @@
 #include "Chunk.hpp"
 #include "random.hpp"
 #include "DayCycle.hpp"
+#include "logs.hpp"
 
 Entity::Entity( Chunk* chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool thrown, t_item item )
     : _item(item), _lifeTime(0.), _pos(position), _dir(dir), _chunk(chunk), _inventory(inventory), _thrown(thrown)
@@ -150,14 +151,14 @@ int Entity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
 }
 int MovingPistonEntity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
 {
-	std::cout << "pistonedBy " << _chunk->getStartX() + pos.x << ", " << _chunk->getStartY() + pos.y << ", " << pos.z << ((_retraction) ? " retraction" : " extension") << " [" << _tickStart << "] from " << _chunk->getStartX() + _pos.x << ", " << _chunk->getStartY() + _pos.y << ", " << _pos.z << " to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
+	PISTONLOG(LOG("pistonedBy " << POSXYZ(pos, _chunk->getStartX(), _chunk->getStartY(), 0) << ((_retraction) ? " retraction" : " extension") << " [" << _tickStart << "] from " << POSXYZ(_pos, _chunk->getStartX(), _chunk->getStartY(), 0) << " to " << POSXYZ(_endPos, _chunk->getStartX(), _chunk->getStartY(), 0)));
 	if (pos == _source) { // force place block at posEnd
 		_softKill = true;
 		// _chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 		int currentTick = DayCycle::Get()->getGameTicks();
-		std::cout << "MovingPistonEntity forcefinish movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
+		PISTONLOG(LOG("MovingPistonEntity forcefinish movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] to " << POSXYZ(_endPos, _chunk->getStartX(), _chunk->getStartY(), 0)));
 		if (currentTick == _tickStart && _retraction) {
-			std::cout << "\ttrap card activated->redstone::piston::cancel_retraction" << std::endl;
+			PISTONLOG(LOG("\ttrap card activated->redstone::piston::cancel_retraction"));
 			_chunk->setBlockAt(_item.type,  _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
 			return (redstone::piston::cancel_retraction);
 		}
@@ -172,8 +173,8 @@ int MovingPistonEntity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
 			}
 		} else {
 			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::sticky_piston : blocks::piston) | (_item.type & (0x7 << offset::blocks::orientation)), _endPos, false);
-			int front_value = _chunk->getBlockAt(_pos);
-			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & mask::blocks::type]->name << std::endl;
+			PISTONLOG(int front_value = _chunk->getBlockAt(_pos);
+			LOG("BLOCK IN FRONT IS " << s_blocks[front_value & mask::blocks::type]->name));
 			// if ((front_value & mask::blocks::type) == blocks::moving_piston) {
 			// 	_chunk->setBlockAt(blocks::air, _pos, true);
 			// }
@@ -461,7 +462,7 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camP
 
     if (currentTick - _tickStart == lifeLimit) {
 		// finish extension, turn back to block
-		std::cout << "MovingPistonEntity finished movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] from " << _chunk->getStartX() + _pos.x << ", " << _chunk->getStartY() + _pos.y << ", " << _pos.z << " to " << _chunk->getStartX() + _endPos.x << ", " << _chunk->getStartY() + _endPos.y << ", " << _endPos.z << std::endl;
+		PISTONLOG(LOG("MovingPistonEntity finished movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] from " << POSXYZ(_pos, _chunk->getStartX(), _chunk->getStartY(), 0) << " to " << POSXYZ(_endPos, _chunk->getStartX(), _chunk->getStartY(), 0)));
 		if (!_piston_head) {
 			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 			if (_retraction) {
@@ -472,12 +473,12 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camP
 			}
 		} else {
 			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::sticky_piston : blocks::piston) | (_item.type & (0x7 << offset::blocks::orientation)), _endPos, false);
-			int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z);
-			std::cout << "BLOCK IN FRONT IS " << s_blocks[front_value & mask::blocks::type]->name << std::endl;
+			PISTONLOG(int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z);
+			LOG("BLOCK IN FRONT IS " << s_blocks[front_value & mask::blocks::type]->name));
 			// if ((front_value & mask::blocks::type) == blocks::moving_piston) {
 			// 	_chunk->setBlockAt(blocks::air, _pos.x, _pos.y, _pos.z, true);
 			// }
-			std::cout << "source is " << _chunk->getStartX() + _source.x << ", " << _chunk->getStartY() + _source.y << ", " << _source.z << std::endl;
+			PISTONLOG(LOG("source is " << POSXYZ(_source, _chunk->getStartX(), _chunk->getStartY(), 0)));
 			int piston_value = _chunk->getBlockAt(_source);
 			_chunk->setBlockAt(piston_value & (mask::all_bits - mask::redstone::piston::moving), _source, false);
 			_chunk->updatePiston(_source, piston_value);

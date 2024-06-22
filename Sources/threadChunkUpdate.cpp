@@ -1,11 +1,12 @@
 #include "OpenGL_Manager.hpp"
 #include "Settings.hpp"
+#include "logs.hpp"
 #include <chrono>
 #include <thread>
 
 void thread_chunk_update( OpenGL_Manager *render )
 {
-	std::cout << "thread_chunk_update started" << std::endl;
+	MAINLOG(LOG("thread_chunk_update started"));
 	glm::ivec2 pos;
 	int render_dist;
 	Settings *settings = Settings::Get();
@@ -13,12 +14,11 @@ void thread_chunk_update( OpenGL_Manager *render )
 	while (!render->getThreadUpdate()) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		if (render->getThreadStop()) {
-			std::cout << "thread_chunk_update stopped before loop" << std::endl;
+			MAINLOG(LOG("thread_chunk_update stopped before loop"));
 			return ;
 		}
 	}
 	while (true) {
-		// std::cout << "thread chunk update" << std::endl;
 		pos = render->getCurrentChunk();
 		render_dist = settings->getInt(settings::ints::render_dist);
 		render->setThreadUpdate(false);
@@ -35,10 +35,8 @@ void thread_chunk_update( OpenGL_Manager *render )
 		newperi_chunks.reserve(render->_perimeter_chunks.capacity());
 		std::list<Chunk*>::iterator ite = render->_chunks.end();
 		std::list<Chunk*>::iterator it = render->_chunks.begin();
-		// std::cout << "IN THREAD UPDATE, nb chunks: " << render->_chunks.size() << std::endl;
 		for (; it != ite;) {
 			if ((*it)->inPerimeter(pos.x, pos.y, render_dist << settings::consts::chunk_shift)) {
-				// std::cout << "IN PERIMETER" << std::endl;
 				(*it)->checkFillVertices();
 				newperi_chunks.push_back(*it);
 				coords.erase({(*it)->getStartX(), (*it)->getStartY()});
@@ -80,12 +78,11 @@ void thread_chunk_update( OpenGL_Manager *render )
 		}
 		// b.stamp("loop and create new chunks");
 		// b.stop("chunk update");
-		// std::cout << "for now " << count << " new chunks, computed " << coords.size() << std::endl;
 
 		while (!render->getThreadUpdate()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			if (render->getThreadStop()) {
-				std::cout << "thread_chunk_update stopped" << std::endl;
+				MAINLOG(LOG("thread_chunk_update stopped"));
 				return ;
 			}
 		}

@@ -24,7 +24,7 @@ Zombie::~Zombie( void )
 bool Zombie::update( std::vector<t_shaderInput>& modArr, float deltaTime )
 {
     if (!_chunk) {
-        std::cout << "zombie is missing a _chunk" << std::endl;
+        LOGERROR("zombie is missing a _chunk");
         return (true);
     }
 	bool changeOwner = false;

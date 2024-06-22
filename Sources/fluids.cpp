@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include "utils.h"
+#include "logs.hpp"
 
 // ************************************************************************** //
 //                                Private                                     //
@@ -90,19 +91,19 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 {
 	int type = (value & mask::blocks::type), wLevel = (value >> offset::blocks::bitfield) & 0x7;
 	if (type != blocks::water) {
-		// std::cout << "water turned into " << s_blocks[type]->name << std::endl;
+		FLUIDLOG(LOG("water turned into " << s_blocks[type]->name));
 		for (int index = 0; index < 6; index++) {
 			const glm::ivec3 delta = adj_blocks[index];
 			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z) & mask::blocks::type;
 			if (adj == blocks::water) {
-				// std::cout << "updating neighbour" << std::endl;
+				FLUIDLOG(LOG("updating neighbour"));
 				insertFluidAt(newFluids, posX + delta.x, posY + delta.y, posZ + delta.z);
 			}
 		}
 		return (true);
 	}
 	if (wLevel > 0) {  // not a water source
-		// std::cout << "update water" << wLevel << std::endl;
+		FLUIDLOG(LOG("update water" << wLevel));
 		int offset = (((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ;
 		bool stop = true, onGround = false;
 		int sourceCount = 0;
@@ -110,7 +111,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 			const glm::ivec3 delta = adj_blocks[index];
 			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z);
 			if (index != face_dir::minus_z) { // if not block underneath
-			// std::cout << posX + delta.x << ", " << posY + delta.y << ", " << posZ + delta.z << " is " << s_blocks[adj]->name << std::endl;
+			FLUIDLOG(LOG(posX + delta.x << ", " << posY + delta.y << ", " << posZ + delta.z << " is " << s_blocks[adj]->name));
 				if ((adj & mask::blocks::type) == blocks::water) {
 					int adjWLevel = ((adj >> offset::blocks::bitfield) & 0x7);
 					if (index == face_dir::plus_z) { // flow from above
@@ -130,7 +131,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 							_removed.erase(offset);
 						}
 						stop = false; // still supplyed
-						// std::cout << "supplyed by water" << adj << std::endl;
+						FLUIDLOG(LOG("supplyed by water" << adj));
 					}
 				}
 			} else if (air_flower(adj, false, false, false)) { // check block underneath
@@ -138,7 +139,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 			}
 		}
 		if (stop) {
-			// std::cout << "stop flow of " << s_blocks[value]->name << std::endl;
+			FLUIDLOG(LOG("stop flow of " << s_blocks[value]->name));
 			_blocks[offset] = blocks::air;
 			_added.erase(offset);
 			_removed.insert(offset);
@@ -152,7 +153,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 			}
 			return (true);
 		} else if (onGround && sourceCount > 1) {
-			// std::cout << "infinite water source" << std::endl;
+			FLUIDLOG(LOG("infinite water source"));
 			value = blocks::water; // infinite water baby
 			_blocks[offset] = value;
 			_added[offset] = value;
@@ -166,17 +167,17 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 {
 	int offset = (((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ;
 	int value = _blocks[offset], type = (value & mask::blocks::type), wLevel = (value >> offset::blocks::bitfield) & 0x7;
-	// std::cout << "checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[type]->name << std::endl;
+	FLUIDLOG(LOG("checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[type]->name));
 	// if (!air_flower(type, false, false, true) || type > level || (type == level && level == blocks::water1)) {
 	if (!s_blocks[type]->isSolidForFluid || (type == blocks::water && (wLevel > srcWLevel || (wLevel == srcWLevel && wLevel == 1)))) {
-		// std::cout << "column expension, water count before: " << _water_count << std::endl;
+		FLUIDLOG(LOG("column expension, water count before: " << _water_count));
 		_blocks[offset] = blocks::water + (srcWLevel << offset::blocks::bitfield);
 		_added[offset] = blocks::water + (srcWLevel << offset::blocks::bitfield);
 		_removed.erase(offset);
 		if (!s_blocks[type]->isSolidForFluid) {
 			_hasWater = true;
 			if (type != blocks::air) { // replace flower with water
-				// std::cout << _startX << ", " << _startY << " type before: " << s_blocks[type]->name << ". displayed: " << _displayed_faces << std::endl;
+				FLUIDLOG(LOG(_startX << ", " << _startY << " type before: " << s_blocks[type]->name << ". displayed: " << _displayed_faces));
 				entity_block(posX, posY, posZ, type); // drop item(s)
 				if (type == blocks::torch || type == blocks::redstone_torch) {
 					_lights[offset] &= 0xFF00;
@@ -189,19 +190,19 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 						}
 					}
 				}
-				// std::cout << "type after: " << s_blocks[level]->name << ". displayed: " << _displayed_faces << std::endl;
+				FLUIDLOG(LOG("type after: " << s_blocks[level]->name << ". displayed: " << _displayed_faces));
 				_vertex_update = true;
 			}
 		} else {
-			// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[type]->name << " with " << s_blocks[level]->name << std::endl; 
+			FLUIDLOG(LOG('[' << _startX << ", " << _startY << "] replaced " << s_blocks[type]->name << " with " << s_blocks[level]->name)); 
 		}
-			// std::cout << '[' << _startX << ", " << _startY << "] replaced " << s_blocks[type]->name << " with " << s_blocks[level]->name << " at " << posX << ", " << posY << ", " << posZ << std::endl; 
+			FLUIDLOG(LOG('[' << _startX << ", " << _startY << "] replaced " << s_blocks[type]->name << " with " << s_blocks[level]->name << " at " << posX << ", " << posY << ", " << posZ)); 
 		if (newFluids) {
 			newFluids->insert(offset);
 		} else {
 			_fluids.insert(offset);
 		}
-		// std::cout << "column expension, water count after: " << _water_count << std::endl;
+		FLUIDLOG(LOG("column expension, water count after: " << _water_count));
 		return (true);
 	} else if (type == blocks::water) {
 		return (true);
@@ -216,7 +217,7 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 void Chunk::sort_water( glm::vec3 pos, bool vip )
 {
 	_sortedOnce = true;
-	// std::cout << "in sort water" << std::endl;
+	FLUIDLOG(LOG("in sort water"));
 	if (!_water_count && !_hasWater) {
 		return ;
 	}
@@ -395,24 +396,24 @@ void Chunk::updateFluids( void )
 		int posX = ((f >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 		int value = _blocks[f];
 		if (endFlow(&newFluids, value, posX, posY, posZ)) {
-			// std::cout << "ENDFLOW" << std::endl;
+			FLUIDLOG(LOG("ENDFLOW"));
 			continue ;
 		}
 		int wLevel = (value >> offset::blocks::bitfield) & 0x7;
 		if (try_addFlow(&newFluids, posX, posY, posZ - 1, 1) && wLevel != 0) { // source water spread to the side even if air below
 		} else if (wLevel == 7) { // stop flow
 		} else {
-			// std::cout << "block under fluid: " << s_blocks[_blocks[*f - 1]].name << std::endl;
+			FLUIDLOG(LOG("block under fluid: " << s_blocks[_blocks[*f - 1]].name));
 			try_addFlow(&newFluids, posX - 1, posY, posZ, wLevel + 1);
 			try_addFlow(&newFluids, posX + 1, posY, posZ, wLevel + 1);
 			try_addFlow(&newFluids, posX, posY - 1, posZ, wLevel + 1);
 			try_addFlow(&newFluids, posX, posY + 1, posZ, wLevel + 1);
 		}
-		// std::cout << _startX << " " << _startY << " fluid at " << posX << " (" << _startX + posX << "), " << posY << " (" << _startY + posY << "), " << posZ << ": before " << s_blocks[level]->name << " after " << s_blocks[_blocks[*f]].name << std::endl;
+		FLUIDLOG(LOG(_startX << " " << _startY << " fluid at " << posX << " (" << _startX + posX << "), " << posY << " (" << _startY + posY << "), " << posZ << ": before " << s_blocks[level]->name << " after " << s_blocks[_blocks[*f]].name));
 	}
 	_fluids = newFluids;
 	if (fluid_modif) {
-		// std::cout << "s" << std::endl;
+		FLUIDLOG(LOG("sort water after fluid modif"));
 		sort_water(_player->getEyePos(), true);
 	}
 }

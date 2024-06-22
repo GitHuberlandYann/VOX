@@ -1,5 +1,6 @@
 #include <fstream>
 #include "Chunk.hpp"
+#include "logs.hpp"
 
 #include "SOIL/SOIL.h"
 typedef struct {
@@ -101,12 +102,12 @@ static void compile_shader( GLuint ptrShader, std::string name )
     GLint status;
     glGetShaderiv(ptrShader, GL_COMPILE_STATUS, &status);
 	if (status) {
-		std::cout << name << " shader compiled successfully" << std::endl;
+		MAINLOG(LOG(name << " shader compiled successfully"));
 	} else {
 		char buffer[512];
 		glGetShaderInfoLog(ptrShader, 512, NULL, buffer);
 
-		std::cerr << name << " shader did not compile, error log:" << std::endl << buffer << std::endl;
+		MAINLOG(LOGERROR(name << " shader did not compile, error log:\n" << buffer));
 		exit(1);
 	}
 }
@@ -158,11 +159,11 @@ void check_glstate( std::string str, bool displayDebug )
 {
 	GLenum error_check = glGetError();	
 	if (error_check) {
-		std::cerr << "glGetError set to " << error_check << " when trying to " << str << ", quitting now" << std::endl;
+		LOGERROR("glGetError set to " << error_check << " when trying to " << str << ", quitting now");
 		exit(1);
 	}
 	if (displayDebug) {
-		std::cout << str << std::endl;
+		MAINLOG(LOG(str));
 	}
 }
 

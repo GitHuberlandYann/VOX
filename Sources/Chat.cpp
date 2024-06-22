@@ -2,6 +2,7 @@
 #include "OpenGL_Manager.hpp"
 #include "PerlinNoise.hpp"
 #include "WorldEdit.hpp"
+#include "logs.hpp"
 extern siv::PerlinNoise::seed_type perlin_seed;
 
 Chat::Chat( std::shared_ptr<Text> text )
@@ -13,7 +14,7 @@ Chat::Chat( std::shared_ptr<Text> text )
 
 Chat::~Chat( void )
 {
-	std::cout << "Destructor of Chat called" << std::endl;
+	MAINLOG(LOG("Destructor of Chat called"));
 }
 
 // ************************************************************************** //
@@ -424,6 +425,25 @@ bool Chat::handle_freeze( int argc, std::vector<std::string> &argv )
 	return (true);
 }
 
+/**
+ * @brief Checks if command is //frame and update targeted block 
+ * @return argv[0] != //frame
+*/
+bool Chat::handle_frame( int argc, std::vector<std::string> &argv )
+{
+	if (!argv[0].compare("//frame") && argc == 2) {
+		if (!argv[1].compare("visible")) {
+			_oglMan->setItemFrame(true, false);
+		} else if (!argv[1].compare("lock")) {
+			_oglMan->setItemFrame(false, true);
+		} else {
+			return (true);
+		}
+		return (false);
+	}
+	return (true);
+}
+
 class InvalidLocationException : public std::exception
 {
 	public:
@@ -532,7 +552,8 @@ bool Chat::sendMessage( std::string str )
 	if (str[0] == '/') {
 		std::vector<std::string> parstr = split(str, ' ');
 		if (str[1] == '/') {
-			if (!WorldEdit::Get()->parseCommand(parstr) || !handle_freeze(parstr.size(), parstr)) {
+			if (!WorldEdit::Get()->parseCommand(parstr) || !handle_freeze(parstr.size(), parstr)
+				|| !handle_frame(parstr.size(), parstr)) {
 				return (true);
 			}
 		} else {

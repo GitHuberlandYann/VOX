@@ -2,6 +2,7 @@
 #include "Settings.hpp"
 #include "utils.h"
 #include "Player.hpp"
+#include "logs.hpp"
 
 Camera::Camera( void )
 	: _camPlacement(CAMPLACEMENT::DEFAULT)
@@ -11,7 +12,7 @@ Camera::Camera( void )
 
 Camera::~Camera( void )
 {
-	std::cout << "Destructor of Camera called" << std::endl;
+	MAINLOG(LOG("Destructor of Camera called"));
 }
 
 // ************************************************************************** //

@@ -1,4 +1,5 @@
 #include "SignInstance.hpp"
+#include "logs.hpp"
 #include <cassert>
 
 SignInstance::SignInstance( Chunk* chunk, int value, glm::ivec3 pos )
@@ -70,7 +71,7 @@ void SignInstance::displayText( std::vector<t_shaderInput> &partArr )
 			up    = glm::vec3(0, 0, 1);
 			break ;
 		default:
-			std::cout << "ERROR signInstance::displayText orientation" << std::endl;
+			LOGERROR("ERROR signInstance::displayText orientation");
 			return ;
 	}
 	glm::vec3 topLeft = glm::vec3(_chunk->getStartX(), _chunk->getStartY(), 0) + _pos + glm::vec3(0.5f, 0.5f, 0.5f) + front * (0.5f - 1.751f * one16th) + up * 0.225f;

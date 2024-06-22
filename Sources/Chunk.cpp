@@ -1,6 +1,7 @@
 #include "Player.hpp"
 #include "random.hpp"
 #include "Menu.hpp"
+#include "logs.hpp"
 
 extern std::mutex mtx_backup;
 
@@ -345,10 +346,10 @@ ChestInstance *Chunk::getChestInstance( glm::ivec3 pos )
 	if (search != _chests.end()) {
 		return (search->second);
 	}
-	std::cout << _startX << ", " << _startY << " failed to find chest at " << key << " from " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-	std::cout << "chests values are " << std::endl;
+	LOGERROR(_startX << ", " << _startY << " failed to find chest at " << key << " from " << POS(pos));
+	LOGERROR("chests values are ");
 	for (auto& ch: _chests) {
-		std::cout << ch.first << std::endl;
+		LOGERROR(ch.first);
 	}
 	return (NULL);
 }
@@ -360,10 +361,10 @@ FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
 	if (search != _furnaces.end()) {
 		return (search->second);
 	}
-	std::cout << _startX << ", " << _startY << " failed to find furnace at " << key << " from " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-	std::cout << "furnaces values are " << std::endl;
+	LOGERROR(_startX << ", " << _startY << " failed to find furnace at " << key << " from " << POS(pos));
+	LOGERROR("furnaces values are ");
 	for (auto& fur: _furnaces) {
-		std::cout << fur.first << std::endl;
+		LOGERROR(fur.first);
 	}
 	return (NULL);
 }
@@ -377,7 +378,7 @@ void Chunk::setSignContent( t_sign_info sign )
 	int key = ((((sign.pos.x - _startX) << settings::consts::chunk_shift) + sign.pos.y - _startY) << settings::consts::world_shift) + sign.pos.z;;
 	auto search = _signs.find(key);
 	if (search == _signs.end()) {
-		std::cout << "Chunk::setSignContent [" << _startX << ", " << _startY << "]failed to find sign at pos " << sign.pos.x << ", " << sign.pos.y << ", " << sign.pos.z << std::endl;
+		LOGERROR("Chunk::setSignContent [" << _startX << ", " << _startY << "]failed to find sign at pos " << POS(sign.pos));
 		return ;
 	}
 	search->second->setContent(sign.content);
@@ -431,7 +432,6 @@ void Chunk::checkFillVertices( void )
 			}
 		}
 		resetDisplayedFaces();
-		// std::cout << "chunk " << _startX << ", " << _startY << ": " << _displayed_faces << std::endl;
 		fill_vertex_array();
 		_vaoVIP = false;
 		_nb_neighbours = cnt; // do this at end to make sure resetDisplayedFaces is called before any light_update shinanigans
@@ -575,7 +575,7 @@ int Chunk::isHit( glm::ivec3 pos )
 		return (blocks::air);
 	}
 	if (chunk_pos.x < 0 || chunk_pos.x >= settings::consts::chunk_size || chunk_pos.y < 0 || chunk_pos.y >= settings::consts::chunk_size) {
-		std::cout << "ERROR block out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
+		LOGERROR("ERROR block out of chunk " << POS(chunk_pos));
 		return (blocks::air);
 	}
 	// if (_thread.joinable()) {
@@ -665,7 +665,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit )
 	}
 	glm::ivec3 chunk_pos = {block_hit.x - _startX, block_hit.y - _startY, block_hit.z};
 	if (chunk_pos.x < 0 || chunk_pos.x >= settings::consts::chunk_size || chunk_pos.y < 0 || chunk_pos.y >= settings::consts::chunk_size || chunk_pos.z < 0 || chunk_pos.z > 255) {
-		std::cout << "ERROR block hit out of chunk " << chunk_pos.x << ", " << chunk_pos.y << ", " << chunk_pos.z << std::endl;
+		LOGERROR("ERROR block hit out of chunk " << POS(chunk_pos));
 		return ;
 	}
 	for (int index = 0; index < 6; ++index) {
@@ -692,20 +692,16 @@ int Chunk::isLoaded( GLint& counter )
 void Chunk::drawArray( GLint& counter, GLint& face_counter )
 {
 	if (_light_update && _nb_neighbours == 4) {
-		std::cout << _startX << ", " << _startY << " light update" << std::endl;
+		MAINLOG(LOG(_startX << ", " << _startY << " light update"));
 		fill_vertex_array();
-		// std::cout << "over." << std::endl;
 	} else if (_vertex_update && _nb_neighbours == 4) {
-		// std::cout << _startX << ", " << _startY << " vertex update (prob crop)" << std::endl;
 		fill_vertex_array();
 	}
 	if (!_vaoReset) { // TODO change vaoReset logic (swap true and false)
 		++counter;
 		if (!_vaoVIP && (counter & 63) > 6) { // we don't load more than 5 new chunks per 50 new chunks per frame
-		// std::cout << "skip one" << std::endl;
 			return ;
 		}
-		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		setup_array_buffer();
 	}
     _vabo.bindVertexArray(); // this is the costly operation, chunk_size up == fps down
@@ -718,14 +714,14 @@ void Chunk::updateFurnaces( double currentTime )
 	for (auto& fur: _furnaces) {
 		int state = fur.second->updateTimes(currentTime);
 		if (state != furnace_state::NOCHANGE) {
-			// std::cout << "FURNACE STATE CHANGE TO " << state << std::endl;
+			FURNACELOG(LOG("FURNACE STATE CHANGE TO " << state));
 			int value = _blocks[fur.first];
 			_blocks[fur.first] = (value & (mask::all_bits - mask::redstone::activated)) + ((state == furnace_state::ON) << offset::redstone::activated);
 			// set/unset furnace position as light source of 13 using state
 			int posZ = fur.first & (settings::consts::world_height - 1);
 			int posY = ((fur.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
 			int posX = ((fur.first >> settings::consts::world_shift) >> settings::consts::chunk_shift);
-			// std::cout << "furnace at " << _startX + posX << ", " << _startY + posY << ", " << posZ << std::endl;
+			FURNACELOG(LOG("furnace at " << _startX + posX << ", " << _startY + posY << ", " << posZ));
 			if (state == furnace_state::ON) {
 				_lights[fur.first] = 13 + (13 << 4);
 				light_spread(posX, posY, posZ, false); // spread block light
@@ -752,7 +748,7 @@ void Chunk::addMob( const AMob& mob, int mobType )
 			_mobs.push_back(std::make_shared<Skeleton>(static_cast<const Skeleton&>(mob)));
 			break ;
 		default:
-			std::cout << "ERROR Chunk::addMob invalid mobType " << mobType << std::endl;
+			LOGERROR("ERROR Chunk::addMob invalid mobType " << mobType);
 			break ;
 	}
 }
@@ -849,7 +845,6 @@ void Chunk::drawSky( GLint& counter, GLint& face_counter )
 		return ;
 	}
 	if (_skyVaoReset) {
-		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		++counter;
 		if (!_skyVaoVIP && !_skyVaoSet && counter > 5) { // we don't load more than 5 new chunks per frame
 			return ;
@@ -859,7 +854,6 @@ void Chunk::drawSky( GLint& counter, GLint& face_counter )
 	}
     _vaboSky.bindVertexArray();
 	glDrawArrays(GL_TRIANGLES, 0, _sky_count * 6); // 6 points/face
-	// std::cout << "draw sky" << std::endl;
 	face_counter += _sky_count;
 }
 
@@ -869,7 +863,6 @@ void Chunk::drawWater( GLint& counter, GLint& face_counter )
 		return ;
 	}
 	if (_waterVaoReset) {
-		// std::cout << "chunk reset " << _startX << ", " << _startY << std::endl;
 		++counter;
 		if (!_waterVaoVIP && !_waterVaoSet && counter > 5) { // we don't load more than 5 new chunks per frame
 			return ;
@@ -879,7 +872,6 @@ void Chunk::drawWater( GLint& counter, GLint& face_counter )
 	}
     _vaboWater.bindVertexArray();
 	glDrawArrays(GL_TRIANGLES, 0, _water_count * 6); // 6 points/face
-	// std::cout << "draw water" << std::endl;
 	face_counter += _water_count;
 }
 

@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "DayCycle.hpp"
 #include "Chat.hpp"
+#include "logs.hpp"
 
 // ************************************************************************** //
 //                                Private                                     //
@@ -15,7 +16,7 @@ DayCycle::DayCycle( void )
 
 DayCycle::~DayCycle( void )
 {
-	std::cout << "Destructor of DayCycle called" << std::endl;
+	MAINLOG(LOG("Destructor of DayCycle called"));
 }
 
 /* Internal sky light

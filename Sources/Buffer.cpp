@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "Buffer.hpp"
+#include "logs.hpp"
 
 Buffer::Buffer( void )
     : _vao(0), _vbo(0), _size(0)
@@ -57,7 +58,7 @@ void Buffer::uploadData( size_t size, const void* data )
 				glVertexAttribPointer(attrib.index, attrib.size, GL_FLOAT, GL_FALSE, _size, (void *)(offset));
 				break ;
 			default:
-				std::cout << "ERROR Buffer::updloadData unrecognized type: " << attrib.type << std::endl;
+				LOGERROR("ERROR Buffer::updloadData unrecognized type: " << attrib.type);
 				break ;
 		}
 		offset += attrib.size * sizeof(GLint);

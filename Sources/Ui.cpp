@@ -1,6 +1,7 @@
 #include "Player.hpp"
 #include "Ui.hpp"
 #include "Settings.hpp"
+#include "logs.hpp"
 
 UI::UI( void )
 	: _hideUI(false), _texture(0), _gui_size(4), _nb_items(0),
@@ -12,7 +13,7 @@ UI::UI( void )
 
 UI::~UI( void )
 {
-	std::cout << "Destructor of UI called" << std::endl;	
+	MAINLOG(LOG("Destructor of UI called"));
 }
 
 void UI::deleteBuffers( void )

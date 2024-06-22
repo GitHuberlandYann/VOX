@@ -2,6 +2,7 @@
 #include "Menu.hpp"
 #include "Inventory.hpp"
 #include "callbacks.hpp"
+#include "logs.hpp"
 
 Player* playerPtr = NULL;
 Menu* menuPtr = NULL;
@@ -60,7 +61,7 @@ namespace inputs
 	{
 		(void)window;
 		if (codepoint < 32 || codepoint > 126) {
-			std::cout << __func__ << ": codepoint out of range: " << codepoint << std::endl;
+			LOGERROR(__func__ << ": codepoint out of range: " << codepoint);
 			return ;
 		}
 		// std::cout << "codepoint you just pressed: " << codepoint << " => " << static_cast<char>(codepoint) << std::endl;

@@ -3,6 +3,7 @@
 #include "Settings.hpp"
 #include "WorldEdit.hpp"
 // #include "Benchmark.hpp"
+#include "logs.hpp"
 void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
@@ -13,7 +14,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0}), _camera(std::make_unique<Camera>()),
 	_ui(std::make_unique<UI>()), _menu(std::make_unique<Menu>()), _skybox(std::make_unique<Skybox>())
 {
-	std::cout << "Constructor of OpenGL_Manager called" << std::endl << std::endl;
+	MAINLOG(LOG("Constructor of OpenGL_Manager called\n"));
 	_inventory->setUIPtr(_ui.get());
 	_camera->setTarget(_player.get());
 	_ui->setPtrs(this, _inventory.get(), _player.get());
@@ -25,7 +26,7 @@ OpenGL_Manager::OpenGL_Manager( void )
 
 OpenGL_Manager::~OpenGL_Manager( void )
 {
-	std::cout << "Destructor of OpenGL_Manager called" << std::endl;
+	MAINLOG(LOG("Destructor of OpenGL_Manager called"));
 
 	stopThread();
 

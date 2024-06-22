@@ -1,6 +1,7 @@
 #include "Chunk.hpp"
 #include "random.hpp"
 #include "utils.h"
+#include "logs.hpp"
 
 // ************************************************************************** //
 //                                Private                                     //
@@ -16,11 +17,11 @@ void Chunk::updateCrop( int value, int offset )
 	int posZ = offset & (settings::consts::world_height - 1);
 	int posY = ((offset >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
 	int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
-	// std::cout << _startX << ", " << _startY << ": update crop at " << posX << ", " << posY << ", " << posZ << std::endl;
+	TICKUPLOG(LOG(_startX << ", " << _startY << ": update crop at " << posX << ", " << posY << ", " << posZ));
 	int light = getLightLevel(posX, posY, posZ);
 	light = maxi(light & 0xF, (light >> 8) & 0xF);
 	if (light < 9) { // crop requires light level of at least 9 to grow // TODO handle night light dimming
-		// std::cout << "Failure. sky light " << ((light >> 8) & 0xF) << ", block light " << (light & 0xF) << std::endl;
+		TICKUPLOG(LOG("Failure. sky light " << ((light >> 8) & 0xF) << ", block light " << (light & 0xF)));
 		if (light <= 7) { // uproot // TODO crops can't be planted if light level <= 7
 			remove_block(true, {posX, posY, posZ});
 			_vertex_update = true;
@@ -40,14 +41,14 @@ void Chunk::updateCrop( int value, int offset )
 		}
 	} // TODO might want to handle diag crop
 	float growth_probability = 1.0f / (glm::floor(25 / points) + 1);
-	// std::cout << "points " << points << ", proba: " << growth_probability << "%" << std::endl;
+	TICKUPLOG(LOG("points " << points << ", proba: " << growth_probability << "%"));
 	if (Random::randomFloat(_seed) <= growth_probability) {
 		_blocks[offset] = value + (1 << offset::blocks::bitfield);
 		_added[offset] = value + (1 << offset::blocks::bitfield);
 		_vertex_update = true;
-		// std::cout << "Success!" << std::endl;
+		TICKUPLOG(LOG("Success!"));
 	} else {
-		// std::cout << "Failure." << std::endl;
+		TICKUPLOG(LOG("Failure."));
 	}
 }
 
@@ -85,7 +86,7 @@ void Chunk::updateFarmland( int value, int offset )
 			_removed.erase(offset);
 			return ;
 		} else if (type_above != blocks::wheat_crop) { // TODO once other crops implemented, use ->geometry != GEO::CROP instead
-			// std::cout << "updateFarmland replace_block " << _startX << ", " << _startY << std::endl;
+			TICKUPLOG(LOG("updateFarmland replace_block " << _startX << ", " << _startY));
 			setBlockAt(blocks::dirt, {posX, posY, posZ}, true);
 			_vertex_update = true;
 			return ;
@@ -169,7 +170,7 @@ void Chunk::decayLeaves( int offset )
 
 	int logConnected = findLog(posX, posY, posZ, 6);
 	if (!logConnected) {
-		// std::cout << "decay leave " << _startX << ", " << _startY << std::endl;
+		TICKUPLOG(LOG("decay leave " << _startX << ", " << _startY));
 		remove_block(true, {posX, posY, posZ}); // TODO might want to update ligth
 		_vertex_update = true;
 	}
@@ -200,18 +201,18 @@ void Chunk::growTree( int value, int offset )
 
 	int light = getLightLevel(posX, posY, posZ);
 	light = maxi(light & 0xF, (light >> 8) & 0xF);
-	std::cout << "growTree at " << posX << ", " << posY << ", " << posZ << std::endl;
+	TICKUPLOG(LOG("growTree at " << posX << ", " << posY << ", " << posZ));
 	if (light < 9 || !spaceForTree(posX, posY, posZ)) { // requirements not met
-	std::cout << "failure. light " << light << std::endl;
+	TICKUPLOG(LOG("failure. light " << light));
 		return ;
 	}
 	if (!(value & mask::sapling::growth)) { // grow into stage 1, no visual diff
 		_blocks[offset] = value | mask::sapling::growth;
 		_added[offset] = value | mask::sapling::growth;
-	std::cout << "grow stage 1!" << std::endl;
+	TICKUPLOG(LOG("grow stage 1!"));
 		return ;
 	}
-	std::cout << "oak tree!" << std::endl;
+	TICKUPLOG(LOG("oak tree!"));
 	// grow oak tree starting from offset
 	_blocks[offset] = blocks::air;
 	add_block( false, {posX, posY, posZ}, blocks::oak_log, blocks::air );
@@ -257,7 +258,7 @@ void Chunk::tickUpdate( void )
 		for (int j = 0; j < 3; j++) {
 			int selected = Random::rangedNumber(_seed, i * (1 << 12), (i + 1) * (1 << 12));
 			int value = _blocks[selected], type = value & mask::blocks::type;
-				// std::cout << "updating crop in chunk " << _startX << ", " << _startY << ": " << ((selected >> settings::consts::world_shift) >> settings::consts::chunk_shift) << " " << ((selected >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)) << ", " << (selected & (settings::consts::world_height - 1)) << std::endl;
+				TICKUPLOG(LOG("updating crop in chunk " << _startX << ", " << _startY << ": " << ((selected >> settings::consts::world_shift) >> settings::consts::chunk_shift) << " " << ((selected >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)) << ", " << (selected & (settings::consts::world_height - 1))));
 			if (value & mask::blocks::notVisible) { // not updated
 				continue ;
 			}
@@ -295,7 +296,7 @@ void Chunk::updateScheduledBlocks( void )
 		int offset = _scheduled_to_fall[0];
 		int type = _blocks[offset] & mask::blocks::type;
 		if (type != blocks::sand && type != blocks::gravel) {
-			// std::cerr << _startX << ", " << _startY << " scheduled_to_fall block is " << s_blocks[type]->name << std::endl;
+			LOGERROR(_startX << ", " << _startY << " scheduled_to_fall block is " << s_blocks[type]->name);
 			_scheduled_to_fall.erase(_scheduled_to_fall.begin());
 			continue ;
 		}

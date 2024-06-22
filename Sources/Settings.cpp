@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "Settings.hpp"
+#include "logs.hpp"
 #include <cassert>
 
 Settings::Settings( void )
@@ -19,7 +20,7 @@ Settings::Settings( void )
 
 Settings::~Settings( void )
 {
-	std::cout << "Destructor of Settings called" << std::endl;
+	MAINLOG(LOG("Destructor of Settings called"));
 }
 
 // ************************************************************************** //
