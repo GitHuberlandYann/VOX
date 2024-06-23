@@ -6,6 +6,14 @@
 
 Inventory::Inventory( void ) : _slot(0), _modif(false)
 {
+	#if 0 // check if hardcoded recipe book has appropriate dimensions at first glance
+	for (auto entry : recipes) {
+		size_t lineSize = (entry.first & 0x3) * (entry.first >> 2) + 2; // widthxheight
+		LOGERROR("Checking key " << entry.first << " width " << (entry.first & 0x3) << " height "
+				<< (entry.first >> 2) << " lineSize " << lineSize << " total size " << entry.second.size());
+		assert((!(entry.second.size() % lineSize)) && " incorrect recipe book.");
+	}
+	#endif
 }
 
 Inventory::~Inventory( void )
@@ -50,36 +58,60 @@ void Inventory::changeCrafted( int craft )
 {
 	if (!craft) {
 		return ;
-	} else if (craft == 1) {
-		for (int index = 0; index < IRECEIPT_SIZE; index++) {
-			bool match = true;
-			for (int rindex = 0; rindex < 4; rindex++) {
-				if (_icraft[rindex].type != ireceipt[index][rindex]) {
-					match = false;
-				}
-			}
-			if (match) {
-				int dura = s_blocks[ireceipt[index][4]]->durability;
-				_crafted = {ireceipt[index][4], ireceipt[index][5], {dura, dura}};
-				return ;
+	}
+	int minX = 2, minY = 2, maxX = 0, maxY = 0;
+	if (craft == 1) {
+		for (int index = 0; index < 4; index++) {
+			if (_icraft[index].type != blocks::air) {
+				minX = glm::min(minX, index & 1);
+				maxX = glm::max(maxX, index & 1);
+				minY = glm::min(minY, index >> 1);
+				maxY = glm::max(maxY, index >> 1);
 			}
 		}
 	} else if (craft == 2) {
-		for (int index = 0; index < RECEIPT_SIZE; index++) {
-			bool match = true;
-			for (int rindex = 0; rindex < 9; rindex++) {
-				if (_craft[rindex].type != receipt[index][rindex]) {
-					match = false;
-				}
-			}
-			if (match) {
-				int dura = s_blocks[receipt[index][9]]->durability;
-				_crafted = {receipt[index][9], receipt[index][10], {dura, dura}};
-				return ;
+		for (int index = 0; index < 9; index++) {
+			if (_craft[index].type != blocks::air) {
+				minX = glm::min(minX, index % 3);
+				maxX = glm::max(maxX, index % 3);
+				minY = glm::min(minY, index / 3);
+				maxY = glm::max(maxY, index / 3);
 			}
 		}
 	}
-	_crafted ={0};
+	if (minX > maxX) { // _icraft/_craft grid is empty
+		_crafted = {0};
+		return ;
+	}
+	int width = maxX + 1 - minX, height = maxY + 1 - minY;
+	int key = width + (height << 2);
+	auto search = recipes.find(key);
+	if (search == recipes.end()) {
+		_crafted = {0};
+		return ;
+	}
+	size_t line = (width * height) + 2;
+	for (size_t index = 0; index < search->second.size(); index += line) {
+		bool match = true;
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
+				if ((craft == 1 && _icraft[minX + x + (minY + y) * 2].type != search->second[index + x + y * width])
+					|| (craft == 2 && _craft[minX + x + (minY + y) * 3].type != search->second[index + x + y * width])) {
+					match = false;
+					break ;
+				}
+			}
+			if (!match) break ;
+		}
+		if (match) { // recipe matches recipe in book
+			_crafted.type = search->second[index + line - 2];
+			_crafted.amount = search->second[index + line - 1];
+			int dura = s_blocks[_crafted.type]->durability;
+			_crafted.dura = {dura, dura};
+			return ;
+		}
+	}
+	_crafted = {0};
 }
 
 void Inventory::produceCraft( int craft )
@@ -467,7 +499,9 @@ t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceIns
 	} else {
 		return (block);
 	}
+	LOG("changeCrafted called from putOneBlockAt with arg " << craft_place);
 	changeCrafted(craft_place);
+	LOG("changeCrafted over");
 	if (--block.amount == 0) {
 		return (t_item());
 	}

@@ -254,11 +254,11 @@ namespace blocks {
 		redstone_ore,
 		redstone_block,
 		oak_slab = 48,
-		oak_fence,
+		oak_fence = 50,
 		stone_slab,
-		smooth_stone_slab,
-		cobblestone_slab,
-		stone_bricks_slab = 57, // 56 is free
+		smooth_stone_slab = 53,
+		cobblestone_slab = 55,
+		stone_bricks_slab = 57,
 		piston,
 		sticky_piston,
 		piston_head,
@@ -319,6 +319,7 @@ namespace blocks {
 		flint_and_steel,
 		zombie_egg = 128,
 		skeleton_egg,
+		string,
 		white_wool = 136,
 		pink_wool,
 		magenta_wool,
@@ -2857,6 +2858,17 @@ struct SkeletonEgg : Block {
 			item3D = false;
 			textureX = 10;
 			textureY = 3;
+		}
+};
+
+struct String : Block {
+	public:
+		String() {
+			name = "STRING";
+			isItemOnly = true;
+			item3D = false;
+			textureX = 10;
+			textureY = 4;
 		}
 };
 
