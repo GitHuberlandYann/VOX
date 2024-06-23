@@ -12,7 +12,7 @@ Settings::Settings( void )
 
 	_ints[settings::ints::render_dist] = settings::defaults::render_distance;
 	_ints[settings::ints::clouds] = settings::FANCY;
-	_ints[settings::ints::flat_world_block] = blocks::sand;
+	_ints[settings::ints::flat_world_block] = settings::fw_types[0];
 
 	_floats[settings::floats::fov] = settings::defaults::fov;
 	_floats[settings::floats::brightness] = settings::defaults::brightness;

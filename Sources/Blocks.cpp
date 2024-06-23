@@ -12,14 +12,17 @@ const std::array<std::unique_ptr<Block>, S_BLOCKS_SIZE> s_blocks = {
 	std::make_unique<CobbleStoneSlabTop>(), std::make_unique<StoneBricksSlabBottom>(), std::make_unique<StoneBricksSlabTop>(), std::make_unique<Piston>(), std::make_unique<StickyPiston>(), std::make_unique<PistonHead>(), std::make_unique<MovingPiston>(), std::make_unique<Observer>(),
 	std::make_unique<Poppy>(), std::make_unique<Dandelion>(), std::make_unique<BlueOrchid>(), std::make_unique<Allium>(), std::make_unique<CornFlower>(), std::make_unique<PinkTulip>(), std::make_unique<Grass>(), std::make_unique<SugarCane>(),
 	std::make_unique<DeadBush>(), std::make_unique<OakSapling>(), std::make_unique<Torch>(), std::make_unique<RedstoneTorch>(), std::make_unique<RedstoneDust>(), std::make_unique<Repeater>(), std::make_unique<Comparator>(), std::make_unique<Chest>(),
-	std::make_unique<WheatCrop>(), std::make_unique<ItemFrame>(), std::make_unique<BirchPlanks>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
+	std::make_unique<WheatCrop>(), std::make_unique<ItemFrame>(), std::make_unique<BirchPlanks>(), std::make_unique<SandStone>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
 	std::make_unique<Water>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
 	std::make_unique<Stick>(), std::make_unique<WoodenShovel>(), std::make_unique<StoneShovel>(), std::make_unique<IronShovel>(), std::make_unique<DiamondShovel>(), std::make_unique<WoodenAxe>(), std::make_unique<StoneAxe>(), std::make_unique<IronAxe>(),
 	std::make_unique<DiamondAxe>(), std::make_unique<WoodenPickaxe>(), std::make_unique<StonePickaxe>(), std::make_unique<IronPickaxe>(), std::make_unique<DiamondPickaxe>(), std::make_unique<Bow>(), std::make_unique<Arrow>(), std::make_unique<WorldEditWand>(),
 	std::make_unique<Coal>(), std::make_unique<Charcoal>(), std::make_unique<IronIngot>(), std::make_unique<Diamond>(), std::make_unique<Bucket>(), std::make_unique<WaterBucket>(), std::make_unique<WoodenHoe>(), std::make_unique<StoneHoe>(),
 	std::make_unique<IronHoe>(), std::make_unique<DiamondHoe>(), std::make_unique<WheatSeeds>(), std::make_unique<Wheat>(), std::make_unique<Bread>(), std::make_unique<Apple>(), std::make_unique<Flint>(), std::make_unique<FlintAndSteel>(),
 	std::make_unique<ZombieEgg>(), std::make_unique<SkeletonEgg>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
-	std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
+	std::make_unique<WhiteWool>(), std::make_unique<PinkWool>(), std::make_unique<MagentaWool>(), std::make_unique<PurpleWool>(), std::make_unique<BlueWool>(), std::make_unique<LightBlueWool>(), std::make_unique<CyanWool>(), std::make_unique<GreenWool>(),
+	std::make_unique<LimeWool>(), std::make_unique<YellowWool>(), std::make_unique<OrangeWool>(), std::make_unique<RedWool>(), std::make_unique<BrownWool>(), std::make_unique<BlackWool>(), std::make_unique<GrayWool>(), std::make_unique<LightGrayWool>(),
+	std::make_unique<WhiteCarpet>(), std::make_unique<PinkCarpet>(), std::make_unique<MagentaCarpet>(), std::make_unique<PurpleCarpet>(), std::make_unique<BlueCarpet>(), std::make_unique<LightBlueCarpet>(), std::make_unique<CyanCarpet>(), std::make_unique<GreenCarpet>(),
+	std::make_unique<LimeCarpet>(), std::make_unique<YellowCarpet>(), std::make_unique<OrangeCarpet>(), std::make_unique<RedCarpet>(), std::make_unique<BrownCarpet>(), std::make_unique<BlackCarpet>(), std::make_unique<GrayCarpet>(), std::make_unique<LightGrayCarpet>(),
 };
 
 void Cube::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
@@ -2897,5 +2900,73 @@ void Observer::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 		spec = (this->texX(face_dir::minus_z, value) << 4) + (this->texY(face_dir::minus_z, value) << 12) + (5 << 19);
 		spec += (chunk->computeLight(pos.x, pos.y, pos.z - 1) << 24);
 		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, 16, 16, 0, 8);
+	}
+}
+
+void Carpet::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
+{
+	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + one16th);
+	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + one16th);
+	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
+	glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
+
+	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + one16th);
+	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + one16th);
+	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
+	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
+
+	int spec, faceLight, cornerLight, shade;
+	std::array<int, 4> deltas;
+	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
+		spec = (textureX << 4) + (textureY << 12) + (3 << 19);
+		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
+		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + (15 << 8) + (faceLight << 24), 16, 1, 0, 8);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
+		spec = (textureX << 4) + (textureY << 12) + (4 << 19);
+		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
+		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + (15 << 8) + (faceLight << 24), 16, 1, 0, 8);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
+		spec = (textureX << 4) + (textureY << 12) + (1 << 19);
+		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
+		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + (15 << 8) + (faceLight << 24), 16, 1, 0, 8);
+	}
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
+		spec = (textureX << 4) + (textureY << 12) + (2 << 19);
+		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
+		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + (15 << 8) + (faceLight << 24), 16, 1, 0, 8);
+	}
+	spec = (textureX << 4) + (textureY << 12);
+	faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
+	cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+	shade = chunk->computeShade(pos.x, pos.y, pos.z, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+	deltas[0] = (cornerLight << 24) + (shade << 22);
+	cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+	shade = chunk->computeShade(pos.x, pos.y, pos.z, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+	deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+	cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+	shade = chunk->computeShade(pos.x, pos.y, pos.z, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+	deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
+	cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+	shade = chunk->computeShade(pos.x, pos.y, pos.z, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+	deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
+	utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
+		spec = (textureX << 4) + (textureY << 12) + (5 << 19);
+		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
+		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+		deltas[0] = (cornerLight << 24) + (shade << 22);
+		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+		deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
+		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
+		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
 	}
 }

@@ -205,7 +205,7 @@ namespace settings {
 		FAST,
 		OFF,
 	};
-	const std::array<int, 5> fw_types = {blocks::sand, blocks::grass_block, blocks::water, blocks::stone, blocks::oak_log};
+	const std::array<int, 5> fw_types = {blocks::sand_stone, blocks::grass_block, blocks::water, blocks::stone, blocks::oak_log};
 };
 
 class Settings

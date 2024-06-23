@@ -361,3 +361,30 @@ void Chest::addItem( UI *ui, int x, int y, int gui_size, int width, int depth, b
     v3 = {spec + 15 + (15 << 8), {x + (width - 2) * gui_size, y + width * gui_size * 281.25f / 362.5f}};
     ui->addFace(v0, v1, v2, v3, alien, movement);
 }
+
+void Carpet::addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const
+{
+    x += gui_size;
+    int ytop = y + width * gui_size * 175.0f / 362.5f;
+	// top face
+	int spec = (15 << 24) + (textureX << 4) + (textureY << 12) + (depth << 16);
+	t_shaderInputItem v0 = {spec, {x, ytop + width * gui_size * 81.25f / 362.5f}};
+	t_shaderInputItem v1 = {spec + (1 << 4), {x + (width - 2) * 0.5f * gui_size, ytop}};
+	t_shaderInputItem v2 = {spec + (1 << 12), {x + (width - 2) * 0.5f * gui_size, ytop + width * gui_size * 162.5f / 362.5f}};
+	t_shaderInputItem v3 = {spec + (1 << 4) + (1 << 12), {x + (width - 2) * gui_size, ytop + width * gui_size * 81.25f / 362.5f}};
+	ui->addFace(v0, v1, v2, v3, alien, movement);
+	// left face
+	spec = (10 << 24) + (textureX << 4) + (textureY << 12) + (depth << 16);
+	v0 = {spec + (15 << 8), {x, ytop + width * gui_size * 81.25f / 362.5f}};
+	v1 = {spec + (15 << 8) + (1 << 4), {x + (width - 2) * 0.5f * gui_size, ytop + width * gui_size * 162.5f / 362.5f}};
+	v2 = {spec + (1 << 12), {x, y + width * gui_size * 281.25f / 362.5f}};
+	v3 = {spec + (1 << 4) + (1 << 12), {x + (width - 2) * 0.5f * gui_size, y + width * gui_size}};
+	ui->addFace(v0, v1, v2, v3, alien, movement);
+	// right face
+	spec = (7 << 24) + (textureX << 4) + (textureY << 12) + (depth << 16);
+	v0 = {spec + (15 << 8), {x + (width - 2) * 0.5f * gui_size, ytop + width * gui_size * 162.5f / 362.5f}};
+	v1 = {spec + (15 << 8) + (1 << 4), {x + (width - 2) * gui_size, ytop + width * gui_size * 81.25f / 362.5f}};
+	v2 = {spec + (1 << 12), {x + (width - 2) * 0.5f * gui_size, y + width * gui_size}};
+	v3 = {spec + (1 << 4) + (1 << 12), {x + (width - 2) * gui_size, y + width * gui_size * 281.25f / 362.5f}};
+	ui->addFace(v0, v1, v2, v3, alien, movement);
+}

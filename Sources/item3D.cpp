@@ -252,3 +252,26 @@ void ItemFrame::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::ve
 	spec = (texX() << 4) + (textureY << 12) + (3 << 19) + (light << 24);
 	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec + 2 + (2 << 8), 12, 12, 0, 8);
 }
+
+void Carpet::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
+{
+	up *= one16th;
+
+	int spec = (textureX << 4) + (textureY << 12) + (3 << 19) + (light << 24);
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec + (15 << 8), 16, 1, 0, 8);
+
+	spec += (1 << 19);
+	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec + (15 << 8), 16, 1, 0, 8);
+
+	spec -= (3 << 19);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec + (15 << 8), 16, 1, 0, 8);
+
+	spec += (1 << 19);
+	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec + (15 << 8), 16, 1, 0, 8);
+
+	spec -= (2 << 19);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front + right + up) * size, pos + up * size, pos + (right + up) * size}, spec, 16, 16, 0, 8);
+
+	spec += (5 << 19);
+	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, 16, 16, 0, 8);
+}
