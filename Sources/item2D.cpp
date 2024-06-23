@@ -91,7 +91,7 @@ void OakLog::addItem( UI *ui, int x, int y, int gui_size, int width, int depth, 
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 }
 
-void SlabBottom::addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const
+void Slab::addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const
 {
     x += gui_size;
     int ytop = y + width * gui_size * 100.0f / 362.5f;

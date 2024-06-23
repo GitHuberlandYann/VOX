@@ -377,11 +377,6 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		case blocks::smooth_stone_stairs_top:
 		case blocks::cobblestone_stairs_top:
 		case blocks::stone_bricks_stairs_top:
-		case blocks::oak_slab_top:
-		case blocks::stone_slab_top:
-		case blocks::smooth_stone_slab_top:
-		case blocks::cobblestone_slab_top:
-		case blocks::stone_bricks_slab_top:
 		case blocks::piston_head:
 		case blocks::moving_piston:
 		case blocks::wheat_crop:

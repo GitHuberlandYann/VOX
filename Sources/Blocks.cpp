@@ -8,8 +8,8 @@ const std::array<std::unique_ptr<Block>, S_BLOCKS_SIZE> s_blocks = {
 	std::make_unique<Bedrock>(), std::make_unique<Dirt>(), std::make_unique<SmoothStone>(), std::make_unique<Stone>(), std::make_unique<Cobblestone>(), std::make_unique<StoneBrick>(), std::make_unique<CrackedStoneBrick>(), std::make_unique<Sand>(),
 	std::make_unique<Gravel>(), std::make_unique<OakLeaves>(), std::make_unique<OakPlanks>(), std::make_unique<Glass>(), std::make_unique<GlassPane>(), std::make_unique<RedstoneLamp>(), std::make_unique<StoneButton>(), std::make_unique<OakButton>(),
 	std::make_unique<CoalOre>(), std::make_unique<IronOre>(), std::make_unique<DiamondOre>(), std::make_unique<CoalBlock>(), std::make_unique<IronBlock>(), std::make_unique<DiamondBlock>(), std::make_unique<RedstoneOre>(), std::make_unique<RedstoneBlock>(),
-	std::make_unique<OakSlabBottom>(), std::make_unique<OakSlabTop>(), std::make_unique<OakFence>(), std::make_unique<StoneSlabBottom>(), std::make_unique<StoneSlabTop>(), std::make_unique<SmoothStoneSlabBottom>(), std::make_unique<SmoothStoneSlabTop>(), std::make_unique<CobbleStoneSlabBottom>(),
-	std::make_unique<CobbleStoneSlabTop>(), std::make_unique<StoneBricksSlabBottom>(), std::make_unique<StoneBricksSlabTop>(), std::make_unique<Piston>(), std::make_unique<StickyPiston>(), std::make_unique<PistonHead>(), std::make_unique<MovingPiston>(), std::make_unique<Observer>(),
+	std::make_unique<OakSlab>(), std::make_unique<TBD>(), std::make_unique<OakFence>(), std::make_unique<StoneSlab>(), std::make_unique<TBD>(), std::make_unique<SmoothStoneSlab>(), std::make_unique<TBD>(), std::make_unique<CobbleStoneSlab>(),
+	std::make_unique<TBD>(), std::make_unique<StoneBricksSlab>(), std::make_unique<TBD>(), std::make_unique<Piston>(), std::make_unique<StickyPiston>(), std::make_unique<PistonHead>(), std::make_unique<MovingPiston>(), std::make_unique<Observer>(),
 	std::make_unique<Poppy>(), std::make_unique<Dandelion>(), std::make_unique<BlueOrchid>(), std::make_unique<Allium>(), std::make_unique<CornFlower>(), std::make_unique<PinkTulip>(), std::make_unique<Grass>(), std::make_unique<SugarCane>(),
 	std::make_unique<DeadBush>(), std::make_unique<OakSapling>(), std::make_unique<Torch>(), std::make_unique<RedstoneTorch>(), std::make_unique<RedstoneDust>(), std::make_unique<Repeater>(), std::make_unique<Comparator>(), std::make_unique<Chest>(),
 	std::make_unique<WheatCrop>(), std::make_unique<ItemFrame>(), std::make_unique<BirchPlanks>(), std::make_unique<SandStone>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
@@ -283,17 +283,20 @@ void Farmland::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 	}
 }
 
-void SlabBottom::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
+void Slab::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
-	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0.5f);
-	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0.5f);
-	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
-	glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
+	float zTop = (value & mask::slab::top) ? 1.f : .5f;
+	float zBottom = (value & mask::slab::top) ? .5f : .0f;
+	int zOffset = (value & mask::slab::top) ? 0 : (8 << 8);
+	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + zTop);
+	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + zTop);
+	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + zBottom);
+	glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + zBottom);
 
-	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0.5f);
-	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0.5f);
-	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
-	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
+	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + zTop);
+	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + zTop);
+	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + zBottom);
+	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + zBottom);
 
 	int spec, faceLight;
 	int baseSpec = (textureX << 4) + (textureY << 12);
@@ -301,86 +304,38 @@ void SlabBottom::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, gl
 		spec = baseSpec + (3 << 19);
 		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + (8 << 8), 16, 8, 0, 8);
+		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + zOffset, 16, 8, 0, 8);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
 		spec = baseSpec + (4 << 19);
 		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + (8 << 8), 16, 8, 0, 8);
+		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + zOffset, 16, 8, 0, 8);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
 		spec = baseSpec + (1 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + (8 << 8), 16, 8, 0, 8);
+		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + zOffset, 16, 8, 0, 8);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
 		spec = baseSpec + (2 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + (8 << 8), 16, 8, 0, 8);
+		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + zOffset, 16, 8, 0, 8);
 	}
-	spec = baseSpec + (0 << 19);
-	faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-	spec += (faceLight << 24);
-	utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
+	if (!(value & mask::slab::top) || visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
+		spec = baseSpec + (0 << 19);
+		faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
+		spec += (faceLight << 24);
+		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
+	}
+	if ((value & mask::slab::top) || visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
 		spec = baseSpec + (5 << 19);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 		spec += (faceLight << 24);
 		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
 	}
-}
-
-void SlabTop::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
-{
-	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
-	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
-	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0.5f);
-	glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0.5f);
-
-	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 1);
-	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 1);
-	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0.5f);
-	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0.5f);
-
-	int spec, faceLight;
-	int baseSpec = (textureX << 4) + (textureY << 12);
-	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-		spec = baseSpec + (3 << 19);
-		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 16, 8, 0, 8);
-	}
-	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-		spec = baseSpec + (4 << 19);
-		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 16, 8, 0, 8);
-	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-		spec = baseSpec + (1 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 16, 8, 0, 8);
-	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-		spec = baseSpec + (2 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 16, 8, 0, 8);
-	}
-	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-		spec = baseSpec + (0 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
-	}
-	spec = baseSpec + (5 << 19);
-	faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-	spec += (faceLight << 24);
-	utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
 }
 
 void Torch::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const

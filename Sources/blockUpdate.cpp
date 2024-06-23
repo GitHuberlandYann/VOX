@@ -201,7 +201,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		if (neighbourShape != geometry::cube) {
 			block_value = type + (face_dir::minus_z << offset::blocks::orientation);
 			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1) & mask::blocks::type]->geometry;
-			if (!(neighbourShape == geometry::cube || neighbourShape == geometry::slab_top
+			if (!(neighbourShape == geometry::cube || (neighbourShape == geometry::slab && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::slab::top))
 				|| neighbourShape == geometry::stairs_top || neighbourShape == geometry::fence)) {
 				return ;
 			}
@@ -257,8 +257,8 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		}
 	} else if (shape == geometry::dust) {
 		geometry shape_below = s_blocks[_blocks[offset - 1] & mask::blocks::type]->geometry;
-		if (!(shape_below == geometry::cube || shape_below == geometry::slab_top || shape_below == geometry::piston
-			|| shape_below == geometry::stairs_top || shape_below == geometry::glass)) {
+		if (!(shape_below == geometry::cube || (shape_below == geometry::slab && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::slab::top))
+			|| shape_below == geometry::piston || shape_below == geometry::stairs_top || shape_below == geometry::glass)) {
 			return ;
 		}
 	}

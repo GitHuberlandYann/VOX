@@ -105,11 +105,11 @@ const int receipt[RECEIPT_SIZE][11] = {
 	{blocks::air, blocks::air, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::crafting_table, 1},
 	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::crafting_table, 1},
 	
-	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_slab_bottom, 6},
-	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::stone, blocks::stone, blocks::stone, blocks::stone_slab_bottom, 6},
-	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone_slab_bottom, 6},
-	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone_slab_bottom, 6},
-	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::stone_bricks, blocks::stone_bricks, blocks::stone_bricks, blocks::stone_bricks_slab_bottom, 6},
+	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_slab, 6},
+	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::stone, blocks::stone, blocks::stone, blocks::stone_slab, 6},
+	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone_slab, 6},
+	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone_slab, 6},
+	{blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::air, blocks::stone_bricks, blocks::stone_bricks, blocks::stone_bricks, blocks::stone_bricks_slab, 6},
 
 	{blocks::oak_planks, blocks::air, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_stairs_bottom, 4},
 	{blocks::stone, blocks::air, blocks::air, blocks::stone, blocks::stone, blocks::air, blocks::stone, blocks::stone, blocks::stone, blocks::stone_stairs_bottom, 4},

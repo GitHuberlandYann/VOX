@@ -25,9 +25,8 @@ namespace settings {
 		inline int   gui_max()     { return (glm::max(1, glm::min(WIN_WIDTH / 320, WIN_HEIGHT / 240))); } // TODO check this
 
 		namespace json {
-			const std::string current_version = "v1.1";
-			const int nbr_past_versions = 2;
-			const std::array<std::string, nbr_past_versions> past_versions = {"v0.0", "v1.0"};
+			const int nbr_versions = 4;
+			const std::array<std::string, nbr_versions> versions = {"v0.0", "v1.0", "v1.1", "v1.2"};
 		};
 
 		namespace gamemode {
@@ -147,6 +146,7 @@ namespace settings {
 			monitor_height,
 			available_res,
 			flat_world_block,
+			json_version,
 			size
 		};
 	};
@@ -194,9 +194,7 @@ namespace settings {
 			ui_vertex_shader,
 			size_shaders = ui_vertex_shader + 1 - size_textures,
 
-			json_version = ui_vertex_shader + 1,
-
-			size,
+			size = ui_vertex_shader + 1,
 		};
 	};
 

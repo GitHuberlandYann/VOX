@@ -27,7 +27,7 @@ void Block::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 p
 	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, 16, 16, 0, 8);
 }
 
-void SlabBottom::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
+void Slab::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
 {
 	up *= 0.5f;
 

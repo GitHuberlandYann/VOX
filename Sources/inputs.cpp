@@ -237,7 +237,22 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 				type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::minus_y : face_dir::plus_y) << offset::blocks::orientation);
 			}
 		}
-	} else if (shape == geometry::slab_bottom || shape == geometry::stairs_bottom) { // TODO get rid of oak_slab_top and oak_stairs_top and use door::upper_half instead
+	} else if (shape == geometry::slab) {
+		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
+			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? type : type | mask::slab::top);
+		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
+			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.x > _block_hit.prev_pos.x) ? glm::ivec3(0, 0, 0) : glm::ivec3(1, 0, 0));
+			glm::vec3 intersect = line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {1, 0, 0});
+			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type | mask::slab::top);
+			// _ui->chatMessage("block hit " + std::to_string(_block_hit.pos.x) + ", " + std::to_string(_block_hit.pos.y) + ", " + std::to_string(_block_hit.pos.z));
+			// _ui->chatMessage("p0 at " + std::to_string(p0.x) + ", " + std::to_string(p0.y) + ", " + std::to_string(p0.z));
+			// _ui->chatMessage("intersect at " + std::to_string(intersect.x) + ", " + std::to_string(intersect.y) + ", " + std::to_string(intersect.z));
+		} else {
+			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
+			glm::vec3 intersect = line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {0, 1, 0});
+			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type | mask::slab::top);
+		}
+	} else if (shape == geometry::stairs_bottom) { // TODO get rid of oak_stairs_top and use door::upper_half instead
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
 			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? type : type + 1); // oak_slab_top = oak_slab_bottom + 1
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {

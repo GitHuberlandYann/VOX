@@ -606,7 +606,7 @@ t_item Inventory::removeBlock( bool thrown )
 void Inventory::replaceSlot( int type, bool creative )
 {
 	geometry shape = s_blocks[type]->geometry;
-	if (shape == geometry::slab_top || shape == geometry::stairs_top) {
+	if (shape == geometry::stairs_top) {
 		--type;
 	} else if (type == blocks::piston_head || type == blocks::moving_piston) {
 		return ;

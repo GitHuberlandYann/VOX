@@ -175,6 +175,10 @@ namespace mask {
 		const int locked = (1 << 26);
 		const int notVisible = (1 << 27);
 	};
+
+	namespace slab {
+		const int top = (1 << 24);
+	};
 };
 
 enum class geometry {
@@ -183,8 +187,7 @@ enum class geometry {
 	cross,         // flowers and such
 	farmland,      // cube with z = 15 * one16th
 	torch,
-	slab_bottom,
-	slab_top,
+	slab,
 	stairs_bottom,
 	stairs_top,
 	fence,
@@ -250,17 +253,12 @@ namespace blocks {
 		diamond_block,
 		redstone_ore,
 		redstone_block,
-		oak_slab_bottom = 48,
-		oak_slab_top,
+		oak_slab = 48,
 		oak_fence,
-		stone_slab_bottom,
-		stone_slab_top,
-		smooth_stone_slab_bottom,
-		smooth_stone_slab_top,
-		cobblestone_slab_bottom,
-		cobblestone_slab_top = 56,
-		stone_bricks_slab_bottom,
-		stone_bricks_slab_top,
+		stone_slab,
+		smooth_stone_slab,
+		cobblestone_slab,
+		stone_bricks_slab = 57, // 56 is free
 		piston,
 		sticky_piston,
 		piston_head,
@@ -454,34 +452,26 @@ struct Cross : Block {
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
-struct SlabBottom : Block {
+struct Slab : Block {
 	public:
-		SlabBottom() {
+		Slab() {
 			hasHitbox = true;
+			hasOrientedHitbox = true;
 			collisionHitbox_1x1x1 = false;
 			collisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 0.25f};
-			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = geometry::slab_bottom;
+			orientedCollisionHitbox = true;
+			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			geometry = geometry::slab;
 			transparent = true;
+		}
+		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
+			(void)orientation;
+			hitbox[0] = {.5f, .5f, (bitfield == 1) ? .75f : .25f}; // hitboxCenter
+			hitbox[1] = {.5f, .5f, .25f}; // hitboxHalfSize
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
-};
-
-struct SlabTop : Block {
-	public:
-		SlabTop() {
-			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 0.75f};
-			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = geometry::slab_top;
-			transparent = true;
-		}
-		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
 struct StairsBottom : Block {
@@ -1856,27 +1846,11 @@ struct RedstoneBlock : Cube {
 		}
 };
 
-struct OakSlabBottom : SlabBottom {
+struct OakSlab : Slab {
 	public:
-		OakSlabBottom() {
-			name = "OAK_SLAB_BOTTOM";
-			mined = blocks::oak_slab_bottom;
-			blast_resistance = 3.0f;
-			isFuel = true;
-			fuel_time = 15;
-			byHand = true;
-			needed_tool = blocks::wooden_axe;
-			hardness = 2.0f;
-			textureX = 4;
-			textureY = 10;
-		}
-};
-
-struct OakSlabTop : SlabTop {
-	public:
-		OakSlabTop() {
-			name = "OAK_SLAB_TOP";
-			mined = blocks::oak_slab_bottom;
+		OakSlab() {
+			name = "OAK_SLAB";
+			mined = blocks::oak_slab;
 			blast_resistance = 3.0f;
 			isFuel = true;
 			fuel_time = 15;
@@ -1904,13 +1878,13 @@ struct OakFence : Fence {
 		}
 };
 
-struct StoneSlabBottom : SlabBottom {
+struct StoneSlab : Slab {
 	public:
-		StoneSlabBottom() {
-			name = "STONE_SLAB_BOTTOM";
-			mined = blocks::stone_slab_bottom;
+		StoneSlab() {
+			name = "STONE_SLAB";
+			mined = blocks::stone_slab;
 			isComposant = true;
-			getProduction = blocks::smooth_stone_slab_bottom;
+			getProduction = blocks::smooth_stone_slab;
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
@@ -1920,25 +1894,11 @@ struct StoneSlabBottom : SlabBottom {
 		}
 };
 
-struct StoneSlabTop : SlabTop {
+struct SmoothStoneSlab : Slab {
 	public:
-		StoneSlabTop() {
-			name = "STONE_SLAB_TOP";
-			mined = blocks::stone_slab_bottom;
-			blast_resistance = 6.0f;
-			byHand = false;
-			needed_tool = blocks::wooden_pickaxe;
-			hardness = 2.0f;
-			textureX = 4;
-			textureY = 3;
-		}
-};
-
-struct SmoothStoneSlabBottom : SlabBottom {
-	public:
-		SmoothStoneSlabBottom() {
-			name = "SMOOTH_STONE_SLAB_BOTTOM";
-			mined = blocks::smooth_stone_slab_bottom;
+		SmoothStoneSlab() {
+			name = "SMOOTH_STONE_SLAB";
+			mined = blocks::smooth_stone_slab;
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
@@ -1948,27 +1908,13 @@ struct SmoothStoneSlabBottom : SlabBottom {
 		}
 };
 
-struct SmoothStoneSlabTop : SlabTop {
+struct CobbleStoneSlab : Slab {
 	public:
-		SmoothStoneSlabTop() {
-			name = "SMOOTH_STONE_SLAB_TOP";
-			mined = blocks::smooth_stone_slab_bottom;
-			blast_resistance = 6.0f;
-			byHand = false;
-			needed_tool = blocks::wooden_pickaxe;
-			hardness = 2.0f;
-			textureX = 4;
-			textureY = 2;
-		}
-};
-
-struct CobbleStoneSlabBottom : SlabBottom {
-	public:
-		CobbleStoneSlabBottom() {
-			name = "COBBLESTONE_SLAB_BOTTOM";
-			mined = blocks::cobblestone_slab_bottom;
+		CobbleStoneSlab() {
+			name = "COBBLESTONE_SLAB";
+			mined = blocks::cobblestone_slab;
 			isComposant = true;
-			getProduction = blocks::stone_slab_bottom;
+			getProduction = blocks::stone_slab;
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
@@ -1978,25 +1924,11 @@ struct CobbleStoneSlabBottom : SlabBottom {
 		}
 };
 
-struct CobbleStoneSlabTop : SlabTop {
+struct StoneBricksSlab : Slab {
 	public:
-		CobbleStoneSlabTop() {
-			name = "COBBLESTONE_SLAB_TOP";
-			mined = blocks::cobblestone_slab_bottom;
-			blast_resistance = 6.0f;
-			byHand = false;
-			needed_tool = blocks::wooden_pickaxe;
-			hardness = 2.0f;
-			textureX = 4;
-			textureY = 4;
-		}
-};
-
-struct StoneBricksSlabBottom : SlabBottom {
-	public:
-		StoneBricksSlabBottom() {
-			name = "STONE_BRICKS_SLAB_BOTTOM";
-			mined = blocks::stone_bricks_slab_bottom;
+		StoneBricksSlab() {
+			name = "STONE_BRICKS_SLAB";
+			mined = blocks::stone_bricks_slab;
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
@@ -2006,19 +1938,6 @@ struct StoneBricksSlabBottom : SlabBottom {
 		}
 };
 
-struct StoneBricksSlabTop : SlabTop {
-	public:
-		StoneBricksSlabTop() {
-			name = "STONE_BRICKS_SLAB_TOP";
-			mined = blocks::stone_bricks_slab_bottom;
-			blast_resistance = 6.0f;
-			byHand = false;
-			needed_tool = blocks::wooden_pickaxe;
-			hardness = 2.0f;
-			textureX = 4;
-			textureY = 5;
-		}
-};
 int opposite_dir( int dir );
 struct Piston : Block {
 	public:

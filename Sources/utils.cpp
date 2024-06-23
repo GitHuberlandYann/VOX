@@ -334,30 +334,24 @@ int opposite_dir( int dir )
  */
 bool visible_face( int value, int next, int dir )
 {
-	value &= mask::blocks::type;
-	next &= mask::blocks::type;
-	geometry valueShape = s_blocks[value]->geometry;
-	geometry nextShape = s_blocks[next]->geometry;
+	int type = (value & mask::blocks::type);
+	int nextType = (next & mask::blocks::type);
+	geometry valueShape = s_blocks[type]->geometry;
+	geometry nextShape = s_blocks[nextType]->geometry;
 
 	switch (valueShape) {
 		case geometry::none:
-			return (value == blocks::oak_sign);
-		case geometry::slab_bottom:
+			return (type == blocks::oak_sign);
 		case geometry::farmland:
 			if (dir == face_dir::plus_z) {
-				return (true);
-			}
-			break ;
-		case geometry::slab_top:
-			if (dir == face_dir::minus_z) {
 				return (true);
 			}
 			break ;
 		default:
 			break ;
 	}
-	if (next == blocks::oak_leaves && (value != blocks::oak_leaves
-		|| (value == blocks::oak_leaves
+	if (nextType == blocks::oak_leaves && (type != blocks::oak_leaves
+		|| (type == blocks::oak_leaves
 		&& (dir == face_dir::plus_x || dir == face_dir::plus_y || dir == face_dir::plus_z)))) {
 		return (true);
 	}
@@ -371,6 +365,7 @@ bool visible_face( int value, int next, int dir )
 		case geometry::crop:
 		case geometry::lever:
 		case geometry::dust:
+		case geometry::slab:
 		case geometry::piston: // might want to change this..
 		case geometry::button:
 			return (true);
@@ -378,16 +373,6 @@ bool visible_face( int value, int next, int dir )
 			return (dir != face_dir::plus_z && valueShape != geometry::repeater);
 		case geometry::glass:
 		case geometry::glass_pane:
-			return (valueShape != nextShape);
-		case geometry::slab_bottom:
-			if (dir == face_dir::minus_z) {
-				return (true);
-			}
-			return (valueShape != nextShape);
-		case geometry::slab_top:
-			if (dir == face_dir::plus_z) {
-				return (true);
-			}
 			return (valueShape != nextShape);
 		case geometry::stairs_bottom:
 			if (dir == face_dir::plus_z) {
@@ -405,7 +390,7 @@ bool visible_face( int value, int next, int dir )
 			} else if (dir == face_dir::plus_z) {
 				return (false);
 			}
-			return (valueShape != geometry::slab_bottom && valueShape != geometry::farmland);
+			return (valueShape != geometry::farmland);
 		default:
 			break ;
 	}

@@ -106,8 +106,8 @@ void Player::drawHeldItem( std::vector<t_shaderInput>& arr, std::vector<t_shader
 		utils::shader::addQuads(partArr, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
 
 		geometry shape = s_blocks[item]->geometry;
-		float height = (shape == geometry::slab_bottom) ? 0.125f : (shape == geometry::trapdoor) ? 0.046875f : 0.25f;
-		int yoff = (shape == geometry::slab_bottom) ? 8 : (shape == geometry::trapdoor) ? 3 : 16;
+		float height = (shape == geometry::slab) ? 0.125f : (shape == geometry::trapdoor) ? 0.046875f : 0.25f;
+		int yoff = (shape == geometry::slab) ? 8 : (shape == geometry::trapdoor) ? 3 : 16;
 		// left
 		p1 = p2;
 		p2 = p0 - itemUp * height;
