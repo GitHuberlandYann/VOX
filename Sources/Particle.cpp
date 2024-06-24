@@ -143,7 +143,7 @@ bool Particle::updateBreaking( std::vector<t_shaderInput>& arr, glm::vec3 camDir
 //                                Public                                      //
 // ************************************************************************** //
 
-bool Particle::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime )
+bool Particle::update( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInput>& partArr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime )
 {
 	_lifeTime += deltaTime;
 
@@ -155,13 +155,13 @@ bool Particle::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, glm::v
 
 	switch (_type) {
 		case PARTICLES::FLAME:
-			return (updateFlame(arr, camDir));
+			return (updateFlame(partArr, camDir));
 		case PARTICLES::SMOKE:
-			return (updateSmoke(arr, camDir, deltaTime));
+			return (updateSmoke(partArr, camDir, deltaTime));
 		case PARTICLES::EXPLOSION:
-			return (updateExplosion(arr, camDir));
+			return (updateExplosion(partArr, camDir));
 		case PARTICLES::BREAKING:
-			return (updateBreaking(arr, camDir, deltaTime));
+			return (updateBreaking(entityArr, camDir, deltaTime));
 	}
 	return (false);
 }

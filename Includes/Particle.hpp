@@ -18,7 +18,7 @@ class Particle
 		Particle( Chunk* chunk, glm::vec3 pos, int type, float shade = 1, int block = blocks::air );
 		~Particle( void );
 
-		bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime );
+		bool update( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInput>& partArr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime );
 
 	private:
 		glm::vec3 _pos, _dir;

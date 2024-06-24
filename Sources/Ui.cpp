@@ -63,10 +63,10 @@ void UI::add_dura_value( std::vector<std::array<int, 3>> &vertices, int index )
 		return ;
 	}
 	// adding grey bar first
-	addQuads(vertices, settings::consts::tex::blocks, settings::consts::depth::dura_back, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura_back, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, 14 * _gui_size, _gui_size, 16, 0, 1, 1);
 	// adding progress bar second
 	float percent = 1.0f * dura.x / dura.y;
-	addQuads(vertices, settings::consts::tex::blocks, settings::consts::depth::dura, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1);
+	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, (percent < .6f) ? (percent < .3f) ? 19 : 18 : 17, 0, 1, 1);
 }
 
 void UI::add_hearts_holder( std::vector<std::array<int, 3>> &vertices, int index )
@@ -264,8 +264,7 @@ void UI::loadTextures( void )
 	glActiveTexture(GL_TEXTURE0 + 2);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _texture);
 
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 6);
-	loadSubTextureArray(256, 256, settings::consts::tex::blocks, Settings::Get()->getString(settings::strings::block_atlas));
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 5);
 	loadSubTextureArray(256, 256, settings::consts::tex::ui, Settings::Get()->getString(settings::strings::ui_atlas));
 	loadSubTextureArray(256, 256, settings::consts::tex::inventory, Settings::Get()->getString(settings::strings::tex_inventory));
 	loadSubTextureArray(256, 256, settings::consts::tex::crafting_table, Settings::Get()->getString(settings::strings::tex_crafting_table));

@@ -990,9 +990,9 @@ void Menu::setup_array_buffer_load( int completion )
 	int step = 1, turnCounter = 0, numSteps = 1, stepSize = 20, state = 0, x = WIN_WIDTH / 2 - 20, y = WIN_HEIGHT / 2;
 	for (; step < 1 + 100; step++) {
 		int offset = (step < 1 + completion / 10) ? 48 : 32; // cobblestone or stone
-		addQuads(settings::consts::tex::blocks, settings::consts::depth::menu::str, x, y, stepSize, stepSize, 64, offset, 16, 16);
+		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::str, x, y, stepSize, stepSize, offset, 0, 16, 16);
 		if (step == 1 + completion / 10) {
-			addQuads(settings::consts::tex::blocks, settings::consts::depth::menu::str, x, y, stepSize, stepSize, 240, 32 * ((completion % 10) != 0) + 16 * (completion % 10), 16, 16); // break frame
+			addQuads(settings::consts::tex::ui, settings::consts::depth::menu::dura, x, y, stepSize, stepSize, 80 + 16 * (completion % 10), 0, 16, 16); // break frame
 		}
 		switch (state) {
 			case 0:
@@ -1182,8 +1182,8 @@ void Menu::setup_array_buffer_sign( void )
 {
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1); // occult window
 
-	addQuads(settings::consts::tex::blocks, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 50 * _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size, 100 * _gui_size, 50 * _gui_size, 2, 226, 24, 12); // sign main body
-	addQuads(settings::consts::tex::blocks, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 4.1666f * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 8.333f * _gui_size, 50 * _gui_size, 6, 32, 2, 12); // sign post
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 50 * _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size, 100 * _gui_size, 50 * _gui_size, 24, 47, 24, 12); // sign main body
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 4.1666f * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 8.333f * _gui_size, 50 * _gui_size, 48, 47, 2, 12); // sign post
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // Done
 
 	setup_shader();
@@ -1243,10 +1243,10 @@ void Menu::add_dura_value( glm::ivec2 dura, int x, int y )
 		return ;
 	}
 	// adding grey bar first
-	addQuads(settings::consts::tex::blocks, settings::consts::depth::menu::dura_back, x + _gui_size, y + 14 * _gui_size, 14 * _gui_size, _gui_size, 64, 0, 1, 1);
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::dura_back, x + _gui_size, y + 14 * _gui_size, 14 * _gui_size, _gui_size, 16, 0, 1, 1);
 	// adding progress bar second
 	float percent = 1.0f * dura.x / dura.y;
-	addQuads(settings::consts::tex::blocks, settings::consts::depth::menu::dura, x + _gui_size, y + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, 103 * (percent < 0.6f) - (percent < 0.3), 16 + 9 * (percent < 0.6f) - 18 * (percent < 0.3f), 1, 1);
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::dura, x + _gui_size, y + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, (percent < .6f) ? (percent < .3f) ? 19 : 18 : 17, 0, 1, 1);
 }
 
 void Menu::display_item_value( int x, int y, int amount, int depth )

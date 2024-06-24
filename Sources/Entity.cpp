@@ -212,21 +212,21 @@ bool Entity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double d
 	// if item in block, push it out of block.
 	// first try on the sides, then push it upwards
 	// std::cout << "pos inside chunk " << _chunk_pos.x << ", " << _chunk_pos.y << ": " << _pos.x - _chunk_pos.x << ", " << _pos.y - _chunk_pos.y << ", " << _pos.z << std::endl;
-	if (air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
+	if (!s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
 		_pos.z += 3 * deltaTime;
 		_dir = {0, 0, 1};
 	} else {
-		if (_dir.x && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
+		if (_dir.x && s_blocks[_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
 			_pos.x += _dir.x * deltaTime;
 		} else {
 			_dir.x = 0;
 		}
-		if (_dir.y && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
+		if (_dir.y && s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
 			_pos.y += _dir.y * deltaTime;
 		} else {
 			_dir.y = 0;
 		}
-		if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime)), false, false, false)) {
+		if (s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime)) & mask::blocks::type]->transparent) {
 			_pos.z += _dir.z * deltaTime;
 			_dir.z -= 0.1f;
 		} else {
@@ -345,17 +345,17 @@ bool TNTEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, doubl
 		}
 	}
 
-	if (_dir.x && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
+	if (_dir.x && s_blocks[_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
 		_pos.x += _dir.x * deltaTime;
 	} else {
 		_dir.x = 0;
 	}
-	if (_dir.y && !air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
+	if (_dir.y && s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
 		_pos.y += _dir.y * deltaTime;
 	} else {
 		_dir.y = 0;
 	}
-	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime)), false, false, false)) {
+	if (s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime)) & mask::blocks::type]->transparent) {
 		_pos.z += _dir.z * deltaTime;
 		_dir.z -= 0.1f;
 	} else {

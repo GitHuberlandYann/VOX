@@ -817,7 +817,7 @@ size_t Chunk::clearEntities( void )
 	return (res);
 }
 
-void Chunk::updateParticles( std::vector<t_shaderInput>& arr, double deltaTime )
+void Chunk::updateParticles( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInput>& partArr, double deltaTime )
 {
 	glm::vec3 camPos = _player->getPos(), camDir = _player->getDir();
 	size_t size = _particles.size();
@@ -826,7 +826,7 @@ void Chunk::updateParticles( std::vector<t_shaderInput>& arr, double deltaTime )
 	}
 
 	for (int index = size - 1; index >= 0; --index) {
-		if (_particles[index]->update(arr, camPos, camDir, deltaTime)) {
+		if (_particles[index]->update(entityArr, partArr, camPos, camDir, deltaTime)) {
 			delete _particles[index];
 			_particles.erase(_particles.begin() + index);
 		}
@@ -834,7 +834,7 @@ void Chunk::updateParticles( std::vector<t_shaderInput>& arr, double deltaTime )
 
 	FLAMES:
 	for (auto &f : _flames) {
-		f.second->update(arr, camPos, camDir, deltaTime);
+		f.second->update(entityArr, partArr, camPos, camDir, deltaTime);
 	}
 }
 

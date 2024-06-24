@@ -246,22 +246,28 @@ Textures:
 	0: settings::strings::block_atlas
 	1: settings::strings::ascii_atlas
 	2: array:
-		0: settings::strings::block_atlas
-		1: settings::strings::ui_atlas
-		2: settings::strings::tex_inventory
-		3: settings::strings::tex_crafting_table
-		4: settings::strings::tex_furnace
-		5: settings::strings::tex_chest
+		0: settings::strings::ui_atlas
+		1: settings::strings::tex_inventory
+		2: settings::strings::tex_crafting_table
+		3: settings::strings::tex_furnace
+		4: settings::strings::tex_chest
 	3: array:
 		0: settings::strings::tex_zombie
 		1: settings::strings::tex_skeleton
 		2: settings::strings::tex_player
 	4: settings::strings::water_still
 	5: settings::strings::water_flow
-	6: array:
-		0: settings::strings::block_atlas
-		1: settings::strings::particle_atlas
-		2: settings::strings::model_atlas
+	6: settings::strings::particle_atlas
+
+Shaders x Textures:
+	default	 x 0
+	sky		 x 0, 4, 5 TODO transform 0 into just glass texture
+	skybox	 x none
+	ui		 x 2
+	text	 x 1
+	item	 x 0
+	particle x 6
+	model	 x 3
 
 
 Some info:

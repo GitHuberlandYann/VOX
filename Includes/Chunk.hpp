@@ -203,7 +203,7 @@ class Chunk
 		void updateMobs( std::vector<t_shaderInput>& modArr, double deltaTime );
 		void updateEntities( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, double deltaTime );
 		size_t clearEntities( void );
-		void updateParticles( std::vector<t_shaderInput>& arr, double deltaTime );
+		void updateParticles( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInput>& partArr, double deltaTime );
 		size_t clearParticles( void );
 
 		std::string getAddsRmsString( void );

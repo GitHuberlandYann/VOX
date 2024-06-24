@@ -455,14 +455,8 @@ void OpenGL_Manager::loadTextures( void )
 	glUniform1i(glGetUniformLocation(_skyShader.getProgram(), "waterFlow"), 5);
 
 	_particleShader.useProgram();
-	glActiveTexture(GL_TEXTURE0 + 6);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, _textures[3]);
-
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 2);
-	loadSubTextureArray(256, 256, 0, Settings::Get()->getString(settings::strings::block_atlas));
-	loadSubTextureArray(256, 256, 1, Settings::Get()->getString(settings::strings::particle_atlas));
-	glUniform1i(glGetUniformLocation(_particleShader.getProgram(), "textures"), 6);
-	check_glstate("Successfully loaded img[6] texture array 2D", true);
+	loadTextureShader(6, _textures[3], Settings::Get()->getString(settings::strings::particle_atlas));
+	glUniform1i(glGetUniformLocation(_particleShader.getProgram(), "particleAtlas"), 6);
 
 	_modelShader.useProgram();
 	glActiveTexture(GL_TEXTURE0 + 3);
@@ -614,7 +608,7 @@ void OpenGL_Manager::main_loop( void )
 				c->updateMobs(_models, deltaTime);
 				c->updateEntities(_entities, _particles, deltaTime);
 				if (Settings::Get()->getBool(settings::bools::particles)) {
-					c->updateParticles(_particles, deltaTime);
+					c->updateParticles(_entities, _particles, deltaTime);
 				}
 			}
 		}
@@ -624,10 +618,10 @@ void OpenGL_Manager::main_loop( void )
 		// b.stamp("solids");
 
 		if (!gamePaused) {
-			(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
-				? _player->drawHeldItem(_models, _particles, _hand_content, _game_mode)
-				: _player->drawPlayer(_models, _particles, _hand_content);
 			drawParticles();
+			(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
+				? _player->drawHeldItem(_models, _entities, _hand_content, _game_mode)
+				: _player->drawPlayer(_models, _entities, _hand_content);
 			drawModels();
 			_shader.useProgram();
 			addBreakingAnim();

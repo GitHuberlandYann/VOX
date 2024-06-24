@@ -37,12 +37,11 @@ namespace settings {
 		};
 
 		namespace tex {
-			const int blocks = 0;
-			const int ui = 1;
-			const int inventory = 2;
-			const int crafting_table = 3;
-			const int furnace = 4;
-			const int chest = 5;
+			const int ui = 0;
+			const int inventory = 1;
+			const int crafting_table = 2;
+			const int furnace = 3;
+			const int chest = 4;
 		};
 
 		namespace depth {

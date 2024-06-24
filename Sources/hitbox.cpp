@@ -180,8 +180,6 @@ void Door::getHitbox( glm::vec3* hitbox, int value ) const
 			}
 			break ;
 	}
-	LOG("getHitbox of " << ((open) ? "open" : "closed") << " door called! orientation " << orientation << ", right hinge " << (bitfield & door::right_hinge));
-	LOG("\tresulting hitbox: " << POS(hitbox[0]) << " and " << POS(hitbox[1]));
 }
 
 void Trapdoor::getHitbox( glm::vec3* hitbox, int value ) const
