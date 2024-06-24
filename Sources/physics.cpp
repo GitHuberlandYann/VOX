@@ -17,19 +17,20 @@
 */
 void Chunk::collisionWHitbox( t_collision& res, const Block* target, int value, glm::vec3 pos, float width, float height, int bX, int bY, int bZ )
 {
+	glm::vec3 hitbox[2];
+	target->getHitbox(hitbox, value);
 	if (cube_cube_intersection(pos, {width, width, height},
-		{bX + target->hitboxCenter.x + _startX, bY + target->hitboxCenter.y + _startY, bZ + target->hitboxCenter.z},
-		target->hitboxHalfSize)) {
+		{bX + hitbox[0].x + _startX, bY + hitbox[0].y + _startY, bZ + hitbox[0].z},
+		hitbox[1])) {
 		if (res.type == COLLISION::NONE) {
-			res = {COLLISION::PARTIAL, bZ + target->hitboxCenter.z - target->hitboxHalfSize.z, bZ + target->hitboxCenter.z + target->hitboxHalfSize.z};
+			res = {COLLISION::PARTIAL, bZ + hitbox[0].z - hitbox[1].z, bZ + hitbox[0].z + hitbox[1].z};
 		} else {
-			res.minZ = glm::min(res.minZ, bZ + target->hitboxCenter.z - target->hitboxHalfSize.z);
-			res.maxZ = glm::max(res.maxZ, bZ + target->hitboxCenter.z + target->hitboxHalfSize.z);
+			res.minZ = glm::min(res.minZ, bZ + hitbox[0].z - hitbox[1].z);
+			res.maxZ = glm::max(res.maxZ, bZ + hitbox[0].z + hitbox[1].z);
 		}
 	}
-	if (target->orientedCollisionHitbox) {
-		glm::vec3 hitbox[2];
-		target->getSecondaryHitbox(hitbox, (value >> offset::blocks::orientation) & 0x7, value >> offset::blocks::bitfield);
+	if (target->hasSecondaryCollisionHitbox) {
+		target->getSecondaryHitbox(hitbox, value);
 		if (cube_cube_intersection(pos, {width, width, height},
 			{bX + hitbox[0].x + _startX, bY + hitbox[0].y + _startY, bZ + hitbox[0].z},
 			hitbox[1])) {
@@ -61,35 +62,35 @@ t_collision Chunk::collisionBox( glm::vec3 pos, float width, float height, float
 	int top  = glm::floor(pos.z + height);
 	int value = getBlockAt(minX, minY, top);
 	const Block* target = s_blocks[value & mask::blocks::type].get();
-	if (target->collisionHitbox_1x1x1) {
+	if (target->hasCollisionHitbox_1x1x1) {
 		return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-	} else if (target->collisionHitbox) {
+	} else if (target->hasCollisionHitbox) {
 		collisionWHitbox(res, target, value, pos, width, originalHeight, minX, minY, top);
 	}
 	if (minX != maxX) {
 		value = getBlockAt(maxX, minY, top);
 		target = s_blocks[value & mask::blocks::type].get();
-		if (target->collisionHitbox_1x1x1) {
+		if (target->hasCollisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-		} else if (target->collisionHitbox) {
+		} else if (target->hasCollisionHitbox) {
 			collisionWHitbox(res, target, value, pos, width, originalHeight, maxX, minY, top);
 		}
 	}
 	if (minY != maxY) {
 		value = getBlockAt(minX, maxY, top);
 		target = s_blocks[value & mask::blocks::type].get();
-		if (target->collisionHitbox_1x1x1) {
+		if (target->hasCollisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-		} else if (target->collisionHitbox) {
+		} else if (target->hasCollisionHitbox) {
 			collisionWHitbox(res, target, value, pos, width, originalHeight, minX, maxY, top);
 		}
 	}
 	if (minX != maxX && minY != maxY) {
 		value = getBlockAt(maxX, maxY, top);
 		target = s_blocks[value & mask::blocks::type].get();
-		if (target->collisionHitbox_1x1x1) {
+		if (target->hasCollisionHitbox_1x1x1) {
 			return {COLLISION::TOTAL, 0, static_cast<float>(top + 1)};
-		} else if (target->collisionHitbox) {
+		} else if (target->hasCollisionHitbox) {
 			collisionWHitbox(res, target, value, pos, width, originalHeight, maxX, maxY, top);
 		}
 	}

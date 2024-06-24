@@ -201,8 +201,9 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		if (neighbourShape != geometry::cube) {
 			block_value = type + (face_dir::minus_z << offset::blocks::orientation);
 			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1) & mask::blocks::type]->geometry;
-			if (!(neighbourShape == geometry::cube || (neighbourShape == geometry::slab && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::slab::top))
-				|| neighbourShape == geometry::stairs_top || neighbourShape == geometry::fence)) {
+			if (!(neighbourShape == geometry::cube || neighbourShape == geometry::fence
+				|| (neighbourShape == geometry::slab && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::slab::top))
+				|| (neighbourShape == geometry::stairs && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::stairs::top)))) {
 				return ;
 			}
 		}
@@ -218,8 +219,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			block_value += (_player->getOrientation() << offset::blocks::orientation);
 		}
 		switch (shape) {
-			case geometry::stairs_bottom:
-			case geometry::stairs_top:
+			case geometry::stairs:
 				handle_stair_corners(pos, block_value);
 				break ;
 			case geometry::door:
@@ -257,8 +257,9 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		}
 	} else if (shape == geometry::dust) {
 		geometry shape_below = s_blocks[_blocks[offset - 1] & mask::blocks::type]->geometry;
-		if (!(shape_below == geometry::cube || (shape_below == geometry::slab && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::slab::top))
-			|| shape_below == geometry::piston || shape_below == geometry::stairs_top || shape_below == geometry::glass)) {
+		if (!(shape_below == geometry::cube|| shape_below == geometry::piston || shape_below == geometry::glass
+			|| (shape_below == geometry::slab && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::slab::top))
+			|| (shape_below == geometry::stairs && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::stairs::top)))) {
 			return ;
 		}
 	}
@@ -893,7 +894,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 		case face_dir::minus_x:
 			type |= ((corners::pm | corners::pp) << offset::blocks::bitfield);
 			behind = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((behind & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((behind & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
 					type ^= (corners::pm << offset::blocks::bitfield); // outside corner
 					goto SKIP_FRONT_minus_x;
@@ -903,7 +904,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 				}
 			}
 			front = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((front & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((front & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((front >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
 					type |= (corners::mp << offset::blocks::bitfield); // inside corner
 				} else if (((front >> offset::blocks::orientation) & 0x7) == face_dir::plus_y) {
@@ -912,7 +913,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 			}
 			SKIP_FRONT_minus_x:
 			left = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((left & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((left & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((left >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
 					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::mp | corners::pp)) {
 						left |= (corners::pm << offset::blocks::bitfield); // transform left stair into inside corner stair
@@ -926,7 +927,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 				}
 			}
 			right = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((right & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((right & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((right >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
 					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::mp | corners::pp)) {
 						right ^= (corners::mp << offset::blocks::bitfield); // transform left stair into outside corner stair
@@ -943,7 +944,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 		case face_dir::plus_x:
 			type |= ((corners::mm | corners::mp) << offset::blocks::bitfield);
 			behind = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((behind & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((behind & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
 					type ^= (corners::mm << offset::blocks::bitfield); // outside corner
 					goto SKIP_FRONT_plus_x;
@@ -953,7 +954,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 				}
 			}
 			front = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((front & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((front & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((front >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
 					type |= (corners::pp << offset::blocks::bitfield); // inside corner
 				} else if (((front >> offset::blocks::orientation) & 0x7) == face_dir::plus_y) {
@@ -962,7 +963,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 			}
 			SKIP_FRONT_plus_x:
 			left = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((left & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((left & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((left >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
 					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::mp | corners::pp)) {
 						left ^= (corners::pp << offset::blocks::bitfield); // transform left stair into outside corner stair
@@ -976,7 +977,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 				}
 			}
 			right = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((right & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((right & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((right >> offset::blocks::orientation) & 0x7) == face_dir::minus_y) {
 					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::mp | corners::pp)) {
 						right |= (corners::mm << offset::blocks::bitfield); // transform right stair into inside corner stair
@@ -993,7 +994,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 		case face_dir::minus_y:
 			type |= ((corners::mp | corners::pp) << offset::blocks::bitfield);
 			behind = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((behind & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((behind & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
 					type ^= (corners::mp << offset::blocks::bitfield); // outside corner
 					goto SKIP_FRONT_minus_y;
@@ -1003,7 +1004,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 				}
 			}
 			front = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((front & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((front & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((front >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
 					type |= (corners::pm << offset::blocks::bitfield); // inside corner
 				} else if (((front >> offset::blocks::orientation) & 0x7) == face_dir::plus_x) {
@@ -1012,7 +1013,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 			}
 			SKIP_FRONT_minus_y:
 			left = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((left & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((left & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((left >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
 					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::pm | corners::pp)) {
 						left ^= (corners::pm << offset::blocks::bitfield); // transform left stair into outside corner stair
@@ -1026,7 +1027,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 				}
 			}
 			right = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((right & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((right & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((right >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
 					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::pm | corners::pp)) {
 						right |= (corners::mp << offset::blocks::bitfield); // transform right stair into inside corner stair
@@ -1043,7 +1044,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 		case face_dir::plus_y:
 			type |= ((corners::mm | corners::pm) << offset::blocks::bitfield);
 			behind = getBlockAt(pos.x, pos.y - 1, pos.z);
-			if ((behind & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((behind & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((behind >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
 					type ^= (corners::mm << offset::blocks::bitfield); // outside corner
 					goto SKIP_FRONT_plus_y;
@@ -1053,7 +1054,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 				}
 			}
 			front = getBlockAt(pos.x, pos.y + 1, pos.z);
-			if ((front & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((front & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((front >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
 					type |= (corners::pp << offset::blocks::bitfield); // inside corner
 				} else if (((front >> offset::blocks::orientation) & 0x7) == face_dir::plus_x) {
@@ -1062,7 +1063,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 			}
 			SKIP_FRONT_plus_y:
 			left = getBlockAt(pos.x + 1, pos.y, pos.z);
-			if ((left & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((left & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((left >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
 					if (((left >> offset::blocks::bitfield) & 0xF) == (corners::pm | corners::pp)) {
 						left |= (corners::mm << offset::blocks::bitfield); // transform left stair into inside corner stair
@@ -1076,7 +1077,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 				}
 			}
 			right = getBlockAt(pos.x - 1, pos.y, pos.z);
-			if ((right & mask::blocks::type) == (type & mask::blocks::type)) {
+			if ((right & (mask::blocks::type | mask::stairs::top)) == (type & (mask::blocks::type | mask::stairs::top))) {
 				if (((right >> offset::blocks::orientation) & 0x7) == face_dir::minus_x) {
 					if (((right >> offset::blocks::bitfield) & 0xF) == (corners::pm | corners::pp)) {
 						right ^= (corners::pp << offset::blocks::bitfield); // transform left stair into outside corner stair
@@ -1096,7 +1097,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 void Chunk::handle_door_placement( glm::ivec3 pos, int &type )
 {
 	int below = getBlockAt(pos.x, pos.y, pos.z - 1, false);
-	if (!s_blocks[below & mask::blocks::type]->collisionHitbox_1x1x1) {
+	if (!s_blocks[below & mask::blocks::type]->hasCollisionHitbox_1x1x1) {
 		type = blocks::air;
 		return ;
 	}
@@ -1112,19 +1113,19 @@ void Chunk::handle_door_placement( glm::ivec3 pos, int &type )
 void Chunk::handle_fence_placement( glm::ivec3 pos, int &type )
 {
 	int next = getBlockAt(pos.x - 1, pos.y, pos.z);
-	if (s_blocks[next & mask::blocks::type]->collisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+	if (s_blocks[next & mask::blocks::type]->hasCollisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
 		type |= (fence::mx << offset::blocks::bitfield);
 	}
 	next = getBlockAt(pos.x + 1, pos.y, pos.z);
-	if (s_blocks[next & mask::blocks::type]->collisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+	if (s_blocks[next & mask::blocks::type]->hasCollisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
 		type |= (fence::px << offset::blocks::bitfield);
 	}
 	next = getBlockAt(pos.x, pos.y - 1, pos.z);
-	if (s_blocks[next & mask::blocks::type]->collisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+	if (s_blocks[next & mask::blocks::type]->hasCollisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
 		type |= (fence::my << offset::blocks::bitfield);
 	}
 	next = getBlockAt(pos.x, pos.y + 1, pos.z);
-	if (s_blocks[next & mask::blocks::type]->collisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+	if (s_blocks[next & mask::blocks::type]->hasCollisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
 		type |= (fence::py << offset::blocks::bitfield);
 	}
 }

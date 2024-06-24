@@ -1,12 +1,12 @@
 {
-	"version": "v1.2",
+	"version": "v1.3",
 	"seed": 1942,
 	"game_mode": 0,
 	"debug_mode": false,
 	"f5_mode": false,
 	"outline": true,
 	"flat_world": 83,
-	"dayCycle": {"day": 2, "ticks": 3080},
+	"dayCycle": {"day": 2, "ticks": 3117},
 	"camera": {
 		"pos": {"x": 302.799713, "y": 167.943710, "z": 11.000000},
 		"spawnpoint": {"x": 1.000000, "y": -2.000000, "z": 66.000000},

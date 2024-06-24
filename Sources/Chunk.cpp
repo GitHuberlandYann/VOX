@@ -119,7 +119,7 @@ GLint Chunk::face_count( int type, int row, int col, int level )
 			res += visible_face(type, getBlockAt(row, col, level - 1), face_dir::minus_z);
 			res += visible_face(type, getBlockAt(row, col, level + 1), face_dir::plus_z);
 	}
-	if (type == blocks::oak_stairs_bottom || type == blocks::oak_stairs_top) {
+	if (s_blocks[type]->geometry == geometry::stairs) {
 		res += 2; // +3 if corner stair, but np so far
 	}
 	return (res);

@@ -52,7 +52,7 @@ void Player::drawHeldItem( std::vector<t_shaderInput>& arr, std::vector<t_shader
 		}
 		glm::vec3 itemUp = glm::normalize(glm::cross(itemRight, itemFront));
 
-		if (s_blocks[item]->geometry == geometry::stairs_bottom) {
+		if (s_blocks[item]->geometry == geometry::stairs) {
 			// up
 			glm::vec3 p0 = pos + settings::consts::math::world_up * (0.1f + 0.5f * _front.z) + itemFront * 12.0f * scale - itemRight * 0.25f;
 			glm::vec3 p1 = p0 + itemRight * 0.25f;

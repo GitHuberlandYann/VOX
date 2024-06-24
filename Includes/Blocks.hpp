@@ -128,7 +128,6 @@ namespace mask {
 	namespace blocks {
 		const int type = 0xFFF;
 		const int notVisible = (1 << 12);
-		const int orientation = (0x7 << offset::blocks::orientation);
 	};
 
 	namespace redstone {
@@ -179,6 +178,10 @@ namespace mask {
 	namespace slab {
 		const int top = (1 << 24);
 	};
+
+	namespace stairs {
+		const int top = (1 << 28);
+	};
 };
 
 enum class geometry {
@@ -188,8 +191,7 @@ enum class geometry {
 	farmland,      // cube with z = 15 * one16th
 	torch,
 	slab,
-	stairs_bottom,
-	stairs_top,
+	stairs,
 	fence,
 	glass,
 	glass_pane,
@@ -215,18 +217,18 @@ namespace blocks {
 		target,
 		crafting_table = 8,
 		furnace,
-		oak_stairs_bottom,
-		oak_stairs_top,
+		oak_stairs,
+		empty11,
 		oak_door,
 		oak_trapdoor,
-		stone_stairs_bottom,
-		stone_stairs_top,
-		smooth_stone_stairs_bottom = 16,
-		smooth_stone_stairs_top,
-		cobblestone_stairs_bottom,
-		cobblestone_stairs_top,
-		stone_bricks_stairs_bottom,
-		stone_bricks_stairs_top,
+		stone_stairs,
+		empty15,
+		smooth_stone_stairs = 16,
+		empty17,
+		cobblestone_stairs,
+		empty19,
+		stone_bricks_stairs,
+		empty21,
 		lever,
 		oak_sign,
 		bedrock = 24,
@@ -254,11 +256,16 @@ namespace blocks {
 		redstone_ore,
 		redstone_block,
 		oak_slab = 48,
-		oak_fence = 50,
+		empty49,
+		oak_fence,
 		stone_slab,
-		smooth_stone_slab = 53,
-		cobblestone_slab = 55,
-		stone_bricks_slab = 57,
+		empty52,
+		smooth_stone_slab,
+		empty54,
+		cobblestone_slab,
+		empty56 = 56,
+		stone_bricks_slab,
+		empty58,
 		piston,
 		sticky_piston,
 		piston_head,
@@ -380,11 +387,11 @@ struct Block {
 		bool isFuel = false;
 		bool isComposant = false;
 		bool hasHitbox = false;
-		bool hasOrientedHitbox = false;
-		bool collisionHitbox_1x1x1 = true;
-		bool collisionHitbox = false;
+		bool hasSecondaryHitbox = false;
+		bool hasCollisionHitbox_1x1x1 = true;
+		bool hasCollisionHitbox = false;
 		bool oriented = false;
-		bool orientedCollisionHitbox = false;
+		bool hasSecondaryCollisionHitbox = false;
 		bool isFood = false;
 		bool byHand = false;
 		bool transparent = false;
@@ -407,16 +414,9 @@ struct Block {
 			(void)dir;(void)value;
 			return (textureY);
 		}
-		virtual void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int corners ) const {
-			(void)hitbox;(void)orientation;(void)corners;
-		}
-		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const {
-			(void)chunk;
-			(void)vertices;
-			(void)start;
-			(void)pos;
-			(void)value;
-		}
+		virtual void getHitbox( glm::vec3* hitbox, int value ) const;
+		virtual void getSecondaryHitbox( glm::vec3* hitbox, int value ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 		virtual void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const;
 		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
 		virtual bool isTransparent( int value ) const {
@@ -440,7 +440,7 @@ struct Cross : Block {
 		Cross() {
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
+			hasCollisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, 0.3f};
 			hitboxHalfSize = {0.2f, 0.2f, 0.3f};
 			geometry = geometry::cross;
@@ -457,247 +457,46 @@ struct Slab : Block {
 	public:
 		Slab() {
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			geometry = geometry::slab;
 			transparent = true;
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			(void)orientation;
-			hitbox[0] = {.5f, .5f, (bitfield == 1) ? .75f : .25f}; // hitboxCenter
-			hitbox[1] = {.5f, .5f, .25f}; // hitboxHalfSize
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
 };
 
-struct StairsBottom : Block {
+struct Stairs : Block {
 	public:
-		StairsBottom() {
+		Stairs() {
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
+			hasSecondaryHitbox = true;
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			oriented = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 0.25f};
-			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = geometry::stairs_bottom;
+			hasSecondaryCollisionHitbox = true;
+			geometry = geometry::stairs;
 			transparent = true;
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int corners ) const override {
-			switch (corners) {
-				case corners::mm | corners::mp:
-					hitbox[0] = {0.25f, 0.5f, 0.75f}; // hitboxCenter
-					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
-					break ;
-				case corners::pm | corners::pp:
-					hitbox[0] = {0.75f, 0.5f, 0.75f};
-					hitbox[1] = {0.25f, 0.5f, 0.25f};
-					break ;
-				case corners::mm | corners::pm:
-					hitbox[0] = {0.5f, 0.25f, 0.75f};
-					hitbox[1] = {0.5f, 0.25f, 0.25f};
-					break ;
-				case corners::mp | corners::pp:
-					hitbox[0] = {0.5f, 0.75f, 0.75f};
-					hitbox[1] = {0.5f, 0.25f, 0.25f};
-					break ;
-				case corners::mm:
-					hitbox[0] = {0.25f, 0.25f, 0.75f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case corners::mp:
-					hitbox[0] = {0.25f, 0.75f, 0.75f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case corners::pm:
-					hitbox[0] = {0.75f, 0.25f, 0.75f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case corners::pp:
-					hitbox[0] = {0.75f, 0.75f, 0.75f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case corners::mm | corners::mp | corners::pm:
-					if (orientation == face_dir::plus_x) {
-						hitbox[0] = {0.25f, 0.5f, 0.75f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.25f, 0.75f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case corners::mm | corners::mp | corners::pp:
-					if (orientation == face_dir::plus_x) {
-						hitbox[0] = {0.25f, 0.5f, 0.75f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.75f, 0.75f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case corners::pm | corners::pp | corners::mm:
-					if (orientation == face_dir::minus_x) {
-						hitbox[0] = {0.75f, 0.5f, 0.75f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.25f, 0.75f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case corners::pm | corners::pp | corners::mp:
-					if (orientation == face_dir::minus_x) {
-						hitbox[0] = {0.75f, 0.5f, 0.75f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.75f, 0.75f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-			}
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
+		void getSecondaryHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
-};
-
-struct StairsTop : Block {
-	public:
-		StairsTop() {
-			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			oriented = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0.5f, 0.5f, 0.75f};
-			hitboxHalfSize = {0.5f, 0.5f, 0.25f};
-			geometry = geometry::stairs_top;
-			transparent = true;
-		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int corners ) const override {
-			switch (corners) {
-				case corners::mm | corners::mp:
-					hitbox[0] = {0.25f, 0.5f, 0.25f}; // hitboxCenter
-					hitbox[1] = {0.25f, 0.5f, 0.25f}; // hitboxHalfSize
-					break ;
-				case corners::pm | corners::pp:
-					hitbox[0] = {0.75f, 0.5f, 0.25f};
-					hitbox[1] = {0.25f, 0.5f, 0.25f};
-					break ;
-				case corners::mm | corners::pm:
-					hitbox[0] = {0.5f, 0.25f, 0.25f};
-					hitbox[1] = {0.5f, 0.25f, 0.25f};
-					break ;
-				case corners::mp | corners::pp:
-					hitbox[0] = {0.5f, 0.75f, 0.25f};
-					hitbox[1] = {0.5f, 0.25f, 0.25f};
-					break ;
-				case corners::mm:
-					hitbox[0] = {0.25f, 0.25f, 0.25f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case corners::mp:
-					hitbox[0] = {0.25f, 0.75f, 0.25f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case corners::pm:
-					hitbox[0] = {0.75f, 0.25f, 0.25f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case corners::pp:
-					hitbox[0] = {0.75f, 0.75f, 0.25f};
-					hitbox[1] = {0.25f, 0.25f, 0.25f};
-					break ;
-				case corners::mm | corners::mp | corners::pm:
-					if (orientation == face_dir::plus_x) {
-						hitbox[0] = {0.25f, 0.5f, 0.25f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.25f, 0.25f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case corners::mm | corners::mp | corners::pp:
-					if (orientation == face_dir::plus_x) {
-						hitbox[0] = {0.25f, 0.5f, 0.25f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.75f, 0.25f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case corners::pm | corners::pp | corners::mm:
-					if (orientation == face_dir::minus_x) {
-						hitbox[0] = {0.75f, 0.5f, 0.25f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.25f, 0.25f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-				case corners::pm | corners::pp | corners::mp:
-					if (orientation == face_dir::minus_x) {
-						hitbox[0] = {0.75f, 0.5f, 0.25f};
-						hitbox[1] = {0.25f, 0.5f, 0.25f};
-					} else {
-						hitbox[0] = {0.5f, 0.75f, 0.25f};
-						hitbox[1] = {0.5f, 0.25f, 0.25f};
-					}
-					break ;
-			}
-		}
-		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
 struct Fence : Block {
 	public:
 		Fence() {
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			geometry = geometry::fence;
 			transparent = true;
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			(void)orientation;
-			hitbox[0] = {0.5f, 0.5f, 0.5f};
-			hitbox[1] = {0.125f, 0.125f, 0.5f};
-			switch (bitfield & (fence::mx | fence::px)) {
-				case fence::mx:
-					hitbox[0].x = 0.375f;
-					hitbox[1].x = 0.375f;
-					break ;
-				case fence::px:
-					hitbox[0].x = 1 - 0.375f;
-					hitbox[1].x = 0.375f;
-					break ;
-				case fence::mx | fence::px:
-					hitbox[1].x = 0.5f;
-					break ;
-			}
-			switch (bitfield & (fence::my | fence::py)) {
-				case fence::my:
-					hitbox[0].y = 0.375f;
-					hitbox[1].y = 0.375f;
-					break ;
-				case fence::py:
-					hitbox[0].y = 1 - 0.375f;
-					hitbox[1].y = 0.375f;
-					break ;
-				case fence::my | fence::py:
-					hitbox[1].y = 0.5f;
-					break ;
-			}
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
@@ -707,58 +506,15 @@ struct Door : Block {
 	public:
 		Door() {
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			oriented = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = geometry::door;
 			transparent = true;
 			redstoneComponant = true;
 			item3D = false;
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			bool open = !!(bitfield & door::open) ^ !!((bitfield << 12) & mask::redstone::powered);
-			switch (orientation) {
-				case face_dir::minus_x:
-					if (!open) {
-						hitbox[0] = {0.90625f, 0.5f, 0.5f};
-						hitbox[1] = {0.09375f, 0.5f, 0.5f};
-					} else {
-						hitbox[0] = {0.5f, (bitfield & door::right_hinge) ? 0.09375f : 0.90625f, 0.5f};
-						hitbox[1] = {0.5f, 0.09375f, 0.5f};
-					}
-					break ;
-				case face_dir::plus_x:
-					if (!open) {
-						hitbox[0] = {0.09375f, 0.5f, 0.5f};
-						hitbox[1] = {0.09375f, 0.5f, 0.5f};
-					} else {
-						hitbox[0] = {0.5f, (bitfield & door::right_hinge) ? 0.90625f : 0.09375f, 0.5f};
-						hitbox[1] = {0.5f, 0.09375f, 0.5f};
-					}
-					break ;
-				case face_dir::minus_y:
-					if (!open) {
-						hitbox[0] = {0.5f, 0.90625f, 0.5f};
-						hitbox[1] = {0.5f, 0.09375f, 0.5f};
-					} else {
-						hitbox[0] = {(bitfield & door::right_hinge) ? 0.90625f : 0.09375f, 0.5f, 0.5f};
-						hitbox[1] = {0.09375f, 0.5f, 0.5f};
-					}
-					break ;
-				case face_dir::plus_y:
-					if (!open) {
-						hitbox[0] = {0.5f, 0.09375f, 0.5f};
-						hitbox[1] = {0.5f, 0.09375f, 0.5f};
-					} else {
-						hitbox[0] = {(bitfield & door::right_hinge) ? 0.09375f : 0.90625f, 0.5f, 0.5f};
-						hitbox[1] = {0.09375f, 0.5f, 0.5f};
-					}
-					break ;
-			}
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
@@ -766,42 +522,14 @@ struct Trapdoor : Block {
 	public:
 		Trapdoor() {
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			oriented = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = geometry::trapdoor;
 			transparent = true;
 			redstoneComponant = true;
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			bool open = !!(bitfield & door::open) ^ !!((bitfield << 12) & mask::redstone::powered);
-			if (!open) {
-				hitbox[0] = {0.5f, 0.5f, (bitfield & door::upper_half) ? 0.90625f : 0.09375f};
-				hitbox[1] = {0.5f, 0.5f, 0.09375f};
-			} else {
-				switch (orientation) {
-					case face_dir::minus_x:
-						hitbox[0] = {0.90625f, 0.5f, 0.5f};
-						hitbox[1] = {0.09375f, 0.5f, 0.5f};
-						break ;
-					case face_dir::plus_x:
-						hitbox[0] = {0.09375f, 0.5f, 0.5f};
-						hitbox[1] = {0.09375f, 0.5f, 0.5f};
-						break ;
-					case face_dir::minus_y:
-						hitbox[0] = {0.5f, 0.90625f, 0.5f};
-						hitbox[1] = {0.5f, 0.09375f, 0.5f};
-						break ;
-					case face_dir::plus_y:
-						hitbox[0] = {0.5f, 0.09375f, 0.5f};
-						hitbox[1] = {0.5f, 0.09375f, 0.5f};
-						break ;
-				}
-			}
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
@@ -812,9 +540,7 @@ struct Crop : Block {
 		Crop() {
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			hasCollisionHitbox_1x1x1 = false;
 			geometry = geometry::crop;
 			byHand = true;
 			hardness = 0.0f;
@@ -828,60 +554,16 @@ struct Crop : Block {
 struct Button : Block {
 	public:
 		Button() {
-			collisionHitbox_1x1x1 = false;
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox = true;
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			oriented = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = geometry::button;
 			transparent = true;
 			isSolidForFluid = false;
 			item3D = true;
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			hitbox[0] = {0.5f, 0.5f, 1.5f * one16th};
-			hitbox[1] = {0,    0,    1.5f * one16th};
-			switch (bitfield & 0x3) {
-				case placement::wall:
-					switch (orientation) {
-						case face_dir::minus_x:
-							hitbox[0] = {14.5f * one16th, 0.5f,           0.5f};
-							hitbox[1] = { 1.5f * one16th, 3.0f * one16th, 4.0f * one16th};
-							break ;
-						case face_dir::plus_x:
-							hitbox[0] = { 1.5f * one16th, 0.5f,           0.5f};
-							hitbox[1] = { 1.5f * one16th, 3.0f * one16th, 4.0f * one16th};
-							break ;
-						case face_dir::minus_y:
-							hitbox[0] = {0.5f,           14.5f * one16th, 0.5f};
-							hitbox[1] = {3.0f * one16th,  1.5f * one16th, 4.0f * one16th};
-							break ;
-						case face_dir::plus_y:
-							hitbox[0] = {0.5f,           1.5f * one16th, 0.5f};
-							hitbox[1] = {3.0f * one16th, 1.5f * one16th, 4.0f * one16th};
-							break ;
-					}
-					break ;
-				case placement::floor:
-				case placement::ceiling:
-					hitbox[0].z = ((bitfield & 0x3) == placement::floor) ? 1.5f * one16th : 14.5f * one16th;
-					switch (orientation) {
-						case face_dir::minus_x:
-						case face_dir::plus_x:
-							hitbox[1].x = 4.0f * one16th;
-							hitbox[1].y = 3.0F * one16th;
-							break ;
-						case face_dir::minus_y:
-						case face_dir::plus_y:
-							hitbox[1].x = 3.0f * one16th;
-							hitbox[1].y = 4.0f * one16th;
-							break ;
-					}
-					break ;
-			}
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
@@ -897,7 +579,7 @@ struct Air : Block {
 		Air() {
 			name = "AIR";
 			blast_resistance = 0.0f;
-			collisionHitbox_1x1x1 = false;
+			hasCollisionHitbox_1x1x1 = false;
 			geometry = geometry::none;
 			transparent = true;
 			isSolidForFluid = false;
@@ -974,7 +656,7 @@ struct Cactus : Cube {
 			name = "CACTUS";
 			mined = blocks::cactus;
 			blast_resistance = 0.4f;
-			collisionHitbox_1x1x1 = false;
+			hasCollisionHitbox_1x1x1 = false;
 			byHand = true;
 			hardness = 0.4f;
 			transparent = true;
@@ -998,8 +680,8 @@ struct Farmland : Block {
 			mined = blocks::dirt;
 			blast_resistance = 0.6f;
 			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5f / 16.0f};
 			hitboxHalfSize = {0.5f, 0.5f, 7.5f / 16.0f};
 			geometry = geometry::farmland;
@@ -1130,27 +812,11 @@ struct Furnace : Cube {
 		}
 };
 
-struct OakStairsBottom : StairsBottom {
+struct OakStairs : Stairs {
 	public:
-		OakStairsBottom() {
-			name = "OAK_STAIRS_BOTTOM";
-			mined = blocks::oak_stairs_bottom;
-			blast_resistance = 3.0f;
-			isFuel = true;
-			fuel_time = 15;
-			byHand = true;
-			needed_tool = blocks::wooden_axe;
-			hardness = 2.0f;
-			textureX = 4;
-			textureY = 10;
-		}
-};
-
-struct OakStairsTop : StairsTop {
-	public:
-		OakStairsTop() {
-			name = "OAK_STAIRS_TOP";
-			mined = blocks::oak_stairs_bottom;
+		OakStairs() {
+			name = "OAK_STAIRS";
+			mined = blocks::oak_stairs;
 			blast_resistance = 3.0f;
 			isFuel = true;
 			fuel_time = 15;
@@ -1207,13 +873,13 @@ struct OakTrapdoor : Trapdoor {
 		}
 };
 
-struct StoneStairsBottom : StairsBottom {
+struct StoneStairs : Stairs {
 	public:
-		StoneStairsBottom() {
-			name = "STONE_STAIRS_BOTTOM";
-			mined = blocks::stone_stairs_bottom;
+		StoneStairs() {
+			name = "STONE_STAIRS";
+			mined = blocks::stone_stairs;
 			isComposant = true;
-			getProduction = blocks::smooth_stone_stairs_bottom;
+			getProduction = blocks::smooth_stone_stairs;
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
@@ -1223,25 +889,11 @@ struct StoneStairsBottom : StairsBottom {
 		}
 };
 
-struct StoneStairsTop : StairsTop {
+struct SmoothStoneStairs : Stairs {
 	public:
-		StoneStairsTop() {
-			name = "STONE_STAIRS_TOP";
-			mined = blocks::stone_stairs_bottom;
-			blast_resistance = 6.0f;
-			byHand = false;
-			needed_tool = blocks::wooden_pickaxe;
-			hardness = 1.5f;
-			textureX = 4;
-			textureY = 3;
-		}
-};
-
-struct SmoothStoneStairsBottom : StairsBottom {
-	public:
-		SmoothStoneStairsBottom() {
-			name = "SMOOTH_STONE_STAIRS_BOTTOM";
-			mined = blocks::smooth_stone_stairs_bottom;
+		SmoothStoneStairs() {
+			name = "SMOOTH_STONE_STAIRS";
+			mined = blocks::smooth_stone_stairs;
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
@@ -1251,27 +903,13 @@ struct SmoothStoneStairsBottom : StairsBottom {
 		}
 };
 
-struct SmoothStoneStairsTop : StairsTop {
+struct CobbleStoneStairs : Stairs {
 	public:
-		SmoothStoneStairsTop() {
-			name = "SMOOTH_STONE_STAIRS_TOP";
-			mined = blocks::smooth_stone_stairs_bottom;
-			blast_resistance = 6.0f;
-			byHand = false;
-			needed_tool = blocks::wooden_pickaxe;
-			hardness = 1.5f;
-			textureX = 4;
-			textureY = 2;
-		}
-};
-
-struct CobbleStoneStairsBottom : StairsBottom {
-	public:
-		CobbleStoneStairsBottom() {
-			name = "COBBLESTONE_STAIRS_BOTTOM";
-			mined = blocks::cobblestone_stairs_bottom;
+		CobbleStoneStairs() {
+			name = "COBBLESTONE_STAIRS";
+			mined = blocks::cobblestone_stairs;
 			isComposant = true;
-			getProduction = blocks::stone_stairs_bottom;
+			getProduction = blocks::stone_stairs;
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
@@ -1281,39 +919,11 @@ struct CobbleStoneStairsBottom : StairsBottom {
 		}
 };
 
-struct CobbleStoneStairsTop : StairsTop {
+struct StoneBricksStairs : Stairs {
 	public:
-		CobbleStoneStairsTop() {
-			name = "COBBLESTONE_STAIRS_TOP";
-			mined = blocks::cobblestone_stairs_bottom;
-			blast_resistance = 6.0f;
-			byHand = false;
-			needed_tool = blocks::wooden_pickaxe;
-			hardness = 1.5f;
-			textureX = 4;
-			textureY = 4;
-		}
-};
-
-struct StoneBricksStairsBottom : StairsBottom {
-	public:
-		StoneBricksStairsBottom() {
-			name = "STONE_BRICKS_STAIRS_BOTTOM";
-			mined = blocks::stone_bricks_stairs_bottom;
-			blast_resistance = 6.0f;
-			byHand = false;
-			needed_tool = blocks::wooden_pickaxe;
-			hardness = 1.5f;
-			textureX = 4;
-			textureY = 5;
-		}
-};
-
-struct StoneBricksStairsTop : StairsTop {
-	public:
-		StoneBricksStairsTop() {
-			name = "STONE_BRICKS_STAIRS_TOP";
-			mined = blocks::stone_bricks_stairs_bottom;
+		StoneBricksStairs() {
+			name = "STONE_BRICKS_STAIRS";
+			mined = blocks::stone_bricks_stairs;
 			blast_resistance = 6.0f;
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
@@ -1330,13 +940,10 @@ struct Lever : Block {
 			mined = blocks::lever;
 			adventure_block = blocks::redstone_ore;
 			blast_resistance = 0.5f;
-			collisionHitbox_1x1x1 = false;
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox = true;
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			oriented = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = geometry::lever;
 			byHand = true;
 			hardness = 0.5f;
@@ -1346,48 +953,7 @@ struct Lever : Block {
 			textureX = 7;
 			textureY = 10;
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			hitbox[0] = {0.5f, 0.5f, 1.5f * one16th};
-			hitbox[1] = {0,    0,    1.5f * one16th};
-			switch (bitfield & 0x3) {
-				case placement::wall:
-					switch (orientation) {
-						case face_dir::minus_x:
-							hitbox[0] = {14.5f * one16th, 0.5f,           0.5f};
-							hitbox[1] = { 1.5f * one16th, 3.0f * one16th, 4.0f * one16th};
-							break ;
-						case face_dir::plus_x:
-							hitbox[0] = { 1.5f * one16th, 0.5f,           0.5f};
-							hitbox[1] = { 1.5f * one16th, 3.0f * one16th, 4.0f * one16th};
-							break ;
-						case face_dir::minus_y:
-							hitbox[0] = {0.5f,           14.5f * one16th, 0.5f};
-							hitbox[1] = {3.0f * one16th,  1.5f * one16th, 4.0f * one16th};
-							break ;
-						case face_dir::plus_y:
-							hitbox[0] = {0.5f,           1.5f * one16th, 0.5f};
-							hitbox[1] = {3.0f * one16th, 1.5f * one16th, 4.0f * one16th};
-							break ;
-					}
-					break ;
-				case placement::floor:
-				case placement::ceiling:
-					hitbox[0].z = ((bitfield & 0x3) == placement::floor) ? 1.5f * one16th : 14.5f * one16th;
-					switch (orientation) {
-						case face_dir::minus_x:
-						case face_dir::plus_x:
-							hitbox[1].x = 4.0f * one16th;
-							hitbox[1].y = 3.0F * one16th;
-							break ;
-						case face_dir::minus_y:
-						case face_dir::plus_y:
-							hitbox[1].x = 3.0f * one16th;
-							hitbox[1].y = 4.0f * one16th;
-							break ;
-					}
-					break ;
-			}
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
@@ -1397,10 +963,8 @@ struct OakSign : Block {
 			name = "OAK_SIGN";
 			mined = blocks::oak_sign;
 			blast_resistance = 1.0f;
-			collisionHitbox_1x1x1 = false;
+			hasCollisionHitbox_1x1x1 = false;
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = geometry::none;
 			byHand = true;
 			needed_tool = blocks::wooden_axe;
@@ -1410,27 +974,7 @@ struct OakSign : Block {
 			textureX = 1;
 			textureY = 11;
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			(void)bitfield;
-			switch (orientation) {
-				case face_dir::minus_x:
-					hitbox[0] = {1.75f * one16th, 0.5f, 0.5f};
-					hitbox[1] = {1.75f * one16th, 0.5f, 0.25f};
-					break ;
-				case face_dir::plus_x:
-					hitbox[0] = {14.25f * one16th, 0.5f, 0.5f};
-					hitbox[1] = {1.75f * one16th, 0.5f, 0.25f};
-					break ;
-				case face_dir::minus_y:
-					hitbox[0] = {0.5f, 1.75f * one16th, 0.5f};
-					hitbox[1] = {0.5f, 1.75f * one16th, 0.25f};
-					break ;
-				case face_dir::plus_y:
-					hitbox[0] = {0.5f, 14.25f * one16th, 0.5f};
-					hitbox[1] = {0.5f, 1.75f * one16th, 0.25f};
-					break ;
-			}
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
@@ -1613,11 +1157,8 @@ struct GlassPane : Block {
 			name = "GLASS_PANE";
 			blast_resistance = 0.3f;
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
-			orientedCollisionHitbox = true;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			geometry = geometry::glass_pane;
 			hardness = 0.3f;
 			transparent = true;
@@ -1636,37 +1177,7 @@ struct GlassPane : Block {
 			}
 			return (4);
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			(void)orientation;
-			hitbox[0] = {0.5f, 0.5f, 0.5f};
-			hitbox[1] = {0.0625, 0.0625, 0.5f};
-			switch (bitfield & (fence::mx | fence::px)) {
-				case fence::mx:
-					hitbox[0].x = 0.28125f;
-					hitbox[1].x = 0.28125f;
-					break ;
-				case fence::px:
-					hitbox[0].x = 1 - 0.28125f;
-					hitbox[1].x = 0.28125f;
-					break ;
-				case fence::mx | fence::px:
-					hitbox[1].x = 0.5f;
-					break ;
-			}
-			switch (bitfield & (fence::my | fence::py)) {
-				case fence::my:
-					hitbox[0].y = 0.28125f;
-					hitbox[1].y = 0.28125f;
-					break ;
-				case fence::py:
-					hitbox[0].y = 1 - 0.28125f;
-					hitbox[1].y = 0.28125f;
-					break ;
-				case fence::my | fence::py:
-					hitbox[1].y = 0.5f;
-					break ;
-			}
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
@@ -2148,8 +1659,7 @@ struct Torch : Block {
 			mined = blocks::torch;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox_1x1x1 = false;
+			hasCollisionHitbox_1x1x1 = false;
 			geometry = geometry::torch;
 			light_level = 14;
 			byHand = true;
@@ -2160,31 +1670,7 @@ struct Torch : Block {
 			textureX = 6;
 			textureY = 10;
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			(void)bitfield;
-			switch (orientation) {
-				case face_dir::minus_x:
-					hitbox[0] = {2 * one16th, 0.5f, 8 * one16th};
-					hitbox[1] = {2 * one16th, one16th, 5 * one16th};
-					break ;
-				case face_dir::plus_x:
-					hitbox[0] = {14 * one16th, 0.5f, 8 * one16th};
-					hitbox[1] = {2 * one16th, one16th, 5 * one16th};
-					break ;
-				case face_dir::minus_y:
-					hitbox[0] = {0.5f, 2 * one16th, 8 * one16th};
-					hitbox[1] = {one16th, 2 * one16th, 5 * one16th};
-					break ;
-				case face_dir::plus_y:
-					hitbox[0] = {0.5f, 14 * one16th, 8 * one16th};
-					hitbox[1] = {one16th, 2 * one16th, 5 * one16th};
-					break ;
-				default:
-					hitbox[0] = {0.5f, 0.5f, 5 * one16th};
-					hitbox[1] = {one16th, one16th, 5 * one16th};
-					break ;
-			}
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
@@ -2210,7 +1696,7 @@ struct RedstoneDust : Block {
 			mined = blocks::redstone_dust;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
+			hasCollisionHitbox_1x1x1 = false;
 			hitboxCenter = {0.5f, 0.5f, one16th};
 			hitboxHalfSize = {0.2f, 0.2f, one16th};
 			geometry = geometry::dust;
@@ -2239,8 +1725,8 @@ struct Repeater : Block {
 			adventure_block = blocks::iron_ore;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, one16th};
 			hitboxHalfSize = {0.5f, 0.5f, one16th};
 			oriented = true;
@@ -2267,8 +1753,8 @@ struct Comparator : Block {
 			adventure_block = blocks::iron_ore;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, one16th};
 			hitboxHalfSize = {0.5f, 0.5f, one16th};
 			oriented = true;
@@ -2294,8 +1780,8 @@ struct Chest : Block {
 			mined = blocks::chest;
 			blast_resistance = 2.5f;
 			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, 7.5 / 16.0f};
 			hitboxHalfSize = {7 / 16.0f, 7 / 16.0f, 7.5 / 16.0f};
 			geometry = geometry::none;
@@ -2321,11 +1807,7 @@ struct WheatCrop : Crop {
 			(void)dir;
 			return (value >> offset::blocks::bitfield);
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			(void)orientation;
-			hitbox[0] = {0.5f, 0.5f, (1 + bitfield * 2) / 32.0f};
-			hitbox[1] = {0.4f, 0.4f, (1 + bitfield * 2) / 32.0f};
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 };
 
 struct ItemFrame : Block {
@@ -2335,10 +1817,8 @@ struct ItemFrame : Block {
 			mined = blocks::item_frame;
 			blast_resistance = 0.0f;
 			hasHitbox = true;
-			hasOrientedHitbox = true;
-			collisionHitbox_1x1x1 = false;
+			hasCollisionHitbox_1x1x1 = false;
 			oriented = true;
-			hitboxCenter = {0, 0, 100000}; // we discard normal hitbox
 			geometry = geometry::none;
 			byHand = true;
 			hardness = 0.0f;
@@ -2351,35 +1831,7 @@ struct ItemFrame : Block {
 			(void)dir;
 			return ((value == blocks::item) ? 10 : 4);
 		}
-		void getSecondaryHitbox( glm::vec3* hitbox, int orientation, int bitfield ) const override {
-			switch (bitfield & 0x3) {
-				case placement::wall:
-					switch (orientation) {
-						case face_dir::minus_x:
-							hitbox[0] = {15.5f * one16th, .4f,           .4f};
-							hitbox[1] = {  .5f * one16th, .4f, 4.0f * one16th};
-							break ;
-						case face_dir::plus_x:
-							hitbox[0] = { .5f * one16th, .4f,           .4f};
-							hitbox[1] = { .5f * one16th, .4f, 4.0f * one16th};
-							break ;
-						case face_dir::minus_y:
-							hitbox[0] = {.4f, 15.5f * one16th, .4f};
-							hitbox[1] = {.4f,   .5f * one16th, 4.0f * one16th};
-							break ;
-						case face_dir::plus_y:
-							hitbox[0] = {.4f, .5f * one16th, .4f};
-							hitbox[1] = {.4f, .5f * one16th, 4.0f * one16th};
-							break ;
-					}
-					break ;
-				case placement::floor:
-				case placement::ceiling:
-					hitbox[0] = {.4f, .4f, ((bitfield & 0x3) == placement::floor) ? .5f * one16th : 15.5f * one16th};
-					hitbox[1] = {.4f, .4f, one16th};
-					break ;
-			}
-		}
+		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 };
@@ -2423,7 +1875,7 @@ struct Water : Block {
 			name = "WATER";
 			mined = blocks::water_bucket;
 			blast_resistance = 100.0f;
-			collisionHitbox_1x1x1 = false;
+			hasCollisionHitbox_1x1x1 = false;
 			geometry = geometry::none;
 			transparent = true;
 		}
@@ -3032,8 +2484,8 @@ struct Carpet : Block {
 		Carpet() {
 			blast_resistance = .1f;
 			hasHitbox = true;
-			collisionHitbox_1x1x1 = false;
-			collisionHitbox = true;
+			hasCollisionHitbox_1x1x1 = false;
+			hasCollisionHitbox = true;
 			hitboxCenter = {0.5f, 0.5f, .5f * one16th};
 			hitboxHalfSize = {0.5f, 0.5f, .5f * one16th};
 			geometry = geometry::repeater;

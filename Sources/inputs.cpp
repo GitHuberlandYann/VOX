@@ -71,16 +71,19 @@ t_hit OpenGL_Manager::getBlockHit( void )
 			// we know cube is hit, now check if hitbox is hit (only on non cube-filling values)
 			// TODO move hitboxes of torches depending on the wall they hang on
 			const auto& target = s_blocks[type];
-			if (!target->hasHitbox || line_cube_intersection(_player->getEyePos(), _player->getDir(), glm::vec3(i) + target->hitboxCenter, target->hitboxHalfSize)) {
+			glm::vec3 hitbox[2];
+			if (target->hasHitbox) {
+				target->getHitbox(hitbox, value);
+			}
+			if (!target->hasHitbox || line_cube_intersection(_player->getEyePos(), _player->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
 				_chunk_hit = chunk;
 				res.pos = i;
 				res.value = value;
 				res.type = type;
 				// _ui->chatMessage(s_blocks[type]->name + ((value & mask::redstone::powered) ? " block hit is powered" : " block hit is not powered"));
 				return (res);
-			} else if (target->hasOrientedHitbox) {
-				glm::vec3 hitbox[2];
-				target->getSecondaryHitbox(hitbox, (value >> offset::blocks::orientation) & 0x7, value >> offset::blocks::bitfield);
+			} else if (target->hasSecondaryHitbox) {
+				target->getSecondaryHitbox(hitbox, value);
 				if (line_cube_intersection(_player->getEyePos(), _player->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
 					_chunk_hit = chunk;
 					res.pos = i;
@@ -237,35 +240,20 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 				type += (((_block_hit.pos.y > _block_hit.prev_pos.y) ? face_dir::minus_y : face_dir::plus_y) << offset::blocks::orientation);
 			}
 		}
-	} else if (shape == geometry::slab) {
+	} else if (shape == geometry::slab || shape == geometry::stairs) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
-			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? type : type | mask::slab::top);
+			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? type : type | ((shape == geometry::slab) ? mask::slab::top : mask::stairs::top));
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.x > _block_hit.prev_pos.x) ? glm::ivec3(0, 0, 0) : glm::ivec3(1, 0, 0));
 			glm::vec3 intersect = line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {1, 0, 0});
-			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type | mask::slab::top);
+			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type | ((shape == geometry::slab) ? mask::slab::top : mask::stairs::top));
 			// _ui->chatMessage("block hit " + std::to_string(_block_hit.pos.x) + ", " + std::to_string(_block_hit.pos.y) + ", " + std::to_string(_block_hit.pos.z));
 			// _ui->chatMessage("p0 at " + std::to_string(p0.x) + ", " + std::to_string(p0.y) + ", " + std::to_string(p0.z));
 			// _ui->chatMessage("intersect at " + std::to_string(intersect.x) + ", " + std::to_string(intersect.y) + ", " + std::to_string(intersect.z));
 		} else {
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
 			glm::vec3 intersect = line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {0, 1, 0});
-			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type | mask::slab::top);
-		}
-	} else if (shape == geometry::stairs_bottom) { // TODO get rid of oak_stairs_top and use door::upper_half instead
-		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
-			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? type : type + 1); // oak_slab_top = oak_slab_bottom + 1
-		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
-			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.x > _block_hit.prev_pos.x) ? glm::ivec3(0, 0, 0) : glm::ivec3(1, 0, 0));
-			glm::vec3 intersect = line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {1, 0, 0});
-			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type + 1);
-			// _ui->chatMessage("block hit " + std::to_string(_block_hit.pos.x) + ", " + std::to_string(_block_hit.pos.y) + ", " + std::to_string(_block_hit.pos.z));
-			// _ui->chatMessage("p0 at " + std::to_string(p0.x) + ", " + std::to_string(p0.y) + ", " + std::to_string(p0.z));
-			// _ui->chatMessage("intersect at " + std::to_string(intersect.x) + ", " + std::to_string(intersect.y) + ", " + std::to_string(intersect.z));
-		} else {
-			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
-			glm::vec3 intersect = line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {0, 1, 0});
-			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type + 1);
+			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type | ((shape == geometry::slab) ? mask::slab::top : mask::stairs::top));
 		}
 	} else if (shape == geometry::trapdoor) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {

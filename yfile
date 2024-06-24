@@ -63,7 +63,8 @@ TODOS:
 	- mobs
 	
 	TODAY:
-	- Way more blocks ?? + world file "version: " line + /respawn
+	- Way more blocks ??
+	- get rid of blockAtlas in favor of 100s of 16x16 textures
 	
 	SHORTTERM memory:
 	\/ - work on cleanAtlas
@@ -357,7 +358,7 @@ _blocks:
 	- crops 0x7 << 24 == growth stage, 7 is ripe
 	- water 0x7 << 24 == water level, 0 is water source
 	- slabs 1 << 24 top_slab
-	- stairs 0x7 << 9 == orientation, 0xF << 24 == corners
+	- stairs 0x7 << 9 == orientation, 0xF << 24 == corners, 1 << 28 top_stairs (ie upside down)
 	- doors 0x7 << 9 == orientation, 1 << 24 == half, 1 << 25 == hinge, 1 << 26 == open
 	- trapdoors 0x7 << 9 == orientation, 1 << 24 == half, 1 << 25 == open
 	- fence 0xF << 24 == 'arms'

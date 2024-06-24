@@ -77,11 +77,11 @@ const std::map<int, std::vector<int>> recipes = {
 	}},
 
 	{3 + (3 << 2), { // 3x3
-		blocks::oak_planks, blocks::air, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_stairs_bottom, 4,
-		blocks::stone, blocks::air, blocks::air, blocks::stone, blocks::stone, blocks::air, blocks::stone, blocks::stone, blocks::stone, blocks::stone_stairs_bottom, 4,
-		blocks::smooth_stone, blocks::air, blocks::air, blocks::smooth_stone, blocks::smooth_stone, blocks::air, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone_stairs_bottom, 4,
-		blocks::cobblestone, blocks::air, blocks::air, blocks::cobblestone, blocks::cobblestone, blocks::air, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone_stairs_bottom, 4,
-		blocks::stone_bricks, blocks::air, blocks::air, blocks::stone_bricks, blocks::stone_bricks, blocks::air, blocks::stone_bricks, blocks::stone_bricks, blocks::stone_bricks, blocks::stone_bricks_stairs_bottom, 4,
+		blocks::oak_planks, blocks::air, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_stairs, 4,
+		blocks::stone, blocks::air, blocks::air, blocks::stone, blocks::stone, blocks::air, blocks::stone, blocks::stone, blocks::stone, blocks::stone_stairs, 4,
+		blocks::smooth_stone, blocks::air, blocks::air, blocks::smooth_stone, blocks::smooth_stone, blocks::air, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone_stairs, 4,
+		blocks::cobblestone, blocks::air, blocks::air, blocks::cobblestone, blocks::cobblestone, blocks::air, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone_stairs, 4,
+		blocks::stone_bricks, blocks::air, blocks::air, blocks::stone_bricks, blocks::stone_bricks, blocks::air, blocks::stone_bricks, blocks::stone_bricks, blocks::stone_bricks, blocks::stone_bricks_stairs, 4,
 		
 		blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::stick, blocks::air, blocks::oak_sign, 3,
 	

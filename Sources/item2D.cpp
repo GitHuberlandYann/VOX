@@ -118,7 +118,7 @@ void Slab::addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bo
 	ui->addFace(v0, v1, v2, v3, alien, movement);
 }
 
-void StairsBottom::addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const
+void Stairs::addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const
 {
     x += gui_size;
     int spec = (15 << 24) + (texX() << 4) + (texY() << 12) + (depth << 16);

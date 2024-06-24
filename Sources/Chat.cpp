@@ -339,7 +339,7 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		_oglMan->_inventory->absorbItem({blocks::grass_block});
 		_oglMan->_inventory->absorbItem({blocks::oak_sign});
 		_oglMan->_inventory->absorbItem({blocks::redstone_lamp});
-		_oglMan->_inventory->absorbItem({blocks::oak_stairs_bottom});
+		_oglMan->_inventory->absorbItem({blocks::oak_stairs});
 		_oglMan->_inventory->absorbItem({blocks::piston});
 		_oglMan->_inventory->absorbItem({blocks::comparator});
 		_oglMan->_inventory->absorbItem({blocks::redstone_torch});
@@ -372,11 +372,6 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		case blocks::air:
 		case blocks::farmland:
 		case blocks::dirt_path:
-		case blocks::oak_stairs_top:
-		case blocks::stone_stairs_top:
-		case blocks::smooth_stone_stairs_top:
-		case blocks::cobblestone_stairs_top:
-		case blocks::stone_bricks_stairs_top:
 		case blocks::piston_head:
 		case blocks::moving_piston:
 		case blocks::wheat_crop:

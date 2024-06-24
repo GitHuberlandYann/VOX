@@ -124,7 +124,7 @@ void Fence::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 p
 	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec + 6 + (6 << 8), 4, 4, 0, 8);
 }
 
-void StairsBottom::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
+void Stairs::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
 {
 	int spec = (textureX << 4) + (textureY << 12) + (3 << 19) + (light << 24);
 	utils::shader::addQuads(arr, {pos + up * size, pos + (right * .5f + up) * size, pos + up * .5f * size, pos + (right + up) * .5f * size}, spec, 8, 8, 0, 8); // top left corner

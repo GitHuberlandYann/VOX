@@ -365,7 +365,6 @@ bool visible_face( int value, int next, int dir )
 		case geometry::crop:
 		case geometry::lever:
 		case geometry::dust:
-		case geometry::slab:
 		case geometry::piston: // might want to change this..
 		case geometry::button:
 			return (true);
@@ -374,13 +373,15 @@ bool visible_face( int value, int next, int dir )
 		case geometry::glass:
 		case geometry::glass_pane:
 			return (valueShape != nextShape);
-		case geometry::stairs_bottom:
-			if (dir == face_dir::plus_z) {
+		case geometry::slab:
+			if ((dir == face_dir::plus_z && !(next & mask::slab::top))
+				|| (dir == face_dir::minus_z && (next & mask::slab::top))) {
 				return (false);
 			}
 			return (true);
-		case geometry::stairs_top:
-			if (dir == face_dir::minus_z) {
+		case geometry::stairs:
+			if ((dir == face_dir::plus_z && !(next & mask::stairs::top))
+				|| (dir == face_dir::minus_z && (next & mask::stairs::top))) {
 				return (false);
 			}
 			return (true);

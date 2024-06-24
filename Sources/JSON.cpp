@@ -396,7 +396,7 @@ static int convert( int value ) // used when I change s_blocks big time
 				value = blocks::water + ((value - blocks::water) << offset::blocks::bitfield);
 			}
 		case 2: // v1.1
-			// transition from v1.1 to f1.2: got rid of slab_bottom and slab_top to only have slab
+			// transition from v1.1 to f1.2: merged slab_bottom and slab_top into slab + data_value
 			switch (value & mask::blocks::type) {
 				case blocks::oak_slab + 1:
 				case blocks::stone_slab + 1:
@@ -406,7 +406,18 @@ static int convert( int value ) // used when I change s_blocks big time
 					value = ((value & mask::blocks::type) - 1) | (value & (mask::all_bits - mask::blocks::type - mask::slab::top)) | mask::slab::top;
 					break ;
 			}
-		case 3: // v1.2 == current version
+		case 3: // v1.2
+			// transition from v1.2 to f1.3: merged stairs_bottom and stairs_top into stairs + data_value
+			switch (value & mask::blocks::type) {
+				case blocks::oak_stairs + 1:
+				case blocks::stone_stairs + 1:
+				case blocks::smooth_stone_stairs + 1:
+				case blocks::cobblestone_stairs + 1:
+				case blocks::stone_bricks_stairs + 1:
+					value = ((value & mask::blocks::type) - 1) | (value & (mask::all_bits - mask::blocks::type - mask::stairs::top)) | mask::stairs::top;
+					break ;
+			}
+		case 4: // v1.3 == current version
 			return (value);
 	}
 	LOGERROR("json version is " << Settings::Get()->getInt(settings::ints::json_version));
