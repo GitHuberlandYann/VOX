@@ -22,7 +22,7 @@ namespace settings {
 		const int    chunk_size    = 16;
 
 		const int    gui_min       = 1;
-		inline int   gui_max()     { return (glm::max(1, glm::min(WIN_WIDTH / 320, WIN_HEIGHT / 240))); } // TODO check this
+		inline int   gui_max()     { return (glm::max(1, glm::min(WIN_WIDTH / 320, WIN_HEIGHT / 240))); }
 
 		namespace json {
 			const int nbr_versions = 5;
@@ -103,8 +103,10 @@ namespace settings {
 
 			namespace attributes {
 				const int specifications = 0;
-				const int color = 1;
-				const int position = 2;
+				const int texture = 1;
+				const int light = 2;
+				const int color = 3;
+				const int position = 4;
 			};
 		};
 

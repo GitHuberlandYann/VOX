@@ -14,7 +14,7 @@ class SignInstance
 		std::string getContent( int index );
 		void setContent( std::vector<std::string> content );
 		void setChunk( Chunk* chunk );
-		void displayText( std::vector<t_shaderInput> &partArr );
+		void displayText( std::vector<t_shaderInputPart> &partArr );
 
 	private:
 		int _value;

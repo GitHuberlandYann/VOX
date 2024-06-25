@@ -64,7 +64,7 @@ void Chunk::entity_block( int posX, int posY, int posZ, int value )
 void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 {
 	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
-	int value = _blocks[offset], type = value & mask::blocks::type; // TODO better handling of invis block gets deleted
+	int value = _blocks[offset], type = value & mask::blocks::type;
 	if (type == blocks::chest) {
 		auto search = _chests.find(offset);
 		if (search != _chests.end()) {

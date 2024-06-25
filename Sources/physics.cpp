@@ -602,7 +602,7 @@ bool Player::updateCurrentBlock( void )
 	return (false);
 }
 
-bool Player::update( std::vector<t_shaderInput>& modArr, float deltaTime )
+bool Player::update( std::vector<t_shaderInputModel>& modArr, float deltaTime )
 {
 	(void)modArr, (void)deltaTime;
 	LOGERROR("ERROR Player::update called.");

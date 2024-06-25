@@ -352,45 +352,43 @@ namespace EXTRUSION {
 		if (search == exList.end()) {
 			return (false);
 		}
-		light <<= 24;
 
-		int texStartX = s_blocks[type]->texX(face_dir::minus_y, blocks::item) * 16, texStartY = s_blocks[type]->texY(face_dir::minus_y, blocks::item) * 16;
+		int texture = s_blocks[type]->getTex(face_dir::minus_y, blocks::item), spec;
 		// front face
-		int spec = texStartX + (texStartY << 8) + light;
-		utils::shader::addQuads(arr, {pos, pos + right * size, pos - up * size, pos + (right - up) * size}, spec, 16, 16, 0, 8);
+		utils::shader::addQuads(arr, {pos, pos + right * size, pos - up * size, pos + (right - up) * size}, texture, light + (1 << 8), 16, 16);
 		// back face
-		utils::shader::addQuads(arr, {pos + front * size * one16th + right * size, pos + front * size * one16th, pos + front * size * one16th + (right - up) * size, pos + front * size * one16th - up * size}, spec, 16, 16, 0, 8, true);
+		utils::shader::addQuads(arr, {pos + front * size * one16th + right * size, pos + front * size * one16th, pos + front * size * one16th + (right - up) * size, pos + front * size * one16th - up * size}, texture, light + (2 << 8), 16, 16, true);
 		// up faces
 		for (auto u : search->second.up) {
-			spec = texStartX + u.x + ((texStartY + u.y) << 8) + light;
+			spec = texture + (u.x << 12) + (u.y << 16);
 			utils::shader::addQuads(arr, {pos + (front + right * static_cast<float>(u.x) - up * static_cast<float>(u.y)) * size * one16th,
 										pos + (front + right * static_cast<float>(u.x + u.z) - up * static_cast<float>(u.y)) * size * one16th,
 										pos + (right * static_cast<float>(u.x) - up * static_cast<float>(u.y)) * size * one16th,
-										pos + (right * static_cast<float>(u.x + u.z) - up * static_cast<float>(u.y)) * size * one16th}, spec, u.z, 1, 0, 8);
+										pos + (right * static_cast<float>(u.x + u.z) - up * static_cast<float>(u.y)) * size * one16th}, spec, light + (0 << 8), u.z, 1);
 		}
 		// down faces
 		for (auto d : search->second.down) {
-			spec = texStartX + d.x + ((texStartY + d.y) << 8) + light;
+			spec = texture + (d.x << 12) + (d.y << 16);
 			utils::shader::addQuads(arr, {pos + (right * static_cast<float>(d.x) - up * static_cast<float>(d.y + 1)) * size * one16th,
 										pos + (right * static_cast<float>(d.x + d.z) - up * static_cast<float>(d.y + 1)) * size * one16th,
 										pos + (front + right * static_cast<float>(d.x) - up * static_cast<float>(d.y + 1)) * size * one16th,
-										pos + (front + right * static_cast<float>(d.x + d.z) - up * static_cast<float>(d.y + 1)) * size * one16th}, spec, d.z, 1, 0, 8);
+										pos + (front + right * static_cast<float>(d.x + d.z) - up * static_cast<float>(d.y + 1)) * size * one16th}, spec, light + (5 << 8), d.z, 1);
 		}
 		// left faces
 		for (auto l : search->second.left) {
-			spec = texStartX + l.x + ((texStartY + l.y) << 8) + light;
+			spec = texture + (l.x << 12) + (l.y << 16);
 			utils::shader::addQuads(arr, {pos + (front + right * static_cast<float>(l.x) - up * static_cast<float>(l.y)) * size * one16th,
 										pos + (right * static_cast<float>(l.x) - up * static_cast<float>(l.y)) * size * one16th,
 										pos + (front + right * static_cast<float>(l.x) - up * static_cast<float>(l.y + l.z)) * size * one16th,
-										pos + (right * static_cast<float>(l.x) - up * static_cast<float>(l.y + l.z)) * size * one16th}, spec, 1, l.z, 0, 8);
+										pos + (right * static_cast<float>(l.x) - up * static_cast<float>(l.y + l.z)) * size * one16th}, spec, light + (3 << 8), 1, l.z);
 		}
 		// right faces
 		for (auto r : search->second.right) {
-			spec = texStartX + r.x + ((texStartY + r.y) << 8) + light;
+			spec = texture + (r.x << 12) + (r.y << 16);
 			utils::shader::addQuads(arr, {pos + (right * static_cast<float>(r.x + 1) - up * static_cast<float>(r.y)) * size * one16th,
 										pos + (front + right * static_cast<float>(r.x + 1) - up * static_cast<float>(r.y)) * size * one16th,
 										pos + (right * static_cast<float>(r.x + 1) - up * static_cast<float>(r.y + r.z)) * size * one16th,
-										pos + (front + right * static_cast<float>(r.x + 1) - up * static_cast<float>(r.y + r.z)) * size * one16th}, spec, 1, r.z, 0, 8);
+										pos + (front + right * static_cast<float>(r.x + 1) - up * static_cast<float>(r.y + r.z)) * size * one16th}, spec, light + (4 << 8), 1, r.z);
 		}
 		return (true);
 	}

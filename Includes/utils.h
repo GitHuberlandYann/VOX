@@ -10,6 +10,8 @@
 
 class Chunk;
 typedef struct s_shaderInput t_shaderInput;
+typedef struct s_shaderInputModel t_shaderInputModel;
+typedef struct s_shaderInputPart t_shaderInputPart;
 
 std::string get_file_content( std::string file_name );
 std::string	trim_spaces( std::string str );
@@ -37,8 +39,11 @@ namespace Utils {
 
 namespace utils {
 	namespace shader {
-		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy, int offx, int offy, bool xflip = false, bool yflip = false );
-		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, std::array<int, 4> deltas, std::array<int, 4> sub );
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int texture, int light, int dx, int dy, bool xflip = false, bool yflip = false );
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int texture, std::array<int, 4> lights, int dx, int dy, bool xflip = false, bool yflip = false );
+
+		void addQuads( std::vector<t_shaderInputModel>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy, bool xflip = false, bool yflip = false );
+		void addQuads( std::vector<t_shaderInputPart>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy, bool xflip = false, bool yflip = false );
 	};
 };
 

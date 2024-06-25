@@ -48,11 +48,11 @@ class Player : public AMob
 
         bool chunkInFront( int camPlacement, glm::ivec2 current_chunk, int posX, int posY );
         std::vector<glm::ivec3> computeRayCasting( GLfloat radius );
-		void drawHeldItem( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, int item, int gameMode );
-		void drawPlayer( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, int item );
+		void drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& partArr, int item, int gameMode );
+		void drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& partArr, int item );
 
-        virtual glm::vec3 getEyePos( void );
-        virtual bool getHitBox( void );
+       	glm::vec3 getEyePos( void ) override;
+       	bool getHitBox( void ) override;
         int getOrientation( void );
 		int getOrientation6( void );
 
@@ -66,10 +66,10 @@ class Player : public AMob
         void setJump( bool state );
 		void setDelta( float deltaTime );
         void setArmAnimation( bool state );
-        virtual void setCamUpdate( bool state );
-        virtual void setUIUpdate( bool state );
+       	void setCamUpdate( bool state );
+       	void setUIUpdate( bool state );
 
-        virtual float getFovOffset( void );
+       	float getFovOffset( void ) override;
         int getFoodLevel( void );
         float getFoodSaturationLevel( void );
         bool getCamUpdate( void );
@@ -91,13 +91,13 @@ class Player : public AMob
 		glm::vec3 getLastTp( void );
 		void respawn( void );
 
-        virtual void applyGravity( void );
+       	void applyGravity( void ) override;
         void applyGravityUnderwater( void );
-		virtual void touchGround( float value );
-		virtual void touchCeiling( float value );
+		void touchGround( float value ) override;
+		void touchCeiling( float value ) override;
         void resetFall( void );
 
-		virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime );
+		bool update( std::vector<t_shaderInputModel>& modArr, float deltaTime ) override;
         void inputUpdate( bool rayCast, int gameMode );
     
     private:
@@ -118,13 +118,13 @@ class Player : public AMob
         void processPitch( GLint offset );
 		void processYaw( GLint offset );
 
-        virtual bool updateCurrentBlock( void );
+       	bool updateCurrentBlock( void ) override;
         void moveFly( GLint v, GLint h, GLint z );
         void moveUnderwater( int direction, GLint v, GLint h, GLint z );
-		virtual float getSpeed( void );
+		float getSpeed( void ) override;
         void move( int direction, GLint v, GLint h, GLint z );
-        virtual void restorePos( glm::vec3 position );
-        virtual bool customObstacle( int dir, float maxZ );
+       	void restorePos( glm::vec3 position ) override;
+       	bool customObstacle( int dir, float maxZ ) override;
         void updateFlySpeed( GLint key_cam_speed );
 };
 

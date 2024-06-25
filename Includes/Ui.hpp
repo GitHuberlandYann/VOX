@@ -36,7 +36,7 @@ class UI
 		void loadTextures( void );
 		void updateWinSize( void );
 
-		void addFace( t_shaderInputItem v0, t_shaderInputItem v1, t_shaderInputItem v2, t_shaderInputItem v3, bool alien, bool movement = false );
+		void addFace( std::array<glm::ivec2, 4> pts, int spec, int dx, int dy, bool alien, bool movement = false );
         void drawUserInterface( std::string str, int game_mode, float deltaTime );
         void chatMessage( std::string str, unsigned color = TEXT::WHITE );
 		void inventoryMessage( std::string str );

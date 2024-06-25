@@ -80,9 +80,20 @@ typedef struct s_collision {
 }				t_collision;
 
 typedef struct s_shaderInput {
-	int spec;
+	int texture;
+	int light;
 	glm::vec3 pos;
 }				t_shaderInput;
+
+typedef struct s_shaderInputModel {
+	int spec;
+	glm::vec3 pos;
+}				t_shaderInputModel;
+
+typedef struct s_shaderInputPart {
+	int spec;
+	glm::vec3 pos;
+}				t_shaderInputPart;
 
 typedef struct s_redstone {
 	glm::ivec3 pos = {0, 0, 0}; // offset of block inside chunk
@@ -200,10 +211,10 @@ class Chunk
 		void tickUpdate( void );
 		void updateScheduledBlocks( void );
 		void addMob( const AMob& mob, int mobType );
-		void updateMobs( std::vector<t_shaderInput>& modArr, double deltaTime );
-		void updateEntities( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, double deltaTime );
+		void updateMobs( std::vector<t_shaderInputModel>& modArr, double deltaTime );
+		void updateEntities( std::vector<t_shaderInput>& arr, std::vector<t_shaderInputPart>& partArr, double deltaTime );
 		size_t clearEntities( void );
-		void updateParticles( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInput>& partArr, double deltaTime );
+		void updateParticles( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInputPart>& partArr, double deltaTime );
 		size_t clearParticles( void );
 
 		std::string getAddsRmsString( void );

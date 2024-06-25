@@ -19,69 +19,79 @@ ChestInstance::~ChestInstance( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-void ChestInstance::displayBottomBox( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int itemLight )
+void ChestInstance::displayBottomBox( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int light )
 {
-	int spec = (1 << 4) + 1 + (15 << 12) + (5 << 8) + (3 << 19) + (itemLight << 24);
-	utils::shader::addQuads(arr, {pts[0], pts[1], pts[2], pts[3]}, spec, 14, 10, 0, 8);
+	int spec = settings::consts::shader::block::chest_front;
+	light += (3 << 8);
+	utils::shader::addQuads(arr, {pts[0], pts[1], pts[2], pts[3]}, spec + (5 << 16), light, 14, 10);
 
-	spec = spec - (1 << 4) + (1 << 19);
-	utils::shader::addQuads(arr, {pts[5], pts[4], pts[7], pts[6]}, spec, 14, 10, 0, 8);
+	spec = settings::consts::shader::block::chest_side;
+	light += (1 << 8);
+	utils::shader::addQuads(arr, {pts[5], pts[4], pts[7], pts[6]}, spec + (5 << 16), light, 14, 10);
 
-	spec -= (3 << 19);
-	utils::shader::addQuads(arr, {pts[4], pts[0], pts[6], pts[2]}, spec, 14, 10, 0, 8);
+	light -= (3 << 8);
+	utils::shader::addQuads(arr, {pts[4], pts[0], pts[6], pts[2]}, spec + (5 << 16), light, 14, 10);
 
-	spec += (1 << 19);
-	utils::shader::addQuads(arr, {pts[1], pts[5], pts[3], pts[7]}, spec, 14, 10, 0, 8);
+	light += (1 << 8);
+	utils::shader::addQuads(arr, {pts[1], pts[5], pts[3], pts[7]}, spec + (5 << 16), light, 14, 10);
 // +z
-	spec = spec + (3 << 4) - (2 << 19);
-	utils::shader::addQuads(arr, {pts[4], pts[5], pts[0], pts[1]}, spec, 14, 9, 0, 8);
+	spec = settings::consts::shader::block::chest_inner_bottom;
+	light -= (2 << 8);
+	utils::shader::addQuads(arr, {pts[4], pts[5], pts[0], pts[1]}, spec, light, 14, 14);
 // -z
 	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1)), false, false, false)) {
-		spec = spec - (1 << 4) + (5 << 19);
-		utils::shader::addQuads(arr, {pts[2], pts[3], pts[6], pts[7]}, spec, 14, 9, 0, 8);
+		spec = settings::consts::shader::block::chest_top;
+		light += (5 << 8);
+		utils::shader::addQuads(arr, {pts[2], pts[3], pts[6], pts[7]}, spec, light, 14, 14);
 	}
 }
 
-void ChestInstance::displayTopBox( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int itemLight )
+void ChestInstance::displayTopBox( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int light )
 {
-	int spec = (4 << 4) + 1 + (15 << 12) + (5 << 19) + (itemLight << 24);
-	utils::shader::addQuads(arr, {pts[0], pts[1], pts[2], pts[3]}, spec, 14, 14, 0, 8);
+	int spec = settings::consts::shader::block::chest_inner_top;
+	light += (5 << 8);
+	utils::shader::addQuads(arr, {pts[0], pts[1], pts[2], pts[3]}, spec, light, 14, 14);
 
-	spec = spec - (2 << 4) - (5 << 19);
-	utils::shader::addQuads(arr, {pts[6], pts[7], pts[4], pts[5]}, spec, 14, 14, 0, 8);
+	spec = settings::consts::shader::block::chest_top;
+	light -= (5 << 8);
+	utils::shader::addQuads(arr, {pts[6], pts[7], pts[4], pts[5]}, spec, light, 14, 14);
 
-	spec = spec - (2 << 4) + (1 << 19);
-	utils::shader::addQuads(arr, {pts[6], pts[4], pts[2], pts[0]}, spec, 14, 5, 0, 8);
+	spec = settings::consts::shader::block::chest_side;
+	light += (1 << 8);
+	utils::shader::addQuads(arr, {pts[6], pts[4], pts[2], pts[0]}, spec, light, 14, 5);
 
-	spec += (1 << 19);
-	utils::shader::addQuads(arr, {pts[5], pts[7], pts[1], pts[3]}, spec, 14, 5, 0, 8);
+	light += (1 << 8);
+	utils::shader::addQuads(arr, {pts[5], pts[7], pts[1], pts[3]}, spec, light, 14, 5);
 // +z
-	spec += (1 << 4) + (2 << 19);
-	utils::shader::addQuads(arr, {pts[4], pts[5], pts[0], pts[1]}, spec, 14, 5, 0, 8);
+	spec = settings::consts::shader::block::chest_front;
+	light += (2 << 8);
+	utils::shader::addQuads(arr, {pts[4], pts[5], pts[0], pts[1]}, spec, light, 14, 5);
 // -z
-	spec -= (1 << 4) + (1 << 19);
-	utils::shader::addQuads(arr, {pts[7], pts[6], pts[3], pts[2]}, spec, 14, 5, 0, 8);
+	spec = settings::consts::shader::block::chest_side;
+	light -= (1 << 8);
+	utils::shader::addQuads(arr, {pts[7], pts[6], pts[3], pts[2]}, spec, light, 14, 5);
 }
 
-void ChestInstance::displayLock( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int itemLight )
+void ChestInstance::displayLock( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int light )
 {
-	int spec = (5 << 4) + (15 << 12) + (3 << 19) + (itemLight << 24); // front
-	utils::shader::addQuads(arr, {pts[0], pts[1], pts[2], pts[3]}, spec, 2, 4, 0, 8);
+	int spec = settings::consts::shader::block::chest_front + (14 << 12);
+	light += (3 << 8); // front
+	utils::shader::addQuads(arr, {pts[0], pts[1], pts[2], pts[3]}, spec, light, 2, 4);
 
-	spec = (5 << 4) + (15 << 12) + (4 << 19) + (itemLight << 24); // back
-	utils::shader::addQuads(arr, {pts[5], pts[4], pts[7], pts[6]}, spec, 2, 4, 0, 8);
+	light += (1 << 8); // back
+	utils::shader::addQuads(arr, {pts[5], pts[4], pts[7], pts[6]}, spec, light, 2, 4, true);
 
-	spec = (5 << 4) + (15 << 12) + (1 << 19) + (itemLight << 24); // left side
-	utils::shader::addQuads(arr, {pts[4], pts[0], pts[6], pts[2]}, spec, 1, 4, 0, 8);
+	light -= (3 << 8); // left side
+	utils::shader::addQuads(arr, {pts[4], pts[0], pts[6], pts[2]}, spec, light, 1, 4);
 
-	spec = (5 << 4) + 1 + (15 << 12) + (2 << 19) + (itemLight << 24); // right side
-	utils::shader::addQuads(arr, {pts[1], pts[5], pts[3], pts[7]}, spec, 1, 4, 0, 8);
+	light += (1 << 8); // right side
+	utils::shader::addQuads(arr, {pts[1], pts[5], pts[3], pts[7]}, spec + (1 << 12), light, 1, 4);
 // +z
-	spec = (5 << 4) + (15 << 12) + (0 << 19) + (itemLight << 24);
-	utils::shader::addQuads(arr, {pts[4], pts[5], pts[0], pts[1]}, spec, 2, 1, 0, 8);
+	light -= (2 << 8);
+	utils::shader::addQuads(arr, {pts[4], pts[5], pts[0], pts[1]}, spec, light, 2, 1);
 // -z
-	spec = (5 << 4) + (15 << 12) + (3 << 8) + (5 << 19) + (itemLight << 24);
-	utils::shader::addQuads(arr, {pts[2], pts[3], pts[6], pts[7]}, spec, 2, 1, 0, 8);
+	light += (5 << 8);
+	utils::shader::addQuads(arr, {pts[2], pts[3], pts[6], pts[7]}, spec + (3 << 16), light, 2, 1);
 }
 
 void ChestInstance::display_open( std::vector<t_shaderInput>& arr )
@@ -274,26 +284,29 @@ void ChestInstance::display_closed( std::vector<t_shaderInput>& arr )
 	glm::vec3 p6 = {pos.x + back.x + 0,       pos.y + back.y + 0,       pos.z + 0};
 	glm::vec3 p7 = {pos.x + back.x + right.x, pos.y + back.y + right.y, pos.z + 0};
 
-	int itemLight = _chunk->computePosLight(_pos);
+	int light = _chunk->computePosLight(_pos);
 
-    int spec = (1 << 4) + 1 + (15 << 12) + (3 << 19) + (itemLight << 24); // front
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 14, 15, 0, 8);
+    int spec = settings::consts::shader::block::chest_front;
+	light += (3 << 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, light, 14, 15);
 
-	spec = spec - (1 << 4) + (1 << 19); // back
-	utils::shader::addQuads(arr, {p5, p4, p7, p6}, spec, 14, 15, 0, 8);
+	spec = settings::consts::shader::block::chest_side; // back
+	light += (1 << 8);
+	utils::shader::addQuads(arr, {p5, p4, p7, p6}, spec, light, 14, 15);
 
-	spec -= (3 << 19); // left size
-	utils::shader::addQuads(arr, {p4, p0, p6, p2}, spec, 14, 15, 0, 8);
+	light -= (3 << 8); // left size
+	utils::shader::addQuads(arr, {p4, p0, p6, p2}, spec, light, 14, 15);
 
-	spec += (1 << 19); // right size
-	utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec, 14, 15, 0, 8);
+	light += (1 << 8); // right size
+	utils::shader::addQuads(arr, {p1, p5, p3, p7}, spec, light, 14, 15);
 // +z
-	spec = spec + (2 << 4) - (2 << 19);
-	utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, 14, 14, 0, 8);
+	spec = settings::consts::shader::block::chest_top;
+	light -= (2 << 8);
+	utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, light, 14, 14);
 // -z
 	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1)), false, false, false)) {
-		spec += (5 << 19);
-		utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, 14, 14, 0, 8);
+		light += (5 << 8);
+		utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, light, 14, 14);
 	}
 
 	const float ONE14TH = 1.0f / 14.0f;
@@ -308,7 +321,7 @@ void ChestInstance::display_closed( std::vector<t_shaderInput>& arr )
 	p6 += glm::vec3( right.x * 6.0f * ONE14TH - back.x,  right.y * 6.0f * ONE14TH - back.y,  8.0f * one16th);
 	p7 += glm::vec3(-right.x * 6.0f * ONE14TH - back.x, -right.y * 6.0f * ONE14TH - back.y,  8.0f * one16th);
 
-    displayLock(arr, {p0, p1, p2, p3, p4, p5, p6, p7}, itemLight);
+    displayLock(arr, {p0, p1, p2, p3, p4, p5, p6, p7}, light & 0xFF);
 }
 
 // ************************************************************************** //

@@ -29,12 +29,13 @@ namespace settings {
 };
 
 typedef struct s_item t_item;
+typedef struct s_shaderInputModel t_shaderInputModel;
 
 class AMob {
 	public:
 		virtual ~AMob( void );
 
-		virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime ) = 0;
+		virtual bool update( std::vector<t_shaderInputModel>& modArr, float deltaTime ) = 0;
 		glm::vec3 getPos( void );
 		virtual glm::vec3 getEyePos( void ) = 0;
 		glm::vec3 getDir( void );

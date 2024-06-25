@@ -727,7 +727,7 @@ menu::ret Menu::ingame_inputs( void )
 				}
 			} else {
 				_selected_block = _inventory->putBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
-				_ui->addFace({0,{0,0}}, {0,{0,0}}, {0,{0,0}}, {0,{0,0}}, false, true); // TODO better way to update ui than this
+					_ui->addFace({glm::ivec2(0, 0), {}, {}, {}}, 0, 0, 0, false, true); // TODO better way to update ui than this
 			}
 		}
 	}
@@ -755,7 +755,7 @@ menu::ret Menu::ingame_inputs( void )
 					if (_selected_block.amount < count) {
 						_selection_list.push_back(_selection);
 					}
-					_ui->addFace({0,{0,0}}, {0,{0,0}}, {0,{0,0}}, {0,{0,0}}, false, true);
+					_ui->addFace({glm::ivec2(0, 0), {}, {}, {}}, 0, 0, 0, false, true);
 				}
 			}
 		}

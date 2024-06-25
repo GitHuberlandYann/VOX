@@ -12,13 +12,15 @@ namespace PARTICLES
 	};
 }
 
+typedef struct s_shaderInputPart t_shaderInputPart;
+
 class Particle
 {
 	public:
 		Particle( Chunk* chunk, glm::vec3 pos, int type, float shade = 1, int block = blocks::air );
 		~Particle( void );
 
-		bool update( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInput>& partArr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime );
+		bool update( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInputPart>& partArr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime );
 
 	private:
 		glm::vec3 _pos, _dir;
@@ -27,9 +29,9 @@ class Particle
 		int _type, _frame, _block;
 		Chunk *_chunk;
 
-		bool updateFlame( std::vector<t_shaderInput>& arr, glm::vec3 camDir );
-		bool updateSmoke( std::vector<t_shaderInput>& arr, glm::vec3 camDir, float deltaTime );
-		bool updateExplosion( std::vector<t_shaderInput>& arr, glm::vec3 camDir );
+		bool updateFlame( std::vector<t_shaderInputPart>& arr, glm::vec3 camDir );
+		bool updateSmoke( std::vector<t_shaderInputPart>& arr, glm::vec3 camDir, float deltaTime );
+		bool updateExplosion( std::vector<t_shaderInputPart>& arr, glm::vec3 camDir );
 		bool updateBreaking( std::vector<t_shaderInput>& arr, glm::vec3 camDir, float deltaTime );
 };
 

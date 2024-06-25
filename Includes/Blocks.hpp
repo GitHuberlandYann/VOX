@@ -86,6 +86,200 @@ namespace redstone {
 	};
 };
 
+namespace settings {
+	namespace consts {
+		namespace shader {
+			namespace block {
+				enum {
+					tex0, tex1, tex2, tex3, tex4, tex5, tex6, tex7, tex8, tex9, tex10, tex11, tex12, tex13, tex14, tex15,
+					allium,
+					arrow,
+					bedrock,
+					birch_planks,
+					black_wool,
+					blue_orchid,
+					blue_wool,
+					bricks,
+					brown_wool,
+					cactus_bottom,
+					cactus_side,
+					cactus_top,
+					chest_front,
+					chest_inner_bottom,
+					chest_inner_top,
+					chest_side,
+					chest_top,
+					coal_block,
+					coal_ore,
+					cobblestone,
+					comparator,
+					comparator_on,
+					cornflower,
+					cracked_stone_bricks,
+					crafting_table_front,
+					crafting_table_side,
+					crafting_table_top,
+					cyan_wool,
+					dandelion,
+					dead_bush,
+					debug,
+					destroy_stage,
+					destroy_stage_0,
+					destroy_stage_1,
+					destroy_stage_2,
+					destroy_stage_3,
+					destroy_stage_4,
+					destroy_stage_5,
+					destroy_stage_6,
+					destroy_stage_7,
+					destroy_stage_8,
+					destroy_stage_9,
+					diamond_block,
+					diamond_ore,
+					dirt,
+					dirt_path_side,
+					dirt_path_top,
+					dust_dot,
+					dust_line,
+					farmland,
+					farmland_moist,
+					furnace_front,
+					furnace_front_on,
+					furnace_side,
+					furnace_top,
+					glass,
+					glass_pane_top,
+					grass,
+					grass_block_side,
+					grass_block_top,
+					gravel,
+					gray_wool,
+					green_wool,
+					iron_block,
+					iron_ore,
+					item_frame,
+					lever,
+					light_blue_wool,
+					light_gray_wool,
+					lime_wool,
+					magenta_wool,
+					oak_door_bottom,
+					oak_door_top,
+					oak_leaves,
+					oak_log,
+					oak_log_spin,
+					oak_log_top,
+					oak_planks,
+					oak_sapling,
+					oak_sign,
+					oak_trapdoor,
+					observer_back,
+					observer_back_on,
+					observer_front,
+					observer_side,
+					observer_top,
+					orange_wool,
+					pink_tulip,
+					pink_wool,
+					piston_bottom,
+					piston_inner,
+					piston_side,
+					piston_top,
+					piston_top_sticky,
+					poppy,
+					purple_wool,
+					red_wool,
+					redstone_block,
+					redstone_lamp,
+					redstone_lamp_on,
+					redstone_ore,
+					redstone_torch,
+					redstone_torch_off,
+					repeater,
+					repeater_on,
+					sand,
+					sandstone,
+					sandstone_bottom,
+					sandstone_top,
+					smooth_stone,
+					stone,
+					stone_bricks,
+					sugar_cane,
+					target_side,
+					target_top,
+					tnt_bottom,
+					tnt_side,
+					tnt_top,
+					torch,
+					wheat_stage0,
+					wheat_stage1,
+					wheat_stage2,
+					wheat_stage3,
+					wheat_stage4,
+					wheat_stage5,
+					wheat_stage6,
+					wheat_stage7,
+					white_tulip,
+					white_wool,
+					yellow_wool,
+					last
+				};
+			};
+
+			namespace item {
+				enum {
+					apple = block::last,
+					arrow,
+					bow,
+					bow_pulling_0,
+					bow_pulling_1,
+					bow_pulling_2,
+					bread,
+					bucket,
+					charcoal,
+					coal,
+					comparator,
+					diamond,
+					diamond_axe,
+					diamond_hoe,
+					diamond_pickaxe,
+					diamond_shovel,
+					flint,
+					flint_and_steel,
+					iron_axe,
+					iron_hoe,
+					iron_ingot,
+					iron_pickaxe,
+					iron_shovel,
+					item_frame,
+					oak_door,
+					oak_sign,
+					redstone,
+					repeater,
+					skeleton_egg,
+					stick,
+					stone_axe,
+					stone_hoe,
+					stone_pickaxe,
+					stone_shovel,
+					string,
+					sugar_cane,
+					water_bucket,
+					wheat,
+					wheat_seeds,
+					wooden_axe,
+					wooden_hoe,
+					wooden_pickaxe,
+					wooden_shovel,
+					zombie_egg,
+					last
+				};
+			};
+			const int blocks_size = item::last;
+		};
+	};
+};
+
 namespace offset {
 
 	namespace blocks {
@@ -373,8 +567,7 @@ struct Block {
 		int needed_tool = blocks::item;
 		int needed_material_level = 0;
 		int durability = 0;
-		int textureX = 1;
-		int textureY = 15;
+		int texture = settings::consts::shader::block::debug;
 		float fuel_time = 0;
 		float blast_resistance = FLT_MAX;
 		float saturation_restauration = 0;
@@ -406,13 +599,9 @@ struct Block {
 			}
 			return (tool >= needed_tool + needed_material_level && tool < needed_tool + 4);
 		}
-		virtual int texX( int dir = face_dir::minus_y, int value = 0 ) const {
+		virtual int getTex( int dir = face_dir::minus_y, int value = 0 ) const {
 			(void)dir;(void)value;
-			return (textureX);
-		}
-		virtual int texY( int dir = face_dir::minus_y, int value = 0 ) const {
-			(void)dir;(void)value;
-			return (textureY);
+			return (texture);
 		}
 		virtual void getHitbox( glm::vec3* hitbox, int value ) const;
 		virtual void getSecondaryHitbox( glm::vec3* hitbox, int value ) const;
@@ -590,8 +779,6 @@ struct TBD : Cube {
 	public:
 		TBD() {
 			name = "TBD";
-			textureX = 15;
-			textureY = 15;
 		}
 };
 
@@ -604,16 +791,15 @@ struct GrassBlock : Cube {
 			byHand = true;
 			needed_tool = blocks::wooden_shovel;
 			hardness = 0.6f;
-			textureY = 1;
 		}
-		int texX( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			(void)value;
 			if (dir == face_dir::plus_z) {
-				return (1);
+				return (settings::consts::shader::block::grass_block_top);
 			} else if (dir == face_dir::minus_z) {
-				return (4);
+				return (settings::consts::shader::block::dirt);
 			}
-			return (0);
+			return (settings::consts::shader::block::grass_block_side);
 		}
 };
 
@@ -630,22 +816,24 @@ struct OakLog : Cube {
 			byHand = true;
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
-			textureY = 2;
 		}
-		int texX( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			int axis = (value >> offset::blocks::orientation) & 0x7;
 			switch (dir) {
 				case face_dir::minus_z:
 				case face_dir::plus_z:
-					return ((axis == face_dir::plus_z) + 2 * (axis == face_dir::plus_x));
+					return ((axis == face_dir::plus_z) ? settings::consts::shader::block::oak_log_top
+						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::oak_log);
 				case face_dir::minus_x:
 				case face_dir::plus_x:
-					return ((axis == face_dir::plus_x) + 2 * (axis == face_dir::plus_y));
+					return ((axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_top
+						: (axis == face_dir::plus_y) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::oak_log);
 				case face_dir::minus_y:
 				case face_dir::plus_y:
-					return ((axis == face_dir::plus_y) + 2 * (axis == face_dir::plus_x));
+					return ((axis == face_dir::plus_y) ? settings::consts::shader::block::oak_log_top
+						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::oak_log);
 			}
-			return (0);
+			return (settings::consts::shader::block::oak_log);
 		}
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
 };
@@ -660,16 +848,15 @@ struct Cactus : Cube {
 			byHand = true;
 			hardness = 0.4f;
 			transparent = true;
-			textureY = 3;
 		}
-		int texX( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			(void)value;
 			if (dir == face_dir::plus_z) {
-				return (1);
+				return (settings::consts::shader::block::cactus_top);
 			} else if (dir == face_dir::minus_z) {
-				return (2);
+				return (settings::consts::shader::block::cactus_bottom);
 			}
-			return (0);
+			return (settings::consts::shader::block::cactus_side);
 		}
 };
 
@@ -688,13 +875,13 @@ struct Farmland : Block {
 			byHand = true;
 			needed_tool = blocks::wooden_shovel;
 			hardness = 0.6f;
-			textureY = 1;
 		}
-		virtual int texX( int dir, int value ) const {
+		virtual int getTex( int dir, int value ) const {
 			if (dir == face_dir::plus_z) {
-				return (2 + !(value & mask::farmland::wet));
+				return ((value & mask::farmland::wet) ? settings::consts::shader::block::farmland_moist
+					: settings::consts::shader::block::farmland);
 			}
-			return (4);
+			return (settings::consts::shader::block::dirt);
 		}
 		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
 };
@@ -707,21 +894,14 @@ struct DirtPath : Farmland {
 			blast_resistance = 0.65f;
 			hardness = 0.65f;
 		}
-		int texX( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			(void)value;
 			if (dir == face_dir::plus_z) {
-				return (1);
+				return (settings::consts::shader::block::dirt_path_top);
 			} else if (dir == face_dir::minus_z) {
-				return (4);
+				return (settings::consts::shader::block::dirt);
 			}
-			return (0);
-		}
-		int texY( int dir, int value ) const override {
-			(void)value;
-			if (dir == face_dir::minus_z) {
-				return (1);
-			}
-			return (5);
+			return (settings::consts::shader::block::dirt_path_side);
 		}
 };
 
@@ -734,16 +914,15 @@ struct TNT : Cube {
 			byHand = true;
 			hardness = 0.0f;
 			redstoneComponant = true;
-			textureY = 6;
 		}
-		int texX( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			(void)value;
 			if (dir == face_dir::plus_z) {
-				return (1);
+				return (settings::consts::shader::block::tnt_top);
 			} else if (dir == face_dir::minus_z) {
-				return (2);
+				return (settings::consts::shader::block::tnt_bottom);
 			}
-			return (0);
+			return (settings::consts::shader::block::tnt_side);
 		}
 };
 
@@ -756,11 +935,11 @@ struct Target : Cube {
 			byHand = true;
 			needed_tool = blocks::wooden_hoe;
 			hardness = 0.5f;
-			textureY = 7;
 		}
-		int texX( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			(void)value;
-			return (dir == face_dir::plus_z || dir == face_dir::minus_z);
+			return ((dir == face_dir::plus_z || dir == face_dir::minus_z)
+				? settings::consts::shader::block::target_top : settings::consts::shader::block::target_side);
 		}
 };
 
@@ -777,15 +956,14 @@ struct CraftingTable : Cube {
 			byHand = true;
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.5f;
-			textureY = 8;
 		}
-		int texX( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			if (dir == face_dir::plus_z || dir == face_dir::minus_z) {
-				return (1);
+				return (settings::consts::shader::block::crafting_table_top);
 			} else if (((value >> offset::blocks::orientation) & 0x7) == dir) {
-				return (2);
+				return (settings::consts::shader::block::crafting_table_front);
 			}
-			return (0);
+			return (settings::consts::shader::block::crafting_table_side);
 		}
 };
 
@@ -800,15 +978,15 @@ struct Furnace : Cube {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 3.5f;
-			textureY = 9;
 		}
-		int texX( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			if (dir == face_dir::plus_z || dir == face_dir::minus_z) {
-				return (1);
+				return (settings::consts::shader::block::furnace_top);
 			} else if (((value >> offset::blocks::orientation) & 0x7) == dir) {
-				return (2 + ((value >> offset::redstone::activated) & 0x1));
+				return (((value >> offset::redstone::activated) & 0x1)
+					? settings::consts::shader::block::furnace_front_on : settings::consts::shader::block::furnace_front);
 			}
-			return (0);
+			return (settings::consts::shader::block::furnace_side);
 		}
 };
 
@@ -823,8 +1001,7 @@ struct OakStairs : Stairs {
 			byHand = true;
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
-			textureX = 4;
-			textureY = 10;
+			texture = settings::consts::shader::block::oak_planks;
 		}
 };
 
@@ -840,19 +1017,20 @@ struct OakDoor : Door {
 			needed_tool = blocks::wooden_axe;
 			hardness = 3.0f;
 		}
-		// offset is bool half or 2 if item
-		int texX( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			(void)dir;
-			return ((value == blocks::item) ? 9 : 0);
-		}
-		int texY( int dir, int value ) const override {
+			if (value == blocks::item) {
+				return (settings::consts::shader::item::oak_door);
+			}
 			switch (dir) {
 				case face_dir::plus_z:
-					return (10);
+					return (settings::consts::shader::block::oak_door_top);
 				case face_dir::minus_z:
-					return (11);
+					return (settings::consts::shader::block::oak_door_bottom);
 				default:
-					return ((value == blocks::item) ? 14 : 11 - ((value >> offset::blocks::bitfield) & door::upper_half));
+					return (((value >> offset::blocks::bitfield) & door::upper_half)
+						? settings::consts::shader::block::oak_door_top
+						: settings::consts::shader::block::oak_door_bottom);
 			}
 		}
 };
@@ -868,8 +1046,7 @@ struct OakTrapdoor : Trapdoor {
 			byHand = true;
 			needed_tool = blocks::wooden_axe;
 			hardness = 3.0f;
-			textureX = 2;
-			textureY = 11;
+			texture = settings::consts::shader::block::oak_trapdoor;
 		}
 };
 
@@ -884,8 +1061,7 @@ struct StoneStairs : Stairs {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 3;
+			texture = settings::consts::shader::block::stone;
 		}
 };
 
@@ -898,8 +1074,7 @@ struct SmoothStoneStairs : Stairs {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 2;
+			texture = settings::consts::shader::block::smooth_stone;
 		}
 };
 
@@ -914,8 +1089,7 @@ struct CobbleStoneStairs : Stairs {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 4;
+			texture = settings::consts::shader::block::cobblestone;
 		}
 };
 
@@ -928,8 +1102,7 @@ struct StoneBricksStairs : Stairs {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 5;
+			texture = settings::consts::shader::block::stone_bricks;
 		}
 };
 
@@ -950,8 +1123,7 @@ struct Lever : Block {
 			transparent = true;
 			isSolidForFluid = false;
 			item3D = false;
-			textureX = 7;
-			textureY = 10;
+			texture = settings::consts::shader::block::lever;
 		}
 		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
@@ -971,8 +1143,7 @@ struct OakSign : Block {
 			hardness = 1.0f;
 			transparent = true;
 			item3D = false;
-			textureX = 1;
-			textureY = 11;
+			texture = settings::consts::shader::item::oak_sign;
 		}
 		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
@@ -983,8 +1154,7 @@ struct Bedrock : Cube {
 		Bedrock() {
 			name = "BEDROCK";
 			byHand = false;
-			textureX = 4;
-			textureY = 0;
+			texture = settings::consts::shader::block::bedrock;
 		}
 };
 
@@ -997,8 +1167,7 @@ struct Dirt : Cube {
 			byHand = true;
 			needed_tool = blocks::wooden_shovel;
 			hardness = 0.5f;
-			textureX = 4;
-			textureY = 1;
+			texture = settings::consts::shader::block::dirt;
 		}
 };
 
@@ -1011,8 +1180,7 @@ struct SmoothStone : Cube {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 2.0f;
-			textureX = 4;
-			textureY = 2;
+			texture = settings::consts::shader::block::smooth_stone;
 		}
 };
 
@@ -1027,8 +1195,7 @@ struct Stone : Cube {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 3;
+			texture = settings::consts::shader::block::stone;
 		}
 };
 
@@ -1043,8 +1210,7 @@ struct Cobblestone : Cube {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 2.0f;
-			textureX = 4;
-			textureY = 4;
+			texture = settings::consts::shader::block::cobblestone;
 		}
 };
 
@@ -1059,8 +1225,7 @@ struct StoneBrick : Cube {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 5;
+			texture = settings::consts::shader::block::stone_bricks;
 		}
 };
 
@@ -1073,8 +1238,7 @@ struct CrackedStoneBrick : Cube {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 6;
+			texture = settings::consts::shader::block::cracked_stone_bricks;
 		}
 };
 
@@ -1089,8 +1253,7 @@ struct Sand : Cube {
 			byHand = true;
 			needed_tool = blocks::wooden_shovel;
 			hardness = 0.5f;
-			textureX = 4;
-			textureY = 7;
+			texture = settings::consts::shader::block::sand;
 		}
 };
 
@@ -1103,8 +1266,7 @@ struct Gravel : Cube {
 			byHand = true;
 			needed_tool = blocks::wooden_shovel;
 			hardness = 0.6f;
-			textureX = 4;
-			textureY = 8;
+			texture = settings::consts::shader::block::gravel;
 		}
 };
 
@@ -1116,8 +1278,7 @@ struct OakLeaves : Cube {
 			byHand = true;
 			hardness = 0.2f;
 			transparent = true;
-			textureX = 4;
-			textureY = 9;
+			texture = settings::consts::shader::block::oak_leaves;
 		}
 };
 
@@ -1132,8 +1293,7 @@ struct OakPlanks : Cube {
 			byHand = true;
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
-			textureX = 4;
-			textureY = 10;
+			texture = settings::consts::shader::block::oak_planks;
 		}
 };
 
@@ -1145,8 +1305,7 @@ struct Glass : Block {
 			hardness = 0.3f;
 			geometry = geometry::glass;
 			transparent = true;
-			textureX = 4;
-			textureY = 11;
+			texture = settings::consts::shader::block::glass;
 		}
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
 };
@@ -1163,19 +1322,7 @@ struct GlassPane : Block {
 			hardness = 0.3f;
 			transparent = true;
 			item3D = false;
-			textureY = 11;
-		}
-		int texX( int dir, int offset ) const override {
-			(void)dir;
-			switch (offset) {
-				case fence::base:
-					return (4);
-				case fence::arm:
-					return (5);
-				case fence::arm_end:
-					return (3);
-			}
-			return (4);
+			texture = settings::consts::shader::block::glass;
 		}
 		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
@@ -1193,11 +1340,11 @@ struct RedstoneLamp : Cube {
 			byHand = true;
 			hardness = 0.3f;
 			redstoneComponant = true;
-			textureX = 5;
 		}
-		int texY( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			(void)dir;
-			return ((value & mask::redstone::activated) ? 9 : 8);
+			return ((value & mask::redstone::activated) ? settings::consts::shader::block::redstone_lamp_on
+				: settings::consts::shader::block::redstone_lamp);
 		}
 };
 
@@ -1211,8 +1358,7 @@ struct StoneButton : Button {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 3;
+			texture = settings::consts::shader::block::stone;
 		}
 };
 
@@ -1226,8 +1372,7 @@ struct OakButton : Button {
 			byHand = true;
 			needed_tool = blocks::wooden_axe;
 			hardness = 0.5f;
-			textureX = 4;
-			textureY = 10;
+			texture = settings::consts::shader::block::oak_planks;
 		}
 };
 
@@ -1242,8 +1387,7 @@ struct CoalOre : Cube {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 3.0f;
-			textureX = 5;
-			textureY = 0;
+			texture = settings::consts::shader::block::coal_ore;
 		}
 };
 
@@ -1259,8 +1403,7 @@ struct IronOre : Cube {
 			needed_tool = blocks::wooden_pickaxe;
 			needed_material_level = 1; // min stone to collect
 			hardness = 3.0f;
-			textureX = 5;
-			textureY = 1;
+			texture = settings::consts::shader::block::iron_ore;
 		}
 };
 
@@ -1276,8 +1419,7 @@ struct DiamondOre : Cube {
 			needed_tool = blocks::wooden_pickaxe;
 			needed_material_level = 2; // min iron to collect
 			hardness = 3.0f;
-			textureX = 5;
-			textureY = 2;
+			texture = settings::consts::shader::block::diamond_ore;
 		}
 };
 
@@ -1292,8 +1434,7 @@ struct CoalBlock : Cube {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 5.0f;
-			textureX = 5;
-			textureY = 3;
+			texture = settings::consts::shader::block::coal_block;
 		}
 };
 
@@ -1307,8 +1448,7 @@ struct IronBlock : Cube {
 			needed_tool = blocks::wooden_pickaxe;
 			needed_material_level = 1; // min stone to collect
 			hardness = 5.0f;
-			textureX = 5;
-			textureY = 4;
+			texture = settings::consts::shader::block::iron_block;
 		}
 };
 
@@ -1322,8 +1462,7 @@ struct DiamondBlock : Cube {
 			needed_tool = blocks::wooden_pickaxe;
 			needed_material_level = 2; // min iron to collect
 			hardness = 5.0f;
-			textureX = 5;
-			textureY = 5;
+			texture = settings::consts::shader::block::diamond_block;
 		}
 };
 
@@ -1339,8 +1478,7 @@ struct RedstoneOre : Cube {
 			needed_tool = blocks::wooden_pickaxe;
 			needed_material_level = 2; // min iron to collect
 			hardness = 3.0f;
-			textureX = 5;
-			textureY = 6;
+			texture = settings::consts::shader::block::redstone_ore;
 		}
 };
 
@@ -1353,8 +1491,7 @@ struct RedstoneBlock : Cube {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 5.0f;
-			textureX = 5;
-			textureY = 7;
+			texture = settings::consts::shader::block::redstone_block;
 		}
 };
 
@@ -1369,8 +1506,7 @@ struct OakSlab : Slab {
 			byHand = true;
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
-			textureX = 4;
-			textureY = 10;
+			texture = settings::consts::shader::block::oak_planks;
 		}
 };
 
@@ -1385,8 +1521,7 @@ struct OakFence : Fence {
 			byHand = true;
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
-			textureX = 4;
-			textureY = 10;
+			texture = settings::consts::shader::block::oak_planks;
 		}
 };
 
@@ -1401,8 +1536,7 @@ struct StoneSlab : Slab {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 3;
+			texture = settings::consts::shader::block::stone;
 		}
 };
 
@@ -1415,8 +1549,7 @@ struct SmoothStoneSlab : Slab {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 2;
+			texture = settings::consts::shader::block::smooth_stone;
 		}
 };
 
@@ -1431,8 +1564,7 @@ struct CobbleStoneSlab : Slab {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 4;
+			texture = settings::consts::shader::block::cobblestone;
 		}
 };
 
@@ -1445,8 +1577,7 @@ struct StoneBricksSlab : Slab {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 1.5f;
-			textureX = 4;
-			textureY = 5;
+			texture = settings::consts::shader::block::stone_bricks;
 		}
 };
 
@@ -1463,17 +1594,18 @@ struct Piston : Block {
 			hardness = 1.5f;
 			transparent = true;
 			oriented = true;
-			textureY = 13;
 		}
-		int texX( int dir = face_dir::minus_y, int value = 0 ) const override {
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
 			int orientation = (value >> offset::blocks::orientation) & 0x7;
 			if (dir == orientation) {
-				return ((value & mask::redstone::piston::moving) ? 2 : 3 + (mined == blocks::sticky_piston));
+				return ((value & mask::redstone::piston::moving) ? settings::consts::shader::block::piston_inner
+					: (mined == blocks::sticky_piston) ? settings::consts::shader::block::piston_top_sticky
+					: settings::consts::shader::block::piston_top);
 			}
 			if (dir == opposite_dir(orientation)) {
-				return (1);
+				return (settings::consts::shader::block::piston_bottom);
 			}
-			return (0);
+			return (settings::consts::shader::block::piston_side);
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
@@ -1499,8 +1631,6 @@ struct PistonHead : Block {
 			hardness = 1.5f;
 			transparent = true;
 			oriented = true;
-			textureX = 4;
-			textureY = 5;
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
@@ -1527,20 +1657,22 @@ struct Observer : Block {
 			hardness = 3.0f;
 			transparent = true;
 			oriented = true;
-			textureY = 12;
 		}
-		int texX( int dir = face_dir::minus_y, int value = 0 ) const override {
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
 			int orientation = (value >> offset::blocks::orientation) & 0x7;
 			if (dir == orientation) {
-				return (2);
+				return (settings::consts::shader::block::observer_front);
 			}
 			if (dir == opposite_dir(orientation)) {
-				return ((value & mask::redstone::activated) ? 4 : 3);
+				return ((value & mask::redstone::activated) ? settings::consts::shader::block::observer_back_on
+					: settings::consts::shader::block::observer_back);
 			}
 			if (orientation & 0x4) {
-				return (!(dir & 0x2));
+				return ((dir & 0x2) ? settings::consts::shader::block::observer_side
+					: settings::consts::shader::block::observer_top);
 			}
-			return (!!(dir & 0x4));
+			return ((dir & 0x4) ? settings::consts::shader::block::observer_top
+				: settings::consts::shader::block::observer_side);
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
@@ -1551,8 +1683,7 @@ struct Poppy : Cross {
 		Poppy() {
 			name = "POPPY";
 			mined = blocks::poppy;
-			textureX = 6;
-			textureY = 0;
+			texture = settings::consts::shader::block::poppy;
 		}
 };
 
@@ -1561,8 +1692,7 @@ struct Dandelion : Cross {
 		Dandelion() {
 			name = "DANDELION";
 			mined = blocks::dandelion;
-			textureX = 6;
-			textureY = 1;
+			texture = settings::consts::shader::block::dandelion;
 		}
 };
 
@@ -1571,8 +1701,7 @@ struct BlueOrchid : Cross {
 		BlueOrchid() {
 			name = "BLUE_ORCHID";
 			mined = blocks::blue_orchid;
-			textureX = 6;
-			textureY = 2;
+			texture = settings::consts::shader::block::blue_orchid;
 		}
 };
 
@@ -1581,8 +1710,7 @@ struct Allium : Cross {
 		Allium() {
 			name = "ALLIUM";
 			mined = blocks::allium;
-			textureX = 6;
-			textureY = 3;
+			texture = settings::consts::shader::block::allium;
 		}
 };
 
@@ -1591,8 +1719,7 @@ struct CornFlower : Cross {
 		CornFlower() {
 			name = "CORNFLOWER";
 			mined = blocks::cornflower;
-			textureX = 6;
-			textureY = 4;
+			texture = settings::consts::shader::block::cornflower;
 		}
 };
 
@@ -1601,8 +1728,7 @@ struct PinkTulip : Cross {
 		PinkTulip() {
 			name = "PINK_TULIP";
 			mined = blocks::pink_tulip;
-			textureX = 6;
-			textureY = 5;
+			texture = settings::consts::shader::block::pink_tulip;
 		}
 };
 
@@ -1612,8 +1738,7 @@ struct Grass : Cross {
 			name = "GRASS";
 			mined = blocks::wheat_seeds;
 			hasHitbox = false;
-			textureX = 6;
-			textureY = 6;
+			texture = settings::consts::shader::block::grass;
 		}
 };
 
@@ -1623,8 +1748,7 @@ struct SugarCane : Cross {
 			name = "SUGAR_CANE";
 			mined = blocks::sugar_cane;
 			hasHitbox = false;
-			textureX = 6;
-			textureY = 7;
+			texture = settings::consts::shader::block::sugar_cane;
 		}
 };
 
@@ -1635,8 +1759,7 @@ struct DeadBush : Cross {
 			mined = blocks::stick;
 			isFuel = true;
 			fuel_time = 5;
-			textureX = 6;
-			textureY = 8;
+			texture = settings::consts::shader::block::dead_bush;
 		}
 };
 
@@ -1647,8 +1770,7 @@ struct OakSapling : Cross {
 			mined = blocks::oak_sapling;
 			isFuel = true;
 			fuel_time = 5;
-			textureX = 6;
-			textureY = 9;
+			texture = settings::consts::shader::block::oak_sapling;
 		}
 };
 
@@ -1667,8 +1789,7 @@ struct Torch : Block {
 			transparent = true;
 			isSolidForFluid = false;
 			item3D = false;
-			textureX = 6;
-			textureY = 10;
+			texture = settings::consts::shader::block::torch;
 		}
 		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
@@ -1680,12 +1801,14 @@ struct RedstoneTorch : Torch {
 			name = "REDSTONE_TORCH";
 			mined = blocks::redstone_torch;
 			light_level = 7;
-			textureX = 7;
-			textureY = 11;
 		}
-		int texY( int dir = face_dir::minus_y, int offset = 0 ) const override {
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
 			(void)dir;
-			return ((offset == blocks::item) ? 11 : 11 + offset);
+			if (value == blocks::item) {
+				return (settings::consts::shader::block::redstone_torch);
+			}
+			return ((value & mask::redstone::powered) ? settings::consts::shader::block::redstone_torch_off
+				: settings::consts::shader::block::redstone_torch);
 		}
 };
 
@@ -1706,13 +1829,10 @@ struct RedstoneDust : Block {
 			isSolidForFluid = false;
 			item3D = false;
 		}
-		int texX( int dir = face_dir::minus_y, int value = 0 ) const override {
+		int getTex( int dir, int value ) const override {
 			(void)dir;
-			return ((value == blocks::item) ? 7 : 6);
-		}
-		int texY( int dir = face_dir::minus_y, int value = 0 ) const override {
-			(void)dir;
-			return ((value == blocks::item) ? 8 : 12);
+			return ((value == blocks::item) ? settings::consts::shader::item::redstone
+				: settings::consts::shader::block::dust_dot);
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
@@ -1736,11 +1856,12 @@ struct Repeater : Block {
 			transparent = true;
 			isSolidForFluid = false;
 			item3D = false;
-			textureY = 13;
 		}
-		int texX( int dir = face_dir::minus_y, int value = 0 ) const override {
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
 			(void)dir;
-			return ((value == blocks::item) ? 7 : 6 - value);
+			return ((value == blocks::item) ? settings::consts::shader::item::repeater
+				: (value & mask::redstone::powered) ? settings::consts::shader::block::repeater_on
+				: settings::consts::shader::block::repeater);
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
@@ -1764,11 +1885,12 @@ struct Comparator : Block {
 			transparent = true;
 			isSolidForFluid = false;
 			item3D = false;
-			textureY = 14;
 		}
-		int texX( int dir = face_dir::minus_y, int value = 0 ) const override {
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
 			(void)dir;
-			return ((value == blocks::item) ? 7 : 6 - value);
+			return ((value == blocks::item) ? settings::consts::shader::item::comparator
+				: (value & mask::redstone::powered) ? settings::consts::shader::block::comparator_on
+				: settings::consts::shader::block::comparator);
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
@@ -1789,8 +1911,7 @@ struct Chest : Block {
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.5f;
 			transparent = true;
-			textureX = 0;
-			textureY = 15;
+			texture = settings::consts::shader::block::chest_front;
 		}
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
@@ -1801,11 +1922,10 @@ struct WheatCrop : Crop {
 		WheatCrop() {
 			name = "WHEAT_CROP";
 			mined = blocks::wheat_seeds;
-			textureX = 7;
 		}
-		int texY( int dir = face_dir::minus_y, int value = 0 ) const override {
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
 			(void)dir;
-			return (value >> offset::blocks::bitfield);
+			return (settings::consts::shader::block::wheat_stage0 + (value >> offset::blocks::bitfield));
 		}
 		void getHitbox( glm::vec3* hitbox, int value ) const override;
 };
@@ -1825,11 +1945,11 @@ struct ItemFrame : Block {
 			transparent = true;
 			isSolidForFluid = false;
 			item3D = false;
-			textureY = 14;
+			texture = settings::consts::shader::block::item_frame;
 		}
-		int texX( int dir = face_dir::minus_y, int value = 0 ) const override {
-			(void)dir;
-			return ((value == blocks::item) ? 10 : 4);
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
+			(void)dir;(void)value;
+			return (settings::consts::shader::item::item_frame);
 		}
 		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
@@ -1847,8 +1967,7 @@ struct BirchPlanks : Cube {
 			byHand = true;
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
-			textureX = 5;
-			textureY = 10;
+			texture = settings::consts::shader::block::birch_planks;
 		}
 };
 
@@ -1861,11 +1980,12 @@ struct SandStone : Cube {
 			byHand = false;
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = .8f;
-			textureX = 3;
 		}
-		int texY( int dir, int value ) const override {
+		int getTex( int dir, int value ) const override {
 			(void)value;
-			return ((dir == face_dir::plus_z) ? 6 : (dir == face_dir::minus_z) ? 8 : 7);
+			return ((dir == face_dir::plus_z) ? settings::consts::shader::block::sandstone_top
+				: (dir == face_dir::minus_z) ? settings::consts::shader::block::sandstone_bottom
+				: settings::consts::shader::block::sandstone);
 		}
 };
 
@@ -1889,8 +2009,7 @@ struct Stick : Block {
 			fuel_time = 5;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 0;
+			texture = settings::consts::shader::item::stick;
 		}
 };
 
@@ -1904,8 +2023,7 @@ struct WoodenShovel : Block {
 			durability = 59;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 1;
+			texture = settings::consts::shader::item::wooden_shovel;
 		}
 };
 
@@ -1917,8 +2035,7 @@ struct StoneShovel : Block {
 			durability = 131;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 2;
+			texture = settings::consts::shader::item::stone_shovel;
 		}
 };
 
@@ -1930,8 +2047,7 @@ struct IronShovel : Block {
 			durability = 250;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 3;
+			texture = settings::consts::shader::item::iron_shovel;
 		}
 };
 
@@ -1943,8 +2059,7 @@ struct DiamondShovel : Block {
 			durability = 1561;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 4;
+			texture = settings::consts::shader::item::diamond_shovel;
 		}
 };
 
@@ -1958,8 +2073,7 @@ struct WoodenAxe : Block {
 			durability = 59;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 5;
+			texture = settings::consts::shader::item::wooden_axe;
 		}
 };
 
@@ -1971,8 +2085,7 @@ struct StoneAxe : Block {
 			durability = 131;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 6;
+			texture = settings::consts::shader::item::stone_axe;
 		}
 };
 
@@ -1984,8 +2097,7 @@ struct IronAxe : Block {
 			durability = 250;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 7;
+			texture = settings::consts::shader::item::iron_axe;
 		}
 };
 
@@ -1997,8 +2109,7 @@ struct DiamondAxe : Block {
 			durability = 1561;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 8;
+			texture = settings::consts::shader::item::diamond_axe;
 		}
 };
 
@@ -2012,8 +2123,7 @@ struct WoodenPickaxe : Block {
 			durability = 59;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 9;
+			texture = settings::consts::shader::item::wooden_pickaxe;
 		}
 };
 
@@ -2025,8 +2135,7 @@ struct StonePickaxe : Block {
 			durability = 131;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 10;
+			texture = settings::consts::shader::item::stone_pickaxe;
 		}
 };
 
@@ -2038,8 +2147,7 @@ struct IronPickaxe : Block {
 			durability = 250;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 11;
+			texture = settings::consts::shader::item::iron_pickaxe;
 		}
 };
 
@@ -2051,8 +2159,7 @@ struct DiamondPickaxe : Block {
 			durability = 1561;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 12;
+			texture = settings::consts::shader::item::diamond_pickaxe;
 		}
 };
 
@@ -2064,8 +2171,7 @@ struct Bow : Block {
 			durability = 384;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 13;
+			texture = settings::consts::shader::item::bow;
 		}
 };
 
@@ -2075,8 +2181,7 @@ struct Arrow : Block {
 			name = "ARROW";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 14;
+			texture = settings::consts::shader::item::arrow;
 		}
 };
 
@@ -2086,8 +2191,7 @@ struct WorldEditWand : Block {
 			name = "WORLDEDIT_WAND";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 8;
-			textureY = 5;
+			texture = settings::consts::shader::item::wooden_axe;
 		}
 };
 
@@ -2099,8 +2203,7 @@ struct Coal : Block {
 			fuel_time = 80;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 0;
+			texture = settings::consts::shader::item::coal;
 		}
 };
 
@@ -2112,8 +2215,7 @@ struct Charcoal : Block {
 			fuel_time = 80;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 1;
+			texture = settings::consts::shader::item::charcoal;
 		}
 };
 
@@ -2123,8 +2225,7 @@ struct IronIngot : Block {
 			name = "IRON_INGOT";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 2;
+			texture = settings::consts::shader::item::iron_ingot;
 		}
 };
 
@@ -2134,8 +2235,7 @@ struct Diamond : Block {
 			name = "DIAMOND";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 3;
+			texture = settings::consts::shader::item::diamond;
 		}
 };
 
@@ -2146,8 +2246,7 @@ struct Bucket : Block {
 			adventure_block = blocks::diamond_ore;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 4;
+			texture = settings::consts::shader::item::bucket;
 		}
 };
 
@@ -2159,8 +2258,7 @@ struct WaterBucket : Block {
 			stackable = false;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 5;
+			texture = settings::consts::shader::item::water_bucket;
 		}
 };
 
@@ -2174,8 +2272,7 @@ struct WoodenHoe : Block {
 			durability = 59;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 6;
+			texture = settings::consts::shader::item::wooden_hoe;
 		}
 };
 
@@ -2187,8 +2284,7 @@ struct StoneHoe : Block {
 			durability = 131;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 7;
+			texture = settings::consts::shader::item::stone_hoe;
 		}
 };
 
@@ -2200,8 +2296,7 @@ struct IronHoe : Block {
 			durability = 250;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 8;
+			texture = settings::consts::shader::item::iron_hoe;
 		}
 };
 
@@ -2213,8 +2308,7 @@ struct DiamondHoe : Block {
 			durability = 1561;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 9;
+			texture = settings::consts::shader::item::diamond_hoe;
 		}
 };
 
@@ -2225,8 +2319,7 @@ struct WheatSeeds : Block {
 			adventure_block = blocks::farmland;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 10;
+			texture = settings::consts::shader::item::wheat_seeds;
 		}
 };
 
@@ -2236,8 +2329,7 @@ struct Wheat : Block {
 			name = "WHEAT";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 11;
+			texture = settings::consts::shader::item::wheat;
 		}
 };
 
@@ -2250,8 +2342,7 @@ struct Bread : Block {
 			saturation_restauration = 6;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 12;
+			texture = settings::consts::shader::item::bread;
 		}
 };
 
@@ -2264,8 +2355,7 @@ struct Apple : Block {
 			saturation_restauration = 2.4f;
 			isItemOnly = true;
 			item3D = false;
-			textureX = 9;
-			textureY = 13;
+			texture = settings::consts::shader::item::apple;
 		}
 };
 
@@ -2275,8 +2365,7 @@ struct Flint : Block {
 			name = "FLINT";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 10;
-			textureY = 0;
+			texture = settings::consts::shader::item::flint;
 		}
 };
 
@@ -2286,8 +2375,7 @@ struct FlintAndSteel : Block {
 			name = "FLINT AND STEEL";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 10;
-			textureY = 1;
+			texture = settings::consts::shader::item::flint_and_steel;
 		}
 };
 
@@ -2297,8 +2385,7 @@ struct ZombieEgg : Block {
 			name = "ZOMBIE_EGG";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 10;
-			textureY = 2;
+			texture = settings::consts::shader::item::zombie_egg;
 		}
 };
 
@@ -2308,8 +2395,7 @@ struct SkeletonEgg : Block {
 			name = "SKELETON_EGG";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 10;
-			textureY = 3;
+			texture = settings::consts::shader::item::skeleton_egg;
 		}
 };
 
@@ -2319,8 +2405,7 @@ struct String : Block {
 			name = "STRING";
 			isItemOnly = true;
 			item3D = false;
-			textureX = 10;
-			textureY = 4;
+			texture = settings::consts::shader::item::string;
 		}
 };
 
@@ -2331,7 +2416,6 @@ struct Wool : Cube {
 			byHand = true;
 			// needed_tool = blocks::shear;
 			hardness = .8f;
-			textureX = 11;
 		}
 };
 
@@ -2340,7 +2424,7 @@ struct WhiteWool : Wool {
 		WhiteWool() {
 			name = "WHITE_WOOL";
 			mined = blocks::white_wool;
-			textureY = 0;
+			texture = settings::consts::shader::block::white_wool;
 		}
 };
 
@@ -2349,7 +2433,7 @@ struct PinkWool : Wool {
 		PinkWool() {
 			name = "PINK_WOOL";
 			mined = blocks::pink_wool;
-			textureY = 1;
+			texture = settings::consts::shader::block::pink_wool;
 		}
 };
 
@@ -2358,7 +2442,7 @@ struct MagentaWool : Wool {
 		MagentaWool() {
 			name = "MAGENTA_WOOL";
 			mined = blocks::magenta_wool;
-			textureY = 2;
+			texture = settings::consts::shader::block::magenta_wool;
 		}
 };
 
@@ -2367,7 +2451,7 @@ struct PurpleWool : Wool {
 		PurpleWool() {
 			name = "PURPLE_WOOL";
 			mined = blocks::purple_wool;
-			textureY = 3;
+			texture = settings::consts::shader::block::purple_wool;
 		}
 };
 
@@ -2376,7 +2460,7 @@ struct BlueWool : Wool {
 		BlueWool() {
 			name = "BLUE_WOOL";
 			mined = blocks::blue_wool;
-			textureY = 4;
+			texture = settings::consts::shader::block::blue_wool;
 		}
 };
 
@@ -2385,7 +2469,7 @@ struct LightBlueWool : Wool {
 		LightBlueWool() {
 			name = "LIGHT_BLUE_WOOL";
 			mined = blocks::light_blue_wool;
-			textureY = 5;
+			texture = settings::consts::shader::block::light_blue_wool;
 		}
 };
 
@@ -2394,7 +2478,7 @@ struct CyanWool : Wool {
 		CyanWool() {
 			name = "CYAN_WOOL";
 			mined = blocks::cyan_wool;
-			textureY = 6;
+			texture = settings::consts::shader::block::cyan_wool;
 		}
 };
 
@@ -2403,7 +2487,7 @@ struct GreenWool : Wool {
 		GreenWool() {
 			name = "GREEN_WOOL";
 			mined = blocks::green_wool;
-			textureY = 7;
+			texture = settings::consts::shader::block::green_wool;
 		}
 };
 
@@ -2412,7 +2496,7 @@ struct LimeWool : Wool {
 		LimeWool() {
 			name = "LIME_WOOL";
 			mined = blocks::lime_wool;
-			textureY = 8;
+			texture = settings::consts::shader::block::lime_wool;
 		}
 };
 
@@ -2421,7 +2505,7 @@ struct YellowWool : Wool {
 		YellowWool() {
 			name = "YELLOW_WOOL";
 			mined = blocks::yellow_wool;
-			textureY = 9;
+			texture = settings::consts::shader::block::yellow_wool;
 		}
 };
 
@@ -2430,7 +2514,7 @@ struct OrangeWool : Wool {
 		OrangeWool() {
 			name = "ORANGE_WOOL";
 			mined = blocks::orange_wool;
-			textureY = 10;
+			texture = settings::consts::shader::block::orange_wool;
 		}
 };
 
@@ -2439,7 +2523,7 @@ struct RedWool : Wool {
 		RedWool() {
 			name = "RED_WOOL";
 			mined = blocks::red_wool;
-			textureY = 11;
+			texture = settings::consts::shader::block::red_wool;
 		}
 };
 
@@ -2448,7 +2532,7 @@ struct BrownWool : Wool {
 		BrownWool() {
 			name = "BROWN_WOOL";
 			mined = blocks::brown_wool;
-			textureY = 12;
+			texture = settings::consts::shader::block::brown_wool;
 		}
 };
 
@@ -2457,7 +2541,7 @@ struct BlackWool : Wool {
 		BlackWool() {
 			name = "BLACK_WOOL";
 			mined = blocks::black_wool;
-			textureY = 13;
+			texture = settings::consts::shader::block::black_wool;
 		}
 };
 
@@ -2466,7 +2550,7 @@ struct GrayWool : Wool {
 		GrayWool() {
 			name = "GRAY_WOOL";
 			mined = blocks::gray_wool;
-			textureY = 14;
+			texture = settings::consts::shader::block::gray_wool;
 		}
 };
 
@@ -2475,7 +2559,7 @@ struct LightGrayWool : Wool {
 		LightGrayWool() {
 			name = "LIGHT_GRAY_WOOL";
 			mined = blocks::light_gray_wool;
-			textureY = 15;
+			texture = settings::consts::shader::block::light_gray_wool;
 		}
 };
 
@@ -2493,7 +2577,6 @@ struct Carpet : Block {
 			hardness = .1f;
 			transparent = true;
 			isSolidForFluid = false;
-			textureX = 11;
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
@@ -2505,7 +2588,7 @@ struct WhiteCarpet : Carpet {
 		WhiteCarpet() {
 			name = "WHITE_CARPET";
 			mined = blocks::white_carpet;
-			textureY = 0;
+			texture = settings::consts::shader::block::white_wool;
 		}
 };
 
@@ -2514,7 +2597,7 @@ struct PinkCarpet : Carpet {
 		PinkCarpet() {
 			name = "PINK_CARPET";
 			mined = blocks::pink_carpet;
-			textureY = 1;
+			texture = settings::consts::shader::block::pink_wool;
 		}
 };
 
@@ -2523,7 +2606,7 @@ struct MagentaCarpet : Carpet {
 		MagentaCarpet() {
 			name = "MAGENTA_CARPET";
 			mined = blocks::magenta_carpet;
-			textureY = 2;
+			texture = settings::consts::shader::block::magenta_wool;
 		}
 };
 
@@ -2532,7 +2615,7 @@ struct PurpleCarpet : Carpet {
 		PurpleCarpet() {
 			name = "PURPLE_CARPET";
 			mined = blocks::purple_carpet;
-			textureY = 3;
+			texture = settings::consts::shader::block::purple_wool;
 		}
 };
 
@@ -2541,7 +2624,7 @@ struct BlueCarpet : Carpet {
 		BlueCarpet() {
 			name = "BLUE_CARPET";
 			mined = blocks::blue_carpet;
-			textureY = 4;
+			texture = settings::consts::shader::block::blue_wool;
 		}
 };
 
@@ -2550,7 +2633,7 @@ struct LightBlueCarpet : Carpet {
 		LightBlueCarpet() {
 			name = "LIGHT_BLUE_CARPET";
 			mined = blocks::light_blue_carpet;
-			textureY = 5;
+			texture = settings::consts::shader::block::light_blue_wool;
 		}
 };
 
@@ -2559,7 +2642,7 @@ struct CyanCarpet : Carpet {
 		CyanCarpet() {
 			name = "CYAN_CARPET";
 			mined = blocks::cyan_carpet;
-			textureY = 6;
+			texture = settings::consts::shader::block::cyan_wool;
 		}
 };
 
@@ -2568,7 +2651,7 @@ struct GreenCarpet : Carpet {
 		GreenCarpet() {
 			name = "GREEN_CARPET";
 			mined = blocks::green_carpet;
-			textureY = 7;
+			texture = settings::consts::shader::block::green_wool;
 		}
 };
 
@@ -2577,7 +2660,7 @@ struct LimeCarpet : Carpet {
 		LimeCarpet() {
 			name = "LIME_CARPET";
 			mined = blocks::lime_carpet;
-			textureY = 8;
+			texture = settings::consts::shader::block::lime_wool;
 		}
 };
 
@@ -2586,7 +2669,7 @@ struct YellowCarpet : Carpet {
 		YellowCarpet() {
 			name = "YELLOW_CARPET";
 			mined = blocks::yellow_carpet;
-			textureY = 9;
+			texture = settings::consts::shader::block::yellow_wool;
 		}
 };
 
@@ -2595,7 +2678,7 @@ struct OrangeCarpet : Carpet {
 		OrangeCarpet() {
 			name = "ORANGE_CARPET";
 			mined = blocks::orange_carpet;
-			textureY = 10;
+			texture = settings::consts::shader::block::orange_wool;
 		}
 };
 
@@ -2604,7 +2687,7 @@ struct RedCarpet : Carpet {
 		RedCarpet() {
 			name = "RED_CARPET";
 			mined = blocks::red_carpet;
-			textureY = 11;
+			texture = settings::consts::shader::block::red_wool;
 		}
 };
 
@@ -2613,7 +2696,7 @@ struct BrownCarpet : Carpet {
 		BrownCarpet() {
 			name = "BROWN_CARPET";
 			mined = blocks::brown_carpet;
-			textureY = 12;
+			texture = settings::consts::shader::block::brown_wool;
 		}
 };
 
@@ -2622,7 +2705,7 @@ struct BlackCarpet : Carpet {
 		BlackCarpet() {
 			name = "BLACK_CARPET";
 			mined = blocks::black_carpet;
-			textureY = 13;
+			texture = settings::consts::shader::block::black_wool;
 		}
 };
 
@@ -2631,7 +2714,7 @@ struct GrayCarpet : Carpet {
 		GrayCarpet() {
 			name = "GRAY_CARPET";
 			mined = blocks::gray_carpet;
-			textureY = 14;
+			texture = settings::consts::shader::block::gray_wool;
 		}
 };
 
@@ -2640,7 +2723,7 @@ struct LightGrayCarpet : Carpet {
 		LightGrayCarpet() {
 			name = "LIGHT_GRAY_CARPET";
 			mined = blocks::light_gray_carpet;
-			textureY = 15;
+			texture = settings::consts::shader::block::light_gray_wool;
 		}
 };
 

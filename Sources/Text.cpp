@@ -62,18 +62,6 @@ void Text::setupShader( void )
 	_vabo.addAttribute(settings::consts::shader::attributes::position, 2, GL_INT);
 }
 
-void Text::loadTexture( void )
-{
-	if (_texture) {
-		glDeleteTextures(1, &_texture);
-	}
-	glGenTextures(1, &_texture);
-
-	_shader.useProgram();
-	loadTextureShader(1, _texture, Settings::Get()->getString(settings::strings::ascii_atlas));
-	glUniform1i(glGetUniformLocation(_shader.getProgram(), "asciiAtlas"), 1); // sampler2D #index in fragment shader
-}
-
 void Text::updateWinSize( void )
 {
 	_shader.useProgram();

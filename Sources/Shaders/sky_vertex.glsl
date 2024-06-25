@@ -34,7 +34,7 @@ void main()
 	Atlas = (position.w >> 8) & 0x3;
 	if (Atlas == 3) {
 		Color = vec3(1.0f, 1.0f, 1.0f);
-		TexCoord = vec2((4 + ((position.w >> 10) & 0x1)) * one16th, (11 + ((position.w >> 11) & 0x1)) * one16th);
+		TexCoord = vec2((position.w >> 10) & 0x1, (position.w >> 11) & 0x1);
 	} else if (Atlas != 0) {
 		int shiftX = (position.w >> 10) & 0x1;
 		int shiftY = (position.w >> 11) & 0x1;

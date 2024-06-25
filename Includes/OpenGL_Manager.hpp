@@ -66,7 +66,7 @@ class OpenGL_Manager
 		Shader _shader, _skyShader, _particleShader, _modelShader;
 		Buffer _vaboEntities, _vaboParticles, _vaboModels;
 		glm::ivec2 _current_chunk;
-		std::array<GLuint, 5> _textures;
+		std::array<GLuint, 6> _textures;
 		GLint _fill;
 		bool _debug_mode, _outline, _paused, _threadUpdate, _threadStop;
 		float _break_time, _eat_timer, _bow_timer;
@@ -74,8 +74,8 @@ class OpenGL_Manager
 		std::string _world_name;
 		std::vector<Chunk*> _visible_chunks;
 		std::vector<t_shaderInput> _entities;
-		std::vector<t_shaderInput> _particles;
-		std::vector<t_shaderInput> _models;
+		std::vector<t_shaderInputPart> _particles;
+		std::vector<t_shaderInputModel> _models;
 		std::thread _thread;
 		std::mutex _mtx;
 		t_hit _block_hit;

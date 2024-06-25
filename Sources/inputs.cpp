@@ -69,7 +69,6 @@ t_hit OpenGL_Manager::getBlockHit( void )
 			res.prev_pos = i;
 		} else if (type) {
 			// we know cube is hit, now check if hitbox is hit (only on non cube-filling values)
-			// TODO move hitboxes of torches depending on the wall they hang on
 			const auto& target = s_blocks[type];
 			glm::vec3 hitbox[2];
 			if (target->hasHitbox) {

@@ -47,108 +47,108 @@ void Cube::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
 	int spec, faceLight, cornerLight, shade;
-	std::array<int, 4> deltas;
+	std::array<int, 4> lights;
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-		spec = (this->texX(face_dir::minus_x, value) << 4) + (this->texY(face_dir::minus_x, value) << 12) + (3 << 19);
+		spec = this->getTex(face_dir::minus_x, value);
 		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (3 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x - 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x - 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (3 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
+		lights[2] = cornerLight + (3 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x - 1, pos.y, pos.z, {0, -1, 0, 0, -1, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x - 1, pos.y, pos.z, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (3 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, lights, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-		spec = (this->texX(face_dir::plus_x, value) << 4) + (this->texY(face_dir::plus_x, value) << 12) + (4 << 19);
+		spec = this->getTex(face_dir::plus_x, value);
 		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (4 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x + 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x + 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (4 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
+		lights[2] = cornerLight + (4 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x + 1, pos.y, pos.z, {0, 1, 0, 0, 1, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x + 1, pos.y, pos.z, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (4 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, lights, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-		spec = (this->texX(face_dir::minus_y, value) << 4) + (this->texY(face_dir::minus_y, value) << 12) + (1 << 19);
+		spec = this->getTex(face_dir::minus_y, value);
 		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (1 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y - 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x, pos.y - 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (1 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
+		lights[2] = cornerLight + (1 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y - 1, pos.z, {1, 0, 0, 1, 0, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x, pos.y - 1, pos.z, {1, 0, 0, 1, 0, -1, 0, 0, -1});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (1 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, lights, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-		spec = (this->texX(face_dir::plus_y, value) << 4) + (this->texY(face_dir::plus_y, value) << 12) + (2 << 19);
+		spec = this->getTex(face_dir::plus_y, value);
 		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (2 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y + 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x, pos.y + 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (2 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, -1, 0, 0, -1});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
+		lights[2] = cornerLight + (2 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y + 1, pos.z, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x, pos.y + 1, pos.z, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (2 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, lights, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-		spec = (this->texX(face_dir::plus_z, value) << 4) + (this->texY(face_dir::plus_z, value) << 12);
+		spec = this->getTex(face_dir::plus_z, value);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z + 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z + 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
+		lights[2] = cornerLight + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z + 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z + 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (shade << 12);
+		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, lights, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-		spec = (this->texX(face_dir::minus_z, value) << 4) + (this->texY(face_dir::minus_z, value) << 12) + (5 << 19);
+		spec = this->getTex(face_dir::minus_z, value);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (5 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (5 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
+		lights[2] = cornerLight + (5 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (5 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, lights, 16, 16);
 	}
 }
 
@@ -165,13 +165,11 @@ void Cross::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
-	int spec = (textureX << 4) + (textureY << 12) + (0 << 19);
-	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-	spec += (faceLight << 24);
-	utils::shader::addQuads(vertices, {p0, p5, p2, p7}, spec, 16, 16, 0, 8); // recto
-	utils::shader::addQuads(vertices, {p1, p4, p3, p6}, spec, 16, 16, 0, 8);
-	utils::shader::addQuads(vertices, {p5, p0, p7, p2}, spec, 16, 16, 0, 8, true); // verso
-	utils::shader::addQuads(vertices, {p4, p1, p6, p3}, spec, 16, 16, 0, 8, true);
+	int light = chunk->computeLight(pos.x, pos.y, pos.z);
+	utils::shader::addQuads(vertices, {p0, p5, p2, p7}, texture, light, 16, 16); // recto
+	utils::shader::addQuads(vertices, {p1, p4, p3, p6}, texture, light, 16, 16);
+	utils::shader::addQuads(vertices, {p5, p0, p7, p2}, texture, light, 16, 16, true); // verso
+	utils::shader::addQuads(vertices, {p4, p1, p6, p3}, texture, light, 16, 16, true);
 }
 
 void Farmland::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
@@ -187,108 +185,108 @@ void Farmland::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
 	int spec, faceLight, cornerLight, shade;
-	std::array<int, 4> deltas;
+	std::array<int, 4> lights;
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-		spec = (this->texX(face_dir::minus_x, value) << 4) + (this->texY(face_dir::minus_x, value) << 12) + (3 << 19);
+		spec = this->getTex(face_dir::minus_x, value);
 		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (3 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x - 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x - 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (3 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x - 1, pos.y, pos.z, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (15 << 8) + (1 << 18);
+		lights[2] = cornerLight + (3 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x - 1, pos.y, pos.z, {0, -1, 0, 0, -1, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x - 1, pos.y, pos.z, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (15 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + (1 << 8), deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (3 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + (1 << 16), lights, 16, 15);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-		spec = (this->texX(face_dir::plus_x, value) << 4) + (this->texY(face_dir::plus_x, value) << 12) + (4 << 19);
+		spec = this->getTex(face_dir::plus_x, value);
 		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, 1, 0, 0, 1});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (4 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x + 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x + 1, pos.y, pos.z, {0, 1, 0, 0, 1, 1, 0, 0, 1});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (4 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x + 1, pos.y, pos.z, {0, -1, 0, 0, -1, -1, 0, 0, -1});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (15 << 8) + (1 << 18);
+		lights[2] = cornerLight + (4 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x + 1, pos.y, pos.z, {0, 1, 0, 0, 1, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x + 1, pos.y, pos.z, {0, 1, 0, 0, 1, -1, 0, 0, -1});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (15 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + (1 << 8), deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (4 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + (1 << 16), lights, 16, 15);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-		spec = (this->texX(face_dir::minus_y, value) << 4) + (this->texY(face_dir::minus_y, value) << 12) + (1 << 19);
+		spec = this->getTex(face_dir::minus_y, value);
 		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (1 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y - 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x, pos.y - 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (1 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x, pos.y - 1, pos.z, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (15 << 8) + (1 << 18);
+		lights[2] = cornerLight + (1 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y - 1, pos.z, {1, 0, 0, 1, 0, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x, pos.y - 1, pos.z, {1, 0, 0, 1, 0, -1, 0, 0, -1});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (15 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + (1 << 8), deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (1 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + (1 << 16), lights, 16, 15);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-		spec = (this->texX(face_dir::plus_y, value) << 4) + (this->texY(face_dir::plus_y, value) << 12) + (2 << 19);
+		spec = this->getTex(face_dir::plus_y, value);
 		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, 1, 0, 0, 1});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (2 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y + 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
 		shade = chunk->computeShade(pos.x, pos.y + 1, pos.z, {-1, 0, 0, -1, 0, 1, 0, 0, 1});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (2 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x, pos.y + 1, pos.z, {1, 0, 0, 1, 0, -1, 0, 0, -1});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (15 << 8) + (1 << 18);
+		lights[2] = cornerLight + (2 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y + 1, pos.z, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
 		shade = chunk->computeShade(pos.x, pos.y + 1, pos.z, {-1, 0, 0, -1, 0, -1, 0, 0, -1});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (15 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + (1 << 8), deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (2 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + (1 << 16), lights, 16, 15);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-		spec = (this->texX(face_dir::plus_z, value) << 4) + (this->texY(face_dir::plus_z, value) << 12);
+		spec = this->getTex(face_dir::plus_z, value);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (0 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z + 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z + 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (0 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z + 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
+		lights[2] = cornerLight + (0 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z + 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z + 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (0 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, lights, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-		spec = (this->texX(face_dir::minus_z, value) << 4) + (this->texY(face_dir::minus_z, value) << 12) + (5 << 19);
+		spec = this->getTex(face_dir::minus_z, value);
 		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
+		lights[0] = cornerLight + (5 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
+		lights[1] = cornerLight + (5 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
+		lights[2] = cornerLight + (5 << 8) + (shade << 12);
 		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (5 << 8) + (shade << 12);
+		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, lights, 16, 16);
 	}
 }
 
@@ -296,7 +294,7 @@ void Slab::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 {
 	float zTop = (value & mask::slab::top) ? 1.f : .5f;
 	float zBottom = (value & mask::slab::top) ? .5f : .0f;
-	int zOffset = (value & mask::slab::top) ? 0 : (8 << 8);
+	int zOffset = (value & mask::slab::top) ? 0 : (8 << 16);
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + zTop);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + zTop);
 	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + zBottom);
@@ -307,43 +305,37 @@ void Slab::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + zBottom);
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + zBottom);
 
-	int spec, faceLight;
-	int baseSpec = (textureX << 4) + (textureY << 12);
+	int spec, light;
+	int baseSpec = texture;
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-		spec = baseSpec + (3 << 19);
-		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + zOffset, 16, 8, 0, 8);
+		spec = baseSpec;
+		light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
+		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + zOffset, light, 16, 8);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-		spec = baseSpec + (4 << 19);
-		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + zOffset, 16, 8, 0, 8);
+		spec = baseSpec;
+		light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
+		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + zOffset, light, 16, 8);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-		spec = baseSpec + (1 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + zOffset, 16, 8, 0, 8);
+		spec = baseSpec;
+		light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
+		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + zOffset, light, 16, 8);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-		spec = baseSpec + (2 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + zOffset, 16, 8, 0, 8);
+		spec = baseSpec;
+		light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
+		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + zOffset, light, 16, 8);
 	}
 	if (!(value & mask::slab::top) || visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-		spec = baseSpec + (0 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
+		spec = baseSpec;
+		light = chunk->computeLight(pos.x, pos.y, pos.z) + (0 << 8);
+		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, light, 16, 16);
 	}
 	if ((value & mask::slab::top) || visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-		spec = baseSpec + (5 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
+		spec = baseSpec;
+		light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, light, 16, 16);
 	}
 }
 
@@ -360,7 +352,8 @@ void Torch::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
-	int spec = (textureX << 4) + (texY(face_dir::minus_x, !!(value & mask::redstone::powered)) << 12) + (0 << 19) + (15 << 24);
+	int spec = getTex(face_dir::minus_x, value);
+	int light = (15 << 4);
 	switch ((value >> offset::blocks::orientation) & 0x7) { // orientation
 		case face_dir::minus_z: // default
 			p0 += glm::vec3( 7.0f * one16th,  7.0f * one16th, -6.0f * one16th);
@@ -418,14 +411,14 @@ void Torch::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 			p7 += glm::vec3(-7.0f * one16th, -15.0f * one16th,  3.0f * one16th);
 			break ;
 	}
-	spec += 7 + (6 << 8);
-	utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 2, 10, 0, 8); // -x
-	utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 2, 10, 0, 8); // +x
-	utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 2, 10, 0, 8); // -y
-	utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 2, 10, 0, 8); // +y
-	utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 2, 2, 0, 8);  // +z
+	spec += (7 << 12) + (6 << 16);
+	utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 2, 10); // -x
+	utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 2, 10); // +x
+	utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 2, 10); // -y
+	utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 2, 10); // +y
+	utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, light, 2, 2);  // +z
 	if (((value >> offset::blocks::orientation) & 0x7) != face_dir::minus_z) {
-		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec + (8 << 8), 2, 2, 0, 8); // -z
+		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec + (8 << 16), light, 2, 2); // -z
 	}
 }
 
@@ -443,409 +436,379 @@ void Stairs::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 
 	if (!(value & mask::stairs::top)) { // TODO rework this fun entirely
 		int corners = (value >> offset::blocks::bitfield) & 0xF;
-		int baseSpec = (textureX << 4) + (textureY << 12);
-		int spec, faceLight;
+		int spec = texture;
+		int light;
 		if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-			spec = baseSpec + (3 << 19);
-			faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-			spec += (faceLight << 24);
+			light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
 			switch (corners & (corners::mm | corners::mp)) {
 				case corners::mm | corners::mp:
-					utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 16, 16, 0, 8);
+					utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 16, 16);
 					break ;
 				case corners::mm:
-					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, 0.0f), p0, p6 + glm::vec3(0.0f, -0.5f, 0.5f), p2 + glm::vec3(0.0f, 0.0f, 0.5f)}, spec + 8, 8, 8, 0, 8);
-					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, 0.0f, -0.5f), p0 + glm::vec3(0.0f, 0.0f, -0.5f), p6, p2}, spec + (8 << 8), 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, 0.0f), p0, p6 + glm::vec3(0.0f, -0.5f, 0.5f), p2 + glm::vec3(0.0f, 0.0f, 0.5f)}, spec + (8 << 12), light, 8, 8);
+					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, 0.0f, -0.5f), p0 + glm::vec3(0.0f, 0.0f, -0.5f), p6, p2}, spec + (8 << 16), light, 16, 8);
 					break ;
 				case corners::mp:
-					utils::shader::addQuads(vertices, {p4, p0 + glm::vec3(0.0f, 0.5f, 0.0f), p6 + glm::vec3(0.0f, 0.0f, 0.5f), p2 + glm::vec3(0.0f, 0.5f, 0.5f)}, spec, 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4, p0 + glm::vec3(0.0f, 0.5f, 0.0f), p6 + glm::vec3(0.0f, 0.0f, 0.5f), p2 + glm::vec3(0.0f, 0.5f, 0.5f)}, spec, light, 8, 8);
 				default:
-					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, 0.0f, -0.5f), p0 + glm::vec3(0.0f, 0.0f, -0.5f), p6, p2}, spec + (8 << 8), 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, 0.0f, -0.5f), p0 + glm::vec3(0.0f, 0.0f, -0.5f), p6, p2}, spec + (8 << 16), light, 16, 8);
 					break ;
 			}
 		}
 		if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-			spec = baseSpec + (4 << 19);
-			faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-			spec += (faceLight << 24);
+			light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
 			switch (corners & (corners::pm | corners::pp)) {
 				case corners::pm | corners::pp:
-					utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
+					utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 16, 16);
 					break ;
 				case corners::pm:
-					utils::shader::addQuads(vertices, {p1, p5 + glm::vec3(0.0f, -0.5f, 0.0f), p3 + glm::vec3(0.0f, 0.0f, 0.5f), p7 + glm::vec3(0.0f, -0.5f, 0.5f)}, spec, 8, 8, 0, 8);
-					utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 0.0f, -0.5f), p5 + glm::vec3(0.0f, 0.0f, -0.5f), p3, p7}, spec + (8 << 8), 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p1, p5 + glm::vec3(0.0f, -0.5f, 0.0f), p3 + glm::vec3(0.0f, 0.0f, 0.5f), p7 + glm::vec3(0.0f, -0.5f, 0.5f)}, spec, light, 8, 8);
+					utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 0.0f, -0.5f), p5 + glm::vec3(0.0f, 0.0f, -0.5f), p3, p7}, spec + (8 << 16), light, 16, 8);
 					break ;
 				case corners::pp:
-					utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 0.5f, 0.0f), p5, p3 + glm::vec3(0.0f, 0.5f, 0.5f), p7 + glm::vec3(0.0f, 0.0f, 0.5f)}, spec + 8, 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 0.5f, 0.0f), p5, p3 + glm::vec3(0.0f, 0.5f, 0.5f), p7 + glm::vec3(0.0f, 0.0f, 0.5f)}, spec + (8 << 12), light, 8, 8);
 				default:
-					utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 0.0f, -0.5f), p5 + glm::vec3(0.0f, 0.0f, -0.5f), p3, p7}, spec + (8 << 8), 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 0.0f, -0.5f), p5 + glm::vec3(0.0f, 0.0f, -0.5f), p3, p7}, spec + (8 << 16), light, 16, 8);
 					break ;
 			}
 		}
 		if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-			spec = baseSpec + (1 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-			spec += (faceLight << 24);
+			light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
 			switch (corners & (corners::mm | corners::pm)) {
 				case corners::mm | corners::pm:
-					utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
+					utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 16, 16);
 					break ;
 				case corners::mm:
-					utils::shader::addQuads(vertices, {p0, p1 + glm::vec3(-0.5f, 0.0f, 0.0f), p2 + glm::vec3(0.0f, 0.0f, 0.5f), p3 + glm::vec3(-0.5f, 0.0f, 0.5f)}, spec, 8, 8, 0, 8);
-					utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 0.0f, -0.5f), p1 + glm::vec3(0.0f, 0.0f, -0.5f), p2, p3}, spec + (8 << 8), 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p0, p1 + glm::vec3(-0.5f, 0.0f, 0.0f), p2 + glm::vec3(0.0f, 0.0f, 0.5f), p3 + glm::vec3(-0.5f, 0.0f, 0.5f)}, spec, light, 8, 8);
+					utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 0.0f, -0.5f), p1 + glm::vec3(0.0f, 0.0f, -0.5f), p2, p3}, spec + (8 << 16), light, 16, 8);
 					break ;
 				case corners::pm:
-					utils::shader::addQuads(vertices, {p0 + glm::vec3(0.5f, 0.0f, 0.0f), p1, p2 + glm::vec3(0.5f, 0.0f, 0.5f), p3 + glm::vec3(0.0f, 0.0f, 0.5f)}, spec + 8, 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p0 + glm::vec3(0.5f, 0.0f, 0.0f), p1, p2 + glm::vec3(0.5f, 0.0f, 0.5f), p3 + glm::vec3(0.0f, 0.0f, 0.5f)}, spec + (8 << 12), light, 8, 8);
 				default:
-					utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 0.0f, -0.5f), p1 + glm::vec3(0.0f, 0.0f, -0.5f), p2, p3}, spec + (8 << 8), 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 0.0f, -0.5f), p1 + glm::vec3(0.0f, 0.0f, -0.5f), p2, p3}, spec + (8 << 16), light, 16, 8);
 					break ;
 			}
 		}
 		if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-			spec = baseSpec + (2 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-			spec += (faceLight << 24);
+			light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
 			switch (corners & (corners::mp | corners::pp)) {
 				case corners::mp | corners::pp:
-					utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 16, 16, 0, 8);
+					utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 16, 16);
 					break ;
 				case corners::mp:
-					utils::shader::addQuads(vertices, {p5 + glm::vec3(-0.5f, 0.0f, 0.0f), p4, p7 + glm::vec3(-0.5f, 0.0f, 0.5f), p6 + glm::vec3(0.0f, 0.0f, 0.5f)}, spec + 8, 8, 8, 0, 8);
-					utils::shader::addQuads(vertices, {p5 + glm::vec3(0.0f, 0.0f, -0.5f), p4 + glm::vec3(0.0f, 0.0f, -0.5f), p7, p6}, spec + (8 << 8), 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p5 + glm::vec3(-0.5f, 0.0f, 0.0f), p4, p7 + glm::vec3(-0.5f, 0.0f, 0.5f), p6 + glm::vec3(0.0f, 0.0f, 0.5f)}, spec + (8 << 12), light, 8, 8);
+					utils::shader::addQuads(vertices, {p5 + glm::vec3(0.0f, 0.0f, -0.5f), p4 + glm::vec3(0.0f, 0.0f, -0.5f), p7, p6}, spec + (8 << 16), light, 16, 8);
 					break ;
 				case corners::pp:
-					utils::shader::addQuads(vertices, {p5, p4 + glm::vec3(0.5f, 0.0f, 0.0f), p7 + glm::vec3(0.0f, 0.0f, 0.5f), p6 + glm::vec3(0.5f, 0.0f, 0.5f)}, spec, 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p5, p4 + glm::vec3(0.5f, 0.0f, 0.0f), p7 + glm::vec3(0.0f, 0.0f, 0.5f), p6 + glm::vec3(0.5f, 0.0f, 0.5f)}, spec, light, 8, 8);
 				default:
-					utils::shader::addQuads(vertices, {p5 + glm::vec3(0.0f, 0.0f, -0.5f), p4 + glm::vec3(0.0f, 0.0f, -0.5f), p7, p6}, spec + (8 << 8), 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p5 + glm::vec3(0.0f, 0.0f, -0.5f), p4 + glm::vec3(0.0f, 0.0f, -0.5f), p7, p6}, spec + (8 << 16), light, 16, 8);
 					break ;
 			}
 		}
 		if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-			spec = baseSpec + (0 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-			spec += (faceLight << 24);
+			light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
 			switch (corners & (corners::mp | corners::pp)) {
 				case corners::mp:
-					utils::shader::addQuads(vertices, {p4, p5 + glm::vec3(-0.5f, 0.0f, 0.0f), p0 + glm::vec3(0.0f, 0.5f, 0.0f), p1 + glm::vec3(-0.5f, 0.5f, 0.0f)}, spec, 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4, p5 + glm::vec3(-0.5f, 0.0f, 0.0f), p0 + glm::vec3(0.0f, 0.5f, 0.0f), p1 + glm::vec3(-0.5f, 0.5f, 0.0f)}, spec, light, 8, 8);
 					break ;
 				case corners::pp:
-					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, 0.0f, 0.0f), p5, p0 + glm::vec3(0.5f, 0.5f, 0.0f), p1 + glm::vec3(0.0f, 0.5f, 0.0f)}, spec + 8, 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, 0.0f, 0.0f), p5, p0 + glm::vec3(0.5f, 0.5f, 0.0f), p1 + glm::vec3(0.0f, 0.5f, 0.0f)}, spec + (8 << 12), light, 8, 8);
 					break ;
 				case corners::mp | corners::pp:
-					utils::shader::addQuads(vertices, {p4, p5, p0 + glm::vec3(0.0f, 0.5f, 0.0f), p1 + glm::vec3(0.0f, 0.5f, 0.0f)}, spec, 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4, p5, p0 + glm::vec3(0.0f, 0.5f, 0.0f), p1 + glm::vec3(0.0f, 0.5f, 0.0f)}, spec, light, 16, 8);
 					break ;
 			}
 			switch (corners & (corners::mm | corners::pm)) {
 				case corners::mm:
-					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, 0.0f), p5 + glm::vec3(-0.5f, -0.5f, 0.0f), p0, p1 + glm::vec3(-0.5f, 0.0f, 0.0f)}, spec + (8 << 8), 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, 0.0f), p5 + glm::vec3(-0.5f, -0.5f, 0.0f), p0, p1 + glm::vec3(-0.5f, 0.0f, 0.0f)}, spec + (8 << 16), light, 8, 8);
 					break ;
 				case corners::pm:
-					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, -0.5f, 0.0f), p5 + glm::vec3(0.0f, -0.5f, 0.0f), p0 + glm::vec3(0.5f, 0.0f, 0.0f), p1}, spec + 8 + (8 << 8), 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, -0.5f, 0.0f), p5 + glm::vec3(0.0f, -0.5f, 0.0f), p0 + glm::vec3(0.5f, 0.0f, 0.0f), p1}, spec + (8 << 12) + (8 << 16), light, 8, 8);
 					break ;
 				case corners::mm | corners::pm:
-					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, 0.0f), p5 + glm::vec3(0.0f, -0.5f, 0.0f), p0, p1}, spec + (8 << 8), 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, 0.0f), p5 + glm::vec3(0.0f, -0.5f, 0.0f), p0, p1}, spec + (8 << 16), light, 16, 8);
 					break ;
 			}
 		}
 		// up of first step
-		spec = baseSpec + (0 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-		spec += (faceLight << 24);
+		light = chunk->computeLight(pos.x, pos.y, pos.z) + (0 << 8);
 		switch (corners & (corners::mp | corners::pp)) {
 			case corners::pp:
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, 0.0f, -0.5f), p5 + glm::vec3(-0.5f, 0.0f, -0.5f), p0 + glm::vec3(0.0f, 0.5f, -0.5f), p1 + glm::vec3(-0.5f, 0.5f, -0.5f)}, spec, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, 0.0f, -0.5f), p5 + glm::vec3(-0.5f, 0.0f, -0.5f), p0 + glm::vec3(0.0f, 0.5f, -0.5f), p1 + glm::vec3(-0.5f, 0.5f, -0.5f)}, spec, light, 8, 8);
 				break ;
 			case corners::mp:
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, 0.0f, -0.5f), p5 + glm::vec3(0.0f, 0.0f, -0.5f), p0 + glm::vec3(0.5f, 0.5f, -0.5f), p1 + glm::vec3(0.0f, 0.5f, -0.5f)}, spec + 8, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, 0.0f, -0.5f), p5 + glm::vec3(0.0f, 0.0f, -0.5f), p0 + glm::vec3(0.5f, 0.5f, -0.5f), p1 + glm::vec3(0.0f, 0.5f, -0.5f)}, spec + (8 << 12), light, 8, 8);
 				break ;
 			case corners::mp | corners::pp:
 				break ;
 			default:
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, 0.0f, -0.5f), p5 + glm::vec3(0.0f, 0.0f, -0.5f), p0 + glm::vec3(0.0f, 0.5f, -0.5f), p1 + glm::vec3(0.0f, 0.5f, -0.5f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, 0.0f, -0.5f), p5 + glm::vec3(0.0f, 0.0f, -0.5f), p0 + glm::vec3(0.0f, 0.5f, -0.5f), p1 + glm::vec3(0.0f, 0.5f, -0.5f)}, spec, light, 16, 8);
 				break ;
 		}
 		switch (corners & (corners::mm | corners::pm)) {
 			case corners::pm:
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, -0.5f), p5 + glm::vec3(-0.5f, -0.5f, -0.5f), p0 + glm::vec3(0.0f, 0.0f, -0.5f), p1 + glm::vec3(-0.5f, 0.0f, -0.5f)}, spec + (8 << 8), 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, -0.5f), p5 + glm::vec3(-0.5f, -0.5f, -0.5f), p0 + glm::vec3(0.0f, 0.0f, -0.5f), p1 + glm::vec3(-0.5f, 0.0f, -0.5f)}, spec + (8 << 16), light, 8, 8);
 				break ;
 			case corners::mm:
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, -0.5f, -0.5f), p5 + glm::vec3(0.0f, -0.5f, -0.5f), p0 + glm::vec3(0.5f, 0.0f, -0.5f), p1 + glm::vec3(0.0f, 0.0f, -0.5f)}, spec + 8 + (8 << 8), 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, -0.5f, -0.5f), p5 + glm::vec3(0.0f, -0.5f, -0.5f), p0 + glm::vec3(0.5f, 0.0f, -0.5f), p1 + glm::vec3(0.0f, 0.0f, -0.5f)}, spec + (8 << 12) + (8 << 16), light, 8, 8);
 				break ;
 			case corners::mm | corners::pm:
 				break;
 			default:
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, -0.5f), p5 + glm::vec3(0.0f, -0.5f, -0.5f), p0 + glm::vec3(0.0f, 0.0f, -0.5f), p1 + glm::vec3(0.0f, 0.0f, -0.5f)}, spec + (8 << 8), 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, -0.5f), p5 + glm::vec3(0.0f, -0.5f, -0.5f), p0 + glm::vec3(0.0f, 0.0f, -0.5f), p1 + glm::vec3(0.0f, 0.0f, -0.5f)}, spec + (8 << 16), light, 16, 8);
 				break ;
 		}
-		spec = baseSpec + (faceLight << 24);
 		// front minus_x of second step
-		spec += (3 << 19);
+		light += (3 << 8);
 		switch (corners) {
 			case corners::pm | corners::pp: // full width
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, 0.0f, 0.0f), p0 + glm::vec3(0.5f, 0.0f, 0.0f), p4 + glm::vec3(0.5f, 0.0f, -0.5f), p0 + glm::vec3(0.5f, 0.0f, -0.5f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, 0.0f, 0.0f), p0 + glm::vec3(0.5f, 0.0f, 0.0f), p4 + glm::vec3(0.5f, 0.0f, -0.5f), p0 + glm::vec3(0.5f, 0.0f, -0.5f)}, spec, light, 16, 8);
 				break ;
 			case corners::pm: // only 'right'
 			case corners::pm | corners::pp | corners::mp:
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, -0.5f, 0.0f), p0 + glm::vec3(0.5f, 0.0f, 0.0f), p4 + glm::vec3(0.5f, -0.5f, -0.5f), p0 + glm::vec3(0.5f, 0.0f, -0.5f)}, spec + 8, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, -0.5f, 0.0f), p0 + glm::vec3(0.5f, 0.0f, 0.0f), p4 + glm::vec3(0.5f, -0.5f, -0.5f), p0 + glm::vec3(0.5f, 0.0f, -0.5f)}, spec + (8 << 12), light, 8, 8);
 				break ;
 			case corners::pp: // only 'left'
 			case corners::pm | corners::pp | corners::mm:
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, 0.0f, 0.0f), p0 + glm::vec3(0.5f, 0.5f, 0.0f), p4 + glm::vec3(0.5f, 0.0f, -0.5f), p0 + glm::vec3(0.5f, 0.5f, -0.5f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, 0.0f, 0.0f), p0 + glm::vec3(0.5f, 0.5f, 0.0f), p4 + glm::vec3(0.5f, 0.0f, -0.5f), p0 + glm::vec3(0.5f, 0.5f, -0.5f)}, spec, light, 16, 8);
 				break ;
 		}
 		// front plus_x of second step
-		spec += (1 << 19);
+		light += (1 << 8);
 		switch (corners) {
 			case corners::mm | corners::mp: // full width
-				utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.5f, 0.0f, 0.0f), p5 + glm::vec3(-0.5f, 0.0f, 0.0f), p1 + glm::vec3(-0.5f, 0.0f, -0.5f), p5 + glm::vec3(-0.5f, 0.0f, -0.5f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.5f, 0.0f, 0.0f), p5 + glm::vec3(-0.5f, 0.0f, 0.0f), p1 + glm::vec3(-0.5f, 0.0f, -0.5f), p5 + glm::vec3(-0.5f, 0.0f, -0.5f)}, spec, light, 16, 8);
 				break ;
 			case corners::mp: // only 'right'
 			case corners::mm | corners::mp | corners::pm:
-				utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.5f, 0.5f, 0.0f), p5 + glm::vec3(-0.5f, 0.0f, 0.0f), p1 + glm::vec3(-0.5f, 0.5f, -0.5f), p5 + glm::vec3(-0.5f, 0.0f, -0.5f)}, spec + 8, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.5f, 0.5f, 0.0f), p5 + glm::vec3(-0.5f, 0.0f, 0.0f), p1 + glm::vec3(-0.5f, 0.5f, -0.5f), p5 + glm::vec3(-0.5f, 0.0f, -0.5f)}, spec + (8 << 12), light, 8, 8);
 				break ;
 			case corners::mm: // only 'left'
 			case corners::mm | corners::mp | corners::pp:
-				utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.5f, 0.0f, 0.0f), p5 + glm::vec3(-0.5f, -0.5f, 0.0f), p1 + glm::vec3(-0.5f, 0.0f, -0.5f), p5 + glm::vec3(-0.5f, -0.5f, -0.5f)}, spec, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.5f, 0.0f, 0.0f), p5 + glm::vec3(-0.5f, -0.5f, 0.0f), p1 + glm::vec3(-0.5f, 0.0f, -0.5f), p5 + glm::vec3(-0.5f, -0.5f, -0.5f)}, spec, light, 8, 8);
 				break ;
 		}
 		// front minus_y of second step
-		spec -= (3 << 19);
+		light -= (3 << 8);
 		switch (corners) {
 			case corners::mp | corners::pp: // full width
-				utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 0.5f, 0.0f), p1 + glm::vec3(0.0f, 0.5f, 0.0f), p0 + glm::vec3(0.0f, 0.5f, -0.5f), p1 + glm::vec3(0.0f, 0.5f, -0.5f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 0.5f, 0.0f), p1 + glm::vec3(0.0f, 0.5f, 0.0f), p0 + glm::vec3(0.0f, 0.5f, -0.5f), p1 + glm::vec3(0.0f, 0.5f, -0.5f)}, spec, light, 16, 8);
 				break ;
 			case corners::pp: // only 'right'
 			case corners::mp | corners::pp | corners::mm:
-				utils::shader::addQuads(vertices, {p0 + glm::vec3(0.5f, 0.5f, 0.0f), p1 + glm::vec3(0.0f, 0.5f, 0.0f), p0 + glm::vec3(0.5f, 0.5f, -0.5f), p1 + glm::vec3(0.0f, 0.5f, -0.5f)}, spec + 8, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p0 + glm::vec3(0.5f, 0.5f, 0.0f), p1 + glm::vec3(0.0f, 0.5f, 0.0f), p0 + glm::vec3(0.5f, 0.5f, -0.5f), p1 + glm::vec3(0.0f, 0.5f, -0.5f)}, spec + (8 << 12), light, 8, 8);
 				break ;
 			case corners::mp: // only 'left'
 			case corners::mp | corners::pp | corners::pm:
-				utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 0.5f, 0.0f), p1 + glm::vec3(-0.5f, 0.5f, 0.0f), p0 + glm::vec3(0.0f, 0.5f, -0.5f), p1 + glm::vec3(-0.5f, 0.5f, -0.5f)}, spec, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 0.5f, 0.0f), p1 + glm::vec3(-0.5f, 0.5f, 0.0f), p0 + glm::vec3(0.0f, 0.5f, -0.5f), p1 + glm::vec3(-0.5f, 0.5f, -0.5f)}, spec, light, 8, 8);
 				break ;
 		}
 		// front plus_y of second step
-		spec += (1 << 19);
+		light += (1 << 8);
 		switch (corners) {
 			case corners::mm | corners::pm: // full width
-				utils::shader::addQuads(vertices, {p5 + glm::vec3(0.0f, -0.5f, 0.0f), p4 + glm::vec3(0.0f, -0.5f, 0.0f), p5 + glm::vec3(0.0f, -0.5f, -0.5f), p4 + glm::vec3(0.0f, -0.5f, -0.5f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p5 + glm::vec3(0.0f, -0.5f, 0.0f), p4 + glm::vec3(0.0f, -0.5f, 0.0f), p5 + glm::vec3(0.0f, -0.5f, -0.5f), p4 + glm::vec3(0.0f, -0.5f, -0.5f)}, spec, light, 16, 8);
 				break ;
 			case corners::pm: // only 'left'
 			case corners::mm | corners::pm | corners::mp:
-				utils::shader::addQuads(vertices, {p5 + glm::vec3(0.0f, -0.5f, 0.0f), p4 + glm::vec3(0.5f, -0.5f, 0.0f), p5 + glm::vec3(0.0f, -0.5f, -0.5f), p4 + glm::vec3(0.5f, -0.5f, -0.5f)}, spec, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p5 + glm::vec3(0.0f, -0.5f, 0.0f), p4 + glm::vec3(0.5f, -0.5f, 0.0f), p5 + glm::vec3(0.0f, -0.5f, -0.5f), p4 + glm::vec3(0.5f, -0.5f, -0.5f)}, spec, light, 8, 8);
 				break ;
 			case corners::mm: // only 'right'
 			case corners::mm | corners::pm | corners::pp:
-				utils::shader::addQuads(vertices, {p5 + glm::vec3(-0.5f, -0.5f, 0.0f), p4 + glm::vec3(0.0f, -0.5f, 0.0f), p5 + glm::vec3(-0.5f, -0.5f, -0.5f), p4 + glm::vec3(0.0f, -0.5f, -0.5f)}, spec + 8, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p5 + glm::vec3(-0.5f, -0.5f, 0.0f), p4 + glm::vec3(0.0f, -0.5f, 0.0f), p5 + glm::vec3(-0.5f, -0.5f, -0.5f), p4 + glm::vec3(0.0f, -0.5f, -0.5f)}, spec + (8 << 12), light, 8, 8);
 				break ;
 		}
 		if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-			spec = baseSpec + (5 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
+			light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+			utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, light, 16, 16);
 		}
 	} else { // upside down stairs
 		int corners = (value >> offset::blocks::bitfield) & 0xF;
-		int baseSpec = (textureX << 4) + (textureY << 12);
-		int spec, faceLight;
+		int spec = texture;
+		int light;
 		if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-			spec = baseSpec + (3 << 19);
-			faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-			spec += (faceLight << 24);
+			light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
 			switch (corners & (corners::mm | corners::mp)) {
 				case corners::mm | corners::mp:
-					utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 16, 16, 0, 8);
+					utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 16, 16);
 					break ;
 				case corners::mm:
-					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, -.5f, -.5f), p0 + glm::vec3(0.f, 0.f, -.5f), p6 + glm::vec3(0.f, -.5f, 0.f), p2}, spec + 8 + (8 << 8), 8, 8, 0, 8);
-					utils::shader::addQuads(vertices, {p4, p0, p6 + glm::vec3(0.f, 0.f, .5f), p2 + glm::vec3(0.f, 0.f, .5f)}, spec, 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, -.5f, -.5f), p0 + glm::vec3(0.f, 0.f, -.5f), p6 + glm::vec3(0.f, -.5f, 0.f), p2}, spec + (8 << 12) + (8 << 16), light, 8, 8);
+					utils::shader::addQuads(vertices, {p4, p0, p6 + glm::vec3(0.f, 0.f, .5f), p2 + glm::vec3(0.f, 0.f, .5f)}, spec, light, 16, 8);
 					break ;
 				case corners::mp:
-					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, 0.f, -.5f), p0 + glm::vec3(0.f, 0.5f, -.5f), p6, p2 + glm::vec3(0.f, .5f, 0.f)}, spec + (8 << 8), 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, 0.f, -.5f), p0 + glm::vec3(0.f, 0.5f, -.5f), p6, p2 + glm::vec3(0.f, .5f, 0.f)}, spec + (8 << 16), light, 8, 8);
 				default:
-					utils::shader::addQuads(vertices, {p4, p0, p6 + glm::vec3(0.f, 0.f, .5f), p2 + glm::vec3(0.f, 0.f, .5f)}, spec, 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p4, p0, p6 + glm::vec3(0.f, 0.f, .5f), p2 + glm::vec3(0.f, 0.f, .5f)}, spec, light, 16, 8);
 					break ;
 			}
 		}
 		if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-			spec = baseSpec + (4 << 19);
-			faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-			spec += (faceLight << 24);
+			light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
 			switch (corners & (corners::pm | corners::pp)) {
 				case corners::pm | corners::pp:
-					utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
+					utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 16, 16);
 					break ;
 				case corners::pm:
-					utils::shader::addQuads(vertices, {p1 + glm::vec3(0.f, 0.f, -.5f), p5 + glm::vec3(0.f, -0.5f, -.5f), p3, p7 + glm::vec3(0.f, -.5f, 0.f)}, spec + (8 << 8), 8, 8, 0, 8);
-					utils::shader::addQuads(vertices, {p1, p5, p3 + glm::vec3(0.f, 0.f, .5f), p7 + glm::vec3(0.f, 0.f, .5f)}, spec, 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p1 + glm::vec3(0.f, 0.f, -.5f), p5 + glm::vec3(0.f, -0.5f, -.5f), p3, p7 + glm::vec3(0.f, -.5f, 0.f)}, spec + (8 << 16), light, 8, 8);
+					utils::shader::addQuads(vertices, {p1, p5, p3 + glm::vec3(0.f, 0.f, .5f), p7 + glm::vec3(0.f, 0.f, .5f)}, spec, light, 16, 8);
 					break ;
 				case corners::pp:
-					utils::shader::addQuads(vertices, {p1 + glm::vec3(0.f, .5f, -.5f), p5 + glm::vec3(0.f, 0.f, -.5f), p3 + glm::vec3(0.f, .5f, 0.f), p7}, spec + 8 + (8 << 8), 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p1 + glm::vec3(0.f, .5f, -.5f), p5 + glm::vec3(0.f, 0.f, -.5f), p3 + glm::vec3(0.f, .5f, 0.f), p7}, spec + (8 << 12) + (8 << 16), light, 8, 8);
 				default:
-					utils::shader::addQuads(vertices, {p1, p5, p3 + glm::vec3(0.f, 0.f, .5f), p7 + glm::vec3(0.f, 0.f, .5f)}, spec, 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p1, p5, p3 + glm::vec3(0.f, 0.f, .5f), p7 + glm::vec3(0.f, 0.f, .5f)}, spec, light, 16, 8);
 					break ;
 			}
 		}
 		if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-			spec = baseSpec + (1 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-			spec += (faceLight << 24);
+			light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
 			switch (corners & (corners::mm | corners::pm)) {
 				case corners::mm | corners::pm:
-					utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
+					utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 16, 16);
 					break ;
 				case corners::mm:
-					utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -.5f), p1 + glm::vec3(-.5f, .0f, -.5f), p2, p3 + glm::vec3(-.5f, .0f, 0.f)}, spec + (8 << 8), 8, 8, 0, 8);
-					utils::shader::addQuads(vertices, {p0, p1, p2 + glm::vec3(0.f, 0.f, .5f), p3 + glm::vec3(0.f, 0.f, .5f)}, spec, 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -.5f), p1 + glm::vec3(-.5f, .0f, -.5f), p2, p3 + glm::vec3(-.5f, .0f, 0.f)}, spec + (8 << 16), light, 8, 8);
+					utils::shader::addQuads(vertices, {p0, p1, p2 + glm::vec3(0.f, 0.f, .5f), p3 + glm::vec3(0.f, 0.f, .5f)}, spec, light, 16, 8);
 					break ;
 				case corners::pm:
-					utils::shader::addQuads(vertices, {p0 + glm::vec3(.5f, .0f, -.5f), p1 + glm::vec3(0.f, 0.f, -.5f), p2 + glm::vec3(0.5f, .0f, 0.f), p3}, spec + 8 + (8 << 8), 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p0 + glm::vec3(.5f, .0f, -.5f), p1 + glm::vec3(0.f, 0.f, -.5f), p2 + glm::vec3(0.5f, .0f, 0.f), p3}, spec + (8 << 12) + (8 << 16), light, 8, 8);
 				default:
-					utils::shader::addQuads(vertices, {p0, p1, p2 + glm::vec3(0.f, 0.f, .5f), p3 + glm::vec3(0.f, 0.f, .5f)}, spec, 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p0, p1, p2 + glm::vec3(0.f, 0.f, .5f), p3 + glm::vec3(0.f, 0.f, .5f)}, spec, light, 16, 8);
 					break ;
 			}
 		}
 		if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-			spec = baseSpec + (2 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-			spec += (faceLight << 24);
+			light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
 			switch (corners & (corners::mp | corners::pp)) {
 				case corners::mp | corners::pp:
-					utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 16, 16, 0, 8);
+					utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 16, 16);
 					break ;
 				case corners::mp:
-					utils::shader::addQuads(vertices, {p5 + glm::vec3(-.5f, .0f, -.5f), p4 + glm::vec3(0.f, 0.f, -.5f), p7 + glm::vec3(-0.5f, .0f, 0.f), p6}, spec + 8 + (8 << 8), 8, 8, 0, 8);
-					utils::shader::addQuads(vertices, {p5, p4, p7 + glm::vec3(0.f, 0.f, .5f), p6 + glm::vec3(0.f, 0.f, .5f)}, spec, 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p5 + glm::vec3(-.5f, .0f, -.5f), p4 + glm::vec3(0.f, 0.f, -.5f), p7 + glm::vec3(-0.5f, .0f, 0.f), p6}, spec + (8 << 12) + (8 << 16), light, 8, 8);
+					utils::shader::addQuads(vertices, {p5, p4, p7 + glm::vec3(0.f, 0.f, .5f), p6 + glm::vec3(0.f, 0.f, .5f)}, spec, light, 16, 8);
 					break ;
 				case corners::pp:
-					utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, 0.f, -.5f), p4 + glm::vec3(.5f, .0f, -.5f), p7, p6 + glm::vec3(.5f, .0f, 0.f)}, spec + (8 << 8), 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, 0.f, -.5f), p4 + glm::vec3(.5f, .0f, -.5f), p7, p6 + glm::vec3(.5f, .0f, 0.f)}, spec + (8 << 16), light, 8, 8);
 				default:
-					utils::shader::addQuads(vertices, {p5, p4, p7 + glm::vec3(0.f, 0.f, .5f), p6 + glm::vec3(0.f, 0.f, .5f)}, spec, 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p5, p4, p7 + glm::vec3(0.f, 0.f, .5f), p6 + glm::vec3(0.f, 0.f, .5f)}, spec, light, 16, 8);
 					break ;
 			}
 		}
 		if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-			spec = baseSpec + (0 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
+			light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+			utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, light, 16, 16);
 		}
 		// 'down' of first step
-		spec = baseSpec + (5 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-		spec += (faceLight << 24);
+		light = chunk->computeLight(pos.x, pos.y, pos.z) + (5 << 8);
 		switch (corners & (corners::mp | corners::pp)) {
 			case corners::pp:
-				utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .5f, .5f), p3 + glm::vec3(-.5f, .5f, .5f), p6 + glm::vec3(.0f, .0f, .5f), p7 + glm::vec3(-.5f, .0f, .5f)}, spec, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .5f, .5f), p3 + glm::vec3(-.5f, .5f, .5f), p6 + glm::vec3(.0f, .0f, .5f), p7 + glm::vec3(-.5f, .0f, .5f)}, spec, light, 8, 8);
 				break ;
 			case corners::mp:
-				utils::shader::addQuads(vertices, {p2 + glm::vec3(.5f, .5f, .5f), p3 + glm::vec3(.0f, .5f, .5f), p6 + glm::vec3(.5f, .0f, .5f), p7 + glm::vec3(.0f, .0f, .5f)}, spec + 8, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p2 + glm::vec3(.5f, .5f, .5f), p3 + glm::vec3(.0f, .5f, .5f), p6 + glm::vec3(.5f, .0f, .5f), p7 + glm::vec3(.0f, .0f, .5f)}, spec + (8 << 12), light, 8, 8);
 				break ;
 			case corners::mp | corners::pp:
 				break ;
 			default:
-				utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .5f, .5f), p3 + glm::vec3(.0f, .5f, .5f), p6 + glm::vec3(.0f, .0f, .5f), p7 + glm::vec3(.0f, .0f, .5f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .5f, .5f), p3 + glm::vec3(.0f, .5f, .5f), p6 + glm::vec3(.0f, .0f, .5f), p7 + glm::vec3(.0f, .0f, .5f)}, spec, light, 16, 8);
 				break ;
 		}
 		switch (corners & (corners::mm | corners::pm)) {
 			case corners::pm:
-				utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .0f, .5f), p3 + glm::vec3(-.5f, .0f, .5f), p6 + glm::vec3(.0f, -.5f, .5f), p7 + glm::vec3(-.5f, -.5f, .5f)}, spec + (8 << 8), 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .0f, .5f), p3 + glm::vec3(-.5f, .0f, .5f), p6 + glm::vec3(.0f, -.5f, .5f), p7 + glm::vec3(-.5f, -.5f, .5f)}, spec + (8 << 16), light, 8, 8);
 				break ;
 			case corners::mm:
-				utils::shader::addQuads(vertices, {p2 + glm::vec3(.5f, .0f, .5f), p3 + glm::vec3(.0f, .0f, .5f), p6 + glm::vec3(.5f, -.5f, .5f), p7 + glm::vec3(.0f, -.5f, .5f)}, spec + 8 + (8 << 8), 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p2 + glm::vec3(.5f, .0f, .5f), p3 + glm::vec3(.0f, .0f, .5f), p6 + glm::vec3(.5f, -.5f, .5f), p7 + glm::vec3(.0f, -.5f, .5f)}, spec + (8 << 12) + (8 << 16), light, 8, 8);
 				break ;
 			case corners::mm | corners::pm:
 				break;
 			default:
-				utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .0f, .5f), p3 + glm::vec3(.0f, .0f, .5f), p6 + glm::vec3(.0f, -.5f, .5f), p7 + glm::vec3(.0f, -.5f, .5f)}, spec + (8 << 8), 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .0f, .5f), p3 + glm::vec3(.0f, .0f, .5f), p6 + glm::vec3(.0f, -.5f, .5f), p7 + glm::vec3(.0f, -.5f, .5f)}, spec + (8 << 16), light, 16, 8);
 				break ;
 		}
-		spec = baseSpec + (faceLight << 24);
 		// front minus_x of second step
-		spec += (3 << 19);
+		light += (3 << 8);
 		switch (corners) {
 			case corners::pm | corners::pp: // full width
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(.5f, .0f, -.5f), p0 + glm::vec3(.5f, .0f, -.5f), p4 + glm::vec3(.5f, .0f, -1.0f), p0 + glm::vec3(.5f, .0f, -1.0f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(.5f, .0f, -.5f), p0 + glm::vec3(.5f, .0f, -.5f), p4 + glm::vec3(.5f, .0f, -1.0f), p0 + glm::vec3(.5f, .0f, -1.0f)}, spec, light, 16, 8);
 				break ;
 			case corners::pm: // only 'right'
 			case corners::pm | corners::pp | corners::mp:
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(.5f, -.5f, -.5f), p0 + glm::vec3(.5f, .0f, -.5f), p4 + glm::vec3(.5f, -.5f, -1.0f), p0 + glm::vec3(.5f, .0f, -1.0f)}, spec + 8, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(.5f, -.5f, -.5f), p0 + glm::vec3(.5f, .0f, -.5f), p4 + glm::vec3(.5f, -.5f, -1.0f), p0 + glm::vec3(.5f, .0f, -1.0f)}, spec + (8 << 12), light, 8, 8);
 				break ;
 			case corners::pp: // only 'left'
 			case corners::pm | corners::pp | corners::mm:
-				utils::shader::addQuads(vertices, {p4 + glm::vec3(.5f, .0f, -.5f), p0 + glm::vec3(.5f, .5f, -.5f), p4 + glm::vec3(.5f, .0f, -1.0f), p0 + glm::vec3(.5f, .5f, -1.0f)}, spec, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p4 + glm::vec3(.5f, .0f, -.5f), p0 + glm::vec3(.5f, .5f, -.5f), p4 + glm::vec3(.5f, .0f, -1.0f), p0 + glm::vec3(.5f, .5f, -1.0f)}, spec, light, 8, 8);
 				break ;
 		}
 		// front plus_x of second step
-		spec += (1 << 19);
+		light += (1 << 8);
 		switch (corners) {
 			case corners::mm | corners::mp: // full width
-				utils::shader::addQuads(vertices, {p1 + glm::vec3(-.5f, .0f, -.5f), p5 + glm::vec3(-.5f, .0f, -.5f), p1 + glm::vec3(-.5f, .0f, -1.0f), p5 + glm::vec3(-.5f, .0f, -1.0f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p1 + glm::vec3(-.5f, .0f, -.5f), p5 + glm::vec3(-.5f, .0f, -.5f), p1 + glm::vec3(-.5f, .0f, -1.0f), p5 + glm::vec3(-.5f, .0f, -1.0f)}, spec, light, 16, 8);
 				break ;
 			case corners::mp: // only 'right'
 			case corners::mm | corners::mp | corners::pm:
-				utils::shader::addQuads(vertices, {p1 + glm::vec3(-.5f, .5f, -.5f), p5 + glm::vec3(-.5f, .0f, -.5f), p1 + glm::vec3(-.5f, .5f, -1.0f), p5 + glm::vec3(-.5f, .0f, -1.0f)}, spec + 8, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p1 + glm::vec3(-.5f, .5f, -.5f), p5 + glm::vec3(-.5f, .0f, -.5f), p1 + glm::vec3(-.5f, .5f, -1.0f), p5 + glm::vec3(-.5f, .0f, -1.0f)}, spec + (8 << 12), light, 8, 8);
 				break ;
 			case corners::mm: // only 'left'
 			case corners::mm | corners::mp | corners::pp:
-				utils::shader::addQuads(vertices, {p1 + glm::vec3(-.5f, .0f, -.5f), p5 + glm::vec3(-.5f, -.5f, -.5f), p1 + glm::vec3(-.5f, .0f, -1.0f), p5 + glm::vec3(-.5f, -.5f, -1.0f)}, spec, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p1 + glm::vec3(-.5f, .0f, -.5f), p5 + glm::vec3(-.5f, -.5f, -.5f), p1 + glm::vec3(-.5f, .0f, -1.0f), p5 + glm::vec3(-.5f, -.5f, -1.0f)}, spec, light, 8, 8);
 				break ;
 		}
 		// front minus_y of second step
-		spec -= (3 << 19);
+		light -= (3 << 8);
 		switch (corners) {
 			case corners::mp | corners::pp: // full width
-				utils::shader::addQuads(vertices, {p0 + glm::vec3(.0f, .5f, -.5f), p1 + glm::vec3(.0f, .5f, -.5f), p0 + glm::vec3(.0f, .5f, -1.0f), p1 + glm::vec3(.0f, .5f, -1.0f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p0 + glm::vec3(.0f, .5f, -.5f), p1 + glm::vec3(.0f, .5f, -.5f), p0 + glm::vec3(.0f, .5f, -1.0f), p1 + glm::vec3(.0f, .5f, -1.0f)}, spec, light, 16, 8);
 				break ;
 			case corners::pp: // only 'right'
 			case corners::mp | corners::pp | corners::mm:
-				utils::shader::addQuads(vertices, {p0 + glm::vec3(.5f, .5f, -.5f), p1 + glm::vec3(.0f, .5f, -.5f), p0 + glm::vec3(.5f, .5f, -1.0f), p1 + glm::vec3(.0f, .5f, -1.0f)}, spec + 8, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p0 + glm::vec3(.5f, .5f, -.5f), p1 + glm::vec3(.0f, .5f, -.5f), p0 + glm::vec3(.5f, .5f, -1.0f), p1 + glm::vec3(.0f, .5f, -1.0f)}, spec + (8 << 12), light, 8, 8);
 				break ;
 			case corners::mp: // only 'left'
 			case corners::mp | corners::pp | corners::pm:
-				utils::shader::addQuads(vertices, {p0 + glm::vec3(.0f, .5f, -.5f), p1 + glm::vec3(-.5f, .5f, -.5f), p0 + glm::vec3(.0f, .5f, -1.0f), p1 + glm::vec3(-.5f, .5f, -1.0f)}, spec, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p0 + glm::vec3(.0f, .5f, -.5f), p1 + glm::vec3(-.5f, .5f, -.5f), p0 + glm::vec3(.0f, .5f, -1.0f), p1 + glm::vec3(-.5f, .5f, -1.0f)}, spec, light, 8, 8);
 				break ;
 		}
 		// front plus_y of second step
-		spec += (1 << 19);
+		light += (1 << 8);
 		switch (corners) {
 			case corners::mm | corners::pm: // full width
-				utils::shader::addQuads(vertices, {p5 + glm::vec3(.0f, -.5f, -.5f), p4 + glm::vec3(.0f, -.5f, -.5f), p5 + glm::vec3(.0f, -.5f, -1.0f), p4 + glm::vec3(.0f, -.5f, -1.0f)}, spec, 16, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p5 + glm::vec3(.0f, -.5f, -.5f), p4 + glm::vec3(.0f, -.5f, -.5f), p5 + glm::vec3(.0f, -.5f, -1.0f), p4 + glm::vec3(.0f, -.5f, -1.0f)}, spec, light, 16, 8);
 				break ;
 			case corners::pm: // only 'left'
 			case corners::mm | corners::pm | corners::mp:
-				utils::shader::addQuads(vertices, {p5 + glm::vec3(.0f, -.5f, -.5f), p4 + glm::vec3(.5f, -.5f, -.5f), p5 + glm::vec3(.0f, -.5f, -1.0f), p4 + glm::vec3(.5f, -.5f, -1.0f)}, spec, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p5 + glm::vec3(.0f, -.5f, -.5f), p4 + glm::vec3(.5f, -.5f, -.5f), p5 + glm::vec3(.0f, -.5f, -1.0f), p4 + glm::vec3(.5f, -.5f, -1.0f)}, spec, light, 8, 8);
 				break ;
 			case corners::mm: // only 'right'
 			case corners::mm | corners::pm | corners::pp:
-				utils::shader::addQuads(vertices, {p5 + glm::vec3(-.5f, -.5f, -.5f), p4 + glm::vec3(.0f, -.5f, -.5f), p5 + glm::vec3(-.5f, -.5f, -1.0f), p4 + glm::vec3(.0f, -.5f, -1.0f)}, spec + 8, 8, 8, 0, 8);
+				utils::shader::addQuads(vertices, {p5 + glm::vec3(-.5f, -.5f, -.5f), p4 + glm::vec3(.0f, -.5f, -.5f), p5 + glm::vec3(-.5f, -.5f, -1.0f), p4 + glm::vec3(.0f, -.5f, -1.0f)}, spec + (8 << 12), light, 8, 8);
 				break ;
 		}
 		if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-			spec = baseSpec + (5 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-			spec += (faceLight << 24);
+			light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
 			switch (corners & (corners::mp | corners::pp)) {
 				case corners::mp:
-					utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .5f, .0f), p3 + glm::vec3(-.5f, .5f, .0f), p6, p7 + glm::vec3(-.5f, .0f, .0f)}, spec, 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .5f, .0f), p3 + glm::vec3(-.5f, .5f, .0f), p6, p7 + glm::vec3(-.5f, .0f, .0f)}, spec, light, 8, 8);
 					break ;
 				case corners::pp:
-					utils::shader::addQuads(vertices, {p2 + glm::vec3(.5f, .5f, .0f), p3 + glm::vec3(.0f, .5f, .0f), p6 + glm::vec3(.5f, .0f, .0f), p7}, spec + 8, 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p2 + glm::vec3(.5f, .5f, .0f), p3 + glm::vec3(.0f, .5f, .0f), p6 + glm::vec3(.5f, .0f, .0f), p7}, spec + (8 << 12), light, 8, 8);
 					break ;
 				case corners::mp | corners::pp:
-					utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .5f, .0f), p3 + glm::vec3(.0f, .5f, .0f), p6, p7}, spec, 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p2 + glm::vec3(.0f, .5f, .0f), p3 + glm::vec3(.0f, .5f, .0f), p6, p7}, spec, light, 16, 8);
 					break ;
 			}
 			switch (corners & (corners::mm | corners::pm)) {
 				case corners::mm:
-					utils::shader::addQuads(vertices, {p2, p3 + glm::vec3(-.5f, .0f, .0f), p6 + glm::vec3(.0f, -.5f, .0f), p7 + glm::vec3(-.5f, -.5f, .0f)}, spec + (8 << 8), 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p2, p3 + glm::vec3(-.5f, .0f, .0f), p6 + glm::vec3(.0f, -.5f, .0f), p7 + glm::vec3(-.5f, -.5f, .0f)}, spec + (8 << 16), light, 8, 8);
 					break ;
 				case corners::pm:
-					utils::shader::addQuads(vertices, {p2 + glm::vec3(.5f, .0f, .0f), p3, p6 + glm::vec3(.5f, -.5f, .0f), p7 + glm::vec3(.0f, -.5f, .0f)}, spec + 8 + (8 << 8), 8, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p2 + glm::vec3(.5f, .0f, .0f), p3, p6 + glm::vec3(.5f, -.5f, .0f), p7 + glm::vec3(.0f, -.5f, .0f)}, spec + (8 << 12) + (8 << 16), light, 8, 8);
 					break ;
 				case corners::mm | corners::pm:
-					utils::shader::addQuads(vertices, {p2, p3, p6 + glm::vec3(.0f, -.5f, .0f), p7 + glm::vec3(.0f, -.5f, .0f)}, spec + (8 << 8), 16, 8, 0, 8);
+					utils::shader::addQuads(vertices, {p2, p3, p6 + glm::vec3(.0f, -.5f, .0f), p7 + glm::vec3(.0f, -.5f, .0f)}, spec + (8 << 16), light, 16, 8);
 					break ;
 			}
 		}
@@ -865,7 +828,7 @@ void Door::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
 	int orientation = 0;
-	int spec, faceLight;
+	int spec, light;
 	int bitfield = value >> offset::blocks::bitfield;
 	bool open = !!(bitfield & door::open) ^ ((value >> offset::redstone::powered) & 0x1);
 	bool flip;
@@ -925,39 +888,33 @@ void Door::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 			p2.x += 0.8125f;
 			p4.x += 0.8125f;
 			p6.x += 0.8125f;
-			spec = (this->texX(face_dir::minus_x, value) << 4) + (this->texY(face_dir::minus_x, value) << 12) + (3 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 16, 16, 0, 8, !flip);
+			spec = this->getTex(face_dir::minus_x, value);
+			light = chunk->computeLight(pos.x, pos.y, pos.z) + (3 << 8);
+			utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 16, 16, !flip);
 			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-				spec = (this->texX(face_dir::plus_x, value) << 4) + (this->texY(face_dir::plus_x, value) << 12) + (4 << 19);
-				faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 16, 16, 0, 8, flip);
+				spec = this->getTex(face_dir::plus_x, value);
+				light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
+				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 16, 16, flip);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-				spec = (this->texX(face_dir::minus_y, value) << 4) + (this->texY(face_dir::minus_y, value) << 12) + (1 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 3, 16, 0, 8);
+				spec = this->getTex(face_dir::minus_y, value);
+				light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
+				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 3, 16);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-				spec = (this->texX(face_dir::plus_y, value) << 4) + (this->texY(face_dir::plus_y, value) << 12) + (2 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 3, 16, 0, 8);
+				spec = this->getTex(face_dir::plus_y, value);
+				light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
+				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 3, 16);
 			}
 			if ((bitfield & door::upper_half) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-				spec = (this->texX(face_dir::plus_z) << 4) + (this->texY(face_dir::plus_z) << 12) + (0 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p0, p4, p1, p5}, spec, 16, 3, 0, 8);
+				spec = this->getTex(face_dir::plus_z);
+				light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+				utils::shader::addQuads(vertices, {p0, p4, p1, p5}, spec, light, 16, 3);
 			}
 			if (!(bitfield & door::upper_half) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-				spec = (this->texX(face_dir::minus_z, face_dir::minus_z) << 4) + (this->texY(face_dir::minus_z, face_dir::minus_z) << 12) + (5 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p6, p2, p7, p3}, spec + (13 << 8), 16, 3, 0, 8);
+				spec = this->getTex(face_dir::minus_z, face_dir::minus_z);
+				light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+				utils::shader::addQuads(vertices, {p6, p2, p7, p3}, spec + (13 << 16), light, 16, 3);
 			}
 			break ;
 		case face_dir::plus_x:
@@ -966,38 +923,32 @@ void Door::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 			p5.x -= 0.8125f;
 			p7.x -= 0.8125f;
 			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-				spec = (this->texX(face_dir::minus_x, value) << 4) + (this->texY(face_dir::minus_x, value) << 12) + (3 << 19);
-				faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 16, 16, 0, 8, !flip);
+				spec = this->getTex(face_dir::minus_x, value);
+				light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
+				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 16, 16, !flip);
 			}
-			spec = (this->texX(face_dir::plus_x, value) << 4) + (this->texY(face_dir::plus_x, value) << 12) + (4 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 16, 16, 0, 8, flip);
+			spec = this->getTex(face_dir::plus_x, value);
+			light = chunk->computeLight(pos.x, pos.y, pos.z) + (4 << 8);
+			utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 16, 16, flip);
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-				spec = (this->texX(face_dir::minus_y, value) << 4) + (this->texY(face_dir::minus_y, value) << 12) + (1 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 3, 16, 0, 8);
+				spec = this->getTex(face_dir::minus_y, value);
+				light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
+				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 3, 16);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-				spec = (this->texX(face_dir::plus_y, value) << 4) + (this->texY(face_dir::plus_y, value) << 12) + (2 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 3, 16, 0, 8);
+				spec = this->getTex(face_dir::plus_y, value);
+				light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
+				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 3, 16);
 			}
 			if ((bitfield & door::upper_half) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-				spec = (this->texX(face_dir::plus_z) << 4) + (this->texY(face_dir::plus_z) << 12) + (0 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p0, p4, p1, p5}, spec, 16, 3, 0, 8);
+				spec = this->getTex(face_dir::plus_z);
+				light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+				utils::shader::addQuads(vertices, {p0, p4, p1, p5}, spec, light, 16, 3);
 			}
 			if (!(bitfield & door::upper_half) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-				spec = (this->texX(face_dir::minus_z, face_dir::minus_z) << 4) + (this->texY(face_dir::minus_z, face_dir::minus_z) << 12) + (5 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p6, p2, p7, p3}, spec + (13 << 8), 16, 3, 0, 8);
+				spec = this->getTex(face_dir::minus_z, face_dir::minus_z);
+				light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+				utils::shader::addQuads(vertices, {p6, p2, p7, p3}, spec + (13 << 16), light, 16, 3);
 			}
 			break ;
 		case face_dir::minus_y:
@@ -1006,38 +957,32 @@ void Door::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 			p2.y += 0.8125f;
 			p3.y += 0.8125f;
 			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-				spec = (this->texX(face_dir::minus_x, value) << 4) + (this->texY(face_dir::minus_x, value) << 12) + (3 << 19);
-				faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 3, 16, 0, 8);
+				spec = this->getTex(face_dir::minus_x, value);
+				light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
+				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 3, 16);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-				spec = (this->texX(face_dir::plus_x, value) << 4) + (this->texY(face_dir::plus_x, value) << 12) + (4 << 19);
-				faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 3, 16, 0, 8);
+				spec = this->getTex(face_dir::plus_x, value);
+				light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
+				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 3, 16);
 			}
-			spec = (this->texX(face_dir::minus_y, value) << 4) + (this->texY(face_dir::minus_y, value) << 12) + (1 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 16, 16, 0, 8, !flip);
+			spec = this->getTex(face_dir::minus_y, value);
+			light = chunk->computeLight(pos.x, pos.y, pos.z) + (1 << 8);
+			utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 16, 16, !flip);
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-				spec = (this->texX(face_dir::plus_y, value) << 4) + (this->texY(face_dir::plus_y, value) << 12) + (2 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 16, 16, 0, 8, flip);
+				spec = this->getTex(face_dir::plus_y, value);
+				light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
+				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 16, 16, flip);
 			}
 			if ((bitfield & door::upper_half) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-				spec = (this->texX(face_dir::plus_z) << 4) + (this->texY(face_dir::plus_z) << 12) + (0 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p1, p0, p5, p4}, spec, 16, 3, 0, 8);
+				spec = this->getTex(face_dir::plus_z);
+				light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+				utils::shader::addQuads(vertices, {p1, p0, p5, p4}, spec, light, 16, 3);
 			}
 			if (!(bitfield & door::upper_half) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-				spec = (this->texX(face_dir::minus_z, face_dir::minus_z) << 4) + (this->texY(face_dir::minus_z, face_dir::minus_z) << 12) + (5 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p7, p6, p3, p2}, spec + (13 << 8), 16, 3, 0, 8);
+				spec = this->getTex(face_dir::minus_z, face_dir::minus_z);
+				light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+				utils::shader::addQuads(vertices, {p7, p6, p3, p2}, spec + (13 << 16), light, 16, 3);
 			}
 			break ;
 		case face_dir::plus_y:
@@ -1046,38 +991,32 @@ void Door::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 			p6.y -= 0.8125f;
 			p7.y -= 0.8125f;
 			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-				spec = (this->texX(face_dir::minus_x, value) << 4) + (this->texY(face_dir::minus_x, value) << 12) + (3 << 19);
-				faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 3, 16, 0, 8);
+				spec = this->getTex(face_dir::minus_x, value);
+				light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
+				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 3, 16);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-				spec = (this->texX(face_dir::plus_x, value) << 4) + (this->texY(face_dir::plus_x, value) << 12) + (4 << 19);
-				faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 3, 16, 0, 8);
+				spec = this->getTex(face_dir::plus_x, value);
+				light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
+				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 3, 16);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-				spec = (this->texX(face_dir::minus_y, value) << 4) + (this->texY(face_dir::minus_y, value) << 12) + (1 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 16, 16, 0, 8, !flip);
+				spec = this->getTex(face_dir::minus_y, value);
+				light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
+				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 16, 16, !flip);
 			}
-			spec = (this->texX(face_dir::plus_y, value) << 4) + (this->texY(face_dir::plus_y, value) << 12) + (2 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 16, 16, 0, 8, flip);
+			spec = this->getTex(face_dir::plus_y, value);
+			light = chunk->computeLight(pos.x, pos.y, pos.z) + (2 << 8);
+			utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 16, 16, flip);
 			if ((bitfield & door::upper_half) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-				spec = (this->texX(face_dir::plus_z) << 4) + (this->texY(face_dir::plus_z) << 12) + (0 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p1, p0, p5, p4}, spec, 16, 3, 0, 8);
+				spec = this->getTex(face_dir::plus_z);
+				light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+				utils::shader::addQuads(vertices, {p1, p0, p5, p4}, spec, light, 16, 3);
 			}
 			if (!(bitfield & door::upper_half) && visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-				spec = (this->texX(face_dir::minus_z, face_dir::minus_z) << 4) + (this->texY(face_dir::minus_z, face_dir::minus_z) << 12) + (5 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p7, p6, p3, p2}, spec + (13 << 8), 16, 3, 0, 8);
+				spec = this->getTex(face_dir::minus_z, face_dir::minus_z);
+				light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+				utils::shader::addQuads(vertices, {p7, p6, p3, p2}, spec + (13 << 16), light, 16, 3);
 			}
 			break ;
 	}
@@ -1096,8 +1035,8 @@ void Trapdoor::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
 	int bitfield = value >> offset::blocks::bitfield;
-	int baseSpec = (textureX << 4) + (textureY << 12);
-	int spec, faceLight;
+	int spec = texture;
+	int light;
 	bool open = !!(bitfield & door::open) ^ ((value >> offset::redstone::powered) & 0x1);
 	if (!open) {
 		if (!(bitfield & door::upper_half)) {
@@ -1106,38 +1045,26 @@ void Trapdoor::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 			p4.z -= 0.8125f;
 			p5.z -= 0.8125f;
 			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-				spec = baseSpec + (3 << 19);
-				faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 16, 3, 0, 8);
+				light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
+				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 16, 3);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-				spec = baseSpec + (4 << 19);
-				faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 16, 3, 0, 8);
+				light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
+				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 16, 3);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-				spec = baseSpec + (1 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 16, 3, 0, 8);
+				light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
+				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 16, 3);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-				spec = baseSpec + (2 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 16, 3, 0, 8);
+				light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
+				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 16, 3);
 			}
-			spec = baseSpec + (0 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
+			light = chunk->computeLight(pos.x, pos.y, pos.z) + (0 << 8);
+			utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, light, 16, 16);
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-				spec = baseSpec + (5 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
+				light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+				utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, light, 16, 16);
 			}
 		} else {
 			p2.z += 0.8125f;
@@ -1145,39 +1072,27 @@ void Trapdoor::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 			p6.z += 0.8125f;
 			p7.z += 0.8125f;
 			if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-				spec = baseSpec + (3 << 19);
-				faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 16, 3, 0, 8, false, true);
+				light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
+				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 16, 3, false, true);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-				spec = baseSpec + (4 << 19);
-				faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 16, 3, 0, 8, false, true);
+				light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
+				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 16, 3, false, true);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-				spec = baseSpec + (1 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 16, 3, 0, 8, false, true);
+				light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
+				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 16, 3, false, true);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-				spec = baseSpec + (2 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 16, 3, 0, 8, false, true);
+				light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
+				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 16, 3, false, true);
 			}
 			if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-				spec = baseSpec + (0 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
+				light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+				utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, light, 16, 16);
 			}
-			spec = baseSpec + (5 << 19);
-			faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
+			light = chunk->computeLight(pos.x, pos.y, pos.z) + (5 << 8);
+			utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, light, 16, 16);
 		}
 	} else { // open trapdoor
 		switch ((value >> offset::blocks::orientation) & 0x7) {
@@ -1186,39 +1101,27 @@ void Trapdoor::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 				p2 += glm::vec3(0.8125f, 0, 0);
 				p4 += glm::vec3(0.8125f, 0, 0);
 				p6 += glm::vec3(0.8125f, 0, 0);
-				spec = baseSpec + (3 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 16, 16, 0, 8);
+				light = chunk->computeLight(pos.x, pos.y, pos.z) + (3 << 8);
+				utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 16, 16);
 				if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-					spec = baseSpec + (4 << 19);
-					faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
+					light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
+					utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 16, 16);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-					spec = baseSpec + (1 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p2, p0, p3, p1}, spec, 16, 3, 0, 8, true, true);
+					light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
+					utils::shader::addQuads(vertices, {p2, p0, p3, p1}, spec, light, 16, 3, true, true);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-					spec = baseSpec + (2 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p7, p5, p6, p4}, spec, 16, 3, 0, 8);
+					light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
+					utils::shader::addQuads(vertices, {p7, p5, p6, p4}, spec, light, 16, 3);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-					spec = baseSpec + (0 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p0, p4, p1, p5}, spec, 16, 3, 0, 8, true, true);
+					light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+					utils::shader::addQuads(vertices, {p0, p4, p1, p5}, spec, light, 16, 3, true, true);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-					spec = baseSpec + (5 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p6, p2, p7, p3}, spec, 16, 3, 0, 8, true, true);
+					light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+					utils::shader::addQuads(vertices, {p6, p2, p7, p3}, spec, light, 16, 3, true, true);
 				}
 				break ;
 			case face_dir::plus_x:
@@ -1227,38 +1130,26 @@ void Trapdoor::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 				p5 -= glm::vec3(0.8125f, 0, 0);
 				p7 -= glm::vec3(0.8125f, 0, 0);
 				if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-					spec = baseSpec + (3 << 19);
-					faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, 16, 16, 0, 8);
+					light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
+					utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec, light, 16, 16);
 				}
-				spec = baseSpec + (4 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
+				light = chunk->computeLight(pos.x, pos.y, pos.z) + (4 << 8);
+				utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec, light, 16, 16);
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-					spec = baseSpec + (1 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p2, p0, p3, p1}, spec, 16, 3, 0, 8);
+					light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
+					utils::shader::addQuads(vertices, {p2, p0, p3, p1}, spec, light, 16, 3);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-					spec = baseSpec + (2 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p7, p5, p6, p4}, spec, 16, 3, 0, 8, true, true);
+					light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
+					utils::shader::addQuads(vertices, {p7, p5, p6, p4}, spec, light, 16, 3, true, true);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-					spec = baseSpec + (0 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p0, p4, p1, p5}, spec, 16, 3, 0, 8);
+					light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+					utils::shader::addQuads(vertices, {p0, p4, p1, p5}, spec, light, 16, 3);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-					spec = baseSpec + (5 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p6, p2, p7, p3}, spec, 16, 3, 0, 8);
+					light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+					utils::shader::addQuads(vertices, {p6, p2, p7, p3}, spec, light, 16, 3);
 				}
 				break ;
 			case face_dir::minus_y:
@@ -1267,38 +1158,26 @@ void Trapdoor::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 				p2 += glm::vec3(0, 0.8125f, 0);
 				p3 += glm::vec3(0, 0.8125f, 0);
 				if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-					spec = baseSpec + (3 << 19);
-					faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p6, p4, p2, p0}, spec, 16, 3, 0, 8);
+					light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
+					utils::shader::addQuads(vertices, {p6, p4, p2, p0}, spec, light, 16, 3);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-					spec = baseSpec + (4 << 19);
-					faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p3, p1, p7, p5}, spec, 16, 3, 0, 8, true, true);
+					light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
+					utils::shader::addQuads(vertices, {p3, p1, p7, p5}, spec, light, 16, 3, true, true);
 				}
-				spec = baseSpec + (1 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
+				light = chunk->computeLight(pos.x, pos.y, pos.z) + (1 << 8);
+				utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 16, 16);
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-					spec = baseSpec + (2 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 16, 16, 0, 8);
+					light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
+					utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 16, 16);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-					spec = baseSpec + (0 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 16, 3, 0, 8);
+					light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+					utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, light, 16, 3);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-					spec = baseSpec + (5 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, 16, 3, 0, 8, true, true);
+					light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+					utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, light, 16, 3, true, true);
 				}
 				break ;
 			case face_dir::plus_y:
@@ -1307,38 +1186,26 @@ void Trapdoor::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 				p6 -= glm::vec3(0, 0.8125f, 0);
 				p7 -= glm::vec3(0, 0.8125f, 0);
 				if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-					spec = baseSpec + (3 << 19);
-					faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p6, p4, p2, p0}, spec, 16, 3, 0, 8, true, true);
+					light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
+					utils::shader::addQuads(vertices, {p6, p4, p2, p0}, spec, light, 16, 3, true, true);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-					spec = baseSpec + (4 << 19);
-					faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p3, p1, p7, p5}, spec, 16, 3, 0, 8);
+					light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
+					utils::shader::addQuads(vertices, {p3, p1, p7, p5}, spec, light, 16, 3);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-					spec = baseSpec + (1 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
+					light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
+					utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec, light, 16, 16);
 				}
-				spec = baseSpec + (2 << 19);
-				faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-				spec += (faceLight << 24);
-				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, 16, 16, 0, 8);
+				light = chunk->computeLight(pos.x, pos.y, pos.z) + (2 << 8);
+				utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec, light, 16, 16);
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-					spec = baseSpec + (0 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 16, 3, 0, 8, true, true);
+					light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+					utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, light, 16, 3, true, true);
 				}
 				if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-					spec = baseSpec + (5 << 19);
-					faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-					spec += (faceLight << 24);
-					utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, 16, 3, 0, 8);
+					light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+					utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, light, 16, 3);
 				}
 				break ;
 		}
@@ -1367,34 +1234,26 @@ void Fence::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 	glm::vec3 pp7 = p7 + glm::vec3(-0.375f, -0.375f, 0);
 
 	// central pole
-	int baseSpec = (textureX << 4) + (textureY << 12);
-	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-	int spec = baseSpec + (3 << 19);
-	spec += (faceLight << 24);
-	utils::shader::addQuads(vertices, {pp4, pp0, pp6, pp2}, spec + 6, 4, 16, 0, 8);
-	spec = baseSpec + (4 << 19);
-	spec += (faceLight << 24);
-	utils::shader::addQuads(vertices, {pp1, pp5, pp3, pp7}, spec + 6, 4, 16, 0, 8);
-	spec = baseSpec + (1 << 19);
-	spec += (faceLight << 24);
-	utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + 6, 4, 16, 0, 8);
-	spec = baseSpec + (2 << 19);
-	spec += (faceLight << 24);
-	utils::shader::addQuads(vertices, {pp5, pp4, pp7, pp6}, spec + 6, 4, 16, 0, 8);
+	int spec = texture;
+	int baseLight = chunk->computeLight(pos.x, pos.y, pos.z);
+	int light = baseLight + (3 << 8);
+	utils::shader::addQuads(vertices, {pp4, pp0, pp6, pp2}, spec + (6 << 12), light, 4, 16);
+	light = baseLight + (4 << 8);
+	utils::shader::addQuads(vertices, {pp1, pp5, pp3, pp7}, spec + (6 << 12), light, 4, 16);
+	light = baseLight + (1 << 8);
+	utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (6 << 12), light, 4, 16);
+	light = baseLight + (2 << 8);
+	utils::shader::addQuads(vertices, {pp5, pp4, pp7, pp6}, spec + (6 << 12), light, 4, 16);
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-		spec = baseSpec + (0 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {pp4, pp5, pp0, pp1}, spec + 6 + (6 << 8), 4, 4, 0, 8);
+		light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
+		utils::shader::addQuads(vertices, {pp4, pp5, pp0, pp1}, spec + (6 << 12) + (6 << 16), light, 4, 4);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-		spec = baseSpec + (5 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {pp2, pp3, pp6, pp7}, spec + 6 + (6 << 8), 4, 4, 0, 8);
+		light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+		utils::shader::addQuads(vertices, {pp2, pp3, pp6, pp7}, spec + (6 << 12) + (6 << 16), light, 4, 4);
 	}
 	// arms
-	faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
+	baseLight = chunk->computeLight(pos.x, pos.y, pos.z);
 	if ((value >> offset::blocks::bitfield) & fence::mx) {
 		pp0 = p0 + glm::vec3( 0,                7.0f * one16th, -one16th);
 		pp1 = p1 + glm::vec3(-10.0f * one16th,  7.0f * one16th, -one16th);
@@ -1405,18 +1264,14 @@ void Fence::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 		pp6 = p6 + glm::vec3( 0,               -7.0f * one16th, 12.0f * one16th);
 		pp7 = p7 + glm::vec3(-10.0f * one16th, -7.0f * one16th, 12.0f * one16th);
 		for (int i = 0; i < 2; ++i) {
-			spec = baseSpec + (1 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + ((1 + 6*i) << 8), 6, 3, 0, 8);
-			spec = baseSpec + (2 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp5, pp4, pp7, pp6}, spec + 10 + ((1 + 6*i) << 8), 6, 3, 0, 8);
-			spec = baseSpec + (0 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp4, pp5, pp0, pp1}, spec + (7 << 8), 6, 2, 0, 8);
-			spec = baseSpec + (5 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp2, pp3, pp6, pp7}, spec + (7 << 8), 6, 2, 0, 8);
+			light = baseLight + (1 << 8);
+			utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + ((1 + 6*i) << 16), light, 6, 3);
+			light = baseLight + (2 << 8);
+			utils::shader::addQuads(vertices, {pp5, pp4, pp7, pp6}, spec + (10 << 12) + ((1 + 6*i) << 16), light, 6, 3);
+			light = baseLight + (0 << 8);
+			utils::shader::addQuads(vertices, {pp4, pp5, pp0, pp1}, spec + (7 << 16), light, 6, 2);
+			light = baseLight + (5 << 8);
+			utils::shader::addQuads(vertices, {pp2, pp3, pp6, pp7}, spec + (7 << 16), light, 6, 2);
 			// bottom arm is drawn on second loop
 			pp0.z -= 6.0f * one16th;
 			pp1.z -= 6.0f * one16th;
@@ -1438,18 +1293,14 @@ void Fence::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 		pp6 = p6 + glm::vec3( 10.0f * one16th, -7.0f * one16th, 12.0f * one16th);
 		pp7 = p7 + glm::vec3( 0,               -7.0f * one16th, 12.0f * one16th);
 		for (int i = 0; i < 2; ++i) {
-			spec = baseSpec + (1 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + 10 + ((1 + 6*i) << 8), 6, 3, 0, 8);
-			spec = baseSpec + (2 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp5, pp4, pp7, pp6}, spec + ((1 + 6*i) << 8), 6, 3, 0, 8);
-			spec = baseSpec + (0 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp4, pp5, pp0, pp1}, spec + (7 << 8), 6, 2, 0, 8);
-			spec = baseSpec + (5 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp2, pp3, pp6, pp7}, spec + (7 << 8), 6, 2, 0, 8);
+			light = baseLight + (1 << 8);
+			utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (10 << 12) + ((1 + 6*i) << 16), light, 6, 3);
+			light = baseLight + (2 << 8);
+			utils::shader::addQuads(vertices, {pp5, pp4, pp7, pp6}, spec + ((1 + 6*i) << 16), light, 6, 3);
+			light = baseLight + (0 << 8);
+			utils::shader::addQuads(vertices, {pp4, pp5, pp0, pp1}, spec + (7 << 16), light, 6, 2);
+			light = baseLight + (5 << 8);
+			utils::shader::addQuads(vertices, {pp2, pp3, pp6, pp7}, spec + (7 << 16), light, 6, 2);
 			// bottom arm is drawn on second loop
 			pp0.z -= 6.0f * one16th;
 			pp1.z -= 6.0f * one16th;
@@ -1471,18 +1322,14 @@ void Fence::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 		pp6 = p6 + glm::vec3( 7.0f * one16th, -10.0f * one16th, 12.0f * one16th);
 		pp7 = p7 + glm::vec3(-7.0f * one16th, -10.0f * one16th, 12.0f * one16th);
 		for (int i = 0; i < 2; ++i) {
-			spec = baseSpec + (3 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp4, pp0, pp6, pp2}, spec + 10 + ((1 + 6*i) << 8), 6, 3, 0, 8);
-			spec = baseSpec + (4 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp1, pp5, pp3, pp7}, spec + ((1 + 6*i) << 8), 6, 3, 0, 8);
-			spec = baseSpec + (0 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp5, pp1, pp4, pp0}, spec + (7 << 8), 6, 2, 0, 8);
-			spec = baseSpec + (5 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp3, pp7, pp2, pp6}, spec + (7 << 8), 6, 2, 0, 8);
+			light = baseLight + (3 << 8);
+			utils::shader::addQuads(vertices, {pp4, pp0, pp6, pp2}, spec + (10 << 12) + ((1 + 6*i) << 16), light, 6, 3);
+			light = baseLight + (4 << 8);
+			utils::shader::addQuads(vertices, {pp1, pp5, pp3, pp7}, spec + ((1 + 6*i) << 16), light, 6, 3);
+			light = baseLight + (0 << 8);
+			utils::shader::addQuads(vertices, {pp5, pp1, pp4, pp0}, spec + (7 << 16), light, 6, 2);
+			light = baseLight + (5 << 8);
+			utils::shader::addQuads(vertices, {pp3, pp7, pp2, pp6}, spec + (7 << 16), light, 6, 2);
 			// bottom arm is drawn on second loop
 			pp0.z -= 6.0f * one16th;
 			pp1.z -= 6.0f * one16th;
@@ -1504,18 +1351,14 @@ void Fence::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 		pp6 = p6 + glm::vec3( 7.0f * one16th, 0,               12.0f * one16th);
 		pp7 = p7 + glm::vec3(-7.0f * one16th, 0,               12.0f * one16th);
 		for (int i = 0; i < 2; ++i) {
-			spec = baseSpec + (3 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp4, pp0, pp6, pp2}, spec + ((1 + 6*i) << 8), 6, 3, 0, 8);
-			spec = baseSpec + (4 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp1, pp5, pp3, pp7}, spec + 10 + ((1 + 6*i) << 8), 6, 3, 0, 8);
-			spec = baseSpec + (0 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp5, pp1, pp4, pp0}, spec + (7 << 8), 6, 2, 0, 8);
-			spec = baseSpec + (5 << 19);
-			spec += (faceLight << 24);
-			utils::shader::addQuads(vertices, {pp3, pp7, pp2, pp6}, spec + (7 << 8), 6, 2, 0, 8);
+			light = baseLight + (3 << 8);
+			utils::shader::addQuads(vertices, {pp4, pp0, pp6, pp2}, spec + ((1 + 6*i) << 16), light, 6, 3);
+			light = baseLight + (4 << 8);
+			utils::shader::addQuads(vertices, {pp1, pp5, pp3, pp7}, spec + (10 << 12) + ((1 + 6*i) << 16), light, 6, 3);
+			light = baseLight + (0 << 8);
+			utils::shader::addQuads(vertices, {pp5, pp1, pp4, pp0}, spec + (7 << 16), light, 6, 2);
+			light = baseLight + (5 << 8);
+			utils::shader::addQuads(vertices, {pp3, pp7, pp2, pp6}, spec + (7 << 16), light, 6, 2);
 			// bottom arm is drawn on second loop
 			pp0.z -= 6.0f * one16th;
 			pp1.z -= 6.0f * one16th;
@@ -1531,8 +1374,9 @@ void Fence::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 
 void GlassPane::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
+	(void)chunk;(void)vertices;(void)start;(void)pos;(void)value;
 	// TODO move this to sky_vertex
-	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
+	/*glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
 	glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
@@ -1629,7 +1473,7 @@ void GlassPane::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm
 		if (bitfield & fence::px) {
 			utils::shader::addQuads(vertices, {p7, p3, p7 + glm::vec3(-0.4375f, 0.f, 0.f), p3 + glm::vec3(-0.4375f, 0.f, 0.f)}, spec, 16, 7, 0, 8);
 		}
-	}
+	}*/
 }
 
 void Crop::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
@@ -1645,11 +1489,12 @@ void Crop::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 	glm::vec3 p6 = {start.x + pos.x + 0, start.y + pos.y + 1, pos.z - one16th};
 	glm::vec3 p7 = {start.x + pos.x + 1, start.y + pos.y + 1, pos.z - one16th};
 
-	int spec = (textureX << 4) + (texY(face_dir::plus_z, value) << 12) + (0 << 19) + (chunk->computeLight(pos.x, pos.y, pos.z) << 24);
-	utils::shader::addQuads(vertices, {p4 + glm::vec3(3.0f * one16th, 0.0f, 0.0f), {p0.x + 3.0f * one16th, p0.y, p0.z}, {p6.x + 3.0f * one16th, p6.y, p6.z}, {p2.x + 3.0f * one16th, p2.y, p2.z}}, spec, 16, 16, 0, 8); // -x
-	utils::shader::addQuads(vertices, {p0 + glm::vec3(13.0f * one16th, 0.0f, 0.0f), {p4.x + 13.0f * one16th, p4.y, p4.z}, {p2.x + 13.0f * one16th, p2.y, p2.z}, {p6.x + 13.0f * one16th, p6.y, p6.z}}, spec, 16, 16, 0, 8); // +x
-	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 3.0f * one16th, 0.0f), {p1.x, p1.y + 3.0f * one16th, p1.z}, {p2.x, p2.y + 3.0f * one16th, p2.z}, {p3.x, p3.y + 3.0f * one16th, p3.z}}, spec, 16, 16, 0, 8); // -y
-	utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 13.0f * one16th, 0.0f), {p4.x, p4.y + 13.0f * one16th, p4.z}, {p2.x, p2.y + 13.0f * one16th, p2.z}, {p6.x, p6.y + 13.0f * one16th, p6.z}}, spec, 16, 16, 0, 8); // +y
+	int spec = getTex(face_dir::plus_z, value);
+	int light = chunk->computeLight(pos.x, pos.y, pos.z);
+	utils::shader::addQuads(vertices, {p4 + glm::vec3(3.0f * one16th, 0.0f, 0.0f), {p0.x + 3.0f * one16th, p0.y, p0.z}, {p6.x + 3.0f * one16th, p6.y, p6.z}, {p2.x + 3.0f * one16th, p2.y, p2.z}}, spec, light, 16, 16); // -x
+	utils::shader::addQuads(vertices, {p0 + glm::vec3(13.0f * one16th, 0.0f, 0.0f), {p4.x + 13.0f * one16th, p4.y, p4.z}, {p2.x + 13.0f * one16th, p2.y, p2.z}, {p6.x + 13.0f * one16th, p6.y, p6.z}}, spec, light, 16, 16); // +x
+	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 3.0f * one16th, 0.0f), {p1.x, p1.y + 3.0f * one16th, p1.z}, {p2.x, p2.y + 3.0f * one16th, p2.z}, {p3.x, p3.y + 3.0f * one16th, p3.z}}, spec, light, 16, 16); // -y
+	utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 13.0f * one16th, 0.0f), {p4.x, p4.y + 13.0f * one16th, p4.z}, {p2.x, p2.y + 13.0f * one16th, p2.z}, {p6.x, p6.y + 13.0f * one16th, p6.z}}, spec, light, 16, 16); // +y
 }
 
 void ItemFrame::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
@@ -1825,26 +1670,25 @@ void Lever::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 			break ;
 	}
 	// drawing lever's base
-	spec = (s_blocks[blocks::cobblestone]->texX() << 4) + (s_blocks[blocks::cobblestone]->texY() << 12) + (0 << 19);
-	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-	spec += (faceLight << 24);
+	spec = s_blocks[blocks::cobblestone]->texture;
+	int light = chunk->computeLight(pos.x, pos.y, pos.z);
 	if (placement != placement::wall || orientation != face_dir::plus_x) {
-		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + x_texMX + (x_texMY << 8), 16 - x_texMX - x_texPX, 16 - x_texMY - x_texPY, 0, 8); // -x
+		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + (x_texMX << 12) + (x_texMY << 16), light, 16 - x_texMX - x_texPX, 16 - x_texMY - x_texPY); // -x
 	}
 	if (placement != placement::wall || orientation != face_dir::minus_x) {
-		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + x_texMX + (x_texMY << 8), 16 - x_texMX - x_texPX, 16 - x_texMY - x_texPY, 0, 8); // +x
+		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + (x_texMX << 12) + (x_texMY << 16), light, 16 - x_texMX - x_texPX, 16 - x_texMY - x_texPY); // +x
 	}
 	if (placement != placement::wall || orientation != face_dir::plus_y) {
-		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + y_texMX + (y_texMY << 8), 16 - y_texMX - y_texPX, 16 - y_texMY - y_texPY, 0, 8); // -y
+		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + (y_texMX << 12) + (y_texMY << 16), light, 16 - y_texMX - y_texPX, 16 - y_texMY - y_texPY); // -y
 	}
 	if (placement != placement::wall || orientation != face_dir::minus_y) {
-		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + y_texMX + (y_texMY << 8), 16 - y_texMX - y_texPX, 16 - y_texMY - y_texPY, 0, 8); // +y
+		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + (y_texMX << 12) + (y_texMY << 16), light, 16 - y_texMX - y_texPX, 16 - y_texMY - y_texPY); // +y
 	}
 	if (placement != placement::ceiling) {
-		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec + z_texMX + (z_texMY << 8), 16 - z_texMX - z_texPX, 16 - z_texMY - z_texPY, 0, 8); // +z
+		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec + (z_texMX << 12) + (z_texMY << 16), light, 16 - z_texMX - z_texPX, 16 - z_texMY - z_texPY); // +z
 	}
 	if (placement != placement::floor) {
-		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec + z_texMX + (z_texMY << 8), 16 - z_texMX - z_texPX, 16 - z_texMY - z_texPY, 0, 8); // -z
+		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec + (z_texMX << 12) + (z_texMY << 16), light, 16 - z_texMX - z_texPX, 16 - z_texMY - z_texPY); // -z
 	}
 	// it's lever time
 	glm::vec3 top, right, front;
@@ -1899,13 +1743,12 @@ void Lever::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 	p6 = baseCenter - right * one16th + front * one16th;
 	p7 = baseCenter + right * one16th + front * one16th;
 
-	spec = (textureX << 4) + (textureY << 12);
-	spec += (faceLight << 24);
-	utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + 7 + (6 << 8), 2, 10, 0, 8); // -x
-	utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + 7 + (6 << 8), 2, 10, 0, 8); // +x
-	utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + 7 + (6 << 8), 2, 10, 0, 8); // -y
-	utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + 7 + (6 << 8), 2, 10, 0, 8); // +y
-	utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec + 7 + (6 << 8), 2, 2, 0, 8); // +z
+	spec = texture;
+	utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + (7 << 12) + (6 << 16), light, 2, 10); // -x
+	utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + (7 << 12) + (6 << 16), light, 2, 10); // +x
+	utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + (7 << 12) + (6 << 16), light, 2, 10); // -y
+	utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + (7 << 12) + (6 << 16), light, 2, 10); // +y
+	utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec + (7 << 12) + (6 << 16), light, 2, 2); // +z
 }
 
 void Button::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
@@ -2029,26 +1872,25 @@ void Button::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 			}
 			break ;
 	}
-	spec = (textureX << 4) + (textureY << 12) + (0 << 19);
-	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-	spec += (faceLight << 24);
+	spec = texture;
+	int light = chunk->computeLight(pos.x, pos.y, pos.z);
 	if (placement != placement::wall || orientation != face_dir::plus_x) {
-		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + x_texMX + (x_texMY << 8), 16 - x_texMX - x_texPX, 16 - x_texMY - x_texPY, 0, 8); // -x
+		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + (x_texMX << 12) + (x_texMY << 16), light, 16 - x_texMX - x_texPX, 16 - x_texMY - x_texPY); // -x
 	}
 	if (placement != placement::wall || orientation != face_dir::minus_x) {
-		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + x_texMX + (x_texMY << 8), 16 - x_texMX - x_texPX, 16 - x_texMY - x_texPY, 0, 8); // +x
+		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + (x_texMX << 12) + (x_texMY << 16), light, 16 - x_texMX - x_texPX, 16 - x_texMY - x_texPY); // +x
 	}
 	if (placement != placement::wall || orientation != face_dir::plus_y) {
-		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + y_texMX + (y_texMY << 8), 16 - y_texMX - y_texPX, 16 - y_texMY - y_texPY, 0, 8); // -y
+		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + (y_texMX << 12) + (y_texMY << 16), light, 16 - y_texMX - y_texPX, 16 - y_texMY - y_texPY); // -y
 	}
 	if (placement != placement::wall || orientation != face_dir::minus_y) {
-		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + y_texMX + (y_texMY << 8), 16 - y_texMX - y_texPX, 16 - y_texMY - y_texPY, 0, 8); // +y
+		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + (y_texMX << 12) + (y_texMY << 16), light, 16 - y_texMX - y_texPX, 16 - y_texMY - y_texPY); // +y
 	}
 	if (placement != placement::ceiling) {
-		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec + z_texMX + (z_texMY << 8), 16 - z_texMX - z_texPX, 16 - z_texMY - z_texPY, 0, 8); // +z
+		utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec + (z_texMX << 12) + (z_texMY << 16), light, 16 - z_texMX - z_texPX, 16 - z_texMY - z_texPY); // +z
 	}
 	if (placement != placement::floor) {
-		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec + z_texMX + (z_texMY << 8), 16 - z_texMX - z_texPX, 16 - z_texMY - z_texPY, 0, 8); // -z
+		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec + (z_texMX << 12) + (z_texMY << 16), light, 16 - z_texMX - z_texPX, 16 - z_texMY - z_texPY); // -z
 	}
 }
 
@@ -2057,19 +1899,12 @@ void RedstoneDust::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, 
 	(void)chunk;
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0.002f);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0.002f);
-	// glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
-	// glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
 
 	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0.002f);
 	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0.002f);
-	// glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
-	// glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
-	int spec = (texX() << 4) + (texY() << 12); // dust dot texture
-	// (void)value; int color = pos.x;
+	int spec = settings::consts::shader::block::dust_dot;
 	int color = (value >> offset::redstone::strength) & 0xF;
-	spec += (color << 24);
-
 
 	int mx = (value >> offset::redstone::dust::mx) & mask::redstone::dust::connect;
 	int px = (value >> offset::redstone::dust::px) & mask::redstone::dust::connect;
@@ -2078,32 +1913,32 @@ void RedstoneDust::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, 
 
 	if ((mx && (my || py)) || (px && (my || py)) // display central dot if at least 2 perpendicular dir are on
 		|| !(mx | py | my | py)) { // or if no dir is on
-		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, 0.0f, -0.0005f), p5 + glm::vec3(0.0f, 0.0f, -0.0005f), p0 + glm::vec3(0.0f, 0.0f, -0.0005f), p1 + glm::vec3(0.0f, 0.0f, -0.0005f)}, spec, 16, 16, 0, 8);
+		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, 0.0f, -0.0005f), p5 + glm::vec3(0.0f, 0.0f, -0.0005f), p0 + glm::vec3(0.0f, 0.0f, -0.0005f), p1 + glm::vec3(0.0f, 0.0f, -0.0005f)}, spec, color, 16, 16);;
 	}
 
-	spec -= (1 << 4); // dust line texture
+	spec = settings::consts::shader::block::dust_line;
 	if (mx) {
-		utils::shader::addQuads(vertices, {p4, p5 + glm::vec3(-0.5f, 0.0f, 0.0f), p0, p1 + glm::vec3(-0.5f, 0.0f, 0.0f)}, spec, {16 + (1 << 17), 16 + (1 << 17) + (8 << 8) + (1 << 18), 0, (8 << 8) + (1 << 18)}, {1, 1 + (1 << 8), 0, (1 << 8)});
+		utils::shader::addQuads(vertices, {p0, p4, p1 + glm::vec3(-0.5f, 0.0f, 0.0f), p5 + glm::vec3(-0.5f, 0.0f, 0.0f)}, spec, color, 16, 8);
 		if (mx & redstone::dust::up) {
-			utils::shader::addQuads(vertices, {p0 + glm::vec3(0.002f, 0.0f, 1.0f), p4 + glm::vec3(0.002f, 0.0f, 1.0f), p0 + glm::vec3(0.002f, 0.0f, 0.0f), p4 + glm::vec3(0.002f, 0.0f, 0.0f)}, spec, 16, 16, 0, 8);
+			utils::shader::addQuads(vertices, {p0 + glm::vec3(0.002f, 0.0f, 1.0f), p4 + glm::vec3(0.002f, 0.0f, 1.0f), p0 + glm::vec3(0.002f, 0.0f, 0.0f), p4 + glm::vec3(0.002f, 0.0f, 0.0f)}, spec, color, 16, 16);;
 		}
 	}
 	if (px) {
-		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.5f, 0.0f, 0.0f), p5, p0 + glm::vec3(0.5f, 0.0f, 0.0f), p1}, spec + (8 << 8), {16 + (1 << 17), 16 + (1 << 17) + (8 << 8) + (1 << 18), 0, (8 << 8) + (1 << 18)}, {1, 1 + (1 << 8), 0, (1 << 8)});
+		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.5f, 0.0f, 0.0f), p4 + glm::vec3(0.5f, 0.0f, 0.0f), p1, p5}, spec + (8 << 16), color, 16, 8);
 		if (px & redstone::dust::up) {
-			utils::shader::addQuads(vertices, {p5 + glm::vec3(-0.002f, 0.0f, 1.0f), p1 + glm::vec3(-0.002f, 0.0f, 1.0f), p5 + glm::vec3(-0.002f, 0.0f, 0.0f), p1 + glm::vec3(-0.002f, 0.0f, 0.0f)}, spec, 16, 16, 0, 8);
+			utils::shader::addQuads(vertices, {p5 + glm::vec3(-0.002f, 0.0f, 1.0f), p1 + glm::vec3(-0.002f, 0.0f, 1.0f), p5 + glm::vec3(-0.002f, 0.0f, 0.0f), p1 + glm::vec3(-0.002f, 0.0f, 0.0f)}, spec, color, 16, 16);;
 		}
 	}
 	if (my) {
-		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.5f, 0.0f), p5 + glm::vec3(0.0f, -0.5f, 0.0f), p0, p1}, spec, {16 + (1 << 17) + (8 << 8) + (1 << 18), (8 << 8) + (1 << 18), 16 + (1 << 17), 0}, {1 + (1 << 8), (1 << 8), 1, 0});
+		utils::shader::addQuads(vertices, {p1, p0, p5 + glm::vec3(0.0f, -0.5f, 0.0f), p4 + glm::vec3(0.0f, -0.5f, 0.0f)}, spec, color, 16, 8);
 		if (my & redstone::dust::up) {
-			utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 0.002f, 1.0f), p0 + glm::vec3(0.0f, 0.002f, 1.0f), p1 + glm::vec3(0.0f, 0.002f, 0.0f), p0 + glm::vec3(0.0f, 0.002f, 0.0f)}, spec, 16, 16, 0, 8);
+			utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 0.002f, 1.0f), p0 + glm::vec3(0.0f, 0.002f, 1.0f), p1 + glm::vec3(0.0f, 0.002f, 0.0f), p0 + glm::vec3(0.0f, 0.002f, 0.0f)}, spec, color, 16, 16);;
 		}
 	}
 	if (py) {
-		utils::shader::addQuads(vertices, {p4, p5, p0 + glm::vec3(0.0f, 0.5f, 0.0f), p1 + glm::vec3(0.0f, 0.5f, 0.0f)}, spec + (8 << 8), {16 + (1 << 17) + (8 << 8) + (1 << 18), (8 << 8) + (1 << 18), 16 + (1 << 17), 0}, {1 + (1 << 8), (1 << 8), 1, 0});
+		utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 0.5f, 0.0f), p0 + glm::vec3(0.0f, 0.5f, 0.0f), p5, p4}, spec + (8 << 16), color, 16, 8);
 		if (py & redstone::dust::up) {
-			utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.002f, 1.0f), p5 + glm::vec3(0.0f, -0.002f, 1.0f), p4 + glm::vec3(0.0f, -0.002f, 0.0f), p5 + glm::vec3(0.0f, -0.002f, 0.0f)}, spec, 16, 16, 0, 8);
+			utils::shader::addQuads(vertices, {p4 + glm::vec3(0.0f, -0.002f, 1.0f), p5 + glm::vec3(0.0f, -0.002f, 1.0f), p4 + glm::vec3(0.0f, -0.002f, 0.0f), p5 + glm::vec3(0.0f, -0.002f, 0.0f)}, spec, color, 16, 16);;
 		}
 	}
 }
@@ -2120,28 +1955,28 @@ void Repeater::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
-	int baseSpec = (s_blocks[blocks::smooth_stone]->texX() << 4) + (s_blocks[blocks::smooth_stone]->texY() << 12);
-	int spec, faceLight;
+	int spec = s_blocks[blocks::smooth_stone]->texture;
+	int light;
 	// draw base
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-		spec = baseSpec + (3 << 19) + (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
-		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p6, p2}, spec + (14 << 8), 16, 2, 0, 8);
+		light = (3 << 8) + chunk->computeLight(pos.x - 1, pos.y, pos.z);
+		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p6, p2}, spec + (14 << 16), light, 16, 2);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-		spec = baseSpec + (4 << 19) + (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
-		utils::shader::addQuads(vertices, {p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p3, p7}, spec + (14 << 8), 16, 2, 0, 8);
+		light = (4 << 8) + chunk->computeLight(pos.x + 1, pos.y, pos.z);
+		utils::shader::addQuads(vertices, {p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p3, p7}, spec + (14 << 16), light, 16, 2);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-		spec = baseSpec + (1 << 19) + (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
-		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p2, p3}, spec + (14 << 8), 16, 2, 0, 8);
+		light = (1 << 8) + chunk->computeLight(pos.x, pos.y - 1, pos.z);
+		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p2, p3}, spec + (14 << 16), light, 16, 2);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-		spec = baseSpec + (2 << 19) + (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
-		utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p7, p6}, spec + (14 << 8), 16, 2, 0, 8);
+		light = (2 << 8) + chunk->computeLight(pos.x, pos.y + 1, pos.z);
+		utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p7, p6}, spec + (14 << 16), light, 16, 2);
 	}
 	// draw top
-	faceLight = (chunk->computeLight(pos.x, pos.y, pos.z) << 24);
-	spec = (this->texX(face_dir::minus_x, !!(value & mask::redstone::powered)) << 4) + (textureY << 12) + faceLight;
+	light = chunk->computeLight(pos.x, pos.y, pos.z);
+	spec = this->getTex(face_dir::minus_x, value);
 	glm::vec3 right, front;
 	switch ((value >> offset::blocks::orientation) & 0x7) {
 		case (face_dir::minus_x):
@@ -2162,10 +1997,9 @@ void Repeater::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 			break ;
 	}
 	glm::vec3 topLeft = p4 + glm::vec3(0.5f, -0.5f, -14 * one16th) - right * 0.5f + front * 0.5f;
-	utils::shader::addQuads(vertices, {topLeft, topLeft + right, topLeft - front, topLeft + right - front}, spec, 16, 16, 0, 8);
+	utils::shader::addQuads(vertices, {topLeft, topLeft + right, topLeft - front, topLeft + right - front}, spec, light, 16, 16);
 	// draw front torch
-	spec = (s_blocks[blocks::redstone_torch]->texX() << 4) + (s_blocks[blocks::redstone_torch]->texY(face_dir::minus_x, !(value & mask::redstone::powered)) << 12);
-	spec += faceLight;
+	spec = s_blocks[blocks::redstone_torch]->getTex(face_dir::minus_x, (value & mask::redstone::powered) ^ mask::redstone::powered);
 	p2 = topLeft + right * 7.0f * one16th - front * 2.0f * one16th;
 	p3 = topLeft + right * 9.0f * one16th - front * 2.0f * one16th;
 	p6 = topLeft + right * 7.0f * one16th - front * 4.0f * one16th;
@@ -2175,24 +2009,23 @@ void Repeater::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 	p1 = topLeft + right * 9.0f * one16th - front * 2.0f * one16th;
 	p4 = topLeft + right * 7.0f * one16th - front * 4.0f * one16th;
 	p5 = topLeft + right * 9.0f * one16th - front * 4.0f * one16th;
-	utils::shader::addQuads(vertices, {p1 + right * one16th, p0 - right * one16th, p3 + right * one16th, p2 - right * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p4 - right * one16th, p5 + right * one16th, p6 - right * one16th, p7 + right * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p0 + front * one16th, p4 - front * one16th, p2 + front * one16th, p6 - front * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p5 - front * one16th, p1 + front * one16th, p7 - front * one16th, p3 + front * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -one16th), p1 + glm::vec3(0.f, 0.f, -one16th), p4 + glm::vec3(0.f, 0.f, -one16th), p5 + glm::vec3(0.f, 0.f, -one16th)}, spec + 7 + (6 << 8), 2, 2, 0, 8);
+	utils::shader::addQuads(vertices, {p1 + right * one16th, p0 - right * one16th, p3 + right * one16th, p2 - right * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p4 - right * one16th, p5 + right * one16th, p6 - right * one16th, p7 + right * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p0 + front * one16th, p4 - front * one16th, p2 + front * one16th, p6 - front * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p5 - front * one16th, p1 + front * one16th, p7 - front * one16th, p3 + front * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -one16th), p1 + glm::vec3(0.f, 0.f, -one16th), p4 + glm::vec3(0.f, 0.f, -one16th), p5 + glm::vec3(0.f, 0.f, -one16th)}, spec + (7 << 12) + (6 << 16), light, 2, 2);
 	// draw back torch or lock bar
 	float delta = 4.0f + 2.0f * ((value >> offset::redstone::repeater::ticks) & 0x3);
 	p0 -= front * delta * one16th; p1 -= front * delta * one16th; p2 -= front * delta * one16th; p3 -= front * delta * one16th;
 	p4 -= front * delta * one16th; p5 -= front * delta * one16th; p6 -= front * delta * one16th; p7 -= front * delta * one16th;
 	if (!(value & mask::redstone::repeater::lock)) { // back torch
-		utils::shader::addQuads(vertices, {p1 + right * one16th, p0 - right * one16th, p3 + right * one16th, p2 - right * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-		utils::shader::addQuads(vertices, {p4 - right * one16th, p5 + right * one16th, p6 - right * one16th, p7 + right * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-		utils::shader::addQuads(vertices, {p0 + front * one16th, p4 - front * one16th, p2 + front * one16th, p6 - front * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-		utils::shader::addQuads(vertices, {p5 - front * one16th, p1 + front * one16th, p7 - front * one16th, p3 + front * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -one16th), p1 + glm::vec3(0.f, 0.f, -one16th), p4 + glm::vec3(0.f, 0.f, -one16th), p5 + glm::vec3(0.f, 0.f, -one16th)}, spec + 7 + (6 << 8), 2, 2, 0, 8);
+		utils::shader::addQuads(vertices, {p1 + right * one16th, p0 - right * one16th, p3 + right * one16th, p2 - right * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+		utils::shader::addQuads(vertices, {p4 - right * one16th, p5 + right * one16th, p6 - right * one16th, p7 + right * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+		utils::shader::addQuads(vertices, {p0 + front * one16th, p4 - front * one16th, p2 + front * one16th, p6 - front * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+		utils::shader::addQuads(vertices, {p5 - front * one16th, p1 + front * one16th, p7 - front * one16th, p3 + front * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -one16th), p1 + glm::vec3(0.f, 0.f, -one16th), p4 + glm::vec3(0.f, 0.f, -one16th), p5 + glm::vec3(0.f, 0.f, -one16th)}, spec + (7 << 12) + (6 << 16), light, 2, 2);
 	} else { // lock bar
-		spec = (s_blocks[blocks::bedrock]->texX() << 4) + (s_blocks[blocks::bedrock]->texY() << 12);
-		spec += faceLight;
+		spec = s_blocks[blocks::bedrock]->texture;
 		p2 += -right * 5.0f * one16th;
 		p3 +=  right * 5.0f * one16th;
 		p6 += -right * 5.0f * one16th;
@@ -2202,11 +2035,11 @@ void Repeater::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 		p1 +=  right * 5.0f * one16th - up * 4.0f * one16th;
 		p4 += -right * 5.0f * one16th - up * 4.0f * one16th;
 		p5 +=  right * 5.0f * one16th - up * 4.0f * one16th;
-		utils::shader::addQuads(vertices, {p1, p0, p3, p2}, spec + 2 + (14 << 8), 12, 2, 0, 8);
-		utils::shader::addQuads(vertices, {p4, p5, p6, p7}, spec + 2 + (14 << 8), 12, 2, 0, 8);
-		utils::shader::addQuads(vertices, {p0, p4, p2, p6}, spec + 6 + (7 << 8), 2, 2, 0, 8);
-		utils::shader::addQuads(vertices, {p5, p1, p7, p3}, spec + 8 + (7 << 8), 2, 2, 0, 8);
-		utils::shader::addQuads(vertices, {p0, p1, p4, p5}, spec + 2 + (7 << 8), 12, 2, 0, 8);
+		utils::shader::addQuads(vertices, {p1, p0, p3, p2}, spec + 2 + (14 << 8), light, 12, 2);
+		utils::shader::addQuads(vertices, {p4, p5, p6, p7}, spec + 2 + (14 << 8), light, 12, 2);
+		utils::shader::addQuads(vertices, {p0, p4, p2, p6}, spec + 6 + (7 << 8), light, 2, 2);
+		utils::shader::addQuads(vertices, {p5, p1, p7, p3}, spec + (8 << 12) + (7 << 8), light, 2, 2);
+		utils::shader::addQuads(vertices, {p0, p1, p4, p5}, spec + 2 + (7 << 8), light, 12, 2);
 	}
 }
 
@@ -2222,28 +2055,28 @@ void Comparator::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, gl
 	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
-	int baseSpec = (s_blocks[blocks::smooth_stone]->texX() << 4) + (s_blocks[blocks::smooth_stone]->texY() << 12);
-	int spec, faceLight;
+	int spec = s_blocks[blocks::smooth_stone]->texture;
+	int light;
 	// draw base
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-		spec = baseSpec + (3 << 19) + (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
-		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p6, p2}, spec + (14 << 8), 16, 2, 0, 8);
+		light = (3 << 8) + chunk->computeLight(pos.x - 1, pos.y, pos.z);
+		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p6, p2}, spec + (14 << 8), light, 16, 2);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-		spec = baseSpec + (4 << 19) + (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
-		utils::shader::addQuads(vertices, {p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p3, p7}, spec + (14 << 8), 16, 2, 0, 8);
+		light = (4 << 8) + chunk->computeLight(pos.x + 1, pos.y, pos.z);
+		utils::shader::addQuads(vertices, {p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p3, p7}, spec + (14 << 8), light, 16, 2);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-		spec = baseSpec + (1 << 19) + (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
-		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p2, p3}, spec + (14 << 8), 16, 2, 0, 8);
+		light = (1 << 8) + chunk->computeLight(pos.x, pos.y - 1, pos.z);
+		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p2, p3}, spec + (14 << 8), light, 16, 2);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-		spec = baseSpec + (2 << 19) + (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
-		utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p7, p6}, spec + (14 << 8), 16, 2, 0, 8);
+		light = (2 << 8) + chunk->computeLight(pos.x, pos.y + 1, pos.z);
+		utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p7, p6}, spec + (14 << 8), light, 16, 2);
 	}
 	// draw top
-	faceLight = (chunk->computeLight(pos.x, pos.y, pos.z) << 24);
-	spec = (this->texX(face_dir::minus_x, !!(value & mask::redstone::powered)) << 4) + (textureY << 12) + faceLight;
+	light = chunk->computeLight(pos.x, pos.y, pos.z);
+	spec = this->getTex(face_dir::minus_x, value);
 	glm::vec3 right, front;
 	switch ((value >> offset::blocks::orientation) & 0x7) {
 		case (face_dir::minus_x):
@@ -2264,10 +2097,9 @@ void Comparator::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, gl
 			break ;
 	}
 	glm::vec3 topLeft = p4 + glm::vec3(0.5f, -0.5f, -14 * one16th) - right * 0.5f + front * 0.5f;
-	utils::shader::addQuads(vertices, {topLeft, topLeft + right, topLeft - front, topLeft + right - front}, spec, 16, 16, 0, 8);
+	utils::shader::addQuads(vertices, {topLeft, topLeft + right, topLeft - front, topLeft + right - front}, spec, light, 16, 16);
 	// draw back torches
-	spec = (s_blocks[blocks::redstone_torch]->texX() << 4) + (s_blocks[blocks::redstone_torch]->texY(face_dir::minus_x, !(value & mask::redstone::powered)) << 12);
-	spec += faceLight;
+	spec = s_blocks[blocks::redstone_torch]->getTex(face_dir::minus_x, (value & mask::redstone::powered) ^ mask::redstone::powered);
 	// back left
 	p2 = topLeft + right * 4.0f * one16th - front * 11.0f * one16th;
 	p3 = topLeft + right * 6.0f * one16th - front * 11.0f * one16th;
@@ -2278,22 +2110,21 @@ void Comparator::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, gl
 	p1 = topLeft + right * 6.0f * one16th - front * 11.0f * one16th;
 	p4 = topLeft + right * 4.0f * one16th - front * 13.0f * one16th;
 	p5 = topLeft + right * 6.0f * one16th - front * 13.0f * one16th;
-	utils::shader::addQuads(vertices, {p1 + right * one16th, p0 - right * one16th, p3 + right * one16th, p2 - right * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p4 - right * one16th, p5 + right * one16th, p6 - right * one16th, p7 + right * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p0 + front * one16th, p4 - front * one16th, p2 + front * one16th, p6 - front * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p5 - front * one16th, p1 + front * one16th, p7 - front * one16th, p3 + front * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -one16th), p1 + glm::vec3(0.f, 0.f, -one16th), p4 + glm::vec3(0.f, 0.f, -one16th), p5 + glm::vec3(0.f, 0.f, -one16th)}, spec + 7 + (6 << 8), 2, 2, 0, 8);
+	utils::shader::addQuads(vertices, {p1 + right * one16th, p0 - right * one16th, p3 + right * one16th, p2 - right * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p4 - right * one16th, p5 + right * one16th, p6 - right * one16th, p7 + right * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p0 + front * one16th, p4 - front * one16th, p2 + front * one16th, p6 - front * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p5 - front * one16th, p1 + front * one16th, p7 - front * one16th, p3 + front * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -one16th), p1 + glm::vec3(0.f, 0.f, -one16th), p4 + glm::vec3(0.f, 0.f, -one16th), p5 + glm::vec3(0.f, 0.f, -one16th)}, spec + (7 << 12) + (6 << 16), light, 2, 2);
 	// back right
 	p0 += right * 6.0f * one16th; p1 += right * 6.0f * one16th; p2 += right * 6.0f * one16th; p3 += right * 6.0f * one16th;
 	p4 += right * 6.0f * one16th; p5 += right * 6.0f * one16th; p6 += right * 6.0f * one16th; p7 += right * 6.0f * one16th;
-	utils::shader::addQuads(vertices, {p1 + right * one16th, p0 - right * one16th, p3 + right * one16th, p2 - right * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p4 - right * one16th, p5 + right * one16th, p6 - right * one16th, p7 + right * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p0 + front * one16th, p4 - front * one16th, p2 + front * one16th, p6 - front * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p5 - front * one16th, p1 + front * one16th, p7 - front * one16th, p3 + front * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -one16th), p1 + glm::vec3(0.f, 0.f, -one16th), p4 + glm::vec3(0.f, 0.f, -one16th), p5 + glm::vec3(0.f, 0.f, -one16th)}, spec + 7 + (6 << 8), 2, 2, 0, 8);
+	utils::shader::addQuads(vertices, {p1 + right * one16th, p0 - right * one16th, p3 + right * one16th, p2 - right * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p4 - right * one16th, p5 + right * one16th, p6 - right * one16th, p7 + right * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p0 + front * one16th, p4 - front * one16th, p2 + front * one16th, p6 - front * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p5 - front * one16th, p1 + front * one16th, p7 - front * one16th, p3 + front * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -one16th), p1 + glm::vec3(0.f, 0.f, -one16th), p4 + glm::vec3(0.f, 0.f, -one16th), p5 + glm::vec3(0.f, 0.f, -one16th)}, spec + (7 << 12) + (6 << 16), light, 2, 2);
 	// draw front torch
-	spec = (s_blocks[blocks::redstone_torch]->texX() << 4) + (s_blocks[blocks::redstone_torch]->texY(face_dir::minus_x, !(value & mask::redstone::comparator::mode)) << 12);
-	spec += faceLight;
+	spec = s_blocks[blocks::redstone_torch]->getTex(face_dir::minus_x, (!(value & mask::redstone::comparator::mode)) << offset::redstone::powered);
 	float delta = (((value & mask::redstone::comparator::mode) == redstone::comparator::compare) ? 3.0f : 2.0f) * one16th;
 	const glm::vec3 up = {0, 0, 1};
 	p0 += front * 9.0f * one16th - right * 3.0f * one16th - up * delta;
@@ -2304,11 +2135,11 @@ void Comparator::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, gl
 	p5 += front * 9.0f * one16th - right * 3.0f * one16th - up * delta;
 	p6 += front * 9.0f * one16th - right * 3.0f * one16th - up * delta;
 	p7 += front * 9.0f * one16th - right * 3.0f * one16th - up * delta;
-	utils::shader::addQuads(vertices, {p1 + right * one16th, p0 - right * one16th, p3 + right * one16th, p2 - right * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p4 - right * one16th, p5 + right * one16th, p6 - right * one16th, p7 + right * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p0 + front * one16th, p4 - front * one16th, p2 + front * one16th, p6 - front * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p5 - front * one16th, p1 + front * one16th, p7 - front * one16th, p3 + front * one16th}, spec + 6 + (5 << 8), 4, 6, 0, 8);
-	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -one16th), p1 + glm::vec3(0.f, 0.f, -one16th), p4 + glm::vec3(0.f, 0.f, -one16th), p5 + glm::vec3(0.f, 0.f, -one16th)}, spec + 7 + (6 << 8), 2, 2, 0, 8);
+	utils::shader::addQuads(vertices, {p1 + right * one16th, p0 - right * one16th, p3 + right * one16th, p2 - right * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p4 - right * one16th, p5 + right * one16th, p6 - right * one16th, p7 + right * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p0 + front * one16th, p4 - front * one16th, p2 + front * one16th, p6 - front * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p5 - front * one16th, p1 + front * one16th, p7 - front * one16th, p3 + front * one16th}, spec + (6 << 12) + (5 << 16), light, 4, 6);
+	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -one16th), p1 + glm::vec3(0.f, 0.f, -one16th), p4 + glm::vec3(0.f, 0.f, -one16th), p5 + glm::vec3(0.f, 0.f, -one16th)}, spec + (7 << 12) + (6 << 16), light, 2, 2);
 }
 
 void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
@@ -2348,7 +2179,7 @@ void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 	glm::vec3 p6 = glm::vec3(start.x + pos.x + dxm, start.y + pos.y + dyp, pos.z + dzm);
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + dxp, start.y + pos.y + dyp, pos.z + dzm);
 
-	int spec;
+	int spec, light;
 
 	glm::vec3 pp0, pp1, pp2, pp3;
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
@@ -2375,9 +2206,9 @@ void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 				pp0 = p4; pp1 = p0; pp2 = p6; pp3 = p2;
 				break ;
 		}
-		spec = (this->texX(face_dir::minus_x, value) << 4) + (this->texY(face_dir::minus_x, value) << 12) + (3 << 19);
-		spec += (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 8), 16, 16 - ttyo, 0, 8);
+		spec = getTex(face_dir::minus_x, value);
+		light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 8);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 16), light, 16, 16 - ttyo);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
 		ttyo = tyo;
@@ -2403,9 +2234,9 @@ void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 				pp0 = p1; pp1 = p5; pp2 = p3; pp3 = p7;
 				break ;
 		}
-		spec = (this->texX(face_dir::plus_x, value) << 4) + (this->texY(face_dir::plus_x, value) << 12) + (4 << 19);
-		spec += (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 8), 16, 16 - ttyo, 0, 8);
+		spec = getTex(face_dir::plus_x, value);
+		light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 8);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 16), light, 16, 16 - ttyo);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
 		ttyo = tyo;
@@ -2431,9 +2262,9 @@ void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 				pp0 = p0; pp1 = p1; pp2 = p2; pp3 = p3;
 				break ;
 		}
-		spec = (this->texX(face_dir::minus_y, value) << 4) + (this->texY(face_dir::minus_y, value) << 12) + (1 << 19);
-		spec += (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 8), 16, 16 - ttyo, 0, 8);
+		spec = getTex(face_dir::minus_y, value);
+		light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 8);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 16), light, 16, 16 - ttyo);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
 		ttyo = tyo;
@@ -2459,9 +2290,9 @@ void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 				pp0 = p5; pp1 = p4; pp2 = p7; pp3 = p6;
 				break ;
 		}
-		spec = (this->texX(face_dir::plus_y, value) << 4) + (this->texY(face_dir::plus_y, value) << 12) + (2 << 19);
-		spec += (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 8), 16, 16 - ttyo, 0, 8);
+		spec = getTex(face_dir::plus_y, value);
+		light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 8);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 16), light, 16, 16 - ttyo);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
 		ttyo = tyo;
@@ -2487,9 +2318,9 @@ void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 				ttyo = 0;
 				break ;
 		}
-		spec = (this->texX(face_dir::plus_z, value) << 4) + (this->texY(face_dir::plus_z, value) << 12);
-		spec += (chunk->computeLight(pos.x, pos.y, pos.z + 1) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 8), 16, 16 - ttyo, 0, 8);
+		spec = getTex(face_dir::plus_z, value);
+		light = chunk->computeLight(pos.x, pos.y, pos.z + 1);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 16), light, 16, 16 - ttyo);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
 		ttyo = tyo;
@@ -2515,9 +2346,9 @@ void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 				ttyo = 0;
 				break ;
 		}
-		spec = (this->texX(face_dir::minus_z, value) << 4) + (this->texY(face_dir::minus_z, value) << 12) + (5 << 19);
-		spec += (chunk->computeLight(pos.x, pos.y, pos.z - 1) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 8), 16, 16 - ttyo, 0, 8);
+		spec = getTex(face_dir::minus_z, value);
+		light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec + (ttyo << 16), light, 16, 16 - ttyo);
 	}
 	if (!(value & mask::redstone::piston::moving)) {
 		return ;
@@ -2556,25 +2387,25 @@ void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 			break ;
 	}
 	spec &= 0xFFFF0000;
-	spec += (this->texX(face_dir::minus_x, face_dir::minus_y << offset::blocks::orientation) << 4) + (this->texY(face_dir::minus_x, face_dir::minus_y << offset::blocks::orientation) << 12);
+	spec += getTex(face_dir::minus_x, face_dir::minus_y << offset::blocks::orientation);
 	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front + up) * 0.5f;
 	// piston bar
 	utils::shader::addQuads(vertices, {topLeft + (right - up) * 6.0f * one16th - front * 0.25f,
 									topLeft + (right - up) * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 0.25f - up * 6.0f * one16th,
-									topLeft + right * 10.0f * one16th - up * 6.0f * one16th}, spec, 4, 4, 0, 8);
+									topLeft + right * 10.0f * one16th - up * 6.0f * one16th}, spec, 0xF, 4, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 10.0f * one16th - front * 0.25f - up * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - up * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 0.25f - up * 10.0f * one16th,
-									topLeft + right * 10.0f * one16th - up * 10.0f * one16th}, spec, 4, 4, 0, 8);
+									topLeft + right * 10.0f * one16th - up * 10.0f * one16th}, spec, 0xF, 4, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 10.0f * one16th - front * 0.25f - up * 10.0f * one16th,
 									topLeft + right * 10.0f * one16th - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 0.25f - up * 10.0f * one16th,
-									topLeft + right * 6.0f * one16th - up * 10.0f * one16th}, spec, 4, 4, 0, 8);
+									topLeft + right * 6.0f * one16th - up * 10.0f * one16th}, spec, 0xF, 4, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 6.0f * one16th - front * 0.25f - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 0.25f - up * 6.0f * one16th,
-									topLeft + right * 6.0f * one16th - up * 6.0f * one16th}, spec, 4, 4, 0, 8);
+									topLeft + right * 6.0f * one16th - up * 6.0f * one16th}, spec, 0xF, 4, 4);
 }
 
 void PistonHead::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
@@ -2617,41 +2448,40 @@ void PistonHead::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, gl
 	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front + up) * 0.5f;
 	int piston = (value & mask::redstone::piston::sticky) ? blocks::sticky_piston : blocks::piston;
 	// front face
-	int spec = (s_blocks[piston]->texX(face_dir::minus_x, face_dir::minus_x << offset::blocks::orientation) << 4) + (s_blocks[piston]->texY(face_dir::minus_x, face_dir::minus_x << offset::blocks::orientation) << 12) + (0xF << 24);
-	utils::shader::addQuads(vertices, {topLeft + right, topLeft, topLeft + right - up, topLeft - up}, spec, 16, 16, 0, 8);
+	int spec = s_blocks[piston]->getTex(face_dir::minus_x, face_dir::minus_x << offset::blocks::orientation);
+	utils::shader::addQuads(vertices, {topLeft + right, topLeft, topLeft + right - up, topLeft - up}, spec, 0xF, 16, 16);
 	// back of front volume
 	if (piston == blocks::sticky_piston) {
-		spec = (s_blocks[blocks::piston]->texX(face_dir::minus_x, face_dir::minus_x << offset::blocks::orientation) << 4) + (s_blocks[blocks::piston]->texY(face_dir::minus_x, face_dir::minus_x << offset::blocks::orientation) << 12) + (0xF << 24);
+		spec = s_blocks[blocks::piston]->getTex(face_dir::minus_x, face_dir::minus_x << offset::blocks::orientation);
 	}
-	utils::shader::addQuads(vertices, {topLeft - front * 0.25f, topLeft + right - front * 0.25f, topLeft - up - front * 0.25f, topLeft + right - up - front * 0.25f}, spec, 16, 16, 0, 8);
+	utils::shader::addQuads(vertices, {topLeft - front * 0.25f, topLeft + right - front * 0.25f, topLeft - up - front * 0.25f, topLeft + right - up - front * 0.25f}, spec, 0xF, 16, 16);
 	// side faces
-	spec = (s_blocks[piston]->texX(face_dir::minus_y, face_dir::minus_x << offset::blocks::orientation) << 4) + (s_blocks[piston]->texY(face_dir::minus_y, face_dir::minus_x << offset::blocks::orientation) << 12) + (0xF << 24);
-	utils::shader::addQuads(vertices, {topLeft, topLeft + right, topLeft - front * 0.25f, topLeft + right - front * 0.25f}, spec, 16, 4, 0, 8);
-	utils::shader::addQuads(vertices, {topLeft - up, topLeft, topLeft - up - front * 0.25f, topLeft - front * 0.25f}, spec, 16, 4, 0, 8);
-	utils::shader::addQuads(vertices, {topLeft + right, topLeft + right - up, topLeft + right - front * 0.25f, topLeft + right - up - front * 0.25f}, spec, 16, 4, 0, 8);
-	utils::shader::addQuads(vertices, {topLeft + right - up, topLeft - up, topLeft + right - up - front * 0.25f, topLeft - up - front * 0.25f}, spec, 16, 4, 0, 8);
+	spec = s_blocks[piston]->getTex(face_dir::minus_y, face_dir::minus_x << offset::blocks::orientation);
+	utils::shader::addQuads(vertices, {topLeft, topLeft + right, topLeft - front * 0.25f, topLeft + right - front * 0.25f}, spec, 0xF, 16, 4);
+	utils::shader::addQuads(vertices, {topLeft - up, topLeft, topLeft - up - front * 0.25f, topLeft - front * 0.25f}, spec, 0xF, 16, 4);
+	utils::shader::addQuads(vertices, {topLeft + right, topLeft + right - up, topLeft + right - front * 0.25f, topLeft + right - up - front * 0.25f}, spec, 0xF, 16, 4);
+	utils::shader::addQuads(vertices, {topLeft + right - up, topLeft - up, topLeft + right - up - front * 0.25f, topLeft - up - front * 0.25f}, spec, 0xF, 16, 4);
 	// piston bar
 	utils::shader::addQuads(vertices, {topLeft + right * 6.0f * one16th - front * 1.0f - up * 6.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 0.25f - up * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 1.0f - up * 6.0f * one16th,
-									topLeft + right * 10.0f * one16th - front * 0.25f - up * 6.0f * one16th}, spec + 4, 12, 4, 0, 8);
+									topLeft + right * 10.0f * one16th - front * 0.25f - up * 6.0f * one16th}, spec + (4 << 12), 0xF, 12, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 10.0f * one16th - front * 1.0f - up * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 0.25f - up * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 1.0f - up * 10.0f * one16th,
-									topLeft + right * 10.0f * one16th - front * 0.25f - up * 10.0f * one16th}, spec + 4, 12, 4, 0, 8);
+									topLeft + right * 10.0f * one16th - front * 0.25f - up * 10.0f * one16th}, spec + (4 << 12), 0xF, 12, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 10.0f * one16th - front * 1.0f - up * 10.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 0.25f - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 1.0f - up * 10.0f * one16th,
-									topLeft + right * 6.0f * one16th - front * 0.25f - up * 10.0f * one16th}, spec + 4, 12, 4, 0, 8);
+									topLeft + right * 6.0f * one16th - front * 0.25f - up * 10.0f * one16th}, spec + (4 << 12), 0xF, 12, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 6.0f * one16th - front * 1.0f - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 0.25f - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 1.0f - up * 6.0f * one16th,
-									topLeft + right * 6.0f * one16th - front * 0.25f - up * 6.0f * one16th,}, spec + 4, 12, 4, 0, 8);
+									topLeft + right * 6.0f * one16th - front * 0.25f - up * 6.0f * one16th,}, spec + (4 << 12), 0xF, 12, 4);
 }
 
 void OakSign::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
-	(void)chunk;
 	glm::vec3 right, front, up;
 	switch ((value >> offset::blocks::orientation) & 0x7) {
 		case (face_dir::minus_x):
@@ -2681,38 +2511,46 @@ void OakSign::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::
 	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front) * 0.5f + up * 0.25f;
 
 	// front face
-	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-	int spec = 2 + (14 << 12) + (2 << 8) + (faceLight << 24);
+	int light = chunk->computeLight(pos.x, pos.y, pos.z);
+	int spec = settings::consts::shader::block::oak_sign;
 	// player side
 	utils::shader::addQuads(vertices, {topLeft - front * 1.75f * one16th,
-								topLeft + right - front * 1.75f * one16th,
+								topLeft + right * .66f - front * 1.75f * one16th,
 								topLeft - up * 0.5f - front * 1.75f * one16th,
-								topLeft + right - up * 0.5f - front * 1.75f * one16th}, spec, 24, 12, 0, 8);
+								topLeft + right * .66f - up * 0.5f - front * 1.75f * one16th}, spec + (2 << 16), light + (1 << 8), 16, 12);
+	utils::shader::addQuads(vertices, {topLeft + right * .66f - front * 1.75f * one16th,
+								topLeft + right - front * 1.75f * one16th,
+								topLeft + right * .66f - up * 0.5f - front * 1.75f * one16th,
+								topLeft + right - up * 0.5f - front * 1.75f * one16th}, spec + (2 << 16), light + (1 << 8), 8, 12);
 	// side faces
-	spec = 2 + (14 << 12) + (faceLight << 24);
 	// top
 	utils::shader::addQuads(vertices, {topLeft,
-								topLeft + right,
+								topLeft + right * .66f,
 								topLeft - front * 1.75f * one16th,
-								topLeft + right - front * 1.75f * one16th}, spec, 24, 2, 0, 8);
+								topLeft + right * .66f - front * 1.75f * one16th}, spec, light + (0 << 8), 16, 2);
+	utils::shader::addQuads(vertices, {topLeft + right * .66f,
+								topLeft + right,
+								topLeft + right * .66f - front * 1.75f * one16th,
+								topLeft + right - front * 1.75f * one16th}, spec, light + (0 << 8), 8, 2);
 	// left
-	spec = (14 << 12) + (2 << 8) + (faceLight << 24);
 	utils::shader::addQuads(vertices, {topLeft,
 								topLeft - front * 1.75f * one16th,
 								topLeft - up * 0.5f,
-								topLeft - up * 0.5f - front * 1.75f * one16th}, spec, 2, 12, 0, 8);
+								topLeft - up * 0.5f - front * 1.75f * one16th}, spec + (8 << 12), light + (3 << 8), 2, 12);
 	// right
-	spec = 2 + (3 << 4) + (14 << 12) + (2 << 8) + (faceLight << 24);
 	utils::shader::addQuads(vertices, {topLeft + right - front * 1.75f * one16th,
 								topLeft + right,
 								topLeft + right - front * 1.75f * one16th - up * 0.5f,
-								topLeft + right - up * 0.5f}, spec, 2, 12, 0, 8);
+								topLeft + right - up * 0.5f}, spec + (10 << 12), light + (4 << 8), 2, 12);
 	// bottom
-	spec = 10 + (1 << 4) + (14 << 12) + (faceLight << 24);
 	utils::shader::addQuads(vertices, {topLeft - up * 0.5f - front * 1.75f * one16th,
-								topLeft + right - up * 0.5f - front * 1.75f * one16th,
+								topLeft + right * .66f - up * 0.5f - front * 1.75f * one16th,
 								topLeft - up * 0.5f,
-								topLeft + right - up * 0.5f}, spec, 24, 2, 0, 8);
+								topLeft + right * .66f - up * 0.5f}, spec, light + (5 << 8), 16, 2);
+	utils::shader::addQuads(vertices, {topLeft + right * .66f - up * 0.5f - front * 1.75f * one16th,
+								topLeft + right - up * 0.5f - front * 1.75f * one16th,
+								topLeft + right * .66f - up * 0.5f,
+								topLeft + right - up * 0.5f}, spec, light + (5 << 8), 8, 2);
 }
 
 void Observer::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
@@ -2729,7 +2567,7 @@ void Observer::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
-	int spec;
+	int spec, light;
 
 	glm::vec3 pp0, pp1, pp2, pp3;
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
@@ -2745,9 +2583,9 @@ void Observer::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 				pp0 = p6; pp1 = p4; pp2 = p2; pp3 = p0;
 				break ;
 		}
-		spec = (this->texX(face_dir::minus_x, value) << 4) + (this->texY(face_dir::minus_x, value) << 12) + (3 << 19);
-		spec += (chunk->computeLight(pos.x - 1, pos.y, pos.z) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, 16, 16, 0, 8);
+		spec = getTex(face_dir::minus_x, value);
+		light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 19);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, light, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
 		switch (orientation) {
@@ -2762,9 +2600,9 @@ void Observer::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 				pp0 = p5; pp1 = p7; pp2 = p1; pp3 = p3;
 				break ;
 		}
-		spec = (this->texX(face_dir::plus_x, value) << 4) + (this->texY(face_dir::plus_x, value) << 12) + (4 << 19);
-		spec += (chunk->computeLight(pos.x + 1, pos.y, pos.z) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, 16, 16, 0, 8);
+		spec = getTex(face_dir::plus_x, value);
+		light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 19);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, light, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
 		switch (orientation) {
@@ -2781,9 +2619,9 @@ void Observer::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 				pp0 = p0; pp1 = p1; pp2 = p2; pp3 = p3;
 				break ;
 		}
-		spec = (this->texX(face_dir::minus_y, value) << 4) + (this->texY(face_dir::minus_y, value) << 12) + (1 << 19);
-		spec += (chunk->computeLight(pos.x, pos.y - 1, pos.z) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, 16, 16, 0, 8);
+		spec = getTex(face_dir::minus_y, value);
+		light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 19);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, light, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
 		switch (orientation) {
@@ -2800,9 +2638,9 @@ void Observer::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 				pp0 = p5; pp1 = p4; pp2 = p7; pp3 = p6;
 				break ;
 		}
-		spec = (this->texX(face_dir::plus_y, value) << 4) + (this->texY(face_dir::plus_y, value) << 12) + (2 << 19);
-		spec += (chunk->computeLight(pos.x, pos.y + 1, pos.z) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, 16, 16, 0, 8);
+		spec = getTex(face_dir::plus_y, value);
+		light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 19);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, light, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
 		switch (orientation) {
@@ -2825,9 +2663,9 @@ void Observer::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 				pp0 = p4; pp1 = p5; pp2 = p0; pp3 = p1;
 				break ;
 		}
-		spec = (this->texX(face_dir::plus_z, value) << 4) + (this->texY(face_dir::plus_z, value) << 12);
-		spec += (chunk->computeLight(pos.x, pos.y, pos.z + 1) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, 16, 16, 0, 8);
+		spec = getTex(face_dir::plus_z, value);
+		light = chunk->computeLight(pos.x, pos.y, pos.z + 1);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, light, 16, 16);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
 		switch (orientation) {
@@ -2850,9 +2688,9 @@ void Observer::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm:
 				pp0 = p2; pp1 = p3; pp2 = p6; pp3 = p7;
 				break ;
 		}
-		spec = (this->texX(face_dir::minus_z, value) << 4) + (this->texY(face_dir::minus_z, value) << 12) + (5 << 19);
-		spec += (chunk->computeLight(pos.x, pos.y, pos.z - 1) << 24);
-		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, 16, 16, 0, 8);
+		spec = getTex(face_dir::minus_z, value);
+		light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 19);
+		utils::shader::addQuads(vertices, {pp0, pp1, pp2, pp3}, spec, light, 16, 16);
 	}
 }
 
@@ -2868,58 +2706,53 @@ void Carpet::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
-	int spec, faceLight, cornerLight, shade;
-	std::array<int, 4> deltas;
+	int spec = texture;
+	int light, cornerLight, shade;
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
-		spec = (textureX << 4) + (textureY << 12) + (3 << 19);
-		faceLight = chunk->computeLight(pos.x - 1, pos.y, pos.z);
-		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + (15 << 8) + (faceLight << 24), 16, 1, 0, 8);
+		light = chunk->computeLight(pos.x - 1, pos.y, pos.z) + (3 << 19);
+		utils::shader::addQuads(vertices, {p4, p0, p6, p2}, spec + (15 << 16), light, 16, 1);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
-		spec = (textureX << 4) + (textureY << 12) + (4 << 19);
-		faceLight = chunk->computeLight(pos.x + 1, pos.y, pos.z);
-		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + (15 << 8) + (faceLight << 24), 16, 1, 0, 8);
+		light = chunk->computeLight(pos.x + 1, pos.y, pos.z) + (4 << 19);
+		utils::shader::addQuads(vertices, {p1, p5, p3, p7}, spec + (15 << 16), light, 16, 1);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
-		spec = (textureX << 4) + (textureY << 12) + (1 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y - 1, pos.z);
-		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + (15 << 8) + (faceLight << 24), 16, 1, 0, 8);
+		light = chunk->computeLight(pos.x, pos.y - 1, pos.z) + (1 << 19);
+		utils::shader::addQuads(vertices, {p0, p1, p2, p3}, spec + (15 << 16), light, 16, 1);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
-		spec = (textureX << 4) + (textureY << 12) + (2 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y + 1, pos.z);
-		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + (15 << 8) + (faceLight << 24), 16, 1, 0, 8);
+		light = chunk->computeLight(pos.x, pos.y + 1, pos.z) + (2 << 19);
+		utils::shader::addQuads(vertices, {p5, p4, p7, p6}, spec + (15 << 16), light, 16, 1);
 	}
-	spec = (textureX << 4) + (textureY << 12);
-	faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-	cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+	std::array<int, 4> lights;
+	light = chunk->computeLight(pos.x, pos.y, pos.z);
+	cornerLight = chunk->computeSmoothLight(light, pos.x, pos.y, pos.z, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 	shade = chunk->computeShade(pos.x, pos.y, pos.z, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
-	deltas[0] = (cornerLight << 24) + (shade << 22);
-	cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+	lights[0] = cornerLight + (shade << 12);
+	cornerLight = chunk->computeSmoothLight(light, pos.x, pos.y, pos.z, {0, 1, 0, 1, 1, 0, 1, 0, 0});
 	shade = chunk->computeShade(pos.x, pos.y, pos.z, {0, 1, 0, 1, 1, 0, 1, 0, 0});
-	deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
-	cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+	lights[1] = cornerLight + (shade << 12);
+	cornerLight = chunk->computeSmoothLight(light, pos.x, pos.y, pos.z, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
 	shade = chunk->computeShade(pos.x, pos.y, pos.z, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
-	deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
-	cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+	lights[2] = cornerLight + (shade << 12);
+	cornerLight = chunk->computeSmoothLight(light, pos.x, pos.y, pos.z, {0, -1, 0, 1, -1, 0, 1, 0, 0});
 	shade = chunk->computeShade(pos.x, pos.y, pos.z, {0, -1, 0, 1, -1, 0, 1, 0, 0});
-	deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
-	utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+	lights[3] = cornerLight + (shade << 12);
+	utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, lights, 16, 16);
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-		spec = (textureX << 4) + (textureY << 12) + (5 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
+		light = chunk->computeLight(pos.x, pos.y, pos.z - 1);
+		cornerLight = chunk->computeSmoothLight(light, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, -1, 0, 0, -1, 0});
-		deltas[0] = (cornerLight << 24) + (shade << 22);
-		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
+		lights[0] = cornerLight + (shade << 12) + (5 << 8);
+		cornerLight = chunk->computeSmoothLight(light, pos.x, pos.y, pos.z - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {0, -1, 0, 1, -1, 0, 1, 0, 0});
-		deltas[1] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17);
-		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
+		lights[1] = cornerLight + (shade << 12) + (5 << 8);
+		cornerLight = chunk->computeSmoothLight(light, pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {-1, 0, 0, -1, 1, 0, 0, 1, 0});
-		deltas[2] = (cornerLight << 24) + (shade << 22) + (16 << 8) + (1 << 18);
-		cornerLight = chunk->computeSmoothLight(faceLight, pos.x, pos.y, pos.z - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
+		lights[2] = cornerLight + (shade << 12) + (5 << 8);
+		cornerLight = chunk->computeSmoothLight(light, pos.x, pos.y, pos.z - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
 		shade = chunk->computeShade(pos.x, pos.y, pos.z - 1, {0, 1, 0, 1, 1, 0, 1, 0, 0});
-		deltas[3] = (cornerLight << 24) + (shade << 22) + 16 + (1 << 17) + (16 << 8) + (1 << 18);
-		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, deltas, {0, 1, (1 << 8), 1 + (1 << 8)});
+		lights[3] = cornerLight + (shade << 12) + (5 << 8);
+		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, lights, 16, 16);
 	}
 }

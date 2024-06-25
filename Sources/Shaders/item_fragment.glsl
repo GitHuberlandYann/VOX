@@ -1,15 +1,15 @@
 #version 150 core
 
-in vec2 Texcoord;
+in vec3 TexCoords;
 in float FaceShadow;
 
 out vec4 outColor;
 
-uniform sampler2D blockAtlas;
+uniform sampler2DArray textures;
 
 void main()
 {
-	outColor = texture(blockAtlas, Texcoord);
+	outColor = texture(textures, TexCoords);
 	if(outColor.a < 0.01) {
 		discard ;
 	}

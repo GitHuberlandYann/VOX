@@ -1,33 +1,36 @@
 #version 150 core
 
 /* specifications is packed
- * 0xFF = x coord in texture atlas
- * 0xFF00 = y coord in texture atlas
- * 0x7 << 16 depth / 60
- * 0x7 << 19 faceLight [0=100, 1=92, 2=88, 3=84, 4=80, 5=76]
- * 0x3 << 22 <unused>
- * 0xF000000 block light
- * 0xF0000000 sky light
+ * 0x00000FFF texture index in [0:4095]
+ * 0x0000F000 x texture coord in [0:15]
+ * 0x000F0000 y texture coord in [0:15]
+ * 0x00100000 x texture half-pixel correction (1 << 20)
+ * 0x00200000 y texture half-pixel correction (1 << 21)
+ * 0x7 << 22 depth / 60
+ * 0xF0000000 block light
 */
 in int specifications;
 in ivec2 position;
 
-uniform int internal_light;
 uniform int win_width;
 uniform int win_height;
 
-out vec2 Texcoord;
+out vec3 TexCoords;
 out float FaceShadow;
 
+const float one16th = 0.0625f;
 const float one256th = 0.00390625f;
+const float half_pxl = 0.0001220703125f;
 
 void main()
 {
-	gl_Position = vec4((2.0 * position.x) / win_width - 1.0, -((2.0 * position.y) / win_height - 1.0), ((specifications >> 16) & 0x3) * 60 * one256th * 0.01f, 1.0);
-	Texcoord = vec2((specifications & 0xFF) / 256.0f, ((specifications >> 8) & 0xFF) / 256.0f);
+	gl_Position = vec4((2.0 * position.x) / win_width - 1.0, -((2.0 * position.y) / win_height - 1.0), ((specifications >> 22) & 0x3) * 60 * one256th * 0.01f, 1.0);
+	
+	float x_half = (((specifications & (1 << 20)) == 0) ? half_pxl : one16th - half_pxl);
+	float y_half = (((specifications & (1 << 21)) == 0) ? half_pxl : one16th - half_pxl);
+	TexCoords = vec3(((specifications >> 12) & 0xF) * one16th + x_half, ((specifications >> 16) & 0xF) * one16th + y_half, (specifications & 0xFFF));
+
 	int blockLight = ((specifications >> 24) & 0xF);
-	int skyLight = internal_light - (15 - ((specifications >> 28) & 0xF));
-	int shadow = 15 - max(blockLight, skyLight);
-	int faceLight = 100 - ((((specifications >> 19) & 0x7) > 0) ? 8 + (((specifications >> 19) & 0x7) << 2) : 0);
-	FaceShadow = max(0.05, max(10, faceLight - 7 * shadow) / 100.0f);
+	int shadow = 15 - blockLight;
+	FaceShadow = max(0.05, max(10, 100 - 7 * shadow) / 100.0f);
 }

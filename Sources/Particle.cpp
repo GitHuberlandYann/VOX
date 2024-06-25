@@ -26,7 +26,7 @@ Particle::~Particle( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-bool Particle::updateFlame( std::vector<t_shaderInput>& arr, glm::vec3 camDir )
+bool Particle::updateFlame( std::vector<t_shaderInputPart>& arr, glm::vec3 camDir )
 {
 	while (_lifeTime > settings::consts::tick * 4) {
 		_lifeTime -= settings::consts::tick * 4;
@@ -58,11 +58,11 @@ bool Particle::updateFlame( std::vector<t_shaderInput>& arr, glm::vec3 camDir )
 
 	int itemLight = 15;
 	int spec = (1 << 19) + (160 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8, 0, 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8);
 	return (false);
 }
 
-bool Particle::updateSmoke( std::vector<t_shaderInput>& arr, glm::vec3 camDir, float deltaTime )
+bool Particle::updateSmoke( std::vector<t_shaderInputPart>& arr, glm::vec3 camDir, float deltaTime )
 {
 	_pos += _dir * deltaTime;
 	while (_lifeTime > settings::consts::tick) {
@@ -83,11 +83,11 @@ bool Particle::updateSmoke( std::vector<t_shaderInput>& arr, glm::vec3 camDir, f
 
 	int itemLight = 0;
 	int spec = (1 << 19) + (7 - _frame) * 8 + (168 << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8, 0, 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 8, 8);
 	return (false);
 }
 
-bool Particle::updateExplosion( std::vector<t_shaderInput>& arr, glm::vec3 camDir )
+bool Particle::updateExplosion( std::vector<t_shaderInputPart>& arr, glm::vec3 camDir )
 {
 	while (_lifeTime > settings::consts::tick) {
 		_lifeTime -= settings::consts::tick;
@@ -108,7 +108,7 @@ bool Particle::updateExplosion( std::vector<t_shaderInput>& arr, glm::vec3 camDi
 	int itemLight = _chunk->computePosLight(_pos);
 	itemLight = (static_cast<int>((itemLight >> 4) * _shade) << 4) + (static_cast<int>((itemLight & 0xF) * _shade));
 	int spec = (1 << 19) + ((_frame & 0x3) * 32) + (((_frame >> 2) * 32) << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 32, 32, 0, 8);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 32, 32);
 	return (false);
 }
 
@@ -133,9 +133,9 @@ bool Particle::updateBreaking( std::vector<t_shaderInput>& arr, glm::vec3 camDir
 	glm::vec3 p2 = {_pos.x - hdir.x * size - up.x * size, _pos.y - hdir.y * size - up.y * size, _pos.z - size * up.z};
 	glm::vec3 p3 = {_pos.x + hdir.x * size - up.x * size, _pos.y + hdir.y * size - up.y * size, _pos.z - size * up.z};
 
-	int itemLight = _chunk->computePosLight(_pos);
-	int spec = (0 << 16) +  s_blocks[_block]->texX() * 16 + _texOffset.x + ((s_blocks[_block]->texY() * 16 + _texOffset.y) << 8) + (itemLight << 24);
-	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, 2, 2, 0, 8);
+	int light = _chunk->computePosLight(_pos);
+	int spec = s_blocks[_block]->getTex() + (_texOffset.x << 12) + (_texOffset.y << 16);
+	utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, light, 2, 2);
 	return (false);
 }
 
@@ -143,7 +143,7 @@ bool Particle::updateBreaking( std::vector<t_shaderInput>& arr, glm::vec3 camDir
 //                                Public                                      //
 // ************************************************************************** //
 
-bool Particle::update( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInput>& partArr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime )
+bool Particle::update( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInputPart>& partArr, glm::vec3 camPos, glm::vec3 camDir, double deltaTime )
 {
 	_lifeTime += deltaTime;
 

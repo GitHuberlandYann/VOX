@@ -1,5 +1,5 @@
 {
-    "BLOCK_ATLAS": "Resources/Textures/blockAtlas.png",
+    "BLOCK_ATLAS": "Resources/Textures/",
 	"ASCII_ATLAS": "Resources/Textures/Gui/asciiAtlas.png",
 	"UI_ATLAS": "Resources/Textures/Gui/uiAtlas.png",
 	"TEX_INVENTORY": "Resources/Textures/Gui/inventory.png",

@@ -9,15 +9,15 @@ class Zombie : public AHostileMob
         Zombie( Chunk* chunk, Player* player, glm::vec3 position );
         virtual ~Zombie( void );
 
-        virtual bool update( std::vector<t_shaderInput>& modArr, float deltaTime );
-		virtual glm::vec3 getEyePos( void );
-		virtual bool getHitBox( void );
+        bool update( std::vector<t_shaderInputModel>& modArr, float deltaTime ) override;
+		glm::vec3 getEyePos( void ) override;
+		bool getHitBox( void ) override;
 
     private:
 
-		virtual float getSpeed( void );
-		virtual void updatePath( void );
-        void draw( std::vector<t_shaderInput>& arr );
+		float getSpeed( void ) override;
+		void updatePath( void ) override;
+        void draw( std::vector<t_shaderInputModel>& arr );
 };
 
 #endif

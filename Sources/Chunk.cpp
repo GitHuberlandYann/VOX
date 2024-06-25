@@ -172,14 +172,15 @@ void Chunk::setup_array_buffer( void )
 
 	if (!_vaoSet) {
 		_vabo.genBuffers();
-		_vabo.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
+		_vabo.addAttribute(settings::consts::shader::attributes::texture, 1, GL_INT);
+		_vabo.addAttribute(settings::consts::shader::attributes::light, 1, GL_INT);
 		_vabo.addAttribute(settings::consts::shader::attributes::position, 3, GL_FLOAT);
 		_vaoSet = true;
 	}
 
 	_displayed_faces = _vertices.size() / 6;
 	_mtx.lock();
-	_vabo.uploadData(_vertices.size(), &_vertices[0].spec);
+	_vabo.uploadData(_vertices.size(), &_vertices[0].texture);
 	_mtx.unlock();
 
 	_vaoReset = true;
@@ -419,7 +420,7 @@ void Chunk::checkFillVertices( void )
 					int level = a.first & (settings::consts::world_height - 1);
 					int col = ((a.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
 					int row = ((a.first >> settings::consts::world_shift) >> settings::consts::chunk_shift);
-					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] &= 0xFF00; // discard previous light value TODO change this if different light source level implemented
+					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] &= 0xFF00; // discard previous light value
 					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] += s_blocks[a.second & mask::blocks::type]->light_level + (s_blocks[a.second & mask::blocks::type]->light_level << 4); // 0xF0 = light source. & 0xF = light level
 					light_spread(row, col, level, false);
 					break ;
@@ -765,7 +766,7 @@ void Chunk::addMob( const AMob& mob, int mobType )
 /**
  * @brief loops through all mobs, update and draw them
  */
-void Chunk::updateMobs( std::vector<t_shaderInput>& modArr, double deltaTime )
+void Chunk::updateMobs( std::vector<t_shaderInputModel>& modArr, double deltaTime )
 {
 	size_t mSize = _mobs.size();
 	if (!mSize) {
@@ -780,7 +781,7 @@ void Chunk::updateMobs( std::vector<t_shaderInput>& modArr, double deltaTime )
 	}
 }
 
-void Chunk::updateEntities( std::vector<t_shaderInput>& arr, std::vector<t_shaderInput>& partArr, double deltaTime )
+void Chunk::updateEntities( std::vector<t_shaderInput>& arr, std::vector<t_shaderInputPart>& partArr, double deltaTime )
 {
 	// TODO merge identical close(3/4 of a block) stackable items together
 	// 			on merge, item timer set to longest of 2
@@ -817,7 +818,7 @@ size_t Chunk::clearEntities( void )
 	return (res);
 }
 
-void Chunk::updateParticles( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInput>& partArr, double deltaTime )
+void Chunk::updateParticles( std::vector<t_shaderInput>& entityArr, std::vector<t_shaderInputPart>& partArr, double deltaTime )
 {
 	glm::vec3 camPos = _player->getPos(), camDir = _player->getDir();
 	size_t size = _particles.size();

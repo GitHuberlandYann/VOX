@@ -63,8 +63,7 @@ TODOS:
 	- mobs
 	
 	TODAY:
-	- Way more blocks ??
-	- get rid of blockAtlas in favor of 100s of 16x16 textures
+	- check // TODO restore
 	
 	SHORTTERM memory:
 	\/ - work on cleanAtlas
@@ -130,6 +129,7 @@ TODOS:
     - sand falls if nothing under, even in caves
 	- sand now turns to falling block entity during fall
 	- use block s hardness to compute time to break instead of hardcoding it
+	- get rid of blockAtlas in favor of 1000s of 16x16 textures
 	- entities !
 	- player 3D model (F5 mode)
 	- particles !
@@ -258,10 +258,11 @@ Textures:
 	4: settings::strings::water_still
 	5: settings::strings::water_flow
 	6: settings::strings::particle_atlas
+	7: glass texture, tmp mesure
 
 Shaders x Textures:
 	default	 x 0
-	sky		 x 0, 4, 5 TODO transform 0 into just glass texture
+	sky		 x 7, 4, 5
 	skybox	 x none
 	ui		 x 2
 	text	 x 1

@@ -223,7 +223,7 @@ void loadSubTextureArray( int width, int height, int layer, std::string texture_
 
 	SOIL_free_image_data(img.content);
 
-	check_glstate("Successfully loaded subTextureArray[" + std::to_string(layer) + "] " + texture_file, true);
+	check_glstate("Successfully loaded subTextureArray[" + std::to_string(layer) + "] " + texture_file, false);
 }
 
 int chunk_pos( int pos )
@@ -515,21 +515,20 @@ std::array<int, 5> compute_texcoord_offsets( int o0, int o1, int o2, int o3 )
 namespace utils {
 	namespace shader {
 		/**
-		 * @brief push back rectangle made out of 4 given pts to arr, (1 << 17) and (1 << 18) are added
+		 * @brief push back rectangle made out of 4 given pts to arr, (1 << 20) and (1 << 21) are added
 		 * @param arr vector containing vertices
 		 * @param pts 4 corners of rectangle, in clockwise order
-		 * @param spec specifications of top left corner
+		 * @param texture texture specifications of top left corner
+		 * @param light lighting specifications of top left corner
 		 * @param dx offset in x coord of texture for right pts
 		 * @param dy offset in y coord of texture for bottom pts
-		 * @param offx bitshift needed by dx
-		 * @param offy bitshift needed by dy
 		 * @param xflip [optional] if true, texture is flipped along the x axis
 		 * @param yflip [optional] if true, texture is flipped along the y axis
 		 */
-		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy, int offx, int offy, bool xflip, bool yflip )
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int texture, int light, int dx, int dy, bool xflip, bool yflip )
 		{
-			dx = ((dx - 1) << offx) + (1 << 17);
-			dy = ((dy - 1) << offy) + (1 << 18);
+			dx = ((dx - 1) << 12) + (1 << 20);
+			dy = ((dy - 1) << 16) + (1 << 21);
 			int adx = 0, ady = 0;
 			if (xflip) {
 				adx = dx;
@@ -539,10 +538,10 @@ namespace utils {
 				ady = dy;
 				dy = 0;
 			}
-			t_shaderInput v0 = {spec + adx + ady, pts[0]};
-			t_shaderInput v1 = {spec + dx  + ady, pts[1]};
-			t_shaderInput v2 = {spec + adx + dy, pts[2]};
-			t_shaderInput v3 = {spec + dx  + dy, pts[3]};
+			t_shaderInput v0 = {texture + adx + ady, light, pts[0]};
+			t_shaderInput v1 = {texture + dx  + ady, light, pts[1]};
+			t_shaderInput v2 = {texture + adx + dy, light, pts[2]};
+			t_shaderInput v3 = {texture + dx  + dy, light, pts[3]};
 			
 			arr.push_back(v0);
 			arr.push_back(v1);
@@ -554,14 +553,99 @@ namespace utils {
 		}
 
 		/**
-		 * @brief same as other addQuads, but deltas are used instead of (1 << 17) | (1 << 18)
+		 * @brief same as other addQuads, but 4 lights are used for light corners
 		 */
-		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int spec, std::array<int, 4> deltas, std::array<int, 4> sub )
+		void addQuads( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 4> pts, int texture, std::array<int, 4> lights, int dx, int dy, bool xflip, bool yflip )
 		{
-			t_shaderInput v0 = {spec + deltas[0] - sub[0], pts[0]};
-			t_shaderInput v1 = {spec + deltas[1] - sub[1], pts[1]};
-			t_shaderInput v2 = {spec + deltas[2] - sub[2], pts[2]};
-			t_shaderInput v3 = {spec + deltas[3] - sub[3], pts[3]};
+			dx = ((dx - 1) << 12) + (1 << 20);
+			dy = ((dy - 1) << 16) + (1 << 21);
+			int adx = 0, ady = 0;
+			if (xflip) {
+				adx = dx;
+				dx = 0;
+			}
+			if (yflip) {
+				ady = dy;
+				dy = 0;
+			}
+			t_shaderInput v0 = {texture + adx + ady, lights[0], pts[0]};
+			t_shaderInput v1 = {texture + dx  + ady, lights[1], pts[1]};
+			t_shaderInput v2 = {texture + adx + dy, lights[2], pts[2]};
+			t_shaderInput v3 = {texture + dx  + dy, lights[3], pts[3]};
+			
+			arr.push_back(v0);
+			arr.push_back(v1);
+			arr.push_back(v2);
+
+			arr.push_back(v1);
+			arr.push_back(v3);
+			arr.push_back(v2);
+		}
+		
+		/**
+		 * @brief push back rectangle made out of 4 given pts to model shader, (1 << 17) and (1 << 18) are added
+		 * @param arr vector containing vertices
+		 * @param pts 4 corners of rectangle, in clockwise order
+		 * @param spec specifications of top left corner
+		 * @param dx offset in x coord of texture for right pts
+		 * @param dy offset in y coord of texture for bottom pts
+		 * @param xflip [optional] if true, texture is flipped along the x axis
+		 * @param yflip [optional] if true, texture is flipped along the y axis
+		 */
+		void addQuads( std::vector<t_shaderInputModel>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy, bool xflip, bool yflip )
+		{
+			dx = (dx - 1) + (1 << 17);
+			dy = ((dy - 1) << 6) + (1 << 18);
+			int adx = 0, ady = 0;
+			if (xflip) {
+				adx = dx;
+				dx = 0;
+			}
+			if (yflip) {
+				ady = dy;
+				dy = 0;
+			}
+			t_shaderInputModel v0 = {spec + adx + ady, pts[0]};
+			t_shaderInputModel v1 = {spec + dx  + ady, pts[1]};
+			t_shaderInputModel v2 = {spec + adx + dy, pts[2]};
+			t_shaderInputModel v3 = {spec + dx  + dy, pts[3]};
+			
+			arr.push_back(v0);
+			arr.push_back(v1);
+			arr.push_back(v2);
+
+			arr.push_back(v1);
+			arr.push_back(v3);
+			arr.push_back(v2);
+		}
+		
+		/**
+		 * @brief push back rectangle made out of 4 given pts to model shader, (1 << 17) and (1 << 18) are added
+		 * @param arr vector containing vertices
+		 * @param pts 4 corners of rectangle, in clockwise order
+		 * @param spec specifications of top left corner
+		 * @param dx offset in x coord of texture for right pts
+		 * @param dy offset in y coord of texture for bottom pts
+		 * @param xflip [optional] if true, texture is flipped along the x axis
+		 * @param yflip [optional] if true, texture is flipped along the y axis
+		 */
+		void addQuads( std::vector<t_shaderInputPart>& arr, std::array<glm::vec3, 4> pts, int spec, int dx, int dy, bool xflip, bool yflip )
+		{
+			dx = (dx - 1) + (1 << 17);
+			dy = ((dy - 1) << 8) + (1 << 18);
+			int adx = 0, ady = 0;
+			if (xflip) {
+				adx = dx;
+				dx = 0;
+			}
+			if (yflip) {
+				ady = dy;
+				dy = 0;
+			}
+			t_shaderInputPart v0 = {spec + adx + ady, pts[0]};
+			t_shaderInputPart v1 = {spec + dx  + ady, pts[1]};
+			t_shaderInputPart v2 = {spec + adx + dy, pts[2]};
+			t_shaderInputPart v3 = {spec + dx  + dy, pts[3]};
 			
 			arr.push_back(v0);
 			arr.push_back(v1);

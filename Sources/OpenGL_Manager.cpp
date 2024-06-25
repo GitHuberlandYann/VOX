@@ -116,28 +116,29 @@ void OpenGL_Manager::addBreakingAnim( void )
 	// 	p7 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x, -1 + hitCenter.y + hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
 	// }
 
-	int spec = (14 << 4) + ((_block_hit.type == blocks::glass && _break_frame == 1) ? 0 : (_break_frame << 12));
-	utils::shader::addQuads(_entities, {p4, p0, p6, p2}, spec, 16, 16, 0, 8);
-	utils::shader::addQuads(_entities, {p1, p5, p3, p7}, spec, 16, 16, 0, 8);
-	utils::shader::addQuads(_entities, {p0, p1, p2, p3}, spec, 16, 16, 0, 8);
-	utils::shader::addQuads(_entities, {p5, p4, p7, p6}, spec, 16, 16, 0, 8);
-	utils::shader::addQuads(_entities, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
-	utils::shader::addQuads(_entities, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
+	if (_block_hit.type == blocks::glass || !_break_frame) {
+		return ;
+	}
+	int spec = settings::consts::shader::block::destroy_stage + _break_frame - 1;
+	utils::shader::addQuads(_entities, {p4, p0, p6, p2}, spec, 0, 16, 16);
+	utils::shader::addQuads(_entities, {p1, p5, p3, p7}, spec, 0, 16, 16);
+	utils::shader::addQuads(_entities, {p0, p1, p2, p3}, spec, 0, 16, 16);
+	utils::shader::addQuads(_entities, {p5, p4, p7, p6}, spec, 0, 16, 16);
+	utils::shader::addQuads(_entities, {p4, p5, p0, p1}, spec, 0, 16, 16);
+	utils::shader::addQuads(_entities, {p2, p3, p6, p7}, spec, 0, 16, 16);
 }
 
 void OpenGL_Manager::addLine( glm::vec3 a, glm::vec3 b )
 {
 	// _entities.push_back({(4 << 4) + 1, a}); // black line
 	// _entities.push_back({(4 << 4) + 2 + (1 << 17) + (1 << 8) + (1 << 18), b});
-	int spec = (6 << 12) + (0xFF << 24);
-	_entities.push_back({spec, a}); // red line
-	_entities.push_back({spec + 1 + (1 << 17) + (1 << 8) + (1 << 18), b});
+	int spec = settings::consts::shader::block::red_wool;
+	_entities.push_back({spec, 0xFF, a}); // red line
+	_entities.push_back({spec + (1 << 20) + (1 << 21), 0xFF, b});
 }
 
 void OpenGL_Manager::drawEntities( void )
 {
-	// TODO update hand entity
-	// _hand->update(deltaTime);
 	size_t esize = _entities.size();
 
 	bool hitBox = false;/*/(_block_hit.type != blocks::air) && (_block_hit.type != blocks::chest);
@@ -201,7 +202,7 @@ void OpenGL_Manager::drawEntities( void )
 	}
 
 	size_t bufSize = esize + ((hitBox) ? 24 : 0) + ((borders) ? 64 : 0);
-	_vaboEntities.uploadData(bufSize, &(_entities[0].spec));
+	_vaboEntities.uploadData(bufSize, &(_entities[0].texture));
 
 	check_glstate("OpenGL_Manager::drawEntities", false);
 
@@ -374,7 +375,8 @@ void OpenGL_Manager::createShaders( void )
 						Settings::Get()->getString(settings::strings::main_fragment_shader));
 
 	_shader.bindFragData(settings::consts::shader::outColor, "outColor");
-	_shader.bindAttribute(settings::consts::shader::attributes::specifications, "specifications");
+	_shader.bindAttribute(settings::consts::shader::attributes::texture, "texture");
+	_shader.bindAttribute(settings::consts::shader::attributes::light, "light");
 	_shader.bindAttribute(settings::consts::shader::attributes::position, "position");
 	_shader.linkProgram();
 
@@ -384,7 +386,8 @@ void OpenGL_Manager::createShaders( void )
 	_vaboParticles.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
 	_vaboParticles.addAttribute(settings::consts::shader::attributes::position, 3, GL_FLOAT);
 	_vaboEntities.genBuffers();
-	_vaboEntities.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
+	_vaboEntities.addAttribute(settings::consts::shader::attributes::texture, 1, GL_INT);
+	_vaboEntities.addAttribute(settings::consts::shader::attributes::light, 1, GL_INT);
 	_vaboEntities.addAttribute(settings::consts::shader::attributes::position, 3, GL_FLOAT);
 	_vaboModels.genBuffers();
 	_vaboModels.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
@@ -429,45 +432,6 @@ void OpenGL_Manager::setupCommunicationShaders( void )
 	_skyShader.setUniformLocation(settings::consts::shader::uniform::animation, "animFrame");
 
 	check_glstate("\nCommunication with shader program successfully established", true);
-}
-
-void OpenGL_Manager::loadTextures( void )
-{
-	_ui->loadTextures();
-
-	if (_textures[0]) {
-		glDeleteTextures(_textures.size(), &_textures[0]);
-		_textures[0] = 0;
-	}
-	glGenTextures(_textures.size(), &_textures[0]);
-
-	_shader.useProgram();
-	loadTextureShader(0, _textures[0], Settings::Get()->getString(settings::strings::block_atlas));
-	glUniform1i(glGetUniformLocation(_shader.getProgram(), "blockAtlas"), 0); // sampler2D #index in fragment shader
-
-	_skyShader.useProgram();
-	glUniform1i(glGetUniformLocation(_skyShader.getProgram(), "blockAtlas"), 0); // we reuse texture from main shader
-
-	loadTextureShader(4, _textures[1], Settings::Get()->getString(settings::strings::water_still));
-	glUniform1i(glGetUniformLocation(_skyShader.getProgram(), "waterStill"), 4);
-
-	loadTextureShader(5, _textures[2], Settings::Get()->getString(settings::strings::water_flow));
-	glUniform1i(glGetUniformLocation(_skyShader.getProgram(), "waterFlow"), 5);
-
-	_particleShader.useProgram();
-	loadTextureShader(6, _textures[3], Settings::Get()->getString(settings::strings::particle_atlas));
-	glUniform1i(glGetUniformLocation(_particleShader.getProgram(), "particleAtlas"), 6);
-
-	_modelShader.useProgram();
-	glActiveTexture(GL_TEXTURE0 + 3);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, _textures[4]);
-
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 64, 64, 3);
-	loadSubTextureArray(64, 64, settings::consts::shader::texture::zombie, Settings::Get()->getString(settings::strings::tex_zombie));
-	loadSubTextureArray(64, 64, settings::consts::shader::texture::skeleton, Settings::Get()->getString(settings::strings::tex_skeleton));
-	loadSubTextureArray(64, 64, settings::consts::shader::texture::player, Settings::Get()->getString(settings::strings::tex_player));
-	glUniform1i(glGetUniformLocation(_modelShader.getProgram(), "textures"), 3);
-	check_glstate("Successfully loaded img[3] texture array 2D", true);
 }
 
 void OpenGL_Manager::setGamemode( int gamemode )

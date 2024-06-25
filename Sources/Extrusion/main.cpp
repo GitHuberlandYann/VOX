@@ -14,31 +14,23 @@ typedef struct {
 */
 int main( int ac, char **av )
 {
-	if (ac != 3) {
-		std::cerr << "Expected format: ./extrude <x coord> <y coord>" << std::endl;
+	if (ac != 2) {
+		std::cerr << "Expected format: ./extrude <path to file>" << std::endl;
 		return (1);
 	}
-
-	int xStart = std::atoi(av[1]);
-	int yStart = std::atoi(av[2]);
 
 	t_tex img;
-	img.content = SOIL_load_image("Resources/Textures/blockAtlas.png", &img.width, &img.height, 0, SOIL_LOAD_RGBA);
+	img.content = SOIL_load_image(av[1], &img.width, &img.height, 0, SOIL_LOAD_RGBA);
 	if (!img.content) {
-		std::cerr << "failed to load image " << "Resources/Textures/blockAtlas.png" << " because:" << std::endl << SOIL_last_result() << std::endl;
+		std::cerr << "failed to load image " << av[1] << " because:" << std::endl << SOIL_last_result() << std::endl;
 		exit(1);
-	}
-	if (xStart + TEXSIZE > img.width || yStart + TEXSIZE > img.height) {
-		std::cerr << "Out of bound coords, img's size is " << img.width << ", " << img.height << std::endl;
-		SOIL_free_image_data(img.content);
-		return (1);
 	}
 
 	bool arr[TEXSIZE * TEXSIZE];
 	int index = 0;
 
-	for (int row = yStart; row < yStart + TEXSIZE; ++row) {
-		for (int col = xStart; col < xStart + TEXSIZE; ++col) {
+	for (int row = 0; row < TEXSIZE; ++row) {
+		for (int col = 0; col < TEXSIZE; ++col) {
 			unsigned char *pixel = &img.content[(row * img.width + col) * 4];
 			arr[index++] = static_cast<int>(pixel[3]) == 255;
 			// std::cout << "at pixel " << row << ", " << col << ": R " << static_cast<int>(pixel[0]) << ", G " << static_cast<int>(pixel[1]) << ", B " << static_cast<int>(pixel[2]) << ", A " << static_cast<int>(pixel[3]) << std::endl;

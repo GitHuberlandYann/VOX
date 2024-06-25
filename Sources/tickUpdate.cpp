@@ -171,7 +171,7 @@ void Chunk::decayLeaves( int offset )
 	int logConnected = findLog(posX, posY, posZ, 6);
 	if (!logConnected) {
 		TICKUPLOG(LOG("decay leave " << _startX << ", " << _startY));
-		remove_block(true, {posX, posY, posZ}); // TODO might want to update ligth
+		remove_block(true, {posX, posY, posZ}); // TODO might want to update light
 		_vertex_update = true;
 	}
 }

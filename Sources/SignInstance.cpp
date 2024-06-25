@@ -42,7 +42,7 @@ void SignInstance::setChunk( Chunk* chunk )
 	_chunk = chunk;
 }
 
-void SignInstance::displayText( std::vector<t_shaderInput> &partArr )
+void SignInstance::displayText( std::vector<t_shaderInputPart> &partArr )
 {
 	if (!_chunk) {
 		return ;
@@ -87,14 +87,14 @@ void SignInstance::displayText( std::vector<t_shaderInput> &partArr )
 				startLine += 7.0f * right * 0.01f;
 				++charLine;
 			} else {
-				int spec = 8 * (c & 0xF) + ((160 + 8 * (c >> 4)) << 8) + (1 << 19);  // + (_chunk->getLightLevel(_pos.x, _pos.y, _pos.z) << 24); // (1 << 19) = atlas index
+				int spec = 8 * (c & 0xF) + ((160 + 8 * (c >> 4)) << 8);  // + (_chunk->getLightLevel(_pos.x, _pos.y, _pos.z) << 24); // (1 << 19) = atlas index
 				partArr.push_back({spec, startLine});
-				partArr.push_back({spec + 8 + (1 << 17), startLine + 7.0f * right * 0.01f});
-				partArr.push_back({spec + (8 << 8) + (1 << 18), startLine - 7.0f * up * 0.01f});
+				partArr.push_back({spec + 7 + (1 << 17), startLine + 7.0f * right * 0.01f});
+				partArr.push_back({spec + (7 << 8) + (1 << 18), startLine - 7.0f * up * 0.01f});
 
-				partArr.push_back({spec + 8 + (1 << 17), startLine + 7.0f * right * 0.01f});
-				partArr.push_back({spec + 8 + (1 << 17) + (8 << 8) + (1 << 18), startLine + 7.0f * 0.01f * right - 7.0f * up * 0.01f});
-				partArr.push_back({spec + (8 << 8) + (1 << 18), startLine - 7.0f * up * 0.01f});
+				partArr.push_back({spec + 7 + (1 << 17), startLine + 7.0f * right * 0.01f});
+				partArr.push_back({spec + 7 + (1 << 17) + (7 << 8) + (1 << 18), startLine + 7.0f * 0.01f * right - 7.0f * up * 0.01f});
+				partArr.push_back({spec + (7 << 8) + (1 << 18), startLine - 7.0f * up * 0.01f});
 
 				if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') {
 					startLine += 7.0f * right * 0.01f * 0.5f;

@@ -248,32 +248,6 @@ void UI::setupShader( void )
 	_vaboItem.addAttribute(settings::consts::shader::attributes::position, 2, GL_INT);
 }
 
-void UI::loadTextures( void )
-{
-	_text->loadTexture();
-
-	_itemShader.useProgram();
-	glUniform1i(glGetUniformLocation(_itemShader.getProgram(), "blockAtlas"), 0); // we reuse texture from main shader
-
-	if (_texture) {
-		glDeleteTextures(1, &_texture);
-	}
-	glGenTextures(1, &_texture);
-
-	_shader.useProgram();
-	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, _texture);
-
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 5);
-	loadSubTextureArray(256, 256, settings::consts::tex::ui, Settings::Get()->getString(settings::strings::ui_atlas));
-	loadSubTextureArray(256, 256, settings::consts::tex::inventory, Settings::Get()->getString(settings::strings::tex_inventory));
-	loadSubTextureArray(256, 256, settings::consts::tex::crafting_table, Settings::Get()->getString(settings::strings::tex_crafting_table));
-	loadSubTextureArray(256, 256, settings::consts::tex::furnace, Settings::Get()->getString(settings::strings::tex_furnace));
-	loadSubTextureArray(256, 256, settings::consts::tex::chest, Settings::Get()->getString(settings::strings::tex_chest));
-	glUniform1i(glGetUniformLocation(_shader.getProgram(), "textures"), 2);
-	check_glstate("Successfully loaded img[2] texture array 2D", true);
-}
-
 void UI::updateWinSize( void )
 {
 	_itemShader.useProgram();
@@ -284,7 +258,16 @@ void UI::updateWinSize( void )
 	glUniform1i(glGetUniformLocation(_shader.getProgram(), "win_height"), WIN_HEIGHT);
 }
 
-void UI::addFace( t_shaderInputItem v0, t_shaderInputItem v1, t_shaderInputItem v2, t_shaderInputItem v3, bool alien, bool movement )
+/**
+ * @brief push back rectangle made out of 4 given pts to arr, (1 << 20) and (1 << 21) are added
+ * @param pts 4 corners of rectangle, in clockwise order
+ * @param spec specifications of top left corner
+ * @param dx offset in x coord of texture for right pts
+ * @param dy offset in y coord of texture for bottom pts
+ * @param alien true if fun called from exterior -> we update vao
+ * @param movement true if we want to update ui vertices -> we update vao ui
+ */
+void UI::addFace( std::array<glm::ivec2, 4> pts, int spec, int dx, int dy, bool alien, bool movement )
 {
 	if (alien) {
 		_vaoSet = false;
@@ -293,6 +276,13 @@ void UI::addFace( t_shaderInputItem v0, t_shaderInputItem v1, t_shaderInputItem 
 		_movement = true;
 		if (!alien) return ;
 	}
+	dx = ((dx - 1) << 12) + (1 << 20);
+	dy = ((dy - 1) << 16) + (1 << 21);
+
+	t_shaderInputItem v0 = {spec, pts[0]};
+	t_shaderInputItem v1 = {spec + dx, pts[1]};
+	t_shaderInputItem v2 = {spec + dy, pts[2]};
+	t_shaderInputItem v3 = {spec + dx + dy, pts[3]};
 
 	_items.push_back(v0);
 	_items.push_back(v1);
