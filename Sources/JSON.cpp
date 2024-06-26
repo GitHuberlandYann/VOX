@@ -54,7 +54,8 @@ void OpenGL_Manager::saveWorld( void )
 std::string DayCycle::saveString( void )
 {
 	std::string res = ",\n\t\"dayCycle\": {\"day\": "
-		+ std::to_string(_day) + ", \"ticks\": " + std::to_string(_ticks) + "},\n\t";
+		+ std::to_string(_day) + ", \"ticks\": " + std::to_string(_ticks)
+		+ "},\n\t\"time_multiplier\": " + std::to_string(_timeMultiplier) + ",\n\t";
 	return (res);
 }
 
@@ -255,6 +256,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 			throw InvalidFileException();
 		}
 		Settings::Get()->setInt(settings::ints::json_version, 0); // reset version
+		DayCycle::Get()->setTimeMultiplier(1); // reset timeMultiplier
 		std::string line;
 		while (!indata.eof()) {
 			std::getline(indata, line);
@@ -296,6 +298,8 @@ void OpenGL_Manager::loadWorld( std::string file )
 				ofs << "flat_world_block set to " << s_blocks[value]->name << std::endl;
 			} else if (!line.compare(0, 12, "\"dayCycle\": ")) {
 				DayCycle::Get()->loadWorld(ofs, line);
+			} else if (!line.compare(0, 19, "\"time_multiplier\": ")) {
+				DayCycle::Get()->setTimeMultiplier(std::atoi(&line[19]));
 			} else if (!line.compare(0, 10, "\"camera\": ")) {
 				_player->loadWorld(ofs, indata);
 			} else if (!line.compare(0, 13, "\"inventory\": ")) {
@@ -324,7 +328,7 @@ void DayCycle::loadWorld( std::ofstream & ofs, std::string line )
 	_ticks = std::atoi(&line[index + 1]);
 	_forceReset = true;
 	setInternals();
-	ofs << "dayCycle " << _ticks << " set to day " << _day << " " << _hour << ":" << _minute << " (light " << _internal_light << ")" << std::endl;
+	ofs << "dayCycle " << _ticks << " set to day " << _day << " " << _hour << ":" << _minute << " (light " << _internalLight << ")" << std::endl;
 }
 
 void Player::loadWorld( std::ofstream & ofs, std::ifstream & indata )

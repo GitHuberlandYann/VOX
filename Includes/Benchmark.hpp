@@ -2,6 +2,7 @@
 # define BENCHMARK_HPP
 
 # include <chrono> //https://www.youtube.com/watch?v=YG4jexlSAjc
+# include "logs.hpp"
 
 class Bench
 {
@@ -31,7 +32,7 @@ class Bench
 			auto duration = end - start;
 			double ms = duration * 0.001;
 
-			std::cout << "Bench [\033[31m" << msg << "\033[0m] result: " << duration << "us | " << ms << "ms" << std::endl;
+			BENCHLOG(LOG("Bench [\033[31m" << msg << "\033[0m] result: " << duration << "us | " << ms << "ms"));
 		}
 
 		void stamp( std::string msg )
@@ -45,7 +46,7 @@ class Bench
 				auto duration = end - start;
 				double ms = duration * 0.001;
 
-				std::cout << "\tstamp [" << msg << "] " << duration << "us | " << ms << "ms" << std::endl;
+				BENCHLOG(LOG("\tstamp [" << msg << "] " << duration << "us | " << ms << "ms"));
 			}
 			_stampTimePoint = currentTimePoint;
 		}

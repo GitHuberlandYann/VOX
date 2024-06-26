@@ -74,13 +74,14 @@ And of course, Minecraft wouldn't be Minecraft without.. DIAMONDS!
 
 ## Shaders
 OpenGL uses shaders, which are programs coded in glsl and running on the GPU.
-* default - used for all blocks and flowers, x[0:255] y[0:255]
+* default - used for all blocks and flowers
 * sky - used for sorted transparent blocks (clouds and water and glass), uses animated sprites
-* ui - draws rectangles from given screen coord and sizes
+* ui - draws rectangles from given screen coord
 * text - draws character using given screen coord
-* item - used to draw 3d items in inventory, x[0:255] y[0:255]
-* particle - used to draw particles and models, x[0:255] y[0:255]
+* item - used to draw 3d items in inventory
+* particle - used to draw particles
 * skybox - used to draw cubic skybox around player, with sun, moon, and atmosphere
+* model - used to draw player and mobs
 
 ## Sound engine
 Not implemented yet, as I am mainly working on this project on WSL, which [does not support sound](https://github.com/microsoft/WSL/issues/237).
@@ -114,7 +115,7 @@ right_click        - place block, use item, put block in inventory
 middle_click       - sample targeted block in gamemode creative
 scoll / 1234656789 - scrolls through hotbar
 
-[]                 - change daycycle speed
+[]                 - shortcut to switch between texture packs
 kp_+ kp_-          - change player speed in gamemode creative
 ```
 

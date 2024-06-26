@@ -33,10 +33,11 @@ namespace chat {
 	namespace rule {
 		enum {
 			mobAI,
+			timeMultiplier,
 			size
 		};
 	};
-	const std::array<std::string, rule::size> rules = {"domobai"};
+	const std::array<std::string, rule::size> rules = {"domobai", "timemultiplier"};
 }
 
 # define NBR_ARG_TIME 4

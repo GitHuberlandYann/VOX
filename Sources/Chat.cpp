@@ -139,17 +139,37 @@ void Chat::handle_gamemode( int argc, std::vector<std::string> &argv )
 	chatMessage("Wrong usage of /gamemode <gamemode>");
 }
 
+static int getGameruleStatus( std::string str )
+{
+	int status = 0;
+
+	if (str == "true" || str == "1") {
+		status = true;
+	} else if (str == "false" || str == "0") {
+		status = false;
+	} else {
+		bool neg = false;
+		for (int i = 0; str[i]; ++i) {
+			if (str[i] == '-' && !i) {
+				neg = true;
+			} else if (!isdigit(str[i])) {
+				return (-424219);
+			} else {
+				status = status * 10 + str[i] - '0';
+			}
+		}
+		status = (neg) ? -status : status;
+	}
+	return (status);
+}
+
 void Chat::handle_gamerule( int argc, std::vector<std::string>& argv )
 {
 	if (argc != 3) {
 		return (chatMessage("Wrong usage of /gamerule <rule> <status>"));
 	}
-	bool state;
-	if (argv[2] == "true" || argv[2] == "1") {
-		state = true;
-	} else if (argv[2] == "false" || argv[2] == "0") {
-		state = false;
-	} else {
+	int state = getGameruleStatus(argv[2]);
+	if (state == -424219) {
 		return (chatMessage("Wrong usage of /gamerule <rule> <status>"));
 	}
 	for (int index = 0; index < chat::rule::size; ++index) {
@@ -158,6 +178,10 @@ void Chat::handle_gamerule( int argc, std::vector<std::string>& argv )
 				case chat::rule::mobAI:
 					Settings::Get()->setBool(settings::bools::mobAI, state);
 					chatMessage("Rule mobAI set to " + std::string((state) ? "true" : "false"));
+					break ;
+				case chat::rule::timeMultiplier:
+					DayCycle::Get()->setTimeMultiplier(state);
+					chatMessage("Rule timeMultiplier set to " + std::to_string(state));
 					break ;
 				default:
 					chatMessage("Rule recognised but no behavior coded yet.");

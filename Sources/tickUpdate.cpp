@@ -256,10 +256,11 @@ void Chunk::tickUpdate( void )
 {
 	for (int i = 0; i < 16; i++) {
 		for (int j = 0; j < 3; j++) {
-			int selected = Random::rangedNumber(_seed, i * (1 << 12), (i + 1) * (1 << 12));
+			// int selected = Random::rangedNumber(_seed, i * (1 << 12), (i + 1) * (1 << 12));
+			int selected = Random::rangedNumber(_seed, (i << 12), (i + 1) << 12);
 			int value = _blocks[selected], type = value & mask::blocks::type;
 				TICKUPLOG(LOG("updating crop in chunk " << _startX << ", " << _startY << ": " << ((selected >> settings::consts::world_shift) >> settings::consts::chunk_shift) << " " << ((selected >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)) << ", " << (selected & (settings::consts::world_height - 1))));
-			if (value & mask::blocks::notVisible) { // not updated
+			if (value & mask::blocks::notVisible || !type) { // not updated
 				continue ;
 			}
 			switch (type) {

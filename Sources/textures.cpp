@@ -78,7 +78,6 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::block::black_wool, root + "black_wool.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::blue_orchid, root + "blue_orchid.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::blue_wool, root + "blue_wool.png");
-	loadSubTextureArray(16, 16, settings::consts::shader::block::bricks, root + "bricks.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::brown_wool, root + "brown_wool.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::cactus_bottom, root + "cactus_bottom.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::cactus_side, root + "cactus_side.png");

@@ -25,6 +25,7 @@
 # define FURNACELOG(x)
 # define FLUIDLOG(x)
 # define TICKUPLOG(x)
+# define BENCHLOG(x)	x
 
 /**
  * macros used to facilitate coordinates output

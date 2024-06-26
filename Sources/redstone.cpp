@@ -1083,7 +1083,7 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 */
 void Chunk::updateRedstone( void )
 {
-	std::array<size_t, SCHEDULE::SIZE> sizes = {_redstone_schedule[SCHEDULE::REPEAT_DIODE].size(), _redstone_schedule[SCHEDULE::REPEAT_OFF].size(), _redstone_schedule[SCHEDULE::REPEAT_ON].size(), _redstone_schedule[SCHEDULE::COMPARATOR].size(), _redstone_schedule[SCHEDULE::OTHER].size()};
+	const std::array<size_t, SCHEDULE::SIZE> sizes = {_redstone_schedule[SCHEDULE::REPEAT_DIODE].size(), _redstone_schedule[SCHEDULE::REPEAT_OFF].size(), _redstone_schedule[SCHEDULE::REPEAT_ON].size(), _redstone_schedule[SCHEDULE::COMPARATOR].size(), _redstone_schedule[SCHEDULE::OTHER].size()};
 	for (int schedIndex = 0; schedIndex < SCHEDULE::SIZE; ++schedIndex) {
 		if (!sizes[schedIndex]) {
 			continue ;

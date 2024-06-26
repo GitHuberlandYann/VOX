@@ -108,7 +108,7 @@ bool Zombie::update( std::vector<t_shaderInputModel>& modArr, float deltaTime )
 				_player->receiveDamage(4.5f, getDir());
 			}
 
-			// changeOwner = updateCurrentBlock();
+			changeOwner = updateCurrentBlock();
 		}
 		_chunk->applyGravity(this);
 	}

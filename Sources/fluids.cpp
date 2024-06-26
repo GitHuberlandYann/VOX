@@ -411,8 +411,8 @@ void Chunk::updateFluids( void )
 		}
 		FLUIDLOG(LOG(_startX << " " << _startY << " fluid at " << posX << " (" << _startX + posX << "), " << posY << " (" << _startY + posY << "), " << posZ << ": before " << s_blocks[level]->name << " after " << s_blocks[_blocks[*f]].name));
 	}
-	_fluids = newFluids;
 	if (fluid_modif) {
+		_fluids = newFluids;
 		FLUIDLOG(LOG("sort water after fluid modif"));
 		sort_water(_player->getEyePos(), true);
 	}

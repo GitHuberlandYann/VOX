@@ -1494,7 +1494,7 @@ void Crop::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ive
 	utils::shader::addQuads(vertices, {p4 + glm::vec3(3.0f * one16th, 0.0f, 0.0f), {p0.x + 3.0f * one16th, p0.y, p0.z}, {p6.x + 3.0f * one16th, p6.y, p6.z}, {p2.x + 3.0f * one16th, p2.y, p2.z}}, spec, light, 16, 16); // -x
 	utils::shader::addQuads(vertices, {p0 + glm::vec3(13.0f * one16th, 0.0f, 0.0f), {p4.x + 13.0f * one16th, p4.y, p4.z}, {p2.x + 13.0f * one16th, p2.y, p2.z}, {p6.x + 13.0f * one16th, p6.y, p6.z}}, spec, light, 16, 16); // +x
 	utils::shader::addQuads(vertices, {p0 + glm::vec3(0.0f, 3.0f * one16th, 0.0f), {p1.x, p1.y + 3.0f * one16th, p1.z}, {p2.x, p2.y + 3.0f * one16th, p2.z}, {p3.x, p3.y + 3.0f * one16th, p3.z}}, spec, light, 16, 16); // -y
-	utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 13.0f * one16th, 0.0f), {p4.x, p4.y + 13.0f * one16th, p4.z}, {p2.x, p2.y + 13.0f * one16th, p2.z}, {p6.x, p6.y + 13.0f * one16th, p6.z}}, spec, light, 16, 16); // +y
+	utils::shader::addQuads(vertices, {p1 + glm::vec3(0.0f, 13.0f * one16th, 0.0f), {p0.x, p0.y + 13.0f * one16th, p0.z}, {p3.x, p3.y + 13.0f * one16th, p3.z}, {p2.x, p2.y + 13.0f * one16th, p2.z}}, spec, light, 16, 16); // +y
 }
 
 void ItemFrame::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
@@ -2060,19 +2060,19 @@ void Comparator::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, gl
 	// draw base
 	if (visible_face(value, chunk->getBlockAt(pos.x - 1, pos.y, pos.z), face_dir::minus_x)) {
 		light = (3 << 8) + chunk->computeLight(pos.x - 1, pos.y, pos.z);
-		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p6, p2}, spec + (14 << 8), light, 16, 2);
+		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p6, p2}, spec + (14 << 16), light, 16, 2);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x + 1, pos.y, pos.z), face_dir::plus_x)) {
 		light = (4 << 8) + chunk->computeLight(pos.x + 1, pos.y, pos.z);
-		utils::shader::addQuads(vertices, {p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p3, p7}, spec + (14 << 8), light, 16, 2);
+		utils::shader::addQuads(vertices, {p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p3, p7}, spec + (14 << 16), light, 16, 2);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y - 1, pos.z), face_dir::minus_y)) {
 		light = (1 << 8) + chunk->computeLight(pos.x, pos.y - 1, pos.z);
-		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p2, p3}, spec + (14 << 8), light, 16, 2);
+		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.f, -14.f * one16th), p1 + glm::vec3(0.f, 0.f, -14.f * one16th), p2, p3}, spec + (14 << 16), light, 16, 2);
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y + 1, pos.z), face_dir::plus_y)) {
 		light = (2 << 8) + chunk->computeLight(pos.x, pos.y + 1, pos.z);
-		utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p7, p6}, spec + (14 << 8), light, 16, 2);
+		utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, 0.f, -14.f * one16th), p4 + glm::vec3(0.f, 0.f, -14.f * one16th), p7, p6}, spec + (14 << 16), light, 16, 2);
 	}
 	// draw top
 	light = chunk->computeLight(pos.x, pos.y, pos.z);

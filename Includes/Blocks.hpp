@@ -99,7 +99,6 @@ namespace settings {
 					black_wool,
 					blue_orchid,
 					blue_wool,
-					bricks,
 					brown_wool,
 					cactus_bottom,
 					cactus_side,

@@ -28,7 +28,6 @@ Project Requirements:
 TODOS:
     - biomes
 	- fix light spread problems caused by recurse limitation (when torches are next to each other)
-	- display item name and details upon mouse hover in menus
 	- double chests
 	- fire
 	- lantern
@@ -55,24 +54,23 @@ TODOS:
 	- water ligth level
     - lava + nether
 	- multiplayer ? Server-Client logic on singleplayer ?
+	- universal use of tps instead of deltatimes ?
 	- divide chunk in 16 subsections ?
 	
 	IN PROGRES:
 	- bow and arrow
-	- universal use of tps instead of deltatimes
 	- mobs
 	
 	TODAY:
 	- check // TODO restore
 	
 	SHORTTERM memory:
-	\/ - work on cleanAtlas
-	\/ - work on readme
-	\/ - rework Makefile
 	- replace glm with own small lib
-	\/ - rework general code structure (who owns who)
-	\/ - check how to update atlas texture ingame
-	\/ - make menus texts responsive
+	- display item name and details upon mouse hover in menus
+	- display block_hit s name and details as a 2D window
+	- finish controls menu (resets)
+	- skin customization menu
+	- anvil + named items
 	
 	DONE:
 	- pthread chunk creation
