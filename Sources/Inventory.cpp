@@ -386,6 +386,27 @@ void Inventory::shiftBlockAt( int craft, int value, FurnaceInstance *furnace, Ch
 	}
 }
 
+/**
+ * same as pickBlockAt, but only get item's info instead of removing it from it's place
+ * used by Menu to display hovered item's info
+ */
+t_item Inventory::getHoveredAt( int state, int value, FurnaceInstance* furnace, ChestInstance* chest )
+{
+	(void)state;
+	if (value == CELLS::product) {
+		if (furnace) {
+			return (furnace->getProduction());
+		}
+		return (_crafted);
+	}
+	int craft_place = 0;
+	t_item *bat = getBlockPtr(value, craft_place, furnace, chest);
+	if (!bat) {
+		return (t_item());
+	}
+	return (*bat);
+}
+
 t_item Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	// std::cout << "pickBlockAt " << value << std::endl;

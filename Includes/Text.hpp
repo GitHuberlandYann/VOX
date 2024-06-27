@@ -7,6 +7,7 @@
 namespace TEXT
 {
 	const unsigned WHITE = 0xFFFFFFFF;
+	const unsigned GRAY = 0xFFAAAAAA;
 	const unsigned BLACK = 0xFF000000;
 	const unsigned GREEN = 0xFF00FF00;
 	const unsigned RED = 0xFFFF0000;

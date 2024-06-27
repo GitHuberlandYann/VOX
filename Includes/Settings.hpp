@@ -65,6 +65,8 @@ namespace settings {
 				const int dura_back = 118;
 				const int dura = 116;
 				const int item_str = 110;
+				const int item_info_back = 100;
+				const int item_info_str = 90;
 				const int held_str = 50;
 
 				namespace controls {

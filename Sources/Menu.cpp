@@ -814,6 +814,17 @@ menu::ret Menu::ingame_menu( void )
 			break ;
 	}
 
+	// adding hovered item's info
+	if (_selection != 0) {
+		t_item hovered = _inventory->getHoveredAt(_state, _selection - 1, _furnace, _chest);
+		if (hovered.type != blocks::air) {
+			glm::ivec2 pos = computeScreenPosFromSelection(_selection);
+			int font = 5 * _gui_size;
+			addUnstretchedQuads(settings::consts::tex::inventory, settings::consts::depth::menu::item_info_back, pos.x + 14 * _gui_size, pos.y + 14 * _gui_size, Utils::Text::textWidth(font, s_blocks[hovered.type]->name) + 10 * _gui_size, font + 10 * _gui_size, 165, 166, 24, 24, 3);
+			_text->addText(pos.x + 19 * _gui_size, pos.y + 19 * _gui_size, font, TEXT::GRAY, settings::consts::depth::menu::item_info_str, s_blocks[hovered.type]->name);
+		}
+	}
+
 	blit_to_screen();
 	return (menu::ret::no_change);
 }
@@ -932,6 +943,23 @@ void Menu::addQuads( int atlas, int depth, int posX, int posY, int width, int he
 	_vertices.push_back({texX + 0        + ((texY + texHeight) << 8) + (0 << 16) + (1 << 17) + (atlas << 18) + (depth << 24), posX,         posY + height});
 }
 
+/**
+ * called for container texture, of which we don't want the border to be stretched
+ */
+void Menu::addUnstretchedQuads( int atlas, int depth, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight, int border )
+{
+	// left border
+	addQuads(atlas, depth, posX, posY, border * _gui_size, height, texX, texY, border, texHeight);
+	// right border
+	addQuads(atlas, depth, posX + width - border * _gui_size, posY, border * _gui_size, height, texX + texWidth - border, texY, border, texHeight);
+	// top border
+	addQuads(atlas, depth, posX + border * _gui_size, posY, width - 2 * border * _gui_size, border * _gui_size, texX + border, texY, texWidth - 2 * border, border);
+	// bottom border
+	addQuads(atlas, depth, posX + border * _gui_size, posY + height - border * _gui_size, width - 2 * border * _gui_size, border * _gui_size, texX + border, texY + texHeight - border, texWidth - 2 * border, border);
+	// inner part
+	addQuads(atlas, depth, posX + border * _gui_size, posY + border * _gui_size, width - 2 * border * _gui_size, height - 2 * border * _gui_size, texX + border, texY + border, texWidth - 2 * border, texHeight - 2 * border);
+}
+
 void Menu::setup_array_buffer_main( void )
 {
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 129 * _gui_size, WIN_HEIGHT / 2 - 104 * _gui_size, 256 * _gui_size, 64 * _gui_size, 0, 131, 256, 64); // MINECRAFT
@@ -940,22 +968,22 @@ void Menu::setup_array_buffer_main( void )
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Multiplayer
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Minecraft Realms
 
-    addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 125 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 15 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Lang settings
-    addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 5) ? 111 : 91, 200, 20); // Options...
-    addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20); // Quit Game
-    addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 110 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 15 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // accessibility settings
+    addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 125 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 15 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3); // Lang settings
+    addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 5) ? 111 : 91, 200, 20, 3); // Options...
+    addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20, 3); // Quit Game
+    addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 110 * _gui_size, WIN_HEIGHT / 2 + 80 * _gui_size, 15 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3); // accessibility settings
 
 	setup_shader();
 }
 
 void Menu::setup_array_buffer_select( void )
 {
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (91 + 20 * (_selection == 1)) * (_selected_world != 0) + 71 * (_selected_world == 0), 200, 20); // playSelectedWorld
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // edit
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 78 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // delete
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20); // createNewWorld
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // reCreate
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 82 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20); // cancel
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (91 + 20 * (_selection == 1)) * (_selected_world != 0) + 71 * (_selected_world == 0), 200, 20, 3); // playSelectedWorld
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3); // edit
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 78 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3); // delete
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20, 3); // createNewWorld
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3); // reCreate
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 82 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20, 3); // cancel
 
 	for (int index = 0; index < static_cast<int>(static_cast<int>(_worlds.size())) && index < 8; index++) {
 		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, (30 + 20 * index) * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71 + 20 * (_selected_world - 1 == index), 200, 20); // world #index
@@ -976,8 +1004,8 @@ void Menu::setup_array_buffer_create( void )
 		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20); // Flat World Block
 	}
 
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_world_file == "") ? 71 : (_selection == 5) ? 111 : 91, 200, 20); // Create New World
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20); // Cancel
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_world_file == "") ? 71 : (_selection == 5) ? 111 : 91, 200, 20, 3); // Create New World
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20, 3); // Cancel
 
 	setup_shader();
 }
@@ -1086,13 +1114,13 @@ void Menu::setup_array_buffer_video( void )
 {
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1); // occult window
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Render dist
-    addQuads(settings::consts::tex::ui, settings::consts::depth::menu::slider, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_render_gradient, 8, 32, 0, 190)) * _gui_size, WIN_HEIGHT / 2 - 84 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // render Slider
+    addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::slider, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_render_gradient, 8, 32, 0, 190)) * _gui_size, WIN_HEIGHT / 2 - 84 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20, 3); // render Slider
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 85 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 2) ? 111 : 91, 200, 20); // Resolution
 
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 3) ? 111 : 91, 200, 20); // Clouds
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 5) ? 111 : 91, 200, 20); // Gui scale
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 5 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // brightness
-    addQuads(settings::consts::tex::ui, settings::consts::depth::menu::slider, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_brightness_gradient, 0, 1, 0, 190)) * _gui_size, WIN_HEIGHT / 2 + 6 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 7) ? 111 : 91, 200, 20); // brightness Slider
+    addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::slider, WIN_WIDTH / 2 - 205 * _gui_size + static_cast<int>(gradient(_brightness_gradient, 0, 1, 0, 190)) * _gui_size, WIN_HEIGHT / 2 + 6 * _gui_size, 10 * _gui_size, 18 * _gui_size, 0, (_selection == 7) ? 111 : 91, 200, 20, 3); // brightness Slider
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 9) ? 111 : 91, 200, 20); // Face Culling
 
     addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 45 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // Fullscreen
@@ -1118,11 +1146,11 @@ void Menu::setup_array_buffer_controls( void )
 		if (i == 5 || i == 16 || i == 23 || i == 24) {
 			continue ;
 		}
-		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2, (85 + 25 * i - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, (_selection == 3 + i * 2) ? 111 : 91, 200, 20); // key bind
-		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 110 * _gui_size, (85 + 25 * i - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // reset
+		addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2, (85 + 25 * i - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, (_selection == 3 + i * 2) ? 111 : 91, 200, 20, 3); // key bind
+		addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 110 * _gui_size, (85 + 25 * i - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3); // reset
 	}
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2, (85 + 25 * 24 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // List Players currently disabled
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 110 * _gui_size, (85 + 25 * 24 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20);
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2, (85 + 25 * 24 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3); // List Players currently disabled
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 110 * _gui_size, (85 + 25 * 24 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3);
 
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, 0, WIN_WIDTH, 40 * _gui_size, 0, 91, 1, 1); // occult top part
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, WIN_HEIGHT - 40 * _gui_size, WIN_WIDTH, 40 * _gui_size, 0, 91, 1, 1); // occult bottom part
@@ -1189,6 +1217,40 @@ void Menu::setup_array_buffer_sign( void )
 	setup_shader();
 }
 
+glm::ivec2 Menu::computeScreenPosFromSelection( int selection )
+{
+	if (!selection) {
+	} else if (selection < 10) { // hot bar slot
+		int index = selection - 1;
+		return {(WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * index * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 + 59 * _gui_size};
+	} else if (selection < 37) { // backpack
+		int index = selection - 10;
+		return {(WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 + _gui_size + 18 * _gui_size * (index / 9)};
+	} else if (selection < 41) { // icraft
+		int index = selection - 37;
+		return {(WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (5 + index % 2) * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 - 65 * _gui_size + 18 * _gui_size * (index / 2)};
+	} else if (selection == 41) { // crafted
+		if (_state == menu::inventory) {
+			return {(WIN_WIDTH - (166 * _gui_size)) / 2 + 149 * _gui_size, WIN_HEIGHT / 2 - 55 * _gui_size};
+		} else if (_state == menu::crafting) {
+			return {(WIN_WIDTH - (166 * _gui_size)) / 2 + 119 * _gui_size, WIN_HEIGHT / 2 - 48 * _gui_size};
+		} else if (_state == menu::furnace) {
+			return {(WIN_WIDTH - (166 * _gui_size)) / 2 + 111 * _gui_size, WIN_HEIGHT / 2 - 48 * _gui_size};
+		}
+	} else if (selection < 51) { // craft
+		int index = selection - 42;
+		return {(WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (1 + index % 3) * _gui_size) + _gui_size * 7, WIN_HEIGHT / 2 - 66 * _gui_size + 18 * _gui_size * (index / 3)};
+	} else if (selection == 51) { // composant
+		return {(WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size, WIN_HEIGHT / 2 - 66 * _gui_size};
+	} else if (selection == 52) { // fuel
+		return {(WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size, WIN_HEIGHT / 2 - 30 * _gui_size};
+	} else if (selection < 80) { // chest
+		int index = selection - 53;
+		return {(WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 - 65 * _gui_size + 18 * _gui_size * (index / 9)};
+	}
+	return {0, 0};
+}
+
 void Menu::occult_selection( void )
 {
 	bool found = false;
@@ -1202,34 +1264,9 @@ void Menu::occult_selection( void )
 		_selection_list.push_back(_selection);
 	}
 	for (int cell : _selection_list) {
-		if (!cell) {
-		} else if (cell < 10) { // hot bar slot
-			int index = cell - 1;
-			addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * index * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 + 59 * _gui_size, 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
-		} else if (cell < 37) { // backpack
-			int index = cell - 10;
-			addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 + _gui_size + 18 * _gui_size * (index / 9), 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
-		} else if (cell < 41) { // icraft
-			int index = cell - 37;
-			addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (5 + index % 2) * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 - 65 * _gui_size + 18 * _gui_size * (index / 2), 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
-		} else if (cell == 41) { // crafted
-			if (_state == menu::inventory) {
-				addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, (WIN_WIDTH - (166 * _gui_size)) / 2 + 149 * _gui_size, WIN_HEIGHT / 2 - 55 * _gui_size, 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
-			} else if (_state == menu::crafting) {
-				addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, (WIN_WIDTH - (166 * _gui_size)) / 2 + 119 * _gui_size, WIN_HEIGHT / 2 - 48 * _gui_size, 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
-			} else if (_state == menu::furnace) {
-				addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, (WIN_WIDTH - (166 * _gui_size)) / 2 + 111 * _gui_size, WIN_HEIGHT / 2 - 48 * _gui_size, 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
-			}
-		} else if (cell < 51) { // craft
-			int index = cell - 42;
-			addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (1 + index % 3) * _gui_size) + _gui_size * 7, WIN_HEIGHT / 2 - 66 * _gui_size + 18 * _gui_size * (index / 3), 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
-		} else if (cell == 51) { // composant
-			addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size, WIN_HEIGHT / 2 - 66 * _gui_size, 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
-		} else if (cell == 52) { // fuel
-			addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size, WIN_HEIGHT / 2 - 30 * _gui_size, 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
-		} else if (cell < 80) { // chest
-			int index = cell - 53;
-			addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 - 65 * _gui_size + 18 * _gui_size * (index / 9), 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
+		if (cell) {
+			glm::ivec2 pos = computeScreenPosFromSelection(cell);
+			addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, pos.x, pos.y, 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
 		}
 	}
 	if (!found) {
@@ -1943,11 +1980,8 @@ menu::ret Menu::run( bool animUpdate )
 		case menu::resource_packs:
 			return (resource_packs_menu());
 		case menu::inventory:
-			return (ingame_menu());
 		case menu::crafting:
-			return (ingame_menu());
 		case menu::chest:
-			return (ingame_menu());
 		case menu::furnace:
 			return (ingame_menu());
 		case menu::chat:

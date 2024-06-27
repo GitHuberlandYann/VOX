@@ -51,9 +51,9 @@ glm::vec3 Player::getEyePos( void )
 	return (res);
 }
 
-bool Player::getHitBox( void )
+float Player::getHitBox( void )
 {
-	return (settings::consts::hitbox::player);
+	return ((_sneaking) ? settings::consts::hitbox::player_sneak : settings::consts::hitbox::player);
 }
 
 

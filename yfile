@@ -66,7 +66,6 @@ TODOS:
 	
 	SHORTTERM memory:
 	- replace glm with own small lib
-	- display item name and details upon mouse hover in menus
 	- display block_hit s name and details as a 2D window
 	- finish controls menu (resets)
 	- skin customization menu
@@ -170,6 +169,7 @@ TODOS:
 	- fluid at border
     - Water buckets
 	- water flow
+	- display item name and details upon mouse hover in menus
 	- custom resolution in settings + original resolution by using opengl
 	- settings fullScreen on off, ie call glfwSetWindowMonitor(glfwGetPrimaryMonitor/NULL)
 	- add depth component to all hud elements to draw text on item on text of other item
@@ -183,21 +183,21 @@ TODOS:
 	- centralize settings and save/load them in file
 	- resource packs
 	- Game modes:
-		- survival
+	- survival
 		- creative
 		- adventure
-	- Menus:
+		- Menus:
 		- main menu
 		- world selection menu
 		- world creation menu
-			- load menu
-			- pause menu
-			- options menu
-			- video settings menu
-			- Controls Menu
-			- resource packs menu
-			- inventory menu
-			- crafting menu
+		- load menu
+		- pause menu
+		- options menu
+		- video settings menu
+		- Controls Menu
+		- resource packs menu
+		- inventory menu
+		- crafting menu
 			- chest menu
 			- furnace menu
 			- chat menu

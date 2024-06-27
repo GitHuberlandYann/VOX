@@ -139,11 +139,12 @@ class Inventory
 		t_item getCrafted( void );
 		int getSlotNum( void );
         void setSlot( int value );
-		void shiftBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
-		t_item pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
-		t_item pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest );
-		t_item putBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest, bool swap = true );
-		t_item putOneBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest );
+		void shiftBlockAt( int craft, int value, FurnaceInstance* furnace, ChestInstance* chest );
+		t_item getHoveredAt( int state, int value, FurnaceInstance* furnace, ChestInstance* chest );
+		t_item pickBlockAt( int craft, int value, FurnaceInstance* furnace, ChestInstance* chest );
+		t_item pickHalfBlockAt( int craft, int value, FurnaceInstance* furnace, ChestInstance* chest );
+		t_item putBlockAt( int craft, int value, t_item block, FurnaceInstance* furnace, ChestInstance* chest, bool swap = true );
+		t_item putOneBlockAt( int craft, int value, t_item block, FurnaceInstance* furnace, ChestInstance* chest );
 		bool restoreBlock( t_item block, bool hotbar_first = false );
 		bool absorbItem( t_item block );
 		void restoreiCraft( void );
@@ -151,7 +152,7 @@ class Inventory
 		bool getModif( void );
 		void setModif( bool value );
         void addBlock( int type );
-		// void removeBlockAt( int value, FurnaceInstance *furnace, ChestInstance *chest );
+		// void removeBlockAt( int value, FurnaceInstance* furnace, ChestInstance* chest );
         t_item removeBlock( bool thrown );
 		void replaceSlot( int type, bool creative );
 		void swapCells( int slot, int location );
@@ -162,8 +163,8 @@ class Inventory
         std::string getInventoryString( void );
 		std::string getSlotString( void );
 		std::string saveString( void );
-		void setUIPtr( UI *ui );
-		void loadWorld( std::ofstream & ofs, std::ifstream & indata );
+		void setUIPtr( UI* ui );
+		void loadWorld( std::ofstream& ofs, std::ifstream& indata );
 
     private:
         std::array<t_item, 9> _content;
@@ -173,9 +174,9 @@ class Inventory
 		t_item _crafted;
         int _slot;
 		bool _modif;
-		UI *_ui;
+		UI* _ui;
 
-		t_item *getBlockPtr( int value, int & craft_place, FurnaceInstance *furnace, ChestInstance *chest );
+		t_item* getBlockPtr( int value, int& craft_place, FurnaceInstance* furnace, ChestInstance* chest );
 		void changeCrafted( int craft );
 		void produceCraft( int craft );
 		t_item pickCrafted( int craft, t_item block );

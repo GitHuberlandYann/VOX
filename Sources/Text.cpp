@@ -71,11 +71,13 @@ void Text::updateWinSize( void )
 
 int Utils::Text::textWidth( int font_size, std::string str, int limit )
 {
-	int res = 0;
+	int res = 0, maxWidth = 0;
 	for (size_t i = 0, charLine = 0; str[i]; ++i, ++charLine) {
 		if (limit != -1 && static_cast<int>(i) >= limit) return (res);
 		switch (str[i]) {
 			case '\n':
+				maxWidth = (res > maxWidth) ? res : maxWidth;
+				res = 0;
 				break ;
 			case '\t':
 				charLine += 4 - (charLine & 3);
@@ -114,7 +116,7 @@ int Utils::Text::textWidth( int font_size, std::string str, int limit )
 				break ;
 		}
 	}
-	return (res);
+	return ((res > maxWidth) ? res : maxWidth);
 }
 
 void Text::addText( int posX, int posY, int font_size, unsigned color, int depth, std::string str )

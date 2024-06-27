@@ -134,7 +134,7 @@ bool Zombie::update( std::vector<t_shaderInputModel>& modArr, float deltaTime )
 	return (changeOwner);
 }
 
-bool Zombie::getHitBox( void )
+float Zombie::getHitBox( void )
 {
 	return (settings::consts::hitbox::zombie);
 }

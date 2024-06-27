@@ -134,6 +134,7 @@ class Menu
 		menu::ret sign_menu( bool animUpdate );
 
 		void addQuads( int atlas, int depth, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
+		void addUnstretchedQuads( int atlas, int depth, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight, int border );
         void setup_array_buffer_main( void );
         void setup_array_buffer_select( void );
         void setup_array_buffer_create( void );
@@ -148,6 +149,7 @@ class Menu
         void setup_array_buffer_chat( void );
         void setup_array_buffer_sign( void );
 
+		glm::ivec2 computeScreenPosFromSelection( int selection );
 		void occult_selection( void );
 		void display_item_value( int x, int y, int amount, int depth );
 		void add_dura_value( glm::ivec2 dura, int x, int y );
