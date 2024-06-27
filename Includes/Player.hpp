@@ -44,7 +44,7 @@ class Player : public AMob
 {
     public:
         Player( void );
-        virtual ~Player( void );
+        ~Player( void );
 
         bool chunkInFront( int camPlacement, glm::ivec2 current_chunk, int posX, int posY );
         std::vector<glm::ivec3> computeRayCasting( GLfloat radius );

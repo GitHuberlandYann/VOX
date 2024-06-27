@@ -33,8 +33,8 @@ class FallingBlockEntity : public Entity
 	public:
 		FallingBlockEntity( Chunk* chunk, glm::vec3 position, t_item item );
 
-		virtual void getBlasted( glm::vec3 pos, float blast_radius );
-		virtual bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime );
+		void getBlasted( glm::vec3 pos, float blast_radius ) override;
+		bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime ) override;
 };
 
 class TNTEntity : public Entity
@@ -42,8 +42,8 @@ class TNTEntity : public Entity
 	public:
 		TNTEntity( Chunk* chunk, glm::vec3 position, glm::vec3 dir );
 
-		virtual void getBlasted( glm::vec3 pos, float blast_radius );
-		virtual bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime );
+		void getBlasted( glm::vec3 pos, float blast_radius ) override;
+		bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime ) override;
 };
 
 class ArrowEntity : public Entity
@@ -51,8 +51,8 @@ class ArrowEntity : public Entity
 	public:
 		ArrowEntity( Chunk* chunk, glm::vec3 position, glm::vec3 dir );
 
-		virtual void getBlasted( glm::vec3 pos, float blast_radius );
-		virtual bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime );
+		void getBlasted( glm::vec3 pos, float blast_radius ) override;
+		bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime ) override;
 	
 	private:
 		bool _stuck;
@@ -63,8 +63,8 @@ class MovingPistonEntity : public Entity
 	public:
 		MovingPistonEntity( Chunk* chunk, glm::ivec3 source, glm::ivec3 position, glm::ivec3 dir, bool piston_head, bool retraction, int value );
 
-		virtual int pistonedBy( glm::ivec3 pos, glm::ivec3 target );
-		virtual bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime );
+		int pistonedBy( glm::ivec3 pos, glm::ivec3 target ) override;
+		bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime ) override;
 
 	private:
 		bool _piston_head, _retraction, _softKill;
@@ -81,9 +81,9 @@ class ItemFrameEntity : public Entity
 		int getContent( void );
 		bool rotate( int type );
 		int getRotation( void );
-		virtual bool isAt( glm::ivec3 pos );
+		bool isAt( glm::ivec3 pos ) override;
 
-		virtual bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime );
+		bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime ) override;
 
 		void saveString( std::string& str );
 

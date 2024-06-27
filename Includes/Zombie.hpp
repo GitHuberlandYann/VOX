@@ -7,7 +7,7 @@ class Zombie : public AHostileMob
 {
     public:
         Zombie( Chunk* chunk, Player* player, glm::vec3 position );
-        virtual ~Zombie( void );
+        ~Zombie( void );
 
         bool update( std::vector<t_shaderInputModel>& modArr, float deltaTime ) override;
 		glm::vec3 getEyePos( void ) override;

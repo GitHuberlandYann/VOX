@@ -619,8 +619,8 @@ struct Cube : Block {
 		Cube() {
 			geometry = geometry::cube;
 		}
-		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
-		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const;
+		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
+		virtual void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
 };
 
 struct Cross : Block {
@@ -875,14 +875,14 @@ struct Farmland : Block {
 			needed_tool = blocks::wooden_shovel;
 			hardness = 0.6f;
 		}
-		virtual int getTex( int dir, int value ) const {
+		virtual int getTex( int dir, int value ) const override {
 			if (dir == face_dir::plus_z) {
 				return ((value & mask::farmland::wet) ? settings::consts::shader::block::farmland_moist
 					: settings::consts::shader::block::farmland);
 			}
 			return (settings::consts::shader::block::dirt);
 		}
-		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
+		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
 struct DirtPath : Farmland {

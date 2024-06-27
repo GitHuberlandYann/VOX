@@ -7,7 +7,7 @@ class Skeleton : public AHostileMob
 {
     public:
         Skeleton( Chunk* chunk, Player* player, glm::vec3 position );
-        virtual ~Skeleton( void );
+        ~Skeleton( void );
 
         bool update( std::vector<t_shaderInputModel>& modArr, float deltaTime ) override;
 		glm::vec3 getEyePos( void ) override;
