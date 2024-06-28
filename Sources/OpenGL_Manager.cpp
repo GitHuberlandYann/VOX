@@ -440,6 +440,7 @@ void OpenGL_Manager::setGamemode( int gamemode )
 		return ;
 	}
 	_game_mode = gamemode;
+	Settings::Get()->setInt(settings::ints::game_mode, gamemode);
 	_player->resetFall();
 	_ui->chatMessage("Gamemode set to " + settings::consts::gamemode::str[gamemode]);
 }

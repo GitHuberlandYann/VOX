@@ -527,6 +527,10 @@ menu::ret Menu::video_menu( void )
 
 menu::ret Menu::controls_menu( void )
 {
+	const std::array<int, 27> actions = {inputs::destroy, inputs::drop, inputs::sample, inputs::run, inputs::use, -1,
+				inputs::slot_0, inputs::slot_1, inputs::slot_2, inputs::slot_3, inputs::slot_4, inputs::slot_5, inputs::slot_6, inputs::slot_7, inputs::slot_8, inputs::inventory, -1,
+				inputs::jump, inputs::sneak, inputs::move_left, inputs::move_right, inputs::move_backwards, inputs::move_forwards, -1,
+				-1, inputs::chat, inputs::command};
 	if (inputs::key_down(inputs::left_click)) {
 		if (!inputs::key_update(inputs::left_click)) {
 		} else if (_selected_world != _selection) {
@@ -544,14 +548,14 @@ menu::ret Menu::controls_menu( void )
 					return (options_menu());
 				case 2: // Reset
 					if (_change_to_apply) {
-
+						inputs::reset_key_binds();
 					}
 					break ;
 				default:
 					if (_selection & 0b1) { // key bind
 						inputs::reset_last_input();
 					} else { // reset
-
+						inputs::reset_key_bind(actions[(_selection - 4) / 2]);
 					}
 			}
 		}
@@ -561,10 +565,6 @@ menu::ret Menu::controls_menu( void )
 		reset_values();
 		return (options_menu());
 	}
-	const std::array<int, 27> actions = {inputs::destroy, inputs::drop, inputs::sample, inputs::run, inputs::use, -1,
-				inputs::slot_0, inputs::slot_1, inputs::slot_2, inputs::slot_3, inputs::slot_4, inputs::slot_5, inputs::slot_6, inputs::slot_7, inputs::slot_8, inputs::inventory, -1,
-				inputs::jump, inputs::sneak, inputs::move_left, inputs::move_right, inputs::move_backwards, inputs::move_forwards, -1,
-				-1, inputs::chat, inputs::command};
 	if (_selected_world > 2 && (_selected_world & 0b1)) {
 		int key = inputs::get_last_input();
 		if (key != -1) {
@@ -720,10 +720,14 @@ menu::ret Menu::ingame_inputs( void )
 	if (inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) {
 		if (_selection) {
 			if (_selected_block.type == blocks::air) {
-				if (inputs::key_down(inputs::sneak)) {
+				if (inputs::key_down(inputs::left_shift)) {
 					_inventory->shiftBlockAt(craft, _selection - 1, _furnace, _chest);
 				} else {
 					_selected_block = _inventory->pickBlockAt(craft, _selection - 1, _furnace, _chest);
+					if (_selected_block.type != blocks::air && inputs::key_down(inputs::left_control)
+						&& Settings::Get()->getInt(settings::ints::game_mode) == settings::consts::gamemode::creative) {
+						_selected_block.amount = 64;
+					}
 				}
 			} else {
 				_selected_block = _inventory->putBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
@@ -815,7 +819,7 @@ menu::ret Menu::ingame_menu( void )
 	}
 
 	// adding hovered item's info
-	if (_selection != 0) {
+	if (_selection != 0 && _selected_block.type == blocks::air) {
 		t_item hovered = _inventory->getHoveredAt(_state, _selection - 1, _furnace, _chest);
 		if (hovered.type != blocks::air) {
 			glm::ivec2 pos = computeScreenPosFromSelection(_selection);
@@ -856,10 +860,10 @@ menu::ret Menu::chat_menu( bool animUpdate )
 		inputs::setCurrentMessage(_chat->getHistoMsg(false));
 	}
 	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
-		inputs::moveCursor(true, inputs::key_down(inputs::run));
+		inputs::moveCursor(true, inputs::key_down(inputs::left_control));
 	}
 	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
-		inputs::moveCursor(false, inputs::key_down(inputs::run));
+		inputs::moveCursor(false, inputs::key_down(inputs::left_control));
 	}
 
 	if (animUpdate) {
@@ -909,10 +913,10 @@ menu::ret Menu::sign_menu( bool animUpdate )
 	// 	inputs::setCurrentMessage(_chat->getHistoMsg(false));
 	// }
 	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
-		inputs::moveCursor(true, inputs::key_down(inputs::run));
+		inputs::moveCursor(true, inputs::key_down(inputs::left_control));
 	}
 	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
-		inputs::moveCursor(false, inputs::key_down(inputs::run));
+		inputs::moveCursor(false, inputs::key_down(inputs::left_control));
 	}
 
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, settings::consts::depth::menu::str, "Edit Sign Message");
@@ -1140,14 +1144,22 @@ void Menu::setup_array_buffer_video( void )
 
 void Menu::setup_array_buffer_controls( void )
 {
+	const std::array<int, 27> actions = {inputs::destroy, inputs::drop, inputs::sample, inputs::run, inputs::use, -1,
+				inputs::slot_0, inputs::slot_1, inputs::slot_2, inputs::slot_3, inputs::slot_4, inputs::slot_5, inputs::slot_6, inputs::slot_7, inputs::slot_8, inputs::inventory, -1,
+				inputs::jump, inputs::sneak, inputs::move_left, inputs::move_right, inputs::move_backwards, inputs::move_forwards, -1,
+				-1, inputs::chat, inputs::command};
+
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 40 * _gui_size, WIN_WIDTH, WIN_HEIGHT - 40 * _gui_size, 1, 72, 1, 1); // occult central part
 
+	_change_to_apply = false;
 	for (int i = 0; i < 27; ++i) {
 		if (i == 5 || i == 16 || i == 23 || i == 24) {
 			continue ;
 		}
 		addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2, (85 + 25 * i - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, (_selection == 3 + i * 2) ? 111 : 91, 200, 20, 3); // key bind
-		addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 110 * _gui_size, (85 + 25 * i - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3); // reset
+		bool canReset = !inputs::is_initial_key_bind(actions[i]);
+		if (canReset) _change_to_apply = true;
+		addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 110 * _gui_size, (85 + 25 * i - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, (canReset) ? (_selection == 4 + i * 2) ? 111 : 91 : 71, 200, 20, 3); // reset
 	}
 	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2, (85 + 25 * 24 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3); // List Players currently disabled
 	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 110 * _gui_size, (85 + 25 * 24 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20, 3);

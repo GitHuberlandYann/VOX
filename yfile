@@ -67,7 +67,6 @@ TODOS:
 	SHORTTERM memory:
 	- replace glm with own small lib
 	- display block_hit s name and details as a 2D window
-	- finish controls menu (resets)
 	- skin customization menu
 	- anvil + named items
 	

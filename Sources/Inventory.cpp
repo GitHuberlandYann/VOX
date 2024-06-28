@@ -507,7 +507,7 @@ t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceIns
 	}
 	int craft_place = 0;
 	t_item *bat = getBlockPtr(value, craft_place, furnace, chest);
-	if (!bat || (furnace &&  value == CELLS::furnace_fuel && !s_blocks[block.type]->isFuel)) {
+	if (!bat || (furnace && value == CELLS::furnace_fuel && !s_blocks[block.type]->isFuel)) {
 		return (block);
 	}
 	if (bat->amount == 64) {
@@ -520,10 +520,8 @@ t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceIns
 	} else {
 		return (block);
 	}
-	LOG("changeCrafted called from putOneBlockAt with arg " << craft_place);
 	changeCrafted(craft_place);
-	LOG("changeCrafted over");
-	if (--block.amount == 0) {
+	if (--block.amount <= 0) {
 		return (t_item());
 	}
 	return (block);

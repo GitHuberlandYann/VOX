@@ -30,18 +30,18 @@ void Player::drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_s
 		glm::vec3 p2 = p0 - armFront * 12.0f * scale;
 		glm::vec3 p3 = p1 - armFront * 12.0f * scale;
 
-		int spec = speco + 48 + (32 << 6) + light;
-		// TODO restore this
-		(void)arr;
+		int spec = speco + 48 + (32 << 6) + (light << 24);
 		// utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, {(1 << 17) + (1 << 18), -4 + (1 << 18), (1 << 17) - (12 << 6), -4 - (12 << 6)}, {1 + (1 << 6), (1 << 6), 1, 0});
+		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec - 4 - (12 << 6), 4, 12, true, true);
 
 		// left
 		p1 = p0;
 		p0 -= armUp * 3.0f * scale;
 		p3 = p2;
 		p2 -= armUp * 3.0f * scale;
-		spec = speco + 52 + (32 << 6) + light;
+		spec = speco + 52 + (32 << 6) + (light << 24);
 		// utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, {(1 << 17) + (1 << 18), -4 + (1 << 18), (1 << 17) - (12 << 6), -4 - (12 << 6)}, {1 + (1 << 6), (1 << 6), 1, 0});
+		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec - 4 - (12 << 6), 4, 12, true, true);
 	} else if (s_blocks[item]->item3D) { //(item < blocks::poppy && item != blocks::oak_door && item != blocks::glass_pane) { // draw block
 		glm::vec3 itemFront = glm::normalize(glm::vec3(glm::vec2(_front + _right * 0.5f), 0));
 		glm::vec3 itemRight = glm::normalize(glm::cross(itemFront, settings::consts::math::world_up));

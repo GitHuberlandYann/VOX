@@ -26,6 +26,9 @@ namespace inputs
 	void force_reset_key_update( int key );
 	const char* get_key_name( int action );
 	void set_key_bind( int key, int action );
+	bool is_initial_key_bind( int action );
+	void reset_key_binds( void );
+	void reset_key_bind( int action );
 	void reset_last_input( void );
 	int get_last_input( void );
 
@@ -77,6 +80,8 @@ namespace inputs
 		slot_8,
 		left_click,
 		right_click,
+		left_shift,
+		left_control,
 
 		key_size,
 	};

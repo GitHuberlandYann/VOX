@@ -280,6 +280,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 				ofs << "seed set to " << perlin_seed << std::endl;
 			} else if (!line.compare(0, 13, "\"game_mode\": ")) {
 				_game_mode = std::atoi(&line[13]);
+				Settings::Get()->setInt(settings::ints::game_mode, _game_mode);
 				ofs << "game mode set to " << _game_mode << std::endl;
 			} else if (!line.compare(0, 14, "\"debug_mode\": ")) {
 				_debug_mode = line.substr(14, 4) == "true";

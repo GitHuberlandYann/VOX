@@ -120,6 +120,7 @@ namespace settings {
 
 	namespace defaults {
 		const int   render_distance = 10;
+		const int   game_mode       = settings::consts::gamemode::survival;
 		const float fov             = 70.0f;  // if fov = -fov, world is upside down
 		const float brightness      = 0.05f;  // [0:1]
 		const float yaw             = 90.0f;
@@ -150,6 +151,7 @@ namespace settings {
 			available_res,
 			flat_world_block,
 			json_version,
+			game_mode,
 			size
 		};
 	};

@@ -166,7 +166,7 @@ namespace inputs
 		{GLFW_KEY_7, slot_6},
 		{GLFW_KEY_8, slot_7},
 		{GLFW_KEY_9, slot_8},
-	};
+	}, initial_key_map = key_map;
 
 	void key_callback( GLFWwindow* window, int key, int scancode, int action, int mods )
 	{
@@ -176,6 +176,14 @@ namespace inputs
 		if (action == GLFW_PRESS) {
 			last_input = key;
 		}
+		if (key == GLFW_KEY_LEFT_SHIFT) {
+			down[left_shift] = (action == GLFW_PRESS);
+			updated[left_shift] = true;
+		} else if (key == GLFW_KEY_LEFT_CONTROL) {
+			down[left_control] = (action == GLFW_PRESS);
+			updated[left_control] = true;
+		}
+
 		auto search = key_map.find(key);
 		if (search == key_map.end()) {
 			// std::cout << "couldn't find key " << key << " in key_map" << std::endl;
@@ -254,9 +262,7 @@ namespace inputs
 		if (action < 0 || action >= key_size) {
 			return ("Out of bounds.");
 		}
-		auto result = std::find_if(
-				key_map.begin(),
-				key_map.end(),
+		auto result = std::find_if(key_map.begin(), key_map.end(),
 				[action](auto& it) {return (it.second == action); });
 
 		if (result == key_map.end()) {
@@ -329,6 +335,49 @@ namespace inputs
 		}
 
 		key_map[key] = action; // bind new key
+	}
+
+	/**
+	 * @brief checks if key binded to given action is initial key bind
+	 */
+	bool is_initial_key_bind( int action )
+	{
+		auto current_bind = std::find_if(key_map.begin(), key_map.end(),
+							[action](auto& it) {return (it.second == action); });
+		if (current_bind == key_map.end()) {
+			LOGERROR("ERROR inputs::is_initial_key_bind action not found in key_map");
+			return (false);
+		}
+		auto initial_bind = std::find_if(initial_key_map.begin(), initial_key_map.end(),
+							[action](auto& it) {return (it.second == action); });
+		if (initial_bind == initial_key_map.end()) {
+			LOGERROR("ERROR inputs::is_initial_key_bind action not found in initial_key_map");
+			return (false);
+		}
+
+		return (current_bind->first == initial_bind->first);
+	}
+
+	void reset_key_binds( void )
+	{
+		key_map = initial_key_map;
+	}
+
+	void reset_key_bind( int action )
+	{
+		auto current_bind = std::find_if(key_map.begin(), key_map.end(),
+							[action](auto& it) {return (it.second == action); });
+		if (current_bind != key_map.end()) {
+			key_map.erase(current_bind); // erase previous key
+		}
+		auto initial_bind = std::find_if(initial_key_map.begin(), initial_key_map.end(),
+							[action](auto& it) {return (it.second == action); });
+		if (initial_bind == initial_key_map.end()) {
+			LOGERROR("ERROR inputs::reset_key_bind action not found in initial_key_map");
+			return ;
+		}
+
+		key_map[initial_bind->first] = initial_bind->second; // bind new key
 	}
 
 	/**
