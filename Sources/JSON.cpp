@@ -1,6 +1,7 @@
 #include "OpenGL_Manager.hpp"
 #include "Settings.hpp"
 #include "logs.hpp"
+#include "callbacks.hpp"
 #include <fstream>
 extern siv::PerlinNoise::seed_type perlin_seed;
 
@@ -735,6 +736,8 @@ void Menu::loadSettings( void )
 					Settings::Get()->pushResourcePack(pack);
 					index = end + 1;
 				}
+			} else if (!line.compare(0, 13, "\"bindings\": {")) {
+				inputs::loadBindings(ofs, line);
 			}
 		}
 	}
@@ -756,25 +759,29 @@ void Menu::saveSettings( void )
 					+ ",\n\t\"face_culling\": " + std::to_string(Settings::Get()->getBool(settings::bools::face_culling))
 					+ ",\n\t\"smooth_lighting\": " + std::to_string(Settings::Get()->getBool(settings::bools::smooth_lighting))
 					+ ",\n\t\"resource_packs\": [";
-	std::vector<std::string> &packs = Settings::Get()->getResourcePacks();
+	std::vector<std::string>& packs = Settings::Get()->getResourcePacks();
 	bool start = true;
-	for (auto &pack: packs) {
+	for (auto& pack: packs) {
 		if (!start) {
 			json += ", ";
 		}
 		json += '\"' + pack + '\"';
 		start = false;
 	}
-	json += "]\n}";
+	json += "],\n\t" + inputs::saveBindings() + "\n}";
 	try {
 		std::ofstream ofs("Resources/settings.json", std::ofstream::out | std::ofstream::trunc);
 		ofs << json;
 		ofs.close();
 	}
-	catch (std::exception & e) {
+	catch (std::exception& e) {
 		LOGERROR(e.what() << "\nSettings save on Resources/settings.json failure.");
 	}
 }
+
+// ************************************************************************** //
+//                            Resource packs                                  //
+// ************************************************************************** //
 
 bool Settings::loadResourcePacks( void )
 {

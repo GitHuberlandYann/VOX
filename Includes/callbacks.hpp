@@ -31,6 +31,8 @@ namespace inputs
 	void reset_key_bind( int action );
 	void reset_last_input( void );
 	int get_last_input( void );
+	std::string saveBindings( void );
+	void loadBindings( std::ofstream& ofs, std::string str );
 
 	enum {
 		move_forwards,

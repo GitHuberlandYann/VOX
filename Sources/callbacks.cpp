@@ -3,6 +3,7 @@
 #include "Inventory.hpp"
 #include "callbacks.hpp"
 #include "logs.hpp"
+#include <fstream>
 
 Player* playerPtr = NULL;
 Menu* menuPtr = NULL;
@@ -394,5 +395,41 @@ namespace inputs
 	int get_last_input( void )
 	{
 		return (last_input);
+	}
+
+	/**
+	 * @brief return string containing bindings settings
+	 */
+	std::string saveBindings( void )
+	{
+		std::string res = "\"bindings\": {";
+
+		bool start = true;
+		for (auto bind : key_map) {
+			if (!start) {
+				res += ", ";
+			}
+			res += '\"' + std::to_string(bind.first) + "\": " + std::to_string(bind.second);
+			start = false;
+		}
+		res += '}';
+		return (res);
+	}
+
+	/**
+	 * @brief load bindings from string containing bindings settings
+	 */
+	void loadBindings( std::ofstream& ofs, std::string str )
+	{
+		key_map.clear();
+		size_t index = 13;
+		while (str[index] == '\"') {
+			int key = std::atoi(&str[index + 1]);
+			for (index = index + 3; str[index] != ':'; ++index);
+			int action = std::atoi(&str[index + 2]);
+			for (index = index + 3; str[index] && str[index] != '\"'; ++index);
+			key_map[key] = action;
+			ofs << "binding key " << key << " to action " << action << std::endl;
+		}
 	}
 }
