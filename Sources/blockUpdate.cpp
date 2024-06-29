@@ -496,7 +496,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		_signs.emplace(offset, new SignInstance(this, value, pos));
 	} else if (type == blocks::item_frame) {
 		_entities.push_back(std::make_shared<ItemFrameEntity>(this, glm::ivec3(pos.x + _startX, pos.y + _startY, pos.z), value));
-	} else if (type == blocks::torch || type == blocks::redstone_torch) {
+	} else if (s_blocks[type]->light_level && type != blocks::redstone_lamp) {
 		if (type == blocks::redstone_torch) {
 			updateRedstoneTorch(pos, value);
 		}

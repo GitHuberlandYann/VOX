@@ -87,6 +87,8 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::block::chest_inner_top, root + "chest_inner_top.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::chest_side, root + "chest_side.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::chest_top, root + "chest_top.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::chiseled_quartz_block, root + "chiseled_quartz_block.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::chiseled_quartz_block_top, root + "chiseled_quartz_block_top.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::coal_block, root + "coal_block.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::coal_ore, root + "coal_ore.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::cobblestone, root + "cobblestone.png");
@@ -127,6 +129,7 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::block::furnace_top, root + "furnace_top.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::glass, root + "glass.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::glass_pane_top, root + "glass_pane_top.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::glowstone, root + "glowstone.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::grass, root + "grass.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::grass_block_side, root + "grass_block_side.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::grass_block_top, root + "grass_block_top.png");
@@ -141,6 +144,7 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::block::light_gray_wool, root + "light_gray_wool.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::lime_wool, root + "lime_wool.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::magenta_wool, root + "magenta_wool.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::netherrack, root + "netherrack.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::oak_door_bottom, root + "oak_door_bottom.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::oak_door_top, root + "oak_door_top.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::oak_leaves, root + "oak_leaves.png");
@@ -156,6 +160,7 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::block::observer_front, root + "observer_front.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::observer_side, root + "observer_side.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::observer_top, root + "observer_top.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::obsidian, root + "obsidian.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::orange_wool, root + "orange_wool.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::pink_tulip, root + "pink_tulip.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::pink_wool, root + "pink_wool.png");
@@ -166,6 +171,10 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::block::piston_top_sticky, root + "piston_top_sticky.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::poppy, root + "poppy.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::purple_wool, root + "purple_wool.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::quartz_block, root + "quartz_block.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::quartz_bricks, root + "quartz_bricks.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::quartz_pillar, root + "quartz_pillar.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::quartz_ore, root + "quartz_ore.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::red_wool, root + "red_wool.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::redstone_block, root + "redstone_block.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::redstone_lamp, root + "redstone_lamp.png");
@@ -180,6 +189,7 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::block::sandstone_bottom, root + "sandstone_bottom.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::sandstone_top, root + "sandstone_top.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::smooth_stone, root + "smooth_stone.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::smooth_quartz_block, root + "smooth_quartz_block.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::stone, root + "stone.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::stone_bricks, root + "stone_bricks.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::sugar_cane, root + "sugar_cane.png");
@@ -221,6 +231,7 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::item::diamond_shovel, root + "diamond_shovel.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::flint, root + "flint.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::flint_and_steel, root + "flint_and_steel.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::item::glowstone_dust, root + "glowstone_dust.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::iron_axe, root + "iron_axe.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::iron_hoe, root + "iron_hoe.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::iron_ingot, root + "iron_ingot.png");
@@ -229,6 +240,7 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::item::item_frame, root + "item_frame.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::oak_door, root + "oak_door.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::oak_sign, root + "oak_sign.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::item::quartz, root + "quartz.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::redstone, root + "redstone.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::repeater, root + "repeater.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::skeleton_egg, root + "skeleton_egg.png");

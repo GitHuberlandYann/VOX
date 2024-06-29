@@ -342,35 +342,16 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		return ;
 	} else if (!argv[2].compare("redstone")) {
 		_oglMan->_inventory->spillInventory(NULL);
-		_oglMan->_inventory->absorbItem({blocks::observer, 1});
-		_oglMan->_inventory->absorbItem({blocks::lever, 1});
-		_oglMan->_inventory->absorbItem({blocks::redstone_dust, 1});
-		_oglMan->_inventory->absorbItem({blocks::sticky_piston, 1});
-		_oglMan->_inventory->absorbItem({blocks::repeater, 1});
-		_oglMan->_inventory->absorbItem({blocks::stone_bricks, 1});
-		_oglMan->_inventory->absorbItem({blocks::worldedit_wand, 1});
-		_oglMan->_inventory->absorbItem({blocks::iron_block, 1});
-		_oglMan->_inventory->absorbItem({blocks::glass, 1});
+		const std::array<int, 28> reds = {blocks::observer, blocks::lever, blocks::redstone_dust, blocks::sticky_piston,
+			blocks::repeater, blocks::stone_bricks, blocks::worldedit_wand, blocks::iron_block, blocks::glass,
 
-		_oglMan->_inventory->absorbItem({blocks::stone_button, 1});
-		_oglMan->_inventory->absorbItem({blocks::oak_button, 1});
-		_oglMan->_inventory->absorbItem({blocks::chest, 1});
-		_oglMan->_inventory->absorbItem({blocks::torch, 1});
-		_oglMan->_inventory->absorbItem({blocks::stone, 1});
-		_oglMan->_inventory->absorbItem({blocks::coal_ore, 1});
-		_oglMan->_inventory->absorbItem({blocks::redstone_ore, 1});
-		_oglMan->_inventory->absorbItem({blocks::diamond_ore, 1});
-		_oglMan->_inventory->absorbItem({blocks::grass_block, 1});
-		_oglMan->_inventory->absorbItem({blocks::oak_sign, 1});
-		_oglMan->_inventory->absorbItem({blocks::redstone_lamp, 1});
-		_oglMan->_inventory->absorbItem({blocks::oak_stairs, 1});
-		_oglMan->_inventory->absorbItem({blocks::piston, 1});
-		_oglMan->_inventory->absorbItem({blocks::comparator, 1});
-		_oglMan->_inventory->absorbItem({blocks::redstone_torch, 1});
-		_oglMan->_inventory->absorbItem({blocks::redstone_block, 1});
-		_oglMan->_inventory->absorbItem({blocks::iron_ore, 1});
-		_oglMan->_inventory->absorbItem({blocks::target, 1});
-		_oglMan->_inventory->absorbItem({blocks::item_frame, 1});
+			blocks::stone_button, blocks::oak_button, blocks::chest, blocks::torch, blocks::stone, blocks::coal_ore,
+			blocks::redstone_ore, blocks::diamond_ore, blocks::grass_block, blocks::oak_sign, blocks::redstone_lamp,
+			blocks::oak_stairs, blocks::piston, blocks::comparator, blocks::redstone_torch, blocks::redstone_block,
+			blocks::iron_ore, blocks::target, blocks::item_frame};
+		for (size_t index = 0; index < reds.size(); ++index) {
+			_oglMan->_inventory->absorbItem({reds[index], 1});
+		}
 		return ;
 	} else if (!argv[2].compare(0, 8, "blocks::")) {
 		int i = 0;
@@ -380,6 +361,16 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 				break ;
 			}
 		}
+	} else if (!argv[2].compare(0, 3, "all")) {
+		int start = (argv[2][3]) ? std::atoi(&argv[2][3]) * 36 + 1 : 1;
+		_oglMan->_inventory->spillInventory(NULL);
+		for (int i = 0; i < 36; ++i) {
+			int index = start + i;
+			if (index > blocks::air && index < S_BLOCKS_SIZE) { // && s_blocks[index]->name.compare("TBD")) {
+				_oglMan->_inventory->absorbItem({index, 1});
+			}
+		}
+		return ;
 	} else {
 		size_t index = 0;
 		for (; argv[2][index]; ++index) {

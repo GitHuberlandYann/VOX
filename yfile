@@ -67,6 +67,7 @@ TODOS:
 	SHORTTERM memory:
 	- replace glm with own small lib
 	- display block_hit s name and details as a 2D window
+	- allow player to drop item from inventory menu
 	- skin customization menu
 	- anvil + named items
 	

@@ -28,6 +28,8 @@ const std::map<int, std::vector<int>> recipes = {
 		blocks::charcoal, blocks::stick, blocks::torch, 4,
 		blocks::redstone_dust, blocks::stick, blocks::redstone_torch, 4,
 		blocks::stick, blocks::cobblestone, blocks::lever, 1,
+		blocks::quartz_block, blocks::quartz_block, blocks::quartz_pillar, 1,
+		blocks::quartz_slab, blocks::quartz_slab, blocks::chiseled_quartz_block, 1,
 	}},
 
 	{1 + (3 << 2), { // 1x3
@@ -46,6 +48,9 @@ const std::map<int, std::vector<int>> recipes = {
 		blocks::stone, blocks::stone, blocks::stone, blocks::stone, blocks::stone_bricks, 4,
 		blocks::string, blocks::string, blocks::string, blocks::string, blocks::white_wool, 1,
 		blocks::iron_ingot, blocks::air, blocks::air, blocks::flint, blocks::flint_and_steel, 1,
+		blocks::quartz, blocks::quartz, blocks::quartz, blocks::quartz, blocks::quartz_block, 1,
+		blocks::quartz_block, blocks::quartz_block, blocks::quartz_block, blocks::quartz_block, blocks::quartz_bricks, 1,
+		blocks::glowstone_dust, blocks::glowstone_dust, blocks::glowstone_dust, blocks::glowstone_dust, blocks::glowstone, 1,
 	}},
 
 	{2 + (3 << 2), { // 2x3
@@ -78,6 +83,7 @@ const std::map<int, std::vector<int>> recipes = {
 
 	{3 + (3 << 2), { // 3x3
 		blocks::oak_planks, blocks::air, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_stairs, 4,
+		blocks::quartz_block, blocks::air, blocks::air, blocks::quartz_block, blocks::quartz_block, blocks::air, blocks::quartz_block, blocks::quartz_block, blocks::quartz_block, blocks::quartz_stairs, 4,
 		blocks::stone, blocks::air, blocks::air, blocks::stone, blocks::stone, blocks::air, blocks::stone, blocks::stone, blocks::stone, blocks::stone_stairs, 4,
 		blocks::smooth_stone, blocks::air, blocks::air, blocks::smooth_stone, blocks::smooth_stone, blocks::air, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone_stairs, 4,
 		blocks::cobblestone, blocks::air, blocks::air, blocks::cobblestone, blocks::cobblestone, blocks::air, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone_stairs, 4,
@@ -98,6 +104,10 @@ const std::map<int, std::vector<int>> recipes = {
 		blocks::iron_ingot, blocks::iron_ingot, blocks::iron_ingot, blocks::iron_ingot, blocks::iron_ingot, blocks::iron_ingot, blocks::iron_ingot, blocks::iron_ingot, blocks::iron_ingot, blocks::iron_block, 1,
 		blocks::diamond, blocks::diamond, blocks::diamond, blocks::diamond, blocks::diamond, blocks::diamond, blocks::diamond, blocks::diamond, blocks::diamond, blocks::diamond_block, 1,
 		blocks::redstone_dust, blocks::redstone_dust, blocks::redstone_dust, blocks::redstone_dust, blocks::redstone_dust, blocks::redstone_dust, blocks::redstone_dust, blocks::redstone_dust, blocks::redstone_dust, blocks::redstone_block, 1,
+		
+		blocks::air, blocks::redstone_torch, blocks::air, blocks::redstone_torch, blocks::quartz, blocks::redstone_torch, blocks::smooth_stone, blocks::smooth_stone, blocks::smooth_stone, blocks::comparator, 1,
+		blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::redstone_dust, blocks::redstone_dust, blocks::quartz, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::observer, 1,
+		blocks::air, blocks::redstone_dust, blocks::air, blocks::redstone_dust, blocks::glowstone, blocks::redstone_dust, blocks::air, blocks::redstone_dust, blocks::air, blocks::redstone_lamp, 1,
 	}},
 };
 

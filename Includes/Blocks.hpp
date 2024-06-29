@@ -18,7 +18,7 @@ typedef struct s_shaderInput t_shaderInput;
 
 const float one16th = 0.0625f;
 
-# define S_BLOCKS_SIZE 168
+# define S_BLOCKS_SIZE 184
 
 namespace face_dir {
 	enum {
@@ -108,6 +108,8 @@ namespace settings {
 					chest_inner_top,
 					chest_side,
 					chest_top,
+					chiseled_quartz_block,
+					chiseled_quartz_block_top,
 					coal_block,
 					coal_ore,
 					cobblestone,
@@ -148,6 +150,7 @@ namespace settings {
 					furnace_top,
 					glass,
 					glass_pane_top,
+					glowstone,
 					grass,
 					grass_block_side,
 					grass_block_top,
@@ -162,6 +165,7 @@ namespace settings {
 					light_gray_wool,
 					lime_wool,
 					magenta_wool,
+					netherrack,
 					oak_door_bottom,
 					oak_door_top,
 					oak_leaves,
@@ -177,6 +181,7 @@ namespace settings {
 					observer_front,
 					observer_side,
 					observer_top,
+					obsidian,
 					orange_wool,
 					pink_tulip,
 					pink_wool,
@@ -187,6 +192,11 @@ namespace settings {
 					piston_top_sticky,
 					poppy,
 					purple_wool,
+					quartz_block,
+					quartz_bricks,
+					quartz_ore,
+					quartz_pillar,
+					quartz_pillar_top,
 					red_wool,
 					redstone_block,
 					redstone_lamp,
@@ -201,6 +211,7 @@ namespace settings {
 					sandstone_bottom,
 					sandstone_top,
 					smooth_stone,
+					smooth_quartz_block,
 					stone,
 					stone_bricks,
 					sugar_cane,
@@ -245,6 +256,7 @@ namespace settings {
 					diamond_shovel,
 					flint,
 					flint_and_steel,
+					glowstone_dust,
 					iron_axe,
 					iron_hoe,
 					iron_ingot,
@@ -253,6 +265,7 @@ namespace settings {
 					item_frame,
 					oak_door,
 					oak_sign,
+					quartz,
 					redstone,
 					repeater,
 					skeleton_egg,
@@ -411,7 +424,7 @@ namespace blocks {
 		crafting_table = 8,
 		furnace,
 		oak_stairs,
-		empty11,
+		quartz_stairs,
 		oak_door,
 		oak_trapdoor,
 		stone_stairs,
@@ -449,7 +462,7 @@ namespace blocks {
 		redstone_ore,
 		redstone_block,
 		oak_slab = 48,
-		empty49,
+		quartz_slab,
 		oak_fence,
 		stone_slab,
 		empty52,
@@ -484,7 +497,10 @@ namespace blocks {
 		item_frame,
 		birch_planks,
 		sand_stone,
+		glowstone,
 		water = 88,
+		empty89,
+		obsidian,
 		stick = 96,
 		wooden_shovel,
 		stone_shovel,
@@ -520,6 +536,7 @@ namespace blocks {
 		zombie_egg = 128,
 		skeleton_egg,
 		string,
+		glowstone_dust,
 		white_wool = 136,
 		pink_wool,
 		magenta_wool,
@@ -552,6 +569,14 @@ namespace blocks {
 		black_carpet,
 		gray_carpet,
 		light_gray_carpet,
+		quartz = 168,
+		netherrack,
+		quartz_ore,
+		quartz_block,
+		smooth_quartz_block,
+		chiseled_quartz_block,
+		quartz_pillar,
+		quartz_bricks,
 	};
 	const int item = 1942;
 }
@@ -876,7 +901,9 @@ struct Farmland : Block {
 			hardness = 0.6f;
 		}
 		virtual int getTex( int dir, int value ) const override {
-			if (dir == face_dir::plus_z) {
+			if (value == blocks::item) {
+				return (settings::consts::shader::block::debug);
+			} else if (dir == face_dir::plus_z) {
 				return ((value & mask::farmland::wet) ? settings::consts::shader::block::farmland_moist
 					: settings::consts::shader::block::farmland);
 			}
@@ -894,8 +921,9 @@ struct DirtPath : Farmland {
 			hardness = 0.65f;
 		}
 		int getTex( int dir, int value ) const override {
-			(void)value;
-			if (dir == face_dir::plus_z) {
+			if (value == blocks::item) {
+				return (settings::consts::shader::block::debug);
+			} else if (dir == face_dir::plus_z) {
 				return (settings::consts::shader::block::dirt_path_top);
 			} else if (dir == face_dir::minus_z) {
 				return (settings::consts::shader::block::dirt);
@@ -1001,6 +1029,19 @@ struct OakStairs : Stairs {
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
 			texture = settings::consts::shader::block::oak_planks;
+		}
+};
+
+struct QuartzStairs : Stairs {
+	public:
+		QuartzStairs() {
+			name = "QUARTZ_STAIRS";
+			mined = blocks::quartz_stairs;
+			blast_resistance = .8f;
+			byHand = false;
+			needed_tool = blocks::wooden_pickaxe;
+			hardness = .8f;
+			texture = settings::consts::shader::block::quartz_block;
 		}
 };
 
@@ -1509,6 +1550,19 @@ struct OakSlab : Slab {
 		}
 };
 
+struct QuartzSlab : Slab {
+	public:
+		QuartzSlab() {
+			name = "QUARTZ_SLAB";
+			mined = blocks::quartz_slab;
+			blast_resistance = .8f;
+			byHand = false;
+			needed_tool = blocks::wooden_pickaxe;
+			hardness = .8f;
+			texture = settings::consts::shader::block::quartz_block;
+		}
+};
+
 struct OakFence : Fence {
 	public:
 		OakFence() {
@@ -1988,6 +2042,19 @@ struct SandStone : Cube {
 		}
 };
 
+struct Glowstone : Cube {
+	public:
+		Glowstone() {
+			name = "GLOWSTONE";
+			mined = blocks::glowstone;
+			light_level = 15;
+			blast_resistance = 0.3f;
+			byHand = true;
+			hardness = 0.3f;
+			texture = settings::consts::shader::block::glowstone;
+		}
+};
+
 struct Water : Block {
 	public:
 		Water() {
@@ -1997,6 +2064,20 @@ struct Water : Block {
 			hasCollisionHitbox_1x1x1 = false;
 			geometry = geometry::none;
 			transparent = true;
+		}
+};
+
+struct Obsidian : Cube {
+	public:
+		Obsidian() {
+			name = "OBSIDIAN";
+			mined = blocks::obsidian;
+			blast_resistance = 1200.f;
+			byHand = false;
+			needed_tool = blocks::wooden_pickaxe;
+			needed_material_level = 3; // min diamond to collect
+			hardness = 50.f;
+			texture = settings::consts::shader::block::obsidian;
 		}
 };
 
@@ -2408,6 +2489,16 @@ struct String : Block {
 		}
 };
 
+struct GlowstoneDust : Block {
+	public:
+		GlowstoneDust() {
+			name = "GLOWSTONE_DUST";
+			isItemOnly = true;
+			item3D = false;
+			texture = settings::consts::shader::item::glowstone_dust;
+		}
+};
+
 struct Wool : Cube {
 	public:
 		Wool() {
@@ -2723,6 +2814,145 @@ struct LightGrayCarpet : Carpet {
 			name = "LIGHT_GRAY_CARPET";
 			mined = blocks::light_gray_carpet;
 			texture = settings::consts::shader::block::light_gray_wool;
+		}
+};
+
+struct Quartz : Block {
+	public:
+		Quartz() {
+			name = "NETHER_QUARTZ";
+			isItemOnly = true;
+			item3D = false;
+			texture = settings::consts::shader::item::quartz;
+		}
+};
+
+struct Netherrack : Cube {
+	public:
+		Netherrack() {
+			name = "NETHERRACK";
+			mined = blocks::netherrack;
+			blast_resistance = 0.4f;
+			byHand = false;
+			needed_tool = blocks::wooden_pickaxe;
+			hardness = 0.4f;
+			texture = settings::consts::shader::block::netherrack;
+		}
+};
+
+struct QuartzOre : Cube {
+	public:
+		QuartzOre() {
+			name = "QUARTZ_ORE";
+			mined = blocks::quartz;
+			blast_resistance = 3.f;
+			byHand = false;
+			needed_tool = blocks::wooden_pickaxe;
+			hardness = 3.f;
+			texture = settings::consts::shader::block::quartz_ore;
+		}
+};
+
+struct QuartzBlock : Cube {
+	public:
+		QuartzBlock() {
+			name = "QUARTZ_BLOCK";
+			mined = blocks::quartz_block;
+			isComposant = true;
+			getProduction = blocks::quartz_block;
+			blast_resistance = .8f;
+			byHand = false;
+			needed_tool = blocks::wooden_pickaxe;
+			hardness = .8f;
+			texture = settings::consts::shader::block::quartz_block;
+		}
+};
+
+struct SmoothQuartzBlock : Cube {
+	public:
+		SmoothQuartzBlock() {
+			name = "SMOOTH_QUARTZ_BLOCK";
+			mined = blocks::smooth_quartz_block;
+			blast_resistance = .8f;
+			byHand = false;
+			needed_tool = blocks::wooden_pickaxe;
+			hardness = .8f;
+			texture = settings::consts::shader::block::smooth_quartz_block;
+		}
+};
+
+struct ChiseledQuartzBlock : Cube {
+	public:
+		ChiseledQuartzBlock() {
+			name = "CHISELED_QUARTZ_BLOCK";
+			mined = blocks::chiseled_quartz_block;
+			blast_resistance = .8f;
+			byHand = false;
+			needed_tool = blocks::wooden_pickaxe;
+			hardness = .8f;
+			texture = settings::consts::shader::block::chiseled_quartz_block;
+		}
+		int getTex( int dir, int value ) const override {
+			int axis = (value >> offset::blocks::orientation) & 0x7;
+			switch (dir) {
+				case face_dir::minus_z:
+				case face_dir::plus_z:
+					return ((axis == face_dir::plus_z) ? settings::consts::shader::block::chiseled_quartz_block_top
+						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::chiseled_quartz_block);
+				case face_dir::minus_x:
+				case face_dir::plus_x:
+					return ((axis == face_dir::plus_x) ? settings::consts::shader::block::chiseled_quartz_block_top
+						: (axis == face_dir::plus_y) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::chiseled_quartz_block);
+				case face_dir::minus_y:
+				case face_dir::plus_y:
+					return ((axis == face_dir::plus_y) ? settings::consts::shader::block::chiseled_quartz_block_top
+						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::chiseled_quartz_block);
+			}
+			return (settings::consts::shader::block::chiseled_quartz_block);
+		}
+};
+
+struct QuartzPillar : Cube {
+	public:
+		QuartzPillar() {
+			name = "QUARTZ_PILLAR";
+			mined = blocks::quartz_pillar;
+			oriented = true;
+			blast_resistance = .8f;
+			byHand = false;
+			needed_tool = blocks::wooden_pickaxe;
+			hardness = .8f;
+		}
+		int getTex( int dir, int value ) const override {
+			int axis = (value >> offset::blocks::orientation) & 0x7;
+			switch (dir) {
+				case face_dir::minus_z:
+				case face_dir::plus_z:
+					return ((axis == face_dir::plus_z) ? settings::consts::shader::block::quartz_pillar_top
+						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::quartz_pillar);
+				case face_dir::minus_x:
+				case face_dir::plus_x:
+					return ((axis == face_dir::plus_x) ? settings::consts::shader::block::quartz_pillar_top
+						: (axis == face_dir::plus_y) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::quartz_pillar);
+				case face_dir::minus_y:
+				case face_dir::plus_y:
+					return ((axis == face_dir::plus_y) ? settings::consts::shader::block::quartz_pillar_top
+						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::quartz_pillar);
+			}
+			return (settings::consts::shader::block::quartz_pillar);
+		}
+};
+
+struct QuartzBricks : Cube {
+	public:
+		QuartzBricks() {
+			name = "QUARTZ_BRICKS";
+			mined = blocks::quartz_bricks;
+			blast_resistance = .8f;
+			byHand = false;
+			needed_tool = blocks::wooden_pickaxe;
+			hardness = .8f;
+			texture = settings::consts::shader::block::quartz_bricks;
 		}
 };
 
