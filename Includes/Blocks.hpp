@@ -869,6 +869,7 @@ struct Cactus : Cube {
 			mined = blocks::cactus;
 			blast_resistance = 0.4f;
 			hasCollisionHitbox_1x1x1 = false;
+			geometry = geometry::crop;
 			byHand = true;
 			hardness = 0.4f;
 			transparent = true;
@@ -882,6 +883,8 @@ struct Cactus : Cube {
 			}
 			return (settings::consts::shader::block::cactus_side);
 		}
+		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
+		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 };
 
 struct Farmland : Block {

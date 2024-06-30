@@ -174,6 +174,46 @@ void Cross::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 	utils::shader::addQuads(vertices, {p4, p1, p6, p3}, texture, light, 16, 16, true);
 }
 
+void Cactus::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
+{
+	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1 - one16th);
+	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1 - one16th);
+	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
+	glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
+
+	glm::vec3 p4 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 1 - one16th);
+	glm::vec3 p5 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 1 - one16th);
+	glm::vec3 p6 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 1, pos.z + 0);
+	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
+
+	int spec = settings::consts::shader::block::cactus_side;
+	int light = chunk->computeLight(pos.x, pos.y, pos.z);
+
+	light += (3 << 8);
+	glm::vec3 offset = {one16th, .0f, .0f};
+	utils::shader::addQuads(vertices, {p4 + offset, p0 + offset, p6 + offset, p2 + offset}, spec, light, 16, 16);
+	
+	light += (1 << 8);
+	utils::shader::addQuads(vertices, {p1 - offset, p5 - offset, p3 - offset, p7 - offset}, spec, light, 16, 16);
+
+	light -= (3 << 8);
+	offset = {.0f, one16th, .0f};
+	utils::shader::addQuads(vertices, {p0 + offset, p1 + offset, p2 + offset, p3 + offset}, spec, light, 16, 16);
+
+	light += (1 << 8);
+	utils::shader::addQuads(vertices, {p5 - offset, p4 - offset, p7 - offset, p6 - offset}, spec, light, 16, 16);
+		
+	spec = settings::consts::shader::block::cactus_top;
+	light -= (2 << 8);
+	utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, light, 16, 16);
+	
+	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
+		spec = settings::consts::shader::block::cactus_bottom;
+		light += (5 << 8);
+		utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, light, 16, 16);
+	}
+}
+
 void Farmland::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
 	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1 - one16th);
@@ -355,7 +395,7 @@ void Torch::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
 	int spec = getTex(face_dir::minus_x, value);
-	int light = (15 << 4);
+	int light = light_level;
 	switch ((value >> offset::blocks::orientation) & 0x7) { // orientation
 		case face_dir::minus_z: // default
 			p0 += glm::vec3( 7.0f * one16th,  7.0f * one16th, -6.0f * one16th);
@@ -730,7 +770,7 @@ void Stairs::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 				break ;
 		}
 		// front minus_x of second step
-		light += (3 << 8);
+		light -= (2 << 8);
 		switch (corners) {
 			case corners::pm | corners::pp: // full width
 				utils::shader::addQuads(vertices, {p4 + glm::vec3(.5f, .0f, -.5f), p0 + glm::vec3(.5f, .0f, -.5f), p4 + glm::vec3(.5f, .0f, -1.0f), p0 + glm::vec3(.5f, .0f, -1.0f)}, spec, light, 16, 8);
@@ -1378,7 +1418,7 @@ void GlassPane::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm
 {
 	(void)chunk;(void)vertices;(void)start;(void)pos;(void)value;
 	// TODO move this to sky_vertex
-	/*glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
+	glm::vec3 p0 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p1 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 1);
 	glm::vec3 p2 = glm::vec3(start.x + pos.x + 0, start.y + pos.y + 0, pos.z + 0);
 	glm::vec3 p3 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 0, pos.z + 0);
@@ -1389,93 +1429,73 @@ void GlassPane::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
 	int bitfield = (value >> offset::blocks::bitfield);
-	int baseSpec = (this->texX(face_dir::plus_z, fence::arm_end) << 4) + (this->texY() << 12);
-	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-	int spec;
+	int spec = settings::consts::shader::block::glass;
+	int light = chunk->computeLight(pos.x, pos.y, pos.z);
 	if (bitfield & fence::mx) {
-		spec = baseSpec + (2 << 4) + (1 << 19);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.4375f, 0.f), p1 + glm::vec3(0.f, 0.4375f, 0.f), p2 + glm::vec3(0.f, 0.4375f, 0.f), p3 + glm::vec3(0.f, 0.4375f, 0.f)}, spec, 16, 16, 0, 8);
-		spec += (1 << 19);
-		utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, -0.4375f, 0.f), p4 + glm::vec3(0.f, -0.4375f, 0.f), p7 + glm::vec3(0.f, -0.4375f, 0.f), p6 + glm::vec3(0.f, -0.4375f, 0.f)}, spec, 16, 16, 0, 8, true);
+		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.4375f, 0.f), p1 + glm::vec3(-.5f, 0.4375f, 0.f), p2 + glm::vec3(0.f, 0.4375f, 0.f), p3 + glm::vec3(-.5f, 0.4375f, 0.f)}, spec, light + (1 << 8), 8, 16);
+		utils::shader::addQuads(vertices, {p5 + glm::vec3(-.5f, -0.4375f, 0.f), p4 + glm::vec3(0.f, -0.4375f, 0.f), p7 + glm::vec3(-.5f, -0.4375f, 0.f), p6 + glm::vec3(0.f, -0.4375f, 0.f)}, spec, light + (2 << 8), 8, 16, true);
 	} else {
-		spec = baseSpec + (3 << 19) - (!!((value >> 12) & (fence::my | fence::py)) << 12);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.4375f, 0.f, 0.f), p0 + glm::vec3(0.4375f, 0.f, 0.f), p6 + glm::vec3(0.4375f, 0.f, 0.f), p2 + glm::vec3(0.4375f, 0.f, 0.f)}, spec, 16, 16, 0, 8);
+		int sspec = (bitfield & (fence::my | fence::py)) ? spec : settings::consts::shader::block::glass_pane_top;
+		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.4375f, -.4375f, 0.f), p0 + glm::vec3(0.4375f, .4375f, 0.f), p6 + glm::vec3(0.4375f, -.4375f, 0.f), p2 + glm::vec3(0.4375f, .4375f, 0.f)}, sspec + (7 << 12), light + (3 << 8), 2, 16);
 	}
 	if (bitfield & fence::px) {
-		spec = baseSpec + (3 << 4) + (1 << 19);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.4375f, 0.f), p1 + glm::vec3(0.f, 0.4375f, 0.f), p2 + glm::vec3(0.f, 0.4375f, 0.f), p3 + glm::vec3(0.f, 0.4375f, 0.f)}, spec, 16, 16, 0, 8);
-		spec += (1 << 19);
-		utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, -0.4375f, 0.f), p4 + glm::vec3(0.f, -0.4375f, 0.f), p7 + glm::vec3(0.f, -0.4375f, 0.f), p6 + glm::vec3(0.f, -0.4375f, 0.f)}, spec, 16, 16, 0, 8, true);
+		utils::shader::addQuads(vertices, {p0 + glm::vec3(.5f, 0.4375f, 0.f), p1 + glm::vec3(0.f, 0.4375f, 0.f), p2 + glm::vec3(.5f, 0.4375f, 0.f), p3 + glm::vec3(0.f, 0.4375f, 0.f)}, spec + (8 << 12), light + (1 << 8), 8, 16);
+		utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, -0.4375f, 0.f), p4 + glm::vec3(.5f, -0.4375f, 0.f), p7 + glm::vec3(0.f, -0.4375f, 0.f), p6 + glm::vec3(.5f, -0.4375f, 0.f)}, spec + (8 << 12), light + (2 << 8), 8, 16, true);
 	} else {
-		spec = baseSpec + (4 << 19) - (!!((value >> 12) & (fence::my | fence::py)) << 12);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.4375f, 0.f, 0.f), p5 + glm::vec3(-0.4375f, 0.f, 0.f), p3 + glm::vec3(-0.4375f, 0.f, 0.f), p7 + glm::vec3(-0.4375f, 0.f, 0.f)}, spec, 16, 16, 0, 8);
+		int sspec = (bitfield & (fence::my | fence::py)) ? spec : settings::consts::shader::block::glass_pane_top;
+		utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.4375f, .4375f, 0.f), p5 + glm::vec3(-0.4375f, -.4375f, 0.f), p3 + glm::vec3(-0.4375f, .4375f, 0.f), p7 + glm::vec3(-0.4375f, -.4375f, 0.f)}, sspec + (7 << 12), light + (4 << 8), 2, 16);
 	}
 	if (bitfield & fence::my) {
-		spec = baseSpec + (2 << 4) + (3 << 19);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.4375f, 0.f, 0.f), p0 + glm::vec3(0.4375f, 0.f, 0.f), p6 + glm::vec3(0.4375f, 0.f, 0.f), p2 + glm::vec3(0.4375f, 0.f, 0.f)}, spec, 16, 16, 0, 8, true);
-		spec += (1 << 19);
-		utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.4375f, 0.f, 0.f), p5 + glm::vec3(-0.4375f, 0.f, 0.f), p3 + glm::vec3(-0.4375f, 0.f, 0.f), p7 + glm::vec3(-0.4375f, 0.f, 0.f)}, spec, 16, 16, 0, 8);
+		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.4375f, -.5f, 0.f), p0 + glm::vec3(0.4375f, 0.f, 0.f), p6 + glm::vec3(0.4375f, -.5f, 0.f), p2 + glm::vec3(0.4375f, 0.f, 0.f)}, spec, light + (3 << 8), 8, 16, true);
+		utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.4375f, 0.f, 0.f), p5 + glm::vec3(-0.4375f, -.5f, 0.f), p3 + glm::vec3(-0.4375f, 0.f, 0.f), p7 + glm::vec3(-0.4375f, -.5f, 0.f)}, spec, light + (4 << 8), 8, 16);
 	} else {
-		spec = baseSpec + (1 << 19) - (!!((value >> 12) & (fence::mx | fence::px)) << 12);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p0 + glm::vec3(0.f, 0.4375f, 0.f), p1 + glm::vec3(0.f, 0.4375f, 0.f), p2 + glm::vec3(0.f, 0.4375f, 0.f), p3 + glm::vec3(0.f, 0.4375f, 0.f)}, spec, 16, 16, 0, 8);
+		int sspec = (bitfield & (fence::mx | fence::px)) ? spec : settings::consts::shader::block::glass_pane_top;
+		utils::shader::addQuads(vertices, {p0 + glm::vec3(.4375f, 0.4375f, 0.f), p1 + glm::vec3(-.4375f, 0.4375f, 0.f), p2 + glm::vec3(.4375f, 0.4375f, 0.f), p3 + glm::vec3(-.4375f, 0.4375f, 0.f)}, sspec + (7 << 12), light + (1 << 8), 2, 16);
 	}
 	if (bitfield & fence::py) {
-		spec = baseSpec + (3 << 4) + (3 << 19);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.4375f, 0.f, 0.f), p0 + glm::vec3(0.4375f, 0.f, 0.f), p6 + glm::vec3(0.4375f, 0.f, 0.f), p2 + glm::vec3(0.4375f, 0.f, 0.f)}, spec, 16, 16, 0, 8, true);
-		spec += (1 << 19);
-		utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.4375f, 0.f, 0.f), p5 + glm::vec3(-0.4375f, 0.f, 0.f), p3 + glm::vec3(-0.4375f, 0.f, 0.f), p7 + glm::vec3(-0.4375f, 0.f, 0.f)}, spec, 16, 16, 0, 8);
+		utils::shader::addQuads(vertices, {p4 + glm::vec3(0.4375f, 0.f, 0.f), p0 + glm::vec3(0.4375f, .5f, 0.f), p6 + glm::vec3(0.4375f, 0.f, 0.f), p2 + glm::vec3(0.4375f, .5f, 0.f)}, spec + (8 << 12), light + (3 << 8), 8, 16, true);
+		utils::shader::addQuads(vertices, {p1 + glm::vec3(-0.4375f, .5f, 0.f), p5 + glm::vec3(-0.4375f, 0.f, 0.f), p3 + glm::vec3(-0.4375f, .5f, 0.f), p7 + glm::vec3(-0.4375f, 0.f, 0.f)}, spec + (8 << 12), light + (4 << 8), 8, 16);
 	} else {
-		spec = baseSpec + (2 << 19) - (!!((value >> 12) & (fence::mx | fence::px)) << 12);
-		spec += (faceLight << 24);
-		utils::shader::addQuads(vertices, {p5 + glm::vec3(0.f, -0.4375f, 0.f), p4 + glm::vec3(0.f, -0.4375f, 0.f), p7 + glm::vec3(0.f, -0.4375f, 0.f), p6 + glm::vec3(0.f, -0.4375f, 0.f)}, spec, 16, 16, 0, 8);
+		int sspec = (bitfield & (fence::mx | fence::px)) ? spec : settings::consts::shader::block::glass_pane_top;
+		utils::shader::addQuads(vertices, {p5 + glm::vec3(-.4375f, -0.4375f, 0.f), p4 + glm::vec3(.4375f, -0.4375f, 0.f), p7 + glm::vec3(-.4375f, -0.4375f, 0.f), p6 + glm::vec3(.4375f, -0.4375f, 0.f)}, sspec + (7 << 12), light + (2 << 8), 2, 16);
 	}
+	spec = settings::consts::shader::block::glass_pane_top;
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z + 1), face_dir::plus_z)) {
-		spec = baseSpec + (0 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y, pos.z + 1);
-		spec += (faceLight << 24);
+		light = chunk->computeLight(pos.x, pos.y, pos.z + 1) + (0 << 8);
 		if ((bitfield & fence::py) && (bitfield & fence::my)) {
-			utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, 16, 16, 0, 8);
+			utils::shader::addQuads(vertices, {p4, p5, p0, p1}, spec, light, 16, 16);
 		} else if (bitfield & fence::py) {
-			utils::shader::addQuads(vertices, {p4, p5, p0 + glm::vec3(0.f, 0.4375f, 0.f), p1 + glm::vec3(0.f, 0.4375f, 0.f)}, spec, 16, 9, 0, 8);
+			utils::shader::addQuads(vertices, {p4, p5, p0 + glm::vec3(0.f, 0.4375f, 0.f), p1 + glm::vec3(0.f, 0.4375f, 0.f)}, spec, light, 16, 9);
 		} else if (bitfield & fence::my) {
-			utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, -0.4375f, 0.f), p5 + glm::vec3(0.f, -0.4375f, 0.f), p0, p1}, spec + (7 << 8), 16, 9, 0, 8);
+			utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, -0.4375f, 0.f), p5 + glm::vec3(0.f, -0.4375f, 0.f), p0, p1}, spec + (7 << 16), light, 16, 9);
 		} else {
-			utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, -0.4375f, 0.f), p5 + glm::vec3(0.f, -0.4375f, 0.f), p0 + glm::vec3(0.f, 0.4375f, 0.f), p1 + glm::vec3(0.f, 0.4375f, 0.f)}, spec + (7 << 8), 16, 2, 0, 8);
+			utils::shader::addQuads(vertices, {p4 + glm::vec3(0.f, -0.4375f, 0.f), p5 + glm::vec3(0.f, -0.4375f, 0.f), p0 + glm::vec3(0.f, 0.4375f, 0.f), p1 + glm::vec3(0.f, 0.4375f, 0.f)}, spec + (7 << 16), light, 16, 2);
 		}
 		if (bitfield & fence::mx) {
-			utils::shader::addQuads(vertices, {p0, p4, p0 + glm::vec3(0.4375f, 0.f, 0.f), p4 + glm::vec3(0.4375f, 0.f, 0.f)}, spec, 16, 7, 0, 8);
+			utils::shader::addQuads(vertices, {p0, p4, p0 + glm::vec3(0.4375f, 0.f, 0.f), p4 + glm::vec3(0.4375f, 0.f, 0.f)}, spec, light, 16, 7);
 		}
 		if (bitfield & fence::px) {
-			utils::shader::addQuads(vertices, {p5, p1, p5 + glm::vec3(-0.4375f, 0.f, 0.f), p1 + glm::vec3(-0.4375f, 0.f, 0.f)}, spec, 16, 7, 0, 8);
+			utils::shader::addQuads(vertices, {p5, p1, p5 + glm::vec3(-0.4375f, 0.f, 0.f), p1 + glm::vec3(-0.4375f, 0.f, 0.f)}, spec, light, 16, 7);
 		}
 	}
 	if (visible_face(value, chunk->getBlockAt(pos.x, pos.y, pos.z - 1), face_dir::minus_z)) {
-		spec = baseSpec + (5 << 19);
-		faceLight = chunk->computeLight(pos.x, pos.y, pos.z - 1);
-		spec += (faceLight << 24);
+		light = chunk->computeLight(pos.x, pos.y, pos.z - 1) + (5 << 8);
 		if ((bitfield & fence::my) && (bitfield & fence::py)) {
-			utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, 16, 16, 0, 8);
+			utils::shader::addQuads(vertices, {p2, p3, p6, p7}, spec, light, 16, 16);
 		} else if (bitfield & fence::my) {
-			utils::shader::addQuads(vertices, {p2, p3, p6 + glm::vec3(0.f, -0.4375f, 0.f), p7 + glm::vec3(0.f, -0.4375f, 0.f)}, spec, 16, 9, 0, 8);
+			utils::shader::addQuads(vertices, {p2, p3, p6 + glm::vec3(0.f, -0.4375f, 0.f), p7 + glm::vec3(0.f, -0.4375f, 0.f)}, spec, light, 16, 9);
 		} else if (bitfield & fence::py) {
-			utils::shader::addQuads(vertices, {p2 + glm::vec3(0.f, 0.4375f, 0.f), p3 + glm::vec3(0.f, 0.4375f, 0.f), p6, p7}, spec + (7 << 8), 16, 9, 0, 8);
+			utils::shader::addQuads(vertices, {p2 + glm::vec3(0.f, 0.4375f, 0.f), p3 + glm::vec3(0.f, 0.4375f, 0.f), p6, p7}, spec + (7 << 16), light, 16, 9);
 		} else {
-			utils::shader::addQuads(vertices, {p2 + glm::vec3(0.f, 0.4375f, 0.f), p3 + glm::vec3(0.f, 0.4375f, 0.f), p6 + glm::vec3(0.f, -0.4375f, 0.f), p7 + glm::vec3(0.f, -0.4375f, 0.f)}, spec + (7 << 8), 16, 2, 0, 8);
+			utils::shader::addQuads(vertices, {p2 + glm::vec3(0.f, 0.4375f, 0.f), p3 + glm::vec3(0.f, 0.4375f, 0.f), p6 + glm::vec3(0.f, -0.4375f, 0.f), p7 + glm::vec3(0.f, -0.4375f, 0.f)}, spec + (7 << 16), light, 16, 2);
 		}
 		if (bitfield & fence::mx) {
-			utils::shader::addQuads(vertices, {p6, p2, p6 + glm::vec3(0.4375f, 0.f, 0.f), p2 + glm::vec3(0.4375f, 0.f, 0.f)}, spec, 16, 7, 0, 8);
+			utils::shader::addQuads(vertices, {p6, p2, p6 + glm::vec3(0.4375f, 0.f, 0.f), p2 + glm::vec3(0.4375f, 0.f, 0.f)}, spec, light, 16, 7);
 		}
 		if (bitfield & fence::px) {
-			utils::shader::addQuads(vertices, {p7, p3, p7 + glm::vec3(-0.4375f, 0.f, 0.f), p3 + glm::vec3(-0.4375f, 0.f, 0.f)}, spec, 16, 7, 0, 8);
+			utils::shader::addQuads(vertices, {p7, p3, p7 + glm::vec3(-0.4375f, 0.f, 0.f), p3 + glm::vec3(-0.4375f, 0.f, 0.f)}, spec, light, 16, 7);
 		}
-	}*/
+	}
 }
 
 void Crop::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const

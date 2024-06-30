@@ -226,6 +226,7 @@ Controls (QWERTY):
 	- F3: togle debug screen
 	- F5: change camera placement
 	- O: toggle block highlight
+	- C: zoom
 	- T: open chat
 	- +-: change render distance
 	- kp_* kp_/: change gui size

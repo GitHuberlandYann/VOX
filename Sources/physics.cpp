@@ -207,8 +207,11 @@ void Player::applyGravity( void )
 
 void Player::applyGravityUnderwater( void )
 {
-	float speed_frame = _deltaTime * ((_inJump) ? ((_waterHead) ? settings::consts::speed::swim_up : settings::consts::speed::swim_down)
-												: ((_sneaking) ? -settings::consts::speed::swim_down : -settings::consts::speed::swim_up));
+	// float speed_frame = _deltaTime * ((_inJump) ? ((_waterHead) ? settings::consts::speed::swim_up : settings::consts::speed::swim_down)
+	// 											: ((_sneaking) ? -settings::consts::speed::swim_down : -settings::consts::speed::swim_up));
+	float speed_frame = _deltaTime * ((_inJump) ? ((_sprinting) ?  settings::consts::speed::sprint : settings::consts::speed::swim)
+												: ((_sneaking) ? -((_sprinting) ?  settings::consts::speed::sprint : settings::consts::speed::swim)
+																: -settings::consts::speed::swim_up));
 
 	_position.z += speed_frame;
 	_z0 = _position.z;
@@ -461,11 +464,12 @@ void Player::moveFly( GLint v, GLint h, GLint z )
 
 void Player::moveUnderwater( int direction, GLint v, GLint h, GLint z )
 {
+	if (direction == face_dir::plus_z) {
+		_inJump = (z == 1);
+		_sneaking = (z == -1);
+		return ;
+	}
 	if (!v && !h) {
-		if (direction == face_dir::plus_z) {
-			_inJump = (z == 1);
-			_sneaking = (z == -1);
-		}
 		return ;
 	}
 	_updateCam = true;
@@ -479,14 +483,6 @@ void Player::moveUnderwater( int direction, GLint v, GLint h, GLint z )
 	else if (direction == face_dir::plus_y) {
 		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).y * speed_frame;
 		_position.y += movement;
-	} else {
-		_inJump = (z == 1);
-		_sneaking = (z == -1);
-		movement = glm::normalize(glm::vec3(v * _front.x + h * _right.x, v * _front.y + h * _right.y, v * _front.z + h * _right.z)).z * speed_frame;
-		_position.z += movement;
-		if (_chunk->collisionBox(_position, 0.3f, getHitBox(), getHitBox()).type == COLLISION::TOTAL) { // TODO handle partial collision underwater
-			_position.z -= movement;
-		}
 	}
 	updateExhaustion(glm::abs(movement * settings::consts::exhaustion::swim));
 	if (_sprinting && movement != 0) {

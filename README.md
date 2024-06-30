@@ -88,7 +88,7 @@ Not implemented yet, as I am mainly working on this project on WSL, which [does 
 
 ## Controls (Qwerty)
 ```
-escape             - open pause menu, close any open menu
+escape             - open pause menu, close any opened menu
 backspace          - exit program
 
 WASD               - player movement
@@ -103,6 +103,7 @@ T                  - open chat
 G                  - toggle gamemode
 F                  - toggle wireframe display (warning fps may drop)
 O                  - toggle block highlight
+C                  - zoom
 F1                 - display/hide hotbar
 F2                 - save screenshot under .ppm file format
 F3                 - toggle debug screen

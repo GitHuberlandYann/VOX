@@ -79,14 +79,14 @@ void Chunk::generate_lights( void )
 					int type = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] & mask::blocks::type;
 					if (!s_blocks[type]->transparent) { // block hit
 						light_level = 0;
-					} else if (type == blocks::oak_leaves || type == blocks::water) {
+					} else if ((type == blocks::oak_leaves || type == blocks::water) && light_level) {
 						--light_level;
 					}
-					if (light_level == 15) {
+					// if (light_level == 15) {
 						_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = (light_level + (light_level << 4)) << 8; // we consider blocks directly under sky as light source
-					} else {
-						_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = light_level << 8;
-					}
+					// } else {
+					// 	_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = light_level << 8;
+					// }
 				} else {
 					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = 0;
 				}
@@ -95,15 +95,14 @@ void Chunk::generate_lights( void )
 	}
 }
 
-// uses sky light and block light to output a shade value 
-// -> obsolete, now compute on shader
 // now returns 0xF0 skylight + 0x0F blocklight
 // row and col are in [-1:settings::consts::chunk_size]
 int Chunk::computeLight( int row, int col, int level )
 {
 	// (void)row;(void)col;(void)level;return (0);
 	short light = getLightLevel(row, col, level);
-	// int blockLightAmplitude = 5; // amount by which light decreases on each block
+
+	return ((light & 0xF) | ((light >> 4) & 0xF0));
 	int blockLight = light & 0xF;
 	int skyLight = (light >> 8) & 0xF;
 	return (blockLight + (skyLight << 4));
@@ -130,9 +129,6 @@ int Chunk::computeSmoothLight( int faceLight, int row, int col, int level, std::
 int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets )
 {
 	// (void)row;(void)col;(void)level;(void)offsets;return (0);
-	// return (!!air_flower(getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]), true, true, false)
-	// 		+ !!air_flower(getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]), true, true, false)
-	// 		+ !!air_flower(getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]), true, true, false));
 	return (!s_blocks[getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]) & mask::blocks::type]->transparent
 			+ !s_blocks[getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]) & mask::blocks::type]->transparent
 			+ !s_blocks[getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]) & mask::blocks::type]->transparent);

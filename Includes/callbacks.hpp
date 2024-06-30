@@ -58,6 +58,7 @@ namespace inputs
 		quit_program = del,
 		wireframe,
 		block_highlight,
+		zoom,
 		info,
 		hotbar,
 		screenshot,

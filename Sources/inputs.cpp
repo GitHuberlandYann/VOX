@@ -632,7 +632,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 		}
 	}
 
-	if (_player->getResetFovUpdate()) {
+	if (_player->getResetFovUpdate() || inputs::key_update(inputs::zoom)) {
 		updateCamPerspective();
 	}
 	if (_player->getCamUpdate()) {

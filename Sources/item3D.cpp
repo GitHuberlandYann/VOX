@@ -40,6 +40,19 @@ void Slab::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 po
 	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, light + (5 << 8), 16, 16);
 }
 
+void Cactus::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
+{
+	int spec = settings::consts::shader::block::cactus_side;
+	utils::shader::addQuads(arr, {pos + (front * one16th + up) * size, pos + (front * one16th + right + up) * size, pos + front * one16th * size, pos + (front * one16th + right) * size}, spec, light + (3 << 8), 16, 16);
+	utils::shader::addQuads(arr, {pos + (front * 15.f * one16th + right + up) * size, pos + (front * 15.f * one16th + up) * size, pos + (front * 15.f * one16th + right) * size, pos + front * 15.f * one16th * size}, spec, light + (4 << 8), 16, 16);
+	utils::shader::addQuads(arr, {pos + (front + right * one16th + up) * size, pos + (right * one16th + up) * size, pos + (front + right * one16th) * size, pos + right * one16th * size}, spec, light + (1 << 8), 16, 16);
+	utils::shader::addQuads(arr, {pos + (right * 15.f * one16th + up) * size, pos + (front + right * 15.f * one16th + up) * size, pos + right * 15.f * one16th * size, pos + (front + right * 15.f * one16th) * size}, spec, light + (2 << 8), 16, 16);
+	spec = settings::consts::shader::block::cactus_top;
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front + right + up) * size, pos + up * size, pos + (right + up) * size}, spec, light + (0 << 8), 16, 16);
+	spec = settings::consts::shader::block::cactus_bottom;
+	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, light + (5 << 8), 16, 16);
+}
+
 void Trapdoor::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
 {
 	up *= 3.f * one16th;

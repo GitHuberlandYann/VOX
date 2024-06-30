@@ -2,6 +2,7 @@
 #include "Settings.hpp"
 #include "utils.h"
 #include "Player.hpp"
+#include "callbacks.hpp"
 #include "logs.hpp"
 
 Camera::Camera( void )
@@ -42,6 +43,9 @@ glm::mat4 Camera::getViewMatrix( void )
 
 glm::mat4 Camera::getPerspectiveMatrix( void )
 {
+	if (inputs::key_down(inputs::zoom)) {
+		return (glm::perspective(glm::radians(10.f + ((_target) ? _target->getFovOffset() : 0)), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
+	}
 	return (glm::perspective(glm::radians(Settings::Get()->getFloat(settings::floats::fov) + ((_target) ? _target->getFovOffset() : 0)), (GLfloat)WIN_WIDTH / (GLfloat)WIN_HEIGHT, 0.1f, 1000.0f));
 }
 

@@ -136,6 +136,7 @@ namespace inputs
 		{GLFW_KEY_F5, perspective},
 		{GLFW_KEY_F1, hotbar},
 		{GLFW_KEY_O, block_highlight},
+		{GLFW_KEY_C, zoom},
 		{GLFW_KEY_I, info},
 		{GLFW_KEY_RIGHT_BRACKET, daycycle_up},
 		{GLFW_KEY_LEFT_BRACKET, daycycle_down},
