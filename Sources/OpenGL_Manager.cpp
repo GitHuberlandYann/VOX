@@ -618,7 +618,7 @@ void OpenGL_Manager::main_loop( void )
 		}
 		// b.stamp("display water sky");
 		#endif
-		// Chunk* chunk_ptr = get_current_chunk_ptr();
+		// Chunk* chunk_ptr = _current_chunk_ptr->dropEntity();();
 		if (_menu->getState() >= menu::pause) {
 			std::string str;
 			if (_debug_mode) {
@@ -670,6 +670,10 @@ void OpenGL_Manager::main_loop( void )
 			switch (_menu->run(nbTicks == 1 && tickUpdate)) {
 				case menu::ret::sign_done:
 					_chunk_hit->setSignContent(_menu->getSignContent());
+				case menu::ret::back_to_game_after_drop: // drop items
+					mtx.lock();
+					_current_chunk_ptr->dropEntities(_menu->getDrops());
+					mtx.unlock();
 				case menu::ret::back_to_game: // back to game
 					#if !__linux__
 						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -729,6 +733,16 @@ void OpenGL_Manager::main_loop( void )
 						setupCommunicationShaders();
 						loadTextures();
 					}
+					break ;
+				case menu::ret::drop_item_stack:
+					mtx.lock();
+					_current_chunk_ptr->dropEntity(_player->getDir(), _menu->dropSelectedBlock(true));
+					mtx.unlock();
+					break ;
+				case menu::ret::drop_item:
+					mtx.lock();
+					_current_chunk_ptr->dropEntity(_player->getDir(), _menu->dropSelectedBlock(false));
+					mtx.unlock();
 					break ;
 				default:
 					break ;

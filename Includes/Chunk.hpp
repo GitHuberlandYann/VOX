@@ -174,6 +174,7 @@ class Chunk
 		void generation( void );
 		void checkFillVertices( void );
 		void generate_chunk( void );
+		void dropEntities( std::vector<t_item> drops );
 		void dropEntity( glm::vec3 dir, t_item item );
 		void addParticle( Particle* particle );
 		void sort_sky( glm::vec3& pos, bool vip );

@@ -41,12 +41,6 @@ void Menu::blit_to_screen( void )
 void Menu::reset_values( void )
 {
 	_selection = 0;
-	if (_selected_block.type != blocks::air) {
-		_inventory->restoreBlock(_selected_block); // TODO drop item if restoreBlock finds no empty cell
-	}
-	_inventory->restoreiCraft();
-	_inventory->restoreCraft();
-	_inventory->setModif(true);
 	_selected_block = {0};
 	if (_chest) {
 		_chest->setState(chest_state::CLOSING);
@@ -709,16 +703,21 @@ menu::ret Menu::resource_packs_menu( void )
 menu::ret Menu::ingame_inputs( void )
 {
 	int craft = _state + 1 - menu::inventory; // craft = 1: inventory, 2: crafting, 3: furnace
-	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
+	if ((inputs::key_down(inputs::close) && inputs::key_update(inputs::close))
+		|| (inputs::key_down(inputs::inventory) && inputs::key_update(inputs::inventory))) {
+		if (_selected_block.type != blocks::air) {
+			if (!_inventory->restoreBlock(_selected_block)) {
+				_drops.push_back(_selected_block);
+			}
+		}
+		_inventory->restoreiCraft(_drops);
+		_inventory->restoreCraft(_drops);
+		_inventory->setModif(true);
 		reset_values();
-		return (menu::ret::back_to_game);
-	}
-	if (inputs::key_down(inputs::inventory) && inputs::key_update(inputs::inventory)) {
-		reset_values();
-		return (menu::ret::back_to_game);
+		return ((_drops.size()) ? menu::ret::back_to_game_after_drop : menu::ret::back_to_game);
 	}
 	if (inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) {
-		if (_selection) {
+		if (_selection > 0) {
 			if (_selected_block.type == blocks::air) {
 				if (inputs::key_down(inputs::left_shift)) {
 					_inventory->shiftBlockAt(craft, _selection - 1, _furnace, _chest);
@@ -733,11 +732,13 @@ menu::ret Menu::ingame_inputs( void )
 				_selected_block = _inventory->putBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
 					_ui->addFace({glm::ivec2(0, 0), {}, {}, {}}, 0, 0, 0, false, true); // TODO better way to update ui than this
 			}
+		} else if (_selection == -1 && _selected_block.type != blocks::air) { // drop selected item
+			return (menu::ret::drop_item_stack);
 		}
 	}
 	if (inputs::key_down(inputs::right_click)) {
 		bool first_frame = inputs::key_update(inputs::right_click);
-		if (_selection) {
+		if (_selection > 0) {
 			if (_selected_block.type == blocks::air) {
 				if (first_frame) {
 					_selected_block = _inventory->pickHalfBlockAt(craft, _selection - 1, _furnace, _chest);
@@ -762,6 +763,8 @@ menu::ret Menu::ingame_inputs( void )
 					_ui->addFace({glm::ivec2(0, 0), {}, {}, {}}, 0, 0, 0, false, true);
 				}
 			}
+		} else if (_selection == -1 && _selected_block.type != blocks::air) { // drop one item
+			return (menu::ret::drop_item);
 		}
 	} else if (inputs::key_update(inputs::right_click)) {
 		_selection_list.clear();
@@ -799,7 +802,7 @@ menu::ret Menu::ingame_inputs( void )
 menu::ret Menu::ingame_menu( void )
 {
 	menu::ret ret = ingame_inputs();
-	if (ret) {
+	if (ret == menu::ret::back_to_game_after_drop) {
 		return (ret);
 	}
 
@@ -819,7 +822,7 @@ menu::ret Menu::ingame_menu( void )
 	}
 
 	// adding hovered item's info
-	if (_selection != 0 && _selected_block.type == blocks::air) {
+	if (_selection > 0 && _selected_block.type == blocks::air) {
 		t_item hovered = _inventory->getHoveredAt(_state, _selection - 1, _furnace, _chest);
 		if (hovered.type != blocks::air) {
 			glm::ivec2 pos = computeScreenPosFromSelection(_selection);
@@ -830,7 +833,7 @@ menu::ret Menu::ingame_menu( void )
 	}
 
 	blit_to_screen();
-	return (menu::ret::no_change);
+	return (ret);
 }
 
 menu::ret Menu::chat_menu( bool animUpdate )
@@ -1276,7 +1279,7 @@ void Menu::occult_selection( void )
 		_selection_list.push_back(_selection);
 	}
 	for (int cell : _selection_list) {
-		if (cell) {
+		if (cell > 0) {
 			glm::ivec2 pos = computeScreenPosFromSelection(cell);
 			addQuads(settings::consts::tex::ui, settings::consts::depth::menu::selection, pos.x, pos.y, 16 * _gui_size, 16 * _gui_size, 16, 14, 1, 1);
 		}
@@ -1841,7 +1844,11 @@ void Menu::processMouseMovement( float posX, float posY )
 				}
 				break ;
 		}
-		_selection = 0;
+		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 88 * _gui_size, WIN_HEIGHT / 2 - 83 * _gui_size, 176 * _gui_size, 166 * _gui_size)) {
+			_selection = 0;
+			return ;
+		}
+		_selection = -1;
 	}
 }
 
@@ -1894,6 +1901,32 @@ void Menu::setFurnaceInstance( FurnaceInstance* furnace )
 void Menu::setSignPos( glm::ivec3 pos )
 {
 	_sign_pos = pos;
+}
+
+std::vector<t_item> Menu::getDrops( void )
+{
+	std::vector<t_item> res = _drops;
+	_drops.clear();
+	return (res);
+}
+
+
+t_item Menu::dropSelectedBlock( bool stack )
+{
+	if (_selected_block.type == blocks::air) {
+		return (t_item());
+	}
+	t_item res = _selected_block;
+	if (stack) {
+		_selected_block = {0, 0, {0, 0}};
+	} else {
+		res.amount = 1;
+		--_selected_block.amount;
+		if (_selected_block.amount <= 0) {
+			_selected_block = {0, 0, {0, 0}};
+		}
+	}
+	return (res);
 }
 
 void Menu::handleScroll( int offset )

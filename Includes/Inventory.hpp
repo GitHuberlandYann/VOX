@@ -157,8 +157,8 @@ class Inventory
 		t_item putOneBlockAt( int craft, int value, t_item block, FurnaceInstance* furnace, ChestInstance* chest );
 		bool restoreBlock( t_item block, bool hotbar_first = false );
 		bool absorbItem( t_item block );
-		void restoreiCraft( void );
-		void restoreCraft( void );
+		void restoreiCraft( std::vector<t_item>& drops );
+		void restoreCraft( std::vector<t_item>& drops );
 		bool getModif( void );
 		void setModif( bool value );
         void addBlock( int type );

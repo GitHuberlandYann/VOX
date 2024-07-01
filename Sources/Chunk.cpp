@@ -457,8 +457,25 @@ void Chunk::checkFillVertices( void )
 	}
 }
 
+void Chunk::dropEntities( std::vector<t_item> drops )
+{
+	glm::vec3 camPos = _player->getPos(), dir = _player->getDir();
+	camPos.z += 1;
+	camPos += dir;
+
+	for (auto item : drops) {
+		if (item.type == blocks::air) {
+			return ;
+		}
+		_entities.push_back(std::make_shared<Entity>(this, _inventory, camPos, dir, true, item));
+	}
+}
+
 void Chunk::dropEntity( glm::vec3 dir, t_item item )
 {
+	if (item.type == blocks::air) {
+		return ;
+	}
 	glm::vec3 camPos = _player->getPos();
 	camPos.z += 1;
 	camPos += dir;

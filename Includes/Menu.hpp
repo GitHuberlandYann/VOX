@@ -40,6 +40,7 @@ namespace menu
 		quit = -1,
 		no_change,
 		back_to_game,
+		back_to_game_after_drop,
 		world_selected,
 		world_created,
 		save_and_quit,
@@ -50,6 +51,8 @@ namespace menu
 		brightness_update,
 		apply_resource_packs,
 		sign_done,
+		drop_item_stack,
+		drop_item,
 	};
 
 	const int resolutions_size = 7;
@@ -83,6 +86,8 @@ class Menu
 		void setChestInstance( ChestInstance* chest );
 		void setFurnaceInstance( FurnaceInstance* furnace );
 		void setSignPos( glm::ivec3 pos );
+		std::vector<t_item> getDrops( void );
+		t_item dropSelectedBlock( bool stack );
 		void handleScroll( int offset );
 		void setState( int state );
 		int getState( void );
@@ -101,6 +106,7 @@ class Menu
 		float _fov_gradient, _render_gradient, _brightness_gradient;
 		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs, _sign_content;
 		glm::ivec3 _sign_pos;
+		std::vector<t_item> _drops;
 		std::vector<int> _selection_list;
 		std::vector<std::array<int, 3>> _vertices;
 		std::string _world_file;

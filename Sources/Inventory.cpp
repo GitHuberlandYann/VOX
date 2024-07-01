@@ -533,6 +533,9 @@ t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceIns
 */
 bool Inventory::restoreBlock( t_item block, bool hotbar_first )
 {
+	if (block.type == blocks::air) {
+		return (true);
+	}
 	int location = findEmptyCell(block, hotbar_first);
 	if (location == -1) {
 		return (false);
@@ -561,22 +564,26 @@ bool Inventory::absorbItem( t_item block )
 	return (true);
 }
 
-void Inventory::restoreiCraft( void )
+void Inventory::restoreiCraft( std::vector<t_item>& drops )
 {
 	for (int index = 0; index < 4; index++) {
 		if (_icraft[index].type != blocks::air) {
-			restoreBlock(_icraft[index]);
+			if (!restoreBlock(_icraft[index])) {
+				drops.push_back(_icraft[index]);
+			}
 			_icraft[index] = {0};
 		}
 	}
 	_crafted = {0};
 }
 
-void Inventory::restoreCraft( void )
+void Inventory::restoreCraft( std::vector<t_item>& drops )
 {
 	for (int index = 0; index < 9; index++) {
 		if (_craft[index].type != blocks::air) {
-			restoreBlock(_craft[index]);
+			if (!restoreBlock(_craft[index])) {
+				drops.push_back(_craft[index]);
+			}
 			_craft[index] = {0};
 		}
 	}
