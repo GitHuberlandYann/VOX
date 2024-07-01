@@ -274,6 +274,11 @@ Chunk* Chunk::getChunkAt( int startX, int startY )
 	return (this);
 }
 
+Player* Chunk::getPlayer( void )
+{
+	return (_player);
+}
+
 unsigned& Chunk::getSeed( void )
 {
 	return (_seed);
@@ -660,6 +665,11 @@ void Chunk::explosion( glm::vec3 pos, int power )
 		}
 	}
 	// std::cout << "EXPLOSION OVER" << std::endl;
+}
+
+void Chunk::addArrow( ArrowEntity& arrow )
+{
+	_entities.push_back(std::make_shared<ArrowEntity>(arrow));
 }
 
 void Chunk::shootArrow( const glm::vec3 start, const glm::vec3 dir, float timer )

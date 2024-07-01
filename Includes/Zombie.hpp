@@ -11,7 +11,7 @@ class Zombie : public AHostileMob
 
         bool update( std::vector<t_shaderInputModel>& modArr, float deltaTime ) override;
 		glm::vec3 getEyePos( void ) override;
-		float getHitBox( void ) override;
+		float getHitbox( void ) override;
 
     private:
 

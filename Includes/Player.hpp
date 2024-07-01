@@ -52,7 +52,7 @@ class Player : public AMob
 		void drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& partArr, int item );
 
        	glm::vec3 getEyePos( void ) override;
-       	float getHitBox( void ) override;
+       	float getHitbox( void ) override;
         int getOrientation( void );
 		int getOrientation6( void );
 

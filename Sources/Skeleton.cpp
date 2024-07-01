@@ -146,7 +146,7 @@ bool Skeleton::update( std::vector<t_shaderInputModel>& modArr, float deltaTime 
 	return (changeOwner);
 }
 
-float Skeleton::getHitBox( void )
+float Skeleton::getHitbox( void )
 {
 	return (settings::consts::hitbox::skeleton);
 }

@@ -48,7 +48,7 @@ class AMob {
 		int getHealth( void );
 		bool getTouchGround( void );
 		void setTouchGround( bool state );
-		virtual float getHitBox( void ) = 0;
+		virtual float getHitbox( void ) = 0;
 		void receiveDamage( const float damage, const glm::vec3 sourceDir );
 
 	protected:

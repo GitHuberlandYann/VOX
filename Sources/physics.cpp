@@ -168,7 +168,7 @@ void Chunk::applyGravity( AMob* mob )
 	t_collision coll;
 	if (distZ < 0) { // jumping
 		mob->setTouchGround(false);
-		float hitboxHeight = mob->getHitBox();
+		float hitboxHeight = mob->getHitbox();
 		coll = collisionBox({pos.x, pos.y, pos.z + hitboxHeight}, 0.3f, -distZ, -distZ);
 		if (coll.type == COLLISION::TOTAL) {
 			mob->touchCeiling(glm::floor(pos.z) + 2.0f - hitboxHeight);
@@ -270,6 +270,7 @@ void Player::touchCeiling( float value )
 */
 void Player::resetFall( void )
 {
+	_invulnerable = (Settings::Get()->getInt(settings::ints::game_mode) == settings::consts::gamemode::creative);
 	_fallImmunity = true;
 	_z0 = _position.z;
 	_fallTime = 0;
@@ -437,6 +438,34 @@ bool AHostileMob::updateCurrentBlock( void )
 		}
 
 		updatePath();
+	}
+	return (changeOwner);
+}
+
+/**
+ * @brief if current block pos different from last recorded, we check if arrow went from one chunck to another
+ * @return true if arrow went from one chunk to another
+*/
+bool ArrowEntity::updateCurrentBlock( void )
+{
+	bool changeOwner = false;
+	glm::ivec3 currentBlock = glm::floor(_pos);
+	if (currentBlock != _currentBlock) {
+		if (_currentBlock.z != currentBlock.z) {
+			_currentBlock = currentBlock;
+			return (false);
+		}
+		_currentBlock = currentBlock;
+		
+		glm::ivec2 chunkPos = {chunk_pos(currentBlock.x), chunk_pos(currentBlock.y)};
+		if (chunkPos != _chunk_pos) {
+			Chunk* newOwner = _chunk->getChunkAt(chunkPos.x, chunkPos.y);
+			if (!newOwner || newOwner == _chunk) { return (true); } // just kill arrow if out of generated chunks
+			_chunk = newOwner;
+			_chunk_pos = chunkPos;
+			_chunk->addArrow(*this);
+			changeOwner = true;
+		}
 	}
 	return (changeOwner);
 }
@@ -657,7 +686,7 @@ void Player::inputUpdate( bool rayCast, int gameMode )
 			move(face_dir::plus_z, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement
 			glm::vec3 originalPos = _position;
 			move(face_dir::plus_x, key_cam_v, key_cam_h, 0); // move on X_AXIS
-			float hitBoxHeight = getHitBox();
+			float hitBoxHeight = getHitbox();
 			t_collision coll = _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight);
 			if (coll.type != COLLISION::NONE) {
 				// _ui->chatMessage("xcoll " + std::to_string(coll.type) + ", " + std::to_string(coll.minZ) + " ~ " + std::to_string(coll.maxZ) + " h " + std::to_string(hitBoxHeight));

@@ -137,6 +137,7 @@ class Chunk
 		GLint getStartX( void );
 		GLint getStartY( void );
 		Chunk* getChunkAt( int startX, int startY );
+		Player* getPlayer( void );
 		unsigned& getSeed( void );
 		bool getSortedOnce( void );
 		GLint getCamLightLevel( glm::ivec3 location );
@@ -188,6 +189,7 @@ class Chunk
 		void handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void handleBlast( glm::vec3 pos, int blast_radius );
 		void explosion( glm::vec3 pos, int power );
+		void addArrow( ArrowEntity& arrow );
 		void shootArrow( const glm::vec3 start, const glm::vec3 dir, float timer );
 		void updateBreak( glm::ivec4 block_hit );
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread, int recurse );

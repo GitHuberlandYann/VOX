@@ -92,7 +92,7 @@ AMob* Chunk::mobHit( const t_hit blockHit )
 	const glm::vec3 segStart = _player->getEyePos(), segEnd = segStart + _player->getDir() * settings::consts::reach::attack;
 
 	for (auto& mob : _mobs) {
-		glm::vec3 hitBoxCenter = mob->getPos(), hitBoxHalfSize = {0.3f, 0.3f, mob->getHitBox()};
+		glm::vec3 hitBoxCenter = mob->getPos(), hitBoxHalfSize = {0.3f, 0.3f, mob->getHitbox()};
 		hitBoxCenter.z += hitBoxHalfSize.z;
 		if (segment_cube_intersection(segStart, segEnd, hitBoxCenter, hitBoxHalfSize)) {
 			if (blockHit.value & mask::blocks::type) {

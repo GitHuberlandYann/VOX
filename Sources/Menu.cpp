@@ -537,10 +537,10 @@ menu::ret Menu::controls_menu( void )
 			_selected_world = _selection;
 			switch (_selection) {
 				case 0:
-				case 12:
-				case 34:
-				case 48:
+				case 14:
+				case 36:
 				case 50:
+				case 52:
 					break ;
 				case 1: // Done
 					_state = (_state == menu::controls) ? menu::options : menu::main_options;

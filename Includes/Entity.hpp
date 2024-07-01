@@ -53,9 +53,11 @@ class ArrowEntity : public Entity
 
 		void getBlasted( glm::vec3 pos, float blast_radius ) override;
 		bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime ) override;
+		bool updateCurrentBlock( void );
 	
 	private:
 		bool _stuck;
+		glm::ivec3 _currentBlock;
 };
 
 class MovingPistonEntity : public Entity

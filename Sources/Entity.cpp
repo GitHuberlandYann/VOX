@@ -1,4 +1,5 @@
 #include "Chunk.hpp"
+#include "Player.hpp"
 #include "random.hpp"
 #include "DayCycle.hpp"
 #include "logs.hpp"
@@ -392,7 +393,8 @@ bool ArrowEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, dou
         return (true);
     }
 
-	if (air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)), false, false, false)) {
+	bool changeOwner = false;
+	if (!s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
 		_stuck = true;
 		// arrow explosion for fun
 		// _chunk->explosion(_pos - _dir * 0.25f, 10);
@@ -403,6 +405,15 @@ bool ArrowEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, dou
 	} else {
 		_pos += _dir * static_cast<float>(deltaTime);
 		_dir.z -= 0.1f;
+		Player* player = _chunk->getPlayer();
+		if (cube_cube_intersection(player->getPos(),
+			{0.3f, 0.3f, player->getHitbox()}, _pos + glm::vec3(.0f, .0f, .05f), {.05f, .05f, .05f})) {
+			player->receiveDamage(4.5f, glm::normalize(_dir) * 2.f);
+			// player->receiveDamage(4.5f, _dir); // for fun op knockback
+			return (true);
+		}
+		
+		changeOwner = updateCurrentBlock();
 	}
 		
 	glm::vec3 dir = glm::normalize(_dir); // might want to do this once and save it
@@ -437,7 +448,7 @@ bool ArrowEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, dou
 
     utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec + (5 << 16), light + (3 << 8), 5, 5); // recto
     utils::shader::addQuads(arr, {p1, p0, p3, p2}, spec + (5 << 16), light + (4 << 8), 5, 5, true); // verso
-	return (false);
+	return (changeOwner);
 }
 
 bool MovingPistonEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime )

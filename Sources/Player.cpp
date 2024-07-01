@@ -51,7 +51,7 @@ glm::vec3 Player::getEyePos( void )
 	return (res);
 }
 
-float Player::getHitBox( void )
+float Player::getHitbox( void )
 {
 	return ((_sneaking) ? settings::consts::hitbox::player_sneak : settings::consts::hitbox::player);
 }
@@ -167,7 +167,7 @@ void Player::setSneak( bool state )
 	if (state != _sneaking) {
 		_sneaking = state;
 		if (state == false) {
-			if (_chunk->collisionBox(_position, 0.3f, getHitBox(), getHitBox()).type != COLLISION::NONE) { // keep sneaking no place to stand up
+			if (_chunk->collisionBox(_position, 0.3f, getHitbox(), getHitbox()).type != COLLISION::NONE) { // keep sneaking no place to stand up
 				_sneaking = true;
 				return ;
 			}
@@ -358,6 +358,7 @@ std::string Player::getString( int game_mode )
 			+ ((_breathTime > 0) ? " - " + std::to_string(_breathTime) + ": " + std::to_string(getWaterStatus()) : "")
 			+ "\nWater feet\t> " + ((_waterFeet) ? strtrue : strfalse)
 			+ "\nHealth\t> " + std::to_string(_health)
+			+ "\nKnockback\t> " + std::to_string(_knockback.x) + ", " + std::to_string(_knockback.y) + ", " + std::to_string(_knockback.z)
 			+ "\nFood\tLevel\t> " + std::to_string(_foodLevel)
 			+ "\n\t\tSaturation\t> " + std::to_string(_foodSaturationLevel)
 			+ "\n\t\tExhaustion\t> " + std::to_string(_foodExhaustionLevel)
