@@ -240,6 +240,8 @@ namespace settings {
 				enum {
 					apple = block::last,
 					arrow,
+					book,
+					book_and_quill,
 					bow,
 					bow_pulling_0,
 					bow_pulling_1,
@@ -254,17 +256,21 @@ namespace settings {
 					diamond_hoe,
 					diamond_pickaxe,
 					diamond_shovel,
+					feather,
 					flint,
 					flint_and_steel,
 					glowstone_dust,
+					ink_sac,
 					iron_axe,
 					iron_hoe,
 					iron_ingot,
 					iron_pickaxe,
 					iron_shovel,
 					item_frame,
+					leather,
 					oak_door,
 					oak_sign,
+					paper,
 					quartz,
 					redstone,
 					repeater,
@@ -283,6 +289,7 @@ namespace settings {
 					wooden_hoe,
 					wooden_pickaxe,
 					wooden_shovel,
+					written_book,
 					zombie_egg,
 					last
 				};
@@ -501,6 +508,9 @@ namespace blocks {
 		water = 88,
 		empty89,
 		obsidian,
+		feather = 93,
+		leather,
+		ink_sac,
 		stick = 96,
 		wooden_shovel,
 		stone_shovel,
@@ -537,6 +547,10 @@ namespace blocks {
 		skeleton_egg,
 		string,
 		glowstone_dust,
+		paper,
+		book,
+		book_and_quill,
+		written_book,
 		white_wool = 136,
 		pink_wool,
 		magenta_wool,
@@ -2084,6 +2098,36 @@ struct Obsidian : Cube {
 		}
 };
 
+struct Feather : Block {
+	public:
+		Feather() {
+			name = "FEATHER";
+			isItemOnly = true;
+			item3D = false;
+			texture = settings::consts::shader::item::feather;
+		}
+};
+
+struct Leather : Block {
+	public:
+		Leather() {
+			name = "LEATHER";
+			isItemOnly = true;
+			item3D = false;
+			texture = settings::consts::shader::item::leather;
+		}
+};
+
+struct InkSac : Block {
+	public:
+		InkSac() {
+			name = "INK_SAC";
+			isItemOnly = true;
+			item3D = false;
+			texture = settings::consts::shader::item::ink_sac;
+		}
+};
+
 struct Stick : Block {
 	public:
 		Stick() {
@@ -2499,6 +2543,46 @@ struct GlowstoneDust : Block {
 			isItemOnly = true;
 			item3D = false;
 			texture = settings::consts::shader::item::glowstone_dust;
+		}
+};
+
+struct Paper : Block {
+	public:
+		Paper() {
+			name = "PAPER";
+			isItemOnly = true;
+			item3D = false;
+			texture = settings::consts::shader::item::paper;
+		}
+};
+
+struct Book : Block {
+	public:
+		Book() {
+			name = "BOOK";
+			isItemOnly = true;
+			item3D = false;
+			texture = settings::consts::shader::item::book;
+		}
+};
+
+struct BookAndQuill : Block {
+	public:
+		BookAndQuill() {
+			name = "BOOK_AND_QUILL";
+			isItemOnly = true;
+			item3D = false;
+			texture = settings::consts::shader::item::book_and_quill;
+		}
+};
+
+struct WrittenBook : Block {
+	public:
+		WrittenBook() {
+			name = "WRITTEN_BOOK";
+			isItemOnly = true;
+			item3D = false;
+			texture = settings::consts::shader::item::written_book;
 		}
 };
 

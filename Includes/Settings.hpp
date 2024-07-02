@@ -42,6 +42,8 @@ namespace settings {
 			const int crafting_table = 2;
 			const int furnace = 3;
 			const int chest = 4;
+			const int book = 5;
+			const int size = 6;
 		};
 
 		namespace depth {
@@ -173,6 +175,7 @@ namespace settings {
 			tex_crafting_table,
 			tex_furnace,
 			tex_chest,
+			tex_book,
 			tex_zombie,
 			tex_skeleton,
 			tex_player,

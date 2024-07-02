@@ -7,7 +7,7 @@
 Inventory::Inventory( void ) : _slot(0), _modif(false)
 {
 	#if 0 // check if hardcoded recipe book has appropriate dimensions at first glance
-	for (auto entry : recipes) {
+	for (auto& entry : recipes) {
 		size_t lineSize = (entry.first & 0x3) * (entry.first >> 2) + 2; // widthxheight
 		LOGERROR("Checking key " << entry.first << " width " << (entry.first & 0x3) << " height "
 				<< (entry.first >> 2) << " lineSize " << lineSize << " total size " << entry.second.size());

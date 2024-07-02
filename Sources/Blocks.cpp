@@ -13,12 +13,12 @@ const std::array<std::unique_ptr<Block>, S_BLOCKS_SIZE> s_blocks = {
 	std::make_unique<Poppy>(), std::make_unique<Dandelion>(), std::make_unique<BlueOrchid>(), std::make_unique<Allium>(), std::make_unique<CornFlower>(), std::make_unique<PinkTulip>(), std::make_unique<Grass>(), std::make_unique<SugarCane>(),
 	std::make_unique<DeadBush>(), std::make_unique<OakSapling>(), std::make_unique<Torch>(), std::make_unique<RedstoneTorch>(), std::make_unique<RedstoneDust>(), std::make_unique<Repeater>(), std::make_unique<Comparator>(), std::make_unique<Chest>(),
 	std::make_unique<WheatCrop>(), std::make_unique<ItemFrame>(), std::make_unique<BirchPlanks>(), std::make_unique<SandStone>(), std::make_unique<Glowstone>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
-	std::make_unique<Water>(), std::make_unique<TBD>(), std::make_unique<Obsidian>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
+	std::make_unique<Water>(), std::make_unique<TBD>(), std::make_unique<Obsidian>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<Feather>(), std::make_unique<Leather>(), std::make_unique<InkSac>(),
 	std::make_unique<Stick>(), std::make_unique<WoodenShovel>(), std::make_unique<StoneShovel>(), std::make_unique<IronShovel>(), std::make_unique<DiamondShovel>(), std::make_unique<WoodenAxe>(), std::make_unique<StoneAxe>(), std::make_unique<IronAxe>(),
 	std::make_unique<DiamondAxe>(), std::make_unique<WoodenPickaxe>(), std::make_unique<StonePickaxe>(), std::make_unique<IronPickaxe>(), std::make_unique<DiamondPickaxe>(), std::make_unique<Bow>(), std::make_unique<Arrow>(), std::make_unique<WorldEditWand>(),
 	std::make_unique<Coal>(), std::make_unique<Charcoal>(), std::make_unique<IronIngot>(), std::make_unique<Diamond>(), std::make_unique<Bucket>(), std::make_unique<WaterBucket>(), std::make_unique<WoodenHoe>(), std::make_unique<StoneHoe>(),
 	std::make_unique<IronHoe>(), std::make_unique<DiamondHoe>(), std::make_unique<WheatSeeds>(), std::make_unique<Wheat>(), std::make_unique<Bread>(), std::make_unique<Apple>(), std::make_unique<Flint>(), std::make_unique<FlintAndSteel>(),
-	std::make_unique<ZombieEgg>(), std::make_unique<SkeletonEgg>(), std::make_unique<String>(), std::make_unique<GlowstoneDust>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
+	std::make_unique<ZombieEgg>(), std::make_unique<SkeletonEgg>(), std::make_unique<String>(), std::make_unique<GlowstoneDust>(), std::make_unique<Paper>(), std::make_unique<Book>(), std::make_unique<BookAndQuill>(), std::make_unique<WrittenBook>(),
 	std::make_unique<WhiteWool>(), std::make_unique<PinkWool>(), std::make_unique<MagentaWool>(), std::make_unique<PurpleWool>(), std::make_unique<BlueWool>(), std::make_unique<LightBlueWool>(), std::make_unique<CyanWool>(), std::make_unique<GreenWool>(),
 	std::make_unique<LimeWool>(), std::make_unique<YellowWool>(), std::make_unique<OrangeWool>(), std::make_unique<RedWool>(), std::make_unique<BrownWool>(), std::make_unique<BlackWool>(), std::make_unique<GrayWool>(), std::make_unique<LightGrayWool>(),
 	std::make_unique<WhiteCarpet>(), std::make_unique<PinkCarpet>(), std::make_unique<MagentaCarpet>(), std::make_unique<PurpleCarpet>(), std::make_unique<BlueCarpet>(), std::make_unique<LightBlueCarpet>(), std::make_unique<CyanCarpet>(), std::make_unique<GreenCarpet>(),
@@ -395,7 +395,8 @@ void Torch::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::iv
 	glm::vec3 p7 = glm::vec3(start.x + pos.x + 1, start.y + pos.y + 1, pos.z + 0);
 
 	int spec = getTex(face_dir::minus_x, value);
-	int light = light_level;
+	int light = chunk->computeLight(pos.x, pos.y, pos.z);
+	light = glm::max((light & 0xF), static_cast<int>(light_level)) + (light & 0xF0);
 	switch ((value >> offset::blocks::orientation) & 0x7) { // orientation
 		case face_dir::minus_z: // default
 			p0 += glm::vec3( 7.0f * one16th,  7.0f * one16th, -6.0f * one16th);

@@ -938,6 +938,67 @@ menu::ret Menu::sign_menu( bool animUpdate )
 	return (menu::ret::no_change);
 }
 
+menu::ret Menu::book_menu( bool animUpdate )
+{
+	(void)animUpdate;
+	if (_selection == 2 && inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) { // Done
+		// glfwSetCharCallback(_window, NULL);
+		// std::string line = inputs::getCurrentMessage();
+		// _sign_content.push_back(line);
+		// inputs::resetMessage();
+		reset_values();
+		// return ((_sign_content.size() > 0) ? menu::ret::sign_done : menu::ret::back_to_game);
+		return (menu::ret::back_to_game);
+	}
+	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
+		// glfwSetCharCallback(_window, NULL);
+		// inputs::resetMessage();
+		reset_values();
+		return (menu::ret::back_to_game);
+	}
+	/*if (inputs::key_down(inputs::enter) && inputs::key_update(inputs::enter)) {
+		if (_sign_content.size() < 3) {
+			std::string line = inputs::getCurrentMessage();
+			_sign_content.push_back(line);
+			inputs::resetMessage();
+		} 
+	}
+	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+		inputs::rmLetter();
+	}
+	if (Utils::Text::textWidth(7, inputs::getCurrentMessage()) > 90) {
+		inputs::rmLetter();
+	}
+	// if (inputs::key_down(inputs::look_up) && inputs::key_update(inputs::look_up)) {
+	// 	inputs::setCurrentMessage(_chat->getHistoMsg(true));
+	// }
+	// if (inputs::key_down(inputs::look_down) && inputs::key_update(inputs::look_down)) {
+	// 	inputs::setCurrentMessage(_chat->getHistoMsg(false));
+	// }
+	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
+		inputs::moveCursor(true, inputs::key_down(inputs::left_control));
+	}
+	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
+		inputs::moveCursor(false, inputs::key_down(inputs::left_control));
+	}*/
+
+	_text->addText(WIN_WIDTH / 2 + 55 * _gui_size - Utils::Text::textWidth(6 * _gui_size, "Page 1 of 1"), WIN_HEIGHT / 2 - 115 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, "Page 1 of 1");
+	/*size_t index = 0;
+	for (; index < _sign_content.size(); ++index) {
+		_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2 - 50 * _gui_size + index * 10 * _gui_size, 0, 0, 7 * _gui_size, false, settings::consts::depth::menu::str, _sign_content[index]);
+	}
+	if (animUpdate) {
+		_textBar = !_textBar;
+	}
+	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2 - 50 * _gui_size + index * 10 * _gui_size, 0, 0, 7 * _gui_size, false, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.'));*/
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Sign");
+    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
+
+	setup_array_buffer_book();
+	blit_to_screen();
+	return (menu::ret::no_change);
+}
+
 void Menu::addQuads( int atlas, int depth, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight )
 {
 	--texWidth;--texHeight;
@@ -1228,6 +1289,19 @@ void Menu::setup_array_buffer_sign( void )
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 50 * _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size, 100 * _gui_size, 50 * _gui_size, 24, 47, 24, 12); // sign main body
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 4.1666f * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 8.333f * _gui_size, 50 * _gui_size, 48, 47, 2, 12); // sign post
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // Done
+
+	setup_shader();
+}
+
+void Menu::setup_array_buffer_book( void )
+{
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1); // occult window
+
+	addQuads(settings::consts::tex::book, settings::consts::depth::menu::container, WIN_WIDTH / 2 - 74 * _gui_size, WIN_HEIGHT / 2 - 130 * _gui_size, 146 * _gui_size, 180 * _gui_size, 20, 1, 146, 180);
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20, 3); // Sign
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 2) ? 111 : 91, 200, 20, 3); // Done
+	addQuads(settings::consts::tex::book, settings::consts::depth::menu::selection, WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size, (_selection == 3) ? 23 : 0, 205, 23, 13); // left arrow
+	addQuads(settings::consts::tex::book, settings::consts::depth::menu::selection, WIN_WIDTH / 2 + 25 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size, (_selection == 4) ? 23 : 0, 192, 23, 13); // right arrow
 
 	setup_shader();
 }
@@ -1783,6 +1857,22 @@ void Menu::processMouseMovement( float posX, float posY )
 		}
 		_selection = 0;
 		break ;
+	case menu::book:
+		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size)) {
+			_selection = 1;
+			return ;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size)) {
+			_selection = 2;
+			return ;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size)) {
+			_selection = 3;
+			return ;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 25 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size)) {
+			_selection = 4;
+			return ;
+		}
+		_selection = 0;
+		break ;
 	default: // ingame menus
 		for (int index = 0; index < 9; index++) {
 			if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * index * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 + 59 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
@@ -2033,6 +2123,8 @@ menu::ret Menu::run( bool animUpdate )
 			return (chat_menu(animUpdate));
 		case menu::sign:
 			return (sign_menu(animUpdate));
+		case menu::book:
+			return (book_menu(animUpdate));
 		default:
 			LOGERROR("ERROR defaulting on Menu::run");
 			return (menu::ret::back_to_game);

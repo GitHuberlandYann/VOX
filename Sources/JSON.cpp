@@ -835,6 +835,11 @@ bool Settings::loadResourcePacks( void )
 					if (end == std::string::npos) throw UnclosedBracketException();
 					_strings[settings::strings::tex_chest] = line.substr(14, end - 14);
 					check_set[settings::strings::tex_chest] = true;
+				} else if (!line.compare(0, 12, "\"TEX_BOOK\": ")) {
+					size_t end = line.find('\"', 13);
+					if (end == std::string::npos) throw UnclosedBracketException();
+					_strings[settings::strings::tex_book] = line.substr(13, end - 13);
+					check_set[settings::strings::tex_book] = true;
 				} else if (!line.compare(0, 14, "\"TEX_ZOMBIE\": ")) {
 					size_t end = line.find('\"', 15);
 					if (end == std::string::npos) throw UnclosedBracketException();

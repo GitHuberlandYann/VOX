@@ -28,12 +28,13 @@ void UI::loadTextures( void )
 	glActiveTexture(GL_TEXTURE0 + 2);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _texture);
 
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 5);
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, settings::consts::tex::size);
 	loadSubTextureArray(256, 256, settings::consts::tex::ui, Settings::Get()->getString(settings::strings::ui_atlas));
 	loadSubTextureArray(256, 256, settings::consts::tex::inventory, Settings::Get()->getString(settings::strings::tex_inventory));
 	loadSubTextureArray(256, 256, settings::consts::tex::crafting_table, Settings::Get()->getString(settings::strings::tex_crafting_table));
 	loadSubTextureArray(256, 256, settings::consts::tex::furnace, Settings::Get()->getString(settings::strings::tex_furnace));
 	loadSubTextureArray(256, 256, settings::consts::tex::chest, Settings::Get()->getString(settings::strings::tex_chest));
+	loadSubTextureArray(256, 256, settings::consts::tex::book, Settings::Get()->getString(settings::strings::tex_book));
 	glUniform1i(glGetUniformLocation(_shader.getProgram(), "textures"), 2);
 	check_glstate("Successfully loaded img[2] texture array 2D", true);
 }
@@ -215,6 +216,8 @@ void OpenGL_Manager::loadTextures( void )
 
 	loadSubTextureArray(16, 16, settings::consts::shader::item::apple, root + "apple.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::arrow, root + "arrow.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::item::book, root + "book.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::item::book_and_quill, root + "book_and_quill.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::bow, root + "bow.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::bow_pulling_0, root + "bow_pulling_0.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::bow_pulling_1, root + "bow_pulling_1.png");
@@ -229,17 +232,21 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::item::diamond_hoe, root + "diamond_hoe.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::diamond_pickaxe, root + "diamond_pickaxe.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::diamond_shovel, root + "diamond_shovel.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::item::feather, root + "feather.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::flint, root + "flint.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::flint_and_steel, root + "flint_and_steel.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::glowstone_dust, root + "glowstone_dust.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::item::ink_sac, root + "ink_sac.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::iron_axe, root + "iron_axe.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::iron_hoe, root + "iron_hoe.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::iron_ingot, root + "iron_ingot.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::iron_pickaxe, root + "iron_pickaxe.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::iron_shovel, root + "iron_shovel.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::item_frame, root + "item_frame.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::item::leather, root + "leather.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::oak_door, root + "oak_door.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::oak_sign, root + "oak_sign.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::item::paper, root + "paper.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::quartz, root + "quartz.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::redstone, root + "redstone.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::repeater, root + "repeater.png");
@@ -258,6 +265,7 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::item::wooden_hoe, root + "wooden_hoe.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::wooden_pickaxe, root + "wooden_pickaxe.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::wooden_shovel, root + "wooden_shovel.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::item::written_book, root + "written_book.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::item::zombie_egg, root + "zombie_egg.png");
 	glUniform1i(glGetUniformLocation(_shader.getProgram(), "textures"), 0);
 	check_glstate("Successfully loaded img[0] texture array 2D", true);

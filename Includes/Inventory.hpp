@@ -37,6 +37,7 @@ const std::map<int, std::vector<int>> recipes = {
 		blocks::cobblestone, blocks::stick, blocks::stick, blocks::stone_shovel, 1,
 		blocks::iron_ingot, blocks::stick, blocks::stick, blocks::iron_shovel, 1,
 		blocks::diamond, blocks::stick, blocks::stick, blocks::diamond_shovel, 1,
+		blocks::flint, blocks::stick, blocks::feather, blocks::arrow, 1,
 	}},
 
 	{2 + (1 << 2), { // 2x1
@@ -51,6 +52,8 @@ const std::map<int, std::vector<int>> recipes = {
 		blocks::quartz, blocks::quartz, blocks::quartz, blocks::quartz, blocks::quartz_block, 1,
 		blocks::quartz_block, blocks::quartz_block, blocks::quartz_block, blocks::quartz_block, blocks::quartz_bricks, 1,
 		blocks::glowstone_dust, blocks::glowstone_dust, blocks::glowstone_dust, blocks::glowstone_dust, blocks::glowstone, 1,
+
+		blocks::book, blocks::ink_sac, blocks::air, blocks::feather, blocks::book_and_quill, 1, // TODO implement shapeless recipe
 	}},
 
 	{2 + (3 << 2), { // 2x3
@@ -72,6 +75,7 @@ const std::map<int, std::vector<int>> recipes = {
 		blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone_slab, 6,
 		blocks::stone_bricks, blocks::stone_bricks, blocks::stone_bricks, blocks::stone_bricks_slab, 6,
 		blocks::wheat, blocks::wheat, blocks::wheat, blocks::bread, 1,
+		blocks::sugar_cane, blocks::sugar_cane, blocks::sugar_cane, blocks::paper, 3,
 	}},
 
 	{3 + (2 << 2), { // 3x2
@@ -79,6 +83,8 @@ const std::map<int, std::vector<int>> recipes = {
 		blocks::oak_planks, blocks::stick, blocks::oak_planks, blocks::oak_planks, blocks::stick, blocks::oak_planks, blocks::oak_fence, 3,
 		blocks::glass, blocks::glass, blocks::glass, blocks::glass, blocks::glass, blocks::glass, blocks::glass_pane, 16,
 		blocks::iron_ingot, blocks::air, blocks::iron_ingot, blocks::air, blocks::iron_ingot, blocks::air, blocks::bucket, 1,
+
+		blocks::leather, blocks::air, blocks::air, blocks::paper, blocks::paper, blocks::paper, blocks::book, 1, // TODO implement shapeless recipe
 	}},
 
 	{3 + (3 << 2), { // 3x3
