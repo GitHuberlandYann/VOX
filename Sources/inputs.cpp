@@ -201,6 +201,10 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 	} else if (type == blocks::book_and_quill) {
 		_paused = true;
 		_menu->setState(menu::book);
+		t_item item = _inventory->getSlotBlock(_inventory->getSlotNum());
+		if (item.tag && item.tag->getType() == tags::book_tag) {
+			_menu->setBookContent(&static_cast<BookTag*>(item.tag.get())->getContent());
+		}
 		return ;
 	} else if (s_blocks[type]->isItemOnly) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;

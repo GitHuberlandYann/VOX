@@ -459,6 +459,9 @@ void Chunk::checkFillVertices( void )
 
 void Chunk::dropEntities( std::vector<t_item> drops )
 {
+	if (!drops.size()) {
+		return ;
+	}
 	glm::vec3 camPos = _player->getPos(), dir = _player->getDir();
 	camPos.z += 1;
 	camPos += dir;

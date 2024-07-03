@@ -82,7 +82,7 @@ namespace inputs
 		cursor += (right) ? 1 : -1;
 		if (cursor > message.size()) {
 			cursor = message.size();
-		} else if (control && message[cursor] != ' ') {
+		} else if (control && message[cursor] != ' ' && message[cursor] != '\n') {
 			moveCursor(right, control);
 		}
 	}
@@ -98,6 +98,12 @@ namespace inputs
 		if (!cursor) return ;
 		message = message.substr(0, cursor - 1) + message.substr(cursor);
 		--cursor;
+	}
+
+	void addLetter( char c )
+	{
+		message = message.substr(0, cursor) + c + message.substr(cursor);
+		++cursor;
 	}
 
 	std::string getCurrentMessage( void )

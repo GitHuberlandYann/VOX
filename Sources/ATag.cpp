@@ -28,6 +28,17 @@ ToolTag::~ToolTag( void )
 
 }
 
+BookTag::BookTag( void )
+{
+	_type = tags::book_tag;
+	// _content.push_back("\n\nHello \"World\"!");
+}
+
+BookTag::~BookTag( void )
+{
+
+}
+
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
@@ -58,4 +69,14 @@ int ToolTag::getDura( void )
 float ToolTag::getDuraPercent( void )
 {
 	return (1.f * _dura / _toolDura);
+}
+
+void BookTag::pushPage( std::string page )
+{
+	_content.push_back(page);
+}
+
+std::vector<std::string>& BookTag::getContent( void )
+{
+	return (_content);
 }

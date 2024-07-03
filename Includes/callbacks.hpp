@@ -14,6 +14,7 @@ namespace inputs
 	void moveCursor( bool right, bool control );
 	void resetMessage( void );
 	void rmLetter( void );
+	void addLetter( char c );
 	std::string getCurrentMessage( void );
 	std::string getCurrentInputStr( char c );
 	void setCurrentMessage( std::string str );

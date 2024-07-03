@@ -109,6 +109,8 @@ void Inventory::changeCrafted( int craft )
 			int dura = s_blocks[_crafted.type]->durability;
 			if (dura) {
 				_crafted.tag = std::make_shared<ToolTag>(dura);
+			} else if (_crafted.type == blocks::book_and_quill) {
+				_crafted.tag = std::make_shared<BookTag>();
 			}
 			return ;
 		}
@@ -672,6 +674,8 @@ void Inventory::replaceSlot( int type, bool creative )
 		int dura = s_blocks[type & mask::blocks::type]->durability;
 		if (dura) {
 			_content[_slot].tag = std::make_shared<ToolTag>(dura);
+		} else if (type == blocks::book_and_quill || type == blocks::written_book) {
+			_content[_slot].tag = std::make_shared<BookTag>();
 		}
 		return ;
 	}

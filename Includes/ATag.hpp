@@ -1,10 +1,14 @@
 #ifndef ATAG_HPP
 # define ATAG_HPP
 
+# include <vector>
+# include <string>
+
 namespace tags {
 	enum {
 		none,
 		tool_tag,
+		book_tag,
 	};
 };
 
@@ -35,6 +39,19 @@ class ToolTag : public ATag
 	private:
 		int _dura;
 		int _toolDura;
+};
+
+class BookTag : public ATag
+{
+	public:
+		BookTag( void );
+		~BookTag( void );
+
+		void pushPage( std::string page );
+		std::vector<std::string>& getContent( void );
+	
+	private:
+		std::vector<std::string> _content;
 };
 
 #endif

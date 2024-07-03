@@ -78,11 +78,29 @@ std::string Player::saveString( void )
 
 static void saveItem( std::string& res, t_item item )
 {
+	bool first = true;
 	res += '[' + std::to_string(item.type) + ", " + std::to_string(item.amount);
 	if (item.tag) {
 		switch (item.tag->getType()) {
 			case tags::tool_tag:
 				res += ", {\"toolTag\": " + std::to_string(static_cast<ToolTag*>(item.tag.get())->getDura()) + "}";
+				break ;
+			case tags::book_tag:
+				res += ", {\"bookTag\": [";
+				for (auto page : static_cast<BookTag*>(item.tag.get())->getContent()) {
+					if (!first) {
+						res += ", ";
+					}
+					first = false;
+					res += std::to_string(page.size()) + ", \"";
+					for (char c : page) {
+						if (c == '"') res += "\\\"";
+						else if (c == '\n') res += "\\n";
+						else res += c;
+					}
+					res += "\"";
+				}
+				res += "]}";
 				break ;
 			default:
 				LOGERROR("ERROR saveItem tag with unrecognised type.");
@@ -426,6 +444,28 @@ static void convertTag( std::string line, int& index, t_item& item, char sep )
 					dura = std::atoi(&line[index + 14]);
 					item.tag = std::make_shared<ToolTag>(dura, s_blocks[item.type & mask::blocks::type]->durability);
 					index += 13;
+				} else if (!line.compare(index + 4, 7, "bookTag")) {
+					index += 13;
+					item.tag = std::make_shared<BookTag>();
+					while (line[index] && line[index] != ']') {
+						int pageSize = std::atoi(&line[index + 2]);
+						for (index = index + 2; line[index] && line[index] != ','; index++);
+						index += 3;
+						std::string str;
+						for (int strIndex = 0; strIndex < pageSize; ++strIndex, ++index) {
+							if (line[index] == '\\' && line[index + 1] == '\"') {
+								str += '\"';
+								++pageSize; ++strIndex; ++index;
+							} else if (line[index] == '\\' && line[index + 1] == 'n') {
+								str += '\n';
+								++pageSize; ++strIndex; ++index;
+							} else {
+								str += line[index];
+							}
+						}
+						static_cast<BookTag*>(item.tag.get())->pushPage(str);
+						for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
+					}
 				}
 			}
 			for (index = index + 2; line[index] && line[index] != sep; index++);
@@ -638,7 +678,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 							index += 3;
 							std::string str;
 							for (int strIndex = 0; strIndex < strSize; ++strIndex, ++index) {
-								if (line[index + strIndex] == '\\' && line[index + strIndex + 1] == '\"') {
+								if (line[index] == '\\' && line[index + 1] == '\"') {
 									str += '\"';
 									++strSize;
 									++strIndex;

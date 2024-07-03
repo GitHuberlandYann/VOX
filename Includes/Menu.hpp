@@ -87,6 +87,7 @@ class Menu
 		void setChestInstance( ChestInstance* chest );
 		void setFurnaceInstance( FurnaceInstance* furnace );
 		void setSignPos( glm::ivec3 pos );
+		void setBookContent( std::vector<std::string>* content );
 		std::vector<t_item> getDrops( void );
 		t_item dropSelectedBlock( bool stack );
 		void handleScroll( int offset );
@@ -105,7 +106,7 @@ class Menu
 		t_item _selected_block;
 		bool _vaoSet, _textBar, _input_world, _input_seed, _moving_slider, _change_to_apply, _drop_down_menu;
 		float _fov_gradient, _render_gradient, _brightness_gradient;
-		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs, _sign_content;
+		std::vector<std::string> _worlds, _resource_packs, _active_resource_packs, _sign_content, *_book_content;
 		glm::ivec3 _sign_pos;
 		std::vector<t_item> _drops;
 		std::vector<int> _selection_list;
