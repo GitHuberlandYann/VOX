@@ -946,7 +946,7 @@ menu::ret Menu::sign_menu( bool animUpdate )
 	return (menu::ret::no_change);
 }
 
-menu::ret Menu::book_menu( bool animUpdate )
+menu::ret Menu::book_and_quill_menu( bool animUpdate )
 {
 	if (!_book_content || (inputs::key_down(inputs::close) && inputs::key_update(inputs::close))) {
 		if (!_book_content) { _chat->chatMessage("Missing book content ptr.", TEXT::RED); }
@@ -957,6 +957,10 @@ menu::ret Menu::book_menu( bool animUpdate )
 	}
 	if (inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) {
 		if (_selection == 1) { // Sign
+			_state = menu::book_and_quill_sign;
+			_book_content->at(_scroll) = inputs::getCurrentMessage();
+			inputs::resetMessage();
+			return (book_sign_menu(animUpdate));
 		} else if (_selection == 2) { // Done
 			_book_content->at(_scroll) = inputs::getCurrentMessage();
 			glfwSetCharCallback(_window, NULL);
@@ -1016,6 +1020,55 @@ menu::ret Menu::book_menu( bool animUpdate )
 	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 107 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.'));
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Sign");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
+
+	setup_array_buffer_book();
+	blit_to_screen();
+	return (menu::ret::no_change);
+}
+
+menu::ret Menu::book_sign_menu( bool animUpdate )
+{
+	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
+		inputs::setCurrentMessage(_book_content->at(_scroll));
+		_state = menu::book_and_quill;
+		return (book_and_quill_menu(animUpdate));
+	}
+	if (inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) {
+		if (_selection == 1) { // Sign and close
+			glfwSetCharCallback(_window, NULL);
+			inputs::resetMessage();
+			reset_values();
+			return (menu::ret::sign_book);
+		} else if (_selection == 2) { // Cancel
+			inputs::setCurrentMessage(_book_content->at(_scroll));
+			_state = menu::book_and_quill;
+			return (book_and_quill_menu(animUpdate));
+		}
+	}
+	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+		inputs::rmLetter();
+	}
+	if (Utils::Text::textWidth(6, inputs::getCurrentMessage()) > 114) {
+		inputs::rmLetter();
+	}
+	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
+		_textBar = true;
+		inputs::moveCursor(true, inputs::key_down(inputs::left_control));
+	}
+	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
+		_textBar = true;
+		inputs::moveCursor(false, inputs::key_down(inputs::left_control));
+	}
+
+	_text->addText((WIN_WIDTH - Utils::Text::textWidth(6 * _gui_size, "Enter Book Title:")) / 2, WIN_HEIGHT / 2 - 90 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, "Enter Book Title:");
+	if (animUpdate) {
+		_textBar = !_textBar;
+	}
+	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 80 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.')); // TODO _text->addCursorText(str, cursorPos, cursorChar) which draws cursorChar on top of char at cursorPos
+	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 50 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, "Note! Once you sign\nthe book, it will no\nlonger be editable.");
+	
+	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 6 * _gui_size, true, settings::consts::depth::menu::str, "Sign and Close");
+    _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 6 * _gui_size, true, settings::consts::depth::menu::str, "Cancel");
 
 	setup_array_buffer_book();
 	blit_to_screen();
@@ -1323,11 +1376,14 @@ void Menu::setup_array_buffer_book( void )
 	addQuads(settings::consts::tex::book, settings::consts::depth::menu::container, WIN_WIDTH / 2 - 74 * _gui_size, WIN_HEIGHT / 2 - 130 * _gui_size, 146 * _gui_size, 180 * _gui_size, 20, 1, 146, 180);
 	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20, 3); // Sign
 	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 2) ? 111 : 91, 200, 20, 3); // Done
-	if (_scroll) {
-		addQuads(settings::consts::tex::book, settings::consts::depth::menu::selection, WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size, (_selection == 3) ? 23 : 0, 205, 23, 13); // left arrow
-	}
-	if (_scroll < 99) {
-		addQuads(settings::consts::tex::book, settings::consts::depth::menu::selection, WIN_WIDTH / 2 + 25 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size, (_selection == 4) ? 23 : 0, 192, 23, 13); // right arrow
+	
+	if (_state != menu::book_and_quill_sign) {
+		if (_scroll) {
+			addQuads(settings::consts::tex::book, settings::consts::depth::menu::selection, WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size, (_selection == 3) ? 23 : 0, 205, 23, 13); // left arrow
+		}
+		if (_scroll < 99) {
+			addQuads(settings::consts::tex::book, settings::consts::depth::menu::selection, WIN_WIDTH / 2 + 25 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size, (_selection == 4) ? 23 : 0, 192, 23, 13); // right arrow
+		}
 	}
 
 	setup_shader();
@@ -1887,7 +1943,8 @@ void Menu::processMouseMovement( float posX, float posY )
 		}
 		_selection = 0;
 		break ;
-	case menu::book:
+	case menu::book_and_quill:
+	case menu::book_and_quill_sign:
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
 			return ;
@@ -2084,6 +2141,7 @@ void Menu::setState( int state )
 		case menu::chat:
 		case menu::sign:
 		case menu::book:
+		case menu::book_and_quill:
 			glfwSetCharCallback(_window, inputs::character_callback);
 			break ;
 		case menu::command:
@@ -2121,7 +2179,7 @@ t_sign_info Menu::getSignContent( void )
 
 menu::ret Menu::run( bool animUpdate )
 {
-	if (inputs::key_down(inputs::quit_program) && _state != menu::chat && _state != menu::sign && _state != menu::book && !_input_world && !_input_seed) {
+	if (inputs::key_down(inputs::quit_program) && _state != menu::chat && _state != menu::sign && _state != menu::book_and_quill && _state != menu::book_and_quill_sign && !_input_world && !_input_seed) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return (menu::ret::quit);
 	}
@@ -2163,8 +2221,12 @@ menu::ret Menu::run( bool animUpdate )
 			return (chat_menu(animUpdate));
 		case menu::sign:
 			return (sign_menu(animUpdate));
-		case menu::book:
-			return (book_menu(animUpdate));
+		// case menu::book:
+		// 	return (book_menu());
+		case menu::book_and_quill:
+			return (book_and_quill_menu(animUpdate));
+		case menu::book_and_quill_sign:
+			return (book_sign_menu(animUpdate));
 		default:
 			LOGERROR("ERROR defaulting on Menu::run");
 			return (menu::ret::back_to_game);

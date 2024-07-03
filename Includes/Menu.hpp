@@ -35,6 +35,8 @@ namespace menu
 		command,
 		sign,
 		book,
+		book_and_quill,
+		book_and_quill_sign,
 	};
 
 	enum ret {
@@ -52,6 +54,7 @@ namespace menu
 		brightness_update,
 		apply_resource_packs,
 		sign_done,
+		sign_book,
 		drop_item_stack,
 		drop_item,
 	};
@@ -140,7 +143,9 @@ class Menu
 		menu::ret ingame_menu( void );
 		menu::ret chat_menu( bool animUpdate );
 		menu::ret sign_menu( bool animUpdate );
-		menu::ret book_menu( bool animUpdate );
+		menu::ret book_menu( void );
+		menu::ret book_and_quill_menu( bool animUpdate );
+		menu::ret book_sign_menu( bool animUpdate );
 
 		void addQuads( int atlas, int depth, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight );
 		void addUnstretchedQuads( int atlas, int depth, int posX, int posY, int width, int height, int texX, int texY, int texWidth, int texHeight, int border );

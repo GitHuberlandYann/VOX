@@ -200,7 +200,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		type = blocks::wheat_crop;
 	} else if (type == blocks::book_and_quill) {
 		_paused = true;
-		_menu->setState(menu::book);
+		_menu->setState(menu::book_and_quill);
 		t_item item = _inventory->getSlotBlock(_inventory->getSlotNum());
 		if (item.tag && item.tag->getType() == tags::book_tag) {
 			_menu->setBookContent(&static_cast<BookTag*>(item.tag.get())->getContent());
@@ -420,7 +420,7 @@ float OpenGL_Manager::getBreakTime( bool canHarvest )
 	return (seconds);
 }
 
-void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
+void OpenGL_Manager::userInputs( bool rayCast )
 {
 	// open menu
 	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
@@ -517,7 +517,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 	}
 
 	// add and remove blocks
-	_player->setDelta(deltaTime);
+	_player->setDelta(_time.deltaTime);
 	_hand_content = _inventory->getCurrentSlot();
 	if (inputs::key_down(inputs::destroy)) {
 		bool firstFrame = inputs::key_update(inputs::destroy);
@@ -534,7 +534,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 				_player->setArmAnimation(firstFrame);
 			} else {
 				_player->setArmAnimation(true);
-				_break_time += deltaTime;
+				_break_time += _time.deltaTime;
 				bool can_collect = s_blocks[_block_hit.type]->canCollect(_hand_content);
 				float break_time = getBreakTime(can_collect);
 				if (_break_time >= break_time) {
@@ -565,7 +565,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 	}
 	if (inputs::key_down(inputs::use)) {
 		if (_game_mode != settings::consts::gamemode::creative && s_blocks[_hand_content]->isFood) {
-			_eat_timer += deltaTime;
+			_eat_timer += _time.deltaTime;
 			if (_eat_timer >= 1.61f) {
 				if (_player->canEatFood(_hand_content)) {
 					_inventory->removeBlock(false);
@@ -573,7 +573,7 @@ void OpenGL_Manager::userInputs( float deltaTime, bool rayCast )
 				_eat_timer = 0;
 			}
 		} else if (_hand_content == blocks::bow) {
-			_bow_timer += deltaTime;
+			_bow_timer += _time.deltaTime;
 		} else if (inputs::key_update(inputs::use)) {
 			handleBlockModif(true, _game_mode != settings::consts::gamemode::creative);
 			_player->setArmAnimation(true);

@@ -23,6 +23,36 @@ enum {
 	F_LAST
 };
 
+typedef struct s_time {
+	s_time( void )
+		: deltaTime(0), currentTime(0), lastSecondRecorded(0), lastGameTick(0), previousFrame(0),
+		nbFrames(0), nbFramesLastSecond(0), nbTicks(0), nbTicksLastSecond(0),
+		fluidUpdate(0), animUpdate(0), tickUpdate(0), redTickUpdate(0) {}
+	double deltaTime;
+	double currentTime;
+	double lastSecondRecorded;
+	double lastGameTick;
+	double previousFrame;
+	int nbFrames;
+	int nbFramesLastSecond;
+	int nbTicks;
+	int nbTicksLastSecond;
+	bool fluidUpdate;
+	bool animUpdate;
+	bool tickUpdate;
+	bool redTickUpdate;
+}				t_time;
+
+typedef struct s_counter {
+	s_counter( void )
+		: newVaos(0), meshFaces(0), waterFaces(0), skyFaces(0) {}
+	GLint newVaos;
+	GLint meshFaces;
+	GLint waterFaces;
+	GLint skyFaces;
+	
+}				t_counter;
+
 typedef struct s_hit {
 	glm::ivec3 pos, prev_pos, water_pos;
 	int value, type;
@@ -78,6 +108,8 @@ class OpenGL_Manager
 		std::vector<t_shaderInputModel> _models;
 		std::thread _thread;
 		std::mutex _mtx;
+		t_time _time;
+		t_counter _counter;
 		t_hit _block_hit;
 		Chunk *_current_chunk_ptr = NULL, *_chunk_hit = NULL;
 		std::unique_ptr<Camera> _camera;
@@ -89,7 +121,7 @@ class OpenGL_Manager
 		void updateVisibleChunks( void );
 		void chunkUpdate( void );
 		float getBreakTime( bool canHarvest );
-		void userInputs( float deltaTime, bool rayCast );
+		void userInputs( bool rayCast );
 		t_hit getBlockHit( void );
 		void handleBlockModif( bool adding, bool collect );
 		void updateCamView( void );
@@ -106,6 +138,15 @@ class OpenGL_Manager
 		void drawEntities( void );
 		void drawParticles( void );
 		void drawModels( void );
+
+		void handleEndSetup( void );
+		void handleTime( bool gamePaused );
+		void handleUserInputs( int& backFromMenu );
+		void handleDraw( bool gamePaused );
+		void handleUI( void );
+		void handleBackToGame( void );
+		void handleMenu( bool animUpdate );
+		void handleChunkDeletion( void );
 
 		void startThread( void );
 		void stopThread( void );

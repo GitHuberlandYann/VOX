@@ -2,8 +2,8 @@
 #include "callbacks.hpp"
 #include "Settings.hpp"
 #include "WorldEdit.hpp"
-// #include "Benchmark.hpp"
 #include "logs.hpp"
+BENCHLOG(#include "Benchmark.hpp")
 void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
@@ -468,7 +468,11 @@ size_t OpenGL_Manager::clearParticles( void )
 	return (res);
 }
 
-void OpenGL_Manager::main_loop( void )
+// ************************************************************************** //
+//                                  Run                                       //
+// ************************************************************************** //
+
+void OpenGL_Manager::handleEndSetup( void )
 {
 	if (Settings::Get()->getBool(settings::bools::face_culling)) {
 		glEnable(GL_CULL_FACE);
@@ -490,281 +494,329 @@ void OpenGL_Manager::main_loop( void )
 
 	glfwSetKeyCallback(_window, inputs::key_callback);
 	glfwSetMouseButtonCallback(_window, inputs::mouse_button_callback);
+}
+
+void OpenGL_Manager::handleTime( bool gamePaused )
+{
+	_time.currentTime = glfwGetTime();
+	_time.deltaTime = _time.currentTime - _time.previousFrame;
+
+	++_time.nbFrames;
+	if (_time.currentTime - _time.lastSecondRecorded >= 1.0) {
+		_time.nbFramesLastSecond = _time.nbFrames;
+		_time.nbFrames = 0;
+		_time.nbTicksLastSecond = _time.nbTicks;
+		_time.nbTicks = 0;
+		_time.lastSecondRecorded += 1.0;
+	}
+	_shader.useProgram(); // must be before DayCycle tickUpdate
+	if (_time.currentTime - _time.lastGameTick >= settings::consts::tick) {
+		_time.tickUpdate = true;
+		++_time.nbTicks;
+		_time.lastGameTick += settings::consts::tick;
+		_time.fluidUpdate = (_time.nbTicks == 5 || _time.nbTicks == 10 || _time.nbTicks == 15 || _time.nbTicks == 20);
+		_time.animUpdate = (_time.nbTicks & 0x1);
+		if (!gamePaused) {
+			_player->tickUpdate();
+			_time.redTickUpdate = DayCycle::Get()->tickUpdate();
+		}
+	} else {
+		_time.tickUpdate = false;
+		_time.redTickUpdate = false;
+		_time.fluidUpdate = false;
+		_time.animUpdate = false;
+	}
+}
+
+void OpenGL_Manager::handleUserInputs( int& backFromMenu )
+{
+	if (!_paused) {
+		if (++backFromMenu != 1) {
+			userInputs(++backFromMenu > 3);
+		}
+		chunkUpdate();
+	} else if (_player->getCamUpdate() && _menu->getState() >= menu::inventory) {
+		// _ui->chatMessage("debug time");
+		chunkUpdate();
+		updateCamView();
+		updateVisibleChunks();
+		if (!_visible_chunks.size()) {
+			_current_chunk.x += 32; // we want chunk_update to call thread on next loop
+			_player->setCamUpdate(true);
+		}
+	}
+}
+
+void OpenGL_Manager::handleDraw( bool gamePaused )
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	_counter = t_counter();
+	for (auto& c: _visible_chunks) {
+		c->drawArray(_counter.newVaos, _counter.meshFaces);
+		if (!gamePaused) {
+			if (_time.tickUpdate) {
+				if (_time.redTickUpdate) {
+					c->updateRedstone(); // scheduled ticks
+				}
+				c->updateFurnaces(_time.currentTime);
+				if (_time.fluidUpdate) {
+					c->updateScheduledBlocks();
+					c->updateFluids(); // fluid tick
+				}
+				c->tickUpdate(); // random ticks
+			}
+			c->updateMobs(_models, _time.deltaTime);
+			c->updateEntities(_entities, _particles, _time.deltaTime);
+			if (Settings::Get()->getBool(settings::bools::particles)) {
+				c->updateParticles(_entities, _particles, _time.deltaTime);
+			}
+		}
+	}
+
+	if (!gamePaused) {
+		drawParticles();
+		(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
+			? _player->drawHeldItem(_models, _entities, _hand_content, _game_mode)
+			: _player->drawPlayer(_models, _entities, _hand_content);
+		drawModels();
+		_shader.useProgram();
+		addBreakingAnim();
+		drawEntities();
+	}
+
+	if (_menu->getState() >= menu::pause && Settings::Get()->getBool(settings::bools::skybox)) {
+		_skybox->render(_camera->getCamPos());
+	}
+
+#if 1
+	_skyShader.useProgram();
+	if (_time.animUpdate) {
+		updateAnimFrame();
+	}
+	glDisable(GL_CULL_FACE);
+	DayCycle::Get()->setCloudsColor(_skyShader.getUniform(settings::consts::shader::uniform::color));
+	if (Settings::Get()->getInt(settings::ints::clouds) != settings::OFF) {
+		for (auto& c: _visible_chunks) {
+			c->drawSky(_counter.newVaos, _counter.skyFaces);
+		}
+	}
+	glUniform3f(_skyShader.getUniform(settings::consts::shader::uniform::color), 0.24705882f, 0.4627451f, 0.89411765f); // water color
+	for (auto&c: _visible_chunks) {
+		c->drawWater(_counter.newVaos, _counter.waterFaces);
+	}
+	if (Settings::Get()->getBool(settings::bools::face_culling)) {
+		glEnable(GL_CULL_FACE);
+	}
+#endif
+}
+
+void OpenGL_Manager::handleUI( void )
+{
+	if (_menu->getState() >= menu::pause) {
+		std::string str;
+		if (_debug_mode) {
+			str = "Timer: " + std::to_string(_time.currentTime)
+					+ '\n' + DayCycle::Get()->getInfos()
+					+ "\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\tframe " + std::to_string((_time.deltaTime) * 1000)
+					+ "\nTPS: " + std::to_string(_time.nbTicksLastSecond)
+					+ '\n' + _player->getString(_game_mode)
+					+ "\nBlock\t> " + s_blocks[_block_hit.type]->name
+					+ ((_block_hit.type != blocks::air) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
+					+ ((_block_hit.type) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
+					+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
+					+ ((_game_mode != settings::consts::gamemode::creative) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
+					+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
+					// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
+					+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size());
+			
+			mtx_perimeter.lock();
+			str += '/' + std::to_string(_perimeter_chunks.size());
+			mtx_perimeter.unlock();
+			mtx.lock();
+			str += '/' + std::to_string(_chunks.size());
+			mtx.unlock();
+			str += "\nDisplayed faces\t> " + std::to_string(_counter.meshFaces)
+					+ "\nSky faces\t> " + std::to_string(_counter.skyFaces)
+					+ "\nWater faces\t> " + std::to_string(_counter.waterFaces)
+					+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(settings::ints::render_dist))
+					+ "\nGame mode\t\t> " + settings::consts::gamemode::str[_game_mode];
+			mtx_backup.lock();
+			str += "\nBackups\t> " + std::to_string(_backups.size());
+			mtx_backup.unlock();
+			str += _inventory->getSlotString()
+					+ _menu->getInfoString();
+					// + _inventory->getDuraString()
+					// + _inventory->getInventoryString();
+		} else {
+			str = "\n\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\nTPS: " + std::to_string(_time.nbTicksLastSecond);
+		}
+		// b.stamp("stringing");
+		_ui->drawUserInterface(str, _game_mode, _time.deltaTime);
+	}
+}
+
+void OpenGL_Manager::handleBackToGame( void )
+{
+	#if !__linux__
+		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		if (glfwRawMouseMotionSupported()) {
+			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+		}
+	#endif
+	set_cursor_position_callback(_player.get(), NULL);
+	set_scroll_callback(_inventory.get());
+	_paused = false;
+	_player->setCamUpdate(true);
+	setThreadUpdate(true);
+	_ui->textToScreen(_menu->getState() >= menu::pause);
+	inputs::force_reset_key_update(GLFW_MOUSE_BUTTON_1);
+}
+
+void OpenGL_Manager::handleMenu( bool animUpdate )
+{
+	if (_menu->getState() == menu::load) {
+		mtx.lock();
+		_menu->setChunks(_chunks);
+		mtx.unlock();
+	}
+	switch (_menu->run(animUpdate)) {
+		case menu::no_change:
+			break ;
+		case menu::ret::back_to_game: // back to game
+			handleBackToGame();
+			break ;
+		case menu::ret::world_selected: // world selected, go into loading mode
+			_world_name = _menu->getWorldFile();
+			_shader.useProgram(); // used by dayCycle to modif internal light
+			loadWorld("Worlds/" + _world_name);
+			initWorld();
+			break ;
+		case menu::ret::world_created: // create new world, go into loading mode
+			_world_name = _menu->getWorldFile();
+			_player->setSpawnpoint({0, 0, 256});
+			_player->respawn();
+			_game_mode = settings::consts::gamemode::survival;
+			DayCycle::Get()->setTicks(1000);
+			initWorld();
+			break ;
+		case menu::ret::respawn_player: // Respawn player, init world again
+			_player->respawn();
+			initWorld();
+			break ;
+		case menu::ret::respawn_save_quit: // Respawn player, then save and quit to menu
+			_player->respawn();
+		case menu::ret::save_and_quit: // save and quit to menu
+			resetInputsPtrs();
+			saveWorld();
+			break ;
+		case menu::ret::fov_update: // fov change
+			updateCamPerspective();
+			break ;
+		case menu::ret::render_dist_update: // render dist change
+			// _ui->chatMessage("Render distance set to " + std::to_string(render_dist));
+			glUniform1f(_skyShader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
+			glUniform1f(_shader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
+			setThreadUpdate(true);
+			break ;
+		case menu::ret::brightness_update: // brightness change
+			glUniform1f(_particleShader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
+			glUniform1f(_shader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
+			break ;
+		case menu::ret::apply_resource_packs:
+			if (!Settings::Get()->loadResourcePacks()) { // if missing field in resource packs, we don't load
+				createShaders();
+				setupCommunicationShaders();
+				loadTextures();
+			}
+			break ;
+		case menu::ret::sign_done:
+			_chunk_hit->setSignContent(_menu->getSignContent());
+			handleBackToGame();
+			break ;
+		case menu::ret::sign_book:
+			// _inventory->signBook();
+			handleBackToGame();
+			break ;
+		case menu::ret::drop_item_stack:
+			mtx.lock();
+			_current_chunk_ptr->dropEntity(_player->getDir(), _menu->dropSelectedBlock(true));
+			mtx.unlock();
+			break ;
+		case menu::ret::drop_item:
+			mtx.lock();
+			_current_chunk_ptr->dropEntity(_player->getDir(), _menu->dropSelectedBlock(false));
+			mtx.unlock();
+			break ;
+		case menu::ret::back_to_game_after_drop: // drop items
+			mtx.lock();
+			_current_chunk_ptr->dropEntities(_menu->getDrops());
+			mtx.unlock();
+			handleBackToGame();
+			break ;
+		default:
+			LOGERROR("ERROR menu::ret defaulted");
+			glfwSetWindowShouldClose(_window, GL_TRUE);
+			break ;
+	}
+}
+
+void OpenGL_Manager::handleChunkDeletion( void )
+{
+	mtx_deleted_chunks.lock();
+	for (auto& todel: _deleted_chunks) {
+		delete todel;
+	}
+	_deleted_chunks.clear();
+	mtx_deleted_chunks.unlock();
+}
+
+void OpenGL_Manager::main_loop( void )
+{
+	handleEndSetup();
 
 	check_glstate("setup done, entering main loop\n", true);
 
-	// std::cout << "60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame." << std::endl; 
-	double lastTime = glfwGetTime(), lastGameTick = lastTime;
-	int nbFrames = 0, nbFramesLastSecond = 0, nbTicks = 0, nbTicksLastSecond = 0;
+	// 60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame.
+	_time = t_time();
+	_time.currentTime = glfwGetTime();
+	_time.lastSecondRecorded = _time.currentTime;
+	_time.lastGameTick = _time.currentTime;
+	_time.previousFrame = _time.currentTime;
 
-	double previousFrame = lastTime;
 	int backFromMenu = 0; // TODO check this var's shinanigans
-
-	bool fluidUpdate = false, animUpdate = false, tickUpdate = false, redTickUpdate = false;
 
 	// main loop cheking for inputs and rendering everything
 	while (!glfwWindowShouldClose(_window))
 	{
-		double currentTime = glfwGetTime();
-		double deltaTime = currentTime - previousFrame;
-		// if (deltaTime > 0.1f) std::cout << "\t\tPREVIOUS FRAME AT " << deltaTime << std::endl;
+		// if (deltaTime > 0.1f) MAINLOG(LOG("\t\tPREVIOUS FRAME AT " << _time.deltaTime));
 		bool gamePaused = _paused && _menu->getState() < menu::inventory && _menu->getState() != menu::death;
 
-		++nbFrames;
-		if (currentTime - lastTime >= 1.0) {
-			nbFramesLastSecond = nbFrames;
-			nbFrames = 0;
-			nbTicksLastSecond = nbTicks;
-			nbTicks = 0;
-			lastTime += 1.0;
-		}
-		_shader.useProgram(); // must be before DayCycle tickUpdate
-		if (currentTime - lastGameTick >= settings::consts::tick) {
-			tickUpdate = true;
-			++nbTicks;
-			lastGameTick += settings::consts::tick;
-			fluidUpdate = (nbTicks == 5 || nbTicks == 10 || nbTicks == 15 || nbTicks == 20);
-			animUpdate = (nbTicks & 0x1);
-			if (!gamePaused) {
-				_player->tickUpdate();
-				redTickUpdate = DayCycle::Get()->tickUpdate();
-			}
-		} else {
-			tickUpdate = false;
-			redTickUpdate = false;
-			fluidUpdate = false;
-			animUpdate = false;
-		}
-
-		// Bench b;
-		if (!_paused) {
-			if (++backFromMenu != 1) {
-				userInputs(deltaTime, ++backFromMenu > 3);
-			}
-			chunkUpdate();
-		} else if (_player->getCamUpdate() && _menu->getState() >= menu::inventory) {
-			// _ui->chatMessage("debug time");
-			chunkUpdate();
-			updateCamView();
-			updateVisibleChunks();
-			if (!_visible_chunks.size()) {
-				_current_chunk.x += 32; // we want chunk_update to call thread on next loop
-				_player->setCamUpdate(true);
-			}
-		}
-		// b.stamp("user inputs");
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		GLint newVaoCounter = 0, faceCounter = 0, waterFaces = 0, skyFaces = 0;
-		for (auto& c: _visible_chunks) {
-			c->drawArray(newVaoCounter, faceCounter);
-			if (!gamePaused) {
-				if (tickUpdate) {
-					if (redTickUpdate) {
-						c->updateRedstone(); // scheduled ticks
-					}
-					c->updateFurnaces(currentTime);
-					if (fluidUpdate) {
-						c->updateScheduledBlocks();
-						c->updateFluids(); // fluid tick
-					}
-					c->tickUpdate(); // random ticks
-				}
-				c->updateMobs(_models, deltaTime);
-				c->updateEntities(_entities, _particles, deltaTime);
-				if (Settings::Get()->getBool(settings::bools::particles)) {
-					c->updateParticles(_entities, _particles, deltaTime);
-				}
-			}
-		}
-		// if (newVaoCounter) {
-		// 	std::cout << "new vao counter: " << newVaoCounter << std::endl;
-		// }
-		// b.stamp("solids");
-
-		if (!gamePaused) {
-			drawParticles();
-			(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
-				? _player->drawHeldItem(_models, _entities, _hand_content, _game_mode)
-				: _player->drawPlayer(_models, _entities, _hand_content);
-			drawModels();
-			_shader.useProgram();
-			addBreakingAnim();
-			drawEntities();
-		}
-
-		if (_menu->getState() >= menu::pause && Settings::Get()->getBool(settings::bools::skybox)) {
-			_skybox->render(_camera->getCamPos());
-		}
-
-		#if 1
-		_skyShader.useProgram();
-		if (animUpdate) {
-			updateAnimFrame();
-		}
-		glDisable(GL_CULL_FACE);
-		DayCycle::Get()->setCloudsColor(_skyShader.getUniform(settings::consts::shader::uniform::color));
-		if (Settings::Get()->getInt(settings::ints::clouds) != settings::OFF) {
-			for (auto& c: _visible_chunks) {
-				c->drawSky(newVaoCounter, skyFaces);
-			}
-		}
-		glUniform3f(_skyShader.getUniform(settings::consts::shader::uniform::color), 0.24705882f, 0.4627451f, 0.89411765f); // water color
-		for (auto&c: _visible_chunks) {
-			c->drawWater(newVaoCounter, waterFaces);
-		}
-		if (Settings::Get()->getBool(settings::bools::face_culling)) {
-			glEnable(GL_CULL_FACE);
-		}
-		// b.stamp("display water sky");
-		#endif
-		// Chunk* chunk_ptr = _current_chunk_ptr->dropEntity();();
-		if (_menu->getState() >= menu::pause) {
-			std::string str;
-			if (_debug_mode) {
-				str = "Timer: " + std::to_string(currentTime)
-						+ '\n' + DayCycle::Get()->getInfos()
-						+ "\nFPS: " + std::to_string(nbFramesLastSecond) + "\tframe " + std::to_string((deltaTime) * 1000)
-						+ "\nTPS: " + std::to_string(nbTicksLastSecond)
-						+ '\n' + _player->getString(_game_mode)
-						+ "\nBlock\t> " + s_blocks[_block_hit.type]->name
-						+ ((_block_hit.type != blocks::air) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
-						+ ((_block_hit.type) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
-						+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
-						+ ((_game_mode != settings::consts::gamemode::creative) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
-						+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
-						// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
-						+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size());
-				
-				mtx_perimeter.lock();
-				str += '/' + std::to_string(_perimeter_chunks.size());
-				mtx_perimeter.unlock();
-				mtx.lock();
-				str += '/' + std::to_string(_chunks.size());
-				mtx.unlock();
-				str += "\nDisplayed faces\t> " + std::to_string(faceCounter)
-						+ "\nSky faces\t> " + std::to_string(skyFaces)
-						+ "\nWater faces\t> " + std::to_string(waterFaces)
-						+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(settings::ints::render_dist))
-						+ "\nGame mode\t\t> " + settings::consts::gamemode::str[_game_mode];
-				mtx_backup.lock();
-				str += "\nBackups\t> " + std::to_string(_backups.size());
-				mtx_backup.unlock();
-				str += _inventory->getSlotString()
-						+ _menu->getInfoString();
-						// + _inventory->getDuraString()
-						// + _inventory->getInventoryString();
-			} else {
-				str = "\n\nFPS: " + std::to_string(nbFramesLastSecond) + "\nTPS: " + std::to_string(nbTicksLastSecond);
-			}
-			// b.stamp("stringing");
-			_ui->drawUserInterface(str, _game_mode, deltaTime);
-		}
-		// b.stamp("UI");
+		handleTime(gamePaused);
+		BENCHLOG(Bench b);
+		handleUserInputs(backFromMenu);
+		BENCHLOG(b.stamp("user inputs"));
+		handleDraw(gamePaused);
+		BENCHLOG(b.stamp("draw"));
+		handleUI();
 		if (_paused) {
-			if (_menu->getState() == menu::load) {
-				mtx.lock();
-				_menu->setChunks(_chunks);
-				mtx.unlock();
+			handleMenu(_time.nbTicks == 1 && _time.tickUpdate);
+			if (!_paused) {
+				backFromMenu = 0;
 			}
-			switch (_menu->run(nbTicks == 1 && tickUpdate)) {
-				case menu::ret::sign_done:
-					_chunk_hit->setSignContent(_menu->getSignContent());
-				case menu::ret::back_to_game_after_drop: // drop items
-					mtx.lock();
-					_current_chunk_ptr->dropEntities(_menu->getDrops());
-					mtx.unlock();
-				case menu::ret::back_to_game: // back to game
-					#if !__linux__
-						glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-						if (glfwRawMouseMotionSupported()) {
-							glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-						}
-					#endif
-					set_cursor_position_callback(_player.get(), NULL);
-					set_scroll_callback(_inventory.get());
-					_paused = false;
-					backFromMenu = 0;
-					_player->setCamUpdate(true);
-					setThreadUpdate(true);
-					_ui->textToScreen(_menu->getState() >= menu::pause);
-					inputs::force_reset_key_update(GLFW_MOUSE_BUTTON_1);
-					break ;
-				case menu::ret::world_selected: // world selected, go into loading mode
-					_world_name = _menu->getWorldFile();
-					_shader.useProgram(); // used by dayCycle to modif internal light
-					loadWorld("Worlds/" + _world_name);
-					initWorld();
-					break ;
-				case menu::ret::world_created: // create new world, go into loading mode
-					_world_name = _menu->getWorldFile();
-					_player->setSpawnpoint({0, 0, 256});
-					_player->respawn();
-					_game_mode = settings::consts::gamemode::survival;
-					DayCycle::Get()->setTicks(1000);
-					initWorld();
-					break ;
-				case menu::ret::respawn_player: // Respawn player, init world again
-					_player->respawn();
-					initWorld();
-					break ;
-				case menu::ret::respawn_save_quit: // Respawn player, then save and quit to menu
-					_player->respawn();
-				case menu::ret::save_and_quit: // save and quit to menu
-					resetInputsPtrs();
-					saveWorld();
-					break ;
-				case menu::ret::fov_update: // fov change
-					updateCamPerspective();
-					break ;
-				case menu::ret::render_dist_update: // render dist change
-					// _ui->chatMessage("Render distance set to " + std::to_string(render_dist));
-					glUniform1f(_skyShader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
-					glUniform1f(_shader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
-					setThreadUpdate(true);
-					break ;
-				case menu::ret::brightness_update: // brightness change
-					glUniform1f(_particleShader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
-					glUniform1f(_shader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
-					break ;
-				case menu::ret::apply_resource_packs:
-					if (!Settings::Get()->loadResourcePacks()) { // if missing field in resource packs, we don't load
-						createShaders();
-						setupCommunicationShaders();
-						loadTextures();
-					}
-					break ;
-				case menu::ret::drop_item_stack:
-					mtx.lock();
-					_current_chunk_ptr->dropEntity(_player->getDir(), _menu->dropSelectedBlock(true));
-					mtx.unlock();
-					break ;
-				case menu::ret::drop_item:
-					mtx.lock();
-					_current_chunk_ptr->dropEntity(_player->getDir(), _menu->dropSelectedBlock(false));
-					mtx.unlock();
-					break ;
-				default:
-					break ;
-			}
+			BENCHLOG(b.stamp("menu"));
 		} else {
-			_ui->textToScreen(_menu->getState() >= menu::pause); // called from menu->run to draw in correct order
+			_ui->textToScreen(_menu->getState() >= menu::pause);
+			BENCHLOG(b.stamp("textoscreen"));
 		}
-		// b.stamp("textoscreen");
-		mtx_deleted_chunks.lock();
-		for (auto& todel: _deleted_chunks) {
-			delete todel;
-		}
-		_deleted_chunks.clear();
-		mtx_deleted_chunks.unlock();
-		// b.stamp("chunk deletion");
-
-		previousFrame = currentTime;
+		handleChunkDeletion();
+		BENCHLOG(b.stamp("chunk deletion"));
+		_time.previousFrame = _time.currentTime;
 		glfwSwapBuffers(_window);
-		// b.stamp("swap buffer");
+		BENCHLOG(b.stamp("swap buffer"));
 		glfwPollEvents();
-		// b.stamp("poll events");
-		// b.stop("frame");
+		BENCHLOG(b.stamp("poll events"));
+		BENCHLOG(b.stop("frame"));
 	}
 
 	check_glstate("\nmain loop successfully exited", true);
