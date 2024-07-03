@@ -141,6 +141,7 @@ TODOS:
     - inventory block count
     - right click and drag in inventory
     - tools durabitlity
+	- ATag field in t_item to store tool durabitlity or book_and_quill s content or enchantments
     - block break animation
 	- time 20 min = 1 day
 	- time pause on menu

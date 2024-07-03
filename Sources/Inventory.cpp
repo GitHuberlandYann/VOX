@@ -107,7 +107,9 @@ void Inventory::changeCrafted( int craft )
 			_crafted.type = search->second[index + line - 2];
 			_crafted.amount = search->second[index + line - 1];
 			int dura = s_blocks[_crafted.type]->durability;
-			_crafted.dura = {dura, dura};
+			if (dura) {
+				_crafted.tag = std::make_shared<ToolTag>(dura);
+			}
 			return ;
 		}
 	}
@@ -147,7 +149,7 @@ t_item Inventory::pickCrafted( int craft, t_item block )
 		t_item ret = _crafted;
 		produceCraft(craft);
 		return (ret);
-	} else if (block.type == _crafted.type && s_blocks[block.type]->stackable && block.amount + _crafted.amount <= 64) {
+	} else if (block.type == _crafted.type && block.amount + _crafted.amount <= s_blocks[block.type]->stackSize) {
 		block.amount += _crafted.amount;
 		produceCraft(craft);
 	}
@@ -156,14 +158,14 @@ t_item Inventory::pickCrafted( int craft, t_item block )
 
 int Inventory::findEmptyCell( t_item block, bool hotbar_first )
 {
-	if (s_blocks[block.type]->stackable) {
+	if (s_blocks[block.type]->stackSize > 1) {
 		for (int index = 0; index < 9; index++) {
-			if (_content[index].type == block.type && _content[index].amount + block.amount <= 64) {
+			if (_content[index].type == block.type && _content[index].amount + block.amount <= s_blocks[block.type]->stackSize) {
 				return (index);
 			}
 		}
 		for (int index = 0; index < 27; index++) {
-			if (_backpack[index].type == block.type && _backpack[index].amount + block.amount <= 64) {
+			if (_backpack[index].type == block.type && _backpack[index].amount + block.amount <= s_blocks[block.type]->stackSize) {
 				return (index + CELLS::backpack_first);
 			}
 		}
@@ -217,13 +219,10 @@ void Inventory::pickAllCrafted( int craft )
 	} else {
 		bat = &_backpack[location - CELLS::backpack_first];
 	}
-	while (_crafted.type != blocks::air && bat->amount + _crafted.amount <= 64) {
+	while (_crafted.type != blocks::air && bat->amount + _crafted.amount <= s_blocks[_crafted.type]->stackSize) {
 		*bat = pickCrafted(craft, *bat);
-		if (_crafted.type != bat->type && _crafted.type != blocks::air) {
-			return (pickAllCrafted(craft));
-		}
-		if (!s_blocks[bat->type]->stackable) {
-			return (pickAllCrafted(craft));
+		if (_crafted.type != bat->type) {
+			break ;
 		}
 	}
 	if (_crafted.type != blocks::air) {
@@ -317,11 +316,10 @@ void Inventory::shiftBlockAt( int craft, int value, FurnaceInstance *furnace, Ch
 			break ;
 		case 2: // table craft
 			if (value <= CELLS::backpack_last) {
-				if (s_blocks[item.type]->stackable) {
+				if (s_blocks[item.type]->stackSize > 1) {
 					for (int index = 0; index < 9; index++) {
 						t_item *bat = &_craft[index];
-						if (bat->type == item.type && bat->amount + item.amount <= 64) {
-							bat->type = item.type;
+						if (bat->type == item.type && bat->amount + item.amount <= s_blocks[item.type]->stackSize) {
 							bat->amount += item.amount;
 							return ;
 						}
@@ -355,11 +353,10 @@ void Inventory::shiftBlockAt( int craft, int value, FurnaceInstance *furnace, Ch
 				}
 			} else if (chest) {
 				if (value <= CELLS::backpack_last) { // from inventory to chest
-					if (s_blocks[item.type]->stackable) {
+					if (s_blocks[item.type]->stackSize > 1) {
 						for (int index = 0; index < 27; index++) {
 							t_item *bat = chest->getItem(index);
-							if (bat->type == item.type && bat->amount + item.amount <= 64) {
-								bat->type = item.type;
+							if (bat->type == item.type && bat->amount + item.amount <= s_blocks[item.type]->stackSize) {
 								bat->amount += item.amount;
 								return ;
 							}
@@ -472,11 +469,12 @@ t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstanc
 		return (block);
 	}
 	t_item res = *bat;
-	if (res.type == block.type && s_blocks[block.type]->stackable) {
+	int stackSize = s_blocks[block.type]->stackSize;
+	if (res.type == block.type && stackSize > 1) {
 		res.amount += block.amount;
-		if (res.amount > 64) {
-			block.amount = res.amount - 64;
-			res.amount = 64;
+		if (res.amount > stackSize) {
+			block.amount = res.amount - stackSize;
+			res.amount = stackSize;
 			*bat = res;
 			changeCrafted(craft_place);
 			return (block);
@@ -510,13 +508,10 @@ t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceIns
 	if (!bat || (furnace && value == CELLS::furnace_fuel && !s_blocks[block.type]->isFuel)) {
 		return (block);
 	}
-	if (bat->amount == 64) {
-		return (block);
-	}
-	if (bat->type == block.type && s_blocks[block.type]->stackable) {
-		bat->amount++;
+	if (bat->type == block.type && bat->amount + 1 <= s_blocks[block.type]->stackSize) {
+		++bat->amount;
 	} else if (bat->type == blocks::air) {
-		*bat = {block.type, 1, block.dura};
+		*bat = {block.type, 1, block.tag};
 	} else {
 		return (block);
 	}
@@ -541,10 +536,10 @@ bool Inventory::restoreBlock( t_item block, bool hotbar_first )
 		return (false);
 	}
 	if (location <= CELLS::hotbar_last) {
-		_content[location] = {block.type, block.amount + _content[location].amount, block.dura};
+		_content[location] = {block.type, block.amount + _content[location].amount, block.tag};
 		_modif = true;
 	} else {
-		_backpack[location - CELLS::backpack_first] = {block.type, block.amount + _backpack[location - CELLS::backpack_first].amount, block.dura};
+		_backpack[location - CELLS::backpack_first] = {block.type, block.amount + _backpack[location - CELLS::backpack_first].amount, block.tag};
 	}
 	return (true);
 }
@@ -556,10 +551,10 @@ bool Inventory::absorbItem( t_item block )
 		return (false);
 	}
 	if (location <= CELLS::hotbar_last) {
-		_content[location] = {block.type, block.amount + _content[location].amount, block.dura};
+		_content[location] = {block.type, block.amount + _content[location].amount, block.tag};
 		_modif = true;
 	} else {
-		_backpack[location - CELLS::backpack_first] = {block.type, block.amount + _backpack[location - CELLS::backpack_first].amount, block.dura};
+		_backpack[location - CELLS::backpack_first] = {block.type, block.amount + _backpack[location - CELLS::backpack_first].amount, block.tag};
 	}
 	return (true);
 }
@@ -618,7 +613,10 @@ void Inventory::addBlock( int type )
 		}
 	}
 	int dura = s_blocks[type]->durability;
-	t_item block = {s_blocks[type]->mined, 1, {dura, dura}};
+	t_item block = {s_blocks[type]->mined, 1};
+	if (dura) {
+		block.tag = std::make_shared<ToolTag>(dura);
+	}
 	restoreBlock(block, true);
 }
 /*
@@ -649,7 +647,7 @@ void Inventory::removeBlockAt( int value, FurnaceInstance *furnace, ChestInstanc
 
 t_item Inventory::removeBlock( bool thrown )
 {
-	t_item res = {_content[_slot].type, 1, _content[_slot].dura};
+	t_item res = {_content[_slot].type, 1, _content[_slot].tag};
     if (res.type == blocks::air) {
         return (res);
     }
@@ -670,7 +668,11 @@ void Inventory::replaceSlot( int type, bool creative )
 	}
 	_modif = true;
 	if (creative) {
-		_content[_slot] = {type, 1, {0, 0}};
+		_content[_slot] = {type, 1};
+		int dura = s_blocks[type & mask::blocks::type]->durability;
+		if (dura) {
+			_content[_slot].tag = std::make_shared<ToolTag>(dura);
+		}
 		return ;
 	}
 	int cell = findBlockCell(type);
@@ -699,9 +701,10 @@ void Inventory::swapCells( int slot, int location )
 	}
 	if (_content[slot].type == bat->type && bat->type != blocks::air) {
 		_content[slot].amount += bat->amount;
-		if (_content[slot].amount > 64) {
-			bat->amount = _content[slot].amount - 64;
-			_content[slot].amount = 64;
+		int stackSize = s_blocks[bat->type]->stackSize;
+		if (_content[slot].amount > stackSize) {
+			bat->amount = _content[slot].amount - stackSize;
+			_content[slot].amount = stackSize;
 		} else {
 			*bat = {0};
 		}
@@ -714,8 +717,8 @@ void Inventory::swapCells( int slot, int location )
 
 void Inventory::decrementDurabitilty( void )
 {
-	if (_content[_slot].dura.x) {
-		if (--_content[_slot].dura.x == 0) {
+	if (_content[_slot].tag && _content[_slot].tag->getType() == tags::tool_tag) {
+		if (static_cast<ToolTag*>(_content[_slot].tag.get())->decrementDura() == 0) {
 			removeBlock(false);
 		}
 		_modif = true;
@@ -761,9 +764,9 @@ std::string Inventory::getInventoryString( void )
 
 std::string Inventory::getSlotString( void )
 {
-	std::string res = "\n\nHolding\t> " + s_blocks[_content[_slot].type]->name;
-	if (_content[_slot].dura.x) {
-		res += " (" + std::to_string(_content[_slot].dura.x) + '/' + std::to_string(_content[_slot].dura.y) + ')';
+	std::string res = "\n\nHolding\t> " + s_blocks[_content[_slot].type]->name + " [id: " + std::to_string(_content[_slot].type) + "]";
+	if (_content[_slot].tag && _content[_slot].tag->getType() == tags::tool_tag) {
+		res += " (" + std::to_string(static_cast<ToolTag*>(_content[_slot].tag.get())->getDura()) + '/' + std::to_string(s_blocks[_content[_slot].type]->durability) + ')';
 	} else if (_content[_slot].type) {
 		res += " (" + std::to_string(_content[_slot].amount) + ')';
 	}

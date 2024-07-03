@@ -1,5 +1,6 @@
 #include "Menu.hpp"
 #include "Ui.hpp"
+#include "Inventory.hpp"
 #include "callbacks.hpp"
 #include "Settings.hpp"
 #include <dirent.h>
@@ -724,8 +725,9 @@ menu::ret Menu::ingame_inputs( void )
 				} else {
 					_selected_block = _inventory->pickBlockAt(craft, _selection - 1, _furnace, _chest);
 					if (_selected_block.type != blocks::air && inputs::key_down(inputs::left_control)
-						&& Settings::Get()->getInt(settings::ints::game_mode) == settings::consts::gamemode::creative) {
-						_selected_block.amount = 64;
+						&& Settings::Get()->getInt(settings::ints::game_mode) == settings::consts::gamemode::creative
+						&& _selection != CELLS::product + 1) {
+						_selected_block.amount = s_blocks[_selected_block.type]->stackSize;
 					}
 				}
 			} else {
@@ -1363,15 +1365,18 @@ void Menu::occult_selection( void )
 	}
 }
 
-void Menu::add_dura_value( glm::ivec2 dura, int x, int y )
+void Menu::add_dura_value( std::shared_ptr<ATag> tag, int x, int y )
 {
-	if (dura.y == 0 || dura.x == dura.y) {
+	if (!tag || tag->getType() != tags::tool_tag) {
+		return ;
+	}
+	float percent = static_cast<ToolTag*>(tag.get())->getDuraPercent();
+	if (percent > .99f) {
 		return ;
 	}
 	// adding grey bar first
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::dura_back, x + _gui_size, y + 14 * _gui_size, 14 * _gui_size, _gui_size, 16, 0, 1, 1);
 	// adding progress bar second
-	float percent = 1.0f * dura.x / dura.y;
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::dura, x + _gui_size, y + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, (percent < .6f) ? (percent < .3f) ? 19 : 18 : 17, 0, 1, 1);
 }
 
@@ -1391,7 +1396,7 @@ void Menu::display_item_value( int x, int y, int amount, int depth )
 void Menu::add_item_value( t_item item, int x, int y, int depth, bool movement )
 {
 	display_item_value(x, y, item.amount, depth);
-	add_dura_value(item.dura, x, y);
+	add_dura_value(item.tag, x, y);
 	s_blocks[item.type]->addItem(_ui, x, y, _gui_size, 16, (depth == settings::consts::depth::menu::item_str) ? settings::consts::depth::item::menu : settings::consts::depth::item::held, true, movement);
 }
 
@@ -2008,12 +2013,12 @@ t_item Menu::dropSelectedBlock( bool stack )
 	}
 	t_item res = _selected_block;
 	if (stack) {
-		_selected_block = {0, 0, {0, 0}};
+		_selected_block = {0};
 	} else {
 		res.amount = 1;
 		--_selected_block.amount;
 		if (_selected_block.amount <= 0) {
-			_selected_block = {0, 0, {0, 0}};
+			_selected_block = {0};
 		}
 	}
 	return (res);

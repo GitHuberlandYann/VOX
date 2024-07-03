@@ -606,15 +606,15 @@ struct Block {
 		int needed_material_level = 0;
 		int durability = 0;
 		int texture = settings::consts::shader::block::debug;
+		geometry geometry = geometry::cube;
 		float fuel_time = 0;
 		float blast_resistance = FLT_MAX;
 		float saturation_restauration = 0;
 		float hardness = -1;
 		glm::vec3 hitboxCenter = {0, 0, 0};
 		glm::vec3 hitboxHalfSize = {0, 0, 0};
-		geometry geometry = geometry::cube;
 		char light_level = 0;
-		bool stackable = true;
+		char stackSize = 64;
 		bool isFuel = false;
 		bool isComposant = false;
 		bool hasHitbox = false;
@@ -1199,6 +1199,7 @@ struct OakSign : Block {
 			needed_tool = blocks::wooden_axe;
 			hardness = 1.0f;
 			transparent = true;
+			stackSize = 16;
 			item3D = false;
 			texture = settings::consts::shader::item::oak_sign;
 		}
@@ -2144,7 +2145,7 @@ struct WoodenShovel : Block {
 	public:
 		WoodenShovel() {
 			name = "WOODEN_SHOVEL";
-			stackable = false;
+			stackSize = 1;
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
@@ -2158,7 +2159,7 @@ struct StoneShovel : Block {
 	public:
 		StoneShovel() {
 			name = "STONE_SHOVEL";
-			stackable = false;
+			stackSize = 1;
 			durability = 131;
 			isItemOnly = true;
 			item3D = false;
@@ -2170,7 +2171,7 @@ struct IronShovel : Block {
 	public:
 		IronShovel() {
 			name = "IRON_SHOVEL";
-			stackable = false;
+			stackSize = 1;
 			durability = 250;
 			isItemOnly = true;
 			item3D = false;
@@ -2182,7 +2183,7 @@ struct DiamondShovel : Block {
 	public:
 		DiamondShovel() {
 			name = "DIAMOND_SHOVEL";
-			stackable = false;
+			stackSize = 1;
 			durability = 1561;
 			isItemOnly = true;
 			item3D = false;
@@ -2194,7 +2195,7 @@ struct WoodenAxe : Block {
 	public:
 		WoodenAxe() {
 			name = "wooden_axe";
-			stackable = false;
+			stackSize = 1;
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
@@ -2208,7 +2209,7 @@ struct StoneAxe : Block {
 	public:
 		StoneAxe() {
 			name = "STONE_AXE";
-			stackable = false;
+			stackSize = 1;
 			durability = 131;
 			isItemOnly = true;
 			item3D = false;
@@ -2220,7 +2221,7 @@ struct IronAxe : Block {
 	public:
 		IronAxe() {
 			name = "IRON_AXE";
-			stackable = false;
+			stackSize = 1;
 			durability = 250;
 			isItemOnly = true;
 			item3D = false;
@@ -2232,7 +2233,7 @@ struct DiamondAxe : Block {
 	public:
 		DiamondAxe() {
 			name = "DIAMOND_AXE";
-			stackable = false;
+			stackSize = 1;
 			durability = 1561;
 			isItemOnly = true;
 			item3D = false;
@@ -2244,7 +2245,7 @@ struct WoodenPickaxe : Block {
 	public:
 		WoodenPickaxe() {
 			name = "WOODEN_PICKAXE";
-			stackable = false;
+			stackSize = 1;
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
@@ -2258,7 +2259,7 @@ struct StonePickaxe : Block {
 	public:
 		StonePickaxe() {
 			name = "STONE_PICKAXE";
-			stackable = false;
+			stackSize = 1;
 			durability = 131;
 			isItemOnly = true;
 			item3D = false;
@@ -2270,7 +2271,7 @@ struct IronPickaxe : Block {
 	public:
 		IronPickaxe() {
 			name = "IRON_PICKAXE";
-			stackable = false;
+			stackSize = 1;
 			durability = 250;
 			isItemOnly = true;
 			item3D = false;
@@ -2282,7 +2283,7 @@ struct DiamondPickaxe : Block {
 	public:
 		DiamondPickaxe() {
 			name = "DIAMOND_PICKAXE";
-			stackable = false;
+			stackSize = 1;
 			durability = 1561;
 			isItemOnly = true;
 			item3D = false;
@@ -2294,7 +2295,7 @@ struct Bow : Block {
 	public:
 		Bow() {
 			name = "BOW";
-			stackable = false;
+			stackSize = 1;
 			durability = 384;
 			isItemOnly = true;
 			item3D = false;
@@ -2316,6 +2317,7 @@ struct WorldEditWand : Block {
 	public:
 		WorldEditWand() {
 			name = "WORLDEDIT_WAND";
+			stackSize = 1;
 			isItemOnly = true;
 			item3D = false;
 			texture = settings::consts::shader::item::wooden_axe;
@@ -2371,6 +2373,7 @@ struct Bucket : Block {
 		Bucket() {
 			name = "BUCKET";
 			adventure_block = blocks::diamond_ore;
+			stackSize = 16;
 			isItemOnly = true;
 			item3D = false;
 			texture = settings::consts::shader::item::bucket;
@@ -2382,7 +2385,7 @@ struct WaterBucket : Block {
 		WaterBucket() {
 			name = "WATER_BUCKET";
 			adventure_block = blocks::diamond_ore;
-			stackable = false;
+			stackSize = 1;
 			isItemOnly = true;
 			item3D = false;
 			texture = settings::consts::shader::item::water_bucket;
@@ -2393,7 +2396,7 @@ struct WoodenHoe : Block {
 	public:
 		WoodenHoe() {
 			name = "WOODEN_HOE";
-			stackable = false;
+			stackSize = 1;
 			isFuel = true;
 			fuel_time = 10;
 			durability = 59;
@@ -2407,7 +2410,7 @@ struct StoneHoe : Block {
 	public:
 		StoneHoe() {
 			name = "STONE_HOE";
-			stackable = false;
+			stackSize = 1;
 			durability = 131;
 			isItemOnly = true;
 			item3D = false;
@@ -2419,7 +2422,7 @@ struct IronHoe : Block {
 	public:
 		IronHoe() {
 			name = "IRON_HOE";
-			stackable = false;
+			stackSize = 1;
 			durability = 250;
 			isItemOnly = true;
 			item3D = false;
@@ -2431,7 +2434,7 @@ struct DiamondHoe : Block {
 	public:
 		DiamondHoe() {
 			name = "DIAMOND_HOE";
-			stackable = false;
+			stackSize = 1;
 			durability = 1561;
 			isItemOnly = true;
 			item3D = false;
@@ -2570,6 +2573,7 @@ struct BookAndQuill : Block {
 	public:
 		BookAndQuill() {
 			name = "BOOK_AND_QUILL";
+			stackSize = 1;
 			isItemOnly = true;
 			item3D = false;
 			texture = settings::consts::shader::item::book_and_quill;
@@ -2580,6 +2584,7 @@ struct WrittenBook : Block {
 	public:
 		WrittenBook() {
 			name = "WRITTEN_BOOK";
+			stackSize = 16;
 			isItemOnly = true;
 			item3D = false;
 			texture = settings::consts::shader::item::written_book;

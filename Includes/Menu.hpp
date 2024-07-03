@@ -161,7 +161,7 @@ class Menu
 		glm::ivec2 computeScreenPosFromSelection( int selection );
 		void occult_selection( void );
 		void display_item_value( int x, int y, int amount, int depth );
-		void add_dura_value( glm::ivec2 dura, int x, int y );
+		void add_dura_value( std::shared_ptr<ATag> tag, int x, int y );
 		void add_item_value( t_item item, int x, int y, int depth, bool movement = false );
 	
 		void add_slot_value( int index );

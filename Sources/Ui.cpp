@@ -58,14 +58,18 @@ void UI::addQuads( std::vector<std::array<int, 3>> &vertices, int atlas, int dep
 
 void UI::add_dura_value( std::vector<std::array<int, 3>> &vertices, int index )
 {
-	glm::ivec2 dura = _inventory->getSlotBlock(index).dura;
-	if (dura.y == 0 || dura.x == dura.y) {
+	std::shared_ptr<ATag> tag = _inventory->getSlotBlock(index).tag;
+	if (!tag || tag->getType() != tags::tool_tag) {
+		return ;
+	}
+
+	float percent = static_cast<ToolTag*>(tag.get())->getDuraPercent();
+	if (percent > .99f) {
 		return ;
 	}
 	// adding grey bar first
 	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura_back, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, 14 * _gui_size, _gui_size, 16, 0, 1, 1);
 	// adding progress bar second
-	float percent = 1.0f * dura.x / dura.y;
 	addQuads(vertices, settings::consts::tex::ui, settings::consts::depth::dura, (WIN_WIDTH - (182 * _gui_size)) / 2 + (20 * index * _gui_size) + _gui_size * 3 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 3 + 14 * _gui_size, static_cast<int>(14 * _gui_size * percent), _gui_size, (percent < .6f) ? (percent < .3f) ? 19 : 18 : 17, 0, 1, 1);
 }
 

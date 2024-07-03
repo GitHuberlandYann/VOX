@@ -68,7 +68,7 @@ void FurnaceInstance::setProduction( t_item value )
 void FurnaceInstance::removeComposant( void )
 {
 	if (_composant.type != blocks::air && --_composant.amount <= 0) {
-		_composant = {0, 0, {0, 0}};
+		_composant = {0, 0};
 	}
 }
 
@@ -82,7 +82,7 @@ void FurnaceInstance::removeFuel( void )
 t_item FurnaceInstance::pickProduction( void )
 {
 	t_item res = _production;
-	_production = {0, 0, {0, 0}};
+	_production = {0, 0};
 	return (res);
 }
 
@@ -103,7 +103,7 @@ int FurnaceInstance::updateTimes( float currentTime )
 			deltaTime = currentTime - _composant_time;
 			if (deltaTime >= 10) { // A furnace smelts items at a speed of one item every 200 game ticks (10 seconds)
 				if (_production.type == blocks::air) {
-					_production = {s_blocks[_composant.type]->getProduction, 0, {0, 0}};
+					_production = {s_blocks[_composant.type]->getProduction, 0};
 				}
 				if (++_production.amount == 64) {
 					_composant_time = 0;

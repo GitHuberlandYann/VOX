@@ -305,7 +305,7 @@ void Chunk::updateScheduledBlocks( void )
 		int posY = ((offset >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
 		int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 		handleHit(false, type, {posX + _startX, posY + _startY, posZ}, Modif::rm);
-		_entities.push_back(std::make_shared<FallingBlockEntity>(this, glm::vec3(posX + _startX, posY + _startY, posZ), t_item(type, 1, {0, 0})));
+		_entities.push_back(std::make_shared<FallingBlockEntity>(this, glm::vec3(posX + _startX, posY + _startY, posZ), t_item(type, 1)));
 		_scheduled_to_fall.erase(_scheduled_to_fall.begin());
 	}
 }

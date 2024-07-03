@@ -2,6 +2,7 @@
 # define INVENTORY_HPP
 
 # include "Blocks.hpp"
+# include "ATag.hpp"
 # include <list>
 # include <array>
 # include <map>
@@ -134,11 +135,10 @@ namespace CELLS {
 };
 
 typedef struct s_item {
-	s_item( int t = blocks::air, int a = 0, glm::ivec2 d = {0, 0} ) : type(t), amount(a), dura(d) {}
+	s_item( int t = blocks::air, int a = 0, std::shared_ptr<ATag> g = NULL ) : type(t), amount(a), tag(g) {}
 	int type;
 	int amount;
-	glm::ivec2 dura;
-	// enchantements will come here
+	std::shared_ptr<ATag> tag;
 }			t_item;
 
 class Inventory

@@ -76,19 +76,34 @@ std::string Player::saveString( void )
 	return (res);
 }
 
+static void saveItem( std::string& res, t_item item )
+{
+	res += '[' + std::to_string(item.type) + ", " + std::to_string(item.amount);
+	if (item.tag) {
+		switch (item.tag->getType()) {
+			case tags::tool_tag:
+				res += ", {\"toolTag\": " + std::to_string(static_cast<ToolTag*>(item.tag.get())->getDura()) + "}";
+				break ;
+			default:
+				LOGERROR("ERROR saveItem tag with unrecognised type.");
+		}
+	}
+	res += ']';
+}
+
 std::string Inventory::saveString( void )
 {
 	std::string res = "\"inventory\": {\n\t\t\"slot\": " + std::to_string(_slot)
 		+ ",\n\t\t\"content\": [";
 	for (int index = 0; index < 9; index++) {
-		res += '[' + std::to_string(_content[index].type) + ", " + std::to_string(_content[index].amount) + ", " + std::to_string(_content[index].dura.x) + ']';
+		saveItem(res, _content[index]);
 		if (index < 8) {
 			res += ", ";
 		}
 	}
 	res += "],\n\t\t\"backpack\": [";
 	for (int index = 0; index < 27; index++) {
-		res += '[' + std::to_string(_backpack[index].type) + ", " + std::to_string(_backpack[index].amount) + ", " + std::to_string(_backpack[index].dura.x) + ']';
+		saveItem(res, _backpack[index]);
 		if (index < 26) {
 			res += ", ";
 		}
@@ -144,7 +159,7 @@ std::string OpenGL_Manager::saveBackupString( void )
 					+ ", \"orientation\": " + std::to_string(ch.second->getOrientation())
 					+ ", \"content\": [";
 				for (int index = 0; index < 27; index++) {
-					res += '[' + std::to_string(ch.second->getItem(index)->type) + ", " + std::to_string(ch.second->getItem(index)->amount) + ", " + std::to_string(ch.second->getItem(index)->dura.x) + ']';
+					saveItem(res, *(ch.second->getItem(index)));
 					if (index < 26) {
 						res += ", ";
 					}
@@ -161,11 +176,13 @@ std::string OpenGL_Manager::saveBackupString( void )
 					res += ", ";
 				}
 				fstart = false;
-				res += "{\"pos\": " + std::to_string(fur.first)
-					+ ", \"composant\": [" + std::to_string(fur.second->getComposant().type) + ", " + std::to_string(fur.second->getComposant().amount) + ", " + std::to_string(fur.second->getComposant().dura.x)
-					+ "], \"fuel\": [" + std::to_string(fur.second->getFuel().type) + ", " + std::to_string(fur.second->getFuel().amount) + ", " + std::to_string(fur.second->getFuel().dura.x)
-					+ "], \"production\": [" + std::to_string(fur.second->getProduction().type) + ", " + std::to_string(fur.second->getProduction().amount) + ", " + std::to_string(fur.second->getProduction().dura.x)
-					+ "]}"; // TODO add current times for better backup
+				res += "{\"pos\": " + std::to_string(fur.first) + ", \"composant\": ";
+				saveItem(res, fur.second->getComposant());
+				res += ", \"fuel\": ";
+				saveItem(res, fur.second->getFuel());
+				res += ", \"production\": ";
+				saveItem(res, fur.second->getProduction());
+				res += "}"; // TODO add current times for better backup
 				delete fur.second;
 			}
 		}
@@ -386,6 +403,38 @@ void Player::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 	throw UnclosedBracketException();
 }
 
+static void convertTag( std::string line, int& index, t_item& item, char sep )
+{
+	int dura;
+	switch (Settings::Get()->getInt(settings::ints::json_version)) {
+		case 0: // no change until 1.4, just read dura as 3rd arg of item
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+			for (; line[index] && line[index] != ','; index++);
+			dura = std::atoi(&line[index + 2]);
+			if (dura) {
+				item.tag = std::make_shared<ToolTag>(dura, s_blocks[item.type & mask::blocks::type]->durability);
+			}
+			for (index = index + 2; line[index] && line[index] != sep; index++);
+			return ;
+		case 5: // v1.4 added tags to items
+			for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
+			if (line[index] == ',') {
+				if (!line.compare(index + 4, 7, "toolTag")) {
+					dura = std::atoi(&line[index + 14]);
+					item.tag = std::make_shared<ToolTag>(dura, s_blocks[item.type & mask::blocks::type]->durability);
+					index += 13;
+				}
+			}
+			for (index = index + 2; line[index] && line[index] != sep; index++);
+			return ;
+	}
+	LOGERROR("json version is " << Settings::Get()->getInt(settings::ints::json_version));
+	assert((0 == 1) && "unrecognised json version.");
+}
+
 static int convert( int value ) // used when I change s_blocks big time
 {
 	switch (Settings::Get()->getInt(settings::ints::json_version)) {
@@ -423,7 +472,8 @@ static int convert( int value ) // used when I change s_blocks big time
 					value = ((value & mask::blocks::type) - 1) | (value & (mask::all_bits - mask::blocks::type - mask::stairs::top)) | mask::stairs::top;
 					break ;
 			}
-		case 4: // v1.3 == current version
+		case 4: // v1.3
+		case 5: // v1.4 // no change from 1.3 to 1.4 on values // current version
 			return (value);
 	}
 	LOGERROR("json version is " << Settings::Get()->getInt(settings::ints::json_version));
@@ -450,11 +500,12 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 				for (; line[index] && line[index] != ','; index++);
 				_content[cindex].amount = std::atoi(&line[index + 2]);
 				++index;
-				for (; line[index] && line[index] != ','; index++);
-				_content[cindex].dura.x = std::atoi(&line[index + 2]);
-				_content[cindex].dura.y = s_blocks[_content[cindex].type & mask::blocks::type]->durability;
-				for (index = index + 2; line[index] && line[index] != '['; index++);
-				ofs << "inventory slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount << ", " << _content[cindex].dura.x << ", " << _content[cindex].dura.y << std::endl;
+				convertTag(line, index, _content[cindex], '[');
+				ofs << "inventory slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount;
+				if (_content[cindex].tag && _content[cindex].tag->getType() == tags::tool_tag) {
+					ofs << ", " << static_cast<ToolTag*>(_content[cindex].tag.get())->getDura() << ", " << s_blocks[_content[cindex].type]->durability;
+				}
+				ofs << std::endl;
 			}
 		} else if (!line.compare(0, 12, "\"backpack\": ")) {
 			index = 13;
@@ -463,11 +514,12 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 				for (; line[index] && line[index] != ','; index++);
 				_backpack[bindex].amount = std::atoi(&line[index + 2]);
 				++index;
-				for (; line[index] && line[index] != ','; index++);
-				_backpack[bindex].dura.x = std::atoi(&line[index + 2]);
-				_backpack[bindex].dura.y = s_blocks[_backpack[bindex].type & mask::blocks::type]->durability;
-				for (index = index + 2; line[index] && line[index] != '['; index++);
-				ofs << "inventory backpack slot " << bindex << " set to " << _backpack[bindex].type << ", " << _backpack[bindex].amount << ", " << _backpack[bindex].dura.x << ", " << _backpack[bindex].dura.y << std::endl;
+				convertTag(line, index, _backpack[bindex], '[');
+				ofs << "inventory backpack slot " << bindex << " set to " << _backpack[bindex].type << ", " << _backpack[bindex].amount;
+				if (_backpack[bindex].tag && _backpack[bindex].tag->getType() == tags::tool_tag) {
+					ofs << ", " << static_cast<ToolTag*>(_backpack[bindex].tag.get())->getDura() << ", " << s_blocks[_backpack[bindex].type]->durability;
+				}
+				ofs << std::endl;
 			}
 		} else if (line == "},") {
 			return ;
@@ -487,13 +539,12 @@ void ChestInstance::loadContent( std::ofstream & ofs, std::string &line, int &in
 		for (; line[index] && line[index] != ','; index++);
 		_content[cindex].amount = std::atoi(&line[index + 2]);
 		++index;
-		for (; line[index] && line[index] != ','; index++);
-		_content[cindex].dura.x = std::atoi(&line[index + 2]);
-		_content[cindex].dura.y = s_blocks[_content[cindex].type & mask::blocks::type]->durability;
-		if (cindex < 26) {
-			for (index = index + 2; line[index] && line[index] != '['; index++);
+		convertTag(line, index, _content[cindex], '[');
+		ofs << "chest content slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount;
+		if (_content[cindex].tag && _content[cindex].tag->getType() == tags::tool_tag) {
+			ofs << ", " << static_cast<ToolTag*>(_content[cindex].tag.get())->getDura() << ", " << s_blocks[_content[cindex].type]->durability;
 		}
-		ofs << "chest content slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount << ", " << _content[cindex].dura.x << ", " << _content[cindex].dura.y << std::endl;
+		ofs << std::endl;
 	}
 	// ofs << "at end of loadContent, index is " << index << ", char is " << line[index] << " into " << line.substr(index, 5) << std::endl;
 }
@@ -557,29 +608,20 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						item.type = convert(std::atoi(&line[index + 3]));
 						for (; line[index] && line[index] != ','; index++);
 						item.amount = std::atoi(&line[index + 2]);
-						for (; line[index] && line[index] != ','; index++);
-						item.dura.x = std::atoi(&line[index + 2]);
-						item.dura.y = s_blocks[item.type & mask::blocks::type]->durability;
+						convertTag(line, index, item, ':');
 						fur->setComposant(item);
-						for (; line[index] && line[index] != ':'; index++);
 						item.type = convert(std::atoi(&line[index + 3]));
 						for (; line[index] && line[index] != ','; index++);
 						item.amount = std::atoi(&line[index + 2]);
-						for (; line[index] && line[index] != ','; index++);
-						item.dura.x = std::atoi(&line[index + 2]);
-						item.dura.y = s_blocks[item.type & mask::blocks::type]->durability;
+						convertTag(line, index, item, ':');
 						fur->setFuel(item);
-						for (; line[index] && line[index] != ':'; index++);
 						item.type = convert(std::atoi(&line[index + 3]));
 						for (; line[index] && line[index] != ','; index++);
 						item.amount = std::atoi(&line[index + 2]);
-						for (; line[index] && line[index] != ','; index++);
-						item.dura.x = std::atoi(&line[index + 2]);
-						item.dura.y = s_blocks[item.type & mask::blocks::type]->durability;
+						convertTag(line, index, item, '{');
 						fur->setProduction(item);
 						backups_value.furnaces[fkey] = fur;
 						ofs << "one more furnace at " << fkey << std::endl;
-						for (; line[index] && line[index] != '{'; index++);
 						--index;
 					}
 				} else if (!line.compare(0, 9, "\"signs\": ")) {
