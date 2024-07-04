@@ -204,6 +204,46 @@ void ItemFrame::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::ve
 	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec + (2 << 12) + (2 << 16), light + (3 << 8), 12, 12);
 }
 
+void Lectern::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
+{
+	// draw base
+	up *= 2.f * one16th;
+	int spec = settings::consts::shader::block::oak_planks;
+	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec + (14 << 16), light + (4 << 8), 16, 2);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec + (14 << 16), light + (1 << 8), 16, 2);
+	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec + (14 << 16), light + (2 << 8), 16, 2);
+	spec = settings::consts::shader::block::lectern_base;
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec + (14 << 16), light + (3 << 8), 16, 2);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front + right + up) * size, pos + up * size, pos + (right + up) * size}, spec, light + (0 << 8), 16, 16);
+	spec = settings::consts::shader::block::oak_planks;
+	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, light + (5 << 8), 16, 16);
+	// draw column
+	up *= 8.f;
+	pos += ((front + right) * 4.f + up) * one16th * size;
+	front *= .5f;
+	right *= .5f;
+	spec = settings::consts::shader::block::lectern_front;
+	utils::shader::addQuads(arr, {pos + up * 10.f * one16th * size, pos + (right + up * 10.f * one16th) * size, pos, pos + right * size}, spec + (4 << 16), light + (3 << 8), 8, 10);
+	utils::shader::addQuads(arr, {pos + (front + right + up * 14.f * one16th) * size, pos + (front + up * 14.f * one16th) * size, pos + (front + right) * size, pos + front * size}, spec + (8 << 12) + (2 << 16), light + (4 << 8), 8, 14);
+	spec = settings::consts::shader::block::lectern_sides;
+	utils::shader::addQuads(arr, {pos + up * 14.f * one16th * size, pos, pos + (front + up * 14.f * one16th) * size, pos + front * size}, spec + (2 << 12) + (8 << 16), light + (1 << 8), 14, 8, false, true);
+	utils::shader::addQuads(arr, {pos + (front + right + up * 14.f * one16th) * size, pos + (front + right) * size, pos + (right + up * 14.f * one16th) * size, pos + right * size}, spec + (2 << 12) + (8 << 16), light + (2 << 8), 14, 8);
+	// draw top
+	front *= 2.f;
+	right *= 2.f;
+	pos += (-front * 2.f - right * 4.f + up * 9.f) * one16th * size;
+	front = glm::normalize(front + .5f * up);
+	up = glm::normalize(glm::cross(right, front));
+	up *= .25f;
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec, light + (3 << 8), 16, 4);
+	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec + (4 << 16), light + (4 << 8), 16, 4);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec + (4 << 16), light + (1 << 8), 16, 4);
+	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec + (4 << 16), light + (2 << 8), 16, 4);
+	spec = settings::consts::shader::block::lectern_top;
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front + right + up) * size, pos + up * size, pos + (right + up) * size}, spec, light + (0 << 8), 16, 16);
+	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, light + (5 << 8), 16, 16);
+}
+
 void Carpet::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
 {
 	up *= one16th;

@@ -39,6 +39,11 @@ BookTag::~BookTag( void )
 
 }
 
+WrittenBookTag::WrittenBookTag( void )
+{
+	_type = tags::written_book_tag;
+}
+
 WrittenBookTag::WrittenBookTag( std::string title, std::vector<std::string>& content )
 	: _title(title), _content(content)
 {
@@ -88,9 +93,19 @@ void BookTag::pushPage( std::string page )
 	_content.push_back(page);
 }
 
+void WrittenBookTag::pushPage( std::string page )
+{
+	_content.push_back(page);
+}
+
 std::vector<std::string>& BookTag::getContent( void )
 {
 	return (_content);
+}
+
+void WrittenBookTag::setTitle( std::string title )
+{
+	_title = title;
 }
 
 std::string WrittenBookTag::getTitle( void )

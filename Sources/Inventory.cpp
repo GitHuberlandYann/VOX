@@ -676,8 +676,11 @@ void Inventory::replaceSlot( int type, bool creative )
 		int dura = s_blocks[type & mask::blocks::type]->durability;
 		if (dura) {
 			_content[_slot].tag = std::make_shared<ToolTag>(dura);
-		} else if (type == blocks::book_and_quill || type == blocks::written_book) {
+		} else if (type == blocks::book_and_quill) {
 			_content[_slot].tag = std::make_shared<BookTag>();
+		} else if (type == blocks::written_book) {
+			_content[_slot].tag = std::make_shared<WrittenBookTag>();
+			static_cast<WrittenBookTag*>(_content[_slot].tag.get())->setTitle("Anonymous");
 		}
 		return ;
 	}

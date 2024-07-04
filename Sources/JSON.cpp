@@ -79,6 +79,7 @@ std::string Player::saveString( void )
 static void saveItem( std::string& res, t_item item )
 {
 	bool first = true;
+	std::string title;
 	res += '[' + std::to_string(item.type) + ", " + std::to_string(item.amount);
 	if (item.tag) {
 		switch (item.tag->getType()) {
@@ -93,6 +94,27 @@ static void saveItem( std::string& res, t_item item )
 					}
 					first = false;
 					res += std::to_string(page.size()) + ", \"";
+					for (char c : page) {
+						if (c == '"') res += "\\\"";
+						else if (c == '\n') res += "\\n";
+						else res += c;
+					}
+					res += "\"";
+				}
+				res += "]}";
+				break ;
+			case tags::written_book_tag:
+				res += ", {\"writtenBookTag\": [";
+				title = static_cast<WrittenBookTag*>(item.tag.get())->getTitle();
+				res += std::to_string(title.size()) + ", \"";
+				for (char c : title) {
+					if (c == '"') res += "\\\"";
+					else if (c == '\n') res += "\\n";
+					else res += c;
+				}
+				res += "\"";
+				for (auto page : static_cast<WrittenBookTag*>(item.tag.get())->getContent()) {
+					res += ", " + std::to_string(page.size()) + ", \"";
 					for (char c : page) {
 						if (c == '"') res += "\\\"";
 						else if (c == '\n') res += "\\n";
@@ -466,6 +488,34 @@ static void convertTag( std::string line, int& index, t_item& item, char sep )
 							}
 						}
 						static_cast<BookTag*>(item.tag.get())->pushPage(str);
+						for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
+					}
+				} else if (!line.compare(index + 4, 14, "writtenBookTag")) {
+					index += 20;
+					item.tag = std::make_shared<WrittenBookTag>();
+					bool first = true;
+					while (line[index] && line[index] != ']') {
+						int pageSize = std::atoi(&line[index + 2]);
+						for (index = index + 2; line[index] && line[index] != ','; index++);
+						index += 3;
+						std::string str;
+						for (int strIndex = 0; strIndex < pageSize; ++strIndex, ++index) {
+							if (line[index] == '\\' && line[index + 1] == '\"') {
+								str += '\"';
+								++pageSize; ++strIndex; ++index;
+							} else if (line[index] == '\\' && line[index + 1] == 'n') {
+								str += '\n';
+								++pageSize; ++strIndex; ++index;
+							} else {
+								str += line[index];
+							}
+						}
+						if (first) {
+							static_cast<WrittenBookTag*>(item.tag.get())->setTitle(str);
+							first = false;
+						} else {
+							static_cast<WrittenBookTag*>(item.tag.get())->pushPage(str);
+						}
 						for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
 					}
 				}

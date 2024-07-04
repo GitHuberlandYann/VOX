@@ -58,10 +58,13 @@ class BookTag : public ATag
 class WrittenBookTag : public ATag
 {
 	public:
+		WrittenBookTag( void );
 		WrittenBookTag( std::string title, std::vector<std::string>& content );
 		~WrittenBookTag( void );
 
+		void setTitle( std::string title );
 		std::string getTitle( void );
+		void pushPage( std::string page );
 		std::vector<std::string>& getContent( void );
 	
 	private:

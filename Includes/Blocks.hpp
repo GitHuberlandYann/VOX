@@ -99,6 +99,7 @@ namespace settings {
 					black_wool,
 					blue_orchid,
 					blue_wool,
+					bookshelf,
 					brown_wool,
 					cactus_bottom,
 					cactus_side,
@@ -160,6 +161,10 @@ namespace settings {
 					iron_block,
 					iron_ore,
 					item_frame,
+					lectern_base,
+					lectern_front,
+					lectern_sides,
+					lectern_top,
 					lever,
 					light_blue_wool,
 					light_gray_wool,
@@ -505,6 +510,8 @@ namespace blocks {
 		birch_planks,
 		sand_stone,
 		glowstone,
+		bookshelf,
+		lectern,
 		water = 88,
 		empty89,
 		obsidian,
@@ -2071,6 +2078,46 @@ struct Glowstone : Cube {
 			hardness = 0.3f;
 			texture = settings::consts::shader::block::glowstone;
 		}
+};
+
+struct Bookshelf : Cube {
+	public:
+		Bookshelf() {
+			name = "BOOKSHELF";
+			mined = blocks::book;
+			blast_resistance = 1.5f;
+			needed_tool = blocks::wooden_axe;
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			hardness = 1.5f;
+		}
+		int getTex( int dir, int value ) const override {
+			(void)value;
+			switch (dir) {
+				case face_dir::plus_z:
+				case face_dir::minus_z:
+					return (settings::consts::shader::block::oak_planks);
+			}
+			return (settings::consts::shader::block::bookshelf);
+		}
+};
+
+struct Lectern : Block {
+	public:
+		Lectern() {
+			name = "LECTERN";
+			mined = blocks::lectern;
+			blast_resistance = 2.5f;
+			oriented = true;
+			needed_tool = blocks::wooden_axe;
+			isFuel = true;
+			fuel_time = 15;
+			byHand = true;
+			hardness = 2.5f;
+		}
+		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
+		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 };
 
 struct Water : Block {

@@ -12,7 +12,7 @@ const std::array<std::unique_ptr<Block>, S_BLOCKS_SIZE> s_blocks = {
 	std::make_unique<TBD>(), std::make_unique<StoneBricksSlab>(), std::make_unique<TBD>(), std::make_unique<Piston>(), std::make_unique<StickyPiston>(), std::make_unique<PistonHead>(), std::make_unique<MovingPiston>(), std::make_unique<Observer>(),
 	std::make_unique<Poppy>(), std::make_unique<Dandelion>(), std::make_unique<BlueOrchid>(), std::make_unique<Allium>(), std::make_unique<CornFlower>(), std::make_unique<PinkTulip>(), std::make_unique<Grass>(), std::make_unique<SugarCane>(),
 	std::make_unique<DeadBush>(), std::make_unique<OakSapling>(), std::make_unique<Torch>(), std::make_unique<RedstoneTorch>(), std::make_unique<RedstoneDust>(), std::make_unique<Repeater>(), std::make_unique<Comparator>(), std::make_unique<Chest>(),
-	std::make_unique<WheatCrop>(), std::make_unique<ItemFrame>(), std::make_unique<BirchPlanks>(), std::make_unique<SandStone>(), std::make_unique<Glowstone>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<TBD>(),
+	std::make_unique<WheatCrop>(), std::make_unique<ItemFrame>(), std::make_unique<BirchPlanks>(), std::make_unique<SandStone>(), std::make_unique<Glowstone>(), std::make_unique<Bookshelf>(), std::make_unique<Lectern>(), std::make_unique<TBD>(),
 	std::make_unique<Water>(), std::make_unique<TBD>(), std::make_unique<Obsidian>(), std::make_unique<TBD>(), std::make_unique<TBD>(), std::make_unique<Feather>(), std::make_unique<Leather>(), std::make_unique<InkSac>(),
 	std::make_unique<Stick>(), std::make_unique<WoodenShovel>(), std::make_unique<StoneShovel>(), std::make_unique<IronShovel>(), std::make_unique<DiamondShovel>(), std::make_unique<WoodenAxe>(), std::make_unique<StoneAxe>(), std::make_unique<IronAxe>(),
 	std::make_unique<DiamondAxe>(), std::make_unique<WoodenPickaxe>(), std::make_unique<StonePickaxe>(), std::make_unique<IronPickaxe>(), std::make_unique<DiamondPickaxe>(), std::make_unique<Bow>(), std::make_unique<Arrow>(), std::make_unique<WorldEditWand>(),
@@ -1568,6 +1568,39 @@ void ItemFrame::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm
 			break ;
 	}
 	pos += front * 7.f * one16th - (right + up) * .5f;
+	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
+	addMeshItem(vertices, faceLight, pos, front, right, up, 1.f);
+}
+
+void Lectern::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
+{
+	glm::vec3 front, right, up;
+	pos += glm::vec3(start.x + .5f, start.y + .5f, 0.f);
+
+	int orientation = (value >> offset::blocks::orientation) & 0x7;
+	switch (orientation) {
+		case face_dir::minus_x:
+			front = { 1.f, .0f, .0f};
+			right = { .0f,-1.f, .0f};
+			up    = { .0f, .0f, 1.f};
+			break ;
+		case face_dir::plus_x:
+			front = {-1.f, .0f, .0f};
+			right = { .0f, 1.f, .0f};
+			up    = { .0f, .0f, 1.f};
+			break ;
+		case face_dir::minus_y:
+			front = { 0.f, 1.f, .0f};
+			right = { 1.f, .0f, .0f};
+			up    = { .0f, .0f, 1.f};
+			break ;
+		case face_dir::plus_y:
+			front = { .0f, -1.f, .0f};
+			right = { -1.f, .0f, .0f};
+			up    = { .0f, .0f, 1.f};
+			break ;
+	}
+	pos -= (front + right) * .5f;
 	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
 	addMeshItem(vertices, faceLight, pos, front, right, up, 1.f);
 }

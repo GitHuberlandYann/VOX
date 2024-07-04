@@ -79,6 +79,7 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::block::black_wool, root + "black_wool.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::blue_orchid, root + "blue_orchid.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::blue_wool, root + "blue_wool.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::bookshelf, root + "bookshelf.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::brown_wool, root + "brown_wool.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::cactus_bottom, root + "cactus_bottom.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::cactus_side, root + "cactus_side.png");
@@ -140,6 +141,10 @@ void OpenGL_Manager::loadTextures( void )
 	loadSubTextureArray(16, 16, settings::consts::shader::block::iron_block, root + "iron_block.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::iron_ore, root + "iron_ore.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::item_frame, root + "item_frame.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::lectern_base, root + "lectern_base.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::lectern_front, root + "lectern_front.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::lectern_sides, root + "lectern_sides.png");
+	loadSubTextureArray(16, 16, settings::consts::shader::block::lectern_top, root + "lectern_top.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::lever, root + "lever.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::light_blue_wool, root + "light_blue_wool.png");
 	loadSubTextureArray(16, 16, settings::consts::shader::block::light_gray_wool, root + "light_gray_wool.png");

@@ -100,6 +100,8 @@ const std::map<int, std::vector<int>> recipes = {
 	
 		blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::chest, 1,
 		blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::air, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::furnace, 1,
+		blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::book, blocks::book, blocks::book, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::bookshelf, 1,
+		blocks::oak_slab, blocks::oak_slab, blocks::oak_slab, blocks::air, blocks::bookshelf, blocks::air, blocks::air, blocks::oak_slab, blocks::air, blocks::lectern, 1,
 
 		blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::stick, blocks::air, blocks::air, blocks::stick, blocks::air, blocks::wooden_pickaxe, 1,
 		blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::air, blocks::stick, blocks::air, blocks::air, blocks::stick, blocks::air, blocks::stone_pickaxe, 1,
