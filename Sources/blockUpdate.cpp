@@ -1,6 +1,7 @@
 #include "Player.hpp"
 #include "random.hpp"
 #include "logs.hpp"
+#include "Menu.hpp"
 
 // ************************************************************************** //
 //                                Private                                     //
@@ -106,7 +107,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		if (value & mask::frame::locked) {
 			return ;
 		}
-		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
+		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, 0))); });
 		if (search != _entities.end()) {
 			t_item item = static_cast<ItemFrameEntity*>(search->get())->popContent();
 			if (item.type != blocks::air) { // pop item from frame instead of destroying frame
@@ -116,7 +117,20 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			}
 			_entities.erase(search);
 		} else {
-			LOGERROR("Item frame not found when trying to destroy item frame");
+			LOGERROR("Item frame entity not found when trying to destroy item frame");
+		}
+	} else if (type == blocks::lectern) {
+		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, 0))); });
+		if (search != _entities.end()) {
+			t_item item = static_cast<LecternEntity*>(search->get())->popContent();
+			if (item.type != blocks::air) { // pop item from lectern instead of destroying lectern
+				_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, item));
+				updateLectern(pos);
+				return ;
+			}
+			_entities.erase(search);
+		} else {
+			LOGERROR("Lectern entity not found when trying to destroy lectern");
 		}
 	} else if (type == blocks::oak_door) {
 		// break other part of door
@@ -298,7 +312,17 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 			}
 			updateItemFrame(pos + getAttachedDir(value));
 		} else {
-			LOGERROR("Item frame not found when trying to rotate/place item");
+			LOGERROR("Item frame entity not found when trying to rotate/place item");
+		}
+		return ;
+	} else if ((value & mask::blocks::type) == blocks::lectern) {
+		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
+		if (search != _entities.end()) {
+			static_cast<LecternEntity*>(search->get())->setContent(_inventory->getSlotBlock(_inventory->getSlotNum()));
+			_inventory->removeBlock(false);
+			updateLectern(pos);
+		} else {
+			LOGERROR("Lectern entity not found when trying to place book");
 		}
 		return ;
 	}
@@ -493,6 +517,8 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		_signs.emplace(offset, new SignInstance(this, value, pos));
 	} else if (type == blocks::item_frame) {
 		_entities.push_back(std::make_shared<ItemFrameEntity>(this, glm::ivec3(pos.x + _startX, pos.y + _startY, pos.z), value));
+	} else if (type == blocks::lectern) {
+		_entities.push_back(std::make_shared<LecternEntity>(this, glm::ivec3(pos.x + _startX, pos.y + _startY, pos.z), value));
 	} else if (s_blocks[type]->light_level && type != blocks::redstone_lamp) {
 		if (type == blocks::redstone_torch) {
 			updateRedstoneTorch(pos, value);
@@ -874,7 +900,54 @@ void Chunk::handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif 
 	LOGERROR(_startX << ", " << _startY << " ERROR BLOCK OUT OF CHUNK " << POS(chunk_pos));
 }
 
-
+/**
+ * @brief returns whether lectern at pos currently holds a written book
+ * @param menu used to set/get page content
+ * @param pos absolute pos of lectern
+ * @param turnPage if true we update lectern's page and check if adj comparators needs update
+*/
+bool Chunk::bookedLectern( Menu* menu, glm::ivec3 pos, bool turnPage )
+{
+	glm::ivec3 chunk_pos = {pos.x - _startX, pos.y - _startY, pos.z};
+	if (chunk_pos.x < 0) {
+		if (_neighbours[face_dir::minus_x]) {
+			return (_neighbours[face_dir::minus_x]->bookedLectern(menu, pos, turnPage));
+		}
+	} else if (chunk_pos.x >= settings::consts::chunk_size) {
+		if (_neighbours[face_dir::plus_x]) {
+			return (_neighbours[face_dir::plus_x]->bookedLectern(menu, pos, turnPage));
+		}
+	} else if (chunk_pos.y < 0) {
+		if (_neighbours[face_dir::minus_y]) {
+			return (_neighbours[face_dir::minus_y]->bookedLectern(menu, pos, turnPage));
+		}
+	} else if (chunk_pos.y >= settings::consts::chunk_size) {
+		if (_neighbours[face_dir::plus_y]) {
+			return (_neighbours[face_dir::plus_y]->bookedLectern(menu, pos, turnPage));
+		}
+	} else {
+		auto search = std::find_if(_entities.begin(), _entities.end(), [pos](auto e) { return (e->isAt(pos)); });
+		if (search != _entities.end()) {
+			t_item item = static_cast<LecternEntity*>(search->get())->getContent();
+			if (item.type == blocks::written_book) {
+				if (!turnPage) {
+					menu->setBookContent(&static_cast<WrittenBookTag*>(item.tag.get())->getContent());
+					menu->setBookPage(static_cast<LecternEntity*>(search->get())->getPage());
+				} else {
+					static_cast<LecternEntity*>(search->get())->setPage(menu->getBookPage());
+					updateLectern(chunk_pos);
+				}
+				return (true);
+			}
+		} else {
+			LOGERROR("Lectern entity not found in bookedLectern in chunk " << _startX << ", " << _startY << " at pos " << POS(pos));
+		}
+		return (false);
+	}
+	
+	LOGERROR(_startX << ", " << _startY << " Chunk::bookedLectern BLOCK OUT OF CHUNK " << POS(chunk_pos));
+	return (false);
+}
 
 
 

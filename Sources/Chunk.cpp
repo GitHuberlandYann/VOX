@@ -339,7 +339,7 @@ void Chunk::restoreBackup( s_backup& backup )
 	for (auto &sign : _signs) {
 		sign.second->setChunk(this);
 	}
-	_entities = backup.item_frames;
+	_entities = backup.entities;
 	for (auto &e : _entities) {
 		e->setChunk(this);
 	}

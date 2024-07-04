@@ -754,6 +754,9 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			mtx.unlock();
 			handleBackToGame();
 			break ;
+		case menu::ret::page_turned:
+			_chunk_hit->bookedLectern(_menu.get(), _block_hit.pos, true);
+			break ;
 		default:
 			LOGERROR("ERROR menu::ret defaulted");
 			glfwSetWindowShouldClose(_window, GL_TRUE);

@@ -114,6 +114,8 @@ TODOS:
 	- repeater
 	- comparator
 	- item frame
+	- book, book_and_quill, written_book
+	- lectern
 	- pistons
 	- observers
 	- fences

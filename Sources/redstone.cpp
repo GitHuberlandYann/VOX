@@ -213,6 +213,45 @@ int Chunk::getRedstoneSignalItemFrame( glm::ivec3 pos, glm::ivec3 except )
 }
 
 /**
+ * @brief called by comparator rear
+ * get signal emitted by lectern at given pos
+ */
+int Chunk::getRedstoneSignalLectern( glm::ivec3 pos )
+{
+	if (pos.x < 0) {
+		if (_neighbours[face_dir::minus_x]) {
+			pos.x += settings::consts::chunk_size;
+			return (_neighbours[face_dir::minus_x]->getRedstoneSignalLectern(pos));
+		}
+	} else if (pos.x >= settings::consts::chunk_size) {
+		if (_neighbours[face_dir::plus_x]) {
+			pos.x -= settings::consts::chunk_size;
+			return (_neighbours[face_dir::plus_x]->getRedstoneSignalLectern(pos));
+		}
+	} else if (pos.y < 0) {
+		if (_neighbours[face_dir::minus_y]) {
+			pos.y += settings::consts::chunk_size;
+			return (_neighbours[face_dir::minus_y]->getRedstoneSignalLectern(pos));
+		}
+	} else if (pos.y >= settings::consts::chunk_size) {
+		if (_neighbours[face_dir::plus_y]) {
+			pos.y -= settings::consts::chunk_size;
+			return (_neighbours[face_dir::plus_y]->getRedstoneSignalLectern(pos));
+		}
+	} else {
+		COMPLOG(LOG("Lectern check at " << POS(pos)));
+		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, 0))); });
+		if (search != _entities.end()) {
+			COMPLOG(LOG("Lectern found at " << POS(pos)));
+			return (static_cast<LecternEntity*>(search->get())->getSignal());
+		} else {
+			LOGERROR("404 lectern entity not found in getRedstoneSignalLectern");
+		}
+	}
+	return (redstone::off);
+}
+
+/**
  * @brief get exact signal [0:15] pos outputs towards target diode
  * this is only called by comparators and repeaters
  * @param pos block to get output from
@@ -256,6 +295,12 @@ int Chunk::getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side
 			return ((repeater & side) ? 0 : (adj >> offset::redstone::strength) & 0xF);
 		case blocks::redstone_block:
 			return ((repeater & side) ? 0 : 0xF);
+		case blocks::lectern:
+			COMPLOG(LOG("Lectern found near comparator."));
+			if (!repeater && !side) {
+				COMPLOG(LOG("and it is at rear"));
+				return (getRedstoneSignalLectern(pos));
+			}
 		default:
 			if (!side) {
 				if (!repeater && !s_blocks[adj & mask::blocks::type]->transparent) { // fun called by comparator rear
@@ -814,7 +859,21 @@ void Chunk::updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate )
  */
 void Chunk::updateItemFrame( glm::ivec3 pos )
 {
-	for (int index = 0; index < 6; ++index) {
+	for (int index = 0; index < 4; ++index) {
+		const glm::ivec3 delta = adj_blocks[index];
+		int value = getBlockAt(pos + delta);
+		if ((value & mask::blocks::type) == blocks::comparator && delta == adj_blocks[(value >> offset::blocks::orientation) & 0x7]) {
+			updateComparator(pos + delta, value, false);
+		}
+	}
+}
+
+/**
+ * @brief called when lectern's content is updated, check if comparators are reading lectern and update them
+ */
+void Chunk::updateLectern( glm::ivec3 pos )
+{
+	for (int index = 0; index < 4; ++index) {
 		const glm::ivec3 delta = adj_blocks[index];
 		int value = getBlockAt(pos + delta);
 		if ((value & mask::blocks::type) == blocks::comparator && delta == adj_blocks[(value >> offset::blocks::orientation) & 0x7]) {

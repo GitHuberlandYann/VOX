@@ -2114,6 +2114,7 @@ struct Lectern : Block {
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;
+			transparent = true;
 			hardness = 2.5f;
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;

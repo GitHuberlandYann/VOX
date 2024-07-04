@@ -253,15 +253,22 @@ std::string OpenGL_Manager::saveBackupString( void )
 				delete sign.second;
 			}
 		}
-		if (bup.second.item_frames.size()) {
-			res += "],\n\t\t\"item_frames\": [";
+		if (bup.second.entities.size()) {
+			res += "],\n\t\t\"entities\": [";
 			bool fstart = true;
-			for (auto& frame: bup.second.item_frames) {
+			for (auto& frame: bup.second.entities) {
 				if (!fstart) {
 					res += ", ";
 				}
 				fstart = false;
-				static_cast<ItemFrameEntity*>(frame.get())->saveString(res);
+				switch (frame->getType()) {
+					case entities::item_frame:
+						static_cast<ItemFrameEntity*>(frame.get())->saveString(res);
+						break ;
+					case entities::lectern:
+						static_cast<LecternEntity*>(frame.get())->saveString(res);
+						break ;
+				}
 			}
 		}
 		res += "]}";
@@ -277,10 +284,20 @@ void ItemFrameEntity::saveString( std::string& str )
 	int value = ((_front.z > .5f) ? placement::ceiling : (_front.z < -.5f) ? placement::floor : placement::wall) << offset::blocks::bitfield;
 	value |= (((_front.x < -.5f) ? face_dir::plus_x : (_front.x > .5f) ? face_dir::minus_x
 				: (_front.y < -.5f) ? face_dir::plus_y : (_front.y > .5f) ? face_dir::minus_y : 0) << offset::blocks::orientation);
-	str += "{\"pos\": [" + std::to_string(static_cast<int>(glm::floor(_pos.x))) + ", " + std::to_string(static_cast<int>(glm::floor(_pos.y))) + ", " + std::to_string(static_cast<int>(glm::floor(_pos.z)))
+	str += "\"item_frame\", {\"pos\": [" + std::to_string(static_cast<int>(glm::floor(_pos.x))) + ", " + std::to_string(static_cast<int>(glm::floor(_pos.y))) + ", " + std::to_string(static_cast<int>(glm::floor(_pos.z)))
 		+ "], \"value\": " + std::to_string(value) + ", \"item\": ";
 	saveItem(str, _item);
 	str += ", \"rotation\": " + std::to_string(_rotation) + "}";
+}
+
+void LecternEntity::saveString( std::string& str )
+{
+	int value = (((_front.x < -.8f) ? face_dir::plus_x : (_front.x > .8f) ? face_dir::minus_x
+				: (_front.y < -.8f) ? face_dir::plus_y : (_front.y > .8f) ? face_dir::minus_y : 0) << offset::blocks::orientation);
+	str += "\"lectern\", {\"pos\": [" + std::to_string(static_cast<int>(glm::floor(_pos.x))) + ", " + std::to_string(static_cast<int>(glm::floor(_pos.y))) + ", " + std::to_string(static_cast<int>(glm::floor(_pos.z)))
+		+ "], \"value\": " + std::to_string(value) + ", \"item\": ";
+	saveItem(str, _item);
+	str += ", \"page\": " + std::to_string(_page) + "}";
 }
 
 // ************************************************************************** //
@@ -752,12 +769,14 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						ofs << "one more sign at " << skey << " with content \"" << content[0] << "\", \"" << content[1] << "\", \"" << content[2] << "\", \"" << content[3] << '\"' << std::endl;
 						for (;line[index + 1] && line[index + 1] != '{'; ++index);
 					}
-				} else if (!line.compare(0, 15, "\"item_frames\": ")) {
-					index = 15;
-					while (line[index + 1] == '{') {
+				} else if (!line.compare(0, 12, "\"entities\": ")) {
+					index = 12;
+					while (line[index + 1] == '\"') {
+						short type = (line[index + 2] == 'l') ? entities::lectern : entities::item_frame;
+						for (index = index + 3; line[index] && line[index] != ','; ++index);
 						glm::ivec3 pos;
-						pos.x = std::atoi(&line[index + 10]);
-						for (index = index + 10; line[index] && line[index] != ','; index++);
+						pos.x = std::atoi(&line[index + 11]);
+						for (index = index + 11; line[index] && line[index] != ','; index++);
 						pos.y = std::atoi(&line[index + 2]);
 						for (index = index + 2; line[index] && line[index] != ','; index++);
 						pos.z = std::atoi(&line[index + 2]);
@@ -771,15 +790,23 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						++index;
 						convertTag(line, index, item, ':');
 						int rotation = std::atoi(&line[index + 2]);
-						auto frame = std::make_shared<ItemFrameEntity>(nullptr, pos, value);
-						frame->setContent({1, 1}); // random content other than air to make sure rotations go through
-						for (int i = 0; i < rotation; ++i) {
-							frame->rotate({blocks::air});
+						if (type == entities::item_frame) {
+							auto frame = std::make_shared<ItemFrameEntity>(nullptr, pos, value);
+							frame->setContent({1, 1}); // random content other than air to make sure rotations go through
+							for (int i = 0; i < rotation; ++i) {
+								frame->rotate({blocks::air});
+							}
+							frame->setContent(item);
+							backups_value.entities.push_back(frame);
+							ofs << "one more item_frame entity at " << POS(pos) << " with value " << value << ", type " << item.type << ", and rotation " << rotation << std::endl;
+						} else if (type == entities::lectern) {
+							auto lectern = std::make_shared<LecternEntity>(nullptr, pos, value);
+							lectern->setPage(rotation);
+							lectern->setContent(item);
+							backups_value.entities.push_back(lectern);
+							ofs << "one more lectern entity at " << POS(pos) << " with value " << value << ", type " << item.type << ", and page " << rotation << std::endl;
 						}
-						frame->setContent(item);
-						backups_value.item_frames.push_back(frame);
-						ofs << "one more item frame at " << POS(pos) << " with value " << value << ", type " << item.type << ", and rotation " << rotation << std::endl;
-						for (;line[index + 1] && line[index + 1] != '{'; ++index);
+						for (;line[index + 1] && line[index + 1] != '\"'; ++index);
 					}
 				} else {
 					LOGERROR("foreigh line in backup: " << line);

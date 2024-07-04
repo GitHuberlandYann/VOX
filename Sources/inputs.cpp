@@ -143,11 +143,21 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			return ;
 		case blocks::tnt:
 			if (_hand_content == blocks::flint_and_steel && _current_chunk_ptr) {
-				_current_chunk_ptr->handleHit(false, blocks::tnt, _block_hit.pos, Modif::litnt);
+				_chunk_hit->handleHit(false, blocks::tnt, _block_hit.pos, Modif::litnt);
 			}
 			break ;
 		case blocks::item_frame:
-			_current_chunk_ptr->handleHit(collect, _hand_content, _block_hit.pos, Modif::use);
+			_chunk_hit->handleHit(collect, _hand_content, _block_hit.pos, Modif::use);
+			return ;
+		case blocks::lectern:
+			if (_chunk_hit->bookedLectern(_menu.get(), _block_hit.pos, false)) {
+				_paused = true;
+				_menu->setState(menu::lectern);
+				return ;
+			} else if (_hand_content == blocks::written_book) {
+				_current_chunk_ptr->handleHit(collect, _hand_content, _block_hit.pos, Modif::use);
+				return ;
+			}
 			return ;
 		case blocks::oak_door:
 		case blocks::oak_trapdoor:

@@ -953,22 +953,27 @@ menu::ret Menu::book_menu( void )
 		reset_values();
 		return (menu::ret::back_to_game);
 	}
+	menu::ret ret = menu::ret::no_change;
 	if (inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) {
 		if (_selection == 1) { // Done
 			reset_values();
 			return (menu::ret::back_to_game);
 		} else if (_selection == 3 && _scroll) { // left arrow
 			--_scroll;
+			if (_state == menu::lectern) { ret = menu::ret::page_turned; }
 		} else if (_selection == 4 && static_cast<size_t>(_scroll + 1) < _book_content->size()) { // right arrow
 			++_scroll;
+			if (_state == menu::lectern) { ret = menu::ret::page_turned; }
 		}
 	}
 	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)
 		&& static_cast<size_t>(_scroll + 1) < _book_content->size()) {
 		++_scroll;
+		if (_state == menu::lectern) { ret = menu::ret::page_turned; }
 	}
 	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left) && _scroll) {
 		--_scroll;
+		if (_state == menu::lectern) { ret = menu::ret::page_turned; }
 	}
 
 	std::string pageStr = "Page " + std::to_string(_scroll + 1) + " of " + std::to_string(_book_content->size());
@@ -978,7 +983,7 @@ menu::ret Menu::book_menu( void )
 
 	setup_array_buffer_book();
 	blit_to_screen();
-	return (menu::ret::no_change);
+	return (ret);
 }
 
 menu::ret Menu::book_and_quill_menu( bool animUpdate )
@@ -1411,18 +1416,19 @@ void Menu::setup_array_buffer_book( void )
 
 	addQuads(settings::consts::tex::book, settings::consts::depth::menu::container, WIN_WIDTH / 2 - 74 * _gui_size, WIN_HEIGHT / 2 - 130 * _gui_size, 146 * _gui_size, 180 * _gui_size, 20, 1, 146, 180);
 
-	if (_state != menu::book) {
+	if (_state == menu::book ||_state == menu::lectern) {
+		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // Done
+	} else {
 		addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_state == menu::book_and_quill_sign && _world_file.empty()) ? 71 : ((_selection == 1) ? 111 : 91), 200, 20, 3); // Sign
 		addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 2) ? 111 : 91, 200, 20, 3); // Done
-	} else {
-		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // Done
 	}
 	
 	if (_state != menu::book_and_quill_sign) {
 		if (_scroll) {
 			addQuads(settings::consts::tex::book, settings::consts::depth::menu::selection, WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size, (_selection == 3) ? 23 : 0, 205, 23, 13); // left arrow
 		}
-		if ((_state == menu::book && static_cast<size_t>(_scroll + 1) < _book_content->size()) || (_state != menu::book && _scroll < 99)) {
+		if (((_state == menu::book || _state == menu::lectern) && static_cast<size_t>(_scroll + 1) < _book_content->size())
+			|| (_state != menu::book && _state != menu::lectern && _scroll < 99)) {
 			addQuads(settings::consts::tex::book, settings::consts::depth::menu::selection, WIN_WIDTH / 2 + 25 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size, (_selection == 4) ? 23 : 0, 192, 23, 13); // right arrow
 		}
 	}
@@ -1978,6 +1984,7 @@ void Menu::processMouseMovement( float posX, float posY )
 		}
 		break ;
 	case menu::book:
+	case menu::lectern:
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size)) {
 			_selection = 3;
 			return ;
@@ -2138,6 +2145,16 @@ void Menu::setBookContent( std::vector<std::string>* content )
 	inputs::setCurrentMessage((content) ? content->at(0) : "");
 }
 
+int Menu::getBookPage( void )
+{
+	return (_scroll);
+}
+
+void Menu::setBookPage( int page )
+{
+	_scroll = page;
+}
+
 std::vector<t_item> Menu::getDrops( void )
 {
 	std::vector<t_item> res = _drops;
@@ -2270,6 +2287,7 @@ menu::ret Menu::run( bool animUpdate )
 		case menu::sign:
 			return (sign_menu(animUpdate));
 		case menu::book:
+		case menu::lectern:
 			return (book_menu());
 		case menu::book_and_quill:
 			return (book_and_quill_menu(animUpdate));

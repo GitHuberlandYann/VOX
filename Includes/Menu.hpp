@@ -37,6 +37,7 @@ namespace menu
 		book,
 		book_and_quill,
 		book_and_quill_sign,
+		lectern,
 	};
 
 	enum ret {
@@ -57,6 +58,7 @@ namespace menu
 		sign_book,
 		drop_item_stack,
 		drop_item,
+		page_turned,
 	};
 
 	const int resolutions_size = 7;
@@ -91,6 +93,8 @@ class Menu
 		void setFurnaceInstance( FurnaceInstance* furnace );
 		void setSignPos( glm::ivec3 pos );
 		void setBookContent( std::vector<std::string>* content );
+		int getBookPage( void );
+		void setBookPage( int page );
 		std::vector<t_item> getDrops( void );
 		t_item dropSelectedBlock( bool stack );
 		void handleScroll( int offset );

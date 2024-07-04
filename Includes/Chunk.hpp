@@ -12,6 +12,7 @@
 # include "FurnaceInstance.hpp"
 # include "SignInstance.hpp"
 class Player;
+class Menu;
 # include "Inventory.hpp"
 # include "Entity.hpp"
 # include "Particle.hpp"
@@ -125,7 +126,7 @@ struct s_backup { // TODO add fluids and entities and mobs to backups
 	std::map<int, ChestInstance*> chests;
 	std::map<int, FurnaceInstance*> furnaces;
 	std::map<int, SignInstance*> signs;
-	std::vector<std::shared_ptr<Entity>> item_frames;
+	std::vector<std::shared_ptr<Entity>> entities;
 };
 
 class Chunk
@@ -186,6 +187,7 @@ class Chunk
         bool isInChunk( int posX, int posY );
 
 		int isHit( glm::ivec3 pos );
+		bool bookedLectern( Menu* menu, glm::ivec3 pos, bool turnPage );
 		AMob* mobHit( const t_hit blockHit );
 		void handleHit( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void handleBlast( glm::vec3 pos, int blast_radius );
@@ -301,6 +303,7 @@ class Chunk
 		glm::ivec3 getAttachedDir( int value );
 		int getWeakdyState( glm::ivec3 pos, glm::ivec3 except );
 		int getRedstoneSignalItemFrame( glm::ivec3 pos, glm::ivec3 except );
+		int getRedstoneSignalLectern( glm::ivec3 pos );
 		int getRedstoneSignalTarget( glm::ivec3 pos, glm::ivec3 target, bool side, bool repeater );
 		int getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bool weak );
 		int getDustStrength( glm::ivec3 pos );
@@ -313,6 +316,7 @@ class Chunk
 		void initRepeater( glm::ivec3 pos, int& value, bool init );
 		void updateComparator( glm::ivec3 pos, int value, bool scheduledUpdate );
 		void updateItemFrame( glm::ivec3 pos );
+		void updateLectern( glm::ivec3 pos );
 		int pistonExtendCount( glm::ivec3 pos, int value );
 		void extendPiston( glm::ivec3 pos, int value, int count );
 		void retractPiston( glm::ivec3 pos, int value );

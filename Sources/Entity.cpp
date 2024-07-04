@@ -5,7 +5,7 @@
 #include "logs.hpp"
 
 Entity::Entity( Chunk* chunk, Inventory *inventory, glm::vec3 position, glm::vec3 dir, bool thrown, t_item item )
-    : _item(item), _lifeTime(0.), _pos(position), _dir(dir), _chunk(chunk), _inventory(inventory), _thrown(thrown)
+    : _type(entities::none), _item(item), _lifeTime(0.), _pos(position), _dir(dir), _chunk(chunk), _inventory(inventory), _thrown(thrown)
 {
     // std::cout << "new Entity at " << position.x << ", " << position.y << ", " << position.z << ": " << s_blocks[value]->name << std::endl;
 	if (chunk) {
@@ -46,6 +46,7 @@ MovingPistonEntity::MovingPistonEntity( Chunk* chunk, glm::ivec3 source, glm::iv
 ItemFrameEntity::ItemFrameEntity( Chunk* chunk, glm::ivec3 position, int value )
 	: Entity(chunk, NULL, {0, 0, 0}, {0, 0, 0}, false, {0}), _rotation(0)
 {
+	_type = entities::item_frame;
 	_pos = glm::vec3(position.x + .5f, position.y + .5f, position.z + .5f);
 
 	int placement = (value >> offset::blocks::bitfield) & 0x3;
@@ -89,6 +90,34 @@ ItemFrameEntity::ItemFrameEntity( Chunk* chunk, glm::ivec3 position, int value )
 	_pos += _front * (7.5f * one16th - .125f);
 }
 
+LecternEntity::LecternEntity( Chunk* chunk, glm::ivec3 position, int value )
+	: Entity(chunk, NULL, {0, 0, 0}, {0, 0, 0}, false, {0}), _page(0)
+{
+	_type = entities::lectern;
+	_pos = glm::vec3(position.x + .5f, position.y + .5f, position.z);
+
+	int orientation = (value >> offset::blocks::orientation) & 0x7;
+	switch (orientation) {
+		case face_dir::minus_x:
+			_front = { 1.f, .0f, .0f};
+			_right = { .0f,-1.f, .0f};
+			break ;
+		case face_dir::plus_x:
+			_front = {-1.f, .0f, .0f};
+			_right = { .0f, 1.f, .0f};
+			break ;
+		case face_dir::minus_y:
+			_front = { 0.f, 1.f, .0f};
+			_right = { 1.f, .0f, .0f};
+			break ;
+		case face_dir::plus_y:
+			_front = { .0f, -1.f, .0f};
+			_right = { -1.f, .0f, .0f};
+			break ;
+	}
+	_pos -= (_front * .5f + _right) * .25f;
+}
+
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
@@ -119,6 +148,16 @@ bool ItemFrameEntity::isAt( glm::ivec3 pos )
 {
 	glm::ivec3 mpos = glm::floor(_pos);
 	return (pos == mpos);
+}
+bool LecternEntity::isAt( glm::ivec3 pos )
+{
+	glm::ivec3 mpos = glm::floor(_pos);
+	return (pos == mpos);
+}
+
+short Entity::getType( void )
+{
+	return (_type);
 }
 
 void Entity::getBlasted( glm::vec3 pos, float blast_radius )
@@ -563,5 +602,75 @@ bool ItemFrameEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos,
 		glm::vec3 pos = _pos - (_right - _up) * .25f + _front * (0.125f - one16th);
 		EXTRUSION::drawItem3D(arr, _item.type, itemLight, pos, _front, _right, _up, 0.5f);
 	}
+    return (false);
+}
+
+// ************************************************************************** //
+//                                Lectern                                     //
+// ************************************************************************** //
+
+void LecternEntity::setContent( t_item item )
+{
+	_item = item;
+}
+
+t_item LecternEntity::getContent( void )
+{
+	return (_item);
+}
+
+t_item LecternEntity::popContent( void )
+{
+	t_item res = _item;
+	_item = {0};
+	return (res);
+}
+
+void LecternEntity::setPage( int page )
+{
+	_page = page;
+}
+
+int LecternEntity::getPage( void )
+{
+	return (_page);
+}
+
+int LecternEntity::getSignal( void )
+{
+	if (_item.type == blocks::air || !_item.tag || _item.tag->getType() != tags::written_book_tag) {
+		return (0);
+	}
+	size_t pages = static_cast<WrittenBookTag*>(_item.tag.get())->getContent().size();
+	if (pages < 2) {
+		return (0xF);
+	}
+	COMPLOG(LOG("lectern is at page " << _page << " of " << pages));
+	return glm::floor(1.f + 14.f * _page / (pages - 1));
+}
+
+bool LecternEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime )
+{
+	(void)deltaTime;
+	if (_item.type == blocks::air) {
+		return (false);
+	}
+
+	// item not displayed if 16 blocks away from player (TODO Entity Distance in settings)
+	if (_pos.x < camPos.x - settings::consts::chunk_size || _pos.x > camPos.x + settings::consts::chunk_size
+		|| _pos.y < camPos.y - settings::consts::chunk_size || _pos.y > camPos.y + settings::consts::chunk_size
+		|| _pos.z < camPos.z - settings::consts::chunk_size || _pos.z > camPos.z + settings::consts::chunk_size) {
+		return (false);
+	}
+
+	int itemLight = _chunk->computePosLight(_pos);
+
+	// if (s_blocks[_item.type]->item3D) {
+	// 	glm::vec3 pos = _pos - (_right + _up) * .125f;
+	// 	s_blocks[_item.type]->addMeshItem(arr, itemLight, pos, _front, _right, _up, 0.25f);
+	// } else {
+		glm::vec3 pos = _pos + settings::consts::math::world_up * 1.5f;
+		EXTRUSION::drawItem3D(arr, _item.type, itemLight, pos, _front, _right, settings::consts::math::world_up, 0.5f);
+	// }
     return (false);
 }

@@ -1,6 +1,15 @@
 #ifndef ENTITY_HPP
 # define ENTITY_HPP
 
+namespace entities {
+	enum {
+		none,
+		item_frame,
+		lectern,
+	};
+};
+
+
 class Inventory;
 
 class Entity
@@ -12,11 +21,13 @@ class Entity
 		void setChunk( Chunk* chunk );
 		void setLifetime( double lifetime );
 		virtual bool isAt( glm::ivec3 pos );
+		short getType( void );
 		virtual void getBlasted( glm::vec3 pos, float blast_radius );
 		virtual int pistonedBy( glm::ivec3 pos, glm::ivec3 target );
 		virtual bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime );
 
 	protected:
+		short _type;
 		t_item _item;
 		double _lifeTime;
 		glm::vec3 _pos, _dir;
@@ -92,6 +103,28 @@ class ItemFrameEntity : public Entity
 	private:
 		short _rotation;
 		glm::vec3 _front, _right, _up;
+};
+
+class LecternEntity : public Entity
+{
+	public:
+		LecternEntity( Chunk* chunk, glm::ivec3 position, int value );
+
+		void setContent( t_item item );
+		t_item getContent( void );
+		t_item popContent( void );
+		void setPage( int page );
+		int getPage( void );
+		int getSignal( void );
+		bool isAt( glm::ivec3 pos ) override;
+
+		bool update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime ) override;
+
+		void saveString( std::string& str );
+
+	private:
+		int _page;
+		glm::vec3 _front, _right;
 };
 
 #endif
