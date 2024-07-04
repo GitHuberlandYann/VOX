@@ -9,6 +9,7 @@ namespace tags {
 		none,
 		tool_tag,
 		book_tag,
+		written_book_tag,
 	};
 };
 
@@ -51,6 +52,20 @@ class BookTag : public ATag
 		std::vector<std::string>& getContent( void );
 	
 	private:
+		std::vector<std::string> _content;
+};
+
+class WrittenBookTag : public ATag
+{
+	public:
+		WrittenBookTag( std::string title, std::vector<std::string>& content );
+		~WrittenBookTag( void );
+
+		std::string getTitle( void );
+		std::vector<std::string>& getContent( void );
+	
+	private:
+		std::string _title;
 		std::vector<std::string> _content;
 };
 

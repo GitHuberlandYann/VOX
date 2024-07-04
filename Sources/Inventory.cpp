@@ -291,7 +291,9 @@ void Inventory::setSlot( int value )
     _slot = value;
 	_modif = true;
 	int type = _content[_slot].type;
-	_ui->inventoryMessage((type != blocks::air) ? s_blocks[type]->name : "");
+	_ui->inventoryMessage((type == blocks::written_book && _content[_slot].tag && _content[_slot].tag->getType() == tags::written_book_tag)
+							? static_cast<WrittenBookTag*>(_content[_slot].tag.get())->getTitle()
+							: (type != blocks::air) ? s_blocks[type]->name : "");
 }
 
 /**
@@ -751,6 +753,21 @@ void Inventory::spillInventory( Chunk* chunk )
 			}
 		}
 	}
+	_modif = true;
+}
+
+void Inventory::signBook( std::string title )
+{
+	if (_content[_slot].type != blocks::book_and_quill) {
+		LOGERROR("ERROR Inventory::singBook item is not book and quill.");
+		return ;
+	}
+	if (!_content[_slot].tag || _content[_slot].tag->getType() != tags::book_tag) {
+		LOGERROR("ERROR Inventory::singBook invalid tag.");
+		return ;
+	}
+	_content[_slot].type = blocks::written_book;
+	_content[_slot].tag = std::make_shared<WrittenBookTag>(title, static_cast<BookTag*>(_content[_slot].tag.get())->getContent());
 	_modif = true;
 }
 

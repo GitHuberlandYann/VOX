@@ -735,7 +735,7 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			handleBackToGame();
 			break ;
 		case menu::ret::sign_book:
-			// _inventory->signBook();
+			_inventory->signBook(_menu->getWorldFile());
 			handleBackToGame();
 			break ;
 		case menu::ret::drop_item_stack:

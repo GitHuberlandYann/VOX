@@ -946,6 +946,41 @@ menu::ret Menu::sign_menu( bool animUpdate )
 	return (menu::ret::no_change);
 }
 
+menu::ret Menu::book_menu( void )
+{
+	if (!_book_content || (inputs::key_down(inputs::close) && inputs::key_update(inputs::close))) {
+		if (!_book_content) { _chat->chatMessage("Missing book content ptr.", TEXT::RED); }
+		reset_values();
+		return (menu::ret::back_to_game);
+	}
+	if (inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) {
+		if (_selection == 1) { // Done
+			reset_values();
+			return (menu::ret::back_to_game);
+		} else if (_selection == 3 && _scroll) { // left arrow
+			--_scroll;
+		} else if (_selection == 4 && static_cast<size_t>(_scroll + 1) < _book_content->size()) { // right arrow
+			++_scroll;
+		}
+	}
+	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)
+		&& static_cast<size_t>(_scroll + 1) < _book_content->size()) {
+		++_scroll;
+	}
+	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left) && _scroll) {
+		--_scroll;
+	}
+
+	std::string pageStr = "Page " + std::to_string(_scroll + 1) + " of " + std::to_string(_book_content->size());
+	_text->addText(WIN_WIDTH / 2 + 55 * _gui_size - Utils::Text::textWidth(6 * _gui_size, pageStr), WIN_HEIGHT / 2 - 115 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, pageStr);
+	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 107 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, _book_content->at(_scroll));
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
+
+	setup_array_buffer_book();
+	blit_to_screen();
+	return (menu::ret::no_change);
+}
+
 menu::ret Menu::book_and_quill_menu( bool animUpdate )
 {
 	if (!_book_content || (inputs::key_down(inputs::close) && inputs::key_update(inputs::close))) {
@@ -1034,7 +1069,7 @@ menu::ret Menu::book_sign_menu( bool animUpdate )
 		return (book_and_quill_menu(animUpdate));
 	}
 	if (inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) {
-		if (_selection == 1) { // Sign and close
+		if (_selection == 1 && !_world_file.empty()) { // Sign and close
 			glfwSetCharCallback(_window, NULL);
 			inputs::resetMessage();
 			reset_values();
@@ -1059,6 +1094,7 @@ menu::ret Menu::book_sign_menu( bool animUpdate )
 		_textBar = true;
 		inputs::moveCursor(false, inputs::key_down(inputs::left_control));
 	}
+	_world_file = inputs::getCurrentMessage();
 
 	_text->addText((WIN_WIDTH - Utils::Text::textWidth(6 * _gui_size, "Enter Book Title:")) / 2, WIN_HEIGHT / 2 - 90 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, "Enter Book Title:");
 	if (animUpdate) {
@@ -1374,14 +1410,19 @@ void Menu::setup_array_buffer_book( void )
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 0, WIN_WIDTH, WIN_HEIGHT, 3, 29, 1, 1); // occult window
 
 	addQuads(settings::consts::tex::book, settings::consts::depth::menu::container, WIN_WIDTH / 2 - 74 * _gui_size, WIN_HEIGHT / 2 - 130 * _gui_size, 146 * _gui_size, 180 * _gui_size, 20, 1, 146, 180);
-	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20, 3); // Sign
-	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 2) ? 111 : 91, 200, 20, 3); // Done
+
+	if (_state != menu::book) {
+		addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_state == menu::book_and_quill_sign && _world_file.empty()) ? 71 : ((_selection == 1) ? 111 : 91), 200, 20, 3); // Sign
+		addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 0, (_selection == 2) ? 111 : 91, 200, 20, 3); // Done
+	} else {
+		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // Done
+	}
 	
 	if (_state != menu::book_and_quill_sign) {
 		if (_scroll) {
 			addQuads(settings::consts::tex::book, settings::consts::depth::menu::selection, WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size, (_selection == 3) ? 23 : 0, 205, 23, 13); // left arrow
 		}
-		if (_scroll < 99) {
+		if ((_state == menu::book && static_cast<size_t>(_scroll + 1) < _book_content->size()) || (_state != menu::book && _scroll < 99)) {
 			addQuads(settings::consts::tex::book, settings::consts::depth::menu::selection, WIN_WIDTH / 2 + 25 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size, (_selection == 4) ? 23 : 0, 192, 23, 13); // right arrow
 		}
 	}
@@ -1936,6 +1977,14 @@ void Menu::processMouseMovement( float posX, float posY )
 			_selection = 0;
 		}
 		break ;
+	case menu::book:
+		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size)) {
+			_selection = 3;
+			return ;
+		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 25 * _gui_size, WIN_HEIGHT / 2 + 23 * _gui_size, 23 * _gui_size, 13 * _gui_size)) {
+			_selection = 4;
+			return ;
+		}
 	case menu::sign:
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
@@ -2140,7 +2189,6 @@ void Menu::setState( int state )
 	switch (state) {
 		case menu::chat:
 		case menu::sign:
-		case menu::book:
 		case menu::book_and_quill:
 			glfwSetCharCallback(_window, inputs::character_callback);
 			break ;
@@ -2221,8 +2269,8 @@ menu::ret Menu::run( bool animUpdate )
 			return (chat_menu(animUpdate));
 		case menu::sign:
 			return (sign_menu(animUpdate));
-		// case menu::book:
-		// 	return (book_menu());
+		case menu::book:
+			return (book_menu());
 		case menu::book_and_quill:
 			return (book_and_quill_menu(animUpdate));
 		case menu::book_and_quill_sign:

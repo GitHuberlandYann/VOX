@@ -175,6 +175,7 @@ class Inventory
 		void decrementDurabitilty( void );
 
 		void spillInventory( Chunk* chunk );
+		void signBook( std::string title );
 
         std::string getInventoryString( void );
 		std::string getSlotString( void );

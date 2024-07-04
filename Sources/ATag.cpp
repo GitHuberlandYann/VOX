@@ -39,6 +39,18 @@ BookTag::~BookTag( void )
 
 }
 
+WrittenBookTag::WrittenBookTag( std::string title, std::vector<std::string>& content )
+	: _title(title), _content(content)
+{
+	_type = tags::written_book_tag;
+	// _content.push_back("\n\nHello \"World\"!");
+}
+
+WrittenBookTag::~WrittenBookTag( void )
+{
+
+}
+
 // ************************************************************************** //
 //                                Private                                     //
 // ************************************************************************** //
@@ -77,6 +89,16 @@ void BookTag::pushPage( std::string page )
 }
 
 std::vector<std::string>& BookTag::getContent( void )
+{
+	return (_content);
+}
+
+std::string WrittenBookTag::getTitle( void )
+{
+	return (_title);
+}
+
+std::vector<std::string>& WrittenBookTag::getContent( void )
 {
 	return (_content);
 }

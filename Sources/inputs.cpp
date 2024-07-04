@@ -206,6 +206,14 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			_menu->setBookContent(&static_cast<BookTag*>(item.tag.get())->getContent());
 		}
 		return ;
+	} else if (type == blocks::written_book) {
+		_paused = true;
+		_menu->setState(menu::book);
+		t_item item = _inventory->getSlotBlock(_inventory->getSlotNum());
+		if (item.tag && item.tag->getType() == tags::written_book_tag) {
+			_menu->setBookContent(&static_cast<WrittenBookTag*>(item.tag.get())->getContent());
+		}
+		return ;
 	} else if (s_blocks[type]->isItemOnly) {
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		if (type == blocks::worldedit_wand) {
