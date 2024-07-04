@@ -79,9 +79,9 @@ class ItemFrameEntity : public Entity
 	public:
 		ItemFrameEntity( Chunk* chunk, glm::ivec3 position, int value );
 
-		void setContent( int type );
-		int getContent( void );
-		bool rotate( int type );
+		void setContent( t_item item );
+		t_item popContent( void );
+		bool rotate( t_item item );
 		int getRotation( void );
 		bool isAt( glm::ivec3 pos ) override;
 

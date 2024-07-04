@@ -502,24 +502,26 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camP
 //                              Item Frame                                    //
 // ************************************************************************** //
 
-void ItemFrameEntity::setContent( int type )
+void ItemFrameEntity::setContent( t_item item )
 {
-	_item.type = type;
+	_item = item;
 }
 
-int ItemFrameEntity::getContent( void )
+t_item ItemFrameEntity::popContent( void )
 {
-	return (_item.type);
+	t_item res = _item;
+	_item = {0};
+	return (res);
 }
 
 /**
  * @brief tries to rotate entity in item frame, if entity is air, place give type in item frame
  */
-bool ItemFrameEntity::rotate( int type )
+bool ItemFrameEntity::rotate( t_item item )
 {
 	if (_item.type == blocks::air) {
-		_item.type = type;
-		return (type != blocks::air);
+		_item = item;
+		return (item.type != blocks::air);
 	}
 
 	++_rotation;

@@ -108,14 +108,12 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		}
 		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
 		if (search != _entities.end()) {
-			type = static_cast<ItemFrameEntity*>(search->get())->getContent();
-			if (type != blocks::air) { // pop item from frame instead of destroying frame
-				static_cast<ItemFrameEntity*>(search->get())->setContent(blocks::air);
-				_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(type, 1)));
+			t_item item = static_cast<ItemFrameEntity*>(search->get())->popContent();
+			if (item.type != blocks::air) { // pop item from frame instead of destroying frame
+				_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, item));
 				updateItemFrame(pos + getAttachedDir(value));
 				return ;
 			}
-			type = blocks::item_frame; // restore type
 			_entities.erase(search);
 		} else {
 			LOGERROR("Item frame not found when trying to destroy item frame");
@@ -295,7 +293,7 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 		}
 		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
 		if (search != _entities.end()) {
-			if (static_cast<ItemFrameEntity*>(search->get())->rotate(type) && useInventory) {
+			if (static_cast<ItemFrameEntity*>(search->get())->rotate(_inventory->getSlotBlock(_inventory->getSlotNum())) && useInventory) {
 				_inventory->removeBlock(false);
 			}
 			updateItemFrame(pos + getAttachedDir(value));
@@ -401,13 +399,12 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			if (value & mask::frame::locked) { return ; }
 			auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
 			if (search != _entities.end()) {
-				type = static_cast<ItemFrameEntity*>(search->get())->getContent();
-				if (type != blocks::air) { // pop item from frame
-					static_cast<ItemFrameEntity*>(search->get())->setContent(blocks::air);
-					_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(type, 1)));
-					return ;
+				t_item item = static_cast<ItemFrameEntity*>(search->get())->popContent();
+				if (item.type != blocks::air) { // pop item from frame
+					_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, item));
+					updateItemFrame(pos + getAttachedDir(value));
 				}
-				updateItemFrame(pos + getAttachedDir(value));
+				return ;
 			} else { LOGERROR("Item frame not found when trying to destroy item frame"); }
 			break ;
 	}
@@ -807,14 +804,13 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 					if (value & mask::frame::locked) { return ; }
 					auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
 					if (search != _entities.end()) {
-						type = static_cast<ItemFrameEntity*>(search->get())->getContent();
+						t_item item = static_cast<ItemFrameEntity*>(search->get())->popContent();
 						_entities.erase(search); // erase before push_back to avoid obsolete iterator
-						if (type != blocks::air) { // pop item from frame instead of destroying frame
-							_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, t_item(type, 1)));
+						if (item.type != blocks::air) { // pop item from frame instead of destroying frame
+							_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, item));
 						} else {
 							entity_block(pos.x, pos.y, pos.z, value);
 						}
-						type = blocks::item_frame; // restore type
 						updateItemFrame(pos + getAttachedDir(value));
 					}
 				} else if (s_blocks[type]->byHand) {

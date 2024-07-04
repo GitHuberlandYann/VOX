@@ -256,7 +256,9 @@ void ItemFrameEntity::saveString( std::string& str )
 	value |= (((_front.x < -.5f) ? face_dir::plus_x : (_front.x > .5f) ? face_dir::minus_x
 				: (_front.y < -.5f) ? face_dir::plus_y : (_front.y > .5f) ? face_dir::minus_y : 0) << offset::blocks::orientation);
 	str += "{\"pos\": [" + std::to_string(static_cast<int>(glm::floor(_pos.x))) + ", " + std::to_string(static_cast<int>(glm::floor(_pos.y))) + ", " + std::to_string(static_cast<int>(glm::floor(_pos.z)))
-		+ "], \"value\": " + std::to_string(value) + ", \"type\": " + std::to_string(_item.type) + ", \"rotation\": " + std::to_string(_rotation) + "}";
+		+ "], \"value\": " + std::to_string(value) + ", \"item\": ";
+	saveItem(str, _item);
+	str += ", \"rotation\": " + std::to_string(_rotation) + "}";
 }
 
 // ************************************************************************** //
@@ -712,17 +714,21 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						for (index = index + 2; line[index] && line[index] != ':'; index++);
 						int value = std::atoi(&line[index + 2]);
 						for (index = index + 2; line[index] && line[index] != ':'; index++);
-						int type = std::atoi(&line[index + 2]);
-						for (index = index + 2; line[index] && line[index] != ':'; index++);
+						t_item item;
+						item.type = convert(std::atoi(&line[index + 3]));
+						for (; line[index] && line[index] != ','; index++);
+						item.amount = std::atoi(&line[index + 2]);
+						++index;
+						convertTag(line, index, item, ':');
 						int rotation = std::atoi(&line[index + 2]);
 						auto frame = std::make_shared<ItemFrameEntity>(nullptr, pos, value);
-						frame->setContent(1); // random content other than air to make sure rotations go through
+						frame->setContent({1, 1}); // random content other than air to make sure rotations go through
 						for (int i = 0; i < rotation; ++i) {
-							frame->rotate(blocks::air);
+							frame->rotate({blocks::air});
 						}
-						frame->setContent(type);
+						frame->setContent(item);
 						backups_value.item_frames.push_back(frame);
-						ofs << "one more item frame at " << POS(pos) << " with value " << value << ", type " << type << ", and rotation " << rotation << std::endl;
+						ofs << "one more item frame at " << POS(pos) << " with value " << value << ", type " << item.type << ", and rotation " << rotation << std::endl;
 						for (;line[index + 1] && line[index + 1] != '{'; ++index);
 					}
 				} else {

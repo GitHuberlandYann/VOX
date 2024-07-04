@@ -69,6 +69,8 @@ TODOS:
 	- display block_hit s name and details as a 2D window
 	- skin customization menu
 	- anvil + named items
+	- //brush tool to place/rm lots of blocks in a wormy manner
+	- //gameOfLife cmd with worldEdit to see game of life in 3D
 	
 	DONE:
 	- pthread chunk creation
