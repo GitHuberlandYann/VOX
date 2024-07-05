@@ -531,8 +531,8 @@ void OpenGL_Manager::handleTime( bool gamePaused )
 void OpenGL_Manager::handleUserInputs( int& backFromMenu )
 {
 	if (!_paused) {
-		if (++backFromMenu != 1) {
-			userInputs(++backFromMenu > 3);
+		if (++backFromMenu > 1) {
+			userInputs(backFromMenu > 5);
 		}
 		chunkUpdate();
 	} else if (_player->getCamUpdate() && _menu->getState() >= menu::inventory) {

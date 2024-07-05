@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include "Camera.hpp"
+#include "logs.hpp"
 
 Player::Player( void )
     : AMob({0.0f, 0.0f, 0.0f}), _flySpeed(settings::consts::speed::fly), _foodLevel(20), _foodTickTimer(0),
@@ -444,6 +445,7 @@ void Player::updateVectors( void )
 	_up    = glm::normalize(glm::cross(_right, _front));
 	_front2 = glm::normalize(glm::vec2(_front)); // used in chunkInFront
 	_right2 = glm::vec2(glm::cos(glm::radians(Settings::Get()->getFloat(settings::floats::fov) + _fovOffset))) * glm::normalize(glm::vec2(_right));
+	LOG("updateVectors front " << POS(_front));
 }
 
 void Player::processPitch( GLint offset )

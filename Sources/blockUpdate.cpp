@@ -557,8 +557,10 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		} else if (prev_type == blocks::redstone_dust) {
 			updateRedstoneDust(pos);
 		}
-		for (int i = 0; i < 15; ++i) {
-			_particles.push_back(new Particle(this, {pos.x + _startX + Random::randomFloat(_seed), pos.y + _startY + Random::randomFloat(_seed), pos.z + Random::randomFloat(_seed)}, PARTICLES::BREAKING, 0, prev_type));
+		if (_inventory->getSlotBlock(_inventory->getSlotNum()).type != blocks::worldedit_brush) {
+			for (int i = 0; i < 15; ++i) {
+				_particles.push_back(new Particle(this, {pos.x + _startX + Random::randomFloat(_seed), pos.y + _startY + Random::randomFloat(_seed), pos.z + Random::randomFloat(_seed)}, PARTICLES::BREAKING, 0, prev_type));
+			}
 		}
 		light_spread(pos.x, pos.y, pos.z, false);
 		light_spread(pos.x, pos.y, pos.z, true);

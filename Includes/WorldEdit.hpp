@@ -17,9 +17,10 @@ namespace WEDIT {
 		MOVE,
 		STACK,
 		PATHFIND,
+		BRUSHSIZE,
 		NBR_CMDS
 	};
-	const std::array<std::string, cmds::NBR_CMDS> commands = {"//wand", "//set", "//copy", "//cut", "//paste", "//move", "//stack", "//path"};
+	const std::array<std::string, cmds::NBR_CMDS> commands = {"//wand", "//set", "//copy", "//cut", "//paste", "//move", "//stack", "//path", "//brushsize"};
 };
 
 class WorldEdit
@@ -34,6 +35,7 @@ class WorldEdit
 		void setPtrs( OpenGL_Manager* openGL_Manager, Inventory* inventory, Chat* chat );
 		void setSelectionStart( glm::ivec3 pos );
 		void setSelectionEnd( glm::ivec3 pos );
+		void useBrush( glm::ivec3 pos, bool adding );
 
 		bool parseCommand( std::vector<std::string>& argv );
 
@@ -42,6 +44,7 @@ class WorldEdit
 		static std::mutex _mtx;
 
 		bool _running, _absoluteClipboard;
+		int _brushSize;
 		glm::ivec3 _selectStart, _selectEnd;
 		glm::ivec3 _clipStart, _clipEnd;
 		std::vector<int> _clipboard;
@@ -58,6 +61,7 @@ class WorldEdit
 		void handleCmdMove( std::vector<std::string>& argv );
 		// void handleCmdStack( void );
 		void handleCmdPathfind( void );
+		void handleCmdBrushSize( std::vector<std::string>& argv );
 };
 
 #endif

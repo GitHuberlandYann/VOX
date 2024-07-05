@@ -35,6 +35,7 @@ namespace settings {
 		namespace reach {
 			const float survival = 4.5f;
 			const float creative = chunk_size;
+			const float brush = 64;
 			const float attack = 3.0f;
 		};
 	};

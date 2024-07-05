@@ -515,7 +515,8 @@ namespace blocks {
 		water = 88,
 		empty89,
 		obsidian,
-		feather = 93,
+		worldedit_brush = 92,
+		feather,
 		leather,
 		ink_sac,
 		stick = 96,
@@ -2144,6 +2145,17 @@ struct Obsidian : Cube {
 			needed_material_level = 3; // min diamond to collect
 			hardness = 50.f;
 			texture = settings::consts::shader::block::obsidian;
+		}
+};
+
+struct WorldEditBrush : Block {
+	public:
+		WorldEditBrush() {
+			name = "WORLDEDIT_BRUSH";
+			stackSize = 1;
+			isItemOnly = true;
+			item3D = false;
+			texture = settings::consts::shader::item::stone_axe;
 		}
 };
 

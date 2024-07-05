@@ -4,7 +4,7 @@
 #include <cassert>
 
 WorldEdit::WorldEdit( void )
-	: _running(false), _selectStart(1000), _selectEnd(1000), _openGL_Manager(NULL), _inventory(NULL), _chat(NULL)
+	: _running(false), _brushSize(4), _selectStart(1000), _selectEnd(1000), _openGL_Manager(NULL), _inventory(NULL), _chat(NULL)
 {
 
 }
@@ -76,6 +76,31 @@ void WorldEdit::setSelectionEnd( glm::ivec3 pos )
 	_absoluteClipboard = false;
 	_chat->chatMessage("Selection End set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z), TEXT::RED);
 }
+
+/**
+ * @brief generate sphere at given pos filled with blocks or with air
+ */
+void WorldEdit::useBrush( glm::ivec3 pos, bool adding )
+{
+	Chunk * chunk = _openGL_Manager->getCurrentChunkPtr();
+	glm::ivec3 delta;
+	for (delta.x = -_brushSize; delta.x < _brushSize + 1; ++delta.x) {
+		for (delta.y = -_brushSize; delta.y < _brushSize + 1; ++delta.y) {
+			for (delta.z = -_brushSize; delta.z < _brushSize + 1; ++delta.z) {
+				if (std::sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z) > _brushSize) {
+					continue ;
+				}
+				int previous = chunk->getBlockAtAbsolute(pos + delta) & mask::blocks::type;
+				if (adding && previous == blocks::air) {
+					chunk->setBlockAtAbsolute(blocks::stone, pos + delta, true);
+				} else if (!adding && previous != blocks::air && previous != blocks::bedrock) {
+					chunk->setBlockAtAbsolute(blocks::air, pos + delta, true);
+				}
+			}
+		}
+	}
+}
+
 
 // ************************************************************************** //
 //                                Private                                     //
@@ -234,6 +259,23 @@ void WorldEdit::handleCmdPathfind( void )
 	return (_chat->chatMessage("Path of size " + std::to_string(path.first.size()) + " found in " + std::to_string(path.second) + " iterations."));
 }
 
+void WorldEdit::handleCmdBrushSize( std::vector<std::string>& argv )
+{
+	if (argv.size() != 2) {
+		return (_chat->chatMessage("Wrong usage of command //brushSize <size>", TEXT::RED));
+	}
+	int value = 0;
+	size_t index = 0;
+	for (; argv[1][index]; ++index) {
+		if (!isdigit(argv[1][index])) {
+			return (_chat->chatMessage("Wrong usage of //brushSize <size>, size invalid"));
+		}
+		value = value * 10 + argv[1][index] - '0';
+	}
+	_brushSize = value;
+	_chat->chatMessage("Brush size set to " + std::to_string(value));
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -291,6 +333,9 @@ bool WorldEdit::parseCommand( std::vector<std::string>& argv )
 					break ;
 				case WEDIT::cmds::PATHFIND:
 					handleCmdPathfind();
+					break ;
+				case WEDIT::cmds::BRUSHSIZE:
+					handleCmdBrushSize(argv);
 					break ;
 			}
 			return (false);

@@ -20,8 +20,8 @@ void OpenGL_Manager::resetInputsPtrs( void )
 
 t_hit OpenGL_Manager::getBlockHit( void )
 {
-	t_hit res = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
-	std::vector<glm::ivec3> ids = _player->computeRayCasting((_game_mode == settings::consts::gamemode::creative) ? settings::consts::reach::creative : settings::consts::reach::survival);
+	t_hit res = {{0, 0, 0}, _player->getEyePos(), {0, 0, 0}, 0, 0, 0};
+	std::vector<glm::ivec3> ids = _player->computeRayCasting((_game_mode == settings::consts::gamemode::creative) ? (_hand_content == blocks::worldedit_brush) ? settings::consts::reach::brush : settings::consts::reach::creative : settings::consts::reach::survival);
 
 	glm::ivec2 current_chunk = glm::ivec2(INT_MAX, INT_MAX);
 	Chunk* chunk = NULL;
@@ -106,6 +106,8 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			return ;
 		} else if (_hand_content == blocks::worldedit_wand) {
 			return (WorldEdit::Get()->setSelectionStart(_block_hit.pos));
+		} else if (_hand_content == blocks::worldedit_brush) {
+			return (WorldEdit::Get()->useBrush(_block_hit.pos, false));
 		}
 		if (_game_mode == settings::consts::gamemode::adventure && !(_block_hit.value & mask::adventure_block)) {
 			if ((_block_hit.value & mask::blocks::type) == blocks::item_frame && !(_block_hit.value & mask::frame::locked)) {
@@ -227,6 +229,8 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 	} else if (s_blocks[type]->isItemOnly) {
 		if (type == blocks::worldedit_wand) {
 			return (WorldEdit::Get()->setSelectionEnd(_block_hit.pos));
+		} else if (type == blocks::worldedit_brush && _block_hit.pos != glm::ivec3(0)) {
+			return (WorldEdit::Get()->useBrush(_block_hit.prev_pos, true));
 		}
 		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
@@ -377,6 +381,7 @@ void OpenGL_Manager::updateVisibleChunks( void )
 
 void OpenGL_Manager::chunkUpdate( void )
 {
+	LOG("chunkUpdate called with player at " << POS(_player->getPos()) << " and front of " << POS(_player->getDir()));
 	int posX = chunk_pos(static_cast<int>(glm::floor(_player->getPos().x)));
 	int posY = chunk_pos(static_cast<int>(glm::floor(_player->getPos().y)));
 	
@@ -547,6 +552,8 @@ void OpenGL_Manager::userInputs( bool rayCast )
 			_player->setArmAnimation(true);
 			mobHit->receiveDamage(6.0f, _player->getDir());
 			// TODO set _punch to true to avoid breaking block behind mob
+		} else if (_hand_content == blocks::worldedit_brush) {
+			handleBlockModif(false, false);
 		} else if (_game_mode != settings::consts::gamemode::creative) {
 			if (_block_hit.type == blocks::air || (!firstFrame && (_block_hit.type & mask::blocks::type) == blocks::item_frame)) {
 				_player->setArmAnimation(firstFrame);
@@ -582,7 +589,9 @@ void OpenGL_Manager::userInputs( bool rayCast )
 		_player->setArmAnimation(false);
 	}
 	if (inputs::key_down(inputs::use)) {
-		if (_game_mode != settings::consts::gamemode::creative && s_blocks[_hand_content]->isFood) {
+		if (_hand_content == blocks::worldedit_brush) {
+			handleBlockModif(true, _game_mode != settings::consts::gamemode::creative);
+		} else if (_game_mode != settings::consts::gamemode::creative && s_blocks[_hand_content]->isFood) {
 			_eat_timer += _time.deltaTime;
 			if (_eat_timer >= 1.61f) {
 				if (_player->canEatFood(_hand_content)) {

@@ -542,7 +542,7 @@ void Player::move( int direction, GLint v, GLint h, GLint z )
 		return ;
 	} else if (!v && !h) {
 		_walking = false;
-		// return ;
+		return ;
 	} else {
 		_updateCam = true;
 		_walking = true;
@@ -666,6 +666,7 @@ void Player::inputUpdate( bool rayCast, int gameMode )
 
 	if (rayCast) {
 		if (gameMode != settings::consts::gamemode::creative && _chunk) { // on first frame -> no _chunk
+			LOG("inputUpdate start with player pos " << POS(_position));
 			if (_smoothCam) {
 				if (_smoothCamZ < _position.z) {
 					_smoothCamZ += _deltaTime * settings::consts::speed::smooth_cam;
@@ -698,6 +699,7 @@ void Player::inputUpdate( bool rayCast, int gameMode )
 				// if sneaking and touch ground and after move we have gap of more than 0.6 under our feet, undo movement
 				restorePos(originalPos);
 			}
+			LOG("\tinputUpdate inter with player pos " << POS(_position));
 			originalPos = _position;
 			move(face_dir::plus_y, key_cam_v, key_cam_h, 0); // move on Y_AXIS
 			coll = _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight);
@@ -715,6 +717,7 @@ void Player::inputUpdate( bool rayCast, int gameMode )
 			if (!_touchGround) {
 				_updateCam = true;
 			}
+			LOG("\tinputUpdate end with player pos " << POS(_position));
 		}
 	}
 
