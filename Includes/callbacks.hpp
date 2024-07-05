@@ -3,13 +3,16 @@
 
 class Menu;
 
-void set_cursor_position_callback( Player* player, Menu* men );
-void set_scroll_callback( Inventory* ptr );
-void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
-void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
-
 namespace inputs
 {
+	// mouse callback
+	void set_cursor_position_callback( Player* player, Menu* men );
+	void centerMouse( void );
+	void set_scroll_callback( Inventory* ptr );
+	void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
+	void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
+
+	// character callback
 	void character_callback( GLFWwindow* window, unsigned int codepoint );
 	void moveCursor( bool right, bool control );
 	void resetMessage( void );

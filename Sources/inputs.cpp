@@ -225,10 +225,10 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		}
 		return ;
 	} else if (s_blocks[type]->isItemOnly) {
-		// std::cout << "can't add block if no object in inventory" << std::endl;
 		if (type == blocks::worldedit_wand) {
 			return (WorldEdit::Get()->setSelectionEnd(_block_hit.pos));
 		}
+		// std::cout << "can't add block if no object in inventory" << std::endl;
 		return ;
 	} else if (type == blocks::torch || type == blocks::redstone_torch) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
@@ -459,7 +459,7 @@ void OpenGL_Manager::userInputs( bool rayCast )
 		_menu->setState(menu::chat);
 		return ;
 	}
-	// toggle 'command' chat, id open chat, whit '/' already written
+	// toggle 'command' chat, ie open chat, with '/' already written
 	if (inputs::key_down(inputs::command) && inputs::key_update(inputs::command)) {
 		_paused = true;
 		_menu->setState(menu::command);

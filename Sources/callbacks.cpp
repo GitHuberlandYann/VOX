@@ -5,56 +5,66 @@
 #include "logs.hpp"
 #include <fstream>
 
-Player* playerPtr = NULL;
-Menu* menuPtr = NULL;
-Inventory* scroll_inventory = NULL;
-
-double lastX = WIN_WIDTH / 2.0f, lastY = WIN_HEIGHT / 2.0f;
-
-void set_cursor_position_callback( Player* player, Menu* men )
-{
-	playerPtr = player;
-	menuPtr = men;
-}
-
-void set_scroll_callback( Inventory* ptr )
-{
-	scroll_inventory = ptr;
-}
-
-void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
-{
-	(void)window;
-
-    double x_offset = lastX - xpos;
-    double y_offset = lastY - ypos;
-
-    lastX = xpos;
-    lastY = ypos;
-
-	if (playerPtr) {
-		playerPtr->processMouseMovement(x_offset / 10, y_offset / 10);
-	} else if (menuPtr) {
-		menuPtr->processMouseMovement(xpos, ypos);
-	}
-}
-
-void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
-{
-	(void)window;
-	(void)xoffset;
-	if (!scroll_inventory) {
-		if (menuPtr) {
-			menuPtr->handleScroll(yoffset * 20);
-		}
-		return ;
-	}
-
-	scroll_inventory->setSlot(scroll_inventory->getSlotNum() + ((yoffset > 0) ? 1 : -1));
-}
-
 namespace inputs
 {
+	Player* playerPtr = NULL;
+	Menu* menuPtr = NULL;
+	Inventory* scroll_inventory = NULL;
+
+	double lastX = WIN_WIDTH / 2.0f, lastY = WIN_HEIGHT / 2.0f;
+	bool backFromMenu = false;
+
+	void set_cursor_position_callback( Player* player, Menu* men )
+	{
+		playerPtr = player;
+		menuPtr = men;
+	}
+
+	void centerMouse( void )
+	{
+		lastX = WIN_WIDTH * .5f;
+		lastY = WIN_HEIGHT * .5f;
+		backFromMenu = true;
+	}
+
+	void set_scroll_callback( Inventory* ptr )
+	{
+		scroll_inventory = ptr;
+	}
+
+	void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
+	{
+		(void)window;
+
+		double x_offset = lastX - xpos;
+		double y_offset = lastY - ypos;
+
+		lastX = xpos;
+		lastY = ypos;
+
+		if (backFromMenu) {
+			backFromMenu = false;
+		} else if (playerPtr) {
+			playerPtr->processMouseMovement(x_offset / 10, y_offset / 10);
+		} else if (menuPtr) {
+			menuPtr->processMouseMovement(xpos, ypos);
+		}
+	}
+
+	void scroll_callback( GLFWwindow* window, double xoffset, double yoffset )
+	{
+		(void)window;
+		(void)xoffset;
+		if (!scroll_inventory) {
+			if (menuPtr) {
+				menuPtr->handleScroll(yoffset * 20);
+			}
+			return ;
+		}
+
+		scroll_inventory->setSlot(scroll_inventory->getSlotNum() + ((yoffset > 0) ? 1 : -1));
+	}
+
 	std::string message;
 	size_t cursor = 0;
 

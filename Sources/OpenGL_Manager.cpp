@@ -45,8 +45,8 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_menu->deleteBuffers();
 	_skybox->deleteBuffers();
 
-	set_cursor_position_callback(NULL, NULL);
-	set_scroll_callback(NULL);
+	inputs::set_cursor_position_callback(NULL, NULL);
+	inputs::set_scroll_callback(NULL);
 	_inventory->setUIPtr(NULL);
 	_camera->setTarget(NULL);
 	_ui->setPtrs(NULL, NULL, NULL);
@@ -489,8 +489,8 @@ void OpenGL_Manager::handleEndSetup( void )
 	glClearColor(0, 0, 0, 1.0f); // start of black, will be changed in game by DayCycle
 
 	_menu->setState(menu::main);
-	glfwSetCursorPosCallback(_window, cursor_position_callback);
-	glfwSetScrollCallback(_window, scroll_callback);
+	glfwSetCursorPosCallback(_window, inputs::cursor_position_callback);
+	glfwSetScrollCallback(_window, inputs::scroll_callback);
 
 	glfwSetKeyCallback(_window, inputs::key_callback);
 	glfwSetMouseButtonCallback(_window, inputs::mouse_button_callback);
@@ -659,13 +659,14 @@ void OpenGL_Manager::handleUI( void )
 void OpenGL_Manager::handleBackToGame( void )
 {
 	#if !__linux__
+		inputs::centerMouse();
 		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		if (glfwRawMouseMotionSupported()) {
 			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 		}
 	#endif
-	set_cursor_position_callback(_player.get(), NULL);
-	set_scroll_callback(_inventory.get());
+	inputs::set_cursor_position_callback(_player.get(), NULL);
+	inputs::set_scroll_callback(_inventory.get());
 	_paused = false;
 	_player->setCamUpdate(true);
 	setThreadUpdate(true);

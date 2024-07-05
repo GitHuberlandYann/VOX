@@ -2200,8 +2200,8 @@ void Menu::setState( int state )
 			glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
 		}
 	#endif
-	set_cursor_position_callback(NULL, this);
-	set_scroll_callback(NULL);
+	inputs::set_cursor_position_callback(NULL, this);
+	inputs::set_scroll_callback(NULL);
 
 	switch (state) {
 		case menu::chat:
