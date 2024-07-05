@@ -381,7 +381,6 @@ void OpenGL_Manager::updateVisibleChunks( void )
 
 void OpenGL_Manager::chunkUpdate( void )
 {
-	LOG("chunkUpdate called with player at " << POS(_player->getPos()) << " and front of " << POS(_player->getDir()));
 	int posX = chunk_pos(static_cast<int>(glm::floor(_player->getPos().x)));
 	int posY = chunk_pos(static_cast<int>(glm::floor(_player->getPos().y)));
 	

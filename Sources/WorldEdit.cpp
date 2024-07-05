@@ -87,12 +87,13 @@ void WorldEdit::useBrush( glm::ivec3 pos, bool adding )
 	for (delta.x = -_brushSize; delta.x < _brushSize + 1; ++delta.x) {
 		for (delta.y = -_brushSize; delta.y < _brushSize + 1; ++delta.y) {
 			for (delta.z = -_brushSize; delta.z < _brushSize + 1; ++delta.z) {
-				if (std::sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z) > _brushSize) {
+				float dist = std::sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
+				if (dist - .1f > _brushSize) { // || dist < _brushSize - 1) {
 					continue ;
 				}
 				int previous = chunk->getBlockAtAbsolute(pos + delta) & mask::blocks::type;
 				if (adding && previous == blocks::air) {
-					chunk->setBlockAtAbsolute(blocks::stone, pos + delta, true);
+					chunk->setBlockAtAbsolute(blocks::stone, pos + delta, dist + .9f > _brushSize);
 				} else if (!adding && previous != blocks::air && previous != blocks::bedrock) {
 					chunk->setBlockAtAbsolute(blocks::air, pos + delta, true);
 				}
@@ -100,7 +101,6 @@ void WorldEdit::useBrush( glm::ivec3 pos, bool adding )
 		}
 	}
 }
-
 
 // ************************************************************************** //
 //                                Private                                     //
@@ -276,6 +276,67 @@ void WorldEdit::handleCmdBrushSize( std::vector<std::string>& argv )
 	_chat->chatMessage("Brush size set to " + std::to_string(value));
 }
 
+/**
+ * @brief compute next generation of game of life inside selection
+ */
+void WorldEdit::handleCmdGameOfLife( void )
+{
+	Chunk * chunk = _openGL_Manager->getCurrentChunkPtr();
+	if (!chunk) {
+		return ;
+	}
+
+	_clipStart = {(_selectStart.x < _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y < _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z < _selectEnd.z) ? _selectStart.z : _selectEnd.z};
+	_clipEnd = {(_selectStart.x > _selectEnd.x) ? _selectStart.x : _selectEnd.x, (_selectStart.y > _selectEnd.y) ? _selectStart.y : _selectEnd.y, (_selectStart.z > _selectEnd.z) ? _selectStart.z : _selectEnd.z};
+
+	_clipboard.clear();
+	for (int posX = _clipStart.x; posX <= _clipEnd.x; ++posX) {
+		for (int posY = _clipStart.y; posY <= _clipEnd.y; ++posY) {
+			for (int posZ = _clipStart.z; posZ <= _clipEnd.z; ++posZ) {
+				int value = chunk->getBlockAtAbsolute(posX, posY, posZ);
+				_clipboard.push_back(value);
+			}
+		}
+	}
+
+	std::vector<int> originalState = _clipboard;
+	glm::ivec3 sizes = _clipEnd + glm::ivec3(1) - _clipStart;
+	for (int posX = 0; posX < sizes.x; ++posX) {
+		for (int posY = 0; posY < sizes.y; ++posY) {
+			for (int posZ = 0; posZ < sizes.z; ++posZ) {
+				int cnt = 0;
+				for (int dx = -1; dx < 2; ++dx) {
+					if (posX + dx < 0 || posX + dx >= sizes.x) {
+						continue ;
+					}
+					for (int dy = -1; dy < 2; ++dy) {
+						if (posY + dy < 0 || posY + dy >= sizes.y) {
+							continue ;
+						}
+						for (int dz = -1; dz < 2; ++dz) {
+							if (posZ + dz < 0 || posZ + dz >= sizes.z || (!dx && !dy && !dz)) {
+								continue ;
+							}
+							if (originalState[((posX + dx) * sizes.y + (posY + dy)) * sizes.z + (posZ + dz)] != blocks::air) {
+								++cnt;
+							}
+						}
+					}
+				}
+				if (originalState[(posX * sizes.y + posY) * sizes.z + posZ] != blocks::air) {
+					if (cnt < 2 || cnt > 3) {
+						_clipboard[(posX * sizes.y + posY) * sizes.z + posZ] = blocks::air;
+					}
+				} else if (cnt == 3) { // welcome to life bud
+					_clipboard[(posX * sizes.y + posY) * sizes.z + posZ] = blocks::quartz_block;
+				}
+			}
+		}
+	}
+	_absoluteClipboard = false;
+	handleCmdPaste(false);
+}
+
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
@@ -336,6 +397,9 @@ bool WorldEdit::parseCommand( std::vector<std::string>& argv )
 					break ;
 				case WEDIT::cmds::BRUSHSIZE:
 					handleCmdBrushSize(argv);
+					break ;
+				case WEDIT::cmds::GAMEOFLIFE:
+					handleCmdGameOfLife();
 					break ;
 			}
 			return (false);

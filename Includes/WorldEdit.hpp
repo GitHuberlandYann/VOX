@@ -18,9 +18,10 @@ namespace WEDIT {
 		STACK,
 		PATHFIND,
 		BRUSHSIZE,
+		GAMEOFLIFE,
 		NBR_CMDS
 	};
-	const std::array<std::string, cmds::NBR_CMDS> commands = {"//wand", "//set", "//copy", "//cut", "//paste", "//move", "//stack", "//path", "//brushsize"};
+	const std::array<std::string, cmds::NBR_CMDS> commands = {"//wand", "//set", "//copy", "//cut", "//paste", "//move", "//stack", "//path", "//brushsize", "//gameoflife"};
 };
 
 class WorldEdit
@@ -62,6 +63,7 @@ class WorldEdit
 		// void handleCmdStack( void );
 		void handleCmdPathfind( void );
 		void handleCmdBrushSize( std::vector<std::string>& argv );
+		void handleCmdGameOfLife( void );
 };
 
 #endif
