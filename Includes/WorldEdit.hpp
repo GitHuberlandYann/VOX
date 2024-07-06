@@ -7,21 +7,22 @@
 # include <vector>
 # include <string>
 
-namespace WEDIT {
+namespace world_edit {
 	enum cmds {
-		WAND,
-		SET,
-		COPY,
-		CUT,
-		PASTE,
-		MOVE,
-		STACK,
-		PATHFIND,
-		BRUSHSIZE,
-		GAMEOFLIFE,
-		NBR_CMDS
+		wand,
+		set,
+		copy,
+		cut,
+		paste,
+		move,
+		stack,
+		path_finding,
+		brush,
+		brush_size,
+		game_of_life,
+		size
 	};
-	const std::array<std::string, cmds::NBR_CMDS> commands = {"//wand", "//set", "//copy", "//cut", "//paste", "//move", "//stack", "//path", "//brushsize", "//gameoflife"};
+	const std::array<std::string, cmds::size> commands = {"//wand", "//set", "//copy", "//cut", "//paste", "//move", "//stack", "//path", "//brush", "//brushsize", "//gameoflife"};
 };
 
 class WorldEdit

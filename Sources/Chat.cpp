@@ -392,6 +392,7 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		case blocks::wheat_crop:
 		case blocks::water:
 		case blocks::worldedit_wand:
+		case blocks::worldedit_brush:
 			return (chatMessage("item " + s_blocks[item]->name + " [" + std::to_string(item) + "] can't be given."));
 	}
 	_oglMan->_inventory->replaceSlot(item, true);
@@ -420,7 +421,7 @@ bool Chat::handle_freeze( int argc, std::vector<std::string> &argv )
 				steps = steps * 10 + argv[1][index] - '0';
 			}
 			if (argv[1][index]) { // argv[1] is not only digits
-				chatMessage("Wrong usage of //step [nbr]", TEXT::RED);
+				chatMessage("Wrong usage of //step [nbr]", argb::red);
 			} else {
 				DayCycle::Get()->step(this, steps);
 			}
@@ -552,7 +553,7 @@ bool Chat::sendMessage( std::string str )
 	str = trim_spaces(str);
 	if (!str[0]) return (false);
 	if (!_historic.size() || str != _historic.back().str) {
-		_historic.push_back({str, TEXT::WHITE}); // used to handle arrow action (ie command history)
+		_historic.push_back({str, argb::white}); // used to handle arrow action (ie command history)
 	}
 	if (str[0] == '/') {
 		std::vector<std::string> parstr = split(str, ' ');

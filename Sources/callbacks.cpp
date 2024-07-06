@@ -363,13 +363,13 @@ namespace inputs
 		auto current_bind = std::find_if(key_map.begin(), key_map.end(),
 							[action](auto& it) {return (it.second == action); });
 		if (current_bind == key_map.end()) {
-			LOGERROR("ERROR inputs::is_initial_key_bind action not found in key_map");
+			LOGERROR("inputs::is_initial_key_bind action not found in key_map");
 			return (false);
 		}
 		auto initial_bind = std::find_if(initial_key_map.begin(), initial_key_map.end(),
 							[action](auto& it) {return (it.second == action); });
 		if (initial_bind == initial_key_map.end()) {
-			LOGERROR("ERROR inputs::is_initial_key_bind action not found in initial_key_map");
+			LOGERROR("inputs::is_initial_key_bind action not found in initial_key_map");
 			return (false);
 		}
 
@@ -391,7 +391,7 @@ namespace inputs
 		auto initial_bind = std::find_if(initial_key_map.begin(), initial_key_map.end(),
 							[action](auto& it) {return (it.second == action); });
 		if (initial_bind == initial_key_map.end()) {
-			LOGERROR("ERROR inputs::reset_key_bind action not found in initial_key_map");
+			LOGERROR("inputs::reset_key_bind action not found in initial_key_map");
 			return ;
 		}
 

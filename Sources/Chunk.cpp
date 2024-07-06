@@ -75,7 +75,7 @@ Chunk::~Chunk( void )
 		delete f.second;
 	}
 
-	// std::cout << "chunk deleted " << _startX << ", " << _startY << std::endl;
+	// std::cout << "chunk deleted " << POSXY(_startX, _startY) << std::endl;
 }
 
 // ************************************************************************** //
@@ -350,7 +350,7 @@ void Chunk::openChest( glm::ivec3 pos )
 	int key = ((((pos.x - _startX) << settings::consts::chunk_shift) + pos.y - _startY) << settings::consts::world_shift) + pos.z;
 	auto search = _chests.find(key);
 	if (search != _chests.end()) {
-		search->second->setState(chest_state::OPENING);
+		search->second->setState(chest_state::opening);
 	}
 }
 
@@ -393,7 +393,7 @@ void Chunk::setSignContent( t_sign_info sign )
 	int key = ((((sign.pos.x - _startX) << settings::consts::chunk_shift) + sign.pos.y - _startY) << settings::consts::world_shift) + sign.pos.z;;
 	auto search = _signs.find(key);
 	if (search == _signs.end()) {
-		LOGERROR("Chunk::setSignContent [" << _startX << ", " << _startY << "]failed to find sign at pos " << POS(sign.pos));
+		LOGERROR("Chunk::setSignContent [" << POSXY(_startX, _startY) << "]failed to find sign at pos " << POS(sign.pos));
 		return ;
 	}
 	search->second->setContent(sign.content);
@@ -453,7 +453,7 @@ void Chunk::checkFillVertices( void )
 	} else if (cnt < _nb_neighbours) {
 		_nb_neighbours = cnt;
 	} else if (!cnt) {
-		LOGERROR("ERROR chunk has no neighbours");
+		LOGERROR("chunk has no neighbours");
 	}
 }
 
@@ -604,13 +604,13 @@ bool Chunk::isInChunk( int posX, int posY )
 
 int Chunk::isHit( glm::ivec3 pos )
 {
-	// std::cout << "current_chunk is " << _startX << ", " << _startY << std::endl;
+	// std::cout << "current_chunk is " << POSXY(_startX, _startY) << std::endl;
 	glm::ivec3 chunk_pos = glm::ivec3(pos.x - _startX, pos.y - _startY, pos.z);
 	if (chunk_pos.z < 0 || chunk_pos.z > 255) {
 		return (blocks::air);
 	}
 	if (chunk_pos.x < 0 || chunk_pos.x >= settings::consts::chunk_size || chunk_pos.y < 0 || chunk_pos.y >= settings::consts::chunk_size) {
-		LOGERROR("ERROR block out of chunk " << POS(chunk_pos));
+		LOGERROR("block out of chunk " << POS(chunk_pos));
 		return (blocks::air);
 	}
 	// if (_thread.joinable()) {
@@ -672,12 +672,12 @@ void Chunk::explosion( glm::vec3 pos, int power )
 							handleHit(false, type, p, Modif::litnt);
 							_entities.back()->setLifetime(3.5 - Random::randomFloat(_seed)); // tnt lit by explosion has lifetime in [0.5;1.5] sec
 							// TODO better particles spawning
-							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, PARTICLES::EXPLOSION, Random::randomFloat(_seed)));
+							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, particles::explosion, Random::randomFloat(_seed)));
 						} else if (type != blocks::air) {
 							// std::cout << "block " << s_blocks[type]->name << " removed" << std::endl;
 							handleHit(true, type, p, Modif::rm);
 							// handleHit(false, type, p, Modif::rm);
-							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, PARTICLES::EXPLOSION, Random::randomFloat(_seed)));
+							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, particles::explosion, Random::randomFloat(_seed)));
 						}
 					}
 				}
@@ -705,12 +705,12 @@ void Chunk::updateBreak( glm::ivec4 block_hit )
 	}
 	glm::ivec3 chunk_pos = {block_hit.x - _startX, block_hit.y - _startY, block_hit.z};
 	if (chunk_pos.x < 0 || chunk_pos.x >= settings::consts::chunk_size || chunk_pos.y < 0 || chunk_pos.y >= settings::consts::chunk_size || chunk_pos.z < 0 || chunk_pos.z > 255) {
-		LOGERROR("ERROR block hit out of chunk " << POS(chunk_pos));
+		LOGERROR("block hit out of chunk " << POS(chunk_pos));
 		return ;
 	}
 	for (int index = 0; index < 6; ++index) {
 		const glm::ivec3 delta = adj_blocks[index];
-		_particles.push_back(new Particle(this, {block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.x + 0.55f * delta.x, block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.y + 0.55f * delta.y, block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.z + 0.55f * delta.z}, PARTICLES::BREAKING, 0, block_hit.w));
+		_particles.push_back(new Particle(this, {block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.x + 0.55f * delta.x, block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.y + 0.55f * delta.y, block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.z + 0.55f * delta.z}, particles::breaking, 0, block_hit.w));
 	}
 }
 
@@ -753,16 +753,16 @@ void Chunk::updateFurnaces( double currentTime )
 {
 	for (auto& fur: _furnaces) {
 		int state = fur.second->updateTimes(currentTime);
-		if (state != furnace_state::NOCHANGE) {
+		if (state != furnace_state::no_change) {
 			FURNACELOG(LOG("FURNACE STATE CHANGE TO " << state));
 			int value = _blocks[fur.first];
-			_blocks[fur.first] = (value & (mask::all_bits - mask::redstone::activated)) + ((state == furnace_state::ON) << offset::redstone::activated);
+			_blocks[fur.first] = (value & (mask::all_bits - mask::redstone::activated)) + ((state == furnace_state::on) << offset::redstone::activated);
 			// set/unset furnace position as light source of 13 using state
 			int posZ = fur.first & (settings::consts::world_height - 1);
 			int posY = ((fur.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
 			int posX = ((fur.first >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 			FURNACELOG(LOG("furnace at " << _startX + posX << ", " << _startY + posY << ", " << posZ));
-			if (state == furnace_state::ON) {
+			if (state == furnace_state::on) {
 				_lights[fur.first] = 13 + (13 << 4);
 				light_spread(posX, posY, posZ, false); // spread block light
 			} else {
@@ -782,13 +782,13 @@ void Chunk::addMob( const AMob& mob, int mobType )
 	switch (mobType) {
 		case settings::consts::mob::zombie:
 			_mobs.push_back(std::make_shared<Zombie>(static_cast<const Zombie&>(mob)));
-			// std::cout << _startX << ", " << _startY << ": new zombie added from neighbouring chunk." << std::endl;
+			// std::cout << POSXY(_startX, _startY) << ": new zombie added from neighbouring chunk." << std::endl;
 			break ;
 		case settings::consts::mob::skeleton:
 			_mobs.push_back(std::make_shared<Skeleton>(static_cast<const Skeleton&>(mob)));
 			break ;
 		default:
-			LOGERROR("ERROR Chunk::addMob invalid mobType " << mobType);
+			LOGERROR("Chunk::addMob invalid mobType " << mobType);
 			break ;
 	}
 }

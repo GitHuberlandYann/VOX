@@ -125,7 +125,7 @@ static void saveItem( std::string& res, t_item item )
 				res += "]}";
 				break ;
 			default:
-				LOGERROR("ERROR saveItem tag with unrecognised type.");
+				LOGERROR("saveItem tag with unrecognised type.");
 		}
 	}
 	res += ']';

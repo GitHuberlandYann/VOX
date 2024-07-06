@@ -15,7 +15,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 	}
 	// if (skySpread && _startX == 256 && _startY == 320) {
 	// 	static int cnt;
-	// 	std::cout << _startX << ", " << _startY << " at " << posX << ", " << posY << ", " << posZ << " light_spread " << ((skySpread) ? "SKY" : "BLOCK") << " recurse level " << ++cnt << std::endl;
+	// 	std::cout << POSXY(_startX, _startY) << " at " << posX << ", " << posY << ", " << posZ << " light_spread " << ((skySpread) ? "SKY" : "BLOCK") << " recurse level " << ++cnt << std::endl;
 	// }
 	int shift = 8 * skySpread;
 	int offset = (((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ;
@@ -136,7 +136,7 @@ int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets
 
 void Chunk::fill_vertex_array( void )
 {
-	// std::cout << "filling " << _startX << ", " << _startY << "; expecting " << _displayed_faces << std::endl;
+	// std::cout << "filling " << POSXY(_startX, _startY) << "; expecting " << _displayed_faces << std::endl;
 	_mtx.lock();
 	_vertices.clear();
 	for (int row = 0; row < settings::consts::chunk_size; row++) {

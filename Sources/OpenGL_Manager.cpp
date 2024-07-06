@@ -8,7 +8,7 @@ void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _player(std::make_unique<Player>()), _inventory(std::make_unique<Inventory>()),
-	_window(NULL), _textures({NULL}), _fill(FILL), _debug_mode(true), _outline(true), _paused(true),
+	_window(NULL), _textures({NULL}), _fill(true), _debug_mode(true), _outline(true), _paused(true),
 	_threadUpdate(false), _threadStop(false), _break_time(0), _eat_timer(0), _bow_timer(0),
 	_game_mode(settings::consts::gamemode::creative), _break_frame(0), _world_name("default.json"),
 	_block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0}), _camera(std::make_unique<Camera>()),
@@ -759,7 +759,7 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			_chunk_hit->bookedLectern(_menu.get(), _block_hit.pos, true);
 			break ;
 		default:
-			LOGERROR("ERROR menu::ret defaulted");
+			LOGERROR("menu::ret defaulted");
 			glfwSetWindowShouldClose(_window, GL_TRUE);
 			break ;
 	}

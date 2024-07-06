@@ -7,9 +7,9 @@ Particle::Particle( Chunk* chunk, glm::vec3 pos, int type, float shade, int bloc
 	: _pos(pos), _lifeTime(0), _shade(shade), _type(type), _frame(0), _block(block), _chunk(chunk)
 {
 	switch (type) {
-		case PARTICLES::BREAKING:
+		case particles::breaking:
 			_texOffset = {(pos.x - glm::floor(pos.x)) * 14, (pos.y - glm::floor(pos.y)) * 14};
-		case PARTICLES::SMOKE:
+		case particles::smoke:
 			unsigned& seed = _chunk->getSeed();
 			_dir = {Random::randomFloat(seed), Random::randomFloat(seed), 2};
 			_dir = glm::normalize(_dir);
@@ -32,7 +32,7 @@ bool Particle::updateFlame( std::vector<t_shaderInputPart>& arr, glm::vec3 camDi
 		_lifeTime -= settings::consts::tick * 4;
 		++_frame;
 		if (_frame == 3 || _frame == 6 || _frame == 10) {
-			_chunk->addParticle(new Particle(_chunk, {_pos.x, _pos.y, _pos.z - 0.1f}, PARTICLES::SMOKE, 0.05f));
+			_chunk->addParticle(new Particle(_chunk, {_pos.x, _pos.y, _pos.z - 0.1f}, particles::smoke, 0.05f));
 		}
 	}
 
@@ -154,13 +154,13 @@ bool Particle::update( std::vector<t_shaderInput>& entityArr, std::vector<t_shad
 	}
 
 	switch (_type) {
-		case PARTICLES::FLAME:
+		case particles::flame:
 			return (updateFlame(partArr, camDir));
-		case PARTICLES::SMOKE:
+		case particles::smoke:
 			return (updateSmoke(partArr, camDir, deltaTime));
-		case PARTICLES::EXPLOSION:
+		case particles::explosion:
 			return (updateExplosion(partArr, camDir));
-		case PARTICLES::BREAKING:
+		case particles::breaking:
 			return (updateBreaking(entityArr, camDir, deltaTime));
 	}
 	return (false);

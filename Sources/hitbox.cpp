@@ -12,7 +12,7 @@ void Block::getSecondaryHitbox( glm::vec3* hitbox, int value ) const
 {
 	(void)hitbox;
 	(void)value;
-	LOGERROR("ERROR: getSecondaryHitbox of " << name << " called ");
+	LOGERROR("getSecondaryHitbox of " << name << " called ");
 }
 
 void Slab::getHitbox( glm::vec3* hitbox, int value ) const

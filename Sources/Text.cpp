@@ -156,9 +156,9 @@ void Text::addCenteredText( int left, int top, int width, int height, int font_s
 	int text_width = Utils::Text::textWidth(font_size, str);
 	if (shadow) {
 		int offset = font_size / 8;
-		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, TEXT::BLACK, depth + 1, str);
+		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, argb::black, depth + 1, str);
 	}
-	addText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, TEXT::WHITE, depth, str);
+	addText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, argb::white, depth, str);
 }
 
 void Text::toScreen( void )

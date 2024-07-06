@@ -44,7 +44,7 @@ void Menu::reset_values( void )
 	_selection = 0;
 	_selected_block = {0};
 	if (_chest) {
-		_chest->setState(chest_state::CLOSING);
+		_chest->setState(chest_state::closing);
 		_chest = NULL;
 	}
 	_furnace = NULL;
@@ -145,7 +145,7 @@ menu::ret Menu::world_select_menu( void )
 		}
 	}
 
-	_text->addText(WIN_WIDTH / 2 - 120, 30, 24, TEXT::WHITE, settings::consts::depth::menu::str, "Select World");
+	_text->addText(WIN_WIDTH / 2 - 120, 30, 24, argb::white, settings::consts::depth::menu::str, "Select World");
 
 	_text->addCenteredText(WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 90 * _gui_size, 150 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Play Selected World");
 	_text->addCenteredText(WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 115 * _gui_size, 73 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Edit");
@@ -224,7 +224,7 @@ menu::ret Menu::world_create_menu( bool animUpdate )
 
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, settings::consts::depth::menu::str, "Create New World");
 
-	_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 77 * _gui_size, 6 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "World Name");
+	_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 77 * _gui_size, 6 * _gui_size, argb::white, settings::consts::depth::menu::str, "World Name");
 	if (_input_world) {
 		_world_file = inputs::getCurrentMessage();
 		if (animUpdate) { _textBar = !_textBar; }
@@ -232,7 +232,7 @@ menu::ret Menu::world_create_menu( bool animUpdate )
 	} else {
 		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, _world_file); // World Name
 	}
-	_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 32 * _gui_size, 6 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "World Seed (leave empty for random seed)");
+	_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 32 * _gui_size, 6 * _gui_size, argb::white, settings::consts::depth::menu::str, "World Seed (leave empty for random seed)");
 	if (_input_seed) {
 		std::string input = inputs::getCurrentMessage();
 		for (int i = 0; input[i]; ++i) {
@@ -281,7 +281,7 @@ menu::ret Menu::loading_screen_menu( void )
 	float percentage = current_size / static_cast<float>(goal) * 100;
 
 	std::string str = "LOADING.. " + std::to_string(percentage).substr(0, 5) + '%' + " (" + std::to_string(current_size) + '/' + std::to_string(goal) + ')';
-	_text->addText(WIN_WIDTH / 2 - 24 * str.length() / 2, WIN_HEIGHT / 2 - 150, 24, TEXT::WHITE, settings::consts::depth::menu::str, str);
+	_text->addText(WIN_WIDTH / 2 - 24 * str.length() / 2, WIN_HEIGHT / 2 - 150, 24, argb::white, settings::consts::depth::menu::str, str);
 
 	setup_array_buffer_load(percentage * 10);
 	blit_to_screen();
@@ -331,7 +331,7 @@ menu::ret Menu::pause_menu( void )
 		return (menu::ret::back_to_game);
 	}
 
-	_text->addText(WIN_WIDTH / 2 - 25 * (_gui_size + 1), WIN_HEIGHT / 2 - 60 * _gui_size - 40, (_gui_size + 1) * 7, TEXT::WHITE, settings::consts::depth::menu::str, "Game Menu");
+	_text->addText(WIN_WIDTH / 2 - 25 * (_gui_size + 1), WIN_HEIGHT / 2 - 60 * _gui_size - 40, (_gui_size + 1) * 7, argb::white, settings::consts::depth::menu::str, "Game Menu");
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 60 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Back to Game");
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Advancements");
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Give Feedback");
@@ -578,92 +578,92 @@ menu::ret Menu::controls_menu( void )
 
 	_text->addCenteredText(WIN_WIDTH / 2, (66.5f - _scroll) * _gui_size, 0, 0, 7 * _gui_size, false, settings::consts::depth::menu::str, "Gameplay");
 	{
-		_text->addText(WIN_WIDTH / 4, (91.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Attack/Destroy");
+		_text->addText(WIN_WIDTH / 4, (91.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Attack/Destroy");
 		_text->addCenteredText(WIN_WIDTH / 2, (85 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 3) ? inputs::get_key_name(inputs::destroy) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (85 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (116.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Drop Item");
+		_text->addText(WIN_WIDTH / 4, (116.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Drop Item");
 		_text->addCenteredText(WIN_WIDTH / 2, (110 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 5) ? inputs::get_key_name(inputs::drop) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (110 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (141.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Pick Block");
+		_text->addText(WIN_WIDTH / 4, (141.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Pick Block");
 		_text->addCenteredText(WIN_WIDTH / 2, (135 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 7) ? inputs::get_key_name(inputs::sample) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (135 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (166.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Sprint");
+		_text->addText(WIN_WIDTH / 4, (166.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Sprint");
 		_text->addCenteredText(WIN_WIDTH / 2, (160 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 9) ? inputs::get_key_name(inputs::run) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (160 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (191.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Use Item/Place Block");
+		_text->addText(WIN_WIDTH / 4, (191.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Use Item/Place Block");
 		_text->addCenteredText(WIN_WIDTH / 2, (185 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 11) ? inputs::get_key_name(inputs::use) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (185 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
 	}
 	_text->addCenteredText(WIN_WIDTH / 2, (216.5f - _scroll) * _gui_size, 0, 0, 7 * _gui_size, false, settings::consts::depth::menu::str, "Inventory");
 	{
-		_text->addText(WIN_WIDTH / 4, (241.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Hotbar Slot 1");
+		_text->addText(WIN_WIDTH / 4, (241.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Hotbar Slot 1");
 		_text->addCenteredText(WIN_WIDTH / 2, (235 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 15) ? inputs::get_key_name(inputs::slot_0) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (235 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (266.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Hotbar Slot 2");
+		_text->addText(WIN_WIDTH / 4, (266.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Hotbar Slot 2");
 		_text->addCenteredText(WIN_WIDTH / 2, (260 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 17) ? inputs::get_key_name(inputs::slot_1) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (260 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (291.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Hotbar Slot 3");
+		_text->addText(WIN_WIDTH / 4, (291.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Hotbar Slot 3");
 		_text->addCenteredText(WIN_WIDTH / 2, (285 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 19) ? inputs::get_key_name(inputs::slot_2) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (285 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (316.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Hotbar Slot 4");
+		_text->addText(WIN_WIDTH / 4, (316.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Hotbar Slot 4");
 		_text->addCenteredText(WIN_WIDTH / 2, (310 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 21) ? inputs::get_key_name(inputs::slot_3) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (310 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (341.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Hotbar Slot 5");
+		_text->addText(WIN_WIDTH / 4, (341.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Hotbar Slot 5");
 		_text->addCenteredText(WIN_WIDTH / 2, (335 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 23) ? inputs::get_key_name(inputs::slot_4) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (335 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (366.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Hotbar Slot 6");
+		_text->addText(WIN_WIDTH / 4, (366.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Hotbar Slot 6");
 		_text->addCenteredText(WIN_WIDTH / 2, (360 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 25) ? inputs::get_key_name(inputs::slot_5) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (360 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (391.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Hotbar Slot 7");
+		_text->addText(WIN_WIDTH / 4, (391.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Hotbar Slot 7");
 		_text->addCenteredText(WIN_WIDTH / 2, (385 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 27) ? inputs::get_key_name(inputs::slot_6) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (385 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (416.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Hotbar Slot 8");
+		_text->addText(WIN_WIDTH / 4, (416.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Hotbar Slot 8");
 		_text->addCenteredText(WIN_WIDTH / 2, (410 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 29) ? inputs::get_key_name(inputs::slot_7) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (410 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (441.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Hotbar Slot 9");
+		_text->addText(WIN_WIDTH / 4, (441.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Hotbar Slot 9");
 		_text->addCenteredText(WIN_WIDTH / 2, (435 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 31) ? inputs::get_key_name(inputs::slot_8) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (435 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (466.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Inventory");
+		_text->addText(WIN_WIDTH / 4, (466.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Inventory");
 		_text->addCenteredText(WIN_WIDTH / 2, (460 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 33) ? inputs::get_key_name(inputs::inventory) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (460 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
 	}
 	_text->addCenteredText(WIN_WIDTH / 2, (491.5f - _scroll) * _gui_size, 0, 0, 7 * _gui_size, false, settings::consts::depth::menu::str, "Movement");
 	{
-		_text->addText(WIN_WIDTH / 4, (516.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Jump");
+		_text->addText(WIN_WIDTH / 4, (516.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Jump");
 		_text->addCenteredText(WIN_WIDTH / 2, (510 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 37) ? inputs::get_key_name(inputs::jump) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (510 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (541.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Sneak");
+		_text->addText(WIN_WIDTH / 4, (541.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Sneak");
 		_text->addCenteredText(WIN_WIDTH / 2, (535 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 39) ? inputs::get_key_name(inputs::sneak) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (535 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (566.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Strafe Left");
+		_text->addText(WIN_WIDTH / 4, (566.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Strafe Left");
 		_text->addCenteredText(WIN_WIDTH / 2, (560 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 41) ? inputs::get_key_name(inputs::move_left) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (560 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (591.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Strafe Right");
+		_text->addText(WIN_WIDTH / 4, (591.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Strafe Right");
 		_text->addCenteredText(WIN_WIDTH / 2, (585 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 43) ? inputs::get_key_name(inputs::move_right) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (585 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (616.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Walk Backwards");
+		_text->addText(WIN_WIDTH / 4, (616.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Walk Backwards");
 		_text->addCenteredText(WIN_WIDTH / 2, (610 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 45) ? inputs::get_key_name(inputs::move_backwards) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (610 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (641.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Walk Forwards");
+		_text->addText(WIN_WIDTH / 4, (641.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Walk Forwards");
 		_text->addCenteredText(WIN_WIDTH / 2, (635 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 47) ? inputs::get_key_name(inputs::move_forwards) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (635 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
 	}
 	_text->addCenteredText(WIN_WIDTH / 2, (666.5f - _scroll) * _gui_size, 0, 0, 7 * _gui_size, false, settings::consts::depth::menu::str, "Multiplayer");
 	{
-		_text->addText(WIN_WIDTH / 4, (691.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "List Players");
+		_text->addText(WIN_WIDTH / 4, (691.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "List Players");
 		_text->addCenteredText(WIN_WIDTH / 2, (685 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "TAB");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (685 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (716.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Open Chat");
+		_text->addText(WIN_WIDTH / 4, (716.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Open Chat");
 		_text->addCenteredText(WIN_WIDTH / 2, (710 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 53) ? inputs::get_key_name(inputs::chat) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (710 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
-		_text->addText(WIN_WIDTH / 4, (741.5f - _scroll) * _gui_size, 7 * _gui_size, TEXT::WHITE, settings::consts::depth::menu::str, "Open Command");
+		_text->addText(WIN_WIDTH / 4, (741.5f - _scroll) * _gui_size, 7 * _gui_size, argb::white, settings::consts::depth::menu::str, "Open Command");
 		_text->addCenteredText(WIN_WIDTH / 2, (735 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (_selected_world != 55) ? inputs::get_key_name(inputs::command) : "");
     	_text->addCenteredText(WIN_WIDTH / 2 + 110 * _gui_size, (735 - _scroll) * _gui_size, 90 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Reset");
 	}
 
 	_text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT - 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::controls::str, "Done");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT - 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::controls::str, "Reset");
-	// _text->addText(20, 20, 30, TEXT::WHITE, settings::consts::depth::menu::controls::str, "select " + std::to_string(_selection) + " | key " + std::to_string(inputs::get_last_input()) + " | modif " + std::to_string(_selected_world));
+	// _text->addText(20, 20, 30, argb::white, settings::consts::depth::menu::controls::str, "select " + std::to_string(_selection) + " | key " + std::to_string(inputs::get_last_input()) + " | modif " + std::to_string(_selected_world));
 
 	setup_array_buffer_controls();
 	blit_to_screen();
@@ -700,7 +700,7 @@ menu::ret Menu::resource_packs_menu( void )
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, settings::consts::depth::menu::str, "Select Resource Packs");
     _text->addCenteredText(WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Apply Changes");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
-	// _text->addText(20, 20, 30, TEXT::WHITE, "select " + std::to_string(_selection));
+	// _text->addText(20, 20, 30, argb::white, "select " + std::to_string(_selection));
 
 	setup_array_buffer_resource_packs();
 	blit_to_screen();
@@ -836,7 +836,7 @@ menu::ret Menu::ingame_menu( void )
 			glm::ivec2 pos = computeScreenPosFromSelection(_selection);
 			int font = 5 * _gui_size;
 			addUnstretchedQuads(settings::consts::tex::inventory, settings::consts::depth::menu::item_info_back, pos.x + 14 * _gui_size, pos.y + 14 * _gui_size, Utils::Text::textWidth(font, s_blocks[hovered.type]->name) + 10 * _gui_size, font + 10 * _gui_size, 165, 166, 24, 24, 3);
-			_text->addText(pos.x + 19 * _gui_size, pos.y + 19 * _gui_size, font, TEXT::GRAY, settings::consts::depth::menu::item_info_str, s_blocks[hovered.type]->name);
+			_text->addText(pos.x + 19 * _gui_size, pos.y + 19 * _gui_size, font, argb::gray, settings::consts::depth::menu::item_info_str, s_blocks[hovered.type]->name);
 		}
 	}
 
@@ -881,7 +881,7 @@ menu::ret Menu::chat_menu( bool animUpdate )
 		_textBar = !_textBar;
 	}
 	_chat->blitPastMessages();
-	_text->addText(36, WIN_HEIGHT - 48 - 12, 12, TEXT::WHITE, settings::consts::depth::chat, inputs::getCurrentInputStr((_textBar) ? '|' : '.'));
+	_text->addText(36, WIN_HEIGHT - 48 - 12, 12, argb::white, settings::consts::depth::chat, inputs::getCurrentInputStr((_textBar) ? '|' : '.'));
 
 	setup_array_buffer_chat();
 	blit_to_screen();
@@ -949,7 +949,7 @@ menu::ret Menu::sign_menu( bool animUpdate )
 menu::ret Menu::book_menu( void )
 {
 	if (!_book_content || (inputs::key_down(inputs::close) && inputs::key_update(inputs::close))) {
-		if (!_book_content) { _chat->chatMessage("Missing book content ptr.", TEXT::RED); }
+		if (!_book_content) { _chat->chatMessage("Missing book content ptr.", argb::red); }
 		reset_values();
 		return (menu::ret::back_to_game);
 	}
@@ -977,8 +977,8 @@ menu::ret Menu::book_menu( void )
 	}
 
 	std::string pageStr = "Page " + std::to_string(_scroll + 1) + " of " + std::to_string(_book_content->size());
-	_text->addText(WIN_WIDTH / 2 + 55 * _gui_size - Utils::Text::textWidth(6 * _gui_size, pageStr), WIN_HEIGHT / 2 - 115 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, pageStr);
-	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 107 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, _book_content->at(_scroll));
+	_text->addText(WIN_WIDTH / 2 + 55 * _gui_size - Utils::Text::textWidth(6 * _gui_size, pageStr), WIN_HEIGHT / 2 - 115 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, pageStr);
+	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 107 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, _book_content->at(_scroll));
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
 
 	setup_array_buffer_book();
@@ -989,7 +989,7 @@ menu::ret Menu::book_menu( void )
 menu::ret Menu::book_and_quill_menu( bool animUpdate )
 {
 	if (!_book_content || (inputs::key_down(inputs::close) && inputs::key_update(inputs::close))) {
-		if (!_book_content) { _chat->chatMessage("Missing book content ptr.", TEXT::RED); }
+		if (!_book_content) { _chat->chatMessage("Missing book content ptr.", argb::red); }
 		glfwSetCharCallback(_window, NULL);
 		inputs::resetMessage();
 		reset_values();
@@ -1053,11 +1053,11 @@ menu::ret Menu::book_and_quill_menu( bool animUpdate )
 	}
 
 	std::string pageStr = "Page " + std::to_string(_scroll + 1) + " of " + std::to_string(_book_content->size());
-	_text->addText(WIN_WIDTH / 2 + 55 * _gui_size - Utils::Text::textWidth(6 * _gui_size, pageStr), WIN_HEIGHT / 2 - 115 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, pageStr);
+	_text->addText(WIN_WIDTH / 2 + 55 * _gui_size - Utils::Text::textWidth(6 * _gui_size, pageStr), WIN_HEIGHT / 2 - 115 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, pageStr);
 	if (animUpdate) {
 		_textBar = !_textBar;
 	}
-	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 107 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.'));
+	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 107 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.'));
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Sign");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
 
@@ -1101,12 +1101,12 @@ menu::ret Menu::book_sign_menu( bool animUpdate )
 	}
 	_world_file = inputs::getCurrentMessage();
 
-	_text->addText((WIN_WIDTH - Utils::Text::textWidth(6 * _gui_size, "Enter Book Title:")) / 2, WIN_HEIGHT / 2 - 90 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, "Enter Book Title:");
+	_text->addText((WIN_WIDTH - Utils::Text::textWidth(6 * _gui_size, "Enter Book Title:")) / 2, WIN_HEIGHT / 2 - 90 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, "Enter Book Title:");
 	if (animUpdate) {
 		_textBar = !_textBar;
 	}
-	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 80 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.')); // TODO _text->addCursorText(str, cursorPos, cursorChar) which draws cursorChar on top of char at cursorPos
-	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 50 * _gui_size, 6 * _gui_size, TEXT::BLACK, settings::consts::depth::menu::str, "Note! Once you sign\nthe book, it will no\nlonger be editable.");
+	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 80 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.')); // TODO _text->addCursorText(str, cursorPos, cursorChar) which draws cursorChar on top of char at cursorPos
+	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 50 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, "Note! Once you sign\nthe book, it will no\nlonger be editable.");
 	
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 6 * _gui_size, true, settings::consts::depth::menu::str, "Sign and Close");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 6 * _gui_size, true, settings::consts::depth::menu::str, "Cancel");
@@ -1514,11 +1514,11 @@ void Menu::display_item_value( int x, int y, int amount, int depth )
 		return ;
 	}
 	if (amount > 9) {
-		_text->addText(x + 11 * _gui_size - 6 * _gui_size + _gui_size, y + 9 * _gui_size + _gui_size, 8 * _gui_size, TEXT::BLACK, depth + 1, std::to_string(amount / 10));
-		_text->addText(x + 11 * _gui_size - 6 * _gui_size, y + 9 * _gui_size, 8 * _gui_size, TEXT::WHITE, depth, std::to_string(amount / 10));
+		_text->addText(x + 11 * _gui_size - 6 * _gui_size + _gui_size, y + 9 * _gui_size + _gui_size, 8 * _gui_size, argb::black, depth + 1, std::to_string(amount / 10));
+		_text->addText(x + 11 * _gui_size - 6 * _gui_size, y + 9 * _gui_size, 8 * _gui_size, argb::white, depth, std::to_string(amount / 10));
 	}
-	_text->addText(x + 11 * _gui_size + _gui_size, y + 9 * _gui_size + _gui_size, 8 * _gui_size, TEXT::BLACK, depth + 1, std::to_string(amount % 10));
-	_text->addText(x + 11 * _gui_size, y + 9 * _gui_size, 8 * _gui_size, TEXT::WHITE, depth, std::to_string(amount % 10));
+	_text->addText(x + 11 * _gui_size + _gui_size, y + 9 * _gui_size + _gui_size, 8 * _gui_size, argb::black, depth + 1, std::to_string(amount % 10));
+	_text->addText(x + 11 * _gui_size, y + 9 * _gui_size, 8 * _gui_size, argb::white, depth, std::to_string(amount % 10));
 }
 
 void Menu::add_item_value( t_item item, int x, int y, int depth, bool movement )
@@ -2294,7 +2294,7 @@ menu::ret Menu::run( bool animUpdate )
 		case menu::book_and_quill_sign:
 			return (book_sign_menu(animUpdate));
 		default:
-			LOGERROR("ERROR defaulting on Menu::run");
+			LOGERROR("defaulting on Menu::run");
 			return (menu::ret::back_to_game);
 	}
 	return (menu::ret::no_change);

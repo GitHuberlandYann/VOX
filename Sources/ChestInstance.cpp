@@ -2,7 +2,7 @@
 #include "logs.hpp"
 
 ChestInstance::ChestInstance( Chunk* chunk, glm::ivec3 pos, int orientation )
-	: _orientation(orientation), _state(chest_state::CLOSED), _timer(0), _pos(pos), _chunk(chunk)
+	: _orientation(orientation), _state(chest_state::closed), _timer(0), _pos(pos), _chunk(chunk)
 {
 	if (chunk) {
 		_chunk_pos = {chunk->getStartX(), chunk->getStartY()};
@@ -122,7 +122,7 @@ void ChestInstance::display_open( std::vector<t_shaderInput>& arr )
 			back  = {14.0f * one16th,        0,                        0};
 			break ;
 		default:
-			LOGERROR("ERROR DISPLAY OPEN CHEST");
+			LOGERROR("DISPLAY OPEN CHEST");
 			return ;
 	}
 	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f * one16th};
@@ -195,7 +195,7 @@ void ChestInstance::display_moving( std::vector<t_shaderInput>& arr )
 			back  = {14.0f * one16th,        0,                        0};
 			break ;
 		default:
-			LOGERROR("ERROR DISPLAY MOVING CHEST");
+			LOGERROR("DISPLAY MOVING CHEST");
 			return ;
 	}
 	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 10.0f * one16th};
@@ -271,7 +271,7 @@ void ChestInstance::display_closed( std::vector<t_shaderInput>& arr )
 			back  = {14.0f * one16th,        0,                        0};
 			break ;
 		default:
-			LOGERROR("ERROR DISPLAY CLOSED CHEST");
+			LOGERROR("DISPLAY CLOSED CHEST");
 			return ;
 	}
 	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 15.0f * one16th};
@@ -362,25 +362,25 @@ void ChestInstance::update( std::vector<t_shaderInput>& arr, float deltaTime )
 		return ;
 	}
 	switch (_state) {
-		case chest_state::OPENING:
+		case chest_state::opening:
 			_timer += deltaTime;
 			if (_timer > CHEST_ANIM_TIME) {
-				_state = chest_state::OPEN;
+				_state = chest_state::open;
 				return (display_open(arr));
 			}
 			display_moving(arr);
 			break ;
-		case chest_state::CLOSING:
+		case chest_state::closing:
 			_timer -= deltaTime;
 			if (_timer < 0) {
-				_state = chest_state::CLOSED;
+				_state = chest_state::closed;
 				return (display_closed(arr));
 			}
 			display_moving(arr);
 			break ;
-		case chest_state::OPEN:
+		case chest_state::open:
 			return (display_open(arr));
-		case chest_state::CLOSED:
+		case chest_state::closed:
 			return (display_closed(arr));
 	}
 }

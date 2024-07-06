@@ -17,12 +17,6 @@ extern std::mutex mtx_perimeter;
 extern std::mutex mtx_deleted_chunks;
 extern std::mutex mtx_backup;
 
-enum {
-	FILL,
-	LINE,
-	F_LAST
-};
-
 typedef struct s_time {
 	s_time( void )
 		: deltaTime(0), currentTime(0), lastSecondRecorded(0), lastGameTick(0), previousFrame(0),
@@ -97,8 +91,7 @@ class OpenGL_Manager
 		Buffer _vaboEntities, _vaboParticles, _vaboModels;
 		glm::ivec2 _current_chunk;
 		std::array<GLuint, 6> _textures;
-		GLint _fill;
-		bool _debug_mode, _outline, _paused, _threadUpdate, _threadStop;
+		bool _fill, _debug_mode, _outline, _paused, _threadUpdate, _threadStop;
 		float _break_time, _eat_timer, _bow_timer;
 		int _game_mode, _break_frame, _hand_content;
 		std::string _world_name;

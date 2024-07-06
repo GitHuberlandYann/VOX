@@ -172,11 +172,11 @@ void UI::display_slot_value( int index )
 	int value = _inventory->getSlotBlock(index).amount;
 	if (value > 1) {
 		if (value > 9) {
-			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, TEXT::BLACK, settings::consts::depth::inv_str + 1, std::to_string(value / 10));
-			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12, 8 * _gui_size, TEXT::WHITE, settings::consts::depth::inv_str, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, argb::black, settings::consts::depth::inv_str + 1, std::to_string(value / 10));
+			_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 - 6 * _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12, 8 * _gui_size, argb::white, settings::consts::depth::inv_str, std::to_string(value / 10));
 		}
-		_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, TEXT::BLACK, settings::consts::depth::inv_str + 1, std::to_string(value % 10));
-		_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12, 8 * _gui_size, TEXT::WHITE, settings::consts::depth::inv_str, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4 + _gui_size, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12 + _gui_size, 8 * _gui_size, argb::black, settings::consts::depth::inv_str + 1, std::to_string(value % 10));
+		_text->addText((WIN_WIDTH - (182 * _gui_size)) / 2 + ((10 + 20 * index) * _gui_size) + _gui_size * 4, WIN_HEIGHT - (22 * _gui_size) * 2 + _gui_size * 12, 8 * _gui_size, argb::white, settings::consts::depth::inv_str, std::to_string(value % 10));
 	}
 }
 
@@ -301,10 +301,10 @@ void UI::drawUserInterface( std::string str, int game_mode, float deltaTime )
 {
 	if (_inventoryMessage.timer > 0) {
 		_inventoryMessage.timer -= deltaTime;
-		_text->addText((WIN_WIDTH - Utils::Text::textWidth(_gui_size * 3, _inventoryMessage.str)) / 2, WIN_HEIGHT - (35 * _gui_size) * 2, _gui_size * 3, TEXT::WHITE, settings::consts::depth::debug, _inventoryMessage.str);
+		_text->addText((WIN_WIDTH - Utils::Text::textWidth(_gui_size * 3, _inventoryMessage.str)) / 2, WIN_HEIGHT - (35 * _gui_size) * 2, _gui_size * 3, argb::white, settings::consts::depth::debug, _inventoryMessage.str);
 	}
 	_chat->blitMessages(deltaTime);
-	_text->addText(12, 24, _gui_size * 3, TEXT::WHITE, settings::consts::depth::debug, str);
+	_text->addText(12, 24, _gui_size * 3, argb::white, settings::consts::depth::debug, str);
 	if (_hideUI) {
 		return ;
 	}

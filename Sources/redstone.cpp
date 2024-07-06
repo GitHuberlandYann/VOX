@@ -602,7 +602,7 @@ void Chunk::weaklyPowerTarget( glm::ivec3 pos, glm::ivec3 source, bool state, bo
 	// quasi-connectivity
 	int below = getBlockAt(pos.x, pos.y, pos.z - 1, true);
 	if ((below & mask::blocks::type) == blocks::piston || (below & mask::blocks::type) == blocks::sticky_piston) {
-		PISTONLOG(LOG("\t\tquasi-connectivity at " << POSXYZ(pos, _startX, _startY, - 1)));
+		PISTONLOG(LOG("\t\tquasi-connectivity at " << POSDXYZ(pos, _startX, _startY, - 1)));
 		updatePiston(pos + glm::ivec3(0, 0, -1), below);
 	}
 }
@@ -893,8 +893,8 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 	const glm::ivec3 front = adj_blocks[(value >> offset::blocks::orientation) & 0x7];
 	int count = 0;
 	for (int i = 0; i < 13; ++i) {
-		int adj = getBlockAt(pos.x + front.x * (i + 1), pos.y + front.y * (i + 1), pos.z + front.z * (i + 1));
-		PISTONLOG(LOG("counting " << s_blocks[adj & mask::blocks::type]->name << " at " << POSXYZ(pos, front.x * (i + 1), front.y * (i + 1), front.z * (i + 1))));
+		int adj = getBlockAt(pos + front * (i + 1));
+		PISTONLOG(LOG("counting " << s_blocks[adj & mask::blocks::type]->name << " at " << POS2(pos, front * (i + 1))));
 		switch (s_blocks[adj & mask::blocks::type]->geometry) {
 			case geometry::none:
 				if ((adj & mask::blocks::type) == blocks::chest) {
@@ -992,12 +992,12 @@ void Chunk::extendPiston( glm::ivec3 pos, int value, int count )
 	for (int i = count - 1; i >= 0; --i) {
 		int adj = getBlockAt(pos + front * (i + 1));
 		// creates moving entity for the blocks being pushed
-		PISTONLOG(LOG(s_blocks[adj & mask::blocks::type]->name << " turned into entity at " << POSXYZ(pos, front.x * (i + 1),  front.y * (i + 1), front.z * (i + 1))));
+		PISTONLOG(LOG(s_blocks[adj & mask::blocks::type]->name << " turned into entity at " << POS2(pos, front * (i + 1))));
 		_entities.push_back(std::make_shared<MovingPistonEntity>(this, pos, pos + front * (i + 1), front, false, false, adj));
 		setBlockAt(blocks::moving_piston, pos + front * (i + 2), true);
 	}
 	// this one is for the piston head
-	PISTONLOG(LOG("piston head at " << POSXYZ(pos, _startX, _startY, 0)));
+	PISTONLOG(LOG("piston head at " << POSDXY(pos, _startX, _startY)));
 	_entities.push_back(std::make_shared<MovingPistonEntity>(this, pos, pos, front, false, false, blocks::piston_head | (value & (0x7 << offset::blocks::orientation)) | (((value & mask::blocks::type) == blocks::sticky_piston) ? mask::redstone::piston::sticky : 0)));
 	setBlockAt(blocks::moving_piston, pos + front, true);
 }
@@ -1117,7 +1117,7 @@ void Chunk::updatePiston( glm::ivec3 pos, int value )
 		powered = getRedstoneStrength(pos + glm::ivec3(0, 0, 1), {0, 0, -1}, redstone::off, true);
 		// if (powered) std::cout << "\tbtw, piston on next line powered by block above" << std::endl;
 	}
-	PISTONLOG(LOG("piston update " << POSXYZ(pos, _startX, _startY, 0) << " [" << DayCycle::Get()->getGameTicks() << "] powered: " << powered));
+	PISTONLOG(LOG("piston update " << POSDXY(pos, _startX, _startY) << " [" << DayCycle::Get()->getGameTicks() << "] powered: " << powered));
 	if (powered && !(value & mask::redstone::activated)) {
 		// check if extension possible
 		int count = pistonExtendCount(pos, value);
@@ -1157,7 +1157,7 @@ void Chunk::updateRedstone( void )
 			if (--redRef.ticks == 0) {
 				t_redstoneTick red = redRef;
 				int value = getBlockAt(red.pos.x, red.pos.y, red.pos.z);
-				REDUPLOG(LOG("(" << (-3 + schedIndex) <<  ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " schedule " << s_blocks[value & mask::blocks::type]->name << " at " << POSXYZ(red.pos, _startX, _startY, 0) << ": " << (red.state & 0xF)));;
+				REDUPLOG(LOG("(" << (-3 + schedIndex) <<  ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " schedule " << s_blocks[value & mask::blocks::type]->name << " at " << POSDXY(red.pos, _startX, _startY) << ": " << (red.state & 0xF)));;
 
 				switch (value & mask::blocks::type) {
 					case blocks::redstone_lamp: // only scheduled to be turned off
@@ -1303,7 +1303,7 @@ void Chunk::scheduleRedstoneTick( t_redstoneTick red )
 		} else if ((target & mask::blocks::type) == blocks::comparator) {
 			priority = SCHEDULE::COMPARATOR; // comparator always has priority -1 (but I do -0.5f instead to prioretize repeaters)
 		}
-		REDUPLOG(LOG("new schedule " << s_blocks[target & mask::blocks::type]->name << " (" << (-3 + priority) << ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " pos " << POSXYZ(red.pos, _startX, _startY, 0) << " ticks: " << red.ticks << " state " << (red.state & 0xF) << ((red.state & mask::redstone::repeater::lock) ? " lock" : "")));
+		REDUPLOG(LOG("new schedule " << s_blocks[target & mask::blocks::type]->name << " (" << (-3 + priority) << ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " pos " << POSDXY(red.pos, _startX, _startY) << " ticks: " << red.ticks << " state " << (red.state & 0xF) << ((red.state & mask::redstone::repeater::lock) ? " lock" : "")));
 		for (auto &sched : _redstone_schedule[priority]) {
 			if (sched.pos == red.pos) {
 				if (sched.ticks == red.ticks) {

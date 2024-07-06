@@ -4,13 +4,13 @@
 # include "Shader.hpp"
 # include "Buffer.hpp"
 
-namespace TEXT
+namespace argb
 {
-	const unsigned WHITE = 0xFFFFFFFF;
-	const unsigned GRAY = 0xFFAAAAAA;
-	const unsigned BLACK = 0xFF000000;
-	const unsigned GREEN = 0xFF00FF00;
-	const unsigned RED = 0xFFFF0000;
+	const unsigned white = 0xFFFFFFFF;
+	const unsigned gray = 0xFFAAAAAA;
+	const unsigned black = 0xFF000000;
+	const unsigned green = 0xFF00FF00;
+	const unsigned red = 0xFFFF0000;
 }
 
 typedef struct s_text_shader_input {

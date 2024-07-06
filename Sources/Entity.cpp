@@ -201,12 +201,12 @@ int Entity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
 }
 int MovingPistonEntity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
 {
-	PISTONLOG(LOG("pistonedBy " << POSXYZ(pos, _chunk->getStartX(), _chunk->getStartY(), 0) << ((_retraction) ? " retraction" : " extension") << " [" << _tickStart << "] from " << POSXYZ(_pos, _chunk->getStartX(), _chunk->getStartY(), 0) << " to " << POSXYZ(_endPos, _chunk->getStartX(), _chunk->getStartY(), 0)));
+	PISTONLOG(LOG("pistonedBy " << POSDXY(pos, _chunk->getStartX(), _chunk->getStartY()) << ((_retraction) ? " retraction" : " extension") << " [" << _tickStart << "] from " << POSDXY(_pos, _chunk->getStartX(), _chunk->getStartY()) << " to " << POSDXY(_endPos, _chunk->getStartX(), _chunk->getStartY())));
 	if (pos == _source) { // force place block at posEnd
 		_softKill = true;
 		// _chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 		int currentTick = DayCycle::Get()->getGameTicks();
-		PISTONLOG(LOG("MovingPistonEntity forcefinish movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] to " << POSXYZ(_endPos, _chunk->getStartX(), _chunk->getStartY(), 0)));
+		PISTONLOG(LOG("MovingPistonEntity forcefinish movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] to " << POSDXY(_endPos, _chunk->getStartX(), _chunk->getStartY())));
 		if (currentTick == _tickStart && _retraction) {
 			PISTONLOG(LOG("\ttrap card activated->redstone::piston::cancel_retraction"));
 			_chunk->setBlockAt(_item.type,  _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
@@ -370,7 +370,7 @@ bool TNTEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, doubl
 	if ((frame & 0xF) == 0xF) {
 		int prev = (_lifeTime - deltaTime) * 16;
 		if (prev < frame) {
-			_chunk->addParticle(new Particle(_chunk, {_pos.x + 0.5f, _pos.y + 0.5f, _pos.z + 1}, PARTICLES::SMOKE, 0.2f, 0));
+			_chunk->addParticle(new Particle(_chunk, {_pos.x + 0.5f, _pos.y + 0.5f, _pos.z + 1}, particles::smoke, 0.2f, 0));
 		}
 	}
 
@@ -511,7 +511,7 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camP
 
     if (currentTick - _tickStart == lifeLimit) {
 		// finish extension, turn back to block
-		PISTONLOG(LOG("MovingPistonEntity finished movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] from " << POSXYZ(_pos, _chunk->getStartX(), _chunk->getStartY(), 0) << " to " << POSXYZ(_endPos, _chunk->getStartX(), _chunk->getStartY(), 0)));
+		PISTONLOG(LOG("MovingPistonEntity finished movement " << ((_retraction) ? "retraction" : "extension") << " [" << _tickStart << "] -> [" << currentTick << "] from " << POSDXY(_pos, _chunk->getStartX(), _chunk->getStartY()) << " to " << POSDXY(_endPos, _chunk->getStartX(), _chunk->getStartY())));
 		if (!_piston_head) {
 			_chunk->setBlockAt(_item.type, _endPos.x, _endPos.y, _endPos.z, true);
 			if (_retraction) {
@@ -527,7 +527,7 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camP
 			// if ((front_value & mask::blocks::type) == blocks::moving_piston) {
 			// 	_chunk->setBlockAt(blocks::air, _pos.x, _pos.y, _pos.z, true);
 			// }
-			PISTONLOG(LOG("source is " << POSXYZ(_source, _chunk->getStartX(), _chunk->getStartY(), 0)));
+			PISTONLOG(LOG("source is " << POSDXY(_source, _chunk->getStartX(), _chunk->getStartY())));
 			int piston_value = _chunk->getBlockAt(_source);
 			_chunk->setBlockAt(piston_value & (mask::all_bits - mask::redstone::piston::moving), _source, false);
 			_chunk->updatePiston(_source, piston_value);

@@ -61,7 +61,7 @@ void WorldEdit::setSelectionStart( glm::ivec3 pos )
 	_clipEnd = _clipEnd - _clipStart + pos;
 	_clipStart = pos;
 	_absoluteClipboard = false;
-	_chat->chatMessage("Selection Start set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z), TEXT::GREEN);
+	_chat->chatMessage("Selection Start set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z), argb::green);
 }
 
 /**
@@ -74,7 +74,7 @@ void WorldEdit::setSelectionEnd( glm::ivec3 pos )
 	_clipStart = _clipStart - _clipEnd + pos;
 	_clipEnd = pos;
 	_absoluteClipboard = false;
-	_chat->chatMessage("Selection End set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z), TEXT::RED);
+	_chat->chatMessage("Selection End set to " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z), argb::red);
 }
 
 /**
@@ -171,7 +171,7 @@ void WorldEdit::handleCmdCopy( void )
 void WorldEdit::handleCmdPaste( bool notAirBlocks )
 {
 	if (!_clipboard.size()) {
-		_chat->chatMessage("Clipboard is empty.", TEXT::RED);
+		_chat->chatMessage("Clipboard is empty.", argb::red);
 		return ;
 	}
 
@@ -212,20 +212,20 @@ void WorldEdit::handleCmdMove( std::vector<std::string>& argv )
 {
 	int argc = argv.size();
 	if (argc < 2 || argc > 3 || (argc == 3 && argv[2] != "-a")) {
-		_chat->chatMessage("Wrong usage of WorldEdit command //move <distance> [-a]", TEXT::RED);
+		_chat->chatMessage("Wrong usage of WorldEdit command //move <distance> [-a]", argb::red);
 		return ;
 	}
 
 	int distance = 0;
 	for (int i = (argv[1][0] == '-'); argv[1][i]; ++i) {
 		if (!std::isdigit(argv[1][i])) {
-			_chat->chatMessage("Wrong usage of WorldEdit command //move <distance> [-a]", TEXT::RED);
+			_chat->chatMessage("Wrong usage of WorldEdit command //move <distance> [-a]", argb::red);
 			return ;
 		}
 		distance = distance * 10 + argv[1][i] - '0';
 	}
 	if (!distance) {
-		_chat->chatMessage("Wrong usage of WorldEdit command //move <distance> [-a]", TEXT::RED);
+		_chat->chatMessage("Wrong usage of WorldEdit command //move <distance> [-a]", argb::red);
 		return ;
 	}
 
@@ -245,12 +245,12 @@ void WorldEdit::handleCmdPathfind( void )
 {
 	Chunk* chunk = _openGL_Manager->getCurrentChunkPtr();
 	if (!chunk) {
-		return (_chat->chatMessage("Missing current_chunk_ptr, abort.", TEXT::RED));
+		return (_chat->chatMessage("Missing current_chunk_ptr, abort.", argb::red));
 	}
 	
 	std::pair<std::vector<glm::ivec3>, int> path = chunk->computePathfinding(_selectStart + glm::ivec3(0, 0, 1), _selectEnd + glm::ivec3(0, 0, 1));
 	if (!path.first.size()) {
-		return (_chat->chatMessage("Couldn't find path, nbr iter: " + std::to_string(path.second) + ".", TEXT::RED));
+		return (_chat->chatMessage("Couldn't find path, nbr iter: " + std::to_string(path.second) + ".", argb::red));
 	}
 
 	for (auto pos : path.first) {
@@ -262,7 +262,7 @@ void WorldEdit::handleCmdPathfind( void )
 void WorldEdit::handleCmdBrushSize( std::vector<std::string>& argv )
 {
 	if (argv.size() != 2) {
-		return (_chat->chatMessage("Wrong usage of command //brushSize <size>", TEXT::RED));
+		return (_chat->chatMessage("Wrong usage of command //brushSize <size>", argb::red));
 	}
 	int value = 0;
 	size_t index = 0;
@@ -324,7 +324,7 @@ void WorldEdit::handleCmdGameOfLife( void )
 					}
 				}
 				if (originalState[(posX * sizes.y + posY) * sizes.z + posZ] != blocks::air) {
-					if (cnt < 2 || cnt > 3) {
+					if (cnt < 2 || cnt > 3) { // dies of under/overpopulation
 						_clipboard[(posX * sizes.y + posY) * sizes.z + posZ] = blocks::air;
 					}
 				} else if (cnt == 3) { // welcome to life bud
@@ -353,59 +353,61 @@ bool WorldEdit::parseCommand( std::vector<std::string>& argv )
 	// _chat->chatMessage("Welcome to worldEdit!");
 	// _chat->chatMessage("please wait, we are treating your command " + argv[0]);
 
-	for (int index = 0; index < WEDIT::cmds::NBR_CMDS; ++index) {
-		if (!WEDIT::commands[index].compare(argv[0])) {
-			if (index == WEDIT::cmds::WAND) {
+	for (int index = 0; index < world_edit::cmds::size; ++index) {
+		if (!world_edit::commands[index].compare(argv[0])) {
+			if (index == world_edit::cmds::wand) {
 				_inventory->replaceSlot(blocks::worldedit_wand, true);
 				_selectStart.z = 1000;
 				_selectEnd.z = 1000;
 				_running = true;
-				_chat->chatMessage("******************************************", TEXT::GREEN);
-				_chat->chatMessage("* Welcome to WorldEdit!\t*", TEXT::GREEN);
-				_chat->chatMessage("******************************************", TEXT::GREEN);
+				_chat->chatMessage("******************************************", argb::green);
+				_chat->chatMessage("* Welcome to WorldEdit!\t*", argb::green);
+				_chat->chatMessage("******************************************", argb::green);
+				return (false);
+			} else if (index == world_edit::cmds::brush) {
+				_inventory->replaceSlot(blocks::worldedit_brush, true);
+				return (false);
+			} else if (index == world_edit::cmds::brush_size) {
+				handleCmdBrushSize(argv);
 				return (false);
 			// } else if (!_running) {
 			// 	return (true);
 			} else if (_selectStart.z == 1000) {
-				_chat->chatMessage("Selection start not set.", TEXT::RED);
+				_chat->chatMessage("Selection start not set.", argb::red);
 				return (false);
 			} else if (_selectEnd.z == 1000) {
-				_chat->chatMessage("Selection end not set.", TEXT::RED);
+				_chat->chatMessage("Selection end not set.", argb::red);
 				return (false);
 			}
 			switch (index) {
-				case WEDIT::cmds::SET:
+				case world_edit::cmds::set:
 					handleCmdSet(_inventory->getSlotBlock(_inventory->getSlotNum()).type);
 					break ;
-				case WEDIT::cmds::COPY:
+				case world_edit::cmds::copy:
 					handleCmdCopy();
 					break ;
-				case WEDIT::cmds::CUT:
-					// handleCmdCopy();
-					// handleCmdSet(blocks::air);
+				case world_edit::cmds::cut:
+					handleCmdCopy();
+					handleCmdSet(blocks::air);
 					break ;
-				case WEDIT::cmds::PASTE:
+				case world_edit::cmds::paste:
 					handleCmdPaste(false);
 					break ;
-				case WEDIT::cmds::MOVE:
+				case world_edit::cmds::move:
 					handleCmdMove(argv);
 					break ;
-				case WEDIT::cmds::STACK:
+				case world_edit::cmds::stack:
 					break ;
-				case WEDIT::cmds::PATHFIND:
+				case world_edit::cmds::path_finding:
 					handleCmdPathfind();
 					break ;
-				case WEDIT::cmds::BRUSHSIZE:
-					handleCmdBrushSize(argv);
-					break ;
-				case WEDIT::cmds::GAMEOFLIFE:
+				case world_edit::cmds::game_of_life:
 					handleCmdGameOfLife();
 					break ;
 			}
 			return (false);
 		}
 	}
-
 
 	return (true);
 }

@@ -113,7 +113,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			if ((_block_hit.value & mask::blocks::type) == blocks::item_frame && !(_block_hit.value & mask::frame::locked)) {
 				_chunk_hit->handleHit(true, 0, _block_hit.pos, Modif::popItem);
 			}
-			_ui->chatMessage("[Adventure mode] you can't break blocks you didn't place yourself.", TEXT::RED);
+			_ui->chatMessage("[Adventure mode] you can't break blocks you didn't place yourself.", argb::red);
 			return ;
 		}
 		if (_chunk_hit) {
@@ -196,7 +196,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		}
 		if (_block_hit.type != s_blocks[type]->adventure_block) {
 			_ui->chatMessage(((type == blocks::bucket || type == blocks::water_bucket) ? "[Adventure mode] you can only use " : "[Adventure mode] you can only place ")
-							+ s_blocks[type]->name + " on " + s_blocks[s_blocks[type]->adventure_block]->name + ".", TEXT::RED);
+							+ s_blocks[type]->name + " on " + s_blocks[s_blocks[type]->adventure_block]->name + ".", argb::red);
 			return ;
 		}
 	}
@@ -320,10 +320,10 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 void OpenGL_Manager::setItemFrame( bool visible, bool lock )
 {
 	if ((_block_hit.value & mask::blocks::type) != blocks::item_frame) {
-		return (_ui->chatMessage("Block hit is not an item frame.", TEXT::RED));
+		return (_ui->chatMessage("Block hit is not an item frame.", argb::red));
 	}
 	if (!_chunk_hit) {
-		return (_ui->chatMessage("Cmd failure: missing chunk ptr.", TEXT::RED));
+		return (_ui->chatMessage("Cmd failure: missing chunk ptr.", argb::red));
 	}
 	if (visible) {
 		_block_hit.value ^= mask::frame::notVisible;
@@ -631,20 +631,9 @@ void OpenGL_Manager::userInputs( bool rayCast )
 
 	// toggle polygon mode fill / lines
 	if (inputs::key_down(inputs::wireframe) && inputs::key_update(inputs::wireframe)) {
-		++_fill;
-		if (_fill == F_LAST)
-			_fill = FILL;
-		// std::cout << "fill mode: " << _fill << std::endl;
-		switch (_fill) {
-			case FILL:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				_ui->chatMessage("Triangles FILLED");
-				break;
-			case LINE:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				_ui->chatMessage("Triangles EMPTY");
-				break;
-		}
+		_fill = !_fill;
+		glPolygonMode(GL_FRONT_AND_BACK, (_fill) ? GL_FILL : GL_LINE);
+		_ui->chatMessage((_fill) ? "Triangles FILLED" : "Triangles EMPTIED");
 	}
 
 	_player->inputUpdate(rayCast, _game_mode);

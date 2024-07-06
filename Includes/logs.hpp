@@ -5,7 +5,7 @@
 # include <DayCycle.hpp>
 
 # define LOG(x)         std::cout << x << std::endl
-# define LOGERROR(x)    std::cerr << x << std::endl
+# define LOGERROR(x)    std::cerr << "[ERROR] " << x << std::endl
 # define TLOG(x)        std::cout << "[" << DayCycle::Get()->getGameTicks() << "] " << x << std::endl
 # define REDLOG(x)      std::cout << "[REDSTONE] [" << DayCycle::Get()->getGameTicks() << "] " << x << std::endl
 
@@ -31,8 +31,11 @@
  * macros used to facilitate coordinates output
  */
 
-# define POS(pos)             pos.x << ", " << pos.y << ", " << pos.z
-# define POS2(pos, delta)      pos.x + delta.x << ", " << pos.y + delta.y << ", " << pos.z + delta.z
-# define POSXYZ(pos, dx, dy, dz) pos.x + dx << ", " << pos.y + dy << ", " << pos.z + dz
+# define POS(pos)                 pos.x << ", " << pos.y << ", " << pos.z
+# define POS2(pos, delta)         pos.x + delta.x << ", " << pos.y + delta.y << ", " << pos.z + delta.z
+# define POSDXY(pos, dx, dy)      pos.x + dx << ", " << pos.y + dy << ", " << pos.z
+# define POSDXYZ(pos, dx, dy, dz) pos.x + dx << ", " << pos.y + dy << ", " << pos.z + dz
+# define POSXY(x, y)              x << ", " << y
+# define POSXYZ(x, y, z)          x << ", " << y << ", " << z
 
 #endif

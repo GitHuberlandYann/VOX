@@ -380,7 +380,6 @@ void Chunk::generate_blocks( void )
 		_blocks[a.first] = a.second;
 		if ((a.second & mask::blocks::type) == blocks::torch) {
 			addFlame(a.first, {((a.first >> settings::consts::world_shift) >> settings::consts::chunk_shift), ((a.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)), (a.first & (settings::consts::world_height - 1))}, blocks::torch, (a.second >> offset::blocks::orientation) & 0x7);
-			// _flames.emplace(a.first, new Particle(this, {((a.first >> settings::consts::world_shift) >> settings::consts::chunk_shift) + _startX + 0.5f, ((a.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)) + _startY + 0.5f, (a.first & (settings::consts::world_height - 1)) + 10.0f / 16.0f + 0.1f}, PARTICLES::FLAME));
 		}
 	}
 	// b.stamp("rest");

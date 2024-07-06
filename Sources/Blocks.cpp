@@ -2561,7 +2561,7 @@ void OakSign::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::
 			up    = glm::vec3(0, 0, 1);
 			break ;
 		default:
-			LOGERROR("ERROR oakSign::addMesh orientation");
+			LOGERROR("oakSign::addMesh orientation");
 			return ;
 	}
 	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front) * 0.5f + up * 0.25f;

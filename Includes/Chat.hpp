@@ -53,7 +53,7 @@ const std::array<std::string, NBR_ARG_TIME> timeSetArgs = {"day", "night", "noon
 
 typedef struct s_msg {
 	std::string str;
-	uint color = TEXT::WHITE;
+	uint color = argb::white;
 }				t_msg;
 
 class Chat
@@ -67,7 +67,7 @@ class Chat
 		void resetHistoCursor( void );
 		std::string getHistoMsg( bool up );
 
-		void chatMessage( std::string str, unsigned color = TEXT::WHITE );
+		void chatMessage( std::string str, unsigned color = argb::white );
 		bool sendMessage( std::string str );
 		void blitMessages( float deltaTime );
 		void blitPastMessages( void );

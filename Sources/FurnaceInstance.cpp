@@ -135,7 +135,7 @@ int FurnaceInstance::updateTimes( float currentTime )
 				}
 			} else {
 				_fuel_time = 0;
-				return (furnace_state::OFF);
+				return (furnace_state::off);
 			}
 		}
 	} else if (s_blocks[_fuel.type]->isFuel && s_blocks[_composant.type]->isComposant
@@ -146,10 +146,10 @@ int FurnaceInstance::updateTimes( float currentTime )
 			if (--_fuel.amount == 0) {
 				_fuel = {0};
 			}
-			return (furnace_state::ON);
+			return (furnace_state::on);
 		}
 	}
-	return (furnace_state::NOCHANGE);
+	return (furnace_state::no_change);
 }
 
 // coal 80 seconds

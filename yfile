@@ -51,6 +51,8 @@ TODOS:
 	- toggle don't draw chunks behind player in Settings
     - Sound https://www.ambiera.com/irrklang/tutorials.html
 	- upon world generation, place player on ground by using continentalness
+	- multiheritance for particles + smart_pointer + prefixed size?
+	- more namespaces in utils
 	- water ligth level
     - lava + nether
 	- multiplayer ? Server-Client logic on singleplayer ?
@@ -69,7 +71,7 @@ TODOS:
 	- display block_hit s name and details as a 2D window
 	- skin customization menu
 	- anvil + named items
-	- //gameOfLife cmd with worldEdit to see game of life in 3D
+	- textInput to display cursor under cursored character
 	
 	DONE:
 	- pthread chunk creation
@@ -181,6 +183,7 @@ TODOS:
 	- gui size
 	- Worldedit mod
 	- //brush tool to place/rm lots of blocks in a wormy manner
+	- //gameOfLife cmd with worldEdit to see game of life in 3D
 	- A* Pathfinding algo to be used by mobs
 	- Zombies
 	- Skeletons

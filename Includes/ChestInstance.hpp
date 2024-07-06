@@ -10,10 +10,10 @@
 
 namespace chest_state {
 	enum {
-		OPEN,
-		CLOSED,
-		OPENING,
-		CLOSING
+		open,
+		closed,
+		opening,
+		closing
 	};
 }
 typedef struct s_shaderInput t_shaderInput;

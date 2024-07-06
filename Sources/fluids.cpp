@@ -194,9 +194,9 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 				_vertex_update = true;
 			}
 		} else {
-			FLUIDLOG(LOG('[' << _startX << ", " << _startY << "] replaced " << s_blocks[type]->name << " with " << s_blocks[level]->name)); 
+			FLUIDLOG(LOG('[' << POSXY(_startX, _startY) << "] replaced " << s_blocks[type]->name << " with " << s_blocks[level]->name)); 
 		}
-			FLUIDLOG(LOG('[' << _startX << ", " << _startY << "] replaced " << s_blocks[type]->name << " with " << s_blocks[level]->name << " at " << posX << ", " << posY << ", " << posZ)); 
+			FLUIDLOG(LOG('[' << POSXY(_startX, _startY) << "] replaced " << s_blocks[type]->name << " with " << s_blocks[level]->name << " at " << posX << ", " << posY << ", " << posZ)); 
 		if (newFluids) {
 			newFluids->insert(offset);
 		} else {

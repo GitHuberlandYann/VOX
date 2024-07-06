@@ -6,9 +6,9 @@
 
 namespace furnace_state {
 	enum {
-		NOCHANGE, // same state as previous frame
-		ON,	// turned on this frame
-		OFF // turned off this frame
+		no_change, // same state as previous frame
+		on,	// turned on this frame
+		off // turned off this frame
 	};
 }
 

@@ -71,7 +71,7 @@ void SignInstance::displayText( std::vector<t_shaderInputPart> &partArr )
 			up    = glm::vec3(0, 0, 1);
 			break ;
 		default:
-			LOGERROR("ERROR signInstance::displayText orientation");
+			LOGERROR("signInstance::displayText orientation");
 			return ;
 	}
 	glm::vec3 topLeft = glm::vec3(_chunk->getStartX(), _chunk->getStartY(), 0) + _pos + glm::vec3(0.5f, 0.5f, 0.5f) + front * (0.5f - 1.751f * one16th) + up * 0.225f;

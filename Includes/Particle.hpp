@@ -1,14 +1,14 @@
 #ifndef PARTICLE_HPP
 # define PARTICLE_HPP
 
-namespace PARTICLES
+namespace particles
 {
 	enum {
-		FLAME, // torches and furnaces
-		SMOKE,
-		BIG_SMOKE, // campfire
-		EXPLOSION, // TNT and such
-		BREAKING, // breaking block
+		flame, // torches and furnaces
+		smoke,
+		big_smoke, // campfire
+		explosion, // TNT and such
+		breaking, // breaking block
 	};
 }
 

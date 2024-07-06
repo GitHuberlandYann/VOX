@@ -184,7 +184,7 @@ void DayCycle::freeze( Chat *chat )
 void DayCycle::step( Chat *chat, int steps )
 {
 	if (_gameTimeMultiplier == -1) {
-		return (chat->chatMessage("You can't step when game is not frozen.", TEXT::RED));
+		return (chat->chatMessage("You can't step when game is not frozen.", argb::red));
 	}
 	_gameTimeMultiplier = steps;
 	return (chat->chatMessage("Taking " + std::to_string(steps) + ((steps > 1) ? " steps." : " step.")));

@@ -762,11 +762,11 @@ void Inventory::spillInventory( Chunk* chunk )
 void Inventory::signBook( std::string title )
 {
 	if (_content[_slot].type != blocks::book_and_quill) {
-		LOGERROR("ERROR Inventory::singBook item is not book and quill.");
+		LOGERROR("Inventory::singBook item is not book and quill.");
 		return ;
 	}
 	if (!_content[_slot].tag || _content[_slot].tag->getType() != tags::book_tag) {
-		LOGERROR("ERROR Inventory::singBook invalid tag.");
+		LOGERROR("Inventory::singBook invalid tag.");
 		return ;
 	}
 	_content[_slot].type = blocks::written_book;

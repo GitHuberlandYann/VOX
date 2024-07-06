@@ -154,19 +154,19 @@ void Chunk::addFlame( int offset, glm::vec3 pos, int source, int orientation )
 	if (source == blocks::torch) {
 		switch (orientation) {
 		case face_dir::minus_x:
-			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.25f, pos.y + _startY + 0.5f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
+			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.25f, pos.y + _startY + 0.5f, pos.z + 15.0f / 16.0f}, particles::flame));
 			break ;
 		case face_dir::plus_x:
-			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.75f, pos.y + _startY + 0.5f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
+			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.75f, pos.y + _startY + 0.5f, pos.z + 15.0f / 16.0f}, particles::flame));
 			break ;
 		case face_dir::minus_y:
-			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.25f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
+			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.25f, pos.z + 15.0f / 16.0f}, particles::flame));
 			break ;
 		case face_dir::plus_y:
-			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.75f, pos.z + 15.0f / 16.0f}, PARTICLES::FLAME));
+			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.75f, pos.z + 15.0f / 16.0f}, particles::flame));
 			break ;
 		case face_dir::minus_z:
-			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 11.0f / 16.0f + 0.05f}, PARTICLES::FLAME));
+			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 11.0f / 16.0f + 0.05f}, particles::flame));
 			break ;
 		}
 	}
@@ -319,6 +319,7 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
 		if (search != _entities.end()) {
 			static_cast<LecternEntity*>(search->get())->setContent(_inventory->getSlotBlock(_inventory->getSlotNum()));
+			static_cast<LecternEntity*>(search->get())->setPage(0);
 			_inventory->removeBlock(false);
 			updateLectern(pos);
 		} else {
@@ -372,7 +373,7 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 		_mobs.push_back(std::make_shared<Skeleton>(this, _player, pos + glm::ivec3(_startX, _startY, 0)));
 		return ;
 	default:
-		LOGERROR("ERROR Chunk::regeneration case Modif::use defaulted on: " << s_blocks[value & mask::blocks::type]->name);
+		LOGERROR("Chunk::regeneration case Modif::use defaulted on: " << s_blocks[value & mask::blocks::type]->name);
 		return ;
 	}
 	setBlockAt(value, pos, true);
@@ -453,7 +454,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 {
 	int type = (value & mask::blocks::type), prev_type = (previous & mask::blocks::type);
-	BLOCKLOG(LOG("UPDATE_BLOCK at " << POSXYZ(pos, _startX, _startY, 0) << ". " << s_blocks[prev_type]->name << " -> " << s_blocks[type]->name));
+	BLOCKLOG(LOG("UPDATE_BLOCK at " << POSDXY(pos, _startX, _startY) << ". " << s_blocks[prev_type]->name << " -> " << s_blocks[type]->name));
 	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	if (type == blocks::sand || type == blocks::gravel) {
 		int type_under = (_blocks[offset - 1] & mask::blocks::type);
@@ -559,7 +560,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		}
 		if (_inventory->getSlotBlock(_inventory->getSlotNum()).type != blocks::worldedit_brush) {
 			for (int i = 0; i < 15; ++i) {
-				_particles.push_back(new Particle(this, {pos.x + _startX + Random::randomFloat(_seed), pos.y + _startY + Random::randomFloat(_seed), pos.z + Random::randomFloat(_seed)}, PARTICLES::BREAKING, 0, prev_type));
+				_particles.push_back(new Particle(this, {pos.x + _startX + Random::randomFloat(_seed), pos.y + _startY + Random::randomFloat(_seed), pos.z + Random::randomFloat(_seed)}, particles::breaking, 0, prev_type));
 			}
 		}
 		light_spread(pos.x, pos.y, pos.z, false);
@@ -942,7 +943,7 @@ bool Chunk::bookedLectern( Menu* menu, glm::ivec3 pos, bool turnPage )
 				return (true);
 			}
 		} else {
-			LOGERROR("Lectern entity not found in bookedLectern in chunk " << _startX << ", " << _startY << " at pos " << POS(pos));
+			LOGERROR("Lectern entity not found in bookedLectern in chunk " << POSXY(_startX, _startY) << " at pos " << POS(pos));
 		}
 		return (false);
 	}
