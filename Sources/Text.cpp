@@ -151,6 +151,45 @@ void Text::addText( int posX, int posY, int font_size, unsigned color, int depth
 	}
 }
 
+void Text::addCursorText( int posX, int posY, int font_size, unsigned color, int depth, bool bar, size_t cursor, std::string str )
+{
+	int startX = posX;
+	char c;
+	for (size_t i = 0, charLine = 0; i < str.size(); i++) {
+		if (bar && cursor == i) {
+			addQuads('_', posX, posY + font_size * .1f, font_size, font_size, color, depth);
+		}
+		
+		c = str[i];
+		if (c == '\n') {
+			posY += 1.2f * font_size;
+			posX = startX;
+			charLine = 0;
+		} else if (c == ' ') {
+			posX += font_size;
+			++charLine;
+		} else if (c == '\t') {
+			charLine += 4 - (charLine & 3);
+			posX = startX + charLine * font_size;
+		} else {
+			addQuads(c, posX, posY, font_size, font_size, color, depth);
+			if (c == 'i' || c == '.' || c == ':' || c == '!' || c == '\'' || c == ',' || c == ';' || c == '|' || c == '`') {
+				posX += font_size * 0.5f;
+			} else if (c == 'I' || c == '[' || c == ']' || c == '"' || c == '*') {
+				posX += font_size * 0.6f;	
+			} else if (c == 'l' || c == 't' || c == '(' || c == ')' || c == '<' || c == '>' || c == '{' || c == '}') {
+				posX += font_size * 0.7f;
+			} else {
+				posX += font_size;
+			}
+			++charLine;
+		}
+	}
+	if (bar && cursor == str.size()) {
+		addQuads('_', posX, posY + font_size * .1f, font_size, font_size, color, depth);
+	}
+}
+
 void Text::addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, int depth, std::string str )
 {
 	int text_width = Utils::Text::textWidth(font_size, str);
@@ -159,6 +198,16 @@ void Text::addCenteredText( int left, int top, int width, int height, int font_s
 		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, argb::black, depth + 1, str);
 	}
 	addText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, argb::white, depth, str);
+}
+
+void Text::addCenteredCursorText( int left, int top, int width, int height, int font_size, bool shadow, int depth, bool bar, size_t cursor, std::string str )
+{
+	int text_width = Utils::Text::textWidth(font_size, str);
+	if (shadow) {
+		int offset = font_size / 8;
+		addCursorText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, argb::black, depth + 1, bar, cursor, str);
+	}
+	addCursorText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, argb::white, depth, bar, cursor, str);
 }
 
 void Text::toScreen( void )

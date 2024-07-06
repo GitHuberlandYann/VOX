@@ -116,14 +116,14 @@ namespace inputs
 		++cursor;
 	}
 
+	int getCursor( void )
+	{
+		return (cursor);
+	}
+
 	std::string getCurrentMessage( void )
 	{
 		return (message);
-	}
-
-	std::string getCurrentInputStr( char c )
-	{
-		return (message.substr(0, cursor) + c + message.substr(cursor));
 	}
 
 	void setCurrentMessage( std::string str )

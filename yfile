@@ -71,7 +71,6 @@ TODOS:
 	- display block_hit s name and details as a 2D window
 	- skin customization menu
 	- anvil + named items
-	- textInput to display cursor under cursored character
 	
 	DONE:
 	- pthread chunk creation

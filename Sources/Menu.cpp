@@ -213,13 +213,13 @@ menu::ret Menu::world_create_menu( bool animUpdate )
 		}
 	}
 	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
-		inputs::rmLetter();
+		inputs::rmLetter(); _textBar = true;
 	}
 	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
-		inputs::moveCursor(true, inputs::key_down(inputs::run));
+		inputs::moveCursor(true, inputs::key_down(inputs::run)); _textBar = true;
 	}
 	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
-		inputs::moveCursor(false, inputs::key_down(inputs::run));
+		inputs::moveCursor(false, inputs::key_down(inputs::run)); _textBar = true;
 	}
 
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, settings::consts::depth::menu::str, "Create New World");
@@ -228,7 +228,7 @@ menu::ret Menu::world_create_menu( bool animUpdate )
 	if (_input_world) {
 		_world_file = inputs::getCurrentMessage();
 		if (animUpdate) { _textBar = !_textBar; }
-		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.')); // World Name
+		_text->addCenteredCursorText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage()); // World Name
 	} else {
 		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, _world_file); // World Name
 	}
@@ -244,7 +244,7 @@ menu::ret Menu::world_create_menu( bool animUpdate )
 		}
 		perlin_seed = std::atoi(input.c_str());
 		if (animUpdate) { _textBar = !_textBar; }
-		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.')); // Seed
+		_text->addCenteredCursorText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage()); // Seed
 	} else {
 		_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, (perlin_seed) ? std::to_string(perlin_seed) : ""); // Seed
 	}
@@ -862,26 +862,20 @@ menu::ret Menu::chat_menu( bool animUpdate )
 		}
 	}
 	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
-		inputs::rmLetter();
-	}
-	if (inputs::key_down(inputs::look_up) && inputs::key_update(inputs::look_up)) {
-		inputs::setCurrentMessage(_chat->getHistoMsg(true));
-	}
-	if (inputs::key_down(inputs::look_down) && inputs::key_update(inputs::look_down)) {
-		inputs::setCurrentMessage(_chat->getHistoMsg(false));
-	}
-	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
-		inputs::moveCursor(true, inputs::key_down(inputs::left_control));
-	}
-	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
-		inputs::moveCursor(false, inputs::key_down(inputs::left_control));
-	}
-
-	if (animUpdate) {
+		inputs::rmLetter(); _textBar = true;
+	} else if (inputs::key_down(inputs::look_up) && inputs::key_update(inputs::look_up)) {
+		inputs::setCurrentMessage(_chat->getHistoMsg(true)); _textBar = true;
+	} else if (inputs::key_down(inputs::look_down) && inputs::key_update(inputs::look_down)) {
+		inputs::setCurrentMessage(_chat->getHistoMsg(false)); _textBar = true;
+	} else if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
+		inputs::moveCursor(true, inputs::key_down(inputs::left_control)); _textBar = true;
+	} else if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
+		inputs::moveCursor(false, inputs::key_down(inputs::left_control)); _textBar = true;
+	} else if (animUpdate) {
 		_textBar = !_textBar;
 	}
 	_chat->blitPastMessages();
-	_text->addText(36, WIN_HEIGHT - 48 - 12, 12, argb::white, settings::consts::depth::chat, inputs::getCurrentInputStr((_textBar) ? '|' : '.'));
+	_text->addCursorText(36, WIN_HEIGHT - 48 - 12, 12, argb::white, settings::consts::depth::chat, _textBar, inputs::getCursor(), inputs::getCurrentMessage());
 
 	setup_array_buffer_chat();
 	blit_to_screen();
@@ -911,23 +905,20 @@ menu::ret Menu::sign_menu( bool animUpdate )
 			inputs::resetMessage();
 		} 
 	}
-	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
-		inputs::rmLetter();
-	}
 	if (Utils::Text::textWidth(7, inputs::getCurrentMessage()) > 90) {
-		inputs::rmLetter();
-	}
-	// if (inputs::key_down(inputs::look_up) && inputs::key_update(inputs::look_up)) {
-	// 	inputs::setCurrentMessage(_chat->getHistoMsg(true));
-	// }
-	// if (inputs::key_down(inputs::look_down) && inputs::key_update(inputs::look_down)) {
-	// 	inputs::setCurrentMessage(_chat->getHistoMsg(false));
-	// }
-	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
-		inputs::moveCursor(true, inputs::key_down(inputs::left_control));
-	}
-	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
-		inputs::moveCursor(false, inputs::key_down(inputs::left_control));
+		inputs::rmLetter(); _textBar = true;
+	} else if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+		inputs::rmLetter(); _textBar = true;
+	// } else if (inputs::key_down(inputs::look_up) && inputs::key_update(inputs::look_up)) {
+	// 	inputs::setCurrentMessage(_chat->getHistoMsg(true)); _textBar = true;
+	// } else if (inputs::key_down(inputs::look_down) && inputs::key_update(inputs::look_down)) {
+	// 	inputs::setCurrentMessage(_chat->getHistoMsg(false)); _textBar = true;
+	} else if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
+		inputs::moveCursor(true, inputs::key_down(inputs::left_control)); _textBar = true;
+	} else if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
+		inputs::moveCursor(false, inputs::key_down(inputs::left_control)); _textBar = true;
+	} else if (animUpdate) {
+		_textBar = !_textBar;
 	}
 
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, (_gui_size + 1) * 7, false, settings::consts::depth::menu::str, "Edit Sign Message");
@@ -935,10 +926,8 @@ menu::ret Menu::sign_menu( bool animUpdate )
 	for (; index < _sign_content.size(); ++index) {
 		_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2 - 50 * _gui_size + index * 10 * _gui_size, 0, 0, 7 * _gui_size, false, settings::consts::depth::menu::str, _sign_content[index]);
 	}
-	if (animUpdate) {
-		_textBar = !_textBar;
-	}
-	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2 - 50 * _gui_size + index * 10 * _gui_size, 0, 0, 7 * _gui_size, false, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.'));
+
+	_text->addCenteredCursorText(WIN_WIDTH / 2, WIN_HEIGHT / 2 - 50 * _gui_size + index * 10 * _gui_size, 0, 0, 7 * _gui_size, false, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage());
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
 
 	setup_array_buffer_sign();
@@ -1031,33 +1020,26 @@ menu::ret Menu::book_and_quill_menu( bool animUpdate )
 			_textBar = true;
 		} 
 	}
-	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
-		inputs::rmLetter();
-	}
 	if (Utils::Text::textWidth(6, inputs::getCurrentMessage()) > 114) {
-		inputs::rmLetter();
-	}
-	// if (inputs::key_down(inputs::look_up) && inputs::key_update(inputs::look_up)) {
-	// 	inputs::setCurrentMessage(_chat->getHistoMsg(true));
-	// }
-	// if (inputs::key_down(inputs::look_down) && inputs::key_update(inputs::look_down)) {
-	// 	inputs::setCurrentMessage(_chat->getHistoMsg(false));
-	// }
-	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
-		_textBar = true;
-		inputs::moveCursor(true, inputs::key_down(inputs::left_control));
-	}
-	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
-		_textBar = true;
-		inputs::moveCursor(false, inputs::key_down(inputs::left_control));
+		inputs::rmLetter(); _textBar = true;
+	} else if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+		inputs::rmLetter(); _textBar = true;
+	// } else if (inputs::key_down(inputs::look_up) && inputs::key_update(inputs::look_up)) {
+	// 	inputs::setCurrentMessage(_chat->getHistoMsg(true)); _textBar = true;
+	// } else if (inputs::key_down(inputs::look_down) && inputs::key_update(inputs::look_down)) {
+	// 	inputs::setCurrentMessage(_chat->getHistoMsg(false)); _textBar = true;
+	} else if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
+		inputs::moveCursor(true, inputs::key_down(inputs::left_control)); _textBar = true;
+	} else if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
+		inputs::moveCursor(false, inputs::key_down(inputs::left_control)); _textBar = true;
+	} else if (animUpdate) {
+		_textBar = !_textBar;
 	}
 
 	std::string pageStr = "Page " + std::to_string(_scroll + 1) + " of " + std::to_string(_book_content->size());
 	_text->addText(WIN_WIDTH / 2 + 55 * _gui_size - Utils::Text::textWidth(6 * _gui_size, pageStr), WIN_HEIGHT / 2 - 115 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, pageStr);
-	if (animUpdate) {
-		_textBar = !_textBar;
-	}
-	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 107 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.'));
+
+	_text->addCursorText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 107 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage());
     _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Sign");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, "Done");
 
@@ -1085,27 +1067,22 @@ menu::ret Menu::book_sign_menu( bool animUpdate )
 			return (book_and_quill_menu(animUpdate));
 		}
 	}
-	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
-		inputs::rmLetter();
-	}
 	if (Utils::Text::textWidth(6, inputs::getCurrentMessage()) > 114) {
-		inputs::rmLetter();
-	}
-	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
-		_textBar = true;
-		inputs::moveCursor(true, inputs::key_down(inputs::left_control));
-	}
-	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
-		_textBar = true;
-		inputs::moveCursor(false, inputs::key_down(inputs::left_control));
+		inputs::rmLetter(); _textBar = true;
+	} else if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+		inputs::rmLetter(); _textBar = true;
+	} else if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
+		inputs::moveCursor(true, inputs::key_down(inputs::left_control)); _textBar = true;
+	} else if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
+		inputs::moveCursor(false, inputs::key_down(inputs::left_control)); _textBar = true;
+	} else if (animUpdate) {
+		_textBar = !_textBar;
 	}
 	_world_file = inputs::getCurrentMessage();
 
 	_text->addText((WIN_WIDTH - Utils::Text::textWidth(6 * _gui_size, "Enter Book Title:")) / 2, WIN_HEIGHT / 2 - 90 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, "Enter Book Title:");
-	if (animUpdate) {
-		_textBar = !_textBar;
-	}
-	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 80 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, inputs::getCurrentInputStr((_textBar) ? '|' : '.')); // TODO _text->addCursorText(str, cursorPos, cursorChar) which draws cursorChar on top of char at cursorPos
+
+	_text->addCursorText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 80 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage());
 	_text->addText(WIN_WIDTH / 2 - 58 * _gui_size, WIN_HEIGHT / 2 - 50 * _gui_size, 6 * _gui_size, argb::black, settings::consts::depth::menu::str, "Note! Once you sign\nthe book, it will no\nlonger be editable.");
 	
 	_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 95 * _gui_size, 20 * _gui_size, 6 * _gui_size, true, settings::consts::depth::menu::str, "Sign and Close");

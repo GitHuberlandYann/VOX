@@ -31,7 +31,9 @@ class Text
 		void updateWinSize( void );
 
         void addText( int posX, int posY, int font_size, unsigned color, int depth, std::string str );
+        void addCursorText( int posX, int posY, int font_size, unsigned color, int depth, bool bar, size_t cursor, std::string str );
 		void addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, int depth, std::string str );
+		void addCenteredCursorText( int left, int top, int width, int height, int font_size, bool shadow, int depth, bool bar, size_t cursor, std::string str );
 		void toScreen( void );
 
 	private:

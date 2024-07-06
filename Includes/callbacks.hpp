@@ -18,8 +18,8 @@ namespace inputs
 	void resetMessage( void );
 	void rmLetter( void );
 	void addLetter( char c );
+	int getCursor( void );
 	std::string getCurrentMessage( void );
-	std::string getCurrentInputStr( char c );
 	void setCurrentMessage( std::string str );
 
 	// key callback
