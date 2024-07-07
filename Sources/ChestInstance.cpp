@@ -39,7 +39,7 @@ void ChestInstance::displayBottomBox( std::vector<t_shaderInput>& arr, std::arra
 	light -= (2 << 8);
 	utils::shader::addQuads(arr, {pts[4], pts[5], pts[0], pts[1]}, spec, light, 14, 14);
 // -z
-	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1)), false, false, false)) {
+	if (!utils::block::air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1)), false, false, false)) {
 		spec = settings::consts::shader::block::chest_top;
 		light += (5 << 8);
 		utils::shader::addQuads(arr, {pts[2], pts[3], pts[6], pts[7]}, spec, light, 14, 14);
@@ -304,7 +304,7 @@ void ChestInstance::display_closed( std::vector<t_shaderInput>& arr )
 	light -= (2 << 8);
 	utils::shader::addQuads(arr, {p4, p5, p0, p1}, spec, light, 14, 14);
 // -z
-	if (!air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1)), false, false, false)) {
+	if (!utils::block::air_flower(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z - 1)), false, false, false)) {
 		light += (5 << 8);
 		utils::shader::addQuads(arr, {p2, p3, p6, p7}, spec, light, 14, 14);
 	}

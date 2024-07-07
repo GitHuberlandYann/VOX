@@ -1,7 +1,7 @@
 #include "Chunk.hpp"
 #include <map>
 
-namespace EXTRUSION {
+namespace utils::extrusion {
 
 	typedef struct s_extrusion {
 		std::vector<glm::ivec3> up;

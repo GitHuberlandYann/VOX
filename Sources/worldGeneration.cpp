@@ -53,21 +53,21 @@ bool Chunk::exposed_block( int row, int col, int level, bool isNotLeaves, bool i
 	switch (level) {
 		case 0:
 			below = false;
-			above = !air_flower(_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level + 1], isNotLeaves, true, false);
+			above = !utils::block::air_flower(_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level + 1], isNotLeaves, true, false);
 			break ;
 		case 255:
-			below = !air_flower(_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level - 1], isNotLeaves, true, false);
+			below = !utils::block::air_flower(_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level - 1], isNotLeaves, true, false);
 			above = true;
 			break ;
 		default:
-			below = !air_flower(_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level - 1], isNotLeaves, true, false);
-			above = !air_flower(_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level + 1], isNotLeaves, true, false);
+			below = !utils::block::air_flower(_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level - 1], isNotLeaves, true, false);
+			above = !utils::block::air_flower(_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level + 1], isNotLeaves, true, false);
 	}
 	return (below || above
-		|| !air_flower(getBlockAt(row - 1, col, level, false), isNotLeaves, true, false)
-		|| !air_flower(getBlockAt(row + 1, col, level, false), isNotLeaves, true, false)
-		|| !air_flower(getBlockAt(row, col - 1, level, false), isNotLeaves, true, false)
-		|| !air_flower(getBlockAt(row, col + 1, level, false), isNotLeaves, true, false));
+		|| !utils::block::air_flower(getBlockAt(row - 1, col, level, false), isNotLeaves, true, false)
+		|| !utils::block::air_flower(getBlockAt(row + 1, col, level, false), isNotLeaves, true, false)
+		|| !utils::block::air_flower(getBlockAt(row, col - 1, level, false), isNotLeaves, true, false)
+		|| !utils::block::air_flower(getBlockAt(row, col + 1, level, false), isNotLeaves, true, false));
 }
 
 /**
@@ -155,31 +155,31 @@ int Chunk::surfaceLevel( int row, int col, siv::PerlinNoise perlin )
 		_continent = cont::CONT_MUSHROOM_FIELDS;
 	} else if (continentalness < -0.455) {
 		// offset = -20;	// deep ocean
-		offset = gradient(continentalness, -1.05, -0.455, -40, -10);
+		offset = utils::math::gradient(continentalness, -1.05, -0.455, -40, -10);
 		_continent = cont::CONT_DEEP_OCEAN;
 	} else if (continentalness < -0.19) {
 		// offset = -10;	// ocean
-		offset = gradient(continentalness, -0.455, -0.19, -10, 0);
+		offset = utils::math::gradient(continentalness, -0.455, -0.19, -10, 0);
 		_continent = cont::CONT_OCEAN;
 	} else if (continentalness < -0.11) {
 		// offset = 0;	// coast
-		offset = gradient(continentalness, -0.19, -0.11, 0, 10);
+		offset = utils::math::gradient(continentalness, -0.19, -0.11, 0, 10);
 		_continent = cont::CONT_COAST;
 	} else if (continentalness < 0.03) {
 		// offset = 10; // near inland
-		offset = gradient(continentalness, -0.11, 0.03, 10, 30);
+		offset = utils::math::gradient(continentalness, -0.11, 0.03, 10, 30);
 		_continent = cont::CONT_NEAR_INLAND;
 	} else if (continentalness < 0.3) {
 		// offset = 20;	// mid inland
-		offset = gradient(continentalness, 0.03, 0.3, 30, 40);
+		offset = utils::math::gradient(continentalness, 0.03, 0.3, 30, 40);
 		_continent = cont::CONT_MID_INLAND;
 	} else if (continentalness < 0.4) {
 		// high diff in short span
-		offset = gradient(continentalness, 0.3, 0.4, 40, 80);
+		offset = utils::math::gradient(continentalness, 0.3, 0.4, 40, 80);
 		_continent = cont::CONT_FAR_INLAND;
 	} else {
 		offset = 80;	// far-inland
-		// offset = gradient(continentalness, 0.3, 3.80, 80, 110);
+		// offset = utils::math::gradient(continentalness, 0.3, 3.80, 80, 110);
 		_continent = cont::CONT_FAR_INLAND;
 	}
 	// if (continentalness > -0.11) { // inland
@@ -195,7 +195,7 @@ int Chunk::surfaceLevel( int row, int col, siv::PerlinNoise perlin )
 		return (settings::consts::sea_level + offset);
 	}
 	double erosion = glm::abs(perlin.octave2D_01((_startX - 1000 + row) / 1000.0f, (_startY - 1000 + col) / 1000.0f, 7) - 0.5);
-	return (gradient(erosion, 0, 0.05, settings::consts::sea_level - 6, settings::consts::sea_level + offset));
+	return (utils::math::gradient(erosion, 0, 0.05, settings::consts::sea_level - 6, settings::consts::sea_level + offset));
 	// return (settings::consts::sea_level + offset);
 }
 

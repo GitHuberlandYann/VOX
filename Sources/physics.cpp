@@ -19,7 +19,7 @@ void Chunk::collisionWHitbox( t_collision& res, const Block* target, int value, 
 {
 	glm::vec3 hitbox[2];
 	target->getHitbox(hitbox, value);
-	if (cube_cube_intersection(pos, {width, width, height},
+	if (utils::math::cube_cube_intersection(pos, {width, width, height},
 		{bX + hitbox[0].x + _startX, bY + hitbox[0].y + _startY, bZ + hitbox[0].z},
 		hitbox[1])) {
 		if (res.type == COLLISION::NONE) {
@@ -31,7 +31,7 @@ void Chunk::collisionWHitbox( t_collision& res, const Block* target, int value, 
 	}
 	if (target->hasSecondaryCollisionHitbox) {
 		target->getSecondaryHitbox(hitbox, value);
-		if (cube_cube_intersection(pos, {width, width, height},
+		if (utils::math::cube_cube_intersection(pos, {width, width, height},
 			{bX + hitbox[0].x + _startX, bY + hitbox[0].y + _startY, bZ + hitbox[0].z},
 			hitbox[1])) {
 			if (res.type == COLLISION::NONE) {
@@ -424,8 +424,9 @@ bool AHostileMob::updateCurrentBlock( void )
 			return (false);
 		}
 		
-		if (chunk_pos(currentBlock.x) != chunk_pos(_currentBlock.x) || chunk_pos(currentBlock.y) != chunk_pos(_currentBlock.y)) {
-			Chunk* newOwner = _chunk->getChunkAt(chunk_pos(currentBlock.x), chunk_pos(currentBlock.y));
+		if (utils::math::chunk_pos(currentBlock.x) != utils::math::chunk_pos(_currentBlock.x)
+			|| utils::math::chunk_pos(currentBlock.y) != utils::math::chunk_pos(_currentBlock.y)) {
+			Chunk* newOwner = _chunk->getChunkAt(utils::math::chunk_pos(currentBlock.x), utils::math::chunk_pos(currentBlock.y));
 			if (!newOwner || newOwner == _chunk) { return (true); } // just kill mob if out of generated chunks
 			_chunk = newOwner;
 			_blockTime = 0.0f;
@@ -457,7 +458,7 @@ bool ArrowEntity::updateCurrentBlock( void )
 		}
 		_currentBlock = currentBlock;
 		
-		glm::ivec2 chunkPos = {chunk_pos(currentBlock.x), chunk_pos(currentBlock.y)};
+		glm::ivec2 chunkPos = {utils::math::chunk_pos(currentBlock.x), utils::math::chunk_pos(currentBlock.y)};
 		if (chunkPos != _chunk_pos) {
 			Chunk* newOwner = _chunk->getChunkAt(chunkPos.x, chunkPos.y);
 			if (!newOwner || newOwner == _chunk) { return (true); } // just kill arrow if out of generated chunks

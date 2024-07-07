@@ -115,7 +115,7 @@ bool Skeleton::update( std::vector<t_shaderInputModel>& modArr, float deltaTime 
 			}
 
 			if (_state == settings::state_machine::chase
-				&& cube_cube_intersection(_player->getPos(), {0.3f, 0.3f, settings::consts::hitbox::player},
+				&& utils::math::cube_cube_intersection(_player->getPos(), {0.3f, 0.3f, settings::consts::hitbox::player},
 										_position + glm::vec3(0, 0, settings::consts::hitbox::zombie * 0.5f), {0.6f, 0.6f, settings::consts::hitbox::zombie * 0.5f})) {
 				_player->receiveDamage(4.5f, getDir());
 			}

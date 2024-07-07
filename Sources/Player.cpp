@@ -39,7 +39,7 @@ bool Player::chunkInFront( int camPlacement, glm::ivec2 current_chunk, int posX,
 std::vector<glm::ivec3> Player::computeRayCasting( GLfloat radius )
 {
 	glm::vec3 pos = getEyePos();
-	return (voxel_traversal(pos, pos + _front * radius));
+	return (utils::math::voxel_traversal(pos, pos + _front * radius));
 }
 
 glm::vec3 Player::getEyePos( void )

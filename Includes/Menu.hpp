@@ -40,7 +40,7 @@ namespace menu
 		lectern,
 	};
 
-	enum ret {
+	enum class ret {
 		quit = -1,
 		no_change,
 		back_to_game,

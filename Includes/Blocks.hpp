@@ -645,10 +645,7 @@ struct Block {
 			}
 			return (tool >= needed_tool + needed_material_level && tool < needed_tool + 4);
 		}
-		virtual int getTex( int dir = face_dir::minus_y, int value = 0 ) const {
-			(void)dir;(void)value;
-			return (texture);
-		}
+		virtual int getTex( int dir = face_dir::minus_y, int value = 0 ) const;
 		virtual void getHitbox( glm::vec3* hitbox, int value ) const;
 		virtual void getSecondaryHitbox( glm::vec3* hitbox, int value ) const;
 		virtual void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const;
@@ -838,15 +835,7 @@ struct GrassBlock : Cube {
 			needed_tool = blocks::wooden_shovel;
 			hardness = 0.6f;
 		}
-		int getTex( int dir, int value ) const override {
-			(void)value;
-			if (dir == face_dir::plus_z) {
-				return (settings::consts::shader::block::grass_block_top);
-			} else if (dir == face_dir::minus_z) {
-				return (settings::consts::shader::block::dirt);
-			}
-			return (settings::consts::shader::block::grass_block_side);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct OakLog : Cube {
@@ -863,24 +852,7 @@ struct OakLog : Cube {
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.0f;
 		}
-		int getTex( int dir, int value ) const override {
-			int axis = (value >> offset::blocks::orientation) & 0x7;
-			switch (dir) {
-				case face_dir::minus_z:
-				case face_dir::plus_z:
-					return ((axis == face_dir::plus_z) ? settings::consts::shader::block::oak_log_top
-						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::oak_log);
-				case face_dir::minus_x:
-				case face_dir::plus_x:
-					return ((axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_top
-						: (axis == face_dir::plus_y) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::oak_log);
-				case face_dir::minus_y:
-				case face_dir::plus_y:
-					return ((axis == face_dir::plus_y) ? settings::consts::shader::block::oak_log_top
-						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::oak_log);
-			}
-			return (settings::consts::shader::block::oak_log);
-		}
+		int getTex( int dir, int value ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
 };
 
@@ -896,15 +868,7 @@ struct Cactus : Cube {
 			hardness = 0.4f;
 			transparent = true;
 		}
-		int getTex( int dir, int value ) const override {
-			(void)value;
-			if (dir == face_dir::plus_z) {
-				return (settings::consts::shader::block::cactus_top);
-			} else if (dir == face_dir::minus_z) {
-				return (settings::consts::shader::block::cactus_bottom);
-			}
-			return (settings::consts::shader::block::cactus_side);
-		}
+		int getTex( int dir, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 };
@@ -925,15 +889,7 @@ struct Farmland : Block {
 			needed_tool = blocks::wooden_shovel;
 			hardness = 0.6f;
 		}
-		virtual int getTex( int dir, int value ) const override {
-			if (value == blocks::item) {
-				return (settings::consts::shader::block::debug);
-			} else if (dir == face_dir::plus_z) {
-				return ((value & mask::farmland::wet) ? settings::consts::shader::block::farmland_moist
-					: settings::consts::shader::block::farmland);
-			}
-			return (settings::consts::shader::block::dirt);
-		}
+		virtual int getTex( int dir, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
@@ -945,16 +901,7 @@ struct DirtPath : Farmland {
 			blast_resistance = 0.65f;
 			hardness = 0.65f;
 		}
-		int getTex( int dir, int value ) const override {
-			if (value == blocks::item) {
-				return (settings::consts::shader::block::debug);
-			} else if (dir == face_dir::plus_z) {
-				return (settings::consts::shader::block::dirt_path_top);
-			} else if (dir == face_dir::minus_z) {
-				return (settings::consts::shader::block::dirt);
-			}
-			return (settings::consts::shader::block::dirt_path_side);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct TNT : Cube {
@@ -967,15 +914,7 @@ struct TNT : Cube {
 			hardness = 0.0f;
 			redstoneComponant = true;
 		}
-		int getTex( int dir, int value ) const override {
-			(void)value;
-			if (dir == face_dir::plus_z) {
-				return (settings::consts::shader::block::tnt_top);
-			} else if (dir == face_dir::minus_z) {
-				return (settings::consts::shader::block::tnt_bottom);
-			}
-			return (settings::consts::shader::block::tnt_side);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct Target : Cube {
@@ -988,11 +927,7 @@ struct Target : Cube {
 			needed_tool = blocks::wooden_hoe;
 			hardness = 0.5f;
 		}
-		int getTex( int dir, int value ) const override {
-			(void)value;
-			return ((dir == face_dir::plus_z || dir == face_dir::minus_z)
-				? settings::consts::shader::block::target_top : settings::consts::shader::block::target_side);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct CraftingTable : Cube {
@@ -1009,14 +944,7 @@ struct CraftingTable : Cube {
 			needed_tool = blocks::wooden_axe;
 			hardness = 2.5f;
 		}
-		int getTex( int dir, int value ) const override {
-			if (dir == face_dir::plus_z || dir == face_dir::minus_z) {
-				return (settings::consts::shader::block::crafting_table_top);
-			} else if (((value >> offset::blocks::orientation) & 0x7) == dir) {
-				return (settings::consts::shader::block::crafting_table_front);
-			}
-			return (settings::consts::shader::block::crafting_table_side);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct Furnace : Cube {
@@ -1031,15 +959,7 @@ struct Furnace : Cube {
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = 3.5f;
 		}
-		int getTex( int dir, int value ) const override {
-			if (dir == face_dir::plus_z || dir == face_dir::minus_z) {
-				return (settings::consts::shader::block::furnace_top);
-			} else if (((value >> offset::blocks::orientation) & 0x7) == dir) {
-				return (((value >> offset::redstone::activated) & 0x1)
-					? settings::consts::shader::block::furnace_front_on : settings::consts::shader::block::furnace_front);
-			}
-			return (settings::consts::shader::block::furnace_side);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct OakStairs : Stairs {
@@ -1082,22 +1002,7 @@ struct OakDoor : Door {
 			needed_tool = blocks::wooden_axe;
 			hardness = 3.0f;
 		}
-		int getTex( int dir, int value ) const override {
-			(void)dir;
-			if (value == blocks::item) {
-				return (settings::consts::shader::item::oak_door);
-			}
-			switch (dir) {
-				case face_dir::plus_z:
-					return (settings::consts::shader::block::oak_door_top);
-				case face_dir::minus_z:
-					return (settings::consts::shader::block::oak_door_bottom);
-				default:
-					return (((value >> offset::blocks::bitfield) & door::upper_half)
-						? settings::consts::shader::block::oak_door_top
-						: settings::consts::shader::block::oak_door_bottom);
-			}
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct OakTrapdoor : Trapdoor {
@@ -1407,11 +1312,7 @@ struct RedstoneLamp : Cube {
 			hardness = 0.3f;
 			redstoneComponant = true;
 		}
-		int getTex( int dir, int value ) const override {
-			(void)dir;
-			return ((value & mask::redstone::activated) ? settings::consts::shader::block::redstone_lamp_on
-				: settings::consts::shader::block::redstone_lamp);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct StoneButton : Button {
@@ -1660,7 +1561,6 @@ struct StoneBricksSlab : Slab {
 		}
 };
 
-int opposite_dir( int dir );
 struct Piston : Block {
 	public:
 		Piston() {
@@ -1674,18 +1574,7 @@ struct Piston : Block {
 			transparent = true;
 			oriented = true;
 		}
-		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
-			int orientation = (value >> offset::blocks::orientation) & 0x7;
-			if (dir == orientation) {
-				return ((value & mask::redstone::piston::moving) ? settings::consts::shader::block::piston_inner
-					: (mined == blocks::sticky_piston) ? settings::consts::shader::block::piston_top_sticky
-					: settings::consts::shader::block::piston_top);
-			}
-			if (dir == opposite_dir(orientation)) {
-				return (settings::consts::shader::block::piston_bottom);
-			}
-			return (settings::consts::shader::block::piston_side);
-		}
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
@@ -1737,22 +1626,7 @@ struct Observer : Block {
 			transparent = true;
 			oriented = true;
 		}
-		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
-			int orientation = (value >> offset::blocks::orientation) & 0x7;
-			if (dir == orientation) {
-				return (settings::consts::shader::block::observer_front);
-			}
-			if (dir == opposite_dir(orientation)) {
-				return ((value & mask::redstone::activated) ? settings::consts::shader::block::observer_back_on
-					: settings::consts::shader::block::observer_back);
-			}
-			if (orientation & 0x4) {
-				return ((dir & 0x2) ? settings::consts::shader::block::observer_side
-					: settings::consts::shader::block::observer_top);
-			}
-			return ((dir & 0x4) ? settings::consts::shader::block::observer_top
-				: settings::consts::shader::block::observer_side);
-		}
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addItem( UI* ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const override;
 };
@@ -1881,14 +1755,7 @@ struct RedstoneTorch : Torch {
 			mined = blocks::redstone_torch;
 			light_level = 7;
 		}
-		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
-			(void)dir;
-			if (value == blocks::item) {
-				return (settings::consts::shader::block::redstone_torch);
-			}
-			return ((value & mask::redstone::powered) ? settings::consts::shader::block::redstone_torch_off
-				: settings::consts::shader::block::redstone_torch);
-		}
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override;
 };
 
 struct RedstoneDust : Block {
@@ -1908,11 +1775,7 @@ struct RedstoneDust : Block {
 			isSolidForFluid = false;
 			item3D = false;
 		}
-		int getTex( int dir, int value ) const override {
-			(void)dir;
-			return ((value == blocks::item) ? settings::consts::shader::item::redstone
-				: settings::consts::shader::block::dust_dot);
-		}
+		int getTex( int dir, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
@@ -1936,12 +1799,7 @@ struct Repeater : Block {
 			isSolidForFluid = false;
 			item3D = false;
 		}
-		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
-			(void)dir;
-			return ((value == blocks::item) ? settings::consts::shader::item::repeater
-				: (value & mask::redstone::powered) ? settings::consts::shader::block::repeater_on
-				: settings::consts::shader::block::repeater);
-		}
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
@@ -1965,12 +1823,7 @@ struct Comparator : Block {
 			isSolidForFluid = false;
 			item3D = false;
 		}
-		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
-			(void)dir;
-			return ((value == blocks::item) ? settings::consts::shader::item::comparator
-				: (value & mask::redstone::powered) ? settings::consts::shader::block::comparator_on
-				: settings::consts::shader::block::comparator);
-		}
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 };
 
@@ -2002,10 +1855,7 @@ struct WheatCrop : Crop {
 			name = "WHEAT_CROP";
 			mined = blocks::wheat_seeds;
 		}
-		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
-			(void)dir;
-			return (settings::consts::shader::block::wheat_stage0 + (value >> offset::blocks::bitfield));
-		}
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override;
 		void getHitbox( glm::vec3* hitbox, int value ) const override;
 };
 
@@ -2026,10 +1876,7 @@ struct ItemFrame : Block {
 			item3D = false;
 			texture = settings::consts::shader::block::item_frame;
 		}
-		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override {
-			(void)dir;(void)value;
-			return (settings::consts::shader::item::item_frame);
-		}
+		int getTex( int dir = face_dir::minus_y, int value = 0 ) const override;
 		void getHitbox( glm::vec3* hitbox, int value ) const override;
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
@@ -2060,12 +1907,7 @@ struct SandStone : Cube {
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = .8f;
 		}
-		int getTex( int dir, int value ) const override {
-			(void)value;
-			return ((dir == face_dir::plus_z) ? settings::consts::shader::block::sandstone_top
-				: (dir == face_dir::minus_z) ? settings::consts::shader::block::sandstone_bottom
-				: settings::consts::shader::block::sandstone);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct Glowstone : Cube {
@@ -2093,15 +1935,7 @@ struct Bookshelf : Cube {
 			byHand = true;
 			hardness = 1.5f;
 		}
-		int getTex( int dir, int value ) const override {
-			(void)value;
-			switch (dir) {
-				case face_dir::plus_z:
-				case face_dir::minus_z:
-					return (settings::consts::shader::block::oak_planks);
-			}
-			return (settings::consts::shader::block::bookshelf);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct Lectern : Block {
@@ -3044,24 +2878,7 @@ struct ChiseledQuartzBlock : Cube {
 			hardness = .8f;
 			texture = settings::consts::shader::block::chiseled_quartz_block;
 		}
-		int getTex( int dir, int value ) const override {
-			int axis = (value >> offset::blocks::orientation) & 0x7;
-			switch (dir) {
-				case face_dir::minus_z:
-				case face_dir::plus_z:
-					return ((axis == face_dir::plus_z) ? settings::consts::shader::block::chiseled_quartz_block_top
-						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::chiseled_quartz_block);
-				case face_dir::minus_x:
-				case face_dir::plus_x:
-					return ((axis == face_dir::plus_x) ? settings::consts::shader::block::chiseled_quartz_block_top
-						: (axis == face_dir::plus_y) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::chiseled_quartz_block);
-				case face_dir::minus_y:
-				case face_dir::plus_y:
-					return ((axis == face_dir::plus_y) ? settings::consts::shader::block::chiseled_quartz_block_top
-						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::chiseled_quartz_block);
-			}
-			return (settings::consts::shader::block::chiseled_quartz_block);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct QuartzPillar : Cube {
@@ -3075,24 +2892,7 @@ struct QuartzPillar : Cube {
 			needed_tool = blocks::wooden_pickaxe;
 			hardness = .8f;
 		}
-		int getTex( int dir, int value ) const override {
-			int axis = (value >> offset::blocks::orientation) & 0x7;
-			switch (dir) {
-				case face_dir::minus_z:
-				case face_dir::plus_z:
-					return ((axis == face_dir::plus_z) ? settings::consts::shader::block::quartz_pillar_top
-						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::quartz_pillar);
-				case face_dir::minus_x:
-				case face_dir::plus_x:
-					return ((axis == face_dir::plus_x) ? settings::consts::shader::block::quartz_pillar_top
-						: (axis == face_dir::plus_y) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::quartz_pillar);
-				case face_dir::minus_y:
-				case face_dir::plus_y:
-					return ((axis == face_dir::plus_y) ? settings::consts::shader::block::quartz_pillar_top
-						: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::quartz_pillar);
-			}
-			return (settings::consts::shader::block::quartz_pillar);
-		}
+		int getTex( int dir, int value ) const override;
 };
 
 struct QuartzBricks : Cube {

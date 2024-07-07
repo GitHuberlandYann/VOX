@@ -303,7 +303,7 @@ bool Entity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double d
 		s_blocks[_item.type]->addMeshItem(arr, itemLight, pos, front, right, settings::consts::math::world_up, 0.25f);
 	} else {
 		glm::vec3 pos = _pos - front * .25f * one16th - right * .25f + settings::consts::math::world_up * (0.5f + (cosRot + 1) * 0.25f);
-		EXTRUSION::drawItem3D(arr, _item.type, itemLight, pos, front, right, settings::consts::math::world_up, 0.5f);
+		utils::extrusion::drawItem3D(arr, _item.type, itemLight, pos, front, right, settings::consts::math::world_up, 0.5f);
 	}
     return (false);
 }
@@ -445,7 +445,7 @@ bool ArrowEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, dou
 		_pos += _dir * static_cast<float>(deltaTime);
 		_dir.z -= 0.1f;
 		Player* player = _chunk->getPlayer();
-		if (cube_cube_intersection(player->getPos(),
+		if (utils::math::cube_cube_intersection(player->getPos(),
 			{0.3f, 0.3f, player->getHitbox()}, _pos + glm::vec3(.0f, .0f, .05f), {.05f, .05f, .05f})) {
 			player->receiveDamage(4.5f, glm::normalize(_dir) * 2.f);
 			// player->receiveDamage(4.5f, _dir); // for fun op knockback
@@ -600,7 +600,7 @@ bool ItemFrameEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos,
 		s_blocks[_item.type]->addMeshItem(arr, itemLight, pos, _front, _right, _up, 0.25f);
 	} else {
 		glm::vec3 pos = _pos - (_right - _up) * .25f + _front * (0.125f - one16th);
-		EXTRUSION::drawItem3D(arr, _item.type, itemLight, pos, _front, _right, _up, 0.5f);
+		utils::extrusion::drawItem3D(arr, _item.type, itemLight, pos, _front, _right, _up, 0.5f);
 	}
     return (false);
 }
@@ -670,7 +670,7 @@ bool LecternEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, d
 	// 	s_blocks[_item.type]->addMeshItem(arr, itemLight, pos, _front, _right, _up, 0.25f);
 	// } else {
 		glm::vec3 pos = _pos + settings::consts::math::world_up * 1.5f;
-		EXTRUSION::drawItem3D(arr, _item.type, itemLight, pos, _front, _right, settings::consts::math::world_up, 0.5f);
+		utils::extrusion::drawItem3D(arr, _item.type, itemLight, pos, _front, _right, settings::consts::math::world_up, 0.5f);
 	// }
     return (false);
 }

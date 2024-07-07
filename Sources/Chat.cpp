@@ -356,7 +356,7 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 	} else if (!argv[2].compare(0, 8, "blocks::")) {
 		int i = 0;
 		for (; i < S_BLOCKS_SIZE; ++i) {
-			if (!case_insensitive_compare(s_blocks[i]->name, argv[2].substr(8))) {
+			if (!utils::string::case_insensitive_compare(s_blocks[i]->name, argv[2].substr(8))) {
 				item = i;
 				break ;
 			}
@@ -550,13 +550,13 @@ void Chat::chatMessage( std::string str, unsigned color )
 bool Chat::sendMessage( std::string str )
 {
 	_histo_cursor = 0;
-	str = trim_spaces(str);
+	str = utils::string::trim_spaces(str);
 	if (!str[0]) return (false);
 	if (!_historic.size() || str != _historic.back().str) {
 		_historic.push_back({str, argb::white}); // used to handle arrow action (ie command history)
 	}
 	if (str[0] == '/') {
-		std::vector<std::string> parstr = split(str, ' ');
+		std::vector<std::string> parstr = utils::string::split(str, ' ');
 		if (str[1] == '/') {
 			if (!WorldEdit::Get()->parseCommand(parstr) || !handle_freeze(parstr.size(), parstr)
 				|| !handle_frame(parstr.size(), parstr)) {
@@ -631,19 +631,19 @@ void Chat::blitMessages( float deltaTime )
 // display messages other than current ones
 void Chat::blitPastMessages( void )
 {
-	int nbr_past = maxi(0, mini(10, _past.size() + _current.size()) - _current.size());
+	int nbr_past = glm::max(0UL, glm::min(10UL, _past.size() + _current.size()) - _current.size());
 	for (int index = 0; index < nbr_past; ++index) {
 		t_msg msg = _past[_past.size() - nbr_past + index];
-		_text->addText(36, WIN_HEIGHT - 68 - 18 * (mini(10, _past.size() + _current.size()) - index), 12, msg.color, settings::consts::depth::chat, msg.str);
+		_text->addText(36, WIN_HEIGHT - 68 - 18 * (glm::min(10UL, _past.size() + _current.size()) - index), 12, msg.color, settings::consts::depth::chat, msg.str);
 	}
 }
 
 // compute number of lines of text displayed by past and current messages
 int Chat::computeHeight( void )
 {
-	if (_current.size() >= 10)
+	if (_current.size() >= 10UL)
 		return (_current.size());
-	return (mini(10, _past.size() + _current.size()));
+	return (glm::min(10UL, _past.size() + _current.size()));
 }
 
 std::string Chat::getInfoString( void )

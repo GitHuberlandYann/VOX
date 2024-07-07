@@ -19,7 +19,7 @@ void Chunk::updateCrop( int value, int offset )
 	int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 	TICKUPLOG(LOG(_startX << ", " << _startY << ": update crop at " << posX << ", " << posY << ", " << posZ));
 	int light = getLightLevel(posX, posY, posZ);
-	light = maxi(light & 0xF, (light >> 8) & 0xF);
+	light = glm::max(light & 0xF, (light >> 8) & 0xF);
 	if (light < 9) { // crop requires light level of at least 9 to grow // TODO handle night light dimming
 		TICKUPLOG(LOG("Failure. sky light " << ((light >> 8) & 0xF) << ", block light " << (light & 0xF)));
 		if (light <= 7) { // uproot // TODO crops can't be planted if light level <= 7
@@ -121,7 +121,7 @@ void Chunk::spreadGrassblock( int offset )
 		}
 	}
 	int light = getLightLevel(posX, posY, posZ + 1);
-	light = maxi(light & 0xF, (light >> 8) & 0xF);
+	light = glm::max(light & 0xF, (light >> 8) & 0xF);
 	if (light < 9) { // grass requires light level of at least 9 to spread // TODO handle night light dimming
 		if (light < 5) {
 			_blocks[offset] = blocks::dirt;
@@ -184,7 +184,7 @@ bool Chunk::spaceForTree( int posX, int posY, int posZ )
 		for (int col = -1; col < 2; col++) {
 			for (int level = 1; level < 6; level++) {
 				int type = getBlockAt(posX + row, posY + col, posZ + level) & mask::blocks::type;
-				if (air_flower(type, true, false, true) && type != blocks::grass_block && type != blocks::dirt) {
+				if (utils::block::air_flower(type, true, false, true) && type != blocks::grass_block && type != blocks::dirt) {
 					return (false);
 				}
 			}
@@ -200,7 +200,7 @@ void Chunk::growTree( int value, int offset )
 	int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 
 	int light = getLightLevel(posX, posY, posZ);
-	light = maxi(light & 0xF, (light >> 8) & 0xF);
+	light = glm::max(light & 0xF, (light >> 8) & 0xF);
 	TICKUPLOG(LOG("growTree at " << posX << ", " << posY << ", " << posZ));
 	if (light < 9 || !spaceForTree(posX, posY, posZ)) { // requirements not met
 	TICKUPLOG(LOG("failure. light " << light));

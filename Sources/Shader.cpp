@@ -64,7 +64,7 @@ GLuint Shader::createProgram( std::string vertex, std::string geometry, std::str
     if (_program) {
 		glDeleteProgram(_program);
 	}
-	_program = createShaderProgram(vertex, geometry, fragment);
+	_program = utils::shader::createShaderProgram(vertex, geometry, fragment);
     return (_program);
 }
 

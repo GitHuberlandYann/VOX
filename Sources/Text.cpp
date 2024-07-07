@@ -51,7 +51,7 @@ void Text::setupShader( void )
 	_shader.bindAttribute(settings::consts::shader::attributes::position, "position");
 	_shader.linkProgram();
 
-	check_glstate("text_Shader program successfully created", true);
+	utils::shader::check_glstate("text_Shader program successfully created", true);
 
 	glUniform1i(glGetUniformLocation(_shader.getProgram(), "win_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_shader.getProgram(), "win_height"), WIN_HEIGHT);
@@ -69,7 +69,7 @@ void Text::updateWinSize( void )
 	glUniform1i(glGetUniformLocation(_shader.getProgram(), "win_height"), WIN_HEIGHT);
 }
 
-int Utils::Text::textWidth( int font_size, std::string str, int limit )
+int utils::text::textWidth( int font_size, std::string str, int limit )
 {
 	int res = 0, maxWidth = 0;
 	for (size_t i = 0, charLine = 0; str[i]; ++i, ++charLine) {
@@ -192,7 +192,7 @@ void Text::addCursorText( int posX, int posY, int font_size, unsigned color, int
 
 void Text::addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, int depth, std::string str )
 {
-	int text_width = Utils::Text::textWidth(font_size, str);
+	int text_width = utils::text::textWidth(font_size, str);
 	if (shadow) {
 		int offset = font_size / 8;
 		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, argb::black, depth + 1, str);
@@ -202,7 +202,7 @@ void Text::addCenteredText( int left, int top, int width, int height, int font_s
 
 void Text::addCenteredCursorText( int left, int top, int width, int height, int font_size, bool shadow, int depth, bool bar, size_t cursor, std::string str )
 {
-	int text_width = Utils::Text::textWidth(font_size, str);
+	int text_width = utils::text::textWidth(font_size, str);
 	if (shadow) {
 		int offset = font_size / 8;
 		addCursorText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, argb::black, depth + 1, bar, cursor, str);
@@ -219,7 +219,7 @@ void Text::toScreen( void )
 
 	_vabo.uploadData(tSize, &_texts[0].spec);
 
-	check_glstate("Text::toScreen", false);
+	utils::shader::check_glstate("Text::toScreen", false);
 
 	_shader.useProgram();
 	glDrawArrays(GL_TRIANGLES, 0, tSize);

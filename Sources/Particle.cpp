@@ -38,11 +38,11 @@ bool Particle::updateFlame( std::vector<t_shaderInputPart>& arr, glm::vec3 camDi
 
 	float size, time = _frame * settings::consts::tick * 4 + _lifeTime;
 	if (_frame < 4) {
-		size = gradient(time, 0, 4 * settings::consts::tick * 4, 0.125, 0.1);
+		size = utils::math::gradient(time, 0, 4 * settings::consts::tick * 4, 0.125, 0.1);
 	} else if (_frame < 6) {
-		size = gradient(time, 4 * settings::consts::tick * 4, 6 * settings::consts::tick * 4, 0.1125, 0.1);
+		size = utils::math::gradient(time, 4 * settings::consts::tick * 4, 6 * settings::consts::tick * 4, 0.1125, 0.1);
 	} else {
-		size = gradient(time, 6 * settings::consts::tick * 4, 14 * settings::consts::tick * 4, 0.1125, 0);
+		size = utils::math::gradient(time, 6 * settings::consts::tick * 4, 14 * settings::consts::tick * 4, 0.1125, 0);
 		if (_frame > 15) {
 			_frame = 0;
 		}

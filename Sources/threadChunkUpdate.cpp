@@ -54,7 +54,7 @@ void thread_chunk_update( OpenGL_Manager *render )
 			++it;
 		}
 		// b.stamp("delperi");
-		sort_chunks(render->_player->getPos(), newperi_chunks);
+		utils::math::sort_chunks(render->_player->getPos(), newperi_chunks);
 		// b.stamp("sort chunks");
 		mtx_perimeter.lock();
 		render->_perimeter_chunks = newperi_chunks;

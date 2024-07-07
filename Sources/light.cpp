@@ -29,7 +29,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 			if (posZ + delta.z < 0 || posZ + delta.z > 255) {
 			} else {
 				short adj = getLightLevel(posX + delta.x, posY + delta.y, posZ + delta.z) >> shift;
-				maxLevel = maxs(maxLevel, adj & 0xF);
+				maxLevel = utils::math::maxs(maxLevel, adj & 0xF);
 				if (skySpread && index == face_dir::plus_z && (adj & 0xF0)) {
 					// TODO if _blocks[offset].. is not water/leaves
 					// 	maxLevel = adj&0xFF - (0x10 if adj & 0xF0 else 0);
@@ -40,7 +40,7 @@ void Chunk::light_spread( int posX, int posY, int posZ, bool skySpread, int recu
 		}
 		if ((maxLevel && maxLevel - 1 != level) || (!maxLevel && level)) {
 			if (!skySpread && level >= maxLevel - 1) maxLevel = 1;
-			level = (level & 0xF0) + maxs((level & 0xF0) >> 4, maxLevel - 1);
+			level = (level & 0xF0) + utils::math::maxs((level & 0xF0) >> 4, maxLevel - 1);
 			_lights[offset] = (saveLight & (0xFF << (8 - shift))) + (level << shift);
 			_light_update = true;
 		} else {
@@ -117,11 +117,11 @@ int Chunk::computeSmoothLight( int faceLight, int row, int col, int level, std::
 		return (faceLight);
 	}
 	short light = getLightLevel(row + offsets[0], col + offsets[1], level + offsets[2]);
-	faceLight = maxs(faceLight & 0xF, light & 0xF) + (maxs((faceLight >> 4) & 0xF, (light >> 8) & 0xF) << 4);
+	faceLight = utils::math::maxs(faceLight & 0xF, light & 0xF) + (utils::math::maxs((faceLight >> 4) & 0xF, (light >> 8) & 0xF) << 4);
 	light = getLightLevel(row + offsets[3], col + offsets[4], level + offsets[5]);
-	faceLight = maxs(faceLight & 0xF, light & 0xF) + (maxs((faceLight >> 4) & 0xF, (light >> 8) & 0xF) << 4);
+	faceLight = utils::math::maxs(faceLight & 0xF, light & 0xF) + (utils::math::maxs((faceLight >> 4) & 0xF, (light >> 8) & 0xF) << 4);
 	light = getLightLevel(row + offsets[6], col + offsets[7], level + offsets[8]);
-	faceLight = maxs(faceLight & 0xF, light & 0xF) + (maxs((faceLight >> 4) & 0xF, (light >> 8) & 0xF) << 4);
+	faceLight = utils::math::maxs(faceLight & 0xF, light & 0xF) + (utils::math::maxs((faceLight >> 4) & 0xF, (light >> 8) & 0xF) << 4);
 	return (faceLight);
 }
 
@@ -286,14 +286,14 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 		}
 	} else {
 		int type = _blocks[(((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ] & mask::blocks::type;
-		// if (air_flower(type, false, true, true) && type != blocks::OAK_SLAB_BOTTOM && type != blocks::farmland && type != blocks::dirt_PATH) {
+		// if (utils::block::air_flower(type, false, true, true) && type != blocks::OAK_SLAB_BOTTOM && type != blocks::farmland && type != blocks::dirt_PATH) {
 		// 	return ;
 		// }
 		if (!s_blocks[type]->transparent) {
 			return ;
 		}
 		short neighbour = (_lights[(((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ] >> (8 * skySpread));
-		if ((!(neighbour & 0xF0) || (skySpread && !(level & 0xF0))) && ((neighbour & 0xF) != maxs(0, ((level & 0xF) - 1) & 0xF))) { // only spread to non source blocks whose value is not expected value. Also spread to source block if from non source block and skySpread
+		if ((!(neighbour & 0xF0) || (skySpread && !(level & 0xF0))) && ((neighbour & 0xF) != utils::math::maxs(0, ((level & 0xF) - 1) & 0xF))) { // only spread to non source blocks whose value is not expected value. Also spread to source block if from non source block and skySpread
 			light_spread(posX, posY, posZ, skySpread, recurse);
 		}
 	}

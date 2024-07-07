@@ -28,8 +28,8 @@ t_hit OpenGL_Manager::getBlockHit( void )
 	bool first_loop = true;
 	for (auto& i : ids) {
 		// std::cout << "checking > " << i.x << ", " << i.y << ", " << i.z << std::endl;
-		int posX = chunk_pos(i.x);
-		int posY = chunk_pos(i.y);
+		int posX = utils::math::chunk_pos(i.x);
+		int posY = utils::math::chunk_pos(i.y);
 		
 		if (!chunk || posX != current_chunk.x || posY != current_chunk.y) {
 			current_chunk = glm::ivec2(posX, posY);
@@ -74,7 +74,7 @@ t_hit OpenGL_Manager::getBlockHit( void )
 			if (target->hasHitbox) {
 				target->getHitbox(hitbox, value);
 			}
-			if (!target->hasHitbox || line_cube_intersection(_player->getEyePos(), _player->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
+			if (!target->hasHitbox || utils::math::line_cube_intersection(_player->getEyePos(), _player->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
 				_chunk_hit = chunk;
 				res.pos = i;
 				res.value = value;
@@ -83,7 +83,7 @@ t_hit OpenGL_Manager::getBlockHit( void )
 				return (res);
 			} else if (target->hasSecondaryHitbox) {
 				target->getSecondaryHitbox(hitbox, value);
-				if (line_cube_intersection(_player->getEyePos(), _player->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
+				if (utils::math::line_cube_intersection(_player->getEyePos(), _player->getDir(), glm::vec3(i) + hitbox[0], hitbox[1])) {
 					_chunk_hit = chunk;
 					res.pos = i;
 					res.value = value;
@@ -120,7 +120,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			_chunk_hit->handleHit(collect, 0, _block_hit.pos, Modif::rm);
 			return ;
 		}
-		LOGERROR("rm: chunk out of bound at " << chunk_pos(_block_hit.pos.x) << ", " << chunk_pos(_block_hit.pos.y));
+		LOGERROR("rm: chunk out of bound at " << utils::math::chunk_pos(_block_hit.pos.x) << ", " << utils::math::chunk_pos(_block_hit.pos.y));
 		return ;
 	}
 	// from now on adding = true
@@ -274,14 +274,14 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			type = ((_block_hit.pos.z < _block_hit.prev_pos.z) ? type : type | ((shape == geometry::slab) ? mask::slab::top : mask::stairs::top));
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.x > _block_hit.prev_pos.x) ? glm::ivec3(0, 0, 0) : glm::ivec3(1, 0, 0));
-			glm::vec3 intersect = line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {1, 0, 0});
+			glm::vec3 intersect = utils::math::line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {1, 0, 0});
 			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type | ((shape == geometry::slab) ? mask::slab::top : mask::stairs::top));
 			// _ui->chatMessage("block hit " + std::to_string(_block_hit.pos.x) + ", " + std::to_string(_block_hit.pos.y) + ", " + std::to_string(_block_hit.pos.z));
 			// _ui->chatMessage("p0 at " + std::to_string(p0.x) + ", " + std::to_string(p0.y) + ", " + std::to_string(p0.z));
 			// _ui->chatMessage("intersect at " + std::to_string(intersect.x) + ", " + std::to_string(intersect.y) + ", " + std::to_string(intersect.z));
 		} else {
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
-			glm::vec3 intersect = line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {0, 1, 0});
+			glm::vec3 intersect = utils::math::line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {0, 1, 0});
 			type = ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? type : type | ((shape == geometry::slab) ? mask::slab::top : mask::stairs::top));
 		}
 	} else if (shape == geometry::trapdoor) {
@@ -289,14 +289,14 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			type += ((_block_hit.pos.z < _block_hit.prev_pos.z) ? 0 : (door::upper_half << 12));
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.x > _block_hit.prev_pos.x) ? glm::ivec3(0, 0, 0) : glm::ivec3(1, 0, 0));
-			glm::vec3 intersect = line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {1, 0, 0});
+			glm::vec3 intersect = utils::math::line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {1, 0, 0});
 			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (door::upper_half << 12));
 			// _ui->chatMessage("block hit " + std::to_string(_block_hit.pos.x) + ", " + std::to_string(_block_hit.pos.y) + ", " + std::to_string(_block_hit.pos.z));
 			// _ui->chatMessage("p0 at " + std::to_string(p0.x) + ", " + std::to_string(p0.y) + ", " + std::to_string(p0.z));
 			// _ui->chatMessage("intersect at " + std::to_string(intersect.x) + ", " + std::to_string(intersect.y) + ", " + std::to_string(intersect.z));
 		} else {
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
-			glm::vec3 intersect = line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {0, 1, 0});
+			glm::vec3 intersect = utils::math::line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {0, 1, 0});
 			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (door::upper_half << 12));
 		}
 	} else if (type == blocks::oak_log) {
@@ -381,8 +381,8 @@ void OpenGL_Manager::updateVisibleChunks( void )
 
 void OpenGL_Manager::chunkUpdate( void )
 {
-	int posX = chunk_pos(static_cast<int>(glm::floor(_player->getPos().x)));
-	int posY = chunk_pos(static_cast<int>(glm::floor(_player->getPos().y)));
+	int posX = utils::math::chunk_pos(static_cast<int>(glm::floor(_player->getPos().x)));
+	int posY = utils::math::chunk_pos(static_cast<int>(glm::floor(_player->getPos().y)));
 	
 	if (posX == _current_chunk.x && posY == _current_chunk.y) {
 		return ;

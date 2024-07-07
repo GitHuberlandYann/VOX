@@ -152,7 +152,7 @@ void UI::setup_array_buffer( void )
 	_vaoSet = true;
 	_vabo.uploadData(_nb_points, &vertices[0][0]);
 
-	check_glstate("UI::setup_array_buffer", false);
+	utils::shader::check_glstate("UI::setup_array_buffer", false);
 }
 
 void UI::setup_item_array_buffer( void )
@@ -228,7 +228,7 @@ void UI::setupShader( void )
 	glUniform1i(glGetUniformLocation(_itemShader.getProgram(), "win_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_itemShader.getProgram(), "win_height"), WIN_HEIGHT);
 
-	check_glstate("Item_Shader program successfully created\n", true);
+	utils::shader::check_glstate("Item_Shader program successfully created\n", true);
 
 	// then setup ui shader program
 	_shader.createProgram(Settings::Get()->getString(settings::strings::ui_vertex_shader), "",
@@ -242,7 +242,7 @@ void UI::setupShader( void )
 	glUniform1i(glGetUniformLocation(_shader.getProgram(), "win_width"), WIN_WIDTH);
 	glUniform1i(glGetUniformLocation(_shader.getProgram(), "win_height"), WIN_HEIGHT);
 
-	check_glstate("UI_Shader program successfully created\n", true);
+	utils::shader::check_glstate("UI_Shader program successfully created\n", true);
 
 	_vabo.genBuffers();
 	_vabo.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
@@ -301,7 +301,7 @@ void UI::drawUserInterface( std::string str, int game_mode, float deltaTime )
 {
 	if (_inventoryMessage.timer > 0) {
 		_inventoryMessage.timer -= deltaTime;
-		_text->addText((WIN_WIDTH - Utils::Text::textWidth(_gui_size * 3, _inventoryMessage.str)) / 2, WIN_HEIGHT - (35 * _gui_size) * 2, _gui_size * 3, argb::white, settings::consts::depth::debug, _inventoryMessage.str);
+		_text->addText((WIN_WIDTH - utils::text::textWidth(_gui_size * 3, _inventoryMessage.str)) / 2, WIN_HEIGHT - (35 * _gui_size) * 2, _gui_size * 3, argb::white, settings::consts::depth::debug, _inventoryMessage.str);
 	}
 	_chat->blitMessages(deltaTime);
 	_text->addText(12, 24, _gui_size * 3, argb::white, settings::consts::depth::debug, str);
@@ -361,7 +361,7 @@ void UI::textToScreen( bool ingame )
 
 			_vaboItem.uploadData(nb_items, &_items[0].spec);
 			
-			check_glstate("UI::setup_item_array_buffer", false);
+			utils::shader::check_glstate("UI::setup_item_array_buffer", false);
 		}
 
 		_vaboItem.bindVertexArray();

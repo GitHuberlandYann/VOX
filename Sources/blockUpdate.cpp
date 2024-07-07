@@ -225,7 +225,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 	} else if (shape == geometry::piston) {
 		block_value += (_player->getOrientation6() << offset::blocks::orientation);
 	} else if (type == blocks::observer) {
-		block_value += (opposite_dir(_player->getOrientation6()) << offset::blocks::orientation);
+		block_value += (utils::block::opposite_dir(_player->getOrientation6()) << offset::blocks::orientation);
 	} else if (s_blocks[type]->oriented) {
 		if ((type != blocks::lever && shape != geometry::button && type != blocks::item_frame) || ((block_value >> offset::blocks::bitfield) & 0x3) != placement::wall) {
 			block_value += (_player->getOrientation() << offset::blocks::orientation);

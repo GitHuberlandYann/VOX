@@ -81,7 +81,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	DayCycle::Destroy();
 	Settings::Destroy();
 	WorldEdit::Destroy();
-	check_glstate("openGL_Manager destructed", true);
+	utils::shader::check_glstate("openGL_Manager destructed", true);
 }
 
 // ************************************************************************** //
@@ -204,7 +204,7 @@ void OpenGL_Manager::drawEntities( void )
 	size_t bufSize = esize + ((hitBox) ? 24 : 0) + ((borders) ? 64 : 0);
 	_vaboEntities.uploadData(bufSize, &(_entities[0].texture));
 
-	check_glstate("OpenGL_Manager::drawEntities", false);
+	utils::shader::check_glstate("OpenGL_Manager::drawEntities", false);
 
 	if (hitBox) {
 		glDrawArrays(GL_LINES, esize, 24);
@@ -229,7 +229,7 @@ void OpenGL_Manager::drawParticles( void )
 	_particleShader.useProgram();
 	_vaboParticles.uploadData(psize, &(_particles[0].spec));
 
-	check_glstate("OpenGL_Manager::drawParticles", false);
+	utils::shader::check_glstate("OpenGL_Manager::drawParticles", false);
 
 	glDrawArrays(GL_TRIANGLES, 0, psize);
 
@@ -248,7 +248,7 @@ void OpenGL_Manager::drawModels( void )
 	_modelShader.useProgram();
 	_vaboModels.uploadData(msize, &(_models[0].spec));
 
-	check_glstate("OpenGL_Manager::drawModels", false);
+	utils::shader::check_glstate("OpenGL_Manager::drawModels", false);
 
 	glDrawArrays(GL_TRIANGLES, 0, msize);
 
@@ -321,7 +321,7 @@ void OpenGL_Manager::setupWindow( void )
 	_menu->setWindow(_window);
 	Settings::Get()->loadResourcePacks();
 
-	check_glstate("Window successfully created", true);
+	utils::shader::check_glstate("Window successfully created", true);
 }
 
 void OpenGL_Manager::initWorld( void )
@@ -343,7 +343,7 @@ void OpenGL_Manager::createShaders( void )
 	_skyShader.bindAttribute(settings::consts::shader::attributes::position, "position");
 	_skyShader.linkProgram();
 
-	check_glstate("skyShader program successfully created", true);
+	utils::shader::check_glstate("skyShader program successfully created", true);
 
 	// then setup particles shader
 	_particleShader.createProgram(Settings::Get()->getString(settings::strings::particle_vertex_shader), "",
@@ -354,7 +354,7 @@ void OpenGL_Manager::createShaders( void )
 	_particleShader.bindAttribute(settings::consts::shader::attributes::position, "position");
 	_particleShader.linkProgram();
 
-	check_glstate("particleShader program successfully created", true);
+	utils::shader::check_glstate("particleShader program successfully created", true);
 
 	// then setup model shader
 	_modelShader.createProgram(Settings::Get()->getString(settings::strings::model_vertex_shader), "",
@@ -365,7 +365,7 @@ void OpenGL_Manager::createShaders( void )
 	_modelShader.bindAttribute(settings::consts::shader::attributes::position, "position");
 	_modelShader.linkProgram();
 
-	check_glstate("modelShader program successfully created", true);
+	utils::shader::check_glstate("modelShader program successfully created", true);
 
 	// then setup the skybox shader
 	_skybox->createShader();
@@ -380,7 +380,7 @@ void OpenGL_Manager::createShaders( void )
 	_shader.bindAttribute(settings::consts::shader::attributes::position, "position");
 	_shader.linkProgram();
 
-	check_glstate("Shader program successfully created", true);
+	utils::shader::check_glstate("Shader program successfully created", true);
 
 	_vaboParticles.genBuffers();
 	_vaboParticles.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
@@ -392,7 +392,7 @@ void OpenGL_Manager::createShaders( void )
 	_vaboModels.genBuffers();
 	_vaboModels.addAttribute(settings::consts::shader::attributes::specifications, 1, GL_INT);
 	_vaboModels.addAttribute(settings::consts::shader::attributes::position, 3, GL_FLOAT);
-	check_glstate("Gen and setup buffers", false);
+	utils::shader::check_glstate("Gen and setup buffers", false);
 }
 
 void OpenGL_Manager::setupCommunicationShaders( void )
@@ -431,7 +431,7 @@ void OpenGL_Manager::setupCommunicationShaders( void )
 	_skyShader.setUniformLocation(settings::consts::shader::uniform::color, "color");
 	_skyShader.setUniformLocation(settings::consts::shader::uniform::animation, "animFrame");
 
-	check_glstate("\nCommunication with shader program successfully established", true);
+	utils::shader::check_glstate("\nCommunication with shader program successfully established", true);
 }
 
 void OpenGL_Manager::setGamemode( int gamemode )
@@ -682,7 +682,7 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 		mtx.unlock();
 	}
 	switch (_menu->run(animUpdate)) {
-		case menu::no_change:
+		case menu::ret::no_change:
 			break ;
 		case menu::ret::back_to_game: // back to game
 			handleBackToGame();
@@ -758,6 +758,8 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 		case menu::ret::page_turned:
 			_chunk_hit->bookedLectern(_menu.get(), _block_hit.pos, true);
 			break ;
+		case menu::ret::quit:
+			break ;
 		default:
 			LOGERROR("menu::ret defaulted");
 			glfwSetWindowShouldClose(_window, GL_TRUE);
@@ -779,7 +781,7 @@ void OpenGL_Manager::main_loop( void )
 {
 	handleEndSetup();
 
-	check_glstate("setup done, entering main loop\n", true);
+	utils::shader::check_glstate("setup done, entering main loop\n", true);
 
 	// 60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame.
 	_time = t_time();
@@ -823,5 +825,5 @@ void OpenGL_Manager::main_loop( void )
 		BENCHLOG(b.stop("frame"));
 	}
 
-	check_glstate("\nmain loop successfully exited", true);
+	utils::shader::check_glstate("\nmain loop successfully exited", true);
 }

@@ -37,7 +37,7 @@ void Skybox::createShader( void )
 	_shader.bindAttribute(settings::consts::shader::attributes::position, "position");
 	_shader.linkProgram();
 
-	check_glstate("Skybox shader program successfully created", true);
+	utils::shader::check_glstate("Skybox shader program successfully created", true);
 
 	_vabo.genBuffers();
 	_vabo.addAttribute(settings::consts::shader::attributes::position, 3, GL_FLOAT);
@@ -72,7 +72,7 @@ void Skybox::setupCommunicationShaders( void )
 	_shader.useProgram();
 	_vabo.uploadData(vertices.size(), &vertices[0]);
 
-	check_glstate("Skybox::setup_communication_shaders", false);
+	utils::shader::check_glstate("Skybox::setup_communication_shaders", false);
 }
 
 void Skybox::updateCamView( glm::mat4 view )

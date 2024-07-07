@@ -52,7 +52,6 @@ TODOS:
     - Sound https://www.ambiera.com/irrklang/tutorials.html
 	- upon world generation, place player on ground by using continentalness
 	- multiheritance for particles + smart_pointer + prefixed size?
-	- more namespaces in utils
 	- water ligth level
     - lava + nether
 	- multiplayer ? Server-Client logic on singleplayer ?

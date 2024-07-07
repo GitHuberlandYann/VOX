@@ -103,21 +103,21 @@ GLint Chunk::face_count( int type, int row, int col, int level )
 	if (type >= blocks::poppy) {
 		return (2 << (type >= blocks::torch));
 	}
-	GLint res = visible_face(type, getBlockAt(row - 1, col, level), face_dir::minus_x)
-				+ visible_face(type, getBlockAt(row + 1, col, level), face_dir::plus_x)
-				+ visible_face(type, getBlockAt(row, col - 1, level), face_dir::minus_y)
-				+ visible_face(type, getBlockAt(row, col + 1, level), face_dir::plus_y);
+	GLint res = utils::block::visible_face(type, getBlockAt(row - 1, col, level), face_dir::minus_x)
+				+ utils::block::visible_face(type, getBlockAt(row + 1, col, level), face_dir::plus_x)
+				+ utils::block::visible_face(type, getBlockAt(row, col - 1, level), face_dir::minus_y)
+				+ utils::block::visible_face(type, getBlockAt(row, col + 1, level), face_dir::plus_y);
 	switch (level) {
 		case 0:
-			res += visible_face(type, getBlockAt(row, col, level + 1), face_dir::plus_z);
+			res += utils::block::visible_face(type, getBlockAt(row, col, level + 1), face_dir::plus_z);
 			break ;
 		case 255:
-			res += visible_face(type, getBlockAt(row, col, level - 1), face_dir::minus_z);
+			res += utils::block::visible_face(type, getBlockAt(row, col, level - 1), face_dir::minus_z);
 			res += 1;
 			break ;
 		default:
-			res += visible_face(type, getBlockAt(row, col, level - 1), face_dir::minus_z);
-			res += visible_face(type, getBlockAt(row, col, level + 1), face_dir::plus_z);
+			res += utils::block::visible_face(type, getBlockAt(row, col, level - 1), face_dir::minus_z);
+			res += utils::block::visible_face(type, getBlockAt(row, col, level + 1), face_dir::plus_z);
 	}
 	if (s_blocks[type]->geometry == geometry::stairs) {
 		res += 2; // +3 if corner stair, but np so far
@@ -140,7 +140,7 @@ void Chunk::resetDisplayedFaces( void )
 				}
 				if (type != blocks::air && type != blocks::chest && type != blocks::water) {
 					GLint below = ((level) ? _blocks[offset - 1] : 0) & mask::blocks::type;
-					if (!air_flower(type, false, false, true) && type < blocks::torch && below != blocks::grass_block && below != blocks::dirt && below != blocks::sand) {
+					if (!utils::block::air_flower(type, false, false, true) && type < blocks::torch && below != blocks::grass_block && below != blocks::dirt && below != blocks::sand) {
 						_blocks[offset] = blocks::air;
 					} else {
 						GLint count = face_count(type, row, col, level);
@@ -186,46 +186,29 @@ void Chunk::setup_array_buffer( void )
 	_vaoReset = true;
 	_vaoVIP = false;
 
-	check_glstate("Chunk::setup_array_buffer", false);
+	utils::shader::check_glstate("Chunk::setup_array_buffer", false);
 }
 
 void Chunk::setup_sky_array_buffer( void )
 {
-	// if (_thread.joinable()) {
-	// 	_thread.join();
-	// }
-
-	// check_glstate("BEFORE Chunk::setup_sky_array_buffer", false);
 	if (!_skyVaoSet) {
 		_vaboSky.genBuffers();
 		_vaboSky.addAttribute(settings::consts::shader::attributes::position, 4, GL_INT);
 		_skyVaoSet = true;
-		// check_glstate("GEN Chunk::setup_sky_array_buffer", false);
-	// glBindVertexArray(_skyVao);
+	}
 
-	// glBindBuffer(GL_ARRAY_BUFFER, _skyVbo);
-	// check_glstate("BIND GEN Chunk::setup_sky_array_buffer", false);
-	}//else{
-
-	// check_glstate("BIND Chunk::setup_sky_array_buffer", false);}
 	_mtx_sky.lock();
 	_vaboSky.uploadData(_sky_count * 6, &_sky_vert[0][0]);
-	// glBufferData(GL_ARRAY_BUFFER, _sky_count * 24 * sizeof(GLint), &_sky_vert[0][0], GL_STATIC_DRAW);
 	_mtx_sky.unlock();
 
-	// check_glstate("BUFFERDATA Chunk::setup_sky_array_buffer", false);
 	_skyVaoReset = false;
 	_skyVaoVIP = false;
 
-	check_glstate("Chunk::setup_sky_array_buffer", false);
+	utils::shader::check_glstate("Chunk::setup_sky_array_buffer", false);
 }
 
 void Chunk::setup_water_array_buffer( void )
 {
-	// if (_thread.joinable()) {
-	// 	_thread.join();
-	// }
-
 	if (!_waterVaoSet) {
 		_vaboWater.genBuffers();
 		_vaboWater.addAttribute(settings::consts::shader::attributes::position, 4, GL_INT);
@@ -240,7 +223,7 @@ void Chunk::setup_water_array_buffer( void )
 	_waterVaoReset = false;
 	_waterVaoVIP = false;
 
-	check_glstate("Chunk::setup_water_array_buffer", false);
+	utils::shader::check_glstate("Chunk::setup_water_array_buffer", false);
 }
 
 // ************************************************************************** //
@@ -505,19 +488,19 @@ void Chunk::sort_sky( glm::vec3& pos, bool vip )
 			if (_sky[row * (settings::consts::chunk_size + 2) + col]) {
 				int pX = _startX + row - 1;
 				int pY = _startY + col - 1;
-				order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 196.0f)), {pX, pY + 1, 196, 1, -1, 0, }});
-				order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 195.0f)), {pX, pY, 195, 1, 1, 0, }});
+				order.push_back({utils::math::dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 196.0f)), {pX, pY + 1, 196, 1, -1, 0, }});
+				order.push_back({utils::math::dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, 195.0f)), {pX, pY, 195, 1, 1, 0, }});
 				if (!_sky[(row - 1) * (settings::consts::chunk_size + 2) + col]) {
-					order.push_back({dist2(pos, glm::vec3(pX, pY + 0.5f, 195.5f)), {pX, pY + 1, 196, 0, -1, -1, }});
+					order.push_back({utils::math::dist2(pos, glm::vec3(pX, pY + 0.5f, 195.5f)), {pX, pY + 1, 196, 0, -1, -1, }});
 				}
 				if (!_sky[(row + 1) * (settings::consts::chunk_size + 2) + col]) {
-					order.push_back({dist2(pos, glm::vec3(pX + 1, pY + 0.5f, 195.5f)), {pX + 1, pY, 196, 0, 1, -1, }});
+					order.push_back({utils::math::dist2(pos, glm::vec3(pX + 1, pY + 0.5f, 195.5f)), {pX + 1, pY, 196, 0, 1, -1, }});
 				}
 				if (!_sky[row * (settings::consts::chunk_size + 2) + col - 1]) {
-					order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY, 195.5f)), {pX, pY, 196, 1, 0, -1, }});
+					order.push_back({utils::math::dist2(pos, glm::vec3(pX + 0.5f, pY, 195.5f)), {pX, pY, 196, 1, 0, -1, }});
 				}
 				if (!_sky[row * (settings::consts::chunk_size + 2) + col + 1]) {
-					order.push_back({dist2(pos, glm::vec3(pX + 0.5f, pY + 1, 195.5f)), {pX + 1, pY + 1, 196, -1, 0, -1, }});
+					order.push_back({utils::math::dist2(pos, glm::vec3(pX + 0.5f, pY + 1, 195.5f)), {pX + 1, pY + 1, 196, -1, 0, -1, }});
 				}
 			}
 		}
@@ -550,7 +533,7 @@ void Chunk::sort_sky( glm::vec3& pos, bool vip )
 		}
 		// std::cout << "vindex " << vindex << std::endl;
 		_mtx_sky.lock();
-		face_water_vertices(_sky_vert, start, offset0, offset1, offset2);
+		utils::fluid::face_water_vertices(_sky_vert, start, offset0, offset1, offset2);
 		_mtx_sky.unlock();
 	}
 	order.clear();
@@ -570,7 +553,7 @@ void Chunk::sort_sky( glm::vec3& pos, bool vip )
  */
 bool Chunk::lineOfSight( const glm::vec3 src, const glm::vec3 dst )
 {
-	const std::vector<glm::ivec3> ids = voxel_traversal(src, dst);
+	const std::vector<glm::ivec3> ids = utils::math::voxel_traversal(src, dst);
 
 	for (auto i : ids) {
 		int value = getBlockAtAbsolute(i);
@@ -661,7 +644,7 @@ void Chunk::explosion( glm::vec3 pos, int power )
 				if (!row || !col || !level || row == 15 || col == 15 || level == 15) {
 					float intensity = (0.7f + 0.6f * Random::randomFloat(_seed)) * power; // [0.7:1.3] * power
 					glm::vec3 end = pos + glm::normalize(glm::vec3(-7.5f + row, -7.5f + col, -7.5f + level)) * intensity;
-					std::vector<glm::ivec3> vt = voxel_traversal(pos, end);
+					std::vector<glm::ivec3> vt = utils::math::voxel_traversal(pos, end);
 					intensity += 0.75f;
 					for (auto &p : vt) {
 						int type = getBlockAt(p.x - _startX, p.y - _startY, p.z) & mask::blocks::type;

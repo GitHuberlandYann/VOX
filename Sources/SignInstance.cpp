@@ -79,7 +79,7 @@ void SignInstance::displayText( std::vector<t_shaderInputPart> &partArr )
 	for (size_t index = 0; index < 4; ++index) {
 		std::string str = _content[index];
 
-		glm::vec3 startLine = topLeft - right * static_cast<float>(Utils::Text::textWidth(7, str) * 0.5f * 0.01f) - up * static_cast<float>(index) * 0.1f;
+		glm::vec3 startLine = topLeft - right * static_cast<float>(utils::text::textWidth(7, str) * 0.5f * 0.01f) - up * static_cast<float>(index) * 0.1f;
 		char c;
 		for (size_t i = 0, charLine = 0; i < str.size(); i++) {
 			c = str[i];

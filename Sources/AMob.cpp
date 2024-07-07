@@ -94,7 +94,7 @@ AMob* Chunk::mobHit( const t_hit blockHit )
 	for (auto& mob : _mobs) {
 		glm::vec3 hitBoxCenter = mob->getPos(), hitBoxHalfSize = {0.3f, 0.3f, mob->getHitbox()};
 		hitBoxCenter.z += hitBoxHalfSize.z;
-		if (segment_cube_intersection(segStart, segEnd, hitBoxCenter, hitBoxHalfSize)) {
+		if (utils::math::segment_cube_intersection(segStart, segEnd, hitBoxCenter, hitBoxHalfSize)) {
 			if (blockHit.value & mask::blocks::type) {
 				// compute which of block hit and mob is hit first
 				const glm::ivec3 mobFeet = glm::floor(hitBoxCenter);
@@ -113,7 +113,7 @@ AMob* Chunk::mobHit( const t_hit blockHit )
 			}
 		}
 	}
-	Chunk* chunkEnd = getChunkAt(chunk_pos(segEnd.x), chunk_pos(segEnd.y));
+	Chunk* chunkEnd = getChunkAt(utils::math::chunk_pos(segEnd.x), utils::math::chunk_pos(segEnd.y));
 	// std::cout << "chunkEnd " << chunkEnd << " vs this " << this << std::endl;
 	if (chunkEnd && chunkEnd != this) {
 		return (chunkEnd->mobHit(blockHit));

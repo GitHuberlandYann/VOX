@@ -49,11 +49,15 @@ void DayCycle::setInternals( void )
 	_hour = (_ticks / 1000 + 6) % 24;
 	_minute = (_ticks % 1000) / MINECRAFT_MINUTE;
 	if (_ticks > 12000 && _ticks < 13671) {
-		glClearColor(gradient(_ticks, 12010, 13670, 120 / 255.0, 0), gradient(_ticks, 12010, 13670, 169 / 255.0, 0), gradient(_ticks, 12010, 13670, 1, 0), 1.0f);
-		_internalLight = static_cast<int>(gradient(_ticks, 12010, 13670, 15, 4));
+		glClearColor(utils::math::gradient(_ticks, 12010, 13670, 120 / 255.0, 0),
+					utils::math::gradient(_ticks, 12010, 13670, 169 / 255.0, 0),
+					utils::math::gradient(_ticks, 12010, 13670, 1, 0), 1.0f);
+		_internalLight = static_cast<int>(utils::math::gradient(_ticks, 12010, 13670, 15, 4));
 	} else if (_ticks > 22299) {
-		glClearColor(gradient(_ticks, 22300, 24000, 0, 120 / 255.0), gradient(_ticks, 22300, 24000, 0, 169 / 255.0), gradient(_ticks, 22300, 24000, 0, 1), 1.0f);
-		_internalLight = static_cast<int>(gradient(_ticks, 22300, 24000, 4, 15));
+		glClearColor(utils::math::gradient(_ticks, 22300, 24000, 0, 120 / 255.0),
+					utils::math::gradient(_ticks, 22300, 24000, 0, 169 / 255.0),
+					utils::math::gradient(_ticks, 22300, 24000, 0, 1), 1.0f);
+		_internalLight = static_cast<int>(utils::math::gradient(_ticks, 22300, 24000, 4, 15));
 	} else if (_forceReset) {
 		(_ticks < 12500) ? glClearColor(120 / 255.0, 169 / 255.0, 1, 1.0f) : glClearColor(0, 0, 0, 1.0f);
 		_internalLight = (_ticks < 12500) ? 15 : 4;
@@ -103,9 +107,9 @@ void DayCycle::setCloudsColor( GLint uniform_location )
 {
 	float color;
 	if (_ticks > 12000 && _ticks < 13671) {
-		color = gradient(_ticks, 12010, 13670, 1, 0);
+		color = utils::math::gradient(_ticks, 12010, 13670, 1, 0);
 	} else if (_ticks > 22299) {
-		color = gradient(_ticks, 22300, 24000, 0, 1);
+		color = utils::math::gradient(_ticks, 22300, 24000, 0, 1);
 	} else {
 		color = (_ticks < 12500) ? 1 : 0;
 	}
@@ -192,10 +196,13 @@ void DayCycle::step( Chat *chat, int steps )
 
 std::string DayCycle::getInfos( void )
 {
-	return ("GameTimer\t> " + std::to_string(_ticks) + " speed " + std::to_string(_timeMultiplier) + " on day " + std::to_string(_day) + " " + doubleDigits(_hour) + ":" + doubleDigits(_minute) + " (light " + doubleDigits(_internalLight) + ")" + " GT " + std::to_string(_gameTicks) + " [" + std::to_string(_gameTimeMultiplier) + "]");
+	return ("GameTimer\t> " + std::to_string(_ticks) + " speed " + std::to_string(_timeMultiplier) + " on day " + std::to_string(_day)
+			+ " " + utils::string::doubleDigits(_hour) + ":" + utils::string::doubleDigits(_minute)
+			+ " (light " + utils::string::doubleDigits(_internalLight) + ")" + " GT " + std::to_string(_gameTicks)
+			+ " [" + std::to_string(_gameTimeMultiplier) + "]");
 }
 
 std::string DayCycle::getTime( void )
 {
-	return (std::to_string(_day) + "D" + doubleDigits(_hour) + ":" + doubleDigits(_minute));
+	return (std::to_string(_day) + "D" + utils::string::doubleDigits(_hour) + ":" + utils::string::doubleDigits(_minute));
 }

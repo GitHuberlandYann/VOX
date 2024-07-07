@@ -337,7 +337,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 		std::string line;
 		while (!indata.eof()) {
 			std::getline(indata, line);
-			line = trim_spaces(line);
+			line = utils::string::trim_spaces(line);
 			if (line.empty() || line[0] == '#') {
 				continue ;
 			} else if (line == "{" || line == "}") {
@@ -416,7 +416,7 @@ void Player::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 	std::string line;
 	while (!indata.eof()) {
 		std::getline(indata, line);
-		line = trim_spaces(line);
+		line = utils::string::trim_spaces(line);
 		if (line.empty() || line[0] == '#') {
 			continue ;
 		} else if (!line.compare(0, 7, "\"pos\": ")) {
@@ -596,7 +596,7 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 	std::string line;
 	while (!indata.eof()) {
 		std::getline(indata, line);
-		line = trim_spaces(line);
+		line = utils::string::trim_spaces(line);
 		if (line.empty() || line[0] == '#') {
 			continue ;
 		} else if (!line.compare(0, 8, "\"slot\": ")) {
@@ -664,7 +664,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 	std::string line;
 	while (!indata.eof()) {
 		std::getline(indata, line);
-		line = trim_spaces(line);
+		line = utils::string::trim_spaces(line);
 		if (line.empty() || line[0] == '#') {
 			continue ;
 		} else if (!line.compare(0, 8, "{\"pos\": ")) {
@@ -675,7 +675,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 			s_backup backups_value;
 			while (!indata.eof()) {
 				std::getline(indata, line);
-				line = trim_spaces(line);
+				line = utils::string::trim_spaces(line);
 				if (line.empty() || line[0] == '#') {
 					continue ;
 				} else if (!line.compare(0, 9, "\"added\": ")) {
@@ -845,7 +845,7 @@ void Menu::loadSettings( void )
 		std::string line;
 		while (!indata.eof()) {
 			std::getline(indata, line);
-			line = trim_spaces(line);
+			line = utils::string::trim_spaces(line);
 			if (line.empty() || line[0] == '#') {
 				continue ;
 			} else if (!line.compare(0, 7, "\"fov\": ")) {
@@ -962,7 +962,7 @@ bool Settings::loadResourcePacks( void )
 			std::string line;
 			while (!indata.eof()) {
 				std::getline(indata, line);
-				line = trim_spaces(line);
+				line = utils::string::trim_spaces(line);
 				if (line.empty() || line[0] == '#') {
 					continue ;
 				} else if (!line.compare(0, 15, "\"BLOCK_ATLAS\": ")) {

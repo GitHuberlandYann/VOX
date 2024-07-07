@@ -135,7 +135,7 @@ void Player::drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_s
 			front = glm::normalize(glm::cross(settings::consts::math::world_up, right));
 		}
 		glm::vec3 up = glm::normalize(glm::cross(right, front));
-		EXTRUSION::drawItem3D(entityArr, item, light, pos, front, right, up, 0.5f);
+		utils::extrusion::drawItem3D(entityArr, item, light, pos, front, right, up, 0.5f);
 	}
 }
 
@@ -281,9 +281,7 @@ void Player::drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_sha
 			spec = s_blocks[item]->getTex(face_dir::minus_z, offset);
 			utils::shader::addQuads(entityArr, {p2, p3, p6, p7}, spec, light + (5 << 8), 16, 16);
 		} else { // flowers
-			if (1 && EXTRUSION::drawItem3D(entityArr, item, light, p1 + armFront * 0.25f, -armRight, -armUp, armFront, 0.5f)) { // TODO replace 1 by var toggle fancy_item
-
-			} else {
+			if (!utils::extrusion::drawItem3D(entityArr, item, light, p1 + armFront * 0.25f, -armRight, -armUp, armFront, 0.5f)) {
 				spec = s_blocks[item]->getTex();
 				utils::shader::addQuads(entityArr, {p0, p5, p2, p7}, spec, light, 16, 16);
 
