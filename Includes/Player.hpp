@@ -81,7 +81,7 @@ class Player : public AMob
         void tickUpdate( void );
         void processMouseMovement( float x_offset, float y_offset );
 
-        void setChunkPtr( std::shared_ptr<Chunk> chunk );
+        void setChunkPtr( Chunk* chunk );
         std::string getString( int game_mode );
         std::string saveString( void );
 		void loadWorld( std::ofstream & ofs, std::ifstream & indata );

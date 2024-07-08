@@ -574,8 +574,11 @@ void OpenGL_Manager::handleUI( void )
 	if (_menu->getState() >= menu::pause) {
 		std::string str;
 		if (_debug_mode) {
+			size_t residentSize, virtualSize;
+			utils::memory::getMemoryUsage(residentSize, virtualSize);
 			str = "Timer: " + std::to_string(_time.currentTime)
-					+ '\n' + DayCycle::Get()->getInfos()
+					+ "\nMem usage: " + utils::string::toBytes(residentSize)
+					+ "\n\n" + DayCycle::Get()->getInfos()
 					+ "\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\tframe " + std::to_string((_time.deltaTime) * 1000)
 					+ "\nTPS: " + std::to_string(_time.nbTicksLastSecond)
 					+ '\n' + _player->getString(_game_mode)
@@ -605,7 +608,7 @@ void OpenGL_Manager::handleUI( void )
 			str += _inventory->getSlotString()
 					+ _menu->getInfoString();
 		} else {
-			str = "\n\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\nTPS: " + std::to_string(_time.nbTicksLastSecond);
+			str = "\n\n\n\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\nTPS: " + std::to_string(_time.nbTicksLastSecond);
 		}
 		// b.stamp("stringing");
 		_ui->drawUserInterface(str, _game_mode, _time.deltaTime);

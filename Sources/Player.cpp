@@ -321,7 +321,7 @@ void Player::processMouseMovement( float x_offset, float y_offset )
 	updateVectors();
 }
 
-void Player::setChunkPtr( std::shared_ptr<Chunk> chunk )
+void Player::setChunkPtr( Chunk* chunk )
 {
     _chunk = chunk;
 }

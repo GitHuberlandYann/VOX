@@ -427,8 +427,8 @@ bool AHostileMob::updateCurrentBlock( void )
 		if (utils::math::chunk_pos(currentBlock.x) != utils::math::chunk_pos(_currentBlock.x)
 			|| utils::math::chunk_pos(currentBlock.y) != utils::math::chunk_pos(_currentBlock.y)) {
 			auto newOwner = _chunk->getChunkAt(utils::math::chunk_pos(currentBlock.x), utils::math::chunk_pos(currentBlock.y));
-			if (!newOwner || newOwner == _chunk.get()) { return (true); } // just kill mob if out of generated chunks
-			_chunk.reset(newOwner);
+			if (!newOwner || newOwner == _chunk) { return (true); } // just kill mob if out of generated chunks
+			_chunk = newOwner;
 			_blockTime = 0.0f;
 			_currentBlock = currentBlock;
 			_chunk->addMob(*this, _type);

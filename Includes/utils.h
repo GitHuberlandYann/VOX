@@ -21,6 +21,7 @@ namespace utils {
 		std::vector<std::string> split( std::string &str, char sep );
 		bool case_insensitive_compare( std::string a, std::string b );
 		std::string doubleDigits( int nb );
+		std::string toBytes( size_t bytes );
 	};
 
 	namespace shader {
@@ -68,6 +69,10 @@ namespace utils {
 
 	namespace extrusion {
 		bool drawItem3D( std::vector<t_shaderInput>& arr, int type, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size );
+	};
+
+	namespace memory {
+		void getMemoryUsage( size_t& residentSize, size_t& virtualSize );
 	};
 
 };

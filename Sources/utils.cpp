@@ -1,4 +1,5 @@
 #include <fstream>
+#include <sstream>
 #include "Chunk.hpp"
 #include "logs.hpp"
 
@@ -95,6 +96,39 @@ namespace utils::string {
 			return (std::string("0") + static_cast<char>('0' + nb));
 		}
 		return (std::to_string(nb));
+	}
+	
+	static std::string to_string_with_precision( const double value, const int precision, const bool zero_allowed )
+	{
+		std::ostringstream out;
+		out.precision(precision);
+		out << std::fixed << value;
+		if (zero_allowed) {
+			return (std::move(out).str());
+		}
+		std::string res = std::move(out).str();
+		size_t index = res.find('.'), i = 1;
+		if (index == std::string::npos) {
+			return (res);
+		}
+		while (res[index + i] == '0') ++i;
+		if (res[index + i]) {
+			return (res);
+		}
+		return (res.substr(0, index));
+	}
+
+	std::string toBytes( size_t bytes )
+	{
+		const std::array<std::string, 5> suffixes = {"B", "KB", "MB", "GB", "TB"};
+		int index = 0;
+		double dBytes = bytes;
+
+		while (dBytes >= 1024.0 && index < 5) {
+			++index;
+			dBytes /= 1024.0;
+		}
+		return (to_string_with_precision(dBytes, 2, false) + suffixes[index]);
 	}
 };
 
@@ -826,4 +860,39 @@ namespace utils::math {
 				&& posA.y - sizeA.y < posB.y + sizeB.y && posA.y + sizeA.y > posB.y - sizeB.y
 				&& posA.z < posB.z + sizeB.z && posA.z + sizeA.z > posB.z - sizeB.z);
 	}
+};
+
+namespace utils::memory {
+	// https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+
+	#if __linux__
+
+		void getMemoryUsage( size_t& residentSize, size_t& virtualSize )
+		{
+			residentSize = 0;
+			virtualSize = 0;
+		}
+
+	#else
+
+		#include <mach/mach.h>
+		// #include <unistd.h>
+		void getMemoryUsage( size_t& residentSize, size_t& virtualSize )
+		{
+			struct task_basic_info t_info;
+			mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+
+			if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count) != KERN_SUCCESS) {
+				residentSize = 0;
+				virtualSize = 0;
+			} else {
+				// size_t bytesPerPage = sysconf(_SC_PAGESIZE);
+				// residentSize = t_info.resident_size * bytesPerPage;
+				// virtualSize = t_info.virtual_size * bytesPerPage;
+				residentSize = t_info.resident_size;
+				virtualSize = t_info.virtual_size;
+			}
+		}
+
+	#endif
 };

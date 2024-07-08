@@ -6,7 +6,7 @@
 
 Skeleton::Skeleton( Chunk* chunk, Player* player, glm::vec3 position ) : AHostileMob(player, position)
 {
-    _chunk.reset(chunk);
+    _chunk = chunk;
 	_type = settings::consts::mob::skeleton;
 
 	LOG("new skeleton at " << POS(_position));

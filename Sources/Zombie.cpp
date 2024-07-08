@@ -6,7 +6,7 @@
 
 Zombie::Zombie( Chunk* chunk, Player* player, glm::vec3 position ) : AHostileMob(player, position)
 {
-    _chunk.reset(chunk);
+    _chunk = chunk;
 	_type = settings::consts::mob::zombie;
 
 	LOG("new zombie at " << POS(_position));

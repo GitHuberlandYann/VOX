@@ -43,14 +43,14 @@ t_hit OpenGL_Manager::getBlockHit( void )
 				if (!_visible_chunks.size()) {
 					updateVisibleChunks();
 				} else {
-					LOGERROR("chunk out of bound at " << posX << ", " << posY);
+					LOGERROR("chunk out of bound at " << POSXY(posX, posY));
 				}
 				return (res);
 			}
 		}
 		if (first_loop) {
 			_current_chunk_ptr = chunk;
-			_player->setChunkPtr(chunk);
+			_player->setChunkPtr(chunk.get());
 			first_loop = false;
 		}
 
@@ -626,7 +626,6 @@ void OpenGL_Manager::userInputs( bool rayCast )
 	_player->inputUpdate(rayCast, _game_mode);
 
 	if (rayCast) {
-		// Chunk *save_chunk = _chunk_hit;
 		t_hit block_hit = getBlockHit();
 		if (_block_hit.pos != block_hit.pos) {
 			_break_time = 0;

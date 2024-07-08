@@ -83,7 +83,7 @@ class AMob {
 		// bool _hasVisualFire; // if true, the entity visually appears on fire.
 		bool _noAI;             // setting to true disables the mob's AI.
 		bool _persistenceRequired; // true if the mob must not despawn naturally.
-		std::shared_ptr<Chunk> _chunk;
+		Chunk* _chunk;
 
 		AMob( glm::vec3 position );
 
