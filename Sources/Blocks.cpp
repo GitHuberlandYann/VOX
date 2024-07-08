@@ -1533,26 +1533,23 @@ void ItemFrame::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm
 	int orientation = (value >> offset::blocks::orientation) & 0x7;
 	switch (placement) {
 		case placement::wall:
+			up = settings::consts::math::world_up;
 			switch (orientation) {
 				case face_dir::minus_x:
 					front = { 1.f, .0f, .0f};
 					right = { .0f,-1.f, .0f};
-					up    = { .0f, .0f, 1.f};
 					break ;
 				case face_dir::plus_x:
 					front = {-1.f, .0f, .0f};
 					right = { .0f, 1.f, .0f};
-					up    = { .0f, .0f, 1.f};
 					break ;
 				case face_dir::minus_y:
 					front = { 0.f, 1.f, .0f};
 					right = { 1.f, .0f, .0f};
-					up    = { .0f, .0f, 1.f};
 					break ;
 				case face_dir::plus_y:
 					front = { .0f, -1.f, .0f};
 					right = { -1.f, .0f, .0f};
-					up    = { .0f, .0f, 1.f};
 					break ;
 			}
 			break ;
@@ -1567,8 +1564,8 @@ void ItemFrame::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm
 			up    = { .0f,-1.f, .0f};
 			break ;
 	}
+	int faceLight = chunk->computeLight(pos.x - start.x, pos.y - start.y, pos.z);
 	pos += front * 7.f * one16th - (right + up) * .5f;
-	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
 	addMeshItem(vertices, faceLight, pos, front, right, up, 1.f);
 }
 
@@ -2578,6 +2575,15 @@ void OakSign::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::
 								topLeft + right - front * 1.75f * one16th,
 								topLeft + right * .66f - up * 0.5f - front * 1.75f * one16th,
 								topLeft + right - up * 0.5f - front * 1.75f * one16th}, spec + (2 << 16), light + (1 << 8), 8, 12);
+	// back face
+	utils::shader::addQuads(vertices, {topLeft + right,
+								topLeft + right * .33f,
+								topLeft + right - up * 0.5f,
+								topLeft + right * .33f - up * 0.5f}, spec + (2 << 16), light + (2 << 8), 16, 12);
+	utils::shader::addQuads(vertices, {topLeft + right * .33f,
+								topLeft,
+								topLeft + right * .33f - up * 0.5f,
+								topLeft - up * 0.5f}, spec + (2 << 16), light + (2 << 8), 8, 12);
 	// side faces
 	// top
 	utils::shader::addQuads(vertices, {topLeft,

@@ -132,7 +132,7 @@ void Chunk::resetDisplayedFaces( void )
 				}
 				if (type != blocks::air && type != blocks::chest && type != blocks::water) {
 					GLint below = TYPE((level) ? _blocks[offset - 1] : 0);
-					if (!utils::block::air_flower(type, false, false, true) && type < blocks::torch && below != blocks::grass_block && below != blocks::dirt && below != blocks::sand) {
+					if (type >= blocks::poppy && type < blocks::torch && !(below == blocks::grass_block || below == blocks::dirt || below == blocks::sand)) {
 						_blocks[offset] = blocks::air;
 					} else {
 						GLint count = face_count(type, row, col, level);
@@ -291,7 +291,7 @@ void Chunk::setBackup( std::map<std::pair<int, int>, s_backup>& backups )
 			sign.second->setChunk(NULL);
 		}
 		std::remove_if(_entities.begin(), _entities.end(),
-			[]( auto e ) { return (dynamic_cast<ItemFrameEntity*>(e.get()) == nullptr); }); // rm all entities which are not ItemFrameEntities
+			[]( auto e ) { return (e->getType() == entities::none); }); // rm all entities which are not ItemFrameEntities nor lecterns
 		mtx_backup.lock();
 		backups[std::pair<int, int>(_startX, _startY)] = {_added, _removed, _chests, _furnaces, _signs, _entities};
 		mtx_backup.unlock();
@@ -388,23 +388,19 @@ void Chunk::checkFillVertices( void )
 	if (cnt > _nb_neighbours) {
 		if (cnt == 4) {
 			for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
-				switch (TYPE(a.second)) {
-				case blocks::redstone_lamp:
-					if (!(a.second & mask::redstone::activated)) {
+				short light = s_blocks[TYPE(a.second)]->light_level;
+				if (light) {
+					if (TYPE(a.second) == blocks::redstone_lamp && !(a.second & mask::redstone::activated)) {
 						continue ;
-					}
-				case blocks::torch:
-				case blocks::redstone_torch:
-					if (TYPE(a.second) == blocks::redstone_torch && (a.second & mask::redstone::powered)) {
-						break ; // red torch is turned off
+					} else if (TYPE(a.second) == blocks::redstone_torch && (a.second & mask::redstone::powered)) {
+						continue ; // red torch is turned off
 					}
 					int level = a.first & (settings::consts::world_height - 1);
 					int col = ((a.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
 					int row = ((a.first >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] &= 0xFF00; // discard previous light value
-					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] += s_blocks[TYPE(a.second)]->light_level + (s_blocks[TYPE(a.second)]->light_level << 4); // 0xF0 = light source. & 0xF = light level
+					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] += light + (light << 4); // 0xF0 = light source. & 0xF = light level
 					light_spread(row, col, level, false);
-					break ;
 				}
 			}
 			// this time spread sky_light underground

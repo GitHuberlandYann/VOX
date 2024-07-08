@@ -26,7 +26,12 @@ OpenGL_Manager::OpenGL_Manager( void )
 
 OpenGL_Manager::~OpenGL_Manager( void )
 {
-	MAINLOG(LOG("Destructor of OpenGL_Manager called"));
+	MAINLOG(LOG("Destructor of OpenGL_Manager called");
+	size_t residentSize;
+	size_t virtualSize;
+	utils::memory::getMemoryUsage(residentSize, virtualSize);
+	LOG("Mem usage after " + std::to_string(static_cast<size_t>(_time.currentTime))
+		+ "s at exit: " + utils::string::toBytes(residentSize)));
 
 	stopThread();
 

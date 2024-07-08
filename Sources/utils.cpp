@@ -426,9 +426,11 @@ namespace utils::block {
 		if (air_water && value == blocks::water) {
 			return (value);
 		}
-		if (value >= blocks::poppy || value == blocks::cactus
-			|| (air_leaves && value == blocks::oak_leaves)
-			|| (air_glass && value == blocks::glass)) {
+		(void)air_leaves;(void)air_glass;
+		// if (value >= blocks::poppy || value == blocks::cactus
+		// 	|| (air_leaves && value == blocks::oak_leaves)
+		// 	|| (air_glass && value == blocks::glass)) {
+		if (s_blocks[value]->transparent) {
 			return (0);
 		}
 		return (value);

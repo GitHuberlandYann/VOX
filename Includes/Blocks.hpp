@@ -201,6 +201,7 @@ namespace settings {
 					quartz_bricks,
 					quartz_ore,
 					quartz_pillar,
+					quartz_pillar_spin,
 					quartz_pillar_top,
 					red_wool,
 					redstone_block,
@@ -1953,6 +1954,7 @@ struct Lectern : Block {
 			byHand = true;
 			transparent = true;
 			hardness = 2.5f;
+			texture = settings::consts::shader::block::lectern_front;
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;

@@ -180,6 +180,8 @@ void OpenGL_Manager::loadTextures( void )
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::quartz_block, root + "quartz_block.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::quartz_bricks, root + "quartz_bricks.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::quartz_pillar, root + "quartz_pillar.png");
+	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::quartz_pillar_spin, root + "quartz_pillar_spin.png");
+	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::quartz_pillar_top, root + "quartz_pillar_top.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::quartz_ore, root + "quartz_ore.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::red_wool, root + "red_wool.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::redstone_block, root + "redstone_block.png");
@@ -539,15 +541,15 @@ int QuartzPillar::getTex( int dir, int value ) const {
 		case face_dir::minus_z:
 		case face_dir::plus_z:
 			return ((axis == face_dir::plus_z) ? settings::consts::shader::block::quartz_pillar_top
-				: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::quartz_pillar);
+				: (axis == face_dir::plus_x) ? settings::consts::shader::block::quartz_pillar_spin : settings::consts::shader::block::quartz_pillar);
 		case face_dir::minus_x:
 		case face_dir::plus_x:
 			return ((axis == face_dir::plus_x) ? settings::consts::shader::block::quartz_pillar_top
-				: (axis == face_dir::plus_y) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::quartz_pillar);
+				: (axis == face_dir::plus_y) ? settings::consts::shader::block::quartz_pillar_spin : settings::consts::shader::block::quartz_pillar);
 		case face_dir::minus_y:
 		case face_dir::plus_y:
 			return ((axis == face_dir::plus_y) ? settings::consts::shader::block::quartz_pillar_top
-				: (axis == face_dir::plus_x) ? settings::consts::shader::block::oak_log_spin : settings::consts::shader::block::quartz_pillar);
+				: (axis == face_dir::plus_x) ? settings::consts::shader::block::quartz_pillar_spin : settings::consts::shader::block::quartz_pillar);
 	}
 	return (settings::consts::shader::block::quartz_pillar);
 }
