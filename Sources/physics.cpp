@@ -426,9 +426,9 @@ bool AHostileMob::updateCurrentBlock( void )
 		
 		if (utils::math::chunk_pos(currentBlock.x) != utils::math::chunk_pos(_currentBlock.x)
 			|| utils::math::chunk_pos(currentBlock.y) != utils::math::chunk_pos(_currentBlock.y)) {
-			Chunk* newOwner = _chunk->getChunkAt(utils::math::chunk_pos(currentBlock.x), utils::math::chunk_pos(currentBlock.y));
-			if (!newOwner || newOwner == _chunk) { return (true); } // just kill mob if out of generated chunks
-			_chunk = newOwner;
+			auto newOwner = _chunk->getChunkAt(utils::math::chunk_pos(currentBlock.x), utils::math::chunk_pos(currentBlock.y));
+			if (!newOwner || newOwner == _chunk.get()) { return (true); } // just kill mob if out of generated chunks
+			_chunk.reset(newOwner);
 			_blockTime = 0.0f;
 			_currentBlock = currentBlock;
 			_chunk->addMob(*this, _type);
@@ -460,7 +460,7 @@ bool ArrowEntity::updateCurrentBlock( void )
 		
 		glm::ivec2 chunkPos = {utils::math::chunk_pos(currentBlock.x), utils::math::chunk_pos(currentBlock.y)};
 		if (chunkPos != _chunk_pos) {
-			Chunk* newOwner = _chunk->getChunkAt(chunkPos.x, chunkPos.y);
+			auto newOwner = _chunk->getChunkAt(chunkPos.x, chunkPos.y);
 			if (!newOwner || newOwner == _chunk) { return (true); } // just kill arrow if out of generated chunks
 			_chunk = newOwner;
 			_chunk_pos = chunkPos;

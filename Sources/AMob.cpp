@@ -113,7 +113,7 @@ AMob* Chunk::mobHit( const t_hit blockHit )
 			}
 		}
 	}
-	Chunk* chunkEnd = getChunkAt(utils::math::chunk_pos(segEnd.x), utils::math::chunk_pos(segEnd.y));
+	auto chunkEnd = getChunkAt(utils::math::chunk_pos(segEnd.x), utils::math::chunk_pos(segEnd.y));
 	// std::cout << "chunkEnd " << chunkEnd << " vs this " << this << std::endl;
 	if (chunkEnd && chunkEnd != this) {
 		return (chunkEnd->mobHit(blockHit));

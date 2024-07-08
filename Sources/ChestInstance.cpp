@@ -271,7 +271,7 @@ void ChestInstance::display_closed( std::vector<t_shaderInput>& arr )
 			back  = {14.0f * one16th,        0,                        0};
 			break ;
 		default:
-			LOGERROR("DISPLAY CLOSED CHEST");
+			LOGERROR("ChestInstance::display_closed with orientation " << _orientation);
 			return ;
 	}
 	glm::vec3 p0 = {pos.x + 0,       pos.y + 0      , pos.z + 15.0f * one16th};

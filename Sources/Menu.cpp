@@ -276,6 +276,7 @@ menu::ret Menu::loading_screen_menu( void )
 	// std::cout << "CURRENT IS " << current_size << ", GOAL IS " << goal << std::endl;
 	if (current_size >= goal) {
 		_state = menu::pause;
+		_chunks.clear();
 		return (menu::ret::back_to_game);
 	}
 	float percentage = current_size / static_cast<float>(goal) * 100;
@@ -2101,7 +2102,7 @@ void Menu::setPtrs( Inventory* inventory, UI* ui )
 	}
 }
 
-void Menu::setChunks( std::list<Chunk*>& chunks )
+void Menu::setChunks( std::list<std::shared_ptr<Chunk>>& chunks )
 {
 	if (_state == menu::load) {
 		_chunks = chunks;

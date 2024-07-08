@@ -72,6 +72,8 @@ void Buffer::bindVertexArray( void )
 
 void Buffer::deleteBuffers( void )
 {
-	glDeleteBuffers(1, &_vbo);
-	glDeleteVertexArrays(1, &_vao);
+	if (_vao) {
+		glDeleteBuffers(1, &_vbo);
+		glDeleteVertexArrays(1, &_vao);
+	}
 }

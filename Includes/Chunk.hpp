@@ -132,7 +132,7 @@ struct s_backup { // TODO add fluids and entities and mobs to backups
 class Chunk
 {
     public:
-        Chunk( Player* player, Inventory* inventory, int posX, int posY, std::list<Chunk *>* chunks );
+        Chunk( Player* player, Inventory* inventory, int posX, int posY, std::list<std::shared_ptr<Chunk>>& chunks );
         ~Chunk( void );
 
 		GLint getStartX( void );

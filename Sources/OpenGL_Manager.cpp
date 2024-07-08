@@ -53,13 +53,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_menu->setPtrs(NULL, NULL);
 	WorldEdit::Get()->setPtrs(NULL, NULL, NULL);
 
-	mtx.lock();
-	for (auto& c: _chunks) {
-		c->setBackup(_backups);
-		delete c;
-	}
-	// std::cout << "chunk size upon destruction " << _chunks.size() << std::endl;
-	mtx.unlock();
+	clearChunks();
 
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
@@ -68,6 +62,26 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	Settings::Destroy();
 	WorldEdit::Destroy();
 	utils::shader::check_glstate("openGL_Manager destructed", true);
+}
+
+void OpenGL_Manager::clearChunks( void )
+{
+	_current_chunk_ptr = NULL;
+	_chunk_hit = NULL;
+	_player->setChunkPtr(NULL);
+	mtx_deleted_chunks.lock();
+	_deleted_chunks.clear();
+	mtx_deleted_chunks.unlock();
+	_visible_chunks.clear();
+	mtx_perimeter.lock();
+	_perimeter_chunks.clear();
+	mtx_perimeter.unlock();
+	mtx.lock();
+	for (auto& c: _chunks) {
+		c->setBackup(_backups);
+	}
+	_chunks.clear();
+	mtx.unlock();
 }
 
 // ************************************************************************** //
@@ -712,9 +726,6 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 void OpenGL_Manager::handleChunkDeletion( void )
 {
 	mtx_deleted_chunks.lock();
-	for (auto& todel: _deleted_chunks) {
-		delete todel;
-	}
 	_deleted_chunks.clear();
 	mtx_deleted_chunks.unlock();
 }

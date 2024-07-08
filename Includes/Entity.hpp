@@ -32,7 +32,7 @@ class Entity
 		double _lifeTime;
 		glm::vec3 _pos, _dir;
 		glm::ivec2 _chunk_pos;
-		Chunk *_chunk;
+		Chunk* _chunk;
 		Inventory *_inventory;
 
 	private:

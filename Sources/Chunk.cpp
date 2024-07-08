@@ -5,7 +5,7 @@
 
 extern std::mutex mtx_backup;
 
-Chunk::Chunk( Player *player, Inventory *inventory, int posX, int posY, std::list<Chunk *> *chunks )
+Chunk::Chunk( Player* player, Inventory* inventory, int posX, int posY, std::list<std::shared_ptr<Chunk>>& chunks )
 	: _vaoSet(false), _waterVaoSet(false), _waterVaoVIP(false),
 	_skyVaoSet(false), _skyVaoVIP(false), _hasWater(true), _genDone(false), _light_update(false), _vertex_update(false),
 	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
@@ -15,21 +15,21 @@ Chunk::Chunk( Player *player, Inventory *inventory, int posX, int posY, std::lis
 {
 	int cnt = 0;
 // std::cout << "new chunk at " << posX << ", " << posY << std::endl;
-	for (auto c : *chunks) { // TODO load backups if needed. for trees
+	for (auto c : chunks) { // TODO load backups if needed. for trees
 		if (c->isInChunk(_startX - settings::consts::chunk_size, _startY)) {
-			_neighbours[face_dir::minus_x] = c;
+			_neighbours[face_dir::minus_x] = c.get();
 			c->setNeighbour(this, face_dir::plus_x);
 			++cnt;
 		} else if (c->isInChunk(_startX + settings::consts::chunk_size, _startY)) {
-			_neighbours[face_dir::plus_x] = c;
+			_neighbours[face_dir::plus_x] = c.get();
 			c->setNeighbour(this, face_dir::minus_x);
 			++cnt;
 		} else if (c->isInChunk(_startX, _startY - settings::consts::chunk_size)) {
-			_neighbours[face_dir::minus_y] = c;
+			_neighbours[face_dir::minus_y] = c.get();
 			c->setNeighbour(this, face_dir::plus_y);
 			++cnt;
 		} else if (c->isInChunk(_startX, _startY + settings::consts::chunk_size)) {
-			_neighbours[face_dir::plus_y] = c;
+			_neighbours[face_dir::plus_y] = c.get();
 			c->setNeighbour(this, face_dir::minus_y);
 			++cnt;
 		}
@@ -208,7 +208,8 @@ void Chunk::setup_water_array_buffer( void )
 	}
 
 	_mtx_fluid.lock();
-	_vaboWater.uploadData(_water_count * 6, &_water_vert[0][0]);
+	// _vaboWater.uploadData(_water_count * 6, &_water_vert[0][0]);
+	_vaboWater.uploadData(_water_vert.size(), &_water_vert[0][0]);
 	// glBufferData(GL_ARRAY_BUFFER, _water_count * 24 * sizeof(GLint), &_water_vert[0][0], GL_STATIC_DRAW);
 	_mtx_fluid.unlock();
 
@@ -233,7 +234,7 @@ GLint Chunk::getStartY( void )
 }
 
 /**
- * @brief get ptr to neighbour whose _startX and _startY are those given
+ * @brief get ptr to neighbour whose _startX and _startY match args
  */
 Chunk* Chunk::getChunkAt( int startX, int startY )
 {
@@ -272,7 +273,7 @@ void Chunk::waitGenDone( void )
 void Chunk::setNeighbour( Chunk* neighbour, int index )
 {
 	if (_neighbours[index] && neighbour) {
-		LOGERROR("setNeighbour ERROR DUPLICATE " << neighbour->getStartX() << ", " << neighbour->getStartY() << " vs " << _neighbours[index]->getStartX() << ", " << _neighbours[index]->getStartY());
+		LOGERROR("setNeighbour DUPLICATE " << neighbour->getStartX() << ", " << neighbour->getStartY() << " vs " << _neighbours[index]->getStartX() << ", " << _neighbours[index]->getStartY());
 		if (_neighbours[index] == neighbour) {
 			LOGERROR("but they are the same..");
 		}

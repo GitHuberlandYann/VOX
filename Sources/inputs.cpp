@@ -7,7 +7,7 @@
 
 Chunk *OpenGL_Manager::getCurrentChunkPtr( void )
 {
-	return (_current_chunk_ptr);
+	return (_current_chunk_ptr.get());
 }
 
 void OpenGL_Manager::resetInputsPtrs( void )
@@ -24,7 +24,7 @@ t_hit OpenGL_Manager::getBlockHit( void )
 	std::vector<glm::ivec3> ids = _player->computeRayCasting((_game_mode == settings::consts::gamemode::creative) ? (_hand_content == blocks::worldedit_brush) ? settings::consts::reach::brush : settings::consts::reach::creative : settings::consts::reach::survival);
 
 	glm::ivec2 current_chunk = {INT_MAX, INT_MAX};
-	Chunk* chunk = NULL;
+	std::shared_ptr<Chunk> chunk = NULL;
 	bool first_loop = true;
 	for (auto& i : ids) {
 		int posX = utils::math::chunk_pos(i.x);
@@ -635,7 +635,7 @@ void OpenGL_Manager::userInputs( bool rayCast )
 		_block_hit = block_hit;
 
 		if (!_player->getHealth() && _current_chunk_ptr) { // dead
-			_inventory->spillInventory(_current_chunk_ptr);
+			_inventory->spillInventory(_current_chunk_ptr.get());
 			_paused = true;
 			_menu->setState(menu::death);
 			return ;

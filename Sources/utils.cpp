@@ -589,7 +589,7 @@ namespace utils::math {
 		return (pos);
 	}
 
-	void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks )
+	void sort_chunks( glm::vec3 pos, std::vector<std::shared_ptr<Chunk>>& chunks )
 	{
 		// Bench b;
 		int posX = chunk_pos(pos.x);
@@ -597,14 +597,14 @@ namespace utils::math {
 
 		#if 1
 		// size_t size = chunks.size();
-		std::vector<std::pair<int, Chunk *>> dists;
+		std::vector<std::pair<int, std::shared_ptr<Chunk>>> dists;
 		dists.reserve(chunks.capacity());
 		for (auto& c: chunks) {
-			dists.push_back(std::pair<int, Chunk *>(c->manhattanDist(posX, posY), c));
+			dists.push_back(std::pair<int, std::shared_ptr<Chunk>>(c->manhattanDist(posX, posY), c));
 		}
 		// std::cout << "in sort chunks, dists size = " << dists.size() << std::endl;
 		// b.stamp("SORT - manhattan");
-		std::sort(dists.begin(), dists.end(), []( std::pair<int, Chunk*> a, std::pair<int, Chunk*> b )
+		std::sort(dists.begin(), dists.end(), []( std::pair<int, std::shared_ptr<Chunk>> a, std::pair<int, std::shared_ptr<Chunk>> b )
 								{
 									return (a.first > b.first);
 								});
@@ -615,7 +615,7 @@ namespace utils::math {
 		// int cnt = 0;
 		// sky and water sorted only if new chunk or chunk in cross centered on player
 		for (auto d: dists) {
-			Chunk *c = d.second;
+			std::shared_ptr<Chunk> c = d.second;
 			int diffX = posX - c->getStartX();
 			int diffY = posY - c->getStartY();
 			if (!c->getSortedOnce() || (diffX <= settings::consts::chunk_size && diffX >= -settings::consts::chunk_size) || (diffY <= settings::consts::chunk_size && diffY >= -settings::consts::chunk_size)) {
@@ -630,7 +630,7 @@ namespace utils::math {
 		dists.clear();
 		// b.stop("TOTAL");
 		#else
-		std::multimap<int, Chunk*> dists;
+		std::multimap<int, std::shared_ptr<Chunk>> dists;
 		for (auto c: chunks) {
 			dists.insert({c->manhattanDist(posX, posY), c});
 		}
@@ -644,7 +644,7 @@ namespace utils::math {
 		// int cnt = 0;
 		// sky and water sorted only if new chunk or chunk in cross centered on player
 		for (auto it = dists.rbegin(); it != dists.rend(); it++) {
-			Chunk *c = it->second;
+			std::shared_ptr<Chunk> c = it->second;
 			int diffX = posX - c->getStartX();
 			int diffY = posY - c->getStartY();
 			if (!c->getSortedOnce() || (diffX <= settings::consts::chunk_size && diffX >= -settings::consts::chunk_size) || (diffY <= settings::consts::chunk_size && diffY >= -settings::consts::chunk_size)) {

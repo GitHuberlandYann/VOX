@@ -89,7 +89,7 @@ class Menu
 		void processMouseMovement( float posX, float posY );
 		void setWindow( GLFWwindow *window );
 		void setPtrs( Inventory* inventory, UI* ui );
-		void setChunks( std::list<Chunk *>& chunks );
+		void setChunks( std::list<std::shared_ptr<Chunk>>& chunks );
 		void setChestInstance( ChestInstance* chest );
 		void setFurnaceInstance( FurnaceInstance* furnace );
 		void setSignPos( glm::ivec3 pos );
@@ -125,7 +125,7 @@ class Menu
 		UI* _ui;
 		std::shared_ptr<Chat> _chat;
 		std::shared_ptr<Text> _text;
-		std::list<Chunk*> _chunks;
+		std::list<std::shared_ptr<Chunk>> _chunks;
 		ChestInstance* _chest;
 		FurnaceInstance* _furnace;
 

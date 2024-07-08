@@ -13,18 +13,7 @@ void OpenGL_Manager::saveWorld( void )
 {
 	// first delete chunks, this updates _backups
 	stopThread();
-	_visible_chunks.clear();
-	mtx_perimeter.lock();
-	_perimeter_chunks.clear();
-	mtx_perimeter.unlock();
-	mtx.lock();
-	for (auto& c: _chunks) {
-		c->setBackup(_backups);
-		delete c;
-	}
-	_chunks.clear();
-	mtx.unlock();
-	_player->setChunkPtr(NULL);
+	clearChunks();
 	_block_hit = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
 
 	// then store everything
@@ -645,7 +634,7 @@ void ChestInstance::loadContent( std::ofstream & ofs, std::string &line, int &in
 		for (; line[index] && line[index] != ','; index++);
 		_content[cindex].amount = std::atoi(&line[index + 2]);
 		++index;
-		convertTag(line, index, _content[cindex], '[');
+		convertTag(line, index, _content[cindex], (cindex == 26) ? '}' : '[');
 		ofs << "chest content slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount;
 		if (_content[cindex].tag && _content[cindex].tag->getType() == tags::tool_tag) {
 			ofs << ", " << static_cast<ToolTag*>(_content[cindex].tag.get())->getDura() << ", " << s_blocks[_content[cindex].type]->durability;
@@ -714,16 +703,19 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						item.type = convert(std::atoi(&line[index + 3]));
 						for (; line[index] && line[index] != ','; index++);
 						item.amount = std::atoi(&line[index + 2]);
+						++index;
 						convertTag(line, index, item, ':');
 						fur->setComposant(item);
 						item.type = convert(std::atoi(&line[index + 3]));
 						for (; line[index] && line[index] != ','; index++);
 						item.amount = std::atoi(&line[index + 2]);
+						++index;
 						convertTag(line, index, item, ':');
 						fur->setFuel(item);
 						item.type = convert(std::atoi(&line[index + 3]));
 						for (; line[index] && line[index] != ','; index++);
 						item.amount = std::atoi(&line[index + 2]);
+						++index;
 						convertTag(line, index, item, '{');
 						fur->setProduction(item);
 						backups_value.furnaces[fkey] = fur;

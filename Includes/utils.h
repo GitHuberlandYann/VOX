@@ -57,7 +57,7 @@ namespace utils {
 		short maxs( short a, short b );
 
 		int chunk_pos( int pos );
-		void sort_chunks( glm::vec3 pos, std::vector<Chunk *> &chunks );
+		void sort_chunks( glm::vec3 pos, std::vector<std::shared_ptr<Chunk>>& chunks );
 
 		std::vector<glm::ivec3> voxel_traversal( const glm::vec3 ray_start, const glm::vec3 ray_end );
 		glm::vec3 line_plane_intersection( const glm::vec3 camPos, const glm::vec3 camDir, const glm::vec3 p0, const glm::vec3 cross );

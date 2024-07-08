@@ -56,8 +56,8 @@ typedef struct s_hit {
 class OpenGL_Manager
 {
 	public:
-		std::list<Chunk*> _chunks;
-		std::vector<Chunk*> _perimeter_chunks, _deleted_chunks;
+		std::list<std::shared_ptr<Chunk>> _chunks;
+		std::vector<std::shared_ptr<Chunk>> _perimeter_chunks, _deleted_chunks;
 		std::map<std::pair<int, int>, s_backup> _backups;
 		std::unique_ptr<Player> _player;
 		std::unique_ptr<Inventory> _inventory;
@@ -80,7 +80,7 @@ class OpenGL_Manager
 		size_t clearParticles( void );
 		void main_loop( void );
 
-		glm::ivec2 getCurrentChunk( void );
+		glm::ivec2 getCurrentChunkPos( void );
 		void setThreadUpdate( bool state );
 		bool getThreadUpdate( void );
 		bool getThreadStop( void );
@@ -95,7 +95,7 @@ class OpenGL_Manager
 		float _break_time, _eat_timer, _bow_timer;
 		int _game_mode, _break_frame, _hand_content;
 		std::string _world_name;
-		std::vector<Chunk*> _visible_chunks;
+		std::vector<std::shared_ptr<Chunk>> _visible_chunks;
 		std::vector<t_shaderInput> _entities;
 		std::vector<t_shaderInputPart> _particles;
 		std::vector<t_shaderInputModel> _models;
@@ -104,7 +104,7 @@ class OpenGL_Manager
 		t_time _time;
 		t_counter _counter;
 		t_hit _block_hit;
-		Chunk *_current_chunk_ptr = NULL, *_chunk_hit = NULL;
+		std::shared_ptr<Chunk> _current_chunk_ptr = NULL, _chunk_hit = NULL;
 		std::unique_ptr<Camera> _camera;
 		std::unique_ptr<UI> _ui;
 		std::unique_ptr<Menu> _menu;
@@ -125,6 +125,7 @@ class OpenGL_Manager
 		std::string saveBackupString( void );
 		void loadWorld( std::string file );
 		void loadBackups( std::ofstream & ofs, std::ifstream & indata );
+		void clearChunks( void );
 
 		void addBreakingAnim( void );
 		void addLine( glm::vec3 a, glm::vec3 b );

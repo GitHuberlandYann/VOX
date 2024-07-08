@@ -19,7 +19,7 @@ void thread_chunk_update( OpenGL_Manager *render )
 		}
 	}
 	while (true) {
-		pos = render->getCurrentChunk();
+		pos = render->getCurrentChunkPos();
 		render_dist = settings->getInt(settings::ints::render_dist);
 		render->setThreadUpdate(false);
 		// Bench b;
@@ -31,21 +31,21 @@ void thread_chunk_update( OpenGL_Manager *render )
 		}
 		// b.stamp("gen coordinates set");
 
-		std::vector<Chunk*> newperi_chunks;
+		std::vector<std::shared_ptr<Chunk>> newperi_chunks;
 		newperi_chunks.reserve(render->_perimeter_chunks.capacity());
-		std::list<Chunk*>::iterator ite = render->_chunks.end();
-		std::list<Chunk*>::iterator it = render->_chunks.begin();
+		auto ite = render->_chunks.end();
+		auto it = render->_chunks.begin();
 		for (; it != ite;) {
 			if ((*it)->inPerimeter(pos.x, pos.y, render_dist << settings::consts::chunk_shift)) {
 				(*it)->checkFillVertices();
 				newperi_chunks.push_back(*it);
 				coords.erase({(*it)->getStartX(), (*it)->getStartY()});
 			} else if (!(*it)->inPerimeter(pos.x, pos.y, (render_dist << settings::consts::chunk_shift) * 2)) {
-				std::list<Chunk *>::iterator tmp = it;
+				auto tmp = it;
 				--it;
 				(*tmp)->setBackup(render->_backups);
 				mtx_deleted_chunks.lock();
-				render->_deleted_chunks.push_back(*tmp);
+				render->_deleted_chunks.push_back(*tmp); // must be deleted from main thread because of openGL
 				mtx_deleted_chunks.unlock();
 				mtx.lock();
 				render->_chunks.erase(tmp);
@@ -63,7 +63,7 @@ void thread_chunk_update( OpenGL_Manager *render )
 		// b.stamp("NO");
 		for (auto& c: coords) {
 			//create new chunk where player stands
-			Chunk *newChunk = new Chunk(render->_player.get(), render->_inventory.get(), c.first, c.second, &render->_chunks);
+			std::shared_ptr<Chunk> newChunk = std::make_shared<Chunk>(render->_player.get(), render->_inventory.get(), c.first, c.second, render->_chunks);
 			mtx_backup.lock();
 			std::map<std::pair<int, int>, s_backup>::iterator search = render->_backups.find(std::pair<int, int>(c.first, c.second));
 			if (search != render->_backups.end()) {
@@ -114,7 +114,7 @@ void OpenGL_Manager::stopThread( void )
 	}
 }
 
-glm::ivec2 OpenGL_Manager::getCurrentChunk( void )
+glm::ivec2 OpenGL_Manager::getCurrentChunkPos( void )
 {
 	_mtx.lock();
 	glm::ivec2 res = _current_chunk;
