@@ -12,7 +12,7 @@ int Chunk::exposed_water_faces( int row, int col, int level )
 	switch (level) {
 		case 0:
 			res += 1;
-			res += (_blocks[(row * (settings::consts::chunk_size + 2) + col) * settings::consts::world_height + level + 1] & mask::blocks::type) != blocks::water;
+			res += TYPE(_blocks[(row * (settings::consts::chunk_size + 2) + col) * settings::consts::world_height + level + 1]) != blocks::water;
 			break ;
 		case 255:
 			res += !utils::block::air_flower(_blocks[(row * (settings::consts::chunk_size + 2) + col) * settings::consts::world_height + level - 1], false, false, true);
@@ -20,7 +20,7 @@ int Chunk::exposed_water_faces( int row, int col, int level )
 			break ;
 		default:
 			res += !utils::block::air_flower(_blocks[(row * (settings::consts::chunk_size + 2) + col) * settings::consts::world_height + level - 1], false, false, true);
-			res += (_blocks[(row * (settings::consts::chunk_size + 2) + col) * settings::consts::world_height + level + 1] & mask::blocks::type) != blocks::water;
+			res += TYPE(_blocks[(row * (settings::consts::chunk_size + 2) + col) * settings::consts::world_height + level + 1]) != blocks::water;
 	}
 	res += !utils::block::air_flower(_blocks[((row - 1) * (settings::consts::chunk_size + 2) + col) * settings::consts::world_height + level], false, false, true);
 	res += !utils::block::air_flower(_blocks[((row + 1) * (settings::consts::chunk_size + 2) + col) * settings::consts::world_height + level], false, false, true);
@@ -35,16 +35,16 @@ static int max_water_level( int v0, int v1, int v2, int v3, int u0, int u1, int 
 	if (u0 == blocks::water || u1 == blocks::water || u2 == blocks::water) {
 		return (0);
 	}
-	if ((v0 & mask::blocks::type) == blocks::water && ((v0 >> offset::blocks::bitfield) & 0x7) < res) {
+	if (TYPE(v0) == blocks::water && ((v0 >> offset::blocks::bitfield) & 0x7) < res) {
 		res = (v0 >> offset::blocks::bitfield) & 0x7;
 	}
-	if ((v1 & mask::blocks::type) == blocks::water && ((v1 >> offset::blocks::bitfield) & 0x7) < res) {
+	if (TYPE(v1) == blocks::water && ((v1 >> offset::blocks::bitfield) & 0x7) < res) {
 		res = (v1 >> offset::blocks::bitfield) & 0x7;
 	}
-	if ((v2 & mask::blocks::type) == blocks::water && ((v2 >> offset::blocks::bitfield) & 0x7) < res) {
+	if (TYPE(v2) == blocks::water && ((v2 >> offset::blocks::bitfield) & 0x7) < res) {
 		res = (v2 >> offset::blocks::bitfield) & 0x7;
 	}
-	if ((v3 & mask::blocks::type) == blocks::water && ((v3 >> offset::blocks::bitfield) & 0x7) < res) {
+	if (TYPE(v3) == blocks::water && ((v3 >> offset::blocks::bitfield) & 0x7) < res) {
 		res = (v3 >> offset::blocks::bitfield) & 0x7;
 	}
 	if (res == mask::blocks::notVisible) {
@@ -71,14 +71,14 @@ std::array<int, 4> Chunk::water_heights( int value, int above, int row, int col,
 								getBlockAt(row + 1, col - 1, level),
 								getBlockAt(row + 1, col, level),
 								getBlockAt(row + 1, col + 1, level)};
-	std::array<int, 8> quadsup = {getBlockAt(row - 1, col - 1, level + 1) & mask::blocks::type,
-								getBlockAt(row - 1, col, level + 1) & mask::blocks::type,
-								getBlockAt(row - 1, col + 1, level + 1) & mask::blocks::type,
-								getBlockAt(row, col - 1, level + 1) & mask::blocks::type,
-								getBlockAt(row, col + 1, level + 1) & mask::blocks::type,
-								getBlockAt(row + 1, col - 1, level + 1) & mask::blocks::type,
-								getBlockAt(row + 1, col, level + 1) & mask::blocks::type,
-								getBlockAt(row + 1, col + 1, level + 1) & mask::blocks::type};
+	std::array<int, 8> quadsup = {TYPE(getBlockAt(row - 1, col - 1, level + 1)),
+								TYPE(getBlockAt(row - 1, col, level + 1)),
+								TYPE(getBlockAt(row - 1, col + 1, level + 1)),
+								TYPE(getBlockAt(row, col - 1, level + 1)),
+								TYPE(getBlockAt(row, col + 1, level + 1)),
+								TYPE(getBlockAt(row + 1, col - 1, level + 1)),
+								TYPE(getBlockAt(row + 1, col, level + 1)),
+								TYPE(getBlockAt(row + 1, col + 1, level + 1))};
 
 	res[0] = max_water_level(quads[0], quads[1], quads[3], quads[4], quadsup[0], quadsup[1], quadsup[3]);
 	res[1] = max_water_level(quads[1], quads[2], quads[4], quads[5], quadsup[1], quadsup[2], quadsup[4]);
@@ -89,12 +89,12 @@ std::array<int, 4> Chunk::water_heights( int value, int above, int row, int col,
 
 bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, int posZ )
 {
-	int type = (value & mask::blocks::type), wLevel = (value >> offset::blocks::bitfield) & 0x7;
+	int type = TYPE(value), wLevel = (value >> offset::blocks::bitfield) & 0x7;
 	if (type != blocks::water) {
 		FLUIDLOG(LOG("water turned into " << s_blocks[type]->name));
 		for (int index = 0; index < 6; index++) {
 			const glm::ivec3 delta = adj_blocks[index];
-			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z) & mask::blocks::type;
+			int adj = TYPE(getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z));
 			if (adj == blocks::water) {
 				FLUIDLOG(LOG("updating neighbour"));
 				insertFluidAt(newFluids, posX + delta.x, posY + delta.y, posZ + delta.z);
@@ -112,7 +112,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z);
 			if (index != face_dir::minus_z) { // if not block underneath
 			FLUIDLOG(LOG(posX + delta.x << ", " << posY + delta.y << ", " << posZ + delta.z << " is " << s_blocks[adj]->name));
-				if ((adj & mask::blocks::type) == blocks::water) {
+				if (TYPE(adj) == blocks::water) {
 					int adjWLevel = ((adj >> offset::blocks::bitfield) & 0x7);
 					if (index == face_dir::plus_z) { // flow from above
 						if (wLevel > 1) {
@@ -146,7 +146,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 			// _water_count -= exposed_water_faces(posX, posY, posZ);
 			for (int index = 0; index < 6; index++) {
 				const glm::ivec3 delta = adj_blocks[index];
-				int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z) & mask::blocks::type;
+				int adj = TYPE(getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z));
 				if (adj == blocks::water) {
 					insertFluidAt(newFluids, posX + delta.x, posY + delta.y, posZ + delta.z);
 				}
@@ -166,7 +166,7 @@ bool Chunk::endFlow( std::set<int> *newFluids, int &value, int posX, int posY, i
 bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int srcWLevel )
 {
 	int offset = (((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ;
-	int value = _blocks[offset], type = (value & mask::blocks::type), wLevel = (value >> offset::blocks::bitfield) & 0x7;
+	int value = _blocks[offset], type = TYPE(value), wLevel = (value >> offset::blocks::bitfield) & 0x7;
 	FLUIDLOG(LOG("checking blockFlow " << posX << ", " << posY << ", " << posZ << ": " << s_blocks[type]->name));
 	// if (!utils::block::air_flower(type, false, false, true) || type > level || (type == level && level == blocks::water1)) {
 	if (!s_blocks[type]->isSolidForFluid || (type == blocks::water && (wLevel > srcWLevel || (wLevel == srcWLevel && wLevel == 1)))) {
@@ -228,11 +228,11 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 	for (int row = 0; row < settings::consts::chunk_size; row++) {
 		for (int col = 0; col < settings::consts::chunk_size; col++) {
 			for (int level = 1; level < 244; level++) { // TODO handle water when at level 255..
-				int value = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level], type = value & mask::blocks::type;
+				int value = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level], type = TYPE(value);
 				if (type == blocks::water) {
 					int pX = _startX + row;
 					int pY = _startY + col;
-					int above = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level + 1] & mask::blocks::type;
+					int above = TYPE(_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level + 1]);
 					std::array<int, 4> heights = water_heights(value, above, row, col, level);
 					if (above != blocks::water) {
 						order.push_back({utils::math::dist2(pos, glm::vec3(pX + 0.5f, pY + 0.5f, level + ((8.0f - heights[0]) / 8.0f))), {pX, pY + 1, level + 1, 1, -1, 0, heights[1], heights[3], heights[0], heights[2], 1}});

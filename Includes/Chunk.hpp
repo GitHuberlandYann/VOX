@@ -144,6 +144,7 @@ class Chunk
 		GLint getCamLightLevel( glm::ivec3 location );
 		int computePosLight( glm::vec3 pos );
 		short getLightLevel( int posX, int posY, int posZ );
+		void setLightLevelAbsolute( short level, glm::ivec3 pos, bool askNeighbours );
 		void setLightLevel( short level, int posX, int posY, int posZ, bool askNeighbours );
 		void startLightSpread( int posX, int posY, int posZ, bool skySpread );
 		void waitGenDone( void );

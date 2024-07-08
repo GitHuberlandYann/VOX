@@ -76,7 +76,7 @@ void Chunk::generate_lights( void )
 			char light_level = 15;
 			for (int level = settings::consts::world_height - 1; level >= 0; level--) {
 				if (light_level) {
-					int type = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] & mask::blocks::type;
+					int type = TYPE(_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level]);
 					if (!s_blocks[type]->transparent) { // block hit
 						light_level = 0;
 					} else if ((type == blocks::oak_leaves || type == blocks::water) && light_level) {
@@ -129,9 +129,9 @@ int Chunk::computeSmoothLight( int faceLight, int row, int col, int level, std::
 int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets )
 {
 	// (void)row;(void)col;(void)level;(void)offsets;return (0);
-	return (!s_blocks[getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]) & mask::blocks::type]->transparent
-			+ !s_blocks[getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]) & mask::blocks::type]->transparent
-			+ !s_blocks[getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]) & mask::blocks::type]->transparent);
+	return (!s_blocks[TYPE(getBlockAt(row + offsets[0], col + offsets[1], level + offsets[2]))]->transparent
+			+ !s_blocks[TYPE(getBlockAt(row + offsets[3], col + offsets[4], level + offsets[5]))]->transparent
+			+ !s_blocks[TYPE(getBlockAt(row + offsets[6], col + offsets[7], level + offsets[8]))]->transparent);
 }
 
 void Chunk::fill_vertex_array( void )
@@ -146,7 +146,7 @@ void Chunk::fill_vertex_array( void )
 				if (block_value & mask::blocks::notVisible) {
 					continue ;
 				}
-				s_blocks[block_value & mask::blocks::type]->addMesh(this, _vertices, {_startX, _startY}, {row, col, level}, block_value);
+				s_blocks[TYPE(block_value)]->addMesh(this, _vertices, {_startX, _startY}, {row, col, level}, block_value);
 			}
 		}
 	}
@@ -198,6 +198,11 @@ short Chunk::getLightLevel( int posX, int posY, int posZ )
 		return (_lights[(((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ]);
 	}
 	return (0xF00);
+}
+
+void Chunk::setLightLevelAbsolute( short level, glm::ivec3 pos, bool askNeighbours )
+{
+	setLightLevel(level, pos.x - _startX, pos.y - _startY, pos.z, askNeighbours);
 }
 
 void Chunk::setLightLevel( short level, int posX, int posY, int posZ, bool askNeighbours )
@@ -285,7 +290,7 @@ void Chunk::light_try_spread( int posX, int posY, int posZ, short level, bool sk
 			}
 		}
 	} else {
-		int type = _blocks[(((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ] & mask::blocks::type;
+		int type = TYPE(_blocks[(((posX << settings::consts::chunk_shift) + posY) << settings::consts::world_shift) + posZ]);
 		// if (utils::block::air_flower(type, false, true, true) && type != blocks::OAK_SLAB_BOTTOM && type != blocks::farmland && type != blocks::dirt_PATH) {
 		// 	return ;
 		// }

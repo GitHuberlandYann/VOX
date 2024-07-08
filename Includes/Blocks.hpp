@@ -402,6 +402,8 @@ namespace mask {
 	};
 };
 
+# define TYPE(value) (value & mask::blocks::type)
+
 enum class geometry {
 	none,          // air, water
 	cube,          // default blocks

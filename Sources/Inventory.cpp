@@ -673,7 +673,7 @@ void Inventory::replaceSlot( int type, bool creative )
 	_modif = true;
 	if (creative) {
 		_content[_slot] = {type, 1};
-		int dura = s_blocks[type & mask::blocks::type]->durability;
+		int dura = s_blocks[TYPE(type)]->durability;
 		if (dura) {
 			_content[_slot].tag = std::make_shared<ToolTag>(dura);
 		} else if (type == blocks::book_and_quill) {
@@ -775,16 +775,6 @@ void Inventory::signBook( std::string title )
 }
 
 // -------------------------
-
-std::string Inventory::getInventoryString( void )
-{
-    std::string res = "\nCurrent Slot > " + std::to_string(_slot);
-    for (int index = 0; index < 9; index++) {
-        t_item current = _content[index];
-        res += "\nslot " + std::to_string(index) + '<' + std::to_string(current.type) + "> times " + std::to_string(current.amount);
-    }
-    return (res);
-}
 
 std::string Inventory::getSlotString( void )
 {

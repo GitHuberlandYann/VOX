@@ -91,8 +91,9 @@ void WorldEdit::useBrush( glm::ivec3 pos, bool adding )
 				if (dist - .1f > _brushSize) { // || dist < _brushSize - 1) {
 					continue ;
 				}
-				int previous = chunk->getBlockAtAbsolute(pos + delta) & mask::blocks::type;
+				int previous = TYPE(chunk->getBlockAtAbsolute(pos + delta));
 				if (adding && previous == blocks::air) {
+					chunk->setLightLevelAbsolute(0, pos + delta, true);
 					chunk->setBlockAtAbsolute(blocks::stone, pos + delta, dist + .9f > _brushSize);
 				} else if (!adding && previous != blocks::air && previous != blocks::bedrock) {
 					chunk->setBlockAtAbsolute(blocks::air, pos + delta, true);

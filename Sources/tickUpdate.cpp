@@ -36,7 +36,7 @@ void Chunk::updateCrop( int value, int offset )
 	for (int index = 0; index < 8; ++index) {
 		const int delta[2] = {neighbour8[index][0], neighbour8[index][1]};
 		int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ - 1);
-		if ((adj & mask::blocks::type) == blocks::farmland) {
+		if (TYPE(adj) == blocks::farmland) {
 			points += (adj & mask::farmland::wet) ? 0.75f : 0.25f;
 		}
 	} // TODO might want to handle diag crop
@@ -57,7 +57,7 @@ bool Chunk::watered_farmland( int posX, int posY, int posZ )
 	for (int row = posX - 4; row <= posX + 4; row++) {
 		for (int col = posY - 4; col <= posY + 4; col++) {
 			for (int level = posZ; level <= posZ + 1; level++) {
-				if ((getBlockAt(row, col, level) & mask::blocks::type) == blocks::water) {
+				if (TYPE(getBlockAt(row, col, level)) == blocks::water) {
 					return (true);
 				}
 			}
@@ -74,10 +74,10 @@ void Chunk::updateFarmland( int value, int offset )
 	bool hydrated = watered_farmland(posX, posY, posZ);
 	if (!hydrated) {
 		int wetness = (value >> 10) & 0x7;
-		int type_above = getBlockAt(posX, posY, posZ + 1) & mask::blocks::type;
+		int type_above = TYPE(getBlockAt(posX, posY, posZ + 1));
 		if (wetness == 1) {
-			_blocks[offset] = value & mask::blocks::type;
-			_added[offset] = value & mask::blocks::type;
+			_blocks[offset] = TYPE(value);
+			_added[offset] = TYPE(value);
 			_vertex_update = true;
 			return ;
 		} else if (wetness > 1) {
@@ -92,8 +92,8 @@ void Chunk::updateFarmland( int value, int offset )
 			return ;
 		}
 	} else if (!(value & mask::farmland::wet)) {
-		_blocks[offset] = (value & mask::blocks::type) | mask::farmland::wet | (0x7 << offset::farmland::moisture);
-		_added[offset] = (value & mask::blocks::type) | mask::farmland::wet | (0x7 << offset::farmland::moisture);
+		_blocks[offset] = TYPE(value) | mask::farmland::wet | (0x7 << offset::farmland::moisture);
+		_added[offset] = TYPE(value) | mask::farmland::wet | (0x7 << offset::farmland::moisture);
 		_vertex_update = true;
 	}
 }
@@ -112,7 +112,7 @@ void Chunk::spreadGrassblock( int offset )
 	int posY = ((offset >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
 	int posX = ((offset >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 	if (posZ < 254) {
-		int above = _blocks[offset + 1] & mask::blocks::type;
+		int above = TYPE(_blocks[offset + 1]);
 		if (!s_blocks[above]->transparent || above == blocks::water) {
 			_blocks[offset] = blocks::dirt;
 			_added[offset] = blocks::dirt;
@@ -134,8 +134,8 @@ void Chunk::spreadGrassblock( int offset )
 		int selected = Random::rangedNumber(_seed, 0, 3 * 3 * 5 - 1);
 		const int delta[3] = {neighbour45[selected][0], neighbour45[selected][1], neighbour45[selected][2]};
 		int adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2]);
-		if ((adj & mask::blocks::type) == blocks::dirt && !(adj & mask::blocks::notVisible)) {
-			int above_adj = getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2] + 1) & mask::blocks::type;
+		if (TYPE(adj) == blocks::dirt && !(adj & mask::blocks::notVisible)) {
+			int above_adj = TYPE(getBlockAt(posX + delta[0], posY + delta[1], posZ + delta[2] + 1));
 			if (s_blocks[above_adj]->transparent && above_adj != blocks::water) {
 				turnDirtToGrass(posX + delta[0], posY + delta[1], posZ + delta[2]);
 			}
@@ -148,7 +148,7 @@ bool Chunk::findLog( int posX, int posY, int posZ, int level )
 	if (--level < 0) {
 		return (false);
 	}
-	int type = getBlockAt(posX, posY, posZ) & mask::blocks::type;
+	int type = TYPE(getBlockAt(posX, posY, posZ));
 	if (type == blocks::oak_log) {
 		return (true);
 	} else if (type != blocks::oak_leaves) {
@@ -183,7 +183,7 @@ bool Chunk::spaceForTree( int posX, int posY, int posZ )
 	for (int row = -1; row < 2; row++) {
 		for (int col = -1; col < 2; col++) {
 			for (int level = 1; level < 6; level++) {
-				int type = getBlockAt(posX + row, posY + col, posZ + level) & mask::blocks::type;
+				int type = TYPE(getBlockAt(posX + row, posY + col, posZ + level));
 				if (utils::block::air_flower(type, true, false, true) && type != blocks::grass_block && type != blocks::dirt) {
 					return (false);
 				}
@@ -258,7 +258,7 @@ void Chunk::tickUpdate( void )
 		for (int j = 0; j < 3; j++) {
 			// int selected = Random::rangedNumber(_seed, i * (1 << 12), (i + 1) * (1 << 12));
 			int selected = Random::rangedNumber(_seed, (i << 12), (i + 1) << 12);
-			int value = _blocks[selected], type = value & mask::blocks::type;
+			int value = _blocks[selected], type = TYPE(value);
 				TICKUPLOG(LOG("updating crop in chunk " << POSXY(_startX, _startY) << ": " << ((selected >> settings::consts::world_shift) >> settings::consts::chunk_shift) << " " << ((selected >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)) << ", " << (selected & (settings::consts::world_height - 1))));
 			if (value & mask::blocks::notVisible || !type) { // not updated
 				continue ;
@@ -295,7 +295,7 @@ void Chunk::updateScheduledBlocks( void )
 
 	for (size_t index = 0; index < size; ++index) {
 		int offset = _scheduled_to_fall[0];
-		int type = _blocks[offset] & mask::blocks::type;
+		int type = TYPE(_blocks[offset]);
 		if (type != blocks::sand && type != blocks::gravel) {
 			LOGERROR(_startX << ", " << _startY << " scheduled_to_fall block is " << s_blocks[type]->name);
 			_scheduled_to_fall.erase(_scheduled_to_fall.begin());

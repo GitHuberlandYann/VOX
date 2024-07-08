@@ -428,8 +428,8 @@ namespace utils::block {
 	 */
 	bool visible_face( int value, int next, int dir )
 	{
-		int type = (value & mask::blocks::type);
-		int nextType = (next & mask::blocks::type);
+		int type = TYPE(value);
+		int nextType = TYPE(next);
 		geometry valueShape = s_blocks[type]->geometry;
 		geometry nextShape = s_blocks[nextType]->geometry;
 

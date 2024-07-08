@@ -179,7 +179,6 @@ class Inventory
 		void spillInventory( Chunk* chunk );
 		void signBook( std::string title );
 
-        std::string getInventoryString( void );
 		std::string getSlotString( void );
 		std::string saveString( void );
 		void setUIPtr( UI* ui );

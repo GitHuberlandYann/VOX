@@ -228,12 +228,12 @@ void Chunk::generate_flat_world( void )
 			it = _added.erase(it);
 		} else {
 			// if (it->second & mask::adventure_block) {
-			// 	std::cout << "ADVENTURE BLOCK FOUND IN MAP: " << s_blocks[it->second & mask::blocks::type]->name << " at " << _startX + ((it->first >> settings::consts::world_shift) >> settings::consts::chunk_shift) << ", " << _startY + ((it->first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)) << ", " << (it->first & (settings::consts::world_height - 1)) << std::endl;
+			// 	std::cout << "ADVENTURE BLOCK FOUND IN MAP: " << s_blocks[TYPE(it->second)]->name << " at " << _startX + ((it->first >> settings::consts::world_shift) >> settings::consts::chunk_shift) << ", " << _startY + ((it->first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)) << ", " << (it->first & (settings::consts::world_height - 1)) << std::endl;
 			// 	// it->second &= (mask::all_bits - mask::adventure_block);
 			// 	// it->second |= mask::redstone::piston::moving;
 			// }
 			_blocks[it->first] = it->second;
-			if ((it->second & mask::blocks::type) == blocks::torch) {
+			if (TYPE(it->second) == blocks::torch) {
 				addFlame(it->first, {((it->first >> settings::consts::world_shift) >> settings::consts::chunk_shift), ((it->first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)), (it->first & (settings::consts::world_height - 1))}, blocks::torch, (it->second >> offset::blocks::orientation) & 0x7);
 			}
 			++it;
@@ -378,7 +378,7 @@ void Chunk::generate_blocks( void )
 	}
 	for (auto a: _added) {
 		_blocks[a.first] = a.second;
-		if ((a.second & mask::blocks::type) == blocks::torch) {
+		if (TYPE(a.second) == blocks::torch) {
 			addFlame(a.first, {((a.first >> settings::consts::world_shift) >> settings::consts::chunk_shift), ((a.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1)), (a.first & (settings::consts::world_height - 1))}, blocks::torch, (a.second >> offset::blocks::orientation) & 0x7);
 		}
 	}

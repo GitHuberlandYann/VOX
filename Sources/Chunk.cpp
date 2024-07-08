@@ -132,14 +132,14 @@ void Chunk::resetDisplayedFaces( void )
 		for (int col = 0; col < settings::consts::chunk_size; col++) {
 			for (int level = 0; level < settings::consts::world_height; level++) {
 				int offset = (((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level;
-				GLint value = _blocks[offset], type = value & mask::blocks::type;
+				GLint value = _blocks[offset], type = TYPE(value);
 				bool restore = false;
 				if ((value & mask::blocks::notVisible) && (!row || !col || row == settings::consts::chunk_size - 1 || col == settings::consts::chunk_size - 1)) {
 					value -= mask::blocks::notVisible;
 					restore = true;
 				}
 				if (type != blocks::air && type != blocks::chest && type != blocks::water) {
-					GLint below = ((level) ? _blocks[offset - 1] : 0) & mask::blocks::type;
+					GLint below = TYPE((level) ? _blocks[offset - 1] : 0);
 					if (!utils::block::air_flower(type, false, false, true) && type < blocks::torch && below != blocks::grass_block && below != blocks::dirt && below != blocks::sand) {
 						_blocks[offset] = blocks::air;
 					} else {
@@ -395,21 +395,21 @@ void Chunk::checkFillVertices( void )
 	if (cnt > _nb_neighbours) {
 		if (cnt == 4) {
 			for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
-				switch (a.second & mask::blocks::type) {
+				switch (TYPE(a.second)) {
 				case blocks::redstone_lamp:
 					if (!(a.second & mask::redstone::activated)) {
 						continue ;
 					}
 				case blocks::torch:
 				case blocks::redstone_torch:
-					if ((a.second & mask::blocks::type) == blocks::redstone_torch && (a.second & mask::redstone::powered)) {
+					if (TYPE(a.second) == blocks::redstone_torch && (a.second & mask::redstone::powered)) {
 						break ; // red torch is turned off
 					}
 					int level = a.first & (settings::consts::world_height - 1);
 					int col = ((a.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
 					int row = ((a.first >> settings::consts::world_shift) >> settings::consts::chunk_shift);
 					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] &= 0xFF00; // discard previous light value
-					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] += s_blocks[a.second & mask::blocks::type]->light_level + (s_blocks[a.second & mask::blocks::type]->light_level << 4); // 0xF0 = light source. & 0xF = light level
+					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] += s_blocks[TYPE(a.second)]->light_level + (s_blocks[TYPE(a.second)]->light_level << 4); // 0xF0 = light source. & 0xF = light level
 					light_spread(row, col, level, false);
 					break ;
 				}
@@ -420,7 +420,7 @@ void Chunk::checkFillVertices( void )
 					for (int level = settings::consts::world_height - 1; level > 0; level--) {
 						if (!(_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] & 0xF000)) {
 							int value = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level];
-							if (s_blocks[value & mask::blocks::type]->transparent) { // underground hole
+							if (s_blocks[TYPE(value)]->transparent) { // underground hole
 								// spread_light TODO watch out for leaves and water light damping..
 								light_spread(row, col, level, true);
 							}
@@ -558,7 +558,7 @@ bool Chunk::lineOfSight( const glm::vec3 src, const glm::vec3 dst )
 	for (auto i : ids) {
 		int value = getBlockAtAbsolute(i);
 
-		if (!s_blocks[value & mask::blocks::type]->transparent) {
+		if (!s_blocks[TYPE(value)]->transparent) {
 			return (false);
 		}
 	}
@@ -600,7 +600,7 @@ int Chunk::isHit( glm::ivec3 pos )
 	// 	_thread.join();
 	// }
 	int value = _blocks[(((chunk_pos.x << settings::consts::chunk_shift) + chunk_pos.y) << settings::consts::world_shift) + chunk_pos.z];
-	if ((value & mask::blocks::type) == blocks::water && ((value >> offset::blocks::bitfield) & 0x7) > 0) {
+	if (TYPE(value) == blocks::water && ((value >> offset::blocks::bitfield) & 0x7) > 0) {
 		return (blocks::air);
 	}
 	return (value);
@@ -647,7 +647,7 @@ void Chunk::explosion( glm::vec3 pos, int power )
 					std::vector<glm::ivec3> vt = utils::math::voxel_traversal(pos, end);
 					intensity += 0.75f;
 					for (auto &p : vt) {
-						int type = getBlockAt(p.x - _startX, p.y - _startY, p.z) & mask::blocks::type;
+						int type = TYPE(getBlockAt(p.x - _startX, p.y - _startY, p.z));
 						intensity -= 0.75f + s_blocks[type]->blast_resistance;
 						if (intensity < 0) {
 							break ;

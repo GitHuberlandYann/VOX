@@ -41,7 +41,7 @@ bool Skeleton::update( std::vector<t_shaderInputModel>& modArr, float deltaTime 
 				setState(settings::state_machine::wandle);
 				unsigned seed = _position.x * 14 + _position.y * 18 + _position.z * 40 + deltaTime * 100;
 				_front = glm::normalize(glm::vec3(Random::randomFloat(seed) * 2.0f - 1.0f, Random::randomFloat(seed) * 2.0f - 1.0f, 0.0f));
-				if (!s_blocks[_chunk->getBlockAtAbsolute(_position + _front) & mask::blocks::type]->transparent) {
+				if (!s_blocks[TYPE(_chunk->getBlockAtAbsolute(_position + _front))]->transparent) {
 					_front = -_front;
 				}
 				_bodyFront = _front;

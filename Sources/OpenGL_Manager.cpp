@@ -90,7 +90,8 @@ OpenGL_Manager::~OpenGL_Manager( void )
 
 void OpenGL_Manager::addBreakingAnim( void )
 {
-	if (_block_hit.type == blocks::air || (_block_hit.value & mask::blocks::notVisible)) {
+	if (_block_hit.type == blocks::air || (_block_hit.value & mask::blocks::notVisible)
+		|| _block_hit.type == blocks::glass || !_break_frame) {
 		return ;
 	}
 
@@ -116,9 +117,6 @@ void OpenGL_Manager::addBreakingAnim( void )
 	// 	p7 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x, -1 + hitCenter.y + hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
 	// }
 
-	if (_block_hit.type == blocks::glass || !_break_frame) {
-		return ;
-	}
 	int spec = settings::consts::shader::block::destroy_stage + _break_frame - 1;
 	utils::shader::addQuads(_entities, {p4, p0, p6, p2}, spec, 0, 16, 16);
 	utils::shader::addQuads(_entities, {p1, p5, p3, p7}, spec, 0, 16, 16);
@@ -130,8 +128,6 @@ void OpenGL_Manager::addBreakingAnim( void )
 
 void OpenGL_Manager::addLine( glm::vec3 a, glm::vec3 b )
 {
-	// _entities.push_back({(4 << 4) + 1, a}); // black line
-	// _entities.push_back({(4 << 4) + 2 + (1 << 17) + (1 << 8) + (1 << 18), b});
 	int spec = settings::consts::shader::block::red_wool;
 	_entities.push_back({spec, 0xFF, a}); // red line
 	_entities.push_back({spec + (1 << 20) + (1 << 21), 0xFF, b});
@@ -140,47 +136,6 @@ void OpenGL_Manager::addLine( glm::vec3 a, glm::vec3 b )
 void OpenGL_Manager::drawEntities( void )
 {
 	size_t esize = _entities.size();
-
-	bool hitBox = false;/*/(_block_hit.type != blocks::air) && (_block_hit.type != blocks::chest);
-	if (!hitBox) {
-	} else if (s_blocks[_block_hit.type]->hasHitbox) {
-		glm::vec3 hitCenter = s_blocks[_block_hit.type]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.type]->hitboxHalfSize;
-		glm::vec3 pos = {_block_hit.pos.x + hitCenter.x - hitHalfSize.x, _block_hit.pos.y + hitCenter.y - hitHalfSize.y, _block_hit.pos.z + hitCenter.z - hitHalfSize.z};
-		addLine(pos, pos + glm::vec3(2 * hitHalfSize.x, 0, 0));
-		addLine(pos, pos + glm::vec3(0, 2 * hitHalfSize.y, 0));
-		addLine(pos, pos + glm::vec3(0, 0, 2 * hitHalfSize.z));
-		pos += glm::vec3(2 * hitHalfSize.x, 2 * hitHalfSize.y, 2 * hitHalfSize.z);
-		addLine(pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0));
-		addLine(pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0));
-		addLine(pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z));
-		pos.x -= 2 * hitHalfSize.x;
-		addLine(pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z));
-		addLine(pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0));
-		pos += glm::vec3(2 * hitHalfSize.x, 0, -2 * hitHalfSize.z);
-		addLine(pos, pos + glm::vec3(0, -2 * hitHalfSize.y, 0));
-		addLine(pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0));
-		pos += glm::vec3(0, -2 * hitHalfSize.y, 2 * hitHalfSize.z);
-		addLine(pos, pos + glm::vec3(0, 0, -2 * hitHalfSize.z));
-		addLine(pos, pos + glm::vec3(-2 * hitHalfSize.x, 0, 0));
-	} else {
-		glm::vec3 pos = {_block_hit.pos.x - 0.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z - 0.001f};
-		addLine(pos, pos + glm::vec3(1.0002f, 0, 0));
-		addLine(pos, pos + glm::vec3(0, 1.0002f, 0));
-		addLine(pos, pos + glm::vec3(0, 0, 1.0002f));
-		pos += glm::vec3(1.0002f, 1.0002f, 1.0002f);
-		addLine(pos, pos + glm::vec3(-1.0002f, 0, 0));
-		addLine(pos, pos + glm::vec3(0, -1.0002f, 0));
-		addLine(pos, pos + glm::vec3(0, 0, -1.0002f));
-		pos.x -= 1.0002f;
-		addLine(pos, pos + glm::vec3(0, 0, -1.0002f));
-		addLine(pos, pos + glm::vec3(0, -1.0002f, 0));
-		pos += glm::vec3(1.0002f, 0, -1.0002f);
-		addLine(pos, pos + glm::vec3(0, -1.0002f, 0));
-		addLine(pos, pos + glm::vec3(-1.0002f, 0, 0));
-		pos += glm::vec3(0, -1.0002f, 1.0002f);
-		addLine(pos, pos + glm::vec3(0, 0, -1.0002f));
-		addLine(pos, pos + glm::vec3(-1.0002f, 0, 0));
-	}//*/
 
 	bool borders = false;
 	if (Settings::Get()->getBool(settings::bools::visible_chunk_border)) {
@@ -201,17 +156,14 @@ void OpenGL_Manager::drawEntities( void )
 		}
 	}
 
-	size_t bufSize = esize + ((hitBox) ? 24 : 0) + ((borders) ? 64 : 0);
+	size_t bufSize = esize + ((borders) ? 64 : 0);
 	_vaboEntities.uploadData(bufSize, &(_entities[0].texture));
 
 	utils::shader::check_glstate("OpenGL_Manager::drawEntities", false);
 
-	if (hitBox) {
-		glDrawArrays(GL_LINES, esize, 24);
-	}
 	glDrawArrays(GL_TRIANGLES, 0, esize);
 	if (borders) {
-		glDrawArrays(GL_LINES, esize + ((hitBox) ? 24 : 0), 64);
+		glDrawArrays(GL_LINES, esize, 64);
 	}
 
 	_entities.clear();
@@ -280,8 +232,8 @@ void OpenGL_Manager::setupWindow( void )
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // doesn't seem to work in full sreen mode
-	glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE); // doesn't seem to work in windowed mode
+	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+	glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE);
 
 	int count;
 	GLFWmonitor** monitors = glfwGetMonitors(&count);
@@ -646,8 +598,6 @@ void OpenGL_Manager::handleUI( void )
 			mtx_backup.unlock();
 			str += _inventory->getSlotString()
 					+ _menu->getInfoString();
-					// + _inventory->getDuraString()
-					// + _inventory->getInventoryString();
 		} else {
 			str = "\n\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\nTPS: " + std::to_string(_time.nbTicksLastSecond);
 		}

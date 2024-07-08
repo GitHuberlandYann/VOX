@@ -95,7 +95,7 @@ AMob* Chunk::mobHit( const t_hit blockHit )
 		glm::vec3 hitBoxCenter = mob->getPos(), hitBoxHalfSize = {0.3f, 0.3f, mob->getHitbox()};
 		hitBoxCenter.z += hitBoxHalfSize.z;
 		if (utils::math::segment_cube_intersection(segStart, segEnd, hitBoxCenter, hitBoxHalfSize)) {
-			if (blockHit.value & mask::blocks::type) {
+			if (TYPE(blockHit.value)) {
 				// compute which of block hit and mob is hit first
 				const glm::ivec3 mobFeet = glm::floor(hitBoxCenter);
 				const glm::ivec3 mobWaist = mobFeet + glm::ivec3(0, 0, 1);

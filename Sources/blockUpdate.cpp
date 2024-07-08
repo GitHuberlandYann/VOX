@@ -10,7 +10,7 @@
 /* generate one or many entities depending on block broken */
 void Chunk::entity_block( int posX, int posY, int posZ, int value )
 {
-	int type = (value & mask::blocks::type);
+	int type = TYPE(value);
 	BLOCKLOG(LOG("breaking " << s_blocks[type]->name));
 	float random;
 	switch (type) {
@@ -65,7 +65,7 @@ void Chunk::entity_block( int posX, int posY, int posZ, int value )
 void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 {
 	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
-	int value = _blocks[offset], type = value & mask::blocks::type;
+	int value = _blocks[offset], type = TYPE(value);
 	if (type == blocks::chest) {
 		auto search = _chests.find(offset);
 		if (search != _chests.end()) {
@@ -175,10 +175,10 @@ void Chunk::addFlame( int offset, glm::vec3 pos, int source, int orientation )
 void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int previous )
 {
 	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
-	int type = block_value & mask::blocks::type;
+	int type = TYPE(block_value);
 	geometry shape = s_blocks[type]->geometry;
 	if (type == blocks::sand || type == blocks::gravel) {
-		int type_under = (_blocks[offset - 1] & mask::blocks::type);
+		int type_under = TYPE(_blocks[offset - 1]);
 		if (type_under == blocks::air) {
 			if (useInventory) {
 				_inventory->removeBlock(false);
@@ -198,21 +198,21 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		geometry neighbourShape = geometry::none;
 		switch ((block_value >> offset::blocks::orientation) & 0x7) {
 		case face_dir::plus_x:
-			neighbourShape = s_blocks[getBlockAt(pos.x + 1, pos.y, pos.z) & mask::blocks::type]->geometry;
+			neighbourShape = s_blocks[TYPE(getBlockAt(pos.x + 1, pos.y, pos.z))]->geometry;
 			break;
 		case face_dir::minus_x:
-			neighbourShape = s_blocks[getBlockAt(pos.x - 1, pos.y, pos.z) & mask::blocks::type]->geometry;
+			neighbourShape = s_blocks[TYPE(getBlockAt(pos.x - 1, pos.y, pos.z))]->geometry;
 			break;
 		case face_dir::plus_y:
-			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y + 1, pos.z) & mask::blocks::type]->geometry;
+			neighbourShape = s_blocks[TYPE(getBlockAt(pos.x, pos.y + 1, pos.z))]->geometry;
 			break;
 		case face_dir::minus_y:
-			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y - 1, pos.z) & mask::blocks::type]->geometry;
+			neighbourShape = s_blocks[TYPE(getBlockAt(pos.x, pos.y - 1, pos.z))]->geometry;
 			break;
 		}
 		if (neighbourShape != geometry::cube) {
 			block_value = type + (face_dir::minus_z << offset::blocks::orientation);
-			neighbourShape = s_blocks[getBlockAt(pos.x, pos.y, pos.z - 1) & mask::blocks::type]->geometry;
+			neighbourShape = s_blocks[TYPE(getBlockAt(pos.x, pos.y, pos.z - 1))]->geometry;
 			if (!(neighbourShape == geometry::cube || neighbourShape == geometry::fence
 				|| (neighbourShape == geometry::slab && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::slab::top))
 				|| (neighbourShape == geometry::stairs && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::stairs::top)))) {
@@ -245,7 +245,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 				break ;
 			case geometry::repeater:
 				previous = getBlockAt(pos.x, pos.y, pos.z - 1);
-				if (s_blocks[previous & mask::blocks::type]->isTransparent(previous) && (previous & mask::blocks::type) != blocks::glass && (previous & mask::blocks::type) != blocks::observer) {
+				if (s_blocks[TYPE(previous)]->isTransparent(previous) && TYPE(previous) != blocks::glass && TYPE(previous) != blocks::observer) {
 					return ;
 				}
 				block_value ^= (1 << offset::blocks::orientation); // inverse dir (0->1, 1->0, 2->3, 3->2)
@@ -260,7 +260,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 		if (previous == blocks::water) {
 			return ;
 		}
-		int type_below = _blocks[offset - 1] & mask::blocks::type;
+		int type_below = TYPE(_blocks[offset - 1]);
 		if (type == blocks::wheat_crop) {
 		} else if (type_below != blocks::grass_block && type_below != blocks::dirt && type_below != blocks::sand) {
 			return ; // can't place flower on something else than grass/dirt block
@@ -268,7 +268,7 @@ void Chunk::add_block( bool useInventory, glm::ivec3 pos, int block_value, int p
 			return ;
 		}
 	} else if (shape == geometry::dust) {
-		geometry shape_below = s_blocks[_blocks[offset - 1] & mask::blocks::type]->geometry;
+		geometry shape_below = s_blocks[TYPE(_blocks[offset - 1])]->geometry;
 		if (!(shape_below == geometry::cube|| shape_below == geometry::piston || shape_below == geometry::glass
 			|| (shape_below == geometry::slab && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::slab::top))
 			|| (shape_below == geometry::stairs && (getBlockAt(pos.x, pos.y, pos.z - 1) & mask::stairs::top)))) {
@@ -301,7 +301,7 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 {
 	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	int value = _blocks[offset];
-	if ((value & mask::blocks::type) == blocks::item_frame) {
+	if (TYPE(value) == blocks::item_frame) {
 		if (value & mask::frame::locked) {
 			return ;
 		}
@@ -315,7 +315,7 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 			LOGERROR("Item frame entity not found when trying to rotate/place item");
 		}
 		return ;
-	} else if ((value & mask::blocks::type) == blocks::lectern) {
+	} else if (TYPE(value) == blocks::lectern) {
 		auto search = std::find_if(_entities.begin(), _entities.end(), [this, pos](auto e) { return (e->isAt(pos + glm::ivec3(_startX, _startY, .0f))); });
 		if (search != _entities.end()) {
 			static_cast<LecternEntity*>(search->get())->setContent(_inventory->getSlotBlock(_inventory->getSlotNum()));
@@ -327,8 +327,8 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 		}
 		return ;
 	}
-	if (!s_blocks[type]->isItemOnly && (value & mask::blocks::type) != type) {
-		LOGERROR("Chunk::use_block type diff " << s_blocks[value & mask::blocks::type]->name << " vs " << s_blocks[type]->name);
+	if (!s_blocks[type]->isItemOnly && TYPE(value) != type) {
+		LOGERROR("Chunk::use_block type diff " << s_blocks[TYPE(value)]->name << " vs " << s_blocks[type]->name);
 		return ;
 	}
 	switch (type) {
@@ -373,7 +373,7 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 		_mobs.push_back(std::make_shared<Skeleton>(this, _player, pos + glm::ivec3(_startX, _startY, 0)));
 		return ;
 	default:
-		LOGERROR("Chunk::regeneration case Modif::use defaulted on: " << s_blocks[value & mask::blocks::type]->name);
+		LOGERROR("Chunk::regeneration case Modif::use defaulted on: " << s_blocks[TYPE(value)]->name);
 		return ;
 	}
 	setBlockAt(value, pos, true);
@@ -388,7 +388,7 @@ void Chunk::use_block( bool useInventory, glm::ivec3 pos, int type )
 */
 void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif )
 {
-	int previous_type = _blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z] & mask::blocks::type;
+	int previous_type = TYPE(_blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z]);
 	switch (modif) {
 		case Modif::rm:
 			if (previous_type == blocks::air || previous_type == blocks::bedrock) { // can't rm bedrock
@@ -397,7 +397,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			remove_block(useInventory, pos);
 		break ;
 		case Modif::add:
-			if (type == blocks::wheat_crop && (_blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z - 1] & mask::blocks::type) != blocks::farmland) { // can't place crop on something other than farmland
+			if (type == blocks::wheat_crop && TYPE(_blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z - 1]) != blocks::farmland) { // can't place crop on something other than farmland
 				return ;
 			} else if ((previous_type != blocks::air && previous_type != blocks::water) || type == blocks::air) { // can't replace block
 				return ;
@@ -405,7 +405,7 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 			add_block(useInventory, pos, type, previous_type);
 			break ;
 		case Modif::replace:
-			if (type == blocks::dirt_path && pos.z < 254 && (_blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z + 1] & mask::blocks::type) != blocks::air) { // can't turn dirt to dirt path if anything above it
+			if (type == blocks::dirt_path && pos.z < 254 && TYPE(_blocks[(((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z + 1]) != blocks::air) { // can't turn dirt to dirt path if anything above it
 				return ;
 			} else if ((type == blocks::dirt_path || type == blocks::farmland) && previous_type != blocks::dirt && previous_type != blocks::grass_block) {
 				return ;
@@ -453,11 +453,11 @@ void Chunk::regeneration( bool useInventory, int type, glm::ivec3 pos, Modif mod
 */
 void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 {
-	int type = (value & mask::blocks::type), prev_type = (previous & mask::blocks::type);
+	int type = TYPE(value), prev_type = TYPE(previous);
 	BLOCKLOG(LOG("UPDATE_BLOCK at " << POSDXY(pos, _startX, _startY) << ". " << s_blocks[prev_type]->name << " -> " << s_blocks[type]->name));
 	int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 	if (type == blocks::sand || type == blocks::gravel) {
-		int type_under = (_blocks[offset - 1] & mask::blocks::type);
+		int type_under = TYPE(_blocks[offset - 1]);
 		if (type_under == blocks::air) {
 			if (previous == blocks::air) {
 				_entities.push_back(std::make_shared<FallingBlockEntity>(this, glm::vec3(pos.x + _startX, pos.y + _startY, pos.z), t_item(type, 1)));
@@ -714,16 +714,16 @@ void Chunk::setBlockAt( int value, int posX, int posY, int posZ, bool update, bo
 		}
 		_vertex_update = true;
 		// update observers
-		if (!observer || (value & mask::blocks::type) == blocks::moving_piston) {
+		if (!observer || TYPE(value) == blocks::moving_piston) {
 			return ;
 		}
-		if ((value & mask::blocks::type) == blocks::observer && (previous & mask::blocks::type) == blocks::moving_piston) {
+		if (TYPE(value) == blocks::observer && TYPE(previous) == blocks::moving_piston) {
 			scheduleRedstoneTick({{posX, posY, posZ}, redstone::tick, redstone::on});
 		}
 		for (int i = 0; i < 6; ++i) {
 			const glm::ivec3 delta = adj_blocks[i];
 			int adj = getBlockAt(posX + delta.x, posY + delta.y, posZ + delta.z);
-			if ((adj & mask::blocks::type) == blocks::observer && delta == -adj_blocks[(adj >> offset::blocks::orientation) & 0x7]) {
+			if (TYPE(adj) == blocks::observer && delta == -adj_blocks[(adj >> offset::blocks::orientation) & 0x7]) {
 				scheduleRedstoneTick({{posX + delta.x, posY + delta.y, posZ + delta.z}, redstone::tick, redstone::on});
 			}
 		}
@@ -763,7 +763,7 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		}
 	} else {
 		_vertex_update = true;
-		int value = getBlockAt(pos), type = (value & mask::blocks::type);
+		int value = getBlockAt(pos), type = TYPE(value);
 
 		bool transparent = s_blocks[source]->isTransparent(source);
 
@@ -827,7 +827,7 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 		// break attached block whose attachement got removed
 		glm::ivec3 attachement = getAttachedDir(value);
 		if (attachement != glm::ivec3(0, 0, 0)) {
-			int base = (getBlockAt(pos + attachement) & mask::blocks::type);
+			int base = TYPE(getBlockAt(pos + attachement));
 			if (base == blocks::air || base == blocks::piston_head) {
 				if (type == blocks::item_frame) {
 					if (value & mask::frame::locked) { return ; }
@@ -1169,7 +1169,7 @@ void Chunk::handle_stair_corners( glm::ivec3 pos, int &type )
 void Chunk::handle_door_placement( glm::ivec3 pos, int &type )
 {
 	int below = getBlockAt(pos.x, pos.y, pos.z - 1, false);
-	if (!s_blocks[below & mask::blocks::type]->hasCollisionHitbox_1x1x1) {
+	if (!s_blocks[TYPE(below)]->hasCollisionHitbox_1x1x1) {
 		type = blocks::air;
 		return ;
 	}
@@ -1185,19 +1185,19 @@ void Chunk::handle_door_placement( glm::ivec3 pos, int &type )
 void Chunk::handle_fence_placement( glm::ivec3 pos, int &type )
 {
 	int next = getBlockAt(pos.x - 1, pos.y, pos.z);
-	if (s_blocks[next & mask::blocks::type]->hasCollisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+	if (s_blocks[TYPE(next)]->hasCollisionHitbox_1x1x1 || TYPE(next) == TYPE(type)) {
 		type |= (fence::mx << offset::blocks::bitfield);
 	}
 	next = getBlockAt(pos.x + 1, pos.y, pos.z);
-	if (s_blocks[next & mask::blocks::type]->hasCollisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+	if (s_blocks[TYPE(next)]->hasCollisionHitbox_1x1x1 || TYPE(next) == TYPE(type)) {
 		type |= (fence::px << offset::blocks::bitfield);
 	}
 	next = getBlockAt(pos.x, pos.y - 1, pos.z);
-	if (s_blocks[next & mask::blocks::type]->hasCollisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+	if (s_blocks[TYPE(next)]->hasCollisionHitbox_1x1x1 || TYPE(next) == TYPE(type)) {
 		type |= (fence::my << offset::blocks::bitfield);
 	}
 	next = getBlockAt(pos.x, pos.y + 1, pos.z);
-	if (s_blocks[next & mask::blocks::type]->hasCollisionHitbox_1x1x1 || (next & mask::blocks::type) == (type & mask::blocks::type)) {
+	if (s_blocks[TYPE(next)]->hasCollisionHitbox_1x1x1 || TYPE(next) == TYPE(type)) {
 		type |= (fence::py << offset::blocks::bitfield);
 	}
 }

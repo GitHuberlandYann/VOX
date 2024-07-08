@@ -213,19 +213,19 @@ int MovingPistonEntity::pistonedBy( glm::ivec3 pos, glm::ivec3 target )
 			return (redstone::piston::cancel_retraction);
 		}
 		if (!_piston_head) {
-			_chunk->setBlockAt(_item.type, _endPos, ((_item.type & mask::blocks::type) == blocks::observer) || ((_item.type & mask::blocks::type) == blocks::redstone_block)); // might want to add bool arg to this function, set it to false in (void)FORCE FINISH RETRACTION and to true in FORCE FINISH RETRACTION
+			_chunk->setBlockAt(_item.type, _endPos, (TYPE(_item.type) == blocks::observer) || (TYPE(_item.type) == blocks::redstone_block)); // might want to add bool arg to this function, set it to false in (void)FORCE FINISH RETRACTION and to true in FORCE FINISH RETRACTION
 			// _chunk->setBlockAt(_item.type, _endPos, !_retraction);
 			if (_retraction) { // TODO check if this still necessary
 				_chunk->setBlockAt(blocks::air, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
 			}
-			if ((_item.type & mask::blocks::type) == blocks::piston || (_item.type & mask::blocks::type) == blocks::sticky_piston) {
+			if (TYPE(_item.type) == blocks::piston || TYPE(_item.type) == blocks::sticky_piston) {
 				_chunk->updatePiston(_endPos, _item.type);
 			}
 		} else {
 			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::sticky_piston : blocks::piston) | (_item.type & (0x7 << offset::blocks::orientation)), _endPos, false);
 			PISTONLOG(int front_value = _chunk->getBlockAt(_pos);
-			LOG("BLOCK IN FRONT IS " << s_blocks[front_value & mask::blocks::type]->name));
-			// if ((front_value & mask::blocks::type) == blocks::moving_piston) {
+			LOG("BLOCK IN FRONT IS " << s_blocks[TYPE(front_value)]->name));
+			// if (TYPE(front_value) == blocks::moving_piston) {
 			// 	_chunk->setBlockAt(blocks::air, _pos, true);
 			// }
 			_chunk->setBlockAt(_chunk->getBlockAt(_source) & (mask::all_bits - mask::redstone::piston::moving), _source, false);
@@ -252,21 +252,21 @@ bool Entity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double d
 	// if item in block, push it out of block.
 	// first try on the sides, then push it upwards
 	// std::cout << "pos inside chunk " << _chunk_pos.x << ", " << _chunk_pos.y << ": " << _pos.x - _chunk_pos.x << ", " << _pos.y - _chunk_pos.y << ", " << _pos.z << std::endl;
-	if (!s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
+	if (!s_blocks[TYPE(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)))]->transparent) {
 		_pos.z += 3 * deltaTime;
 		_dir = {0, 0, 1};
 	} else {
-		if (_dir.x && s_blocks[_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
+		if (_dir.x && s_blocks[TYPE(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)))]->transparent) {
 			_pos.x += _dir.x * deltaTime;
 		} else {
 			_dir.x = 0;
 		}
-		if (_dir.y && s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
+		if (_dir.y && s_blocks[TYPE(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z)))]->transparent) {
 			_pos.y += _dir.y * deltaTime;
 		} else {
 			_dir.y = 0;
 		}
-		if (s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime)) & mask::blocks::type]->transparent) {
+		if (s_blocks[TYPE(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime)))]->transparent) {
 			_pos.z += _dir.z * deltaTime;
 			_dir.z -= 0.1f;
 		} else {
@@ -319,7 +319,7 @@ bool FallingBlockEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camP
 	// std::cout << "FALLING BLOCK UPDATE" << std::endl;
 	_dir.z -= 0.1f;
 	_pos.z += _dir.z * deltaTime;
-	int type = (_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type);
+	int type = TYPE(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)));
 	if (type != blocks::air && type != blocks::water) {
 		// std::cout << "youston, we touched ground" << std::endl;
 		if (!s_blocks[type]->isSolidForFluid) { // 'drops' as entity, but is already entity, so update state is enough
@@ -374,17 +374,17 @@ bool TNTEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, doubl
 		}
 	}
 
-	if (_dir.x && s_blocks[_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
+	if (_dir.x && s_blocks[TYPE(_chunk->getBlockAt(glm::floor(_pos.x + _dir.x * deltaTime - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)))]->transparent) {
 		_pos.x += _dir.x * deltaTime;
 	} else {
 		_dir.x = 0;
 	}
-	if (_dir.y && s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
+	if (_dir.y && s_blocks[TYPE(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y + _dir.y * deltaTime - _chunk_pos.y), glm::floor(_pos.z)))]->transparent) {
 		_pos.y += _dir.y * deltaTime;
 	} else {
 		_dir.y = 0;
 	}
-	if (s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime)) & mask::blocks::type]->transparent) {
+	if (s_blocks[TYPE(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z + _dir.z * deltaTime)))]->transparent) {
 		_pos.z += _dir.z * deltaTime;
 		_dir.z -= 0.1f;
 	} else {
@@ -433,7 +433,7 @@ bool ArrowEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, dou
     }
 
 	bool changeOwner = false;
-	if (!s_blocks[_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)) & mask::blocks::type]->transparent) {
+	if (!s_blocks[TYPE(_chunk->getBlockAt(glm::floor(_pos.x - _chunk_pos.x), glm::floor(_pos.y - _chunk_pos.y), glm::floor(_pos.z)))]->transparent) {
 		_stuck = true;
 		// arrow explosion for fun
 		// _chunk->explosion(_pos - _dir * 0.25f, 10);
@@ -507,7 +507,7 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camP
 	int GTMul = DayCycle::Get()->getGameTimeMultiplier();
 	float percent = (GTMul == -1) ? glm::min(1.0, _lifeTime / (settings::consts::tick * lifeLimit))
 									: 1.0f * (currentTick - _tickStart) / lifeLimit;
-	s_blocks[_item.type & mask::blocks::type]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, _pos + _dir * percent, _item.type);
+	s_blocks[TYPE(_item.type)]->addMesh(_chunk, arr, {_chunk->getStartX(), _chunk->getStartY()}, _pos + _dir * percent, _item.type);
 
     if (currentTick - _tickStart == lifeLimit) {
 		// finish extension, turn back to block
@@ -517,14 +517,14 @@ bool MovingPistonEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camP
 			if (_retraction) {
 				_chunk->setBlockAt(blocks::air, _endPos.x - _dir.x, _endPos.y - _dir.y, _endPos.z - _dir.z, false);
 			}
-			if ((_item.type & mask::blocks::type) == blocks::piston || (_item.type & mask::blocks::type) == blocks::sticky_piston) {
+			if (TYPE(_item.type) == blocks::piston || TYPE(_item.type) == blocks::sticky_piston) {
 				_chunk->updatePiston(_endPos, _item.type);
 			}
 		} else {
 			// _chunk->setBlockAt(((_item.type & (REDSTONE::STICKY)) ? blocks::sticky_piston : blocks::piston) | (_item.type & (0x7 << offset::blocks::orientation)), _endPos, false);
 			PISTONLOG(int front_value = _chunk->getBlockAt(_pos.x, _pos.y, _pos.z);
-			LOG("BLOCK IN FRONT IS " << s_blocks[front_value & mask::blocks::type]->name));
-			// if ((front_value & mask::blocks::type) == blocks::moving_piston) {
+			LOG("BLOCK IN FRONT IS " << s_blocks[TYPE(front_value)]->name));
+			// if (TYPE(front_value) == blocks::moving_piston) {
 			// 	_chunk->setBlockAt(blocks::air, _pos.x, _pos.y, _pos.z, true);
 			// }
 			PISTONLOG(LOG("source is " << POSDXY(_source, _chunk->getStartX(), _chunk->getStartY())));

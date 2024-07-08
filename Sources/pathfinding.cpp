@@ -83,8 +83,8 @@ void Chunk::checkNodePathfinding( std::list<std::shared_ptr<t_pathfinding_node>>
 	std::shared_ptr<t_pathfinding_node> current, glm::ivec3 start, glm::ivec3 end )
 {
 	// check if traversable
-	int adj_type = getBlockAtAbsolute(pos) & mask::blocks::type;
-	int above_type = getBlockAtAbsolute(pos.x, pos.y, pos.z + 1) & mask::blocks::type;
+	int adj_type = TYPE(getBlockAtAbsolute(pos));
+	int above_type = TYPE(getBlockAtAbsolute(pos.x, pos.y, pos.z + 1));
 	if (s_blocks[adj_type]->transparent) {
 		if (!s_blocks[above_type]->transparent) { // no space for head, avoid
 			return ;
@@ -92,16 +92,16 @@ void Chunk::checkNodePathfinding( std::list<std::shared_ptr<t_pathfinding_node>>
 		if (trav) { // enough space to try and travel in diagonal
 			*trav = true;
 		}
-		int below_type = getBlockAtAbsolute(pos.x, pos.y, pos.z - 1) & mask::blocks::type;
+		int below_type = TYPE(getBlockAtAbsolute(pos.x, pos.y, pos.z - 1));
 		if (s_blocks[below_type]->transparent) { // under feet is air, look below to 'descend'
-			below_type = getBlockAtAbsolute(pos.x, pos.y, pos.z - 2) & mask::blocks::type;
+			below_type = TYPE(getBlockAtAbsolute(pos.x, pos.y, pos.z - 2));
 			if (s_blocks[below_type]->transparent) { // 2 blocks drop, avoid
 				return ;
 			}
 			--pos.z;
 		}
 	} else if (s_blocks[above_type]->transparent) { // feet is solid, look above to 'climb'
-		above_type = getBlockAtAbsolute(pos.x, pos.y, pos.z + 2) & mask::blocks::type;
+		above_type = TYPE(getBlockAtAbsolute(pos.x, pos.y, pos.z + 2));
 		if (!s_blocks[above_type]->transparent) { // no space for head after climb, avoid
 			return ;
 		}

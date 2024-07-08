@@ -474,7 +474,7 @@ static void convertTag( std::string line, int& index, t_item& item, char sep )
 			for (; line[index] && line[index] != ','; index++);
 			dura = std::atoi(&line[index + 2]);
 			if (dura) {
-				item.tag = std::make_shared<ToolTag>(dura, s_blocks[item.type & mask::blocks::type]->durability);
+				item.tag = std::make_shared<ToolTag>(dura, s_blocks[TYPE(item.type)]->durability);
 			}
 			for (index = index + 2; line[index] && line[index] != sep; index++);
 			return ;
@@ -483,7 +483,7 @@ static void convertTag( std::string line, int& index, t_item& item, char sep )
 			if (line[index] == ',') {
 				if (!line.compare(index + 4, 7, "toolTag")) {
 					dura = std::atoi(&line[index + 14]);
-					item.tag = std::make_shared<ToolTag>(dura, s_blocks[item.type & mask::blocks::type]->durability);
+					item.tag = std::make_shared<ToolTag>(dura, s_blocks[TYPE(item.type)]->durability);
 					index += 13;
 				} else if (!line.compare(index + 4, 7, "bookTag")) {
 					index += 13;
@@ -561,24 +561,24 @@ static int convert( int value ) // used when I change s_blocks big time
 			}
 		case 2: // v1.1
 			// transition from v1.1 to f1.2: merged slab_bottom and slab_top into slab + data_value
-			switch (value & mask::blocks::type) {
+			switch (TYPE(value)) {
 				case blocks::oak_slab + 1:
 				case blocks::stone_slab + 1:
 				case blocks::smooth_stone_slab + 1:
 				case blocks::cobblestone_slab + 1:
 				case blocks::stone_bricks_slab + 1:
-					value = ((value & mask::blocks::type) - 1) | (value & (mask::all_bits - mask::blocks::type - mask::slab::top)) | mask::slab::top;
+					value = (TYPE(value) - 1) | (value & (mask::all_bits - mask::blocks::type - mask::slab::top)) | mask::slab::top;
 					break ;
 			}
 		case 3: // v1.2
 			// transition from v1.2 to f1.3: merged stairs_bottom and stairs_top into stairs + data_value
-			switch (value & mask::blocks::type) {
+			switch (TYPE(value)) {
 				case blocks::oak_stairs + 1:
 				case blocks::stone_stairs + 1:
 				case blocks::smooth_stone_stairs + 1:
 				case blocks::cobblestone_stairs + 1:
 				case blocks::stone_bricks_stairs + 1:
-					value = ((value & mask::blocks::type) - 1) | (value & (mask::all_bits - mask::blocks::type - mask::stairs::top)) | mask::stairs::top;
+					value = (TYPE(value) - 1) | (value & (mask::all_bits - mask::blocks::type - mask::stairs::top)) | mask::stairs::top;
 					break ;
 			}
 		case 4: // v1.3
