@@ -185,7 +185,6 @@ bool Chunk::addFlow( std::set<int> *newFluids, int posX, int posY, int posZ, int
 					if (type == blocks::torch) {
 						auto search = _flames.find(offset);
 						if (search != _flames.end()) {
-							delete search->second;
 							_flames.erase(offset);
 						}
 					}

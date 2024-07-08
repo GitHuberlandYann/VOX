@@ -64,20 +64,6 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
 
-	mtx_backup.lock();
-	for (auto &b : _backups) {
-		for (auto ch : b.second.chests) {
-			delete ch.second;
-		}
-		for (auto fur : b.second.furnaces) {
-			delete fur.second;
-		}
-		for (auto s : b.second.signs) {
-			delete s.second;
-		}
-	}
-	mtx_backup.unlock();
-
 	DayCycle::Destroy();
 	Settings::Destroy();
 	WorldEdit::Destroy();
@@ -523,10 +509,16 @@ void OpenGL_Manager::handleDraw( bool gamePaused )
 			if (Settings::Get()->getBool(settings::bools::particles)) {
 				c->updateParticles(_entities, _particles, _time.deltaTime);
 			}
+		} else {
+			c->updateMobs(_models, 0.0);
+			c->updateEntities(_entities, _particles, 0.0);
+			if (Settings::Get()->getBool(settings::bools::particles)) {
+				c->updateParticles(_entities, _particles, 0.0);
+			}
 		}
 	}
 
-	if (!gamePaused) {
+	if (!gamePaused || _menu->getState() >= menu::death) {
 		drawParticles();
 		(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
 			? _player->drawHeldItem(_models, _entities, _hand_content, _game_mode)

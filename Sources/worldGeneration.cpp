@@ -284,7 +284,7 @@ void Chunk::generate_blocks( void )
 					#endif
 				}//cave = -1;
 				(((cave >= 0.459 && cave <= 0.551f) && !(pillar < 0.3f - 0.7f * (surface_level / 2 - glm::abs(level - surface_level / 2)) / (5.0f * surface_level))))
-					? _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = blocks::air//get_block_type_cave(row, col, level, ground_cave, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees)
+					? _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = blocks::air
 					: _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
 				// _blocks[(row * settings::consts::chunk_size + col) * settings::consts::world_height + level] = get_block_type(perlin, row, col, level, surface_level, poppy, dandelion, blue_orchid, allium, cornflower, pink_tulip, grass, tree_gen, trees);
 				// GLfloat squashing_factor;

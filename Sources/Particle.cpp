@@ -32,7 +32,7 @@ bool Particle::updateFlame( std::vector<t_shaderInputPart>& arr, glm::vec3 camDi
 		_lifeTime -= settings::consts::tick * 4;
 		++_frame;
 		if (_frame == 3 || _frame == 6 || _frame == 10) {
-			_chunk->addParticle(new Particle(_chunk, {_pos.x, _pos.y, _pos.z - 0.1f}, particles::smoke, 0.05f));
+			_chunk->addParticle({_pos.x, _pos.y, _pos.z - 0.1f}, particles::smoke, 0.05f);
 		}
 	}
 

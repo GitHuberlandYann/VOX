@@ -370,7 +370,7 @@ bool TNTEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, doubl
 	if ((frame & 0xF) == 0xF) {
 		int prev = (_lifeTime - deltaTime) * 16;
 		if (prev < frame) {
-			_chunk->addParticle(new Particle(_chunk, {_pos.x + 0.5f, _pos.y + 0.5f, _pos.z + 1}, particles::smoke, 0.2f, 0));
+			_chunk->addParticle({_pos.x + 0.5f, _pos.y + 0.5f, _pos.z + 1}, particles::smoke, 0.2f);
 		}
 	}
 

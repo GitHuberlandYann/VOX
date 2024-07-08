@@ -1571,6 +1571,9 @@ void Menu::add_crafted_value( void )
 
 void Menu::add_chest_value( int index )
 {
+	if (!_chest) {
+		return ;
+	}
 	t_item *item = _chest->getItem(index);
 	if (!item) {
 		// std::cout << "add_chest_value NULL item at " << index << std::endl;
@@ -1586,6 +1589,9 @@ void Menu::add_chest_value( int index )
 
 void Menu::add_furnace_value( void )
 {
+	if (!_furnace) {
+		return ;
+	}
 	t_item item = _furnace->getComposant();
 	if (item.type != blocks::air) {
 		int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size;

@@ -205,7 +205,6 @@ std::string OpenGL_Manager::saveBackupString( void )
 					}
 				}
 				res += "]}";
-				delete ch.second;
 			}
 		}
 		if (bup.second.furnaces.size()) {
@@ -223,7 +222,6 @@ std::string OpenGL_Manager::saveBackupString( void )
 				res += ", \"production\": ";
 				saveItem(res, fur.second->getProduction());
 				res += "}"; // TODO add current times for better backup
-				delete fur.second;
 			}
 		}
 		if (bup.second.signs.size()) {
@@ -250,7 +248,6 @@ std::string OpenGL_Manager::saveBackupString( void )
 					res += "\"";
 				}
 				res += "]}";
-				delete sign.second;
 			}
 		}
 		if (bup.second.entities.size()) {
@@ -701,7 +698,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						int chkey = std::atoi(&line[index + 9]);
 						for (index = index + 9; line[index] && line[index] != ':'; index++);
 						int orientation = std::atoi(&line[index + 2]);
-						backups_value.chests.emplace(chkey, new ChestInstance(NULL, {0, 0, 0}, orientation));
+						backups_value.chests.emplace(chkey, std::make_shared<ChestInstance>(nullptr, glm::ivec3(0), orientation));
 						ofs << "one more chest at " << chkey << " with orientation " << orientation <<  std::endl;
 						backups_value.chests.at(chkey)->loadContent(ofs, line, index);
 						for (; line[index] && line[index] != '{'; index++);
@@ -711,7 +708,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 					index = 12;
 					while (line[index + 1] == '{') {
 						int fkey = std::atoi(&line[index + 9]);
-						FurnaceInstance *fur = new FurnaceInstance();
+						auto fur = std::make_shared<FurnaceInstance>();
 						t_item item;
 						for (index = index + 9; line[index] && line[index] != ':'; index++);
 						item.type = convert(std::atoi(&line[index + 3]));
@@ -763,7 +760,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						pos.z = skey & (settings::consts::world_height - 1);
 						pos.y = ((skey >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
 						pos.x = ((skey >> settings::consts::world_shift) >> settings::consts::chunk_shift);
-						SignInstance *sign = new SignInstance(NULL, value, pos);
+						auto sign = std::make_shared<SignInstance>(nullptr, value, pos);
 						sign->setContent(content);
 						backups_value.signs[skey] = sign;
 						ofs << "one more sign at " << skey << " with content \"" << content[0] << "\", \"" << content[1] << "\", \"" << content[2] << "\", \"" << content[3] << '\"' << std::endl;

@@ -76,8 +76,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 					_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(Random::randomFloat(_seed) * 2 - 1, Random::randomFloat(_seed) * 2 - 1)), 1.0f), false, *item));
 				}
 			}
-			delete _chests[offset]; // TODO what happens if chest explodes while we use it ? prob heap use after free in Menu.cpp
-			_chests.erase(offset);
+			_chests.erase(offset); // TODO what happens if chest explodes while we use it ? prob heap use after free in Menu.cpp
 		}
 	} else if (type == blocks::furnace) {
 		auto search = _furnaces.find(offset); // drop furnace's items
@@ -94,13 +93,11 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 			if (items.amount) {
 				_entities.push_back(std::make_shared<Entity>(this, _inventory, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 0.5f), glm::vec3(glm::normalize(glm::vec2(-4, 5)), 1.0f), false, items));
 			}
-			delete _furnaces[offset];
 			_furnaces.erase(offset);
 		}
 	} else if (type == blocks::oak_sign) {
 		auto search = _signs.find(offset);
 		if (search != _signs.end()) {
-			delete _signs[offset];
 			_signs.erase(offset);
 		}
 	} else if (type == blocks::item_frame) {
@@ -154,19 +151,19 @@ void Chunk::addFlame( int offset, glm::vec3 pos, int source, int orientation )
 	if (source == blocks::torch) {
 		switch (orientation) {
 		case face_dir::minus_x:
-			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.25f, pos.y + _startY + 0.5f, pos.z + 15.0f / 16.0f}, particles::flame));
+			_flames.emplace(offset, std::make_shared<Particle>(this, glm::vec3(pos.x + _startX + 0.25f, pos.y + _startY + 0.5f, pos.z + 15.0f * one16th), particles::flame));
 			break ;
 		case face_dir::plus_x:
-			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.75f, pos.y + _startY + 0.5f, pos.z + 15.0f / 16.0f}, particles::flame));
+			_flames.emplace(offset, std::make_shared<Particle>(this, glm::vec3(pos.x + _startX + 0.75f, pos.y + _startY + 0.5f, pos.z + 15.0f * one16th), particles::flame));
 			break ;
 		case face_dir::minus_y:
-			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.25f, pos.z + 15.0f / 16.0f}, particles::flame));
+			_flames.emplace(offset, std::make_shared<Particle>(this, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.25f, pos.z + 15.0f * one16th), particles::flame));
 			break ;
 		case face_dir::plus_y:
-			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.75f, pos.z + 15.0f / 16.0f}, particles::flame));
+			_flames.emplace(offset, std::make_shared<Particle>(this, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.75f, pos.z + 15.0f * one16th), particles::flame));
 			break ;
 		case face_dir::minus_z:
-			_flames.emplace(offset, new Particle(this, {pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 11.0f / 16.0f + 0.05f}, particles::flame));
+			_flames.emplace(offset, std::make_shared<Particle>(this, glm::vec3(pos.x + _startX + 0.5f, pos.y + _startY + 0.5f, pos.z + 11.0f * one16th + 0.05f), particles::flame));
 			break ;
 		}
 	}
@@ -511,11 +508,11 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 
 	// specific updates
 	if (type == blocks::chest) {
-		_chests.emplace(offset, new ChestInstance(this, {pos.x + _startX, pos.y + _startY, pos.z}, _player->getOrientation()));
+		_chests.emplace(offset, std::make_shared<ChestInstance>(this, glm::ivec3(pos.x + _startX, pos.y + _startY, pos.z), _player->getOrientation()));
 	} else if (type == blocks::furnace) {
-		_furnaces.emplace(offset, new FurnaceInstance());
+		_furnaces.emplace(offset, std::make_shared<FurnaceInstance>());
 	} else if (type == blocks::oak_sign) {
-		_signs.emplace(offset, new SignInstance(this, value, pos));
+		_signs.emplace(offset, std::make_shared<SignInstance>(this, value, pos));
 	} else if (type == blocks::item_frame) {
 		_entities.push_back(std::make_shared<ItemFrameEntity>(this, glm::ivec3(pos.x + _startX, pos.y + _startY, pos.z), value));
 	} else if (type == blocks::lectern) {
@@ -542,7 +539,6 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		if (s_blocks[prev_type]->light_level) {
 			BLOCKLOG(LOG("rm light"));
 			if (prev_type == blocks::torch) {
-				delete _flames[offset];
 				_flames.erase(offset);
 			} else if (prev_type == blocks::redstone_torch) {
 				updateRedstoneTorch(pos, value);
@@ -560,7 +556,7 @@ void Chunk::update_block( glm::ivec3 pos, int previous, int value )
 		}
 		if (_inventory->getSlotBlock(_inventory->getSlotNum()).type != blocks::worldedit_brush) {
 			for (int i = 0; i < 15; ++i) {
-				_particles.push_back(new Particle(this, {pos.x + _startX + Random::randomFloat(_seed), pos.y + _startY + Random::randomFloat(_seed), pos.z + Random::randomFloat(_seed)}, particles::breaking, 0, prev_type));
+				addParticle({pos.x + _startX + Random::randomFloat(_seed), pos.y + _startY + Random::randomFloat(_seed), pos.z + Random::randomFloat(_seed)}, particles::breaking, 0, prev_type);
 			}
 		}
 		light_spread(pos.x, pos.y, pos.z, false);
@@ -849,7 +845,6 @@ void Chunk::update_adj_block( glm::ivec3 pos, int dir, int source )
 					int offset = (((pos.x << settings::consts::chunk_shift) + pos.y) << settings::consts::world_shift) + pos.z;
 					auto search = _signs.find(offset);
 					if (search != _signs.end()) {
-						delete _signs[offset];
 						_signs.erase(offset);
 					}
 				}

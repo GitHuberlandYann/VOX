@@ -123,9 +123,9 @@ namespace SCHEDULE {
 struct s_backup { // TODO add fluids and entities and mobs to backups
 	std::map<int, int> added;
 	std::set<int> removed;
-	std::map<int, ChestInstance*> chests;
-	std::map<int, FurnaceInstance*> furnaces;
-	std::map<int, SignInstance*> signs;
+	std::map<int, std::shared_ptr<ChestInstance>> chests;
+	std::map<int, std::shared_ptr<FurnaceInstance>> furnaces;
+	std::map<int, std::shared_ptr<SignInstance>> signs;
 	std::vector<std::shared_ptr<Entity>> entities;
 };
 
@@ -178,7 +178,7 @@ class Chunk
 		void generate_chunk( void );
 		void dropEntities( std::vector<t_item> drops );
 		void dropEntity( glm::vec3 dir, t_item item );
-		void addParticle( Particle* particle );
+		void addParticle( glm::vec3 pos, int type, float shade = 1, int block = blocks::air );
 		void sort_sky( glm::vec3& pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
 
@@ -228,6 +228,7 @@ class Chunk
     private:
 		Buffer _vabo, _vaboWater, _vaboSky;
         bool _vaoSet, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
+		GLboolean _hasWater;
 		std::atomic_bool _genDone, _light_update, _vertex_update, _vaoReset, _vaoVIP, _waterVaoReset, _skyVaoReset, _sortedOnce;
         GLint _startX, _startY, _nb_neighbours;
 		unsigned _seed;
@@ -237,7 +238,6 @@ class Chunk
 		std::vector<t_shaderInput> _vertices;
 		std::array<short, settings::consts::alloc_size> _lights;  // 0xFF00 sky_light(0xF000 is source value and 0xF00 is actual value), 0xFF block_light(0xF0 source value and 0xF actual value)
 		std::array<GLboolean, (settings::consts::chunk_size + 2) * (settings::consts::chunk_size + 2)> _sky;
-		GLboolean _hasWater;
 		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
 		std::array<Chunk*, 4> _neighbours;
 		Player* _player;
@@ -246,13 +246,13 @@ class Chunk
 		std::set<int> _removed, _fluids;
 		std::vector<int> _scheduled_to_fall;
 		std::array<std::vector<t_redstoneTick>, SCHEDULE::SIZE> _redstone_schedule;
-		std::map<int, ChestInstance*> _chests;
-		std::map<int, FurnaceInstance*> _furnaces;
-		std::map<int, SignInstance*> _signs;
+		std::map<int, std::shared_ptr<ChestInstance>> _chests;
+		std::map<int, std::shared_ptr<FurnaceInstance>> _furnaces;
+		std::map<int, std::shared_ptr<SignInstance>> _signs;
 		std::vector<std::shared_ptr<Entity>> _entities;
 		std::vector<std::shared_ptr<AMob>> _mobs;
-		std::vector<Particle*> _particles;
-		std::map<int, Particle*> _flames;
+		std::vector<std::shared_ptr<Particle>> _particles;
+		std::map<int, std::shared_ptr<Particle>> _flames;
 		std::thread _thread;
 		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 
@@ -271,9 +271,6 @@ class Chunk
 		bool addFlow( std::set<int>* newFluids, int posX, int posY, int posZ, int srcWLevel );
 
 		// world gen
-		// int get_block_type_cave( int row, int col, int level, int ground_level,
-		// 	bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
-		// 	bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
 		int get_block_type( siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );

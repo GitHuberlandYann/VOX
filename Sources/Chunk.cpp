@@ -7,10 +7,10 @@ extern std::mutex mtx_backup;
 
 Chunk::Chunk( Player *player, Inventory *inventory, int posX, int posY, std::list<Chunk *> *chunks )
 	: _vaoSet(false), _waterVaoSet(false), _waterVaoVIP(false),
-	_skyVaoSet(false), _skyVaoVIP(false), _genDone(false), _light_update(false), _vertex_update(false),
+	_skyVaoSet(false), _skyVaoVIP(false), _hasWater(true), _genDone(false), _light_update(false), _vertex_update(false),
 	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
-	_hasWater(true), _displayed_faces(0), _water_count(0), _sky_count(0),
+	_displayed_faces(0), _water_count(0), _sky_count(0),
 	_neighbours({NULL, NULL, NULL, NULL}), _player(player), _inventory(inventory)
 {
 	int cnt = 0;
@@ -66,14 +66,6 @@ Chunk::~Chunk( void )
 	_vabo.deleteBuffers();
 	_vaboSky.deleteBuffers();
 	_vaboWater.deleteBuffers();
-
-	// chests and furnaces are deleted in OpenGl_Manager when deleting backups
-	for (auto p : _particles) {
-		delete p;
-	}
-	for (auto &f : _flames) {
-		delete f.second;
-	}
 
 	// std::cout << "chunk deleted " << POSXY(_startX, _startY) << std::endl;
 }
@@ -340,9 +332,9 @@ void Chunk::openChest( glm::ivec3 pos )
 ChestInstance *Chunk::getChestInstance( glm::ivec3 pos )
 {
 	int key = ((((pos.x - _startX) << settings::consts::chunk_shift) + pos.y - _startY) << settings::consts::world_shift) + pos.z;
-	std::map<int, ChestInstance*>::iterator search = _chests.find(key);
+	auto search = _chests.find(key);
 	if (search != _chests.end()) {
-		return (search->second);
+		return (search->second.get());
 	}
 	LOGERROR(_startX << ", " << _startY << " failed to find chest at " << key << " from " << POS(pos));
 	LOGERROR("chests values are ");
@@ -355,9 +347,9 @@ ChestInstance *Chunk::getChestInstance( glm::ivec3 pos )
 FurnaceInstance *Chunk::getFurnaceInstance( glm::ivec3 pos )
 {
 	int key = ((((pos.x - _startX) << settings::consts::chunk_shift) + pos.y - _startY) << settings::consts::world_shift) + pos.z;
-	std::map<int, FurnaceInstance*>::iterator search = _furnaces.find(key);
+	auto search = _furnaces.find(key);
 	if (search != _furnaces.end()) {
-		return (search->second);
+		return (search->second.get());
 	}
 	LOGERROR(_startX << ", " << _startY << " failed to find furnace at " << key << " from " << POS(pos));
 	LOGERROR("furnaces values are ");
@@ -468,9 +460,9 @@ void Chunk::dropEntity( glm::vec3 dir, t_item item )
 	_entities.push_back(std::make_shared<Entity>(this, _inventory, camPos, dir, true, item));
 }
 
-void Chunk::addParticle( Particle* particle )
+void Chunk::addParticle( glm::vec3 pos, int type, float shade, int block )
 {
-	_particles.push_back(particle);
+	_particles.push_back(std::make_shared<Particle>(this, pos, type, shade, block));
 }
 
 void Chunk::sort_sky( glm::vec3& pos, bool vip )
@@ -655,12 +647,12 @@ void Chunk::explosion( glm::vec3 pos, int power )
 							handleHit(false, type, p, Modif::litnt);
 							_entities.back()->setLifetime(3.5 - Random::randomFloat(_seed)); // tnt lit by explosion has lifetime in [0.5;1.5] sec
 							// TODO better particles spawning
-							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, particles::explosion, Random::randomFloat(_seed)));
+							addParticle({p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, particles::explosion, Random::randomFloat(_seed));
 						} else if (type != blocks::air) {
 							// std::cout << "block " << s_blocks[type]->name << " removed" << std::endl;
 							handleHit(true, type, p, Modif::rm);
 							// handleHit(false, type, p, Modif::rm);
-							_particles.push_back(new Particle(this, {p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, particles::explosion, Random::randomFloat(_seed)));
+							addParticle({p.x + Random::randomFloat(_seed), p.y + Random::randomFloat(_seed), p.z + Random::randomFloat(_seed)}, particles::explosion, Random::randomFloat(_seed));
 						}
 					}
 				}
@@ -693,7 +685,7 @@ void Chunk::updateBreak( glm::ivec4 block_hit )
 	}
 	for (int index = 0; index < 6; ++index) {
 		const glm::ivec3 delta = adj_blocks[index];
-		_particles.push_back(new Particle(this, {block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.x + 0.55f * delta.x, block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.y + 0.55f * delta.y, block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.z + 0.55f * delta.z}, particles::breaking, 0, block_hit.w));
+		addParticle({block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.x + 0.55f * delta.x, block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.y + 0.55f * delta.y, block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.z + 0.55f * delta.z}, particles::breaking, 0, block_hit.w);
 	}
 }
 
@@ -841,7 +833,6 @@ void Chunk::updateParticles( std::vector<t_shaderInput>& entityArr, std::vector<
 
 	for (int index = size - 1; index >= 0; --index) {
 		if (_particles[index]->update(entityArr, partArr, camPos, camDir, deltaTime)) {
-			delete _particles[index];
 			_particles.erase(_particles.begin() + index);
 		}
 	}
@@ -855,9 +846,6 @@ void Chunk::updateParticles( std::vector<t_shaderInput>& entityArr, std::vector<
 size_t Chunk::clearParticles( void )
 {
 	size_t res = _particles.size();
-	for (auto p : _particles) {
-		delete p;
-	}
 	_particles.clear();
 	return (res);
 }

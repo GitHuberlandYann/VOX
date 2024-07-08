@@ -20,6 +20,7 @@ namespace menu
 		world_select,
 		world_create,
 		load,
+
 		death,
 		pause,
 		options,
