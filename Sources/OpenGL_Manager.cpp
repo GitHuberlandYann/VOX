@@ -577,10 +577,10 @@ void OpenGL_Manager::handleUI( void )
 			size_t residentSize, virtualSize;
 			utils::memory::getMemoryUsage(residentSize, virtualSize);
 			str = "Timer: " + std::to_string(_time.currentTime)
-					+ "\nMem usage: " + utils::string::toBytes(residentSize)
 					+ "\n\n" + DayCycle::Get()->getInfos()
 					+ "\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\tframe " + std::to_string((_time.deltaTime) * 1000)
 					+ "\nTPS: " + std::to_string(_time.nbTicksLastSecond)
+					+ "\nMem usage: " + utils::string::toBytes(residentSize)
 					+ '\n' + _player->getString(_game_mode)
 					+ "\nBlock\t> " + s_blocks[_block_hit.type]->name
 					+ ((_block_hit.type != blocks::air) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
@@ -588,7 +588,6 @@ void OpenGL_Manager::handleUI( void )
 					+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
 					+ ((_game_mode != settings::consts::gamemode::creative) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
 					+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
-					// + ((chunk_ptr) ? chunk_ptr->getAddsRmsString() : "")
 					+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size());
 			
 			mtx_perimeter.lock();
@@ -608,7 +607,7 @@ void OpenGL_Manager::handleUI( void )
 			str += _inventory->getSlotString()
 					+ _menu->getInfoString();
 		} else {
-			str = "\n\n\n\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\nTPS: " + std::to_string(_time.nbTicksLastSecond);
+			str = "\n\n\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\nTPS: " + std::to_string(_time.nbTicksLastSecond);
 		}
 		// b.stamp("stringing");
 		_ui->drawUserInterface(str, _game_mode, _time.deltaTime);

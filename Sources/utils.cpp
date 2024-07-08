@@ -867,10 +867,19 @@ namespace utils::memory {
 
 	#if __linux__
 
+		#include <sys/sysinfo.h>
+
 		void getMemoryUsage( size_t& residentSize, size_t& virtualSize )
 		{
-			residentSize = 0;
-			virtualSize = 0;
+			struct sysinfo info;
+
+			if (sysinfo(&info) == -1) {
+				residentSize = 0;
+				virtualSize = 0;
+			} else {
+				residentSize = info.totalram - info.freeram;
+				virtualSize = info.totalram;
+			}
 		}
 
 	#else
