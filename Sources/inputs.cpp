@@ -275,18 +275,18 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		}
 	} else if (shape == geometry::trapdoor) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {
-			type += ((_block_hit.pos.z < _block_hit.prev_pos.z) ? 0 : (door::upper_half << 12));
+			type += ((_block_hit.pos.z < _block_hit.prev_pos.z) ? 0 : (door::upper_half << offset::blocks::bitfield));
 		} else if (_block_hit.pos.x != _block_hit.prev_pos.x) {
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.x > _block_hit.prev_pos.x) ? glm::ivec3(0, 0, 0) : glm::ivec3(1, 0, 0));
 			glm::vec3 intersect = utils::math::line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {1, 0, 0});
-			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (door::upper_half << 12));
+			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (door::upper_half << offset::blocks::bitfield));
 			// _ui->chatMessage("block hit " + std::to_string(_block_hit.pos.x) + ", " + std::to_string(_block_hit.pos.y) + ", " + std::to_string(_block_hit.pos.z));
 			// _ui->chatMessage("p0 at " + std::to_string(p0.x) + ", " + std::to_string(p0.y) + ", " + std::to_string(p0.z));
 			// _ui->chatMessage("intersect at " + std::to_string(intersect.x) + ", " + std::to_string(intersect.y) + ", " + std::to_string(intersect.z));
 		} else {
 			glm::vec3 p0 = _block_hit.pos + ((_block_hit.pos.y > _block_hit.prev_pos.y) ? glm::ivec3(0, 0, 0) : glm::ivec3(0, 1, 0));
 			glm::vec3 intersect = utils::math::line_plane_intersection(_player->getEyePos(), _player->getDir(), p0, {0, 1, 0});
-			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (door::upper_half << 12));
+			type += ((intersect.z - static_cast<int>(intersect.z) < 0.5f) ? 0 : (door::upper_half << offset::blocks::bitfield));
 		}
 	} else if (type == blocks::oak_log) {
 		if (_block_hit.pos.z != _block_hit.prev_pos.z) {

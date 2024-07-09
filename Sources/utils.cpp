@@ -498,6 +498,8 @@ namespace utils::block {
 			case geometry::piston: // might want to change this..
 			case geometry::button:
 				return (true);
+			case geometry::lectern:
+				return (dir != face_dir::plus_z);
 			case geometry::repeater:
 				return (dir != face_dir::plus_z && valueShape != geometry::repeater);
 			case geometry::glass:

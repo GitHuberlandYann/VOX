@@ -424,6 +424,7 @@ enum class geometry {
 	repeater,
 	button,
 	piston,
+	lectern,
 };
 
 namespace blocks {
@@ -1949,6 +1950,7 @@ struct Lectern : Block {
 			blast_resistance = 2.5f;
 			oriented = true;
 			needed_tool = blocks::wooden_axe;
+			geometry = geometry::lectern;
 			isFuel = true;
 			fuel_time = 15;
 			byHand = true;

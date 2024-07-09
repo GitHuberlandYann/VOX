@@ -446,7 +446,7 @@ namespace inputs
 			int action = std::atoi(&str[index + 2]);
 			for (index = index + 3; str[index] && str[index] != '\"'; ++index);
 			key_map[key] = action;
-			ofs << "binding key " << key << " to action " << action << std::endl;
+			LOADINGLOG(ofs << "binding key " << key << " to action " << action << std::endl);
 		}
 	}
 }

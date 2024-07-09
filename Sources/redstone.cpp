@@ -382,7 +382,7 @@ int Chunk::getRedstoneStrength( glm::ivec3 pos, glm::ivec3 except, int state, bo
 				break ;
 			case blocks::stone_button:
 			case blocks::oak_button:
-				if (adj & mask::redstone::powered) {
+				if ((adj & mask::redstone::powered) && delta == -getAttachedDir(adj)) {
 					return (0xF);
 				}
 				break ;
@@ -961,6 +961,8 @@ int Chunk::pistonExtendCount( glm::ivec3 pos, int value )
 					return (13);
 				}
 				break ;
+			case geometry::lectern:
+				return (13);
 			case geometry::cube:
 				switch (TYPE(adj)) {
 					case blocks::bedrock:
@@ -1016,6 +1018,7 @@ static bool pullableBlock( int value )
 		case geometry::button:
 		case geometry::lever:
 		case geometry::dust:
+		case geometry::lectern:
 		case geometry::repeater:
 		case geometry::door:
 		case geometry::trapdoor:
@@ -1156,7 +1159,7 @@ void Chunk::updateRedstone( void )
 			t_redstoneTick &redRef = _redstone_schedule[schedIndex][index - delCount];
 			if (--redRef.ticks == 0) {
 				t_redstoneTick red = redRef;
-				int value = getBlockAt(red.pos.x, red.pos.y, red.pos.z);
+				int value = getBlockAt(red.pos);
 				REDUPLOG(LOG("(" << (-3 + schedIndex) <<  ") [" << DayCycle::Get()->getGameTicks() << "] " << _startX << " " << _startY << " schedule " << s_blocks[TYPE(value)]->name << " at " << POSDXY(red.pos, _startX, _startY) << ": " << (red.state & 0xF)));;
 
 				switch (TYPE(value)) {
@@ -1228,7 +1231,7 @@ void Chunk::updateRedstone( void )
 					case blocks::stone_button:
 					case blocks::oak_button:
 						front = getAttachedDir(value);
-						setBlockAt(value & (-1 - mask::redstone::powered - mask::redstone::strength), red.pos.x, red.pos.y, red.pos.z, false);
+						setBlockAt(value & (-1 - mask::redstone::powered - mask::redstone::strength), red.pos, false);
 						stronglyPower(red.pos + front, -front, redstone::off);
 						weaklyPower(red.pos, {0, 0, 0}, redstone::off, false);
 						break ;

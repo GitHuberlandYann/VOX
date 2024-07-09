@@ -313,7 +313,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 	try {
 		std::ofstream ofs("Worlds/loading.log", std::ofstream::out | std::ofstream::trunc);
 
-		ofs << "Opening file " << file << std::endl;
+		LOADINGLOG(ofs << "Opening file " << file << std::endl);
 		std::ifstream indata(file.c_str());
 		if (!indata.is_open()) {
 			throw InvalidFileException();
@@ -337,21 +337,21 @@ void OpenGL_Manager::loadWorld( std::string file )
 					}
 				}
 				Settings::Get()->setInt(settings::ints::json_version, versionInt);
-				ofs << "version set to " << version << ", which is index " << versionInt << std::endl;
+				LOADINGLOG(ofs << "version set to " << version << ", which is index " << versionInt << std::endl);
 			} else if (!line.compare(0, 8, "\"seed\": ")) {
 				perlin_seed = std::atoi(&line[8]);
-				ofs << "seed set to " << perlin_seed << std::endl;
+				LOADINGLOG(ofs << "seed set to " << perlin_seed << std::endl);
 			} else if (!line.compare(0, 13, "\"game_mode\": ")) {
 				_game_mode = std::atoi(&line[13]);
 				Settings::Get()->setInt(settings::ints::game_mode, _game_mode);
-				ofs << "game mode set to " << _game_mode << std::endl;
+				LOADINGLOG(ofs << "game mode set to " << _game_mode << std::endl);
 			} else if (!line.compare(0, 14, "\"debug_mode\": ")) {
 				_debug_mode = line.substr(14, 4) == "true";
-				ofs << "debug mode set to " << _debug_mode << std::endl;
+				LOADINGLOG(ofs << "debug mode set to " << _debug_mode << std::endl);
 			} else if (!line.compare(0, 11, "\"f5_mode\": ")) {
 				_ui->_hideUI = line.substr(11, 4) == "true";
 				Settings::Get()->setBool(settings::bools::hide_ui, _ui->_hideUI);
-				ofs << "f5 mode set to " << _ui->_hideUI << std::endl;
+				LOADINGLOG(ofs << "f5 mode set to " << _ui->_hideUI << std::endl);
 			} else if (!line.compare(0, 11, "\"outline\": ")) {
 				_outline = line.substr(11, 4) == "true";
 			} else if (!line.compare(0, 14, "\"flat_world\": ")) {
@@ -359,7 +359,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 				value = (value >= 0 && value < S_BLOCKS_SIZE) ? value : blocks::air;
 				Settings::Get()->setInt(settings::ints::flat_world_block, value);
 				Settings::Get()->setBool(settings::bools::flat_world, value != blocks::air);
-				ofs << "flat_world_block set to " << s_blocks[value]->name << std::endl;
+				LOADINGLOG(ofs << "flat_world_block set to " << s_blocks[value]->name << std::endl);
 			} else if (!line.compare(0, 12, "\"dayCycle\": ")) {
 				DayCycle::Get()->loadWorld(ofs, line);
 			} else if (!line.compare(0, 19, "\"time_multiplier\": ")) {
@@ -371,11 +371,11 @@ void OpenGL_Manager::loadWorld( std::string file )
 			} else if (!line.compare(0, 11, "\"backups\": ")) {
 				loadBackups(ofs, indata);
 			} else {
-				ofs << "FOREIGN LINE IN LOADWORLD: " << line << std::endl;
+				LOADINGLOG(ofs << "FOREIGN LINE IN LOADWORLD: " << line << std::endl);
 			}
 		}
 		indata.close();
-		ofs.close();
+		LOADINGLOG(ofs.close());
 	}
 	catch (std::exception & e) {
 		LOGERROR(e.what());
@@ -383,8 +383,9 @@ void OpenGL_Manager::loadWorld( std::string file )
 	}
 }
 
-void DayCycle::loadWorld( std::ofstream & ofs, std::string line )
+void DayCycle::loadWorld( std::ofstream& ofs, std::string line )
 {
+	(void)ofs;
 	int index = 12;
 	for (index = 12; line[index] && line[index] != ':'; index++);
 	_day = std::atoi(&line[index + 1]);
@@ -392,11 +393,12 @@ void DayCycle::loadWorld( std::ofstream & ofs, std::string line )
 	_ticks = std::atoi(&line[index + 1]);
 	_forceReset = true;
 	setInternals();
-	ofs << "dayCycle " << _ticks << " set to day " << _day << " " << _hour << ":" << _minute << " (light " << _internalLight << ")" << std::endl;
+	LOADINGLOG(ofs << "dayCycle " << _ticks << " set to day " << _day << " " << _hour << ":" << _minute << " (light " << _internalLight << ")" << std::endl);
 }
 
-void Player::loadWorld( std::ofstream & ofs, std::ifstream & indata )
+void Player::loadWorld( std::ofstream& ofs, std::ifstream& indata )
 {
+	(void)ofs;
 	_lastTp = {0, 0, 0};
 	int index;
 	std::string line;
@@ -412,32 +414,32 @@ void Player::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			for (index = index + 2; line[index] && line[index] != ':'; index++);
 			_position.z = std::stof(&line[index + 2]);
 			_z0 = _position.z;
-			ofs << "camera pos set to " << _position.x << ", " << _position.y << ", " << _position.z << std::endl;
+			LOADINGLOG(ofs << "camera pos set to " << _position.x << ", " << _position.y << ", " << _position.z << std::endl);
 		} else if (!line.compare(0, 14, "\"spawnpoint\": ")) {
 			_spawnpoint.x = std::stof(&line[20]);
 			for (index = 20; line[index] && line[index] != ':'; index++);
 			_spawnpoint.y = std::stof(&line[index + 2]);
 			for (index = index + 2; line[index] && line[index] != ':'; index++);
 			_spawnpoint.z = std::stof(&line[index + 2]);
-			ofs << "camera spawnpoint set to " << _spawnpoint.x << ", " << _spawnpoint.y << ", " << _spawnpoint.z << std::endl;
+			LOADINGLOG(ofs << "camera spawnpoint set to " << _spawnpoint.x << ", " << _spawnpoint.y << ", " << _spawnpoint.z << std::endl);
 		} else if (!line.compare(0, 7, "\"yaw\": ")) {
 			_yaw = std::stof(&line[7]);
-			ofs << "camera yaw set to " << _yaw << std::endl;
+			LOADINGLOG(ofs << "camera yaw set to " << _yaw << std::endl);
 		} else if (!line.compare(0, 9, "\"pitch\": ")) {
 			_pitch = std::stof(&line[9]);
-			ofs << "camera pitch set to " << _pitch << std::endl;
+			LOADINGLOG(ofs << "camera pitch set to " << _pitch << std::endl);
 		} else if (!line.compare(0, 17, "\"health_points\": ")) {
 			_health = std::atoi(&line[17]);
-			ofs << "camera health points set to " << _health << std::endl;
+			LOADINGLOG(ofs << "camera health points set to " << _health << std::endl);
 		} else if (!line.compare(0, 13, "\"foodLevel\": ")) {
 			_foodLevel = std::atoi(&line[13]);
-			ofs << "camera food level set to " << _foodLevel << std::endl;
+			LOADINGLOG(ofs << "camera food level set to " << _foodLevel << std::endl);
 		} else if (!line.compare(0, 18, "\"foodSaturation\": ")) {
 			_foodSaturationLevel = std::stof(&line[18]);
-			ofs << "camera food saturation level set to " << _foodSaturationLevel << std::endl;
+			LOADINGLOG(ofs << "camera food saturation level set to " << _foodSaturationLevel << std::endl);
 		} else if (!line.compare(0, 16, "\"touch_ground\": ")) {
 			_touchGround = line.substr(16, 4) == "true";
-			ofs << "camera touch ground set to " << _touchGround << std::endl;
+			LOADINGLOG(ofs << "camera touch ground set to " << _touchGround << std::endl);
 		} else if (line == "},") {
 			updateVectors();
 			return ;
@@ -577,6 +579,7 @@ static int convert( int value ) // used when I change s_blocks big time
 
 void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 {
+	(void)ofs;
 	_modif = true;
 	int index;
 	std::string line;
@@ -587,7 +590,7 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 			continue ;
 		} else if (!line.compare(0, 8, "\"slot\": ")) {
 			_slot = std::atoi(&line[8]);
-			ofs << "inventory slot set to " << _slot << std::endl;
+			LOADINGLOG(ofs << "inventory slot set to " << _slot << std::endl);
 		} else if (!line.compare(0, 11, "\"content\": ")) {
 			index = 12;
 			for (int cindex = 0; cindex < 9 && line[index]; cindex++) {
@@ -596,11 +599,11 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 				_content[cindex].amount = std::atoi(&line[index + 2]);
 				++index;
 				convertTag(line, index, _content[cindex], '[');
-				ofs << "inventory slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount;
+				LOADINGLOG(ofs << "inventory slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount);
 				if (_content[cindex].tag && _content[cindex].tag->getType() == tags::tool_tag) {
-					ofs << ", " << static_cast<ToolTag*>(_content[cindex].tag.get())->getDura() << ", " << s_blocks[_content[cindex].type]->durability;
+					LOADINGLOG(ofs << ", " << static_cast<ToolTag*>(_content[cindex].tag.get())->getDura() << ", " << s_blocks[_content[cindex].type]->durability);
 				}
-				ofs << std::endl;
+				LOADINGLOG(ofs << std::endl);
 			}
 		} else if (!line.compare(0, 12, "\"backpack\": ")) {
 			index = 13;
@@ -610,11 +613,11 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 				_backpack[bindex].amount = std::atoi(&line[index + 2]);
 				++index;
 				convertTag(line, index, _backpack[bindex], '[');
-				ofs << "inventory backpack slot " << bindex << " set to " << _backpack[bindex].type << ", " << _backpack[bindex].amount;
+				LOADINGLOG(ofs << "inventory backpack slot " << bindex << " set to " << _backpack[bindex].type << ", " << _backpack[bindex].amount);
 				if (_backpack[bindex].tag && _backpack[bindex].tag->getType() == tags::tool_tag) {
-					ofs << ", " << static_cast<ToolTag*>(_backpack[bindex].tag.get())->getDura() << ", " << s_blocks[_backpack[bindex].type]->durability;
+					LOADINGLOG(ofs << ", " << static_cast<ToolTag*>(_backpack[bindex].tag.get())->getDura() << ", " << s_blocks[_backpack[bindex].type]->durability);
 				}
-				ofs << std::endl;
+				LOADINGLOG(ofs << std::endl);
 			}
 		} else if (line == "},") {
 			return ;
@@ -627,6 +630,7 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 
 void ChestInstance::loadContent( std::ofstream & ofs, std::string &line, int &index )
 {
+	(void)ofs;
 	for (; line[index] && line[index] != '['; ++index);
 	index += !!line[index];
 	for (int cindex = 0; cindex < 27 && line[index]; cindex++) {
@@ -635,13 +639,12 @@ void ChestInstance::loadContent( std::ofstream & ofs, std::string &line, int &in
 		_content[cindex].amount = std::atoi(&line[index + 2]);
 		++index;
 		convertTag(line, index, _content[cindex], (cindex == 26) ? '}' : '[');
-		ofs << "chest content slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount;
+		LOADINGLOG(ofs << "chest content slot " << cindex << " set to " << _content[cindex].type << ", " << _content[cindex].amount);
 		if (_content[cindex].tag && _content[cindex].tag->getType() == tags::tool_tag) {
-			ofs << ", " << static_cast<ToolTag*>(_content[cindex].tag.get())->getDura() << ", " << s_blocks[_content[cindex].type]->durability;
+			LOADINGLOG(ofs << ", " << static_cast<ToolTag*>(_content[cindex].tag.get())->getDura() << ", " << s_blocks[_content[cindex].type]->durability);
 		}
-		ofs << std::endl;
+		LOADINGLOG(ofs << std::endl);
 	}
-	// ofs << "at end of loadContent, index is " << index << ", char is " << line[index] << " into " << line.substr(index, 5) << std::endl;
 }
 
 void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
@@ -670,7 +673,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						int addkey = std::atoi(&line[index + 2]);
 						for (; line[index] && line[index] != ','; index++);
 						backups_value.added[addkey] = convert(std::atoi(&line[index + 2]));
-						ofs << "backups new added " << addkey << ", " << backups_value.added[addkey] << std::endl;
+						LOADINGLOG(ofs << "backups new added " << addkey << ", " << backups_value.added[addkey] << std::endl);
 						for (; line[index + 1] && line[index + 1] != '['; index++);
 					}
 				} else if (!line.compare(0, 11, "\"removed\": ")) {
@@ -678,7 +681,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 					while (line[index + 1] == '[') {
 						int rmvalue = std::atoi(&line[index + 2]);
 						backups_value.removed.insert(rmvalue);
-						ofs << "backups new removed " << rmvalue << std::endl;
+						LOADINGLOG(ofs << "backups new removed " << rmvalue << std::endl);
 						for (index++; line[index + 1] && line[index + 1] != '['; index++);
 					}
 				} else if (!line.compare(0, 10, "\"chests\": ")) {
@@ -688,7 +691,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						for (index = index + 9; line[index] && line[index] != ':'; index++);
 						int orientation = std::atoi(&line[index + 2]);
 						backups_value.chests.emplace(chkey, std::make_shared<ChestInstance>(nullptr, glm::ivec3(0), orientation));
-						ofs << "one more chest at " << chkey << " with orientation " << orientation <<  std::endl;
+						LOADINGLOG(ofs << "one more chest at " << chkey << " with orientation " << orientation <<  std::endl);
 						backups_value.chests.at(chkey)->loadContent(ofs, line, index);
 						for (; line[index] && line[index] != '{'; index++);
 						--index;
@@ -719,7 +722,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						convertTag(line, index, item, '{');
 						fur->setProduction(item);
 						backups_value.furnaces[fkey] = fur;
-						ofs << "one more furnace at " << fkey << std::endl;
+						LOADINGLOG(ofs << "one more furnace at " << fkey << std::endl);
 						--index;
 					}
 				} else if (!line.compare(0, 9, "\"signs\": ")) {
@@ -755,7 +758,7 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 						auto sign = std::make_shared<SignInstance>(nullptr, value, pos);
 						sign->setContent(content);
 						backups_value.signs[skey] = sign;
-						ofs << "one more sign at " << skey << " with content \"" << content[0] << "\", \"" << content[1] << "\", \"" << content[2] << "\", \"" << content[3] << '\"' << std::endl;
+						LOADINGLOG(ofs << "one more sign at " << skey << " with content \"" << content[0] << "\", \"" << content[1] << "\", \"" << content[2] << "\", \"" << content[3] << '\"' << std::endl);
 						for (;line[index + 1] && line[index + 1] != '{'; ++index);
 					}
 				} else if (!line.compare(0, 12, "\"entities\": ")) {
@@ -787,13 +790,13 @@ void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
 							}
 							frame->setContent(item);
 							backups_value.entities.push_back(frame);
-							ofs << "one more item_frame entity at " << POS(pos) << " with value " << value << ", type " << item.type << ", and rotation " << rotation << std::endl;
+							LOADINGLOG(ofs << "one more item_frame entity at " << POS(pos) << " with value " << value << ", type " << item.type << ", and rotation " << rotation << std::endl);
 						} else if (type == entities::lectern) {
 							auto lectern = std::make_shared<LecternEntity>(nullptr, pos, value);
 							lectern->setPage(rotation);
 							lectern->setContent(item);
 							backups_value.entities.push_back(lectern);
-							ofs << "one more lectern entity at " << POS(pos) << " with value " << value << ", type " << item.type << ", and page " << rotation << std::endl;
+							LOADINGLOG(ofs << "one more lectern entity at " << POS(pos) << " with value " << value << ", type " << item.type << ", and page " << rotation << std::endl);
 						}
 						for (;line[index + 1] && line[index + 1] != '\"'; ++index);
 					}
@@ -826,7 +829,7 @@ void Menu::loadSettings( void )
 	try {
 		std::ofstream ofs("Resources/loadingSettings.log", std::ofstream::out | std::ofstream::trunc);
 
-		ofs << "Opening file Resources/settings.json" << std::endl;
+		LOADINGLOG(ofs << "Opening file Resources/settings.json" << std::endl);
 		std::ifstream indata("Resources/settings.json");
 		if (!indata.is_open()) {
 			throw InvalidFileException();
@@ -840,45 +843,45 @@ void Menu::loadSettings( void )
 			} else if (!line.compare(0, 7, "\"fov\": ")) {
 				_fov_gradient = std::stof(&line[7]);
 				Settings::Get()->setFloat(settings::floats::fov, _fov_gradient);
-				ofs << "fov set to " << _fov_gradient << std::endl;
+				LOADINGLOG(ofs << "fov set to " << _fov_gradient << std::endl);
 			} else if (!line.compare(0, 19, "\"render_distance\": ")) {
 				int render = std::atoi(&line[19]);
 				_render_gradient = render;
 				Settings::Get()->setInt(settings::ints::render_dist, render);
-				ofs << "render dist set to " << render << std::endl;
+				LOADINGLOG(ofs << "render dist set to " << render << std::endl);
 			} else if (!line.compare(0, 14, "\"brightness\": ")) {
 				_brightness_gradient = std::stof(&line[14]);
 				Settings::Get()->setFloat(settings::floats::brightness, _brightness_gradient);
-				ofs << "brightness set to " << _brightness_gradient << std::endl;
+				LOADINGLOG(ofs << "brightness set to " << _brightness_gradient << std::endl);
 			} else if (!line.compare(0, 10, "\"clouds\": ")) {
 				int clouds = std::atoi(&line[10]);
 				Settings::Get()->setInt(settings::ints::clouds, clouds);
 				const std::array<std::string, 3> cloudstr = {"Clouds - Fancy", "Clouds - Fast", "Clouds - OFF"};
-				ofs << "clouds set to " << cloudstr[clouds] << std::endl;
+				LOADINGLOG(ofs << "clouds set to " << cloudstr[clouds] << std::endl);
 			} else if (!line.compare(0, 10, "\"skybox\": ")) {
 				int skybox = std::atoi(&line[10]);
 				Settings::Get()->setBool(settings::bools::skybox, skybox);
-				ofs << "skybox set to " << ((skybox) ? "true" : "false") << std::endl;
+				LOADINGLOG(ofs << "skybox set to " << ((skybox) ? "true" : "false") << std::endl);
 			} else if (!line.compare(0, 13, "\"particles\": ")) {
 				int particles = std::atoi(&line[13]);
 				Settings::Get()->setBool(settings::bools::particles, particles);
-				ofs << "particles set to " << ((particles) ? "true" : "false") << std::endl;
+				LOADINGLOG(ofs << "particles set to " << ((particles) ? "true" : "false") << std::endl);
 			} else if (!line.compare(0, 16, "\"face_culling\": ")) {
 				int face_culling = std::atoi(&line[16]);
 				Settings::Get()->setBool(settings::bools::face_culling, face_culling);
-				ofs << "face_culling set to " << face_culling << std::endl;
+				LOADINGLOG(ofs << "face_culling set to " << face_culling << std::endl);
 			} else if (!line.compare(0, 19, "\"smooth_lighting\": ")) {
 				int smooth_lighting = std::atoi(&line[19]);
 				Settings::Get()->setBool(settings::bools::smooth_lighting, smooth_lighting);
-				ofs << "smooth_lighting set to " << smooth_lighting << std::endl;
+				LOADINGLOG(ofs << "smooth_lighting set to " << smooth_lighting << std::endl);
 			} else if (!line.compare(0, 13, "\"gui_scale\": ")) {
 				_gui_size = std::atoi(&line[13]) - 1;
 				changeGuiSize();
-				ofs << "gui_size set to " << _gui_size << std::endl;
+				LOADINGLOG(ofs << "gui_size set to " << _gui_size << std::endl);
 			} else if (!line.compare(0, 19, "\"resource_packs\": [")) {
 				size_t index = 19;
 				size_t endindex = line.rfind(']');
-				ofs << "resource packs" << std::endl;
+				LOADINGLOG(ofs << "resource packs" << std::endl);
 				if (endindex == std::string::npos) throw UnclosedBracketException();
 				while (index < endindex) {
 					size_t start = line.find('\"', index);
@@ -886,7 +889,7 @@ void Menu::loadSettings( void )
 					size_t end = line.find('\"', start + 1);
 					if (end == std::string::npos) throw UnclosedBracketException();
 					std::string pack = line.substr(start + 1, end - 1 - start);
-					ofs << "push resource pack " << pack << std::endl;
+					LOADINGLOG(ofs << "push resource pack " << pack << std::endl);
 					Settings::Get()->pushResourcePack(pack);
 					index = end + 1;
 				}
@@ -943,7 +946,7 @@ bool Settings::loadResourcePacks( void )
 	std::array<bool, settings::strings::size_textures> check_set = {false};
 	for (auto &pack: _packs) {
 		try {
-			ofs << "Opening file Resources/Resource_Packs/" << pack << std::endl;
+			LOADINGLOG(ofs << "Opening file Resources/Resource_Packs/" << pack << std::endl);
 			std::ifstream indata("Resources/Resource_Packs/" + pack);
 			if (!indata.is_open()) {
 				throw InvalidFileException();
