@@ -92,7 +92,7 @@ namespace inputs
 		cursor += (right) ? 1 : -1;
 		if (cursor > message.size()) {
 			cursor = message.size();
-		} else if (control && message[cursor] != ' ' && message[cursor] != '\n') {
+		} else if (control && !isspace(message[cursor])) {
 			moveCursor(right, control);
 		}
 	}
@@ -103,11 +103,14 @@ namespace inputs
 		cursor = 0;
 	}
 
-	void rmLetter( void )
+	void rmLetter( bool control )
 	{
 		if (!cursor) return ;
 		message = message.substr(0, cursor - 1) + message.substr(cursor);
 		--cursor;
+		if (control && cursor && !isspace(message[cursor - 1])) {
+			rmLetter(control);
+		}
 	}
 
 	void addLetter( char c )

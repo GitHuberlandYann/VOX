@@ -151,23 +151,50 @@ t_item Inventory::pickCrafted( int craft, t_item block )
 		t_item ret = _crafted;
 		produceCraft(craft);
 		return (ret);
-	} else if (block.type == _crafted.type && block.amount + _crafted.amount <= s_blocks[block.type]->stackSize) {
+	} else if (canStack(block, _crafted, false)) {
 		block.amount += _crafted.amount;
 		produceCraft(craft);
 	}
 	return (block);
 }
 
+/**
+ * @brief checks if 2 items can stack on each other
+ * 2 items stack if one of them is empty
+ * or they share the same block and their stacked size doesn't
+ * overflow on stackSize and they don't have a name tag / share
+ * the same name 
+ */
+bool Inventory::canStack( t_item a, t_item b, bool emptyAllowed )
+{
+	if (emptyAllowed && (a.type == blocks::air || b.type == blocks::air)) { // one of them empty
+		return (true);
+	}
+	if (a.type != b.type // not same block
+		|| a.amount + b.amount > s_blocks[a.type]->stackSize) { // stackSize overflow
+		return (false);
+	}
+	if (!a.tag && !b.tag) { // both without tag
+		return (true);
+	}
+	if (!a.tag || !b.tag) { // only one of them has tag
+		return (false);
+	}
+	return (!a.tag->compare(b.tag.get()));
+}
+
 int Inventory::findEmptyCell( t_item block, bool hotbar_first )
 {
 	if (s_blocks[block.type]->stackSize > 1) {
 		for (int index = 0; index < 9; index++) {
-			if (_content[index].type == block.type && _content[index].amount + block.amount <= s_blocks[block.type]->stackSize) {
+			if (canStack(block, _content[index], false)) {
+			// if (_content[index].type == block.type && _content[index].amount + block.amount <= s_blocks[block.type]->stackSize) {
 				return (index);
 			}
 		}
 		for (int index = 0; index < 27; index++) {
-			if (_backpack[index].type == block.type && _backpack[index].amount + block.amount <= s_blocks[block.type]->stackSize) {
+			if (canStack(block, _backpack[index], false)) {
+			// if (_backpack[index].type == block.type && _backpack[index].amount + block.amount <= s_blocks[block.type]->stackSize) {
 				return (index + CELLS::backpack_first);
 			}
 		}
@@ -283,6 +310,9 @@ int Inventory::getSlotNum( void )
 	return (_slot);
 }
 
+/**
+ * @brief set _slot to given arg, then display slot's block's name on ui
+ */
 void Inventory::setSlot( int value )
 {
 	if (value < 0 || value >= 9) {
@@ -303,7 +333,7 @@ void Inventory::setSlot( int value )
  * @param furnace ptr to furnace if opened
  * @param chest ptr to chest if opened
 */
-void Inventory::shiftBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
+void Inventory::shiftBlockAt( std::vector<t_item>& drops, int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	t_item item = pickBlockAt(craft, value, furnace, chest);
 	if (!item.type) {
@@ -312,18 +342,19 @@ void Inventory::shiftBlockAt( int craft, int value, FurnaceInstance *furnace, Ch
 	switch (craft) {
 		case 1: // inventory
 			if (value <= CELLS::hotbar_last) {
-				restoreBlock(item);
-			} else {
-				restoreBlock(item, true);
+				if (restoreBlock(item)) {
+					item.type = blocks::air;
+				}
+			} else if (restoreBlock(item, true)) {
+				item.type = blocks::air;
 			}
-			item.type = blocks::air;
 			break ;
 		case 2: // table craft
 			if (value <= CELLS::backpack_last) {
 				if (s_blocks[item.type]->stackSize > 1) {
 					for (int index = 0; index < 9; index++) {
 						t_item *bat = &_craft[index];
-						if (bat->type == item.type && bat->amount + item.amount <= s_blocks[item.type]->stackSize) {
+						if (canStack(*bat, item, false)) {
 							bat->amount += item.amount;
 							return ;
 						}
@@ -337,8 +368,7 @@ void Inventory::shiftBlockAt( int craft, int value, FurnaceInstance *furnace, Ch
 						return ;
 					}
 				}
-			} else {
-				restoreBlock(item);
+			} else if (restoreBlock(item)) {
 				item.type = blocks::air;
 			}
 			break ;
@@ -360,7 +390,7 @@ void Inventory::shiftBlockAt( int craft, int value, FurnaceInstance *furnace, Ch
 					if (s_blocks[item.type]->stackSize > 1) {
 						for (int index = 0; index < 27; index++) {
 							t_item *bat = chest->getItem(index);
-							if (bat->type == item.type && bat->amount + item.amount <= s_blocks[item.type]->stackSize) {
+							if (canStack(*bat, item, false)) {
 								bat->amount += item.amount;
 								return ;
 							}
@@ -383,7 +413,11 @@ void Inventory::shiftBlockAt( int craft, int value, FurnaceInstance *furnace, Ch
 			break ;
 	}
 	if (item.type) { // restore blocks to their original pos
-		putBlockAt(craft, value, item, furnace, chest);
+		if (value == CELLS::product) { // drop item on ground
+			drops.push_back(item);
+		} else {
+			putBlockAt(craft, value, item, furnace, chest);
+		}
 	}
 }
 
@@ -599,30 +633,36 @@ void Inventory::setModif( bool value )
 	_modif = value;
 }
 
-void Inventory::addBlock( int type )
+/**
+ * @brief called when using a bucket to transform it into
+ * water_bucket or place water_bucket in inventory if buckets
+ * are stacked or drop water_bucket if no place in inventory
+ * and buckets are stacked
+ */
+t_item Inventory::transformItem( int type )
 {
-	if (type == blocks::water) {
-		// std::cout << "adding water bucket to inventory" << std::endl;
-		if (_content[_slot].type == blocks::bucket) {
-			if (_content[_slot].amount == 1) {
-				_content[_slot].type = blocks::water_bucket;
+	t_item *bat;
+	switch (type) {
+		case blocks::water:
+			bat = &_content[_slot];
+			if (bat->type == blocks::bucket) {
 				_modif = true;
-				// std::cout << "and replacing current slot with it" << std::endl;
-				return ;
+				if (bat->amount == 1) {
+					bat->type = blocks::water_bucket;
+					return (t_item());
+				}
+				--bat->amount;
+				if (!restoreBlock(t_item(blocks::water_bucket, 1), true)) {
+					return (t_item(blocks::water_bucket, 1));
+				}
 			}
-			// std::cout << "and storing it out of slot" << std::endl;
-			_content[_slot].amount--;
-		} else {
-			return ;
-		}
+			break ;
+		default:
+			LOGERROR("Inventory::transformItem defaulted with " << type);
 	}
-	int dura = s_blocks[type]->durability;
-	t_item block = {s_blocks[type]->mined, 1};
-	if (dura) {
-		block.tag = std::make_shared<ToolTag>(dura);
-	}
-	restoreBlock(block, true);
+	return (t_item());
 }
+
 /*
 void Inventory::removeBlockAt( int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
@@ -708,7 +748,7 @@ void Inventory::swapCells( int slot, int location )
 	} else {
 		bat = &_craft[location - CELLS::table_craft_first];
 	}
-	if (_content[slot].type == bat->type && bat->type != blocks::air) {
+	if (_content[slot].type == bat->type && bat->type != blocks::air) { // TODO check tag here
 		_content[slot].amount += bat->amount;
 		int stackSize = s_blocks[bat->type]->stackSize;
 		if (_content[slot].amount > stackSize) {
@@ -762,11 +802,11 @@ void Inventory::spillInventory( Chunk* chunk )
 void Inventory::signBook( std::string title )
 {
 	if (_content[_slot].type != blocks::book_and_quill) {
-		LOGERROR("Inventory::singBook item is not book and quill.");
+		LOGERROR("Inventory::signBook item is not book and quill.");
 		return ;
 	}
 	if (!_content[_slot].tag || _content[_slot].tag->getType() != tags::book_tag) {
-		LOGERROR("Inventory::singBook invalid tag.");
+		LOGERROR("Inventory::signBook invalid tag.");
 		return ;
 	}
 	_content[_slot].type = blocks::written_book;

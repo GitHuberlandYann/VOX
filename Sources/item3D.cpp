@@ -244,6 +244,62 @@ void Lectern::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3
 	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec, light + (5 << 8), 16, 16);
 }
 
+void Anvil::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
+{
+	// right is anvil's long axis
+	// draw base 12x12x4
+	pos += (front + right) * 2.f * one16th * size;
+	front *= .75f; // 12.f * one16th;
+	right *= .75f; // 12.f * one16th;
+	up *= .25f; // 4.f * one16th;
+	int spec = settings::consts::shader::block::anvil;
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec + (2 << 12) + (12 << 16), light + (3 << 8), 12, 4);
+	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec + (2 << 12) + (12 << 16), light + (4 << 8), 12, 4);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec + (2 << 12) + (12 << 16), light + (2 << 8), 12, 4);
+	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec + (2 << 12) + (12 << 16), light + (2 << 8), 12, 4);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front + right + up) * size, pos + up * size, pos + (right + up) * size}, spec + (2 << 12) + (2 << 16), light + (0 << 8), 12, 12);
+	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec + (2 << 12) + (2 << 16), light + (5 << 8), 12, 12);
+	front *= 4.f / 3.f;
+	right *= 4.f / 3.f;
+	up *= 4.f;
+	// draw basebis 10x8x1
+	pos += (front * 2.f + right + up * 4.f) * one16th * size;
+	front *= .5f; //8.f * one16th;
+	right *= 10.f * one16th;
+	up *= one16th;
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec + (3 << 12) + (11 << 16), light + (3 << 8), 10, 1);
+	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec + (3 << 12) + (11 << 16), light + (4 << 8), 10, 1);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec + (4 << 12) + (11 << 16), light + (1 << 8), 8, 1);
+	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec + (4 << 12) + (11 << 16), light + (2 << 8), 8, 1);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + (front + right + up) * size, pos + up * size, pos + (right + up) * size}, spec + (3 << 12) + (4 << 16), light + (0 << 8), 10, 8);
+	front *= 2.f;
+	right *= 1.6f;
+	up *= 16.f;
+	// draw column 8x4x5
+	pos += (front * 2.f + right + up) * one16th * size;
+	front *= .25f; // 4.f * one16th;
+	right *= .5f; // 8.f * one16th;
+	up *= 5.f * one16th;
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec + (4 << 12) + (6 << 16), light + (3 << 8), 8, 5);
+	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec + (4 << 12) + (6 << 16), light + (4 << 8), 8, 5);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec + (6 << 12) + (6 << 16), light + (1 << 8), 4, 5);
+	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec + (6 << 12) + (6 << 16), light + (2 << 8), 4, 5);
+	front *= 4.f;
+	right *= 2.f;
+	up *= 3.2f; //16.f / 5.f;
+	// draw top 16x10x6
+	pos += (-front * 3.f - right * 4.f + up * 5.f) * one16th * size;
+	front *= 10.f * one16th;
+	up *= 6.f * one16th;
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec, light + (3 << 8), 16, 6);
+	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec, light + (4 << 8), 16, 6);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec + (3 << 12), light + (2 << 8), 10, 6);
+	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec + (3 << 12), light + (2 << 8), 10, 6);
+	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec + (3 << 16), light + (5 << 8), 16, 10);
+	spec = settings::consts::shader::block::anvil_top;
+	utils::shader::addQuads(arr, {pos + up * size, pos + (front + up) * size, pos + (right + up) * size, pos + (front + right + up) * size}, spec + (3 << 12), light + (0 << 8), 10, 16);
+}
+
 void Carpet::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const
 {
 	up *= one16th;

@@ -138,7 +138,7 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		flickLever(pos, value & (mask::all_bits - mask::redstone::powered), redstone::off);
 	}
 	if (useInventory && type == blocks::water) {
-		_inventory->addBlock(type); // water bucket
+		dropEntity(_player->getDir(), _inventory->transformItem(type)); // bucket -> water bucket
 	} else if (useInventory) {
 		entity_block(pos.x, pos.y, pos.z, value);
 	}

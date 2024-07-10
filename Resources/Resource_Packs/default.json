@@ -7,6 +7,7 @@
 	"TEX_FURNACE": "Resources/Textures/Gui/furnace.png",
 	"TEX_CHEST": "Resources/Textures/Gui/chest.png",
 	"TEX_BOOK": "Resources/Textures/Gui/book.png",
+	"TEX_ANVIL": "Resources/Textures/Gui/anvil.png",
 	"TEX_ZOMBIE": "Resources/Textures/Models/zombie.png",
 	"TEX_SKELETON": "Resources/Textures/Models/skeleton.png",
 	"TEX_PLAYER": "Resources/Textures/Models/player.png",

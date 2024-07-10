@@ -12,7 +12,7 @@ const std::array<std::unique_ptr<Block>, S_BLOCKS_SIZE> s_blocks = {
 	std::make_unique<TBD>(), std::make_unique<StoneBricksSlab>(), std::make_unique<TBD>(), std::make_unique<Piston>(), std::make_unique<StickyPiston>(), std::make_unique<PistonHead>(), std::make_unique<MovingPiston>(), std::make_unique<Observer>(),
 	std::make_unique<Poppy>(), std::make_unique<Dandelion>(), std::make_unique<BlueOrchid>(), std::make_unique<Allium>(), std::make_unique<CornFlower>(), std::make_unique<PinkTulip>(), std::make_unique<Grass>(), std::make_unique<SugarCane>(),
 	std::make_unique<DeadBush>(), std::make_unique<OakSapling>(), std::make_unique<Torch>(), std::make_unique<RedstoneTorch>(), std::make_unique<RedstoneDust>(), std::make_unique<Repeater>(), std::make_unique<Comparator>(), std::make_unique<Chest>(),
-	std::make_unique<WheatCrop>(), std::make_unique<ItemFrame>(), std::make_unique<BirchPlanks>(), std::make_unique<SandStone>(), std::make_unique<Glowstone>(), std::make_unique<Bookshelf>(), std::make_unique<Lectern>(), std::make_unique<TBD>(),
+	std::make_unique<WheatCrop>(), std::make_unique<ItemFrame>(), std::make_unique<BirchPlanks>(), std::make_unique<SandStone>(), std::make_unique<Glowstone>(), std::make_unique<Bookshelf>(), std::make_unique<Lectern>(), std::make_unique<Anvil>(),
 	std::make_unique<Water>(), std::make_unique<TBD>(), std::make_unique<Obsidian>(), std::make_unique<TBD>(), std::make_unique<WorldEditBrush>(), std::make_unique<Feather>(), std::make_unique<Leather>(), std::make_unique<InkSac>(),
 	std::make_unique<Stick>(), std::make_unique<WoodenShovel>(), std::make_unique<StoneShovel>(), std::make_unique<IronShovel>(), std::make_unique<DiamondShovel>(), std::make_unique<WoodenAxe>(), std::make_unique<StoneAxe>(), std::make_unique<IronAxe>(),
 	std::make_unique<DiamondAxe>(), std::make_unique<WoodenPickaxe>(), std::make_unique<StonePickaxe>(), std::make_unique<IronPickaxe>(), std::make_unique<DiamondPickaxe>(), std::make_unique<Bow>(), std::make_unique<Arrow>(), std::make_unique<WorldEditWand>(),
@@ -1571,7 +1571,7 @@ void ItemFrame::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm
 
 void Lectern::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
-	glm::vec3 front, right, up;
+	glm::vec3 front, right;
 	pos += glm::vec3(start.x + .5f, start.y + .5f, 0.f);
 
 	int orientation = (value >> offset::blocks::orientation) & 0x7;
@@ -1579,27 +1579,46 @@ void Lectern::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::
 		case face_dir::minus_x:
 			front = { 1.f, .0f, .0f};
 			right = { .0f,-1.f, .0f};
-			up    = { .0f, .0f, 1.f};
 			break ;
 		case face_dir::plus_x:
 			front = {-1.f, .0f, .0f};
 			right = { .0f, 1.f, .0f};
-			up    = { .0f, .0f, 1.f};
 			break ;
 		case face_dir::minus_y:
 			front = { 0.f, 1.f, .0f};
 			right = { 1.f, .0f, .0f};
-			up    = { .0f, .0f, 1.f};
 			break ;
 		case face_dir::plus_y:
 			front = { .0f, -1.f, .0f};
 			right = { -1.f, .0f, .0f};
-			up    = { .0f, .0f, 1.f};
 			break ;
 	}
 	pos -= (front + right) * .5f;
 	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
-	addMeshItem(vertices, faceLight, pos, front, right, up, 1.f);
+	addMeshItem(vertices, faceLight, pos, front, right, settings::consts::math::world_up, 1.f);
+}
+
+void Anvil::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
+{
+	glm::vec3 front, right;
+	pos += glm::vec3(start.x + .5f, start.y + .5f, 0.f);
+
+	int orientation = (value >> offset::blocks::orientation) & 0x7;
+	switch (orientation) {
+		case face_dir::minus_x:
+		case face_dir::plus_x:
+			front = { 1.f, .0f, .0f};
+			right = { .0f,-1.f, .0f};
+			break ;
+		case face_dir::minus_y:
+		case face_dir::plus_y:
+			front = { 0.f, 1.f, .0f};
+			right = { 1.f, .0f, .0f};
+			break ;
+	}
+	pos -= (front + right) * .5f;
+	int faceLight = chunk->computeLight(pos.x, pos.y, pos.z);
+	addMeshItem(vertices, faceLight, pos, front, right, settings::consts::math::world_up, 1.f);
 }
 
 void Lever::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
@@ -2439,6 +2458,7 @@ void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 			up    = glm::vec3(0, -1, 0);
 			break ;
 	}
+	light = chunk->computeLight(pos.x, pos.y, pos.z);
 	spec &= 0xFFFF0000;
 	spec += getTex(face_dir::minus_x, face_dir::minus_y << offset::blocks::orientation);
 	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front + up) * 0.5f;
@@ -2446,25 +2466,23 @@ void Piston::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::i
 	utils::shader::addQuads(vertices, {topLeft + (right - up) * 6.0f * one16th - front * 0.25f,
 									topLeft + (right - up) * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 0.25f - up * 6.0f * one16th,
-									topLeft + right * 10.0f * one16th - up * 6.0f * one16th}, spec, 0xF, 4, 4);
+									topLeft + right * 10.0f * one16th - up * 6.0f * one16th}, spec, light, 4, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 10.0f * one16th - front * 0.25f - up * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - up * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 0.25f - up * 10.0f * one16th,
-									topLeft + right * 10.0f * one16th - up * 10.0f * one16th}, spec, 0xF, 4, 4);
+									topLeft + right * 10.0f * one16th - up * 10.0f * one16th}, spec, light, 4, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 10.0f * one16th - front * 0.25f - up * 10.0f * one16th,
 									topLeft + right * 10.0f * one16th - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 0.25f - up * 10.0f * one16th,
-									topLeft + right * 6.0f * one16th - up * 10.0f * one16th}, spec, 0xF, 4, 4);
+									topLeft + right * 6.0f * one16th - up * 10.0f * one16th}, spec, light, 4, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 6.0f * one16th - front * 0.25f - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 0.25f - up * 6.0f * one16th,
-									topLeft + right * 6.0f * one16th - up * 6.0f * one16th}, spec, 0xF, 4, 4);
+									topLeft + right * 6.0f * one16th - up * 6.0f * one16th}, spec, light, 4, 4);
 }
 
 void PistonHead::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const
 {
-	(void)chunk;
-
 	glm::vec3 right, front, up;
 	switch ((value >> offset::blocks::orientation) & 0x7) {
 		case (face_dir::minus_x):
@@ -2498,39 +2516,40 @@ void PistonHead::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, gl
 			up    = glm::vec3(0, -1, 0);
 			break ;
 	}
+	int light = chunk->computeLight(pos.x - front.x, pos.y - front.y, pos.z - front.z);
 	glm::vec3 topLeft = glm::vec3(start, 0) + pos + glm::vec3(0.5f, 0.5f, 0.5f) + (-right + front + up) * 0.5f;
 	int piston = (value & mask::redstone::piston::sticky) ? blocks::sticky_piston : blocks::piston;
 	// front face
 	int spec = s_blocks[piston]->getTex(face_dir::minus_x, face_dir::minus_x << offset::blocks::orientation);
-	utils::shader::addQuads(vertices, {topLeft + right, topLeft, topLeft + right - up, topLeft - up}, spec, 0xF, 16, 16);
+	utils::shader::addQuads(vertices, {topLeft + right, topLeft, topLeft + right - up, topLeft - up}, spec, light, 16, 16);
 	// back of front volume
 	if (piston == blocks::sticky_piston) {
 		spec = s_blocks[blocks::piston]->getTex(face_dir::minus_x, face_dir::minus_x << offset::blocks::orientation);
 	}
-	utils::shader::addQuads(vertices, {topLeft - front * 0.25f, topLeft + right - front * 0.25f, topLeft - up - front * 0.25f, topLeft + right - up - front * 0.25f}, spec, 0xF, 16, 16);
+	utils::shader::addQuads(vertices, {topLeft - front * 0.25f, topLeft + right - front * 0.25f, topLeft - up - front * 0.25f, topLeft + right - up - front * 0.25f}, spec, light, 16, 16);
 	// side faces
 	spec = s_blocks[piston]->getTex(face_dir::minus_y, face_dir::minus_x << offset::blocks::orientation);
-	utils::shader::addQuads(vertices, {topLeft, topLeft + right, topLeft - front * 0.25f, topLeft + right - front * 0.25f}, spec, 0xF, 16, 4);
-	utils::shader::addQuads(vertices, {topLeft - up, topLeft, topLeft - up - front * 0.25f, topLeft - front * 0.25f}, spec, 0xF, 16, 4);
-	utils::shader::addQuads(vertices, {topLeft + right, topLeft + right - up, topLeft + right - front * 0.25f, topLeft + right - up - front * 0.25f}, spec, 0xF, 16, 4);
-	utils::shader::addQuads(vertices, {topLeft + right - up, topLeft - up, topLeft + right - up - front * 0.25f, topLeft - up - front * 0.25f}, spec, 0xF, 16, 4);
+	utils::shader::addQuads(vertices, {topLeft, topLeft + right, topLeft - front * 0.25f, topLeft + right - front * 0.25f}, spec, light, 16, 4);
+	utils::shader::addQuads(vertices, {topLeft - up, topLeft, topLeft - up - front * 0.25f, topLeft - front * 0.25f}, spec, light, 16, 4);
+	utils::shader::addQuads(vertices, {topLeft + right, topLeft + right - up, topLeft + right - front * 0.25f, topLeft + right - up - front * 0.25f}, spec, light, 16, 4);
+	utils::shader::addQuads(vertices, {topLeft + right - up, topLeft - up, topLeft + right - up - front * 0.25f, topLeft - up - front * 0.25f}, spec, light, 16, 4);
 	// piston bar
 	utils::shader::addQuads(vertices, {topLeft + right * 6.0f * one16th - front * 1.0f - up * 6.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 0.25f - up * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 1.0f - up * 6.0f * one16th,
-									topLeft + right * 10.0f * one16th - front * 0.25f - up * 6.0f * one16th}, spec + (4 << 12), 0xF, 12, 4);
+									topLeft + right * 10.0f * one16th - front * 0.25f - up * 6.0f * one16th}, spec + (4 << 12), light, 12, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 10.0f * one16th - front * 1.0f - up * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 0.25f - up * 6.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 1.0f - up * 10.0f * one16th,
-									topLeft + right * 10.0f * one16th - front * 0.25f - up * 10.0f * one16th}, spec + (4 << 12), 0xF, 12, 4);
+									topLeft + right * 10.0f * one16th - front * 0.25f - up * 10.0f * one16th}, spec + (4 << 12), light, 12, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 10.0f * one16th - front * 1.0f - up * 10.0f * one16th,
 									topLeft + right * 10.0f * one16th - front * 0.25f - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 1.0f - up * 10.0f * one16th,
-									topLeft + right * 6.0f * one16th - front * 0.25f - up * 10.0f * one16th}, spec + (4 << 12), 0xF, 12, 4);
+									topLeft + right * 6.0f * one16th - front * 0.25f - up * 10.0f * one16th}, spec + (4 << 12), light, 12, 4);
 	utils::shader::addQuads(vertices, {topLeft + right * 6.0f * one16th - front * 1.0f - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 0.25f - up * 10.0f * one16th,
 									topLeft + right * 6.0f * one16th - front * 1.0f - up * 6.0f * one16th,
-									topLeft + right * 6.0f * one16th - front * 0.25f - up * 6.0f * one16th,}, spec + (4 << 12), 0xF, 12, 4);
+									topLeft + right * 6.0f * one16th - front * 0.25f - up * 6.0f * one16th,}, spec + (4 << 12), light, 12, 4);
 }
 
 void OakSign::addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const

@@ -702,14 +702,9 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			_inventory->signBook(_menu->getWorldFile());
 			handleBackToGame();
 			break ;
-		case menu::ret::drop_item_stack:
-			mtx.lock();
-			_current_chunk_ptr->dropEntity(_player->getDir(), _menu->dropSelectedBlock(true));
-			mtx.unlock();
-			break ;
 		case menu::ret::drop_item:
 			mtx.lock();
-			_current_chunk_ptr->dropEntity(_player->getDir(), _menu->dropSelectedBlock(false));
+			_current_chunk_ptr->dropEntities(_menu->getDrops());
 			mtx.unlock();
 			break ;
 		case menu::ret::back_to_game_after_drop: // drop items

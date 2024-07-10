@@ -121,7 +121,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			_menu->setState(menu::crafting);
 			return ;
 		case blocks::chest:
-			if (!s_blocks[TYPE(_chunk_hit->getBlockAt(_block_hit.pos.x - _chunk_hit->getStartX(), _block_hit.pos.y - _chunk_hit->getStartY(), _block_hit.pos.z + 1))]->transparent) {
+			if (!s_blocks[TYPE(_chunk_hit->getBlockAtAbsolute(_block_hit.pos + glm::ivec3(0, 0, 1)))]->transparent) {
 				return ;
 			}
 			_chunk_hit->openChest(_block_hit.pos);
@@ -133,6 +133,10 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 			_paused = true;
 			_menu->setState(menu::furnace);
 			_menu->setFurnaceInstance(_chunk_hit->getFurnaceInstance(_block_hit.pos));
+			return ;
+		case blocks::anvil:
+			_paused = true;
+			_menu->setState(menu::anvil);
 			return ;
 		case blocks::tnt:
 			if (_hand_content == blocks::flint_and_steel && _current_chunk_ptr) {

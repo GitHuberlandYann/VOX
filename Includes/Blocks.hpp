@@ -93,6 +93,8 @@ namespace settings {
 				enum {
 					tex0, tex1, tex2, tex3, tex4, tex5, tex6, tex7, tex8, tex9, tex10, tex11, tex12, tex13, tex14, tex15,
 					allium,
+					anvil_top,
+					anvil,
 					arrow,
 					bedrock,
 					birch_planks,
@@ -516,6 +518,7 @@ namespace blocks {
 		glowstone,
 		bookshelf,
 		lectern,
+		anvil,
 		water = 88,
 		empty89,
 		obsidian,
@@ -1957,6 +1960,24 @@ struct Lectern : Block {
 			transparent = true;
 			hardness = 2.5f;
 			texture = settings::consts::shader::block::lectern_front;
+		}
+		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
+		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;
+};
+
+struct Anvil : Block {
+	public:
+		Anvil() {
+			name = "ANVIL";
+			mined = blocks::anvil;
+			blast_resistance = 1200.f;
+			oriented = true;
+			needed_tool = blocks::wooden_axe;
+			geometry = geometry::none;
+			byHand = false;
+			transparent = true;
+			hardness = 5.f;
+			texture = settings::consts::shader::block::anvil;
 		}
 		void addMesh( Chunk* chunk, std::vector<t_shaderInput>& vertices, glm::ivec2 start, glm::vec3 pos, int value ) const override;
 		void addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size ) const override;

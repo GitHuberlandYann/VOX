@@ -32,6 +32,7 @@ namespace menu
 		crafting,
 		chest,
 		furnace,
+		anvil,
 		chat,
 		command,
 		sign,
@@ -57,7 +58,6 @@ namespace menu
 		apply_resource_packs,
 		sign_done,
 		sign_book,
-		drop_item_stack,
 		drop_item,
 		page_turned,
 	};
@@ -97,7 +97,6 @@ class Menu
 		int getBookPage( void );
 		void setBookPage( int page );
 		std::vector<t_item> getDrops( void );
-		t_item dropSelectedBlock( bool stack );
 		void handleScroll( int offset );
 		void setState( int state );
 		int getState( void );
@@ -188,6 +187,7 @@ class Menu
         void setup_array_buffer_crafting( void );
         void setup_array_buffer_chest( void );
         void setup_array_buffer_furnace( void );
+        void setup_array_buffer_anvil( void );
 		void setup_shader( void );
 
 		void loadSettings( void );

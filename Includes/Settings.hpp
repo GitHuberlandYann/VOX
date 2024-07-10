@@ -43,7 +43,8 @@ namespace settings {
 			const int furnace = 3;
 			const int chest = 4;
 			const int book = 5;
-			const int size = 6;
+			const int anvil = 6;
+			const int size = 7;
 		};
 
 		namespace depth {
@@ -176,6 +177,7 @@ namespace settings {
 			tex_furnace,
 			tex_chest,
 			tex_book,
+			tex_anvil,
 			tex_zombie,
 			tex_skeleton,
 			tex_player,

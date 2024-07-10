@@ -190,14 +190,14 @@ void Text::addCursorText( int posX, int posY, int font_size, unsigned color, int
 	}
 }
 
-void Text::addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, int depth, std::string str )
+void Text::addCenteredText( int left, int top, int width, int height, int font_size, unsigned color, bool shadow, int depth, std::string str )
 {
 	int text_width = utils::text::textWidth(font_size, str);
 	if (shadow) {
 		int offset = font_size / 8;
 		addText(left + offset + (width - text_width) / 2, top + offset + (height - font_size) / 2, font_size, argb::black, depth + 1, str);
 	}
-	addText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, argb::white, depth, str);
+	addText(left + (width - text_width) / 2, top + (height - font_size) / 2, font_size, color, depth, str);
 }
 
 void Text::addCenteredCursorText( int left, int top, int width, int height, int font_size, bool shadow, int depth, bool bar, size_t cursor, std::string str )

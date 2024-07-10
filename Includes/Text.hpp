@@ -7,6 +7,7 @@
 namespace argb
 {
 	const unsigned white = 0xFFFFFFFF;
+	const unsigned dark_gray = 0xFF444444;
 	const unsigned gray = 0xFFAAAAAA;
 	const unsigned black = 0xFF000000;
 	const unsigned green = 0xFF00FF00;
@@ -32,7 +33,7 @@ class Text
 
         void addText( int posX, int posY, int font_size, unsigned color, int depth, std::string str );
         void addCursorText( int posX, int posY, int font_size, unsigned color, int depth, bool bar, size_t cursor, std::string str );
-		void addCenteredText( int left, int top, int width, int height, int font_size, bool shadow, int depth, std::string str );
+		void addCenteredText( int left, int top, int width, int height, int font_size, unsigned color, bool shadow, int depth, std::string str );
 		void addCenteredCursorText( int left, int top, int width, int height, int font_size, bool shadow, int depth, bool bar, size_t cursor, std::string str );
 		void toScreen( void );
 

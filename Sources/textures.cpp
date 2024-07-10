@@ -35,6 +35,7 @@ void UI::loadTextures( void )
 	utils::shader::loadSubTextureArray(256, 256, settings::consts::tex::furnace, Settings::Get()->getString(settings::strings::tex_furnace));
 	utils::shader::loadSubTextureArray(256, 256, settings::consts::tex::chest, Settings::Get()->getString(settings::strings::tex_chest));
 	utils::shader::loadSubTextureArray(256, 256, settings::consts::tex::book, Settings::Get()->getString(settings::strings::tex_book));
+	utils::shader::loadSubTextureArray(256, 256, settings::consts::tex::anvil, Settings::Get()->getString(settings::strings::tex_anvil));
 	glUniform1i(glGetUniformLocation(_shader.getProgram(), "textures"), 2);
 	utils::shader::check_glstate("Successfully loaded img[2] texture array 2D", true);
 }
@@ -73,6 +74,8 @@ void OpenGL_Manager::loadTextures( void )
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::tex15, root + "tex15.png");
 
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::allium, root + "allium.png");
+	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::anvil_top, root + "anvil_top.png");
+	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::anvil, root + "anvil.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::arrow, root + "arrow.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::bedrock, root + "bedrock.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::birch_planks, root + "birch_planks.png");

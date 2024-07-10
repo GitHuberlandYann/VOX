@@ -256,8 +256,8 @@ void Trapdoor::addItem( UI *ui, int x, int y, int gui_size, int width, int depth
 
 void Button::addItem( UI *ui, int x, int y, int gui_size, int width, int depth, bool alien, bool movement ) const
 {
-    x += width + (width - 2) * 122.0f / 362.5f; 
-	y += width * 122.0f / 362.5f; 
+    x += gui_size + (width - 2) * gui_size * 122.0f / 362.5f; 
+	y += width * .5f * gui_size * 122.0f / 362.5f; 
 	// top face
 	int spec = (15 << 24) + texture + (depth << 22);
 	ui->addFace({glm::ivec2(x, y + width * gui_size * 81.25f / 362.5f),

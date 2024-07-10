@@ -102,6 +102,7 @@ const std::map<int, std::vector<int>> recipes = {
 		blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::air, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::furnace, 1,
 		blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::book, blocks::book, blocks::book, blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::bookshelf, 1,
 		blocks::oak_slab, blocks::oak_slab, blocks::oak_slab, blocks::air, blocks::bookshelf, blocks::air, blocks::air, blocks::oak_slab, blocks::air, blocks::lectern, 1,
+		blocks::iron_block, blocks::iron_block, blocks::iron_block, blocks::air, blocks::iron_ingot, blocks::air, blocks::iron_ingot, blocks::iron_ingot, blocks::iron_ingot, blocks::anvil, 1,
 
 		blocks::oak_planks, blocks::oak_planks, blocks::oak_planks, blocks::air, blocks::stick, blocks::air, blocks::air, blocks::stick, blocks::air, blocks::wooden_pickaxe, 1,
 		blocks::cobblestone, blocks::cobblestone, blocks::cobblestone, blocks::air, blocks::stick, blocks::air, blocks::air, blocks::stick, blocks::air, blocks::stone_pickaxe, 1,
@@ -157,7 +158,7 @@ class Inventory
 		t_item getCrafted( void );
 		int getSlotNum( void );
         void setSlot( int value );
-		void shiftBlockAt( int craft, int value, FurnaceInstance* furnace, ChestInstance* chest );
+		void shiftBlockAt( std::vector<t_item>& drops, int craft, int value, FurnaceInstance* furnace, ChestInstance* chest );
 		t_item getHoveredAt( int state, int value, FurnaceInstance* furnace, ChestInstance* chest );
 		t_item pickBlockAt( int craft, int value, FurnaceInstance* furnace, ChestInstance* chest );
 		t_item pickHalfBlockAt( int craft, int value, FurnaceInstance* furnace, ChestInstance* chest );
@@ -169,7 +170,7 @@ class Inventory
 		void restoreCraft( std::vector<t_item>& drops );
 		bool getModif( void );
 		void setModif( bool value );
-        void addBlock( int type );
+		t_item transformItem( int type );
 		// void removeBlockAt( int value, FurnaceInstance* furnace, ChestInstance* chest );
         t_item removeBlock( bool thrown );
 		void replaceSlot( int type, bool creative );
@@ -198,6 +199,7 @@ class Inventory
 		void changeCrafted( int craft );
 		void produceCraft( int craft );
 		t_item pickCrafted( int craft, t_item block );
+		bool canStack( t_item a, t_item b, bool emptyAllowed );
 		int findEmptyCell( t_item block, bool hotbar_first = false );
 		int findBlockCell( int type );
 		void pickAllCrafted( int craft );

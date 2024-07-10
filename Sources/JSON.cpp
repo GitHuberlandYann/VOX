@@ -942,6 +942,17 @@ void Menu::saveSettings( void )
 
 bool Settings::loadResourcePacks( void )
 {
+	const std::array<std::string, settings::strings::size> keys = {
+		"\"BLOCK_ATLAS\": ", "\"ASCII_ATLAS\": ", "\"UI_ATLAS\": ", "\"TEX_INVENTORY\": ", "\"TEX_CRAFTING_TABLE\": ",
+		"\"TEX_FURNACE\": ", "\"TEX_CHEST\": ", "\"TEX_BOOK\": ", "\"TEX_ANVIL\": ", "\"TEX_ZOMBIE\": ",
+		"\"TEX_SKELETON\": ", "\"TEX_PLAYER\": ", "\"PARTICLE_ATLAS\": ", "\"WATER_STILL\": ", "\"WATER_FLOW\": ",
+
+		"\"MAIN_FRAGMENT_SHADER\": ", "\"MAIN_VERTEX_SHADER\": ", "\"ITEM_FRAGMENT_SHADER\": ", "\"ITEM_VERTEX_SHADER\": ",
+		"\"MODEL_FRAGMENT_SHADER\": ", "\"MODEL_VERTEX_SHADER\": ", "\"PARTICLE_FRAGMENT_SHADER\": ", "\"PARTICLE_VERTEX_SHADER\": ",
+		"\"SKY_FRAGMENT_SHADER\": ", "\"SKY_VERTEX_SHADER\": ", "\"SKYBOX_FRAGMENT_SHADER\": ", "\"SKYBOX_VERTEX_SHADER\": ",
+		"\"TEXT_FRAGMENT_SHADER\": ", "\"TEXT_VERTEX_SHADER\": ", "\"UI_FRAGMENT_SHADER\": ", "\"UI_VERTEX_SHADER\": ",
+	};
+
 	std::ofstream ofs("Resources/loadingSettings.log", std::ofstream::out | std::ofstream::app);
 	std::array<bool, settings::strings::size_textures> check_set = {false};
 	for (auto &pack: _packs) {
@@ -957,141 +968,22 @@ bool Settings::loadResourcePacks( void )
 				line = utils::string::trim_spaces(line);
 				if (line.empty() || line[0] == '#') {
 					continue ;
-				} else if (!line.compare(0, 15, "\"BLOCK_ATLAS\": ")) {
-					size_t end = line.find('\"', 16);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::block_atlas] = line.substr(16, end - 16);
-					check_set[settings::strings::block_atlas] = true;
-				} else if (!line.compare(0, 15, "\"ASCII_ATLAS\": ")) {
-					size_t end = line.find('\"', 16);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::ascii_atlas] = line.substr(16, end - 16);
-					check_set[settings::strings::ascii_atlas] = true;
-				} else if (!line.compare(0, 12, "\"UI_ATLAS\": ")) {
-					size_t end = line.find('\"', 13);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::ui_atlas] = line.substr(13, end - 13);
-					check_set[settings::strings::ui_atlas] = true;
-				} else if (!line.compare(0, 17, "\"TEX_INVENTORY\": ")) {
-					size_t end = line.find('\"', 18);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::tex_inventory] = line.substr(18, end - 18);
-					check_set[settings::strings::tex_inventory] = true;
-				} else if (!line.compare(0, 22, "\"TEX_CRAFTING_TABLE\": ")) {
-					size_t end = line.find('\"', 23);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::tex_crafting_table] = line.substr(23, end - 23);
-					check_set[settings::strings::tex_crafting_table] = true;
-				} else if (!line.compare(0, 15, "\"TEX_FURNACE\": ")) {
-					size_t end = line.find('\"', 16);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::tex_furnace] = line.substr(16, end - 16);
-					check_set[settings::strings::tex_furnace] = true;
-				} else if (!line.compare(0, 13, "\"TEX_CHEST\": ")) {
-					size_t end = line.find('\"', 14);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::tex_chest] = line.substr(14, end - 14);
-					check_set[settings::strings::tex_chest] = true;
-				} else if (!line.compare(0, 12, "\"TEX_BOOK\": ")) {
-					size_t end = line.find('\"', 13);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::tex_book] = line.substr(13, end - 13);
-					check_set[settings::strings::tex_book] = true;
-				} else if (!line.compare(0, 14, "\"TEX_ZOMBIE\": ")) {
-					size_t end = line.find('\"', 15);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::tex_zombie] = line.substr(15, end - 15);
-					check_set[settings::strings::tex_zombie] = true;
-				} else if (!line.compare(0, 16, "\"TEX_SKELETON\": ")) {
-					size_t end = line.find('\"', 17);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::tex_skeleton] = line.substr(17, end - 17);
-					check_set[settings::strings::tex_skeleton] = true;
-				} else if (!line.compare(0, 14, "\"TEX_PLAYER\": ")) {
-					size_t end = line.find('\"', 15);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::tex_player] = line.substr(15, end - 15);
-					check_set[settings::strings::tex_player] = true;
-				} else if (!line.compare(0, 18, "\"PARTICLE_ATLAS\": ")) {
-					size_t end = line.find('\"', 19);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::particle_atlas] = line.substr(19, end - 19);
-					check_set[settings::strings::particle_atlas] = true;
-				} else if (!line.compare(0, 15, "\"WATER_STILL\": ")) {
-					size_t end = line.find('\"', 16);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::water_still] = line.substr(16, end - 16);
-					check_set[settings::strings::water_still] = true;
-				} else if (!line.compare(0, 14, "\"WATER_FLOW\": ")) {
-					size_t end = line.find('\"', 15);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::water_flow] = line.substr(15, end - 15);
-					check_set[settings::strings::water_flow] = true;
-				} else if (!line.compare(0, 24, "\"MAIN_FRAGMENT_SHADER\": ")) {
-					size_t end = line.find('\"', 25);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::main_fragment_shader] = line.substr(25, end - 25);
-				} else if (!line.compare(0, 22, "\"MAIN_VERTEX_SHADER\": ")) {
-					size_t end = line.find('\"', 23);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::main_vertex_shader] = line.substr(23, end - 23);
-				} else if (!line.compare(0, 24, "\"ITEM_FRAGMENT_SHADER\": ")) {
-					size_t end = line.find('\"', 25);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[::settings::strings::item_fragment_shader] = line.substr(25, end - 25);
-				} else if (!line.compare(0, 22, "\"ITEM_VERTEX_SHADER\": ")) {
-					size_t end = line.find('\"', 23);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[::settings::strings::item_vertex_shader] = line.substr(23, end - 23);
-				} else if (!line.compare(0, 25, "\"MODEL_FRAGMENT_SHADER\": ")) {
-					size_t end = line.find('\"', 26);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::model_fragment_shader] = line.substr(26, end - 26);
-				} else if (!line.compare(0, 23, "\"MODEL_VERTEX_SHADER\": ")) {
-					size_t end = line.find('\"', 24);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::model_vertex_shader] = line.substr(24, end - 24);
-				} else if (!line.compare(0, 28, "\"PARTICLE_FRAGMENT_SHADER\": ")) {
-					size_t end = line.find('\"', 29);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::particle_fragment_shader] = line.substr(29, end - 29);
-				} else if (!line.compare(0, 26, "\"PARTICLE_VERTEX_SHADER\": ")) {
-					size_t end = line.find('\"', 27);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::particle_vertex_shader] = line.substr(27, end - 27);
-				} else if (!line.compare(0, 23, "\"SKY_FRAGMENT_SHADER\": ")) {
-					size_t end = line.find('\"', 24);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::sky_fragment_shader] = line.substr(24, end - 24);
-				} else if (!line.compare(0, 21, "\"SKY_VERTEX_SHADER\": ")) {
-					size_t end = line.find('\"', 22);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::sky_vertex_shader] = line.substr(22, end - 22);
-				} else if (!line.compare(0, 26, "\"SKYBOX_FRAGMENT_SHADER\": ")) {
-					size_t end = line.find('\"', 27);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::skybox_fragment_shader] = line.substr(27, end - 27);
-				} else if (!line.compare(0, 24, "\"SKYBOX_VERTEX_SHADER\": ")) {
-					size_t end = line.find('\"', 25);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::skybox_vertex_shader] = line.substr(25, end - 25);
-				} else if (!line.compare(0, 24, "\"TEXT_FRAGMENT_SHADER\": ")) {
-					size_t end = line.find('\"', 25);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::text_fragment_shader] = line.substr(25, end - 25);
-				} else if (!line.compare(0, 22, "\"TEXT_VERTEX_SHADER\": ")) {
-					size_t end = line.find('\"', 23);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::text_vertex_shader] = line.substr(23, end - 23);
-				} else if (!line.compare(0, 22, "\"UI_FRAGMENT_SHADER\": ")) {
-					size_t end = line.find('\"', 23);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::ui_fragment_shader] = line.substr(23, end - 23);
-				} else if (!line.compare(0, 20, "\"UI_VERTEX_SHADER\": ")) {
-					size_t end = line.find('\"', 21);
-					if (end == std::string::npos) throw UnclosedBracketException();
-					_strings[settings::strings::ui_vertex_shader] = line.substr(21, end - 21);
 				}
+				
+				for (int index = 0; index < settings::strings::size; ++index) {
+					size_t strlen = keys[index].size();
+					if (!line.compare(0, strlen, keys[index])) {
+						size_t end = line.find('\"', strlen + 1);
+						if (end == std::string::npos) throw UnclosedBracketException();
+						_strings[index] = line.substr(strlen + 1, end - (strlen + 1));
+						if (index < settings::strings::size_textures) {
+							check_set[index] = true;
+						}
+						LOADINGLOG(ofs << "Resource " << keys[index] << " at index " << index << " set to |" << _strings[index] << "|" << std::endl);
+						break ;
+					}
+				}
+				
 			}
 		}
 		catch (std::exception & e) {
