@@ -2,6 +2,7 @@
 #include "ChestInstance.hpp"
 #include "FurnaceInstance.hpp"
 #include "OpenGL_Manager.hpp"
+#include "callbacks.hpp"
 #include "logs.hpp"
 
 Inventory::Inventory( void ) : _slot(0), _modif(false)
@@ -35,10 +36,10 @@ t_item *Inventory::getBlockPtr( int value, int &craft_place, FurnaceInstance *fu
 	} else if (value <= CELLS::backpack_last) {
 		return (&_backpack[value - CELLS::backpack_first]);
 	} else if (value <= CELLS::icraft_last) {
-		craft_place = 1;
+		craft_place = menu::inventory;
 		return (&_icraft[value - CELLS::icraft_first]);
 	} else if (value <= CELLS::table_craft_last) {
-		craft_place = 2;
+		craft_place = menu::crafting;
 		return (&_craft[value - CELLS::table_craft_first]);
 	} else if (value <= CELLS::furnace_fuel) {
 		if (!furnace) {
@@ -50,17 +51,52 @@ t_item *Inventory::getBlockPtr( int value, int &craft_place, FurnaceInstance *fu
 			return (NULL);
 		}
 		return (chest->getItem(value - CELLS::chest_first));
+	} else if (value <= CELLS::anvil_second) {
+		craft_place = menu::anvil;
+		return (&_anvil[value - CELLS::anvil_first]);
 	}
 	return (NULL);
 }
 
-void Inventory::changeCrafted( int craft )
+void Inventory::changeCraftedAnvil( void )
 {
-	if (!craft) {
+	if (_anvil[0].type == blocks::air || _anvil[1].type != blocks::air) {
+		_crafted = t_item();
 		return ;
 	}
+	std::string input = inputs::getCurrentMessage();
+	if (input == "" && (!_anvil[0].tag || _anvil[0].tag->getName() == "")) {
+		_crafted = t_item();
+		return ;
+	} else if (_anvil[0].tag && _anvil[0].tag->getName() == input) {
+		_crafted = t_item();
+		return ;
+	} else if (!_anvil[0].tag && input == s_blocks[_anvil[0].type]->name) {
+		_crafted = t_item();
+		return ;
+	}
+	if (_crafted.type != _anvil[0].type) {
+		if (!_anvil[0].tag) {
+			_crafted = t_item(_anvil[0].type, _anvil[0].amount, std::make_shared<NameTag>(input));
+		} else {
+			_crafted = t_item(_anvil[0].type, _anvil[0].amount, _anvil[0].tag->duplicate());
+			_crafted.tag->setName(input);
+		}
+	} else {
+		_crafted.amount = _anvil[0].amount;
+		_crafted.tag->setName(input);
+	}
+}
+
+void Inventory::changeCrafted( int state )
+{
+	if (!state) {
+		return ;
+	} else if (state == menu::anvil) {
+		return (changeCraftedAnvil());
+	}
 	int minX = 2, minY = 2, maxX = 0, maxY = 0;
-	if (craft == 1) {
+	if (state == menu::inventory) {
 		for (int index = 0; index < 4; index++) {
 			if (_icraft[index].type != blocks::air) {
 				minX = glm::min(minX, index & 1);
@@ -69,7 +105,7 @@ void Inventory::changeCrafted( int craft )
 				maxY = glm::max(maxY, index >> 1);
 			}
 		}
-	} else if (craft == 2) {
+	} else if (state == menu::crafting) {
 		for (int index = 0; index < 9; index++) {
 			if (_craft[index].type != blocks::air) {
 				minX = glm::min(minX, index % 3);
@@ -95,8 +131,8 @@ void Inventory::changeCrafted( int craft )
 		bool match = true;
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
-				if ((craft == 1 && _icraft[minX + x + (minY + y) * 2].type != search->second[index + x + y * width])
-					|| (craft == 2 && _craft[minX + x + (minY + y) * 3].type != search->second[index + x + y * width])) {
+				if ((state == menu::inventory && _icraft[minX + x + (minY + y) * 2].type != search->second[index + x + y * width])
+					|| (state == menu::crafting && _craft[minX + x + (minY + y) * 3].type != search->second[index + x + y * width])) {
 					match = false;
 					break ;
 				}
@@ -118,9 +154,9 @@ void Inventory::changeCrafted( int craft )
 	_crafted = {0};
 }
 
-void Inventory::produceCraft( int craft )
+void Inventory::produceCraft( int state )
 {
-	if (craft == 1) {
+	if (state == menu::inventory) {
 		// std::cout << "produce i craft" << std::endl;
 		for (int index = 0; index < 4; index++) {
 			if (_icraft[index].amount > 0) {
@@ -129,7 +165,7 @@ void Inventory::produceCraft( int craft )
 				}
 			}
 		}
-	} else if (craft == 2) {
+	} else if (state == menu::crafting) {
 		// std::cout << "produce craft" << std::endl;
 		for (int index = 0; index < 9; index++) {
 			if (_craft[index].amount > 0) {
@@ -138,24 +174,44 @@ void Inventory::produceCraft( int craft )
 				}
 			}
 		}
+	} else if (state == menu::anvil) {
+		_anvil = {t_item(), t_item()};
 	}
-	changeCrafted(craft);
+	changeCrafted(state);
 }
 
-t_item Inventory::pickCrafted( int craft, t_item block )
+t_item Inventory::pickCrafted( int state, t_item block )
 {
 	if (_crafted.type == blocks::air) {
 		return (block);
 	}
 	if (block.type == blocks::air) {
 		t_item ret = _crafted;
-		produceCraft(craft);
+		produceCraft(state);
 		return (ret);
 	} else if (canStack(block, _crafted, false)) {
 		block.amount += _crafted.amount;
-		produceCraft(craft);
+		produceCraft(state);
 	}
 	return (block);
+}
+
+/**
+ * @brief 2 items are considered the same if they are of the same type
+ * and have the same tag content
+ */
+bool Inventory::sameItem( t_item a, t_item b )
+{
+	if (a.type != b.type) { // not same block X
+		return (false);
+	}
+	if (!a.tag && !b.tag) { // both without tag V
+		return (true);
+	}
+	if (!a.tag || !b.tag) { // only one of them has tag X
+		return (false);
+	}
+	return (!a.tag->compare(b.tag.get()));
 }
 
 /**
@@ -170,17 +226,10 @@ bool Inventory::canStack( t_item a, t_item b, bool emptyAllowed )
 	if (emptyAllowed && (a.type == blocks::air || b.type == blocks::air)) { // one of them empty
 		return (true);
 	}
-	if (a.type != b.type // not same block
-		|| a.amount + b.amount > s_blocks[a.type]->stackSize) { // stackSize overflow
+	if (!sameItem(a, b)) {
 		return (false);
 	}
-	if (!a.tag && !b.tag) { // both without tag
-		return (true);
-	}
-	if (!a.tag || !b.tag) { // only one of them has tag
-		return (false);
-	}
-	return (!a.tag->compare(b.tag.get()));
+	return (a.amount + b.amount <= s_blocks[a.type]->stackSize);
 }
 
 int Inventory::findEmptyCell( t_item block, bool hotbar_first )
@@ -236,7 +285,7 @@ int Inventory::findBlockCell( int type )
 	return (-1);
 }
 
-void Inventory::pickAllCrafted( int craft )
+void Inventory::pickAllCrafted( int state )
 {
 	int location = findEmptyCell(_crafted);
 	if (location == -1) {
@@ -249,13 +298,13 @@ void Inventory::pickAllCrafted( int craft )
 		bat = &_backpack[location - CELLS::backpack_first];
 	}
 	while (_crafted.type != blocks::air && bat->amount + _crafted.amount <= s_blocks[_crafted.type]->stackSize) {
-		*bat = pickCrafted(craft, *bat);
+		*bat = pickCrafted(state, *bat);
 		if (_crafted.type != bat->type) {
 			break ;
 		}
 	}
 	if (_crafted.type != blocks::air) {
-		return (pickAllCrafted(craft));
+		return (pickAllCrafted(state));
 	}
 }
 
@@ -305,6 +354,14 @@ t_item Inventory::getCrafted( void )
 	return (_crafted);
 }
 
+t_item Inventory::getAnvilblock( int slot )
+{
+	if (slot < 0 || slot > 1) {
+		return (t_item());
+	}
+	return (_anvil[slot]);
+}
+
 int Inventory::getSlotNum( void )
 {
 	return (_slot);
@@ -321,8 +378,8 @@ void Inventory::setSlot( int value )
     _slot = value;
 	_modif = true;
 	int type = _content[_slot].type;
-	_ui->inventoryMessage((type == blocks::written_book && _content[_slot].tag && _content[_slot].tag->getType() == tags::written_book_tag)
-							? static_cast<WrittenBookTag*>(_content[_slot].tag.get())->getTitle()
+	_ui->inventoryMessage((_content[_slot].tag && _content[_slot].tag->getName() != "")
+							? _content[_slot].tag->getName()
 							: (type != blocks::air) ? s_blocks[type]->name : "");
 }
 
@@ -333,14 +390,14 @@ void Inventory::setSlot( int value )
  * @param furnace ptr to furnace if opened
  * @param chest ptr to chest if opened
 */
-void Inventory::shiftBlockAt( std::vector<t_item>& drops, int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
+void Inventory::shiftBlockAt( std::vector<t_item>& drops, int state, int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
-	t_item item = pickBlockAt(craft, value, furnace, chest);
+	t_item item = pickBlockAt(state, value, furnace, chest);
 	if (!item.type) {
 		return ;
 	}
-	switch (craft) {
-		case 1: // inventory
+	switch (state) {
+		case menu::inventory:
 			if (value <= CELLS::hotbar_last) {
 				if (restoreBlock(item)) {
 					item.type = blocks::air;
@@ -349,7 +406,7 @@ void Inventory::shiftBlockAt( std::vector<t_item>& drops, int craft, int value, 
 				item.type = blocks::air;
 			}
 			break ;
-		case 2: // table craft
+		case menu::crafting:
 			if (value <= CELLS::backpack_last) {
 				if (s_blocks[item.type]->stackSize > 1) {
 					for (int index = 0; index < 9; index++) {
@@ -376,9 +433,9 @@ void Inventory::shiftBlockAt( std::vector<t_item>& drops, int craft, int value, 
 			if (furnace) {
 				if (value <= CELLS::backpack_last) { // from inventory to furnace
 					if (s_blocks[item.type]->isFuel) {
-						item = putBlockAt(craft, CELLS::furnace_fuel, item, furnace, NULL, false);
+						item = putBlockAt(state, CELLS::furnace_fuel, item, furnace, NULL, false);
 					} else {
-						item = putBlockAt(craft, CELLS::furnace_composant, item, furnace, NULL, false);
+						item = putBlockAt(state, CELLS::furnace_composant, item, furnace, NULL, false);
 					}
 				} else { // from furnace to inventory
 					if (restoreBlock(item)) {
@@ -416,7 +473,7 @@ void Inventory::shiftBlockAt( std::vector<t_item>& drops, int craft, int value, 
 		if (value == CELLS::product) { // drop item on ground
 			drops.push_back(item);
 		} else {
-			putBlockAt(craft, value, item, furnace, chest);
+			putBlockAt(state, value, item, furnace, chest);
 		}
 	}
 }
@@ -442,14 +499,14 @@ t_item Inventory::getHoveredAt( int state, int value, FurnaceInstance* furnace, 
 	return (*bat);
 }
 
-t_item Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
+t_item Inventory::pickBlockAt( int state, int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	// std::cout << "pickBlockAt " << value << std::endl;
 	if (value == CELLS::product) {
 		if (furnace) {
 			return (furnace->pickProduction());
 		}
-		return (pickCrafted(craft, t_item()));
+		return (pickCrafted(state, t_item()));
 	}
 	int craft_place = 0;
 	t_item *bat = getBlockPtr(value, craft_place, furnace, chest);
@@ -459,18 +516,18 @@ t_item Inventory::pickBlockAt( int craft, int value, FurnaceInstance *furnace, C
 	if (bat->type != blocks::air) {
 		t_item res = *bat;
 		*bat = t_item();
-		changeCrafted(craft);
+		changeCrafted(craft_place);
 		return (res);
 	}
 	changeCrafted(craft_place);
 	return (t_item());
 }
 
-t_item Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *furnace, ChestInstance *chest )
+t_item Inventory::pickHalfBlockAt( int state, int value, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	if (value == CELLS::product) {
 		if (!furnace) { // for now does nothing if in furnace
-			pickAllCrafted(craft);
+			pickAllCrafted(state);
 		}
 		return (t_item());
 	}
@@ -493,13 +550,13 @@ t_item Inventory::pickHalfBlockAt( int craft, int value, FurnaceInstance *furnac
 	return (t_item());
 }
 
-t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest, bool swap )
+t_item Inventory::putBlockAt( int state, int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest, bool swap )
 {
 	if (value == CELLS::product) {
 		if (furnace) {
 			return (block);
 		}
-		return (pickCrafted(craft, block));
+		return (pickCrafted(state, block));
 	}
 	int craft_place = 0;
 	t_item *bat = getBlockPtr(value, craft_place, furnace, chest);
@@ -508,7 +565,7 @@ t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstanc
 	}
 	t_item res = *bat;
 	int stackSize = s_blocks[block.type]->stackSize;
-	if (res.type == block.type && stackSize > 1) {
+	if (sameItem(res, block) && stackSize > 1) {
 		res.amount += block.amount;
 		if (res.amount > stackSize) {
 			block.amount = res.amount - stackSize;
@@ -533,11 +590,11 @@ t_item Inventory::putBlockAt( int craft, int value, t_item block, FurnaceInstanc
 	return (res);
 }
 
-t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest )
+t_item Inventory::putOneBlockAt( int state,  int value, t_item block, FurnaceInstance *furnace, ChestInstance *chest )
 {
 	if (value == CELLS::product) {
 		if (!furnace) {
-			pickAllCrafted(craft);
+			pickAllCrafted(state);
 		}
 		return (block);
 	}
@@ -546,7 +603,7 @@ t_item Inventory::putOneBlockAt( int craft,  int value, t_item block, FurnaceIns
 	if (!bat || (furnace && value == CELLS::furnace_fuel && !s_blocks[block.type]->isFuel)) {
 		return (block);
 	}
-	if (bat->type == block.type && bat->amount + 1 <= s_blocks[block.type]->stackSize) {
+	if (sameItem(*bat, block) && bat->amount + 1 <= s_blocks[block.type]->stackSize) {
 		++bat->amount;
 	} else if (bat->type == blocks::air) {
 		*bat = {block.type, 1, block.tag};
@@ -618,6 +675,19 @@ void Inventory::restoreCraft( std::vector<t_item>& drops )
 				drops.push_back(_craft[index]);
 			}
 			_craft[index] = {0};
+		}
+	}
+	_crafted = {0};
+}
+
+void Inventory::restoreAnvil( std::vector<t_item>& drops )
+{
+	for (int index = 0; index < 2; index++) {
+		if (_anvil[index].type != blocks::air) {
+			if (!restoreBlock(_anvil[index])) {
+				drops.push_back(_anvil[index]);
+			}
+			_anvil[index] = {0};
 		}
 	}
 	_crafted = {0};
@@ -719,8 +789,8 @@ void Inventory::replaceSlot( int type, bool creative )
 		} else if (type == blocks::book_and_quill) {
 			_content[_slot].tag = std::make_shared<BookTag>();
 		} else if (type == blocks::written_book) {
-			_content[_slot].tag = std::make_shared<WrittenBookTag>();
-			static_cast<WrittenBookTag*>(_content[_slot].tag.get())->setTitle("Anonymous");
+			_content[_slot].tag = std::make_shared<BookTag>();
+			_content[_slot].tag->setName("Anonymous");
 		}
 		return ;
 	}
@@ -774,6 +844,25 @@ void Inventory::decrementDurabitilty( void )
 	}
 }
 
+std::string Inventory::getAnvilTag( void )
+{
+	if (!_crafted.tag) {
+		if (_anvil[0].type == blocks::air) {
+			return ("");
+		}
+		if (!_anvil[0].tag || _anvil[0].tag->getName() == "") {
+			return (s_blocks[_anvil[0].type]->name);
+		}
+		return (_anvil[0].tag->getName());
+	}
+	return (_crafted.tag->getName());
+}
+
+void Inventory::updateAnvilTag( void )
+{
+	changeCraftedAnvil();
+}
+
 void Inventory::spillInventory( Chunk* chunk )
 {
 	t_item details;
@@ -810,7 +899,7 @@ void Inventory::signBook( std::string title )
 		return ;
 	}
 	_content[_slot].type = blocks::written_book;
-	_content[_slot].tag = std::make_shared<WrittenBookTag>(title, static_cast<BookTag*>(_content[_slot].tag.get())->getContent());
+	_content[_slot].tag->setName(title);
 	_modif = true;
 }
 

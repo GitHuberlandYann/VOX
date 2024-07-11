@@ -929,7 +929,7 @@ bool Chunk::bookedLectern( Menu* menu, glm::ivec3 pos, bool turnPage )
 			t_item item = static_cast<LecternEntity*>(search->get())->getContent();
 			if (item.type == blocks::written_book) {
 				if (!turnPage) {
-					menu->setBookContent(&static_cast<WrittenBookTag*>(item.tag.get())->getContent());
+					menu->setBookContent(&static_cast<BookTag*>(item.tag.get())->getContent());
 					menu->setBookPage(static_cast<LecternEntity*>(search->get())->getPage());
 				} else {
 					static_cast<LecternEntity*>(search->get())->setPage(menu->getBookPage());

@@ -638,10 +638,10 @@ int LecternEntity::getPage( void )
 
 int LecternEntity::getSignal( void )
 {
-	if (_item.type == blocks::air || !_item.tag || _item.tag->getType() != tags::written_book_tag) {
+	if (_item.type == blocks::air || !_item.tag || _item.tag->getType() != tags::book_tag) {
 		return (0);
 	}
-	size_t pages = static_cast<WrittenBookTag*>(_item.tag.get())->getContent().size();
+	size_t pages = static_cast<BookTag*>(_item.tag.get())->getContent().size();
 	if (pages < 2) {
 		return (0xF);
 	}

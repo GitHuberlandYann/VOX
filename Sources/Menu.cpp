@@ -56,6 +56,9 @@ void Menu::reset_values( void )
 		glfwSetCharCallback(_window, NULL);
 		_input_world = false;
 		_input_seed = false;
+		if (_state == menu::anvil) {
+			inputs::resetMessage();
+		}
 	}
 	_moving_slider = false;
 	_change_to_apply = false;
@@ -439,7 +442,14 @@ menu::ret Menu::skin_customization_menu( void )
 	}
 
 	_text->addCenteredText(WIN_WIDTH / 2, 20 * _gui_size, 0, 0, (_gui_size + 1) * 7, argb::white, false, settings::consts::depth::menu::controls::str, "Skin Customization");
-	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2, 0, 0, _gui_size * 7, argb::white, false, settings::consts::depth::menu::controls::str, "Under Maintenance..");
+	_text->addCenteredText(WIN_WIDTH / 2, 30 * _gui_size, 0, 0, _gui_size * 7, argb::white, false, settings::consts::depth::menu::controls::str, "Under Maintenance..");
+
+	const std::string lorem = {"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet,"};
+
+	for (int i = 0, y = 45; i < 18; ++i) {
+		_text->addText(20 * _gui_size, y * _gui_size, (4 + i) * _gui_size, argb::white, settings::consts::depth::menu::controls::str, lorem);
+		y += (6 + i);
+	}
 
 	setup_array_buffer_skin();
 	blit_to_screen();
@@ -711,9 +721,8 @@ menu::ret Menu::resource_packs_menu( void )
 
 menu::ret Menu::ingame_inputs( void )
 {
-	int craft = _state + 1 - menu::inventory; // craft = 1: inventory, 2: crafting, 3: furnace
 	if ((inputs::key_down(inputs::close) && inputs::key_update(inputs::close))
-		|| (inputs::key_down(inputs::inventory) && inputs::key_update(inputs::inventory))) {
+		|| (inputs::key_down(inputs::inventory) && inputs::key_update(inputs::inventory) && !_input_world)) {
 		if (_selected_block.type != blocks::air) {
 			if (!_inventory->restoreBlock(_selected_block)) {
 				_drops.push_back(_selected_block);
@@ -721,17 +730,30 @@ menu::ret Menu::ingame_inputs( void )
 		}
 		_inventory->restoreiCraft(_drops);
 		_inventory->restoreCraft(_drops);
+		_inventory->restoreAnvil(_drops);
 		_inventory->setModif(true);
 		reset_values();
 		return ((_drops.size()) ? menu::ret::back_to_game_after_drop : menu::ret::back_to_game);
 	}
 	if (inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) {
+		if (_selection == -2) { // anvil renaming
+			t_item item = _inventory->getAnvilblock(0);
+			if (item.type != blocks::air && !_input_world) {
+				glfwSetCharCallback(_window, inputs::character_callback);
+				inputs::setCurrentMessage(_inventory->getAnvilTag());
+				_input_world = true;
+			}
+		} else if (_input_world) {
+			glfwSetCharCallback(_window, NULL);
+			_input_world = false;
+			inputs::resetMessage();
+		}
 		if (_selection > 0) {
 			if (_selected_block.type == blocks::air) {
 				if (inputs::key_down(inputs::left_shift)) {
-					_inventory->shiftBlockAt(_drops, craft, _selection - 1, _furnace, _chest);
+					_inventory->shiftBlockAt(_drops, _state, _selection - 1, _furnace, _chest);
 				} else {
-					_selected_block = _inventory->pickBlockAt(craft, _selection - 1, _furnace, _chest);
+					_selected_block = _inventory->pickBlockAt(_state, _selection - 1, _furnace, _chest);
 					if (_selected_block.type != blocks::air && inputs::key_down(inputs::left_control)
 						&& Settings::Get()->getInt(settings::ints::game_mode) == settings::consts::gamemode::creative
 						&& _selection != CELLS::product + 1) {
@@ -739,21 +761,20 @@ menu::ret Menu::ingame_inputs( void )
 					}
 				}
 			} else {
-				_selected_block = _inventory->putBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
-					_ui->addFace({glm::ivec2(0, 0), {}, {}, {}}, 0, 0, 0, false, true); // TODO better way to update ui than this
+				_selected_block = _inventory->putBlockAt(_state, _selection - 1, _selected_block, _furnace, _chest);
+				_ui->addFace({glm::ivec2(0, 0), {}, {}, {}}, 0, 0, 0, false, true); // TODO better way to update ui than this
 			}
 		} else if (_selection == -1 && _selected_block.type != blocks::air) { // drop selected item
 			_drops.push_back(_selected_block);
 			_selected_block = {0};
 			return (menu::ret::drop_item);
 		}
-	}
-	if (inputs::key_down(inputs::right_click)) {
+	} else if (inputs::key_down(inputs::right_click)) {
 		bool first_frame = inputs::key_update(inputs::right_click);
 		if (_selection > 0) {
 			if (_selected_block.type == blocks::air) {
 				if (first_frame) {
-					_selected_block = _inventory->pickHalfBlockAt(craft, _selection - 1, _furnace, _chest);
+					_selected_block = _inventory->pickHalfBlockAt(_state, _selection - 1, _furnace, _chest);
 					if (_selected_block.type != blocks::air) {
 						_selection_list.push_back(_selection);
 					}
@@ -768,7 +789,7 @@ menu::ret Menu::ingame_inputs( void )
 				}
 				if (!inList) {
 					int count = _selected_block.amount;
-					_selected_block = _inventory->putOneBlockAt(craft, _selection - 1, _selected_block, _furnace, _chest);
+					_selected_block = _inventory->putOneBlockAt(_state, _selection - 1, _selected_block, _furnace, _chest);
 					if (_selected_block.amount < count) {
 						_selection_list.push_back(_selection);
 					}
@@ -787,29 +808,21 @@ menu::ret Menu::ingame_inputs( void )
 	}
 	if (inputs::key_down(inputs::slot_0) && inputs::key_update(inputs::slot_0)) {
 		_inventory->swapCells(0, _selection - 1);
-	}
-	if (inputs::key_down(inputs::slot_1) && inputs::key_update(inputs::slot_1)) {
+	} else if (inputs::key_down(inputs::slot_1) && inputs::key_update(inputs::slot_1)) {
 		_inventory->swapCells(1, _selection - 1);
-	}
-	if (inputs::key_down(inputs::slot_2) && inputs::key_update(inputs::slot_2)) {
+	} else if (inputs::key_down(inputs::slot_2) && inputs::key_update(inputs::slot_2)) {
 		_inventory->swapCells(2, _selection - 1);
-	}
-	if (inputs::key_down(inputs::slot_3) && inputs::key_update(inputs::slot_3)) {
+	} else if (inputs::key_down(inputs::slot_3) && inputs::key_update(inputs::slot_3)) {
 		_inventory->swapCells(3, _selection - 1);
-	}
-	if (inputs::key_down(inputs::slot_4) && inputs::key_update(inputs::slot_4)) {
+	} else if (inputs::key_down(inputs::slot_4) && inputs::key_update(inputs::slot_4)) {
 		_inventory->swapCells(4, _selection - 1);
-	}
-	if (inputs::key_down(inputs::slot_5) && inputs::key_update(inputs::slot_5)) {
+	} else if (inputs::key_down(inputs::slot_5) && inputs::key_update(inputs::slot_5)) {
 		_inventory->swapCells(5, _selection - 1);
-	}
-	if (inputs::key_down(inputs::slot_6) && inputs::key_update(inputs::slot_6)) {
+	} else if (inputs::key_down(inputs::slot_6) && inputs::key_update(inputs::slot_6)) {
 		_inventory->swapCells(6, _selection - 1);
-	}
-	if (inputs::key_down(inputs::slot_7) && inputs::key_update(inputs::slot_7)) {
+	} else if (inputs::key_down(inputs::slot_7) && inputs::key_update(inputs::slot_7)) {
 		_inventory->swapCells(7, _selection - 1);
-	}
-	if (inputs::key_down(inputs::slot_8) && inputs::key_update(inputs::slot_8)) {
+	} else if (inputs::key_down(inputs::slot_8) && inputs::key_update(inputs::slot_8)) {
 		_inventory->swapCells(8, _selection - 1);
 	}
 	return ((_drops.size()) ? menu::ret::drop_item : menu::ret::no_change);
@@ -836,6 +849,17 @@ menu::ret Menu::ingame_menu( void )
 			setup_array_buffer_furnace();
 			break ;
 		case menu::anvil:
+			if (_input_world) {
+				if (inputs::getCurrentMessage().size() > 50) {
+					inputs::rmLetter();
+				} else if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+					inputs::rmLetter(inputs::key_down(inputs::left_control));
+				} else if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
+					inputs::moveCursor(true, inputs::key_down(inputs::left_control));
+				} else if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
+					inputs::moveCursor(false, inputs::key_down(inputs::left_control));
+				}
+			}
 			setup_array_buffer_anvil();
 			break ;
 	}
@@ -846,8 +870,10 @@ menu::ret Menu::ingame_menu( void )
 		if (hovered.type != blocks::air) {
 			glm::ivec2 pos = computeScreenPosFromSelection(_selection);
 			int font = 5 * _gui_size;
-			addUnstretchedQuads(settings::consts::tex::inventory, settings::consts::depth::menu::item_info_back, pos.x + 14 * _gui_size, pos.y + 14 * _gui_size, utils::text::textWidth(font, s_blocks[hovered.type]->name) + 10 * _gui_size, font + 10 * _gui_size, 165, 166, 24, 24, 3);
-			_text->addText(pos.x + 19 * _gui_size, pos.y + 19 * _gui_size, font, argb::gray, settings::consts::depth::menu::item_info_str, s_blocks[hovered.type]->name);
+			std::string str = (!hovered.tag || hovered.tag->getName() == "") ? s_blocks[hovered.type]->name : hovered.tag->getName();
+			addUnstretchedQuads(settings::consts::tex::inventory, settings::consts::depth::menu::item_info_back, pos.x + 14 * _gui_size, pos.y + 14 * _gui_size,
+								utils::text::textWidth(font, str) + 10 * _gui_size, utils::text::textHeight(font, str) + 10 * _gui_size, 165, 166, 24, 24, 3);
+			_text->addText(pos.x + 19 * _gui_size, pos.y + 19 * _gui_size, font, argb::gray, settings::consts::depth::menu::item_info_str, str);
 		}
 	}
 
@@ -1279,8 +1305,6 @@ void Menu::setup_array_buffer_skin( void )
 {
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 40 * _gui_size, WIN_WIDTH, WIN_HEIGHT - 40 * _gui_size, 1, 72, 1, 1); // occult central part
 
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2, (85) * _gui_size, 90 * _gui_size, 20 * _gui_size, 0, 71, 200, 20); // List Players currently disabled
-
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, 0, WIN_WIDTH, 40 * _gui_size, 0, 91, 1, 1); // occult top part
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, WIN_HEIGHT - 40 * _gui_size, WIN_WIDTH, 40 * _gui_size, 0, 91, 1, 1); // occult bottom part
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::bars, WIN_WIDTH / 2 - 205 * _gui_size, WIN_HEIGHT - 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // Done
@@ -1448,6 +1472,8 @@ glm::ivec2 Menu::computeScreenPosFromSelection( int selection )
 			return {(WIN_WIDTH - (166 * _gui_size)) / 2 + 119 * _gui_size, WIN_HEIGHT / 2 - 48 * _gui_size};
 		} else if (_state == menu::furnace) {
 			return {(WIN_WIDTH - (166 * _gui_size)) / 2 + 111 * _gui_size, WIN_HEIGHT / 2 - 48 * _gui_size};
+		} else if (_state == menu::anvil) {
+			return {WIN_WIDTH / 2 - (88 - 134) * _gui_size, WIN_HEIGHT / 2 - (83 - 47) * _gui_size};
 		}
 	} else if (selection < 51) { // craft
 		int index = selection - 42;
@@ -1459,6 +1485,10 @@ glm::ivec2 Menu::computeScreenPosFromSelection( int selection )
 	} else if (selection < 80) { // chest
 		int index = selection - 53;
 		return {(WIN_WIDTH - (166 * _gui_size)) / 2 + (18 * (index % 9) * _gui_size) + _gui_size * 3, WIN_HEIGHT / 2 - 65 * _gui_size + 18 * _gui_size * (index / 9)};
+	} else if (selection == 80) { // anvil first
+		return {WIN_WIDTH / 2 - (88 - 27) * _gui_size, WIN_HEIGHT / 2 - (83 - 47) * _gui_size};
+	} else if (selection == 81) { // anvil second
+		return {WIN_WIDTH / 2 - (88 - 76) * _gui_size, WIN_HEIGHT / 2 - (83 - 47) * _gui_size};
 	}
 	return {0, 0};
 }
@@ -1571,15 +1601,24 @@ void Menu::add_crafted_value( void )
 	if (item.type == blocks::air) {
 		return ;
 	}
-	if (_state == menu::inventory) {
-		int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 149 * _gui_size;
-		int y = WIN_HEIGHT / 2 - 55 * _gui_size;
-		add_item_value(item, x, y, settings::consts::depth::menu::item_str);
-	} else if (_state == menu::crafting) {
-		int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 119 * _gui_size;
-		int y = WIN_HEIGHT / 2 - 48 * _gui_size;
-		add_item_value(item, x, y, settings::consts::depth::menu::item_str);
+	int x, y;
+	switch (_state) {
+		case menu::inventory:
+			x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 149 * _gui_size;
+			y = WIN_HEIGHT / 2 - 55 * _gui_size;
+			break ;
+		case menu::crafting:
+			x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 119 * _gui_size;
+			y = WIN_HEIGHT / 2 - 48 * _gui_size;
+			break ;
+		case menu::anvil:
+			x = WIN_WIDTH / 2 - (88 - 134) * _gui_size;
+			y = WIN_HEIGHT / 2 - (83 - 47) * _gui_size;
+			break ;
+		default:
+			return (_ui->chatMessage("Menu::add_crafted_value defaulted with state of " + std::to_string(_state), argb::red));
 	}
+	add_item_value(item, x, y, settings::consts::depth::menu::item_str);
 }
 
 void Menu::add_chest_value( int index )
@@ -1629,6 +1668,42 @@ void Menu::add_furnace_value( void )
 	if (item.type != blocks::air) {
 		int x = (WIN_WIDTH - (166 * _gui_size)) / 2 + 111 * _gui_size;
 		int y = WIN_HEIGHT / 2 - 48 * _gui_size;
+		add_item_value(item, x, y, settings::consts::depth::menu::item_str);
+	}
+}
+
+void Menu::add_anvil_value( void )
+{
+	t_item item = _inventory->getAnvilblock(0);
+	if (item.type != blocks::air) {
+		if (inputs::messageUpdate()) {
+			_inventory->updateAnvilTag();
+		}
+		int x = WIN_WIDTH / 2 - (88 - 27) * _gui_size;
+		int y = WIN_HEIGHT / 2 - (83 - 47) * _gui_size;
+		add_item_value(item, x, y, settings::consts::depth::menu::item_str);
+		t_item crafted = _inventory->getCrafted();
+		if (crafted.type == blocks::air) { // no repair/rename
+			addQuads(settings::consts::tex::anvil, settings::consts::depth::menu::container - 5, WIN_WIDTH / 2 - (88 - 99) * _gui_size, WIN_HEIGHT / 2 - (83 - 45) * _gui_size, 28 * _gui_size, 21 * _gui_size, 176, 0, 28, 21);
+			if (_input_world) {
+				_text->addCursorText(WIN_WIDTH / 2 - (88 - 63) * _gui_size - glm::max(0, utils::text::textWidth(6 * _gui_size, inputs::getCurrentMessage()) - 100 * _gui_size), WIN_HEIGHT / 2 - (83 - 25) * _gui_size, 6 * _gui_size, argb::gray, settings::consts::depth::menu::container + 5, true, inputs::getCursor(), inputs::getCurrentMessage());
+			} else if (!item.tag || item.tag->getName() == "") {
+				_text->addText(WIN_WIDTH / 2 - (88 - 63) * _gui_size - glm::max(0, utils::text::textWidth(6 * _gui_size, s_blocks[item.type]->name) - 100 * _gui_size), WIN_HEIGHT / 2 - (83 - 25) * _gui_size, 6 * _gui_size, argb::gray, settings::consts::depth::menu::container + 5, s_blocks[item.type]->name);
+			} else {
+				_text->addText(WIN_WIDTH / 2 - (88 - 63) * _gui_size - glm::max(0, utils::text::textWidth(6 * _gui_size, item.tag->getName()) - 100 * _gui_size), WIN_HEIGHT / 2 - (83 - 25) * _gui_size, 6 * _gui_size, argb::gray, settings::consts::depth::menu::container + 5, item.tag->getName());
+			}
+		} else {
+			if (_input_world) {
+				_text->addCursorText(WIN_WIDTH / 2 - (88 - 63) * _gui_size - glm::max(0, utils::text::textWidth(6 * _gui_size, crafted.tag->getName()) - 100 * _gui_size), WIN_HEIGHT / 2 - (83 - 25) * _gui_size, 6 * _gui_size, argb::gray, settings::consts::depth::menu::container + 5, true, inputs::getCursor(), crafted.tag->getName());
+			} else {
+				_text->addText(WIN_WIDTH / 2 - (88 - 63) * _gui_size - glm::max(0, utils::text::textWidth(6 * _gui_size, crafted.tag->getName()) - 100 * _gui_size), WIN_HEIGHT / 2 - (83 - 25) * _gui_size, 6 * _gui_size, argb::gray, settings::consts::depth::menu::container + 5, crafted.tag->getName());
+			}
+		}
+	}
+	item = _inventory->getAnvilblock(1);
+	if (item.type != blocks::air) {
+		int x = WIN_WIDTH / 2 - (88 - 76) * _gui_size;
+		int y = WIN_HEIGHT / 2 - (83 - 47) * _gui_size;
 		add_item_value(item, x, y, settings::consts::depth::menu::item_str);
 	}
 }
@@ -1745,7 +1820,7 @@ void Menu::setup_array_buffer_anvil( void )
 	_text->addText(WIN_WIDTH / 2 - (88 - 8) * _gui_size, WIN_HEIGHT / 2 - (83 - 74) * _gui_size, 8 * _gui_size, argb::dark_gray, settings::consts::depth::menu::selection, "Inventory");
 
 	addQuads(settings::consts::tex::anvil, settings::consts::depth::menu::container, WIN_WIDTH / 2 - 88 * _gui_size, WIN_HEIGHT / 2 - 83 * _gui_size, 176 * _gui_size, 166 * _gui_size, 0, 0, 176, 166);
-	addQuads(settings::consts::tex::anvil, settings::consts::depth::menu::selection, WIN_WIDTH / 2 - (88 - 59) * _gui_size, WIN_HEIGHT / 2 - (83 - 20) * _gui_size, 110 * _gui_size, 16 * _gui_size, 0, 182, 110, 16);
+	addQuads(settings::consts::tex::anvil, settings::consts::depth::menu::container + 10, WIN_WIDTH / 2 - (88 - 59) * _gui_size, WIN_HEIGHT / 2 - (83 - 20) * _gui_size, 110 * _gui_size, 16 * _gui_size, 0, 182, 110, 16);
 	occult_selection();
 	for (int index = 0; index < 9; index++) {
 		add_slot_value(index);
@@ -1753,7 +1828,8 @@ void Menu::setup_array_buffer_anvil( void )
 	for (int index = 0; index < 27; index++) {
 		add_backpack_value(index);
 	}
-	// add_anvil_value();
+	add_anvil_value();
+	add_crafted_value();
 
 	if (_selected_block.type != blocks::air) {
 		double mouseX, mouseY;
@@ -2102,13 +2178,26 @@ void Menu::processMouseMovement( float posX, float posY )
 				if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size, WIN_HEIGHT / 2 - 66 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
 					_selection = CELLS::furnace_composant + 1;
 					return ;
-				}
-				if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size, WIN_HEIGHT / 2 - 30 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
+				} else if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + 51 * _gui_size, WIN_HEIGHT / 2 - 30 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
 					_selection = CELLS::furnace_fuel + 1;
 					return ;
-				}
-				if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + 111 * _gui_size, WIN_HEIGHT / 2 - 48 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
+				} else if (inRectangle(posX, posY, (WIN_WIDTH - (166 * _gui_size)) / 2 + 111 * _gui_size, WIN_HEIGHT / 2 - 48 * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
 					_selection = CELLS::product + 1;
+					return ;
+				}
+				break ;
+			case menu::anvil:
+				if (inRectangle(posX, posY, WIN_WIDTH / 2 - (88 - 27) * _gui_size, WIN_HEIGHT / 2 - (83 - 47) * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
+					_selection = CELLS::anvil_first + 1;
+					return ;
+				} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - (88 - 76) * _gui_size, WIN_HEIGHT / 2 - (83 - 47) * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
+					_selection = CELLS::anvil_second + 1;
+					return ;
+				} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - (88 - 134) * _gui_size, WIN_HEIGHT / 2 - (83 - 47) * _gui_size, 16 * _gui_size, 16 * _gui_size)) {
+					_selection = CELLS::product + 1;
+					return ;
+				} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - (88 - 59) * _gui_size, WIN_HEIGHT / 2 - (83 - 20) * _gui_size, 110 * _gui_size, 16 * _gui_size)) {
+					_selection = -2;
 					return ;
 				}
 				break ;
@@ -2178,7 +2267,9 @@ void Menu::setBookContent( std::vector<std::string>* content )
 	if (content && !content->size()) {
 		content->push_back("");
 	}
-	inputs::setCurrentMessage((content) ? content->at(0) : "");
+	if (_state != menu::book) {
+		inputs::setCurrentMessage((content) ? content->at(0) : "");
+	}
 }
 
 int Menu::getBookPage( void )
@@ -2265,7 +2356,8 @@ t_sign_info Menu::getSignContent( void )
 
 menu::ret Menu::run( bool animUpdate )
 {
-	if (inputs::key_down(inputs::quit_program) && _state != menu::chat && _state != menu::sign && _state != menu::book_and_quill && _state != menu::book_and_quill_sign && !_input_world && !_input_seed) {
+	if (inputs::key_down(inputs::quit_program) && _state != menu::chat && _state != menu::sign && _state != menu::book_and_quill
+		&& _state != menu::book_and_quill_sign && !_input_world && !_input_seed) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return (menu::ret::quit);
 	}

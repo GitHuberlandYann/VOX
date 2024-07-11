@@ -1,3 +1,4 @@
+#include <memory>
 #include "ATag.hpp"
 
 ATag::ATag( void )
@@ -7,6 +8,22 @@ ATag::ATag( void )
 }
 
 ATag::~ATag( void )
+{
+
+}
+
+NameTag::NameTag( void )
+{
+	_type = tags::name_tag;
+}
+
+NameTag::NameTag( std::string name )
+{
+	_type = tags::name_tag;
+	_name = name;
+}
+
+NameTag::~NameTag( void )
 {
 
 }
@@ -34,24 +51,13 @@ BookTag::BookTag( void )
 	// _content.push_back("\n\nHello \"World\"!");
 }
 
+BookTag::BookTag( std::vector<std::string>& content )
+	: _content(content)
+{
+	_type = tags::book_tag;
+}
+
 BookTag::~BookTag( void )
-{
-
-}
-
-WrittenBookTag::WrittenBookTag( void )
-{
-	_type = tags::written_book_tag;
-}
-
-WrittenBookTag::WrittenBookTag( std::string title, std::vector<std::string>& content )
-	: _title(title), _content(content)
-{
-	_type = tags::written_book_tag;
-	// _content.push_back("\n\nHello \"World\"!");
-}
-
-WrittenBookTag::~WrittenBookTag( void )
 {
 
 }
@@ -129,11 +135,6 @@ void BookTag::pushPage( std::string page )
 	_content.push_back(page);
 }
 
-void WrittenBookTag::pushPage( std::string page )
-{
-	_content.push_back(page);
-}
-
 std::vector<std::string>& BookTag::getContent( void )
 {
 	return (_content);
@@ -163,46 +164,32 @@ bool BookTag::compare( ATag* other )
 }
 
 // ************************************************************************** //
-//                                WrittenBookTag                              //
+//                                Duplicate                                   //
 // ************************************************************************** //
 
-void WrittenBookTag::setTitle( std::string title )
+std::shared_ptr<ATag> NameTag::duplicate( void )
 {
-	_title = title;
+	std::shared_ptr<ATag> res = std::make_shared<NameTag>();
+
+	res->setType(_type);
+	res->setName(_name);
+	return (res);
 }
 
-std::string WrittenBookTag::getTitle( void )
+std::shared_ptr<ATag> ToolTag::duplicate( void )
 {
-	return (_title);
+	std::shared_ptr<ATag> res = std::make_shared<ToolTag>(_dura, _toolDura);
+
+	res->setType(_type);
+	res->setName(_name);
+	return (res);
 }
 
-std::vector<std::string>& WrittenBookTag::getContent( void )
+std::shared_ptr<ATag> BookTag::duplicate( void )
 {
-	return (_content);
-}
+	std::shared_ptr<ATag> res = std::make_shared<BookTag>(_content);
 
-bool WrittenBookTag::compare( ATag* other )
-{
-	if (!other) {
-		return (true);
-	}
-	if (_type != other->getType() || _type == tags::tool_tag) {
-		return (true);
-	}
-	if (_name != other->getName()) {
-		return (true);
-	}
-	if (_title != static_cast<WrittenBookTag*>(other)->getTitle()) {
-		return (true);
-	}
-	std::vector<std::string>& oContent = static_cast<WrittenBookTag*>(other)->getContent();
-	if (_content.size() != oContent.size()) {
-		return (true);
-	}
-	for (size_t index = 0; index < _content.size(); ++index) {
-		if (_content[index] != oContent[index]) {
-			return (true);
-		}
-	}
-	return (false);
+	res->setType(_type);
+	res->setName(_name);
+	return (res);
 }

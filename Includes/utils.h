@@ -39,6 +39,7 @@ namespace utils {
 
 	namespace text {
 		int textWidth( int font_size, std::string str, int limit = -1 );
+		int textHeight( int font_size, std::string str, int limit = -1 );
 	};
 
 	namespace block {

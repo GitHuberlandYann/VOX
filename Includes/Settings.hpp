@@ -25,8 +25,8 @@ namespace settings {
 		inline int   gui_max()     { return (glm::max(1, glm::min(WIN_WIDTH / 320, WIN_HEIGHT / 240))); }
 
 		namespace json {
-			const int nbr_versions = 6;
-			const std::array<std::string, nbr_versions> versions = {"v0.0", "v1.0", "v1.1", "v1.2", "v1.3", "v1.4"};
+			const int nbr_versions = 7;
+			const std::array<std::string, nbr_versions> versions = {"v0.0", "v1.0", "v1.1", "v1.2", "v1.3", "v1.4", "v1.5"};
 		};
 
 		namespace gamemode {

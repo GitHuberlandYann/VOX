@@ -67,6 +67,7 @@ namespace inputs
 
 	std::string message;
 	size_t cursor = 0;
+	bool update = false;
 
 	void character_callback( GLFWwindow* window, unsigned int codepoint )
 	{
@@ -82,6 +83,7 @@ namespace inputs
 			message = message.substr(0, cursor) + static_cast<char>(codepoint) + message.substr(cursor);
 		}
 		++cursor;
+		update = true;
 	}
 
 	void moveCursor( bool right, bool control )
@@ -108,6 +110,7 @@ namespace inputs
 		if (!cursor) return ;
 		message = message.substr(0, cursor - 1) + message.substr(cursor);
 		--cursor;
+		update = true;
 		if (control && cursor && !isspace(message[cursor - 1])) {
 			rmLetter(control);
 		}
@@ -117,11 +120,19 @@ namespace inputs
 	{
 		message = message.substr(0, cursor) + c + message.substr(cursor);
 		++cursor;
+		update = true;
 	}
 
-	int getCursor( void )
+	size_t getCursor( void )
 	{
 		return (cursor);
+	}
+
+	bool messageUpdate( void )
+	{
+		bool res = update;
+		update = false;
+		return (res);
 	}
 
 	std::string getCurrentMessage( void )

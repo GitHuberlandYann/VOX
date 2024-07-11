@@ -217,8 +217,8 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		_paused = true;
 		_menu->setState(menu::book);
 		t_item item = _inventory->getSlotBlock(_inventory->getSlotNum());
-		if (item.tag && item.tag->getType() == tags::written_book_tag) {
-			_menu->setBookContent(&static_cast<WrittenBookTag*>(item.tag.get())->getContent());
+		if (item.tag && item.tag->getType() == tags::book_tag) {
+			_menu->setBookContent(&static_cast<BookTag*>(item.tag.get())->getContent());
 		}
 		return ;
 	} else if (s_blocks[type]->isItemOnly) {

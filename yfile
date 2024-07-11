@@ -68,7 +68,6 @@ TODOS:
 	- replace glm with own small lib
 	- display block_hit s name and details as a 2D window
 	- skin customization menu
-	- anvil + named items
 	
 	DONE:
 	- pthread chunk creation
@@ -114,6 +113,7 @@ TODOS:
 	- item frame
 	- book, book_and_quill, written_book
 	- lectern
+	- anvil + named items
 	- pistons
 	- observers
 	- fences

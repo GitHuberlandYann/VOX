@@ -67,34 +67,35 @@ std::string Player::saveString( void )
 
 static void saveItem( std::string& res, t_item item )
 {
-	bool first = true;
 	std::string title;
 	res += '[' + std::to_string(item.type) + ", " + std::to_string(item.amount);
 	if (item.tag) {
 		switch (item.tag->getType()) {
+			case tags::name_tag:
+				res += ", {\"nameTag\": [";
+				title = item.tag->getName();
+				res += std::to_string(title.size()) + ", \"";
+				for (char c : title) {
+					if (c == '"') res += "\\\"";
+					else if (c == '\n') res += "\\n";
+					else res += c;
+				}
+				res += "\"]}";
+				break ;
 			case tags::tool_tag:
-				res += ", {\"toolTag\": " + std::to_string(static_cast<ToolTag*>(item.tag.get())->getDura()) + "}";
+				res += ", {\"toolTag\": [";
+				title = item.tag->getName();
+				res += std::to_string(title.size()) + ", \"";
+				for (char c : title) {
+					if (c == '"') res += "\\\"";
+					else if (c == '\n') res += "\\n";
+					else res += c;
+				}
+				res += "\", " + std::to_string(static_cast<ToolTag*>(item.tag.get())->getDura()) + "]}";
 				break ;
 			case tags::book_tag:
 				res += ", {\"bookTag\": [";
-				for (auto page : static_cast<BookTag*>(item.tag.get())->getContent()) {
-					if (!first) {
-						res += ", ";
-					}
-					first = false;
-					res += std::to_string(page.size()) + ", \"";
-					for (char c : page) {
-						if (c == '"') res += "\\\"";
-						else if (c == '\n') res += "\\n";
-						else res += c;
-					}
-					res += "\"";
-				}
-				res += "]}";
-				break ;
-			case tags::written_book_tag:
-				res += ", {\"writtenBookTag\": [";
-				title = static_cast<WrittenBookTag*>(item.tag.get())->getTitle();
+				title = item.tag->getName();
 				res += std::to_string(title.size()) + ", \"";
 				for (char c : title) {
 					if (c == '"') res += "\\\"";
@@ -102,7 +103,7 @@ static void saveItem( std::string& res, t_item item )
 					else res += c;
 				}
 				res += "\"";
-				for (auto page : static_cast<WrittenBookTag*>(item.tag.get())->getContent()) {
+				for (auto page : static_cast<BookTag*>(item.tag.get())->getContent()) {
 					res += ", " + std::to_string(page.size()) + ", \"";
 					for (char c : page) {
 						if (c == '"') res += "\\\"";
@@ -452,7 +453,8 @@ void Player::loadWorld( std::ofstream& ofs, std::ifstream& indata )
 
 static void convertTag( std::string line, int& index, t_item& item, char sep )
 {
-	int dura;
+	int dura, pageSize;
+	bool first;
 	switch (Settings::Get()->getInt(settings::ints::json_version)) {
 		case 0: // no change until 1.4, just read dura as 3rd arg of item
 		case 1:
@@ -476,31 +478,9 @@ static void convertTag( std::string line, int& index, t_item& item, char sep )
 				} else if (!line.compare(index + 4, 7, "bookTag")) {
 					index += 13;
 					item.tag = std::make_shared<BookTag>();
+					first = true;
 					while (line[index] && line[index] != ']') {
-						int pageSize = std::atoi(&line[index + 2]);
-						for (index = index + 2; line[index] && line[index] != ','; index++);
-						index += 3;
-						std::string str;
-						for (int strIndex = 0; strIndex < pageSize; ++strIndex, ++index) {
-							if (line[index] == '\\' && line[index + 1] == '\"') {
-								str += '\"';
-								++pageSize; ++strIndex; ++index;
-							} else if (line[index] == '\\' && line[index + 1] == 'n') {
-								str += '\n';
-								++pageSize; ++strIndex; ++index;
-							} else {
-								str += line[index];
-							}
-						}
-						static_cast<BookTag*>(item.tag.get())->pushPage(str);
-						for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
-					}
-				} else if (!line.compare(index + 4, 14, "writtenBookTag")) {
-					index += 20;
-					item.tag = std::make_shared<WrittenBookTag>();
-					bool first = true;
-					while (line[index] && line[index] != ']') {
-						int pageSize = std::atoi(&line[index + 2]);
+						pageSize = std::atoi(&line[index + 2]);
 						for (index = index + 2; line[index] && line[index] != ','; index++);
 						index += 3;
 						std::string str;
@@ -516,10 +496,85 @@ static void convertTag( std::string line, int& index, t_item& item, char sep )
 							}
 						}
 						if (first) {
-							static_cast<WrittenBookTag*>(item.tag.get())->setTitle(str);
+							item.tag->setName(str);
 							first = false;
 						} else {
-							static_cast<WrittenBookTag*>(item.tag.get())->pushPage(str);
+							static_cast<BookTag*>(item.tag.get())->pushPage(str);
+						}
+						for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
+					}
+				}
+			}
+			for (index = index + 2; line[index] && line[index] != sep; index++);
+			return ;
+		case 6:
+			for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
+			if (line[index] == ',') {
+				if (!line.compare(index + 4, 7, "nameTag")) {
+					index += 13;
+					pageSize = std::atoi(&line[index + 2]);
+					for (index = index + 2; line[index] && line[index] != ','; index++);
+					index += 3;
+					std::string str;
+					for (int strIndex = 0; strIndex < pageSize; ++strIndex, ++index) {
+						if (line[index] == '\\' && line[index + 1] == '\"') {
+							str += '\"';
+							++pageSize; ++strIndex; ++index;
+						} else if (line[index] == '\\' && line[index + 1] == 'n') {
+							str += '\n';
+							++pageSize; ++strIndex; ++index;
+						} else {
+							str += line[index];
+						}
+					}
+					item.tag = std::make_shared<NameTag>();
+					item.tag->setName(str);
+				} else if (!line.compare(index + 4, 7, "toolTag")) {
+					index += 13;
+					pageSize = std::atoi(&line[index + 2]);
+					for (index = index + 2; line[index] && line[index] != ','; index++);
+					index += 3;
+					std::string str;
+					for (int strIndex = 0; strIndex < pageSize; ++strIndex, ++index) {
+						if (line[index] == '\\' && line[index + 1] == '\"') {
+							str += '\"';
+							++pageSize; ++strIndex; ++index;
+						} else if (line[index] == '\\' && line[index + 1] == 'n') {
+							str += '\n';
+							++pageSize; ++strIndex; ++index;
+						} else {
+							str += line[index];
+						}
+					}
+					for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
+					dura = std::atoi(&line[index + 2]);
+					item.tag = std::make_shared<ToolTag>(dura, s_blocks[TYPE(item.type)]->durability);
+					item.tag->setName(str);
+				} else if (!line.compare(index + 4, 7, "bookTag")) {
+					index += 13;
+					item.tag = std::make_shared<BookTag>();
+					first = true;
+					while (line[index] && line[index] != ']') {
+						pageSize = std::atoi(&line[index + 2]);
+						for (index = index + 2; line[index] && line[index] != ','; index++);
+						index += 3;
+						std::string str;
+						for (int strIndex = 0; strIndex < pageSize; ++strIndex, ++index) {
+							if (line[index] == '\\' && line[index + 1] == '\"') {
+								str += '\"';
+								++pageSize; ++strIndex; ++index;
+							} else if (line[index] == '\\' && line[index + 1] == 'n') {
+								str += '\n';
+								++pageSize; ++strIndex; ++index;
+							} else {
+								str += line[index];
+							}
+						}
+						if (first) {
+							item.tag->setName(str);
+							first = false;
+						} else {
+							static_cast<BookTag*>(item.tag.get())->pushPage(str);
 						}
 						for (; line[index] && line[index] != ',' && line[index] != ']'; index++);
 					}
@@ -570,7 +625,8 @@ static int convert( int value ) // used when I change s_blocks big time
 					break ;
 			}
 		case 4: // v1.3
-		case 5: // v1.4 // no change from 1.3 to 1.4 on values // current version
+		case 5: // v1.4 // no change from 1.3 to 1.4 on values
+		case 6: // v1.4 // no change from 1.4 to 1.5 on values // current version
 			return (value);
 	}
 	LOGERROR("json version is " << Settings::Get()->getInt(settings::ints::json_version));

@@ -119,6 +119,18 @@ int utils::text::textWidth( int font_size, std::string str, int limit )
 	return ((res > maxWidth) ? res : maxWidth);
 }
 
+int utils::text::textHeight( int font_size, std::string str, int limit )
+{
+	int cnt = 0;
+	for (auto c : str) {
+		if (c == '\n') {
+			++cnt;
+		}
+	}
+	int res = font_size + cnt * 1.2f * font_size;
+	return ((limit == -1) ? res : glm::min(limit, res));
+}
+
 void Text::addText( int posX, int posY, int font_size, unsigned color, int depth, std::string str )
 {
 	int startX = posX;

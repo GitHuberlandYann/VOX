@@ -182,6 +182,7 @@ class Menu
 		void add_crafted_value( void );
 		void add_chest_value( int index );
 		void add_furnace_value( void );
+		void add_anvil_value( void );
 
         void setup_array_buffer_inventory( void );
         void setup_array_buffer_crafting( void );

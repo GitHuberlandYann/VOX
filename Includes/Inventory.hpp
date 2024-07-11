@@ -135,6 +135,8 @@ namespace CELLS {
 	const int furnace_fuel = 51;
 	const int chest_first = 52;
 	const int chest_last = 78;
+	const int anvil_first = 79;
+	const int anvil_second = 80;
 };
 
 typedef struct s_item {
@@ -156,18 +158,20 @@ class Inventory
 		t_item getiCraftBlock( int slot );
 		t_item getCraftBlock( int slot );
 		t_item getCrafted( void );
+		t_item getAnvilblock( int slot );
 		int getSlotNum( void );
         void setSlot( int value );
-		void shiftBlockAt( std::vector<t_item>& drops, int craft, int value, FurnaceInstance* furnace, ChestInstance* chest );
+		void shiftBlockAt( std::vector<t_item>& drops, int state, int value, FurnaceInstance* furnace, ChestInstance* chest );
 		t_item getHoveredAt( int state, int value, FurnaceInstance* furnace, ChestInstance* chest );
-		t_item pickBlockAt( int craft, int value, FurnaceInstance* furnace, ChestInstance* chest );
-		t_item pickHalfBlockAt( int craft, int value, FurnaceInstance* furnace, ChestInstance* chest );
-		t_item putBlockAt( int craft, int value, t_item block, FurnaceInstance* furnace, ChestInstance* chest, bool swap = true );
-		t_item putOneBlockAt( int craft, int value, t_item block, FurnaceInstance* furnace, ChestInstance* chest );
+		t_item pickBlockAt( int state, int value, FurnaceInstance* furnace, ChestInstance* chest );
+		t_item pickHalfBlockAt( int state, int value, FurnaceInstance* furnace, ChestInstance* chest );
+		t_item putBlockAt( int state, int value, t_item block, FurnaceInstance* furnace, ChestInstance* chest, bool swap = true );
+		t_item putOneBlockAt( int state, int value, t_item block, FurnaceInstance* furnace, ChestInstance* chest );
 		bool restoreBlock( t_item block, bool hotbar_first = false );
 		bool absorbItem( t_item block );
 		void restoreiCraft( std::vector<t_item>& drops );
 		void restoreCraft( std::vector<t_item>& drops );
+		void restoreAnvil( std::vector<t_item>& drops );
 		bool getModif( void );
 		void setModif( bool value );
 		t_item transformItem( int type );
@@ -176,6 +180,8 @@ class Inventory
 		void replaceSlot( int type, bool creative );
 		void swapCells( int slot, int location );
 		void decrementDurabitilty( void );
+		std::string getAnvilTag( void );
+		void updateAnvilTag( void );
 
 		void spillInventory( Chunk* chunk );
 		void signBook( std::string title );
@@ -190,19 +196,22 @@ class Inventory
 		std::array<t_item, 27> _backpack;
 		std::array<t_item, 4> _icraft;
 		std::array<t_item, 9> _craft;
+		std::array<t_item, 2> _anvil;
 		t_item _crafted;
         int _slot;
 		bool _modif;
 		UI* _ui;
 
 		t_item* getBlockPtr( int value, int& craft_place, FurnaceInstance* furnace, ChestInstance* chest );
-		void changeCrafted( int craft );
-		void produceCraft( int craft );
-		t_item pickCrafted( int craft, t_item block );
+		void changeCraftedAnvil( void );
+		void changeCrafted( int state );
+		void produceCraft( int state );
+		t_item pickCrafted( int state, t_item block );
+		bool sameItem( t_item a, t_item b );
 		bool canStack( t_item a, t_item b, bool emptyAllowed );
 		int findEmptyCell( t_item block, bool hotbar_first = false );
 		int findBlockCell( int type );
-		void pickAllCrafted( int craft );
+		void pickAllCrafted( int state );
 };
 
 #endif
