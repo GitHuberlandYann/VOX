@@ -84,6 +84,7 @@ const std::map<int, std::vector<int>> recipes = {
 		blocks::oak_planks, blocks::stick, blocks::oak_planks, blocks::oak_planks, blocks::stick, blocks::oak_planks, blocks::oak_fence, 3,
 		blocks::glass, blocks::glass, blocks::glass, blocks::glass, blocks::glass, blocks::glass, blocks::glass_pane, 16,
 		blocks::iron_ingot, blocks::air, blocks::iron_ingot, blocks::air, blocks::iron_ingot, blocks::air, blocks::bucket, 1,
+		blocks::redstone_torch, blocks::redstone_dust, blocks::redstone_torch, blocks::stone, blocks::stone, blocks::stone, blocks::repeater, 1,
 
 		blocks::leather, blocks::air, blocks::air, blocks::paper, blocks::paper, blocks::paper, blocks::book, 1, // TODO implement shapeless recipe
 	}},

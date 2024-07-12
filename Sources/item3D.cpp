@@ -291,10 +291,10 @@ void Anvil::addMeshItem( std::vector<t_shaderInput>& arr, int light, glm::vec3 p
 	pos += (-front * 3.f - right * 4.f + up * 5.f) * one16th * size;
 	front *= 10.f * one16th;
 	up *= 6.f * one16th;
-	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec, light + (3 << 8), 16, 6);
-	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec, light + (4 << 8), 16, 6);
-	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec + (3 << 12), light + (2 << 8), 10, 6);
-	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec + (3 << 12), light + (2 << 8), 10, 6);
+	utils::shader::addQuads(arr, {pos + up * size, pos + (right + up) * size, pos, pos + right * size}, spec + (10 << 16), light + (3 << 8), 16, 6);
+	utils::shader::addQuads(arr, {pos + (front + right + up) * size, pos + (front + up) * size, pos + (front + right) * size, pos + front * size}, spec + (10 << 16), light + (4 << 8), 16, 6);
+	utils::shader::addQuads(arr, {pos + (front + up) * size, pos + up * size, pos + front * size, pos}, spec + (3 << 12) + (10 << 16), light + (2 << 8), 10, 6);
+	utils::shader::addQuads(arr, {pos + (right + up) * size, pos + (front + right + up) * size, pos + right * size, pos + (front + right) * size}, spec + (3 << 12) + (10 << 16), light + (2 << 8), 10, 6);
 	utils::shader::addQuads(arr, {pos, pos + right * size, pos + front * size, pos + (front + right) * size}, spec + (3 << 16), light + (5 << 8), 16, 10);
 	spec = settings::consts::shader::block::anvil_top;
 	utils::shader::addQuads(arr, {pos + up * size, pos + (front + up) * size, pos + (right + up) * size, pos + (front + right + up) * size}, spec + (3 << 12), light + (0 << 8), 10, 16);
