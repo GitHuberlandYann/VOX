@@ -124,7 +124,7 @@ class LecternEntity : public Entity
 
 	private:
 		int _page;
-		glm::vec3 _front, _right;
+		glm::vec3 _front, _right, _up;
 };
 
 #endif

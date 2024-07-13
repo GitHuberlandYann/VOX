@@ -145,6 +145,7 @@ namespace settings {
 					dirt_path_top,
 					dust_dot,
 					dust_line,
+					enchanted_book,
 					farmland,
 					farmland_moist,
 					furnace_front,

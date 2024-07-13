@@ -126,6 +126,7 @@ void OpenGL_Manager::loadTextures( void )
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::dirt_path_top, root + "dirt_path_top.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::dust_dot, root + "dust_dot.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::dust_line, root + "dust_line.png");
+	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::enchanted_book, root + "enchanted_book.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::farmland, root + "farmland.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::farmland_moist, root + "farmland_moist.png");
 	utils::shader::loadSubTextureArray(16, 16, settings::consts::shader::block::furnace_front, root + "furnace_front.png");

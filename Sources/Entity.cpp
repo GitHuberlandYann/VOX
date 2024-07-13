@@ -62,27 +62,24 @@ ItemFrameEntity::ItemFrameEntity( Chunk* chunk, glm::ivec3 position, int value )
 			_up    = { .0f,-1.f, .0f};
 			break ;
 		case placement::wall:
+			_up    = { .0f, .0f, 1.f};
 			int orientation = (value >> offset::blocks::orientation) & 0x7;
 			switch (orientation) {
 				case face_dir::minus_x:
 					_front = { 1.f, .0f, .0f};
 					_right = { .0f,-1.f, .0f};
-					_up    = { .0f, .0f, 1.f};
 					break ;
 				case face_dir::plus_x:
 					_front = {-1.f, .0f, .0f};
 					_right = { .0f, 1.f, .0f};
-					_up    = { .0f, .0f, 1.f};
 					break ;
 				case face_dir::minus_y:
 					_front = { 0.f, 1.f, .0f};
 					_right = { 1.f, .0f, .0f};
-					_up    = { .0f, .0f, 1.f};
 					break ;
 				case face_dir::plus_y:
 					_front = { .0f, -1.f, .0f};
 					_right = { -1.f, .0f, .0f};
-					_up    = { .0f, .0f, 1.f};
 					break ;
 			}
 			break ;
@@ -115,7 +112,10 @@ LecternEntity::LecternEntity( Chunk* chunk, glm::ivec3 position, int value )
 			_right = { -1.f, .0f, .0f};
 			break ;
 	}
-	_pos -= (_front * .5f + _right) * .25f;
+	_pos -= (_front * .4f + _right * one16th);
+	_front = glm::normalize(_front + .5f * settings::consts::math::world_up);
+	_right = glm::normalize(glm::cross(_front, settings::consts::math::world_up));
+	_up = glm::normalize(glm::cross(_right, _front));
 }
 
 // ************************************************************************** //
@@ -649,6 +649,58 @@ int LecternEntity::getSignal( void )
 	return glm::floor(1.f + 14.f * _page / (pages - 1));
 }
 
+static void addMeshEnchantedBook( std::vector<t_shaderInput>& arr, int light, glm::vec3 pos, glm::vec3 front, glm::vec3 right, glm::vec3 up, float size, float angle )
+{
+	const float cosa = glm::cos(glm::radians(angle));
+	const float sina = glm::sin(glm::radians(angle));
+	int spec = settings::consts::shader::block::enchanted_book;
+	// cover
+	// tranch
+	utils::shader::addQuads(arr, {pos + front * 10.f * one16th * size, pos + (right * 2.f + front * 10.f) * one16th * size, pos, pos + right * 2.f * one16th * size}, spec + (14 << 12), light, 2, 10); //inside
+	utils::shader::addQuads(arr, {pos + (right * 2.f + front * 10.f) * one16th * size, pos + front * 10.f * one16th * size, pos + right * 2.f * one16th * size, pos}, spec + (12 << 12), light, 2, 10); //outside
+	// left cover
+	glm::vec3 tilt = glm::normalize(-cosa * right + sina * up);
+	utils::shader::addQuads(arr, {pos + (front * 10.f + tilt * 6.f) * one16th * size, pos + front * 10.f * one16th * size, pos + tilt * 6.f * one16th, pos}, spec, light, 6, 10); //inside
+	utils::shader::addQuads(arr, {pos + front * 10.f * one16th * size, pos + (front * 10.f + tilt * 6.f) * one16th * size, pos, pos + tilt * 6.f * one16th * size}, spec + (6 << 12), light, 6, 10); //outside
+	// right cover
+	tilt = glm::normalize(cosa * right + sina * up);
+	pos += right * 2.f * one16th * size;
+	utils::shader::addQuads(arr, {pos + front * 10.f * one16th * size, pos + (front * 10.f + tilt * 6.f) * one16th * size, pos, pos + tilt * 6.f * one16th * size}, spec, light, 6, 10, true); //inside
+	utils::shader::addQuads(arr, {pos + (front * 10.f + tilt * 6.f) * one16th * size, pos + front * 10.f * one16th * size, pos + tilt * 6.f * one16th, pos}, spec + (6 << 12), light, 6, 10, true); //outside
+
+	// thick pages
+	pos += front * one16th * size;
+	pos -= right * one16th * size;
+	// right page
+	pos += right * sina * one16th * size;
+	glm::vec3 upp = glm::normalize(glm::cross(tilt, front));
+	
+	utils::shader::addQuads(arr, {pos + front * 8.f * one16th * size, pos + (front * 8.f + upp) * one16th * size, pos, pos + upp * one16th * size}, spec + (1 << 12) + (10 << 16), light, 1, 1); //page inter tranch
+	utils::shader::addQuads(arr, {pos + upp * one16th * size, pos + (tilt * 5.f + upp) * one16th * size, pos, pos + tilt * 5.f * one16th * size}, spec + (1 << 12) + (10 << 16), light, 1, 1); //page front tranch
+	utils::shader::addQuads(arr, {pos + (front * 8.f + tilt * 5.f + upp) * one16th * size, pos + (front * 8.f + tilt * 5.f) * one16th * size, pos + (tilt * 5.f + upp) * one16th * size, pos + tilt * 5.f * one16th * size}, spec + (10 << 16), light, 1, 1); //page exter tranch
+	utils::shader::addQuads(arr, {pos + (front * 8.f + tilt * 5.f + upp) * one16th * size, pos + (front * 8.f + upp) * one16th * size, pos + (front * 8.f + tilt * 5.f) * one16th * size, pos + front * 8.f * one16th * size}, spec + (10 << 16), light, 1, 1); //page up tranch
+	utils::shader::addQuads(arr, {pos + (front * 8.f + tilt * 5.f + upp) * one16th * size, pos + (tilt * 5.f + upp) * one16th * size, pos + (front * 8.f + upp) * one16th * size, pos + upp * one16th * size}, spec + (8 << 12) + (10 << 16), light + (1 << 8), 8, 5); //page face
+	if (angle < 45.f) {
+		tilt = glm::normalize(tilt + 0.3f * up);
+		utils::shader::addQuads(arr, {pos + (front * 8.f + tilt * 5.f + upp) * one16th * size, pos + (tilt * 5.f + upp) * one16th * size, pos + (front * 8.f + upp) * one16th * size, pos + upp * one16th * size}, spec + (8 << 12) + (10 << 16), light, 8, 5); //open page face
+		utils::shader::addQuads(arr, {pos + (tilt * 5.f + upp) * one16th * size,pos + (front * 8.f + tilt * 5.f + upp) * one16th * size, pos + upp * one16th * size,  pos + (front * 8.f + upp) * one16th * size}, spec + (8 << 12) + (10 << 16), light, 8, 5, true); //verso
+	}
+	// left page
+	pos -= right * sina * 2.f * one16th * size;
+	tilt = glm::normalize(-cosa * right + sina * up);
+	upp = glm::normalize(glm::cross(front, tilt));
+	utils::shader::addQuads(arr, {pos + (front * 8.f + upp) * one16th * size, pos + front * 8.f * one16th * size, pos + upp * one16th * size, pos}, spec + (1 << 12) + (10 << 16), light, 1, 1); //page inter tranch
+	utils::shader::addQuads(arr, {pos + (tilt * 5.f + upp) * one16th * size, pos + upp * one16th * size, pos + tilt * 5.f * one16th * size, pos}, spec + (1 << 12) + (10 << 16), light, 1, 1); //page front tranch
+	utils::shader::addQuads(arr, {pos + (front * 8.f + tilt * 5.f) * one16th * size, pos + (front * 8.f + tilt * 5.f + upp) * one16th * size, pos + tilt * 5.f * one16th * size, pos + (tilt * 5.f + upp) * one16th * size}, spec + (10 << 16), light, 1, 1); //page exter tranch
+	utils::shader::addQuads(arr, {pos + (front * 8.f + upp) * one16th * size, pos + (front * 8.f + tilt * 5.f + upp) * one16th * size, pos + front * 8.f * one16th * size, pos + (front * 8.f + tilt * 5.f) * one16th * size}, spec + (10 << 16), light, 1, 1); //page up tranch
+	utils::shader::addQuads(arr, {pos + (front * 8.f + upp) * one16th * size, pos + upp * one16th * size, pos + (front * 8.f + tilt * 5.f + upp) * one16th * size, pos + (tilt * 5.f + upp) * one16th * size}, spec + (8 << 12) + (10 << 16), light, 8, 5); //page face
+	if (angle < 45.f) {
+		tilt = glm::normalize(tilt + 0.3f * up);
+		utils::shader::addQuads(arr, {pos + (front * 8.f + upp) * one16th * size, pos + upp * one16th * size, pos + (front * 8.f + tilt * 5.f + upp) * one16th * size, pos + (tilt * 5.f + upp) * one16th * size}, spec + (8 << 12) + (10 << 16), light + (3 << 8), 8, 5); //open page face
+		utils::shader::addQuads(arr, {pos + upp * one16th * size, pos + (front * 8.f + upp) * one16th * size, pos + (tilt * 5.f + upp) * one16th * size, pos + (front * 8.f + tilt * 5.f + upp) * one16th * size}, spec + (8 << 12) + (10 << 16), light + (3 << 8), 8, 5, true); //verso
+	}
+}
+
 bool LecternEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, double deltaTime )
 {
 	(void)deltaTime;
@@ -665,12 +717,11 @@ bool LecternEntity::update( std::vector<t_shaderInput>& arr, glm::vec3 camPos, d
 
 	int itemLight = _chunk->computePosLight(_pos);
 
-	// if (s_blocks[_item.type]->item3D) {
-	// 	glm::vec3 pos = _pos - (_right + _up) * .125f;
-	// 	s_blocks[_item.type]->addMeshItem(arr, itemLight, pos, _front, _right, _up, 0.25f);
-	// } else {
-		glm::vec3 pos = _pos + settings::consts::math::world_up * 1.5f;
-		utils::extrusion::drawItem3D(arr, _item.type, itemLight, pos, _front, _right, settings::consts::math::world_up, 0.5f);
+	glm::vec3 pos = _pos + settings::consts::math::world_up * 14.375f * one16th;
+	// _lifeTime += deltaTime * 10.;
+	// if (_lifeTime > 90.) {
+	// 	_lifeTime = 0.;
 	// }
+	addMeshEnchantedBook(arr, itemLight, pos, _front, _right, _up, 1.f, 5.f);
     return (false);
 }

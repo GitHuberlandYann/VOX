@@ -995,7 +995,7 @@ void Chunk::extendPiston( glm::ivec3 pos, int value, int count )
 		int adj = getBlockAt(pos + front * (i + 1));
 		// creates moving entity for the blocks being pushed
 		PISTONLOG(LOG(s_blocks[TYPE(adj)]->name << " turned into entity at " << POS2(pos, front * (i + 1))));
-		_entities.push_back(std::make_shared<MovingPistonEntity>(this, pos, pos + front * (i + 1), front, false, false, adj));
+		_entities.push_back(std::make_shared<MovingPistonEntity>(this, pos, pos + front * (i + 1), front, false, false, adj & (mask::all_bits - mask::blocks::notVisible)));
 		setBlockAt(blocks::moving_piston, pos + front * (i + 2), true);
 	}
 	// this one is for the piston head
