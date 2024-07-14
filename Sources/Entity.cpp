@@ -560,6 +560,7 @@ bool ItemFrameEntity::rotate( t_item item )
 {
 	if (_item.type == blocks::air) {
 		_item = item;
+		_item.amount = !!_item.amount;
 		return (item.type != blocks::air);
 	}
 
