@@ -19,6 +19,7 @@ class Menu;
 # include "Zombie.hpp"
 # include "Skeleton.hpp"
 # include "Buffer.hpp"
+# include "redstoneSchedule.hpp"
 
 enum cont {
 	CONT_MUSHROOM_FIELDS,
@@ -96,13 +97,6 @@ typedef struct s_shaderInputPart {
 	glm::vec3 pos;
 }				t_shaderInputPart;
 
-typedef struct s_redstone {
-	glm::ivec3 pos = {0, 0, 0}; // offset of block inside chunk
-	int ticks = 0;              // size of delay
-	int state = redstone::off;
-	// what happens if schedule redstone tick, then piston moves block, and now the thing being ticked is not what was expected?
-}				t_redstoneTick;
-
 typedef struct s_pathfinding_node {
 	s_pathfinding_node( int dist, glm::ivec3 position )
 		: f_dist(dist), pos(position), parent(NULL) {}
@@ -110,15 +104,6 @@ typedef struct s_pathfinding_node {
 	glm::ivec3 pos = {0, 0, 0};
 	std::shared_ptr<s_pathfinding_node> parent = NULL;
 }				t_pathfinding_node;
-
-namespace SCHEDULE {
-	const int REPEAT_DIODE = 0; // priority == -3 if repeater outputs in back or side of other diode
-	const int REPEAT_OFF = 1; // priority == -2 if repeater turns off
-	const int REPEAT_ON = 2; // priority == -1 if repeater turns on
-	const int COMPARATOR = 3; // priority == -0.5 for comparator update
-	const int OTHER = 4; // priority == 0 for rest of redstone schedule
-	const int SIZE = 5;
-};
 
 struct s_backup { // TODO add fluids and entities and mobs to backups
 	std::map<int, int> added;
@@ -208,9 +193,9 @@ class Chunk
 		void drawSky( GLint& counter, GLint& face_counter );
 		void drawWater( GLint& counter, GLint& face_counter );
 
-		void updateRedstone( void );
+		void updateRedstone( int priority, schedule::t_redstoneTick red );
 		void updatePiston( glm::ivec3 pos, int value );
-		void scheduleRedstoneTick( t_redstoneTick red );
+		void scheduleRedstoneTick( schedule::t_redstoneTick red );
 		void abortComparatorScheduleTick( glm::ivec3 pos );
 		void updateFurnaces( double currentTime );
 		void updateFluids( void );
@@ -245,7 +230,6 @@ class Chunk
 		std::map<int,int> _added;
 		std::set<int> _removed, _fluids;
 		std::vector<int> _scheduled_to_fall;
-		std::array<std::vector<t_redstoneTick>, SCHEDULE::SIZE> _redstone_schedule;
 		std::map<int, std::shared_ptr<ChestInstance>> _chests;
 		std::map<int, std::shared_ptr<FurnaceInstance>> _furnaces;
 		std::map<int, std::shared_ptr<SignInstance>> _signs;

@@ -42,7 +42,7 @@ TODOS:
 	- fix fallingBlockEntity falling on torch
 	- enchanting table
 	- stars at night
-	- save entities, redstone_schedule
+	- save entities, redstone_schedule, .. to json
 	- entity shadow
 	- rework clouds
 	- commands /say /me /save /setblock /kill
@@ -110,6 +110,7 @@ TODOS:
 	- redstone dust
 	- repeater
 	- comparator
+	- centralized redstone schedule to get rid of chunk order
 	- item frame
 	- book, book_and_quill, written_book
 	- lectern

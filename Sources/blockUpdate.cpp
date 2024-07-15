@@ -135,7 +135,9 @@ void Chunk::remove_block( bool useInventory, glm::ivec3 pos )
 		_added.erase(offset + (((value >> offset::blocks::bitfield) & door::upper_half) ? -1 : 1));
 		_removed.insert(offset + (((value >> offset::blocks::bitfield) & door::upper_half) ? -1 : 1));
 	} else if (type == blocks::lever && (value & mask::redstone::powered)) {
+		_blocks[offset] = blocks::air; // TODO find out why I need to do this
 		flickLever(pos, value & (mask::all_bits - mask::redstone::powered), redstone::off);
+		_blocks[offset] = value;
 	}
 	if (useInventory && type == blocks::water) {
 		dropEntity(_player->getDir(), _inventory->transformItem(type)); // bucket -> water bucket

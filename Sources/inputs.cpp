@@ -184,7 +184,10 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 		_chunk_hit->handleHit(collect, type, _block_hit.prev_pos, Modif::use);
 		return ;
 	}
-	if (_game_mode == settings::consts::gamemode::adventure && type != blocks::air) {
+	if (_game_mode == settings::consts::gamemode::adventure) {
+		if (type == blocks::air) {
+			return ;
+		}
 		int dist = glm::abs(_block_hit.pos.x - _block_hit.prev_pos.x) + glm::abs(_block_hit.pos.y - _block_hit.prev_pos.y) + glm::abs(_block_hit.pos.z - _block_hit.prev_pos.z);
 		if (dist > 1) {
 			return ;
@@ -559,7 +562,7 @@ void OpenGL_Manager::userInputs( bool rayCast )
 					_player->updateExhaustion(settings::consts::exhaustion::breaking_block);
 					_inventory->decrementDurabitilty();
 				} else {
-					int break_frame = static_cast<int>(10 * _break_time / break_time) + 2;
+					int break_frame = (_break_time < .0f) ? 0 : static_cast<int>(10 * _break_time / break_time) + 2;
 					if (_break_frame != break_frame) {
 						if (_chunk_hit) {
 							_chunk_hit->updateBreak({_block_hit.pos, _block_hit.type});

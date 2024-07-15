@@ -2,6 +2,7 @@
 #include "callbacks.hpp"
 #include "Settings.hpp"
 #include "WorldEdit.hpp"
+#include "redstoneSchedule.hpp"
 #include "logs.hpp"
 BENCHLOG(#include "Benchmark.hpp")
 void thread_chunk_update( OpenGL_Manager *render );
@@ -75,6 +76,7 @@ void OpenGL_Manager::clearChunks( void )
 	_chunk_hit = NULL;
 	_player->setChunkPtr(NULL);
 	mtx_deleted_chunks.lock();
+	schedule::deleteChunkSchedule(_deleted_chunks);
 	_deleted_chunks.clear();
 	mtx_deleted_chunks.unlock();
 	_visible_chunks.clear();
@@ -508,14 +510,15 @@ void OpenGL_Manager::handleDraw( bool gamePaused )
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	if (_time.redTickUpdate) {
+		schedule::tickUpdate(); // scheduled redstone ticks
+	}
+	
 	_counter = t_counter();
 	for (auto& c: _visible_chunks) {
 		c->drawArray(_counter.newVaos, _counter.meshFaces);
 		if (!gamePaused) {
 			if (_time.tickUpdate) {
-				if (_time.redTickUpdate) {
-					c->updateRedstone(); // scheduled ticks
-				}
 				c->updateFurnaces(_time.currentTime);
 				if (_time.fluidUpdate) {
 					c->updateScheduledBlocks();
@@ -728,6 +731,7 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 void OpenGL_Manager::handleChunkDeletion( void )
 {
 	mtx_deleted_chunks.lock();
+	schedule::deleteChunkSchedule(_deleted_chunks);
 	_deleted_chunks.clear();
 	mtx_deleted_chunks.unlock();
 }

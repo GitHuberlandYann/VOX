@@ -2320,6 +2320,7 @@ void Menu::setState( int state )
 		case menu::sign:
 		case menu::book_and_quill:
 			glfwSetCharCallback(_window, inputs::character_callback);
+			inputs::resetMessage();
 			break ;
 		case menu::command:
 			_state = menu::chat;

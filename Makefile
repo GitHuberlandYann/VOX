@@ -2,7 +2,7 @@ NAME		= vox
 OBJS_DIR	= Objs
 SRCS_DIR	= Sources
 
-FILES		= main blockUpdate callbacks drawPlayer fluids hitbox inputs item2D item3D itemExtrusion light pathfinding physics random redstone screenshot textures threadChunkUpdate tickUpdate utils worldGeneration \
+FILES		= main blockUpdate callbacks drawPlayer fluids hitbox inputs item2D item3D itemExtrusion light pathfinding physics random redstone redstoneSchedule screenshot textures threadChunkUpdate tickUpdate utils worldGeneration \
 				AHostileMob AMob ATag Blocks Buffer Camera Chat ChestInstance Chunk DayCycle Entity FurnaceInstance Inventory JSON Menu OpenGL_Manager Particle Player Settings Shader SignInstance Skeleton Skybox Text Ui WorldEdit Zombie
 
 SRCS		= $(addprefix $(SRCS_DIR)/, $(addsuffix .cpp, $(FILES)))

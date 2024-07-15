@@ -171,7 +171,7 @@ void Chunk::applyGravity( AMob* mob )
 		float hitboxHeight = mob->getHitbox();
 		coll = collisionBox({pos.x, pos.y, pos.z + hitboxHeight}, 0.3f, -distZ, -distZ);
 		if (coll.type == COLLISION::TOTAL) {
-			mob->touchCeiling(glm::floor(pos.z) + 2.0f - hitboxHeight);
+			mob->touchCeiling(glm::floor(pos.z) + 1.9999f - hitboxHeight);
 			// std::cout << "hit roof, " << pos.z << " -> " << error->getPos().z << std::endl;
 			return ;
 		} else if (coll.type == COLLISION::PARTIAL) {
