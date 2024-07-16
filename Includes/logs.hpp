@@ -27,6 +27,8 @@
 # define TICKUPLOG(x)
 # define BENCHLOG(x)
 # define LOADINGLOG(x)  x
+# define PACKETLOG(x)
+# define PENDINGLOG(x)
 
 /**
  * macros used to facilitate coordinates output
