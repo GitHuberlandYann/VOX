@@ -53,13 +53,13 @@ TODOS:
 	- upon world generation, place player on ground by using continentalness
 	- water ligth level
     - lava + nether
-	- multiplayer ? Server-Client logic on singleplayer ?
 	- universal use of tps instead of deltatimes ?
 	- divide chunk in 16 subsections ?
 	
 	IN PROGRES:
 	- bow and arrow
 	- mobs
+	- multiplayer
 	
 	TODAY:
 	- check // TODO restore
@@ -393,6 +393,7 @@ Hierarchy:
 
  Class				First created by 	Owned by					Ref by										Allocation
 OpenGL_Manager		main.cpp			main.cpp					WorldEdit									stack allocated
+Server				OpenGL_Manager		main.cpp																unique_ptr
 Skybox				OpenGL_Manager		OpenGL_Manager															unique_ptr
 Menu				OpenGL_Manager		OpenGL_Manager															unique_ptr
 Inventory			OpenGL_Manager		OpenGL_Manager				Menu, UI, Chunk, Entity, WorldEdit			unique_ptr
@@ -400,6 +401,7 @@ UI					OpenGL_Manager		OpenGL_Manager				Menu, Inventory								unique_ptr
 Chat				UI					UI, Menu					WorldEdit									shared_ptr
 Text				UI					UI, Chat, Menu															shared_ptr
 Camera				OpenGL_Manager		OpenGL_Manager				Menu, UI									unique_ptr
+Socket				OpenGL_Manager		OpenGL_Manager, Server													shared_ptr
 
 DayCycle			no - Singleton
 WorldEdit			no - Singleton

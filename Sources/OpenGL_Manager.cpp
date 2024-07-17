@@ -3,6 +3,7 @@
 #include "Settings.hpp"
 #include "WorldEdit.hpp"
 #include "redstoneSchedule.hpp"
+#include <netdb.h> // gethostbyname
 #include "logs.hpp"
 BENCHLOG(#include "Benchmark.hpp")
 void thread_chunk_update( OpenGL_Manager *render );
@@ -13,7 +14,8 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_threadUpdate(false), _threadStop(false), _break_time(0), _eat_timer(0), _bow_timer(0),
 	_game_mode(settings::consts::gamemode::creative), _break_frame(0), _world_name("default.json"),
 	_block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0}), _camera(std::make_unique<Camera>()),
-	_ui(std::make_unique<UI>()), _menu(std::make_unique<Menu>()), _skybox(std::make_unique<Skybox>())
+	_ui(std::make_unique<UI>()), _menu(std::make_unique<Menu>()), _skybox(std::make_unique<Skybox>()),
+	_socket(nullptr)
 {
 	MAINLOG(LOG("Constructor of OpenGL_Manager called\n"));
 	_inventory->setUIPtr(_ui.get());
@@ -31,8 +33,8 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	size_t residentSize;
 	size_t virtualSize;
 	utils::memory::getMemoryUsage(residentSize, virtualSize);
-	LOG("Mem usage after " + std::to_string(static_cast<size_t>(_time.currentTime))
-		+ "s at exit: " + utils::string::toBytes(residentSize)));
+	MAINLOG(LOG("Mem usage after " + std::to_string(static_cast<size_t>(_time.currentTime))
+		+ "s at exit: " + utils::string::toBytes(residentSize))));
 
 	stopThread();
 
@@ -64,8 +66,10 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
 
-	DayCycle::Destroy();
-	Settings::Destroy();
+	if (!_socket || _socket->getType() == sockets::client) { // used by server
+		DayCycle::Destroy();
+		Settings::Destroy();
+	}
 	WorldEdit::Destroy();
 	utils::shader::check_glstate("openGL_Manager destructed", true);
 }
@@ -144,9 +148,8 @@ void OpenGL_Manager::drawEntities( void )
 {
 	size_t esize = _entities.size();
 
-	bool borders = false;
-	if (Settings::Get()->getBool(settings::bools::visible_chunk_border)) {
-		borders = true;
+	bool borders = Settings::Get()->getBool(settings::bools::visible_chunk_border);
+	if (borders) {
 		for (int i = 0; i < 13; i += 4) {
 			addLine(glm::vec3(_current_chunk.x + i,  _current_chunk.y,      0), glm::vec3(_current_chunk.x + i,  _current_chunk.y,      256));
 			addLine(glm::vec3(_current_chunk.x + 16, _current_chunk.y + i,  0), glm::vec3(_current_chunk.x + 16, _current_chunk.y + i,  256));
@@ -215,8 +218,41 @@ void OpenGL_Manager::drawModels( void )
 	_models.reserve(msize);
 }
 
+void OpenGL_Manager::initWorld( void )
+{
+	chunkUpdate();
+	setThreadUpdate(true);
+}
+
 // ************************************************************************** //
 //                                Public                                      //
+// ************************************************************************** //
+
+void OpenGL_Manager::getGamemode( void )
+{
+	_ui->chatMessage("Current gamemode is " + settings::consts::gamemode::str[_game_mode]);
+}
+
+size_t OpenGL_Manager::clearEntities( void )
+{
+	size_t res = 0;
+	for (auto c : _perimeter_chunks) {
+		res += c->clearEntities();
+	}
+	return (res);
+}
+
+size_t OpenGL_Manager::clearParticles( void )
+{
+	size_t res = 0;
+	for (auto c : _perimeter_chunks) {
+		res += c->clearParticles();
+	}
+	return (res);
+}
+
+// ************************************************************************** //
+//                                Setup                                       //
 // ************************************************************************** //
 
 void error_callback( int error, const char *msg ) {
@@ -281,12 +317,6 @@ void OpenGL_Manager::setupWindow( void )
 	Settings::Get()->loadResourcePacks();
 
 	utils::shader::check_glstate("Window successfully created", true);
-}
-
-void OpenGL_Manager::initWorld( void )
-{
-	chunkUpdate();
-	setThreadUpdate(true);
 }
 
 void OpenGL_Manager::createShaders( void )
@@ -402,29 +432,6 @@ void OpenGL_Manager::setGamemode( int gamemode )
 	Settings::Get()->setInt(settings::ints::game_mode, gamemode);
 	_player->resetFall();
 	_ui->chatMessage("Gamemode set to " + settings::consts::gamemode::str[gamemode]);
-}
-
-void OpenGL_Manager::getGamemode( void )
-{
-	_ui->chatMessage("Current gamemode is " + settings::consts::gamemode::str[_game_mode]);
-}
-
-size_t OpenGL_Manager::clearEntities( void )
-{
-	size_t res = 0;
-	for (auto c : _perimeter_chunks) {
-		res += c->clearEntities();
-	}
-	return (res);
-}
-
-size_t OpenGL_Manager::clearParticles( void )
-{
-	size_t res = 0;
-	for (auto c : _perimeter_chunks) {
-		res += c->clearParticles();
-	}
-	return (res);
 }
 
 // ************************************************************************** //
@@ -617,7 +624,7 @@ void OpenGL_Manager::handleUI( void )
 		} else {
 			str = "\n\n\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\nTPS: " + std::to_string(_time.nbTicksLastSecond);
 		}
-		// b.stamp("stringing");
+
 		_ui->drawUserInterface(str, _game_mode, _time.deltaTime);
 	}
 }
@@ -640,6 +647,70 @@ void OpenGL_Manager::handleBackToGame( void )
 	inputs::force_reset_key_update(GLFW_MOUSE_BUTTON_1);
 }
 
+void OpenGL_Manager::hostServer( void )
+{
+	if (_socket) {
+		_menu->setState(menu::error);
+		return (_menu->setErrorStr({"Failed to host server", "Socket already in use"}));
+	}
+
+	_socket = std::make_shared<Socket>(sockets::server);
+	if (!_socket->open()) {
+		_socket = nullptr;
+		_menu->setState(menu::error);
+		return (_menu->setErrorStr({"Failed to host server", "Failed to bind server"}));
+	}
+
+	glfwSetWindowShouldClose(_window, GL_TRUE);
+}
+
+void OpenGL_Manager::joinServer( void )
+{
+	{
+		if (_socket) {
+			_menu->setState(menu::error);
+			return (_menu->setErrorStr({"Failed to connect to the server", "Socket already in use"}));
+		}
+
+		std::string server_ip = _menu->getWorldFile();
+		MAINLOG(LOG("joinServer on ip " << server_ip));
+		struct hostent* server = gethostbyname(server_ip.c_str());
+		if (!server) {
+			_menu->setState(menu::error);
+			return (_menu->setErrorStr({"Failed to connect to the server", "Invalid server ip: " + server_ip}));
+		}
+
+		_socket = std::make_shared<Socket>(sockets::client);
+		if (!_socket->open()) {
+			_socket = nullptr;
+			_menu->setState(menu::error);
+			return (_menu->setErrorStr({"Failed to connect to the server", "Something went wrong when opening socket (check Logs/err.log for more info)"}));
+		}
+
+		Address &addr = _socket->getServerAddress();
+		addr = Address(ntohl(*static_cast<uint32_t*>(static_cast<void*>(server->h_addr))), settings::consts::network::default_port);
+	}
+
+	stopThread();
+	_inventory = nullptr;
+	_player = nullptr;
+	_camera->setTarget(nullptr);
+	_ui->setPtrs(this, nullptr, nullptr);
+	_menu->setPtrs(nullptr, _ui.get());
+	WorldEdit::Get()->setPtrs(this, nullptr, _ui->getChatPtr().get());
+
+	runClient();
+
+	_inventory = std::make_unique<Inventory>();
+	_inventory->setUIPtr(_ui.get());
+	_player = std::make_unique<Player>();
+	_camera->setTarget(_player.get());
+	_ui->setPtrs(this, _inventory.get(), _player.get());
+	_menu->setPtrs(_inventory.get(), _ui.get());
+	WorldEdit::Get()->setPtrs(this, _inventory.get(), _ui->getChatPtr().get());
+	startThread();
+}
+
 void OpenGL_Manager::handleMenu( bool animUpdate )
 {
 	if (_menu->getState() == menu::load) {
@@ -655,7 +726,7 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			break ;
 		case menu::ret::world_selected: // world selected, go into loading mode
 			_world_name = _menu->getWorldFile();
-			_shader.useProgram(); // used by dayCycle to modif internal light
+			_shader.useProgram(); // used by dayCycle to modif internal light - TODO check if really necessary
 			loadWorld("Worlds/" + _world_name);
 			initWorld();
 			break ;
@@ -666,6 +737,14 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			_game_mode = settings::consts::gamemode::survival;
 			DayCycle::Get()->setTicks(1000);
 			initWorld();
+			break ;
+		case menu::ret::host_server:
+			hostServer();
+			_world_name = _menu->getWorldFile();
+			loadWorld("Worlds/" + _world_name);
+			break ;
+		case menu::ret::join_server:
+			joinServer();
 			break ;
 		case menu::ret::respawn_player: // Respawn player, init world again
 			_player->respawn();
@@ -736,8 +815,18 @@ void OpenGL_Manager::handleChunkDeletion( void )
 	mtx_deleted_chunks.unlock();
 }
 
-void OpenGL_Manager::main_loop( void )
+/**
+ * @return true if player is hosting server
+ */
+bool OpenGL_Manager::run( void )
 {
+	setupWindow();
+	MAINLOG(LOG(""));
+	createShaders();
+	setupCommunicationShaders();
+	loadTextures();
+	MAINLOG(LOG(""));
+
 	handleEndSetup();
 
 	utils::shader::check_glstate("setup done, entering main loop\n", true);
@@ -785,4 +874,5 @@ void OpenGL_Manager::main_loop( void )
 	}
 
 	utils::shader::check_glstate("\nmain loop successfully exited", true);
+	return (_socket && _socket->getType() == sockets::server);
 }

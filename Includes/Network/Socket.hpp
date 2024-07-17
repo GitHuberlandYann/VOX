@@ -30,18 +30,29 @@ namespace settings {
 	};
 };
 
+namespace mask {
+	namespace network {
+		const short action_type = 0xFF;
+	};
+};
+
+typedef struct s_packet_data {
+	unsigned short action = 0;
+	char data[settings::consts::network::packet_size_limit] = {};
+}				t_packet_data;
+
 typedef struct s_packet {
 	unsigned int protocol_id = 0;
 	uint16_t sequence = 0;
 	uint16_t ack = 0; // acknoledge
 	unsigned int ack_bitfield = 0;
-	char data[settings::consts::network::packet_size_limit];
+	t_packet_data data;
 }				t_packet;
 
 namespace settings {
 	namespace consts {
 		namespace network {
-			const size_t packet_header_size = sizeof(t_packet) - packet_size_limit;
+			const size_t packet_header_size = sizeof(t_packet) - sizeof(t_packet_data);
 		};
 	};
 };
@@ -54,6 +65,24 @@ typedef struct s_client {
 	uint16_t ack = -1;
 	unsigned int bitfield = 0;
 }				t_client;
+
+namespace packet_id {
+	namespace client { // ids of packets sent by client
+		enum {
+			login,
+			ping,
+		};
+	};
+
+	namespace server { // ids of packets sent by server
+		enum {
+			login,
+			ping,
+			time,
+			player_info,
+		};
+	};
+};
 
 class Socket
 {

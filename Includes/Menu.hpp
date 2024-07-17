@@ -19,6 +19,8 @@ namespace menu
 		main_resource_packs,
 		world_select,
 		world_create,
+		multiplayer,
+		error,
 		load,
 
 		death,
@@ -49,6 +51,8 @@ namespace menu
 		back_to_game_after_drop,
 		world_selected,
 		world_created,
+		host_server,
+		join_server,
 		save_and_quit,
 		respawn_player,
 		respawn_save_quit,
@@ -94,6 +98,7 @@ class Menu
 		void setFurnaceInstance( FurnaceInstance* furnace );
 		void setSignPos( glm::ivec3 pos );
 		void setBookContent( std::vector<std::string>* content );
+		void setErrorStr( std::vector<std::string> content );
 		int getBookPage( void );
 		void setBookPage( int page );
 		std::vector<t_item> getDrops( void );
@@ -136,6 +141,8 @@ class Menu
 		menu::ret enter_world_select_menu( void );
 		menu::ret world_select_menu( void );
 		menu::ret world_create_menu( bool animUpdate );
+		menu::ret multiplayer_menu( void );
+		menu::ret error_menu( void );
 		menu::ret loading_screen_menu( void );
 		menu::ret death_menu( void );
 		menu::ret pause_menu( void );
@@ -157,6 +164,8 @@ class Menu
         void setup_array_buffer_main( void );
         void setup_array_buffer_select( void );
         void setup_array_buffer_create( void );
+        void setup_array_buffer_multiplayer( void );
+        void setup_array_buffer_error( void );
 		void setup_array_buffer_load( int completion );
 		void setup_array_buffer_death( void );
         void setup_array_buffer_pause( void );

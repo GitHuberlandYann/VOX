@@ -17,6 +17,7 @@ Socket::Socket( int type )
 
 Socket::~Socket( void )
 {
+	MAINLOG(LOG("Destructor of socket " << _server_ip << " of type " << ((_type == sockets::server) ? "server" : "client") << " called"));
 	close();
 }
 
@@ -131,7 +132,7 @@ bool Socket::send( const Address& destination, const void* data, size_t size )
 	}
 
 	t_packet packet = {settings::consts::network::protocol_id, dst->sequence, dst->ack, dst->bitfield, {}};
-	memmove(packet.data, data, size);
+	memmove(&packet.data, data, size);
 	size += settings::consts::network::packet_header_size;
 
 	PACKETLOG(LOG("sending packet " << packet.protocol_id << " - " << packet.sequence << " - " << packet.ack << " - " << packet.ack_bitfield << ": " << packet.data));
@@ -202,8 +203,9 @@ ssize_t Socket::receive( Address& sender, void* data, size_t size )
 	size_t bytes = recvfrom(_handle, static_cast<void*>(&packet), settings::consts::network::packet_header_size + size, 0, (sockaddr*)&from, &fromLength);
 
 	// discard wrong recv
-	if (bytes < settings::consts::network::packet_header_size)
+	if (bytes == std::string::npos || bytes < settings::consts::network::packet_header_size) {
 	    return (-1);
+	}
 	bytes -= settings::consts::network::packet_header_size;
 	if (bytes >= settings::consts::network::packet_size_limit) {
 		MAINLOG(LOGERROR("Socket::receive: packet discarded because too big ("
@@ -299,8 +301,8 @@ ssize_t Socket::receive( Address& sender, void* data, size_t size )
 	}
 
 	src->ack = packet.sequence;
-	packet.data[bytes] = '\0';
-	memmove(data, packet.data, bytes);
+	packet.data.data[bytes - sizeof(packet.data.action)] = '\0';
+	memmove(data, &packet.data, bytes);
 	PACKETLOG(LOG("received packet with header " << packet.protocol_id << " - " << packet.sequence << " - " << packet.ack << " - " << packet.ack_bitfield));
 	return (bytes);
 }

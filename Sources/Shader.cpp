@@ -88,7 +88,6 @@ void Shader::deleteProgram( void )
 {
     if (_program) {
         glDeleteProgram(_program);
-
         _program = 0;
     }
 }

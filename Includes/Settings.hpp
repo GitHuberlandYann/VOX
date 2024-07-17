@@ -11,7 +11,7 @@ extern int WIN_HEIGHT;
 
 namespace settings {
 	namespace consts {
-		const double tick          = 0.05f;
+		const double tick          = 0.05;
 
 		const int    sea_level     = 64;
 		const int    light_recurse = 32;

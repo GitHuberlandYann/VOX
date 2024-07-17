@@ -11,6 +11,7 @@
 # include "Skybox.hpp"
 # include "Shader.hpp"
 # include "Buffer.hpp"
+# include "Socket.hpp"
 
 extern std::mutex mtx;
 extern std::mutex mtx_perimeter;
@@ -53,6 +54,8 @@ typedef struct s_hit {
 	bool water_value;
 }				t_hit;
 
+class Server;
+
 class OpenGL_Manager
 {
 	public:
@@ -65,20 +68,17 @@ class OpenGL_Manager
 		OpenGL_Manager( void );
 		~OpenGL_Manager( void );
 
-		Chunk *getCurrentChunkPtr( void );
+		Chunk* getCurrentChunkPtr( void );
 
-		void setupWindow( void );
-		void initWorld( void );
-		void createShaders( void );
-		void setupCommunicationShaders( void );
-		void loadTextures( void );
 		void resetInputsPtrs( void );
 		void setGamemode( int gamemode );
 		void getGamemode( void );
 		void setItemFrame( bool visible, bool lock );
 		size_t clearEntities( void );
 		size_t clearParticles( void );
-		void main_loop( void );
+
+		void createServer( std::unique_ptr<Server>& server );
+		bool run( void );
 
 		glm::ivec2 getCurrentChunkPos( void );
 		void setThreadUpdate( bool state );
@@ -109,6 +109,7 @@ class OpenGL_Manager
 		std::unique_ptr<UI> _ui;
 		std::unique_ptr<Menu> _menu;
 		std::unique_ptr<Skybox> _skybox;
+		std::shared_ptr<Socket> _socket;
 
 
 		void updateVisibleChunks( void );
@@ -132,16 +133,32 @@ class OpenGL_Manager
 		void drawEntities( void );
 		void drawParticles( void );
 		void drawModels( void );
+		void initWorld( void );
 
+		void setupWindow( void );
+		void createShaders( void );
+		void setupCommunicationShaders( void );
+		void loadTextures( void );
+
+		// main loop
 		void handleEndSetup( void );
 		void handleTime( bool gamePaused );
 		void handleUserInputs( int& backFromMenu );
 		void handleDraw( bool gamePaused );
 		void handleUI( void );
 		void handleBackToGame( void );
+		void hostServer( void );
+		void joinServer( void );
 		void handleMenu( bool animUpdate );
 		void handleChunkDeletion( void );
 
+		// client loop
+		void sendPacket( t_packet_data data, size_t size );
+		void handlePackets( void );
+		void handleClientInputs( void );
+		void runClient( void );
+
+		// treading
 		void startThread( void );
 		void stopThread( void );
 };
