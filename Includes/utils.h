@@ -76,6 +76,9 @@ namespace utils {
 		void getMemoryUsage( size_t& residentSize, size_t& virtualSize );
 	};
 
+	namespace network {
+		std::string getEth0( void );
+	};
 };
 
 #endif

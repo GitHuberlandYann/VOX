@@ -698,6 +698,8 @@ void OpenGL_Manager::joinServer( void )
 	_ui->setPtrs(this, nullptr, nullptr);
 	_menu->setPtrs(nullptr, _ui.get());
 	WorldEdit::Get()->setPtrs(this, nullptr, _ui->getChatPtr().get());
+	_menu->setState(menu::wait);
+	_menu->setErrorStr({"Connecting to server."});
 
 	runClient();
 

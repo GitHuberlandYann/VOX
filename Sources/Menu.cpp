@@ -288,7 +288,7 @@ menu::ret Menu::multiplayer_menu( void )
 			reset_values();
 			return (main_menu());
 		} else if (_selection == 4) {
-			_world_file = "localhost";
+			_world_file = (_selected_world == 0) ? "pathfinder.json" : "localhost";
 			return ((_selected_world == 0) ? menu::ret::host_server : menu::ret::join_server);
 		}
 	}
@@ -327,6 +327,22 @@ menu::ret Menu::error_menu( void )
 	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2 - 25 * _gui_size, 0, 0, 7 * _gui_size, argb::gray, false, settings::consts::depth::menu::controls::str, _worlds[0]);
 	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2, 0, 0, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::controls::str, _worlds[1]);
 	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2 + 25 * _gui_size, 0, 0, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::controls::str, "Back to Main Menu");
+
+	setup_array_buffer_error();
+	blit_to_screen();
+	return (menu::ret::no_change);
+}
+
+menu::ret Menu::waiting_menu( bool animUpdate )
+{
+	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2 - 25 * _gui_size, 0, 0, 7 * _gui_size, argb::gray, false, settings::consts::depth::menu::controls::str, _worlds[0]);
+	if (animUpdate) {
+		_worlds[1] += '.';
+		if (_worlds[1].size() > 3) {
+			_worlds[1] = "";
+		}
+	}
+	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2, 0, 0, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::controls::str, _worlds[1]);
 
 	setup_array_buffer_error();
 	blit_to_screen();
@@ -1292,7 +1308,7 @@ void Menu::setup_array_buffer_multiplayer( void )
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20); // Host/Join button
 
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, 0, WIN_WIDTH, 40 * _gui_size, 1, 72, 1, 1); // occult top part
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, WIN_HEIGHT - 65 * _gui_size, WIN_WIDTH, 65 * _gui_size, 1, 72, 1, 1); // occult bottom part
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, WIN_HEIGHT - 60 * _gui_size, WIN_WIDTH, 60 * _gui_size, 1, 72, 1, 1); // occult bottom part
 
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT - 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 3) ? 111 : 91, 200, 20); // cancel
 
@@ -1304,9 +1320,11 @@ void Menu::setup_array_buffer_error( void )
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 40 * _gui_size, WIN_WIDTH, WIN_HEIGHT - 105 * _gui_size, 0, 91, 1, 1); // occult central part
 
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, 0, WIN_WIDTH, 40 * _gui_size, 1, 72, 1, 1); // occult top part
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, WIN_HEIGHT - 65 * _gui_size, WIN_WIDTH, 65 * _gui_size, 1, 72, 1, 1); // occult bottom part
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, WIN_HEIGHT - 40 * _gui_size, WIN_WIDTH, 40 * _gui_size, 1, 72, 1, 1); // occult bottom part
 
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // back to main menu
+	if (_state == menu::error) { // fun used by waiting_menu, which doesn't use this button
+		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 1) ? 111 : 91, 200, 20); // back to main menu
+	}
 
 	setup_shader();
 }
@@ -2032,6 +2050,8 @@ void Menu::processMouseMovement( float posX, float posY )
 			_selection = 0;
 		}
 		break ;
+	case menu::wait:
+		break ;
 	case menu::death:
 		if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 5 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 1;
@@ -2501,6 +2521,8 @@ menu::ret Menu::run( bool animUpdate )
 			return (multiplayer_menu());
 		case menu::error:
 			return (error_menu());
+		case menu::wait:
+			return (waiting_menu(animUpdate));
 		case menu::load:
 			return (loading_screen_menu());
 		case menu::death:

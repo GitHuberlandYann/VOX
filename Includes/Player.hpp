@@ -92,6 +92,10 @@ class Player : public AMob
 		glm::vec3 getLastTp( void );
 		void respawn( void );
 
+		int getId( void );
+		void setId( int id );
+		void setName( std::string name );
+
        	void applyGravity( void ) override;
         void applyGravityUnderwater( void );
 		void touchGround( float value ) override;
@@ -102,6 +106,7 @@ class Player : public AMob
         void inputUpdate( bool rayCast, int gameMode );
     
     private:
+		int _id; // multiplayer id
         int _flySpeed;
         int _foodLevel, _foodTickTimer;
         float _yaw, _pitch;
@@ -110,6 +115,7 @@ class Player : public AMob
         float _foodSaturationLevel, _foodExhaustionLevel;
         glm::vec3 _spawnpoint, _lastTp;
         glm::vec2 _front2, _right2;
+		std::string name;
         bool _smoothCam, _armAnimation, _fallImmunity;
         bool _sprinting, _sneaking;
         bool _waterHead, _waterFeet;

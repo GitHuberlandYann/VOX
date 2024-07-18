@@ -70,16 +70,18 @@ namespace packet_id {
 	namespace client { // ids of packets sent by client
 		enum {
 			login,
-			ping,
+			pong, // response to ping
+			leave,
 		};
 	};
 
 	namespace server { // ids of packets sent by server
 		enum {
 			login,
-			ping,
-			time,
+			ping, // sent once per second to keep connection going
+			kick,
 			player_info,
+			chat_msg,
 		};
 	};
 };

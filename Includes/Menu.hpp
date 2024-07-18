@@ -21,6 +21,7 @@ namespace menu
 		world_create,
 		multiplayer,
 		error,
+		wait,
 		load,
 
 		death,
@@ -143,6 +144,7 @@ class Menu
 		menu::ret world_create_menu( bool animUpdate );
 		menu::ret multiplayer_menu( void );
 		menu::ret error_menu( void );
+		menu::ret waiting_menu( bool animUpdate );
 		menu::ret loading_screen_menu( void );
 		menu::ret death_menu( void );
 		menu::ret pause_menu( void );

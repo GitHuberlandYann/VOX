@@ -20,9 +20,9 @@ extern std::mutex mtx_backup;
 
 typedef struct s_time {
 	s_time( void )
-		: deltaTime(0), currentTime(0), lastSecondRecorded(0), lastGameTick(0), previousFrame(0),
+		: deltaTime(0.), currentTime(0.), lastSecondRecorded(0.), lastGameTick(0.), previousFrame(0.),
 		nbFrames(0), nbFramesLastSecond(0), nbTicks(0), nbTicksLastSecond(0),
-		fluidUpdate(0), animUpdate(0), tickUpdate(0), redTickUpdate(0) {}
+		fluidUpdate(false), animUpdate(false), tickUpdate(false), redTickUpdate(false) {}
 	double deltaTime;
 	double currentTime;
 	double lastSecondRecorded;
@@ -152,10 +152,17 @@ class OpenGL_Manager
 		void handleMenu( bool animUpdate );
 		void handleChunkDeletion( void );
 
-		// client loop
+		// client packets
 		void sendPacket( t_packet_data data, size_t size );
+		void handlePacketLogin( void );
+		void handlePacketPing( char* data );
+		void handlePacketKick( std::string msg );
+		void handlePacketChatMsg( char* data );
+
+		// client loop
 		void handlePackets( void );
 		void handleClientInputs( void );
+		void handleClientDraw( void );
 		void runClient( void );
 
 		// treading

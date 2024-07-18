@@ -1,7 +1,10 @@
 #include "OpenGL_Manager.hpp"
 #include "Player.hpp"
 #include "Server.hpp"
+#include "utils.h"
 #include "logs.hpp"
+
+#include <unistd.h> // usleep
 
 Server::Server( t_time time, std::map<std::pair<int, int>, s_backup>& backups, std::shared_ptr<Socket> socket )
 	: _time(time), _backups(backups), _socket(socket)
@@ -24,6 +27,41 @@ void OpenGL_Manager::createServer( std::unique_ptr<Server>& server )
 }
 
 // ************************************************************************** //
+//                                Packets                                     //
+// ************************************************************************** //
+
+void Server::broadcastPlayersInfo( void )
+{
+	for (auto& player : _players) {
+		t_packet_data data = {packet_id::server::player_info};
+		std::string content = player->getString(false); // TODO custom function instead of this one
+		memmove(data.data, content.c_str(), content.size());
+		_socket->broadcast(&data, sizeof(data.action) + content.size());
+	}
+}
+
+void Server::sendPacket( Address& target, t_packet_data data, size_t size )
+{
+	_socket->send(target, &data, size);
+}
+
+void Server::handlePacketLogin( Address& sender, std::string name )
+{
+	sendPacket(sender, {packet_id::server::login}, 2);
+	int id = _socket->getId(sender);
+	auto search = std::find_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); });
+	if (search == _players.end()) {
+		_players.push_back(std::make_unique<Player>());
+		_players.back()->setId(id);
+		_players.back()->setName(name);
+		t_packet_data data = {packet_id::server::chat_msg};
+		name = name + " joined the game. [id" + std::to_string(id) + "]";
+		memmove(data.data, name.c_str(), name.size());
+		_socket->broadcast(&data, sizeof(data.action) + name.size());
+	}
+}
+
+// ************************************************************************** //
 //                                  Run                                       //
 // ************************************************************************** //
 
@@ -39,9 +77,11 @@ void Server::handleTime( void )
 		_time.nbTicksLastSecond = _time.nbTicks;
 		_time.nbTicks = 0;
 		_time.lastSecondRecorded += 1.0;
-		t_packet_data data = {packet_id::server::time};
+		t_packet_data data = {packet_id::server::ping};
 		memmove(data.data, &_time.currentTime, sizeof(double));
-		_socket->broadcast(&data, sizeof(data.action) + sizeof(double)); // send time every 20 game ticks (== every second) to players
+		memmove(&data.data[sizeof(double)], &_time.nbFramesLastSecond, sizeof(int));
+		memmove(&data.data[sizeof(double) + sizeof(int)], &_time.nbTicksLastSecond, sizeof(int));
+		_socket->broadcast(&data, sizeof(data.action) + sizeof(double) + sizeof(int) + sizeof(int)); // send time every 20 game ticks (== every second) to players
 	}
 	if (_time.currentTime - _time.lastGameTick >= settings::consts::tick) {
 		_time.tickUpdate = true;
@@ -72,24 +112,21 @@ void Server::handlePackets( void )
 			break;
 		}
 		PACKETLOG(LOG("received " << bytes_read << " bytes"));
+		LOG("Packet received with action: " << buffer.action);
 
 		// process packet
 		switch (buffer.action & mask::network::action_type) {
 			case packet_id::client::login:
+				handlePacketLogin(sender, buffer.data);
+				break ;
+			case packet_id::client::pong:
+				break ;
+			case packet_id::client::leave:
 				break ;
 			default:
-				MAINLOG(LOGERROR("Unrecognised packet action: " << buffer.action << ", sent with data: |" << buffer.data << "|"));
+				MAINLOG(LOGERROR("Server::handlePackets: Unrecognised packet action: " << buffer.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << buffer.data << "|"));
+				break ;
 		}
-	}
-}
-
-void Server::broadcastPlayersInfo( void )
-{
-	for (auto& player : _players) {
-		t_packet_data data = {packet_id::server::player_info};
-		std::string content = player->getString(false); // TODO custom function instead of this one
-		memmove(data.data, content.c_str(), content.size());
-		_socket->broadcast(&data, sizeof(data.action) + content.size());
 	}
 }
 
@@ -107,6 +144,7 @@ void Server::run( void )
 	glfwSetTime(_time.currentTime);
 
 	MAINLOG(LOG("\nServer::run with socket " << _socket->getServerAddress()));
+	MAINLOG(LOG("Server ip is " << utils::network::getEth0()));
 
 	while (true)
 	{
@@ -119,6 +157,8 @@ void Server::run( void )
 			handlePackets();
 			broadcastPlayersInfo();
 		}
+
+		usleep(50);
 	}
 }
 

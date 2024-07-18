@@ -15,9 +15,13 @@ class Server
 		std::shared_ptr<Socket> _socket;
 		std::vector<std::unique_ptr<Player>> _players;
 
+		void broadcastPlayersInfo( void );
+		void sendPacket( Address& target, t_packet_data data, size_t size );
+
+		void handlePacketLogin( Address& sender, std::string name );
+
 		void handleTime( void );
 		void handlePackets( void );
-		void broadcastPlayersInfo( void );
 };
 
 #endif

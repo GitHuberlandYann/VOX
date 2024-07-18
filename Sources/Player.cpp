@@ -3,7 +3,7 @@
 #include "logs.hpp"
 
 Player::Player( void )
-    : AMob({0.0f, 0.0f, 0.0f}), _flySpeed(settings::consts::speed::fly), _foodLevel(20), _foodTickTimer(0),
+    : AMob({0.0f, 0.0f, 0.0f}), _id(-1), _flySpeed(settings::consts::speed::fly), _foodLevel(20), _foodTickTimer(0),
     _yaw(settings::defaults::yaw), _pitch(settings::defaults::pitch),
     _smoothCamZ(0.0f), _fovOffset(0.0f), _armAnimTime(0.0f), _breathTime(0.0f), _foodSaturationLevel(20.0f), _foodExhaustionLevel(0.0f),
     _spawnpoint(0.0f, 0.0f, 0.0f), _lastTp(0.0f, 0.0f, 0.0f),
@@ -428,6 +428,20 @@ void Player::respawn( void )
 	updateVectors();
 }
 
+int Player::getId( void )
+{
+	return (_id);
+}
+
+void Player::setId( int id )
+{
+	_id = id;
+}
+
+void Player::setName( std::string name )
+{
+	_name = name;
+}
 
 // ************************************************************************** //
 //                                Private                                     //

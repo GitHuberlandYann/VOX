@@ -17,7 +17,7 @@ Socket::Socket( int type )
 
 Socket::~Socket( void )
 {
-	MAINLOG(LOG("Destructor of socket " << _server_ip << " of type " << ((_type == sockets::server) ? "server" : "client") << " called"));
+	MAINLOG(LOG("Destructor of " << ((_type == sockets::server) ? "Server" : "Client") << " socket " << _server_ip << " called"));
 	close();
 }
 
@@ -121,17 +121,23 @@ bool Socket::send( const Address& destination, const void* data, size_t size )
 		return (false);
 	}
 
+	t_packet packet = {settings::consts::network::protocol_id, dst->sequence, dst->ack, dst->bitfield, {}};
+
 	if (++dst->timeout > 5 * 20) { // timeout after 5 seconds, we send packets at a rate of 20/seconds
 		// disconnection
-		(_type == sockets::server)
-			? MAINLOG(LOG("disconnection from " << dst->ip << ", id is " << dst->id))
-			: MAINLOG(LOG("disconnected from server"));
+		if (_type == sockets::server) {
+			MAINLOG(LOG("disconnection from " << dst->ip << ", id is " << dst->id));
+			t_packet_data d = {packet_id::server::kick, "Timeout"};
+			memmove(&packet.data, &d.action, 2 + 7);
+			sendto(_handle, static_cast<const void*>(&packet.protocol_id), 9 + settings::consts::network::packet_header_size, 0, (sockaddr*)&addr, sizeof(sockaddr_in));
+		} else {
+			MAINLOG(LOG("disconnected from server"));
+		}
 		_occupied_ids[(_clients.begin() + index)->id] = false; // free up id
 		_clients.erase(_clients.begin() + index);
 		return (false);
 	}
 
-	t_packet packet = {settings::consts::network::protocol_id, dst->sequence, dst->ack, dst->bitfield, {}};
 	memmove(&packet.data, data, size);
 	size += settings::consts::network::packet_header_size;
 
