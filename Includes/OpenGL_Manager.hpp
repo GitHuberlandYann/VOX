@@ -102,6 +102,7 @@ class OpenGL_Manager
 		std::thread _thread;
 		std::mutex _mtx;
 		t_time _time;
+		t_packet_data _packet;
 		t_counter _counter;
 		t_hit _block_hit;
 		std::shared_ptr<Chunk> _current_chunk_ptr = NULL, _chunk_hit = NULL;
@@ -153,7 +154,7 @@ class OpenGL_Manager
 		void handleChunkDeletion( void );
 
 		// client packets
-		void sendPacket( t_packet_data data, size_t size );
+		void sendPacket( size_t size );
 		void handlePacketLogin( void );
 		void handlePacketPing( char* data );
 		void handlePacketKick( std::string msg );
@@ -165,7 +166,7 @@ class OpenGL_Manager
 		void handleClientDraw( void );
 		void runClient( void );
 
-		// treading
+		// threading
 		void startThread( void );
 		void stopThread( void );
 };

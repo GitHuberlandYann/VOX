@@ -20,7 +20,7 @@ namespace settings {
 			// id used for this program, if other id found in packet, it is discarded
 			// for the program ./vox, id is "VOX!" (0x56 0x4F 0x58 0x21)
 			const unsigned int protocol_id = 0x564F5821;
-			const size_t packet_size_limit = 1450;
+			const size_t packet_size_limit = 65518;
 			const size_t client_size_limit = 8; // TODO change this
 		};
 
@@ -34,6 +34,12 @@ namespace mask {
 	namespace network {
 		const short action_type = 0xFF;
 	};
+};
+
+namespace send_ret {
+	const int success = -2;
+	const int failure = -1;
+	const int timeout = 0;
 };
 
 typedef struct s_packet_data {
@@ -72,6 +78,8 @@ namespace packet_id {
 			login,
 			pong, // response to ping
 			leave,
+			chunk_ticket,
+			settings,
 		};
 	};
 
@@ -82,6 +90,14 @@ namespace packet_id {
 			kick,
 			player_info,
 			chat_msg,
+			destroy_stage, // set breaking anim of a block
+			damage_event,
+		};
+	};
+
+	namespace step {
+		enum {
+			zero, one, two, three, four, five,
 		};
 	};
 };
@@ -96,14 +112,13 @@ class Socket
         void close( void );
         bool isOpen( void ) const;
 
-        bool send( const Address& destination, const void* data, size_t size );
-        bool send( const Address& destination, std::string str );
-		void broadcast( const void* data, size_t size );
-		void broadcast( std::string str );
+        int send( const Address& destination, const void* data, size_t size );
+		std::vector<int> broadcast( const void* data, size_t size );
         ssize_t receive( Address& sender, void* data, size_t size );
 
 		int getType( void );
 		int getId( Address& target );
+		Address* getAddress( int id );
 		Address& getServerAddress( void );
 		int getPing( void );
 		unsigned getPacketLost( void );
@@ -113,6 +128,7 @@ class Socket
         int _handle, _type, _ping_us, _ping_ms;
 		unsigned _sent, _lost;
 		Address _server_ip;
+		t_packet _packet;
 		std::array<bool, settings::consts::network::client_size_limit> _occupied_ids;
 		std::vector<t_client> _clients;
 		// list of packets waiting for acknoledgment, with timestamps to compute ping

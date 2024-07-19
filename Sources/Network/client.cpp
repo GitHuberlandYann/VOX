@@ -2,9 +2,13 @@
 #include "callbacks.hpp"
 #include "logs.hpp"
 
-void OpenGL_Manager::sendPacket( t_packet_data data, size_t size )
+/**
+ * @brief send packet stored at this->_packet of given size to this->_socket
+ */
+void OpenGL_Manager::sendPacket( size_t size )
 {
-	if (!_socket->send(_socket->getServerAddress(), &data, size)) {
+	int sendRet = _socket->send(_socket->getServerAddress(), &_packet, size);
+	if (sendRet >= send_ret::timeout) {
 		_socket = nullptr;
 		_menu->setState(menu::error);
 		_menu->setErrorStr({"Disconnected from server", "Timeout"});
@@ -28,7 +32,8 @@ void OpenGL_Manager::handlePacketPing( char* data )
 	memmove(&server_fps, &data[sizeof(double)], sizeof(int));
 	memmove(&server_tps, &data[sizeof(double) + sizeof(int)], sizeof(int));
 	MAINLOG(LOG("Client::handlePackets: time received: " << serverCurrentTime << " server fps: " << server_fps << ", server tps: " << server_tps));
-	sendPacket({packet_id::client::pong}, sizeof(unsigned short));
+	_packet.action = packet_id::client::pong;
+	sendPacket(sizeof(unsigned short));
 }
 
 void OpenGL_Manager::handlePacketKick( std::string msg )
@@ -47,41 +52,40 @@ void OpenGL_Manager::handlePacketChatMsg( char* data )
 
 void OpenGL_Manager::handlePackets( void )
 {
+	Address sender;
 	while (true) { // read incoming packets
-		Address sender;
-		t_packet_data buffer;
-
-		ssize_t bytes_read = _socket->receive(sender, &buffer, sizeof(buffer));
+		ssize_t bytes_read = _socket->receive(sender, &_packet, sizeof(_packet));
 		
 		if (bytes_read <= 0) {
 			break;
 		}
 		PACKETLOG(LOG("received " << bytes_read << " bytes"));
-		LOG("Packet received with action: " << buffer.action);
+		LOG("Packet received with action: " << _packet.action << " [" << bytes_read << " bytes]");
 
 		// process packet
-		switch (buffer.action & mask::network::action_type) {
+		switch (_packet.action & mask::network::action_type) {
 			case packet_id::server::login: // server confirmed login
 				handlePacketLogin();
 				break ;
 			case packet_id::server::ping:
-				handlePacketPing(buffer.data);
+				handlePacketPing(_packet.data);
 				break ;
 			case packet_id::server::kick:
-				return (handlePacketKick(buffer.data));
+				return (handlePacketKick(_packet.data));
 			case packet_id::server::player_info:
 				break ;
 			case packet_id::server::chat_msg:
-				handlePacketChatMsg(buffer.data);
+				handlePacketChatMsg(_packet.data);
 				break ;
 			default:
-				MAINLOG(LOGERROR("Client::handlePackets: Unrecognised packet action: " << buffer.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << buffer.data << "|"));
+				MAINLOG(LOGERROR("Client::handlePackets: Unrecognised packet action: " << _packet.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << _packet.data << "|"));
 				break ;
 		}
 	}
 
 	if (!_player) {
-		sendPacket({packet_id::client::login}, sizeof(unsigned short));
+		_packet.action = packet_id::client::login;
+		sendPacket(sizeof(unsigned short));
 	}
 }
 

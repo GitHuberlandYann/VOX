@@ -290,8 +290,8 @@ void Chunk::setBackup( std::map<std::pair<int, int>, s_backup>& backups )
 		for (auto &sign : _signs) {
 			sign.second->setChunk(NULL);
 		}
-		std::remove_if(_entities.begin(), _entities.end(),
-			[]( auto e ) { return (e->getType() == entities::none); }); // rm all entities which are not ItemFrameEntities nor lecterns
+		_entities.erase(std::remove_if(_entities.begin(), _entities.end(),
+			[]( auto e ) { return (e->getType() == entities::none); })); // rm all entities which are not ItemFrameEntities nor lecterns
 		mtx_backup.lock();
 		backups[std::pair<int, int>(_startX, _startY)] = {_added, _removed, _chests, _furnaces, _signs, _entities};
 		mtx_backup.unlock();

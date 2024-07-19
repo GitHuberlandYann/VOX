@@ -1,35 +1,37 @@
 #include "OpenGL_Manager.hpp"
+#include "Player.hpp"
+#include "Server.hpp"
 #include "Settings.hpp"
 #include "logs.hpp"
 #include <chrono>
 #include <thread>
+#include <set>
 
-static void thread_chunk_update( OpenGL_Manager *render )
+static void thread_server_chunk_update( Server *server )
 {
-	MAINLOG(LOG("thread_chunk_update started"));
-	glm::ivec2 pos;
+	MAINLOG(LOG("thread_server_chunk_update started"));
+	/*glm::ivec2 pos;
 	int render_dist;
-	Settings *settings = Settings::Get();
+	Settings* settings = Settings::Get();*/
 
-	while (!render->getThreadUpdate()) {
+	while (!server->getThreadUpdate()) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
-		if (render->getThreadStop()) {
-			MAINLOG(LOG("thread_chunk_update stopped before loop"));
+		if (server->getThreadStop()) {
+			MAINLOG(LOG("thread_server_chunk_update stopped before loop"));
 			return ;
 		}
 	}
 	while (true) {
-		pos = render->getCurrentChunkPos();
+		/*pos = render->getCurrentChunkPos();
 		render_dist = settings->getInt(settings::ints::render_dist);
 		render->setThreadUpdate(false);
-		// Bench b;
+
 		std::set<std::pair<int, int>> coords;
 		for (int row = -render_dist; row <= render_dist; row++) {
 			for (int col = -render_dist; col <= render_dist; col++) {
 				coords.insert({pos.x + (row << settings::consts::chunk_shift), pos.y + (col << settings::consts::chunk_shift)});
 			}
 		}
-		// b.stamp("gen coordinates set");
 
 		std::vector<std::shared_ptr<Chunk>> newperi_chunks;
 		newperi_chunks.reserve(render->_perimeter_chunks.capacity());
@@ -53,17 +55,13 @@ static void thread_chunk_update( OpenGL_Manager *render )
 			}
 			++it;
 		}
-		// b.stamp("delperi");
 		utils::math::sort_chunks(render->_player->getPos(), newperi_chunks);
-		// b.stamp("sort chunks");
 		mtx_perimeter.lock();
 		render->_perimeter_chunks = newperi_chunks;
 		mtx_perimeter.unlock();
 
-		// b.stamp("NO");
 		for (auto& c: coords) {
 			//create new chunk where player stands
-			render->setThreadUpdate(true);
 			std::shared_ptr<Chunk> newChunk = std::make_shared<Chunk>(render->_player.get(), render->_inventory.get(), c.first, c.second, render->_chunks);
 			mtx_backup.lock();
 			std::map<std::pair<int, int>, s_backup>::iterator search = render->_backups.find(std::pair<int, int>(c.first, c.second));
@@ -76,14 +74,12 @@ static void thread_chunk_update( OpenGL_Manager *render )
 			render->_chunks.push_back(newChunk);
 			mtx.unlock();
 			newChunk->generate_chunk(); // TODO remove this from thread because it launches its own thread and there's data races..
-		}
-		// b.stamp("loop and create new chunks");
-		// b.stop("chunk update");
+		}*/
 
-		while (!render->getThreadUpdate()) {
+		while (!server->getThreadUpdate()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(50));
-			if (render->getThreadStop()) {
-				MAINLOG(LOG("thread_chunk_update stopped"));
+			if (server->getThreadStop()) {
+				MAINLOG(LOG("thread_server_chunk_update stopped"));
 				return ;
 			}
 		}
@@ -94,17 +90,17 @@ static void thread_chunk_update( OpenGL_Manager *render )
 //                             OpenGL-Manager                                 //
 // ************************************************************************** //
 
-void OpenGL_Manager::startThread( void )
+void Server::startThread( void )
 {
 	if (!_thread.joinable()) {
 		_mtx.lock();
 		_threadStop = false;
 		_mtx.unlock();
-		_thread = std::thread(thread_chunk_update, this);
+		_thread = std::thread(thread_server_chunk_update, this);
 	}
 }
 
-void OpenGL_Manager::stopThread( void )
+void Server::stopThread( void )
 {
 	_mtx.lock();
 	_threadUpdate = false;
@@ -115,22 +111,22 @@ void OpenGL_Manager::stopThread( void )
 	}
 }
 
-glm::ivec2 OpenGL_Manager::getCurrentChunkPos( void )
-{
-	_mtx.lock();
-	glm::ivec2 res = _current_chunk;
-	_mtx.unlock();
-	return (res);
-}
+// glm::ivec2 Server::getCurrentChunkPos( void )
+// {
+// 	_mtx.lock();
+// 	glm::ivec2 res = _current_chunk;
+// 	_mtx.unlock();
+// 	return (res);
+// }
 
-void OpenGL_Manager::setThreadUpdate( bool state )
+void Server::setThreadUpdate( bool state )
 {
 	_mtx.lock();
 	_threadUpdate = state;
 	_mtx.unlock();
 }
 
-bool OpenGL_Manager::getThreadUpdate( void )
+bool Server::getThreadUpdate( void )
 {
 	_mtx.lock();
 	bool res = _threadUpdate;
@@ -138,7 +134,7 @@ bool OpenGL_Manager::getThreadUpdate( void )
 	return (res);
 }
 
-bool OpenGL_Manager::getThreadStop( void )
+bool Server::getThreadStop( void )
 {
 	_mtx.lock();
 	bool res = _threadStop;

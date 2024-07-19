@@ -6,7 +6,8 @@ NET_DIR		= Network
 FILES		= main blockUpdate callbacks drawPlayer fluids hitbox inputs item2D item3D itemExtrusion light pathfinding physics random redstone redstoneSchedule screenshot textures threadChunkUpdate tickUpdate utils worldGeneration \
 				AHostileMob AMob ATag Blocks Buffer Camera Chat ChestInstance Chunk DayCycle Entity FurnaceInstance Inventory JSON Menu OpenGL_Manager Particle Player Settings Shader SignInstance Skeleton Skybox Text Ui WorldEdit Zombie
 
-NET_FILES	= client Address Server Socket
+NET_FILES	= client threadServerChunkUpdate \
+				Address Server Socket
 FILES		+= $(addprefix $(NET_DIR)/, $(NET_FILES))
 
 SRCS		= $(addprefix $(SRCS_DIR)/, $(addsuffix .cpp, $(FILES)))

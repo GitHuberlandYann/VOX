@@ -6,7 +6,6 @@
 #include <netdb.h> // gethostbyname
 #include "logs.hpp"
 BENCHLOG(#include "Benchmark.hpp")
-void thread_chunk_update( OpenGL_Manager *render );
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _player(std::make_unique<Player>()), _inventory(std::make_unique<Inventory>()),

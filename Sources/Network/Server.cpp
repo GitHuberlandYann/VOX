@@ -7,14 +7,16 @@
 #include <unistd.h> // usleep
 
 Server::Server( t_time time, std::map<std::pair<int, int>, s_backup>& backups, std::shared_ptr<Socket> socket )
-	: _time(time), _backups(backups), _socket(socket)
+	: _threadUpdate(false), _threadStop(false), _time(time), _backups(backups), _socket(socket)
 {
-
+	startThread();
 }
 
 Server::~Server( void )
 {
 	MAINLOG(LOG("Destructor of Server called"));
+	stopThread();
+
 	glfwTerminate();
 
 	DayCycle::Destroy();
@@ -33,31 +35,72 @@ void OpenGL_Manager::createServer( std::unique_ptr<Server>& server )
 void Server::broadcastPlayersInfo( void )
 {
 	for (auto& player : _players) {
-		t_packet_data data = {packet_id::server::player_info};
 		std::string content = player->getString(false); // TODO custom function instead of this one
-		memmove(data.data, content.c_str(), content.size());
-		_socket->broadcast(&data, sizeof(data.action) + content.size());
+		_packet = {pendings::broadcast, sizeof(unsigned short) + content.size()};
+		_packet.packet.action = packet_id::server::player_info;
+		memmove(_packet.packet.data, content.c_str(), content.size());
+		pendPacket();
+		// _socket->broadcast(&_packet, sizeof(unsigned short) + content.size());
 	}
 }
 
-void Server::sendPacket( Address& target, t_packet_data data, size_t size )
+/**
+ * @brief send packet stored at this->_packet of given size to given target
+ */
+void Server::sendPacket( t_pending_packet& pending )
 {
-	_socket->send(target, &data, size);
+	// LOG("Sending packet with action: " << pending.packet.action << " [" << pending.size << " bytes]");
+	std::vector<int> timedout_ids;
+	int sendRet;
+	switch (pending.id) {
+		case -2: // broadcast
+			timedout_ids = _socket->broadcast(&pending.packet, pending.size);
+			break ;
+		case -1: // send to given addr
+			sendRet = _socket->send(pending.addr, &pending.packet, pending.size);
+			if (sendRet >= send_ret::timeout) {
+				timedout_ids.push_back(sendRet - send_ret::timeout);
+			}
+			break ;
+		default:
+			Address* target = _socket->getAddress(pending.id);
+			if (target) {
+				sendRet = _socket->send(*target, &pending.packet, pending.size);
+				if (sendRet >= send_ret::timeout) {
+					timedout_ids.push_back(sendRet - send_ret::timeout);
+				}
+			}
+			break ;
+	}
+	for (auto id : timedout_ids) {
+		_players.erase(std::remove_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); }));
+	}
+}
+
+void Server::pendPacket( void )
+{
+	_mtx_pend.lock();
+	_pendingPackets.push_back(_packet);
+	_mtx_pend.unlock();
 }
 
 void Server::handlePacketLogin( Address& sender, std::string name )
 {
-	sendPacket(sender, {packet_id::server::login}, 2);
+	_packet = {pendings::useAddr, sizeof(unsigned short), sender, {packet_id::server::login}};
+	pendPacket();
+	// sendPacket(sender, sizeof(unsigned short));
 	int id = _socket->getId(sender);
 	auto search = std::find_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); });
 	if (search == _players.end()) {
 		_players.push_back(std::make_unique<Player>());
 		_players.back()->setId(id);
 		_players.back()->setName(name);
-		t_packet_data data = {packet_id::server::chat_msg};
-		name = name + " joined the game. [id" + std::to_string(id) + "]";
-		memmove(data.data, name.c_str(), name.size());
-		_socket->broadcast(&data, sizeof(data.action) + name.size());
+		name = name + " joined the game. [id:" + std::to_string(id) + "]";
+		_packet = {pendings::broadcast, sizeof(unsigned short) + name.size()};
+		_packet.packet.action = packet_id::server::chat_msg;
+		memmove(_packet.packet.data, name.c_str(), name.size());
+		pendPacket();
+		// _socket->broadcast(&_packet, sizeof(unsigned short) + name.size());
 	}
 }
 
@@ -77,11 +120,14 @@ void Server::handleTime( void )
 		_time.nbTicksLastSecond = _time.nbTicks;
 		_time.nbTicks = 0;
 		_time.lastSecondRecorded += 1.0;
-		t_packet_data data = {packet_id::server::ping};
-		memmove(data.data, &_time.currentTime, sizeof(double));
-		memmove(&data.data[sizeof(double)], &_time.nbFramesLastSecond, sizeof(int));
-		memmove(&data.data[sizeof(double) + sizeof(int)], &_time.nbTicksLastSecond, sizeof(int));
-		_socket->broadcast(&data, sizeof(data.action) + sizeof(double) + sizeof(int) + sizeof(int)); // send time every 20 game ticks (== every second) to players
+		_packet = {pendings::broadcast, sizeof(unsigned short) + sizeof(double) + sizeof(int) + sizeof(int)};
+		_packet.packet.action = packet_id::server::ping;
+		memmove(_packet.packet.data, &_time.currentTime, sizeof(double));
+		memmove(&_packet.packet.data[sizeof(double)], &_time.nbFramesLastSecond, sizeof(int));
+		memmove(&_packet.packet.data[sizeof(double) + sizeof(int)], &_time.nbTicksLastSecond, sizeof(int));
+		pendPacket();
+		// _socket->broadcast(&_packet, sizeof(_packet.action) + sizeof(double) + sizeof(int) + sizeof(int)); // send time every 20 game ticks (== every second) to players
+		MAINLOG(LOG("FPS: " << _time.nbFramesLastSecond << ", TPS: " << _time.nbTicksLastSecond << ", players: " << _players.size()));
 	}
 	if (_time.currentTime - _time.lastGameTick >= settings::consts::tick) {
 		_time.tickUpdate = true;
@@ -102,29 +148,36 @@ void Server::handleTime( void )
  */
 void Server::handlePackets( void )
 {
-	while (true) { // read incoming packets
-		Address sender;
-		t_packet_data buffer;
+	// send pending packets
+	_mtx_pend.lock();
+	for (auto& pending : _pendingPackets) {
+		sendPacket(pending);
+	}
+	_pendingPackets.clear();
+	_mtx_pend.unlock();
 
-		ssize_t bytes_read = _socket->receive(sender, &buffer, sizeof(buffer));
+	// read incoming packets
+	Address sender;
+	while (true) {
+		ssize_t bytes_read = _socket->receive(sender, &_packet.packet, sizeof(_packet.packet));
 		
 		if (bytes_read <= 0) {
 			break;
 		}
 		PACKETLOG(LOG("received " << bytes_read << " bytes"));
-		LOG("Packet received with action: " << buffer.action);
+		LOG("Packet received with action: " << _packet.packet.action << " [" << bytes_read << " bytes]");
 
 		// process packet
-		switch (buffer.action & mask::network::action_type) {
+		switch (_packet.packet.action & mask::network::action_type) {
 			case packet_id::client::login:
-				handlePacketLogin(sender, buffer.data);
+				handlePacketLogin(sender, _packet.packet.data);
 				break ;
 			case packet_id::client::pong:
 				break ;
 			case packet_id::client::leave:
 				break ;
 			default:
-				MAINLOG(LOGERROR("Server::handlePackets: Unrecognised packet action: " << buffer.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << buffer.data << "|"));
+				MAINLOG(LOGERROR("Server::handlePackets: Unrecognised packet action: " << _packet.packet.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << _packet.packet.data << "|"));
 				break ;
 		}
 	}
@@ -154,11 +207,14 @@ void Server::run( void )
 			// _player->tickUpdate();
 			_time.redTickUpdate = DayCycle::Get()->tickUpdate();
 
-			handlePackets();
 			broadcastPlayersInfo();
 		}
+		handlePackets();
 
-		usleep(50);
+		if (_time.nbFramesLastSecond > 60) {
+			// usleep(50);
+			std::this_thread::sleep_for(std::chrono::microseconds(50));
+		}
 	}
 }
 

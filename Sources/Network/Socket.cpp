@@ -78,11 +78,14 @@ bool Socket::isOpen( void ) const
 	return (_handle != -1);
 }
 
-bool Socket::send( const Address& destination, const void* data, size_t size )
+/**
+ * @return -2 for success, -1 for failure, (>=0) for timeout -> res is id of client who timed out
+ */
+int Socket::send( const Address& destination, const void* data, size_t size )
 {
 	if (size > settings::consts::network::packet_size_limit) {
 		MAINLOG(LOGERROR("Socket::send: packet too big to be sent (" << size << " vs " << settings::consts::network::packet_size_limit << ')'));
-		return (false);
+		return (send_ret::failure);
 	}
 
 	sockaddr_in addr;
@@ -107,46 +110,50 @@ bool Socket::send( const Address& destination, const void* data, size_t size )
 				_clients.push_back({destination});
 			} else if (_clients[0].ip != destination) {
 				MAINLOG(LOGERROR("Socket::send: address does not match: " << _clients[0].ip << " vs " << destination));
-				return (false);
+				return (send_ret::failure);
 			}
 			dst = &_clients[0];
 			break ;
 		default:
 			MAINLOG(LOGERROR("Socket::send: unrecognised type: " << _type));
-			return (false);
+			return (send_ret::failure);
 	}
 
 	if (!dst) {
 		MAINLOG(LOGERROR("Socket::send: failed to send packet, client not found"));
-		return (false);
+		return (send_ret::failure);
 	}
 
-	t_packet packet = {settings::consts::network::protocol_id, dst->sequence, dst->ack, dst->bitfield, {}};
+	_packet.protocol_id = settings::consts::network::protocol_id;
+	_packet.sequence = dst->sequence;
+	_packet.ack = dst->ack;
+	_packet.ack_bitfield = dst->bitfield;
 
 	if (++dst->timeout > 5 * 20) { // timeout after 5 seconds, we send packets at a rate of 20/seconds
 		// disconnection
 		if (_type == sockets::server) {
 			MAINLOG(LOG("disconnection from " << dst->ip << ", id is " << dst->id));
-			t_packet_data d = {packet_id::server::kick, "Timeout"};
-			memmove(&packet.data, &d.action, 2 + 7);
-			sendto(_handle, static_cast<const void*>(&packet.protocol_id), 9 + settings::consts::network::packet_header_size, 0, (sockaddr*)&addr, sizeof(sockaddr_in));
+			_packet.data.action = packet_id::server::kick;
+			memmove(&_packet.data.data, "Timeout", 7);
+			sendto(_handle, static_cast<const void*>(&_packet.protocol_id), 9 + settings::consts::network::packet_header_size, 0, (sockaddr*)&addr, sizeof(sockaddr_in));
 		} else {
 			MAINLOG(LOG("disconnected from server"));
 		}
-		_occupied_ids[(_clients.begin() + index)->id] = false; // free up id
+		int id = dst->id;
+		_occupied_ids[id] = false; // free up id
 		_clients.erase(_clients.begin() + index);
-		return (false);
+		return (send_ret::timeout + id);
 	}
 
-	memmove(&packet.data, data, size);
+	memmove(&_packet.data, data, size);
 	size += settings::consts::network::packet_header_size;
 
-	PACKETLOG(LOG("sending packet " << packet.protocol_id << " - " << packet.sequence << " - " << packet.ack << " - " << packet.ack_bitfield << ": " << packet.data));
-	size_t sent_bytes = sendto(_handle, static_cast<const void*>(&packet.protocol_id), size, 0, (sockaddr*)&addr, sizeof(sockaddr_in));
+	PACKETLOG(LOG("sending packet " << _packet.protocol_id << " - " << _packet.sequence << " - " << _packet.ack << " - " << _packet.ack_bitfield << ": " << _packet.data));
+	size_t sent_bytes = sendto(_handle, static_cast<const void*>(&_packet.protocol_id), size, 0, (sockaddr*)&addr, sizeof(sockaddr_in));
 
     if (sent_bytes != size) {
         MAINLOG(LOGERROR("failed to send packet"));
-        return (false);
+        return (send_ret::failure);
     }
 
 	PACKETLOG(LOG("sent packet of size " << sent_bytes << " to " << destination));
@@ -162,26 +169,28 @@ bool Socket::send( const Address& destination, const void* data, size_t size )
 		}
 	}
 	++dst->sequence;
-	return (true);
+	return (send_ret::success);
 }
 
-bool Socket::send( const Address& destination, std::string str )
+/**
+ * @brief broadcast data of given size to all clients
+ * @return ids of clients who timed out
+ */
+std::vector<int> Socket::broadcast( const void* data, size_t size )
 {
-	return (send(destination, str.c_str(), str.size()));
-}
+	std::vector<int> res;
 
-void Socket::broadcast( const void* data, size_t size )
-{
-	if (_type == sockets::client) return ; // only server is allowed to broadcast
+	if (_type == sockets::client) { // only server is allowed to broadcast
+		return (res);
+	}
 
 	for (auto& c : _clients) {
-		send(c.ip, data, size);
+		int sendRet = send(c.ip, data, size);
+		if (sendRet >= send_ret::timeout) {
+			res.push_back(sendRet - send_ret::timeout);
+		}
 	}
-}
-
-void Socket::broadcast( std::string str )
-{
-	broadcast(str.c_str(), str.size());
+	return (res);
 }
 
 static inline bool sequence_greater_than( uint16_t s1, uint16_t s2 )
@@ -205,8 +214,7 @@ ssize_t Socket::receive( Address& sender, void* data, size_t size )
 	sockaddr_in from;
 	socklen_t fromLength = sizeof(from);
 
-	t_packet packet;
-	size_t bytes = recvfrom(_handle, static_cast<void*>(&packet), settings::consts::network::packet_header_size + size, 0, (sockaddr*)&from, &fromLength);
+	size_t bytes = recvfrom(_handle, static_cast<void*>(&_packet), settings::consts::network::packet_header_size + size, 0, (sockaddr*)&from, &fromLength);
 
 	// discard wrong recv
 	if (bytes == std::string::npos || bytes < settings::consts::network::packet_header_size) {
@@ -219,8 +227,8 @@ ssize_t Socket::receive( Address& sender, void* data, size_t size )
 			<< " vs " << settings::consts::network::packet_size_limit));
 		return (0);
 	}
-	if (packet.protocol_id != settings::consts::network::protocol_id) {
-		MAINLOG(LOGERROR("Socket::receive: packet discarded becausee wrong protocol id used: " << packet.protocol_id));
+	if (_packet.protocol_id != settings::consts::network::protocol_id) {
+		MAINLOG(LOGERROR("Socket::receive: packet discarded becausee wrong protocol id used: " << _packet.protocol_id));
 		return (0);
 	}
 
@@ -254,10 +262,10 @@ ssize_t Socket::receive( Address& sender, void* data, size_t size )
 	}
 
 	src->timeout = 0; // reset timeout
-	if (!sequence_greater_than(packet.sequence, src->ack)) {
+	if (!sequence_greater_than(_packet.sequence, src->ack)) {
 		PACKETLOG(LOGERROR("Socket::receive: packet discarded because sequence smaller than remote"));
 		if (_type == sockets::server) { // update ack_bitfield
-			int diff = diff_wrap_around(src->ack, packet.sequence);
+			int diff = diff_wrap_around(src->ack, _packet.sequence);
 			src->bitfield |= (1 << (diff - 1));
 		}
 		return (0);
@@ -266,13 +274,13 @@ ssize_t Socket::receive( Address& sender, void* data, size_t size )
 	if (_type == sockets::client) {
 		// update own packet loss
 		for (auto& pack : _pending_packets) {
-			if (pack.first == packet.ack) {
+			if (pack.first == _packet.ack) {
 				auto endstamp = std::chrono::high_resolution_clock::now();
 				int64_t end = std::chrono::time_point_cast<std::chrono::microseconds>(endstamp).time_since_epoch().count();
 				int ping = end - pack.second;
 				_ping_us += 0.1 * (ping - _ping_us); // exponentially smoothed moving average
 				_ping_ms = _ping_us * 0.001f;
-				PACKETLOG(LOG("received packet " << packet.ack << " | " << pack.second << " -> " << end << ", packet's ping is " << ping << "us. Smoothed ping is " << _ping_us));
+				PACKETLOG(LOG("received packet " << _packet.ack << " | " << pack.second << " -> " << end << ", packet's ping is " << ping << "us. Smoothed ping is " << _ping_us));
 				_pending_packets.remove(pack);
 				break ;
 			}
@@ -280,16 +288,16 @@ ssize_t Socket::receive( Address& sender, void* data, size_t size )
 		std::list<std::pair<uint16_t, int64_t>>::iterator it = _pending_packets.begin();
 		PENDINGLOG(LOG("still in pending packets: "));
 		while (it != _pending_packets.end()) {
-			int diff = diff_wrap_around(packet.ack, it->first);
+			int diff = diff_wrap_around(_packet.ack, it->first);
 			if (diff > 32) { // packet lost
 				it = _pending_packets.erase(it);
-				PENDINGLOG(LOG("<LOSS diff " << diff << ", ack " << packet.ack << " it " << it->first  << '>'));
+				PENDINGLOG(LOG("<LOSS diff " << diff << ", ack " << _packet.ack << " it " << it->first  << '>'));
 				++_lost;
 			} else if (diff < 0) {
 				PENDINGLOG(LOG(it->first << ' '));
 				++it;
-			} else if (packet.ack_bitfield & (1 << (diff - 1))) { // paquet has been aknoledged
-				PENDINGLOG(LOG("<diff " << diff << ", ack " << packet.ack << " bitfield rmed " << it->first << '>'));
+			} else if (_packet.ack_bitfield & (1 << (diff - 1))) { // paquet has been aknoledged
+				PENDINGLOG(LOG("<diff " << diff << ", ack " << _packet.ack << " bitfield rmed " << it->first << '>'));
 				it = _pending_packets.erase(it);
 			} else {
 				PENDINGLOG(LOG(it->first << ' '));
@@ -299,17 +307,17 @@ ssize_t Socket::receive( Address& sender, void* data, size_t size )
 		PENDINGLOG(LOG(std::endl << "packet lost: " << _lost << ", pending " << _pending_packets.size() << ", packet sent: " << _sent));
 	} else if (_type == sockets::server) {
 		// update ack_bitfield for client's packet loss
-		int diff = diff_wrap_around(packet.sequence, src->ack);
+		int diff = diff_wrap_around(_packet.sequence, src->ack);
 		src->bitfield <<= diff;
 		PENDINGLOG(LOG("diff is " << diff));
 		src->bitfield |= (1 << (diff - 1));
 		PENDINGLOG(LOG("bitfield is " << src->bitfield));
 	}
 
-	src->ack = packet.sequence;
-	packet.data.data[bytes - sizeof(packet.data.action)] = '\0';
-	memmove(data, &packet.data, bytes);
-	PACKETLOG(LOG("received packet with header " << packet.protocol_id << " - " << packet.sequence << " - " << packet.ack << " - " << packet.ack_bitfield));
+	src->ack = _packet.sequence;
+	_packet.data.data[bytes - sizeof(unsigned short)] = '\0';
+	memmove(data, &_packet.data.action, bytes + 1); // copy the \0 too
+	PACKETLOG(LOG("received packet with header " << _packet.protocol_id << " - " << _packet.sequence << " - " << _packet.ack << " - " << _packet.ack_bitfield));
 	return (bytes);
 }
 
@@ -326,6 +334,16 @@ int Socket::getId( Address& target )
 		}
 	}
 	return (-1);
+}
+
+Address* Socket::getAddress( int id )
+{
+	for (auto &c : _clients) {
+		if (c.id == id) {
+			return (&c.ip);
+		}
+	}
+	return (NULL);
 }
 
 Address& Socket::getServerAddress( void )
