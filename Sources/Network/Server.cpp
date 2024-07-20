@@ -7,7 +7,7 @@
 #include <unistd.h> // usleep
 
 Server::Server( t_time time, std::map<std::pair<int, int>, s_backup>& backups, std::shared_ptr<Socket> socket )
-	: _threadUpdate(false), _threadStop(false), _time(time), _backups(backups), _socket(socket)
+	: _backups(backups), _threadUpdate(false), _threadStop(false), _time(time), _socket(socket)
 {
 	startThread();
 }
@@ -73,7 +73,9 @@ void Server::sendPacket( t_pending_packet& pending )
 			break ;
 	}
 	for (auto id : timedout_ids) {
+		_mtx_plrs.lock();
 		_players.erase(std::remove_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); }));
+		_mtx_plrs.unlock();
 	}
 }
 
@@ -81,6 +83,13 @@ void Server::pendPacket( void )
 {
 	_mtx_pend.lock();
 	_pendingPackets.push_back(_packet);
+	_mtx_pend.unlock();
+}
+
+void Server::pendPacket( t_pending_packet& packet )
+{
+	_mtx_pend.lock();
+	_pendingPackets.push_back(packet);
 	_mtx_pend.unlock();
 }
 
@@ -92,9 +101,12 @@ void Server::handlePacketLogin( Address& sender, std::string name )
 	int id = _socket->getId(sender);
 	auto search = std::find_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); });
 	if (search == _players.end()) {
+		_mtx_plrs.lock();
 		_players.push_back(std::make_unique<Player>());
+		_mtx_plrs.unlock();
 		_players.back()->setId(id);
 		_players.back()->setName(name);
+		_threadUpdate = true;
 		name = name + " joined the game. [id:" + std::to_string(id) + "]";
 		_packet = {pendings::broadcast, sizeof(unsigned short) + name.size()};
 		_packet.packet.action = packet_id::server::chat_msg;
@@ -207,7 +219,7 @@ void Server::run( void )
 			// _player->tickUpdate();
 			_time.redTickUpdate = DayCycle::Get()->tickUpdate();
 
-			broadcastPlayersInfo();
+			// broadcastPlayersInfo();
 		}
 		handlePackets();
 

@@ -78,7 +78,6 @@ namespace packet_id {
 			login,
 			pong, // response to ping
 			leave,
-			chunk_ticket,
 			settings,
 		};
 	};
@@ -88,6 +87,7 @@ namespace packet_id {
 			login,
 			ping, // sent once per second to keep connection going
 			kick,
+			chunk_data, // 16x16x16 subChunk content
 			player_info,
 			chat_msg,
 			destroy_stage, // set breaking anim of a block

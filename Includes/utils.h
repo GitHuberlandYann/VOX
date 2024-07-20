@@ -74,6 +74,8 @@ namespace utils {
 
 	namespace memory {
 		void getMemoryUsage( size_t& residentSize, size_t& virtualSize );
+		void memwrite( char* dst, const void* src, size_t n, size_t& dstOffset );
+		void memread( void* dst, const char* src, size_t n, size_t& srcOffset );
 	};
 
 	namespace network {

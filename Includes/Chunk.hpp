@@ -74,12 +74,20 @@ enum COLLISION {
 
 typedef struct s_sign_info t_sign_info;
 typedef struct s_hit t_hit;
+typedef struct s_packet_data t_packet_data;
+typedef struct s_pending_packet t_pending_packet;
 
 typedef struct s_collision {
 	int type;
 	float minZ = 0.0f;
 	float maxZ = 0.0f;
 }				t_collision;
+
+typedef struct s_palette {
+	std::map<int, int> idToValue;
+	std::map<int, int> valueToId;
+	int idFromValue( int value );
+}				t_palette;
 
 typedef struct s_shaderInput {
 	int texture;
@@ -120,24 +128,27 @@ class Chunk
         Chunk( Player* player, Inventory* inventory, int posX, int posY, std::list<std::shared_ptr<Chunk>>& chunks );
         ~Chunk( void );
 
+		// getters
 		GLint getStartX( void );
 		GLint getStartY( void );
 		Chunk* getChunkAt( int startX, int startY );
 		Player* getPlayer( void );
 		unsigned& getSeed( void );
 		bool getSortedOnce( void );
+		void waitGenDone( void );
+
+		// light
 		GLint getCamLightLevel( glm::ivec3 location );
 		int computePosLight( glm::vec3 pos );
 		short getLightLevel( int posX, int posY, int posZ );
 		void setLightLevelAbsolute( short level, glm::ivec3 pos, bool askNeighbours );
 		void setLightLevel( short level, int posX, int posY, int posZ, bool askNeighbours );
 		void startLightSpread( int posX, int posY, int posZ, bool skySpread );
-		void waitGenDone( void );
-
 		int computeLight( int row, int col, int level );
 		int computeSmoothLight( int basefaceLight, int row, int col, int level, std::array<int, 9> offsets );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
 
+		// backups
 		void setNeighbour( Chunk* neighbour, int index );
 		void setBackup( std::map<std::pair<int, int>, s_backup>& backups );
 		void restoreBackup( s_backup& backup);
@@ -146,6 +157,7 @@ class Chunk
 		FurnaceInstance* getFurnaceInstance( glm::ivec3 pos );
 		void setSignContent( t_sign_info sign );
 
+		// block modif
 		GLint getBlockAtAbsolute( glm::ivec3 pos );
 		GLint getBlockAtAbsolute( int posX, int posY, int posZ );
 		GLint getBlockAt( glm::ivec3 pos, bool askNeighbours = true );
@@ -158,6 +170,7 @@ class Chunk
 		void update_adj_block( glm::ivec3 pos, int dir, int source );
 		void turnDirtToGrass( int posX, int posY, int posZ );
 
+		// world generation
 		void generation( void );
 		void checkFillVertices( void );
 		void generate_chunk( void );
@@ -167,11 +180,13 @@ class Chunk
 		void sort_sky( glm::vec3& pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
 
+		// math
 		bool lineOfSight( const glm::vec3 src, const glm::vec3 dst );
 		bool inPerimeter( int posX, int posY, GLint render_dist );
 		int manhattanDist( int posX, int posY );
         bool isInChunk( int posX, int posY );
 
+		// extern interactions
 		int isHit( glm::ivec3 pos );
 		bool bookedLectern( Menu* menu, glm::ivec3 pos, bool turnPage );
 		AMob* mobHit( const t_hit blockHit );
@@ -188,11 +203,13 @@ class Chunk
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( AMob* mob );
 
+		// draw
 		int isLoaded( GLint& counter );
         void drawArray( GLint& counter, GLint& face_counter );
 		void drawSky( GLint& counter, GLint& face_counter );
 		void drawWater( GLint& counter, GLint& face_counter );
 
+		// updates
 		void updateRedstone( int priority, schedule::t_redstoneTick red );
 		void updatePiston( glm::ivec3 pos, int value );
 		void scheduleRedstoneTick( schedule::t_redstoneTick red );
@@ -209,6 +226,11 @@ class Chunk
 		size_t clearParticles( void );
 
 		std::string getAddsRmsString( void );
+
+		// networking
+		size_t paletteSubChunk( t_palette& palette, int index );
+		void serializeSubChunk( t_pending_packet& packet, int index );
+		void deserializeSubChunk( t_packet_data& packet );
 
     private:
 		Buffer _vabo, _vaboWater, _vaboSky;

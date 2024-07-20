@@ -83,6 +83,9 @@ OpenGL uses shaders, which are programs coded in glsl and running on the GPU.
 * skybox - used to draw cubic skybox around player, with sun, moon, and atmosphere
 * model - used to draw player and mobs
 
+## Multiplayer
+In progress!
+
 ## Sound engine
 Not implemented yet, as I am mainly working on this project on WSL, which [does not support sound](https://github.com/microsoft/WSL/issues/237).
 
@@ -136,3 +139,5 @@ kp_+ kp_-          - change player speed in gamemode creative
 * The [PCG hash](https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/) used to generate random values from a given seed, omnipresent in this project.
 * This [terrain generation video](https://www.youtube.com/watch?v=CSa5O6knuwI) from former Minecraft game designer at Mojang Henrik Kniberg.
 * This [tutorial](https://open.gl/introduction) I used to learn OpenGL in the first place in order to complete this other [OpenGL project](https://github.com/GitHuberlandYann/SCOP_GL.git).
+* These [great articles about Game Networking](https://gafferongames.com/categories/game-networking/) by Glenn Fiedler.  I wouldn't have been able to network with udp sockets without them, check them out, you won't regret it.
+* The communication [protocol](https://wiki.vg/Protocol) used by minecraft.

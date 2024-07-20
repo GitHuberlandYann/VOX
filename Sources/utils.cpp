@@ -908,6 +908,24 @@ namespace utils::memory {
 		}
 
 	#endif
+
+	/**
+	 * @brief calls memmove(&dst[dstOffset], src, n) then adds n to dstOffset
+	 */
+	void memwrite( char* dst, const void* src, size_t n, size_t& dstOffset )
+	{
+		::memmove(&dst[dstOffset], src, n);
+		dstOffset += n;
+	}
+
+	/**
+	 * @brief calls memmove(dst, &src[srcOffset], n) then adds n to dstOffset
+	 */
+	void memread( void* dst, const char* src, size_t n, size_t& srcOffset )
+	{
+		::memmove(dst, &src[srcOffset], n);
+		srcOffset += n;
+	}
 };
 
 #include <sys/types.h>

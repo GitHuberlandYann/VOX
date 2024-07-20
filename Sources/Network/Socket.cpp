@@ -108,6 +108,7 @@ int Socket::send( const Address& destination, const void* data, size_t size )
 		case sockets::client:
 			if (_clients.empty()) {
 				_clients.push_back({destination});
+				_clients[0].timeout = DayCycle::Get()->getGameTicks();
 			} else if (_clients[0].ip != destination) {
 				MAINLOG(LOGERROR("Socket::send: address does not match: " << _clients[0].ip << " vs " << destination));
 				return (send_ret::failure);
@@ -129,10 +130,10 @@ int Socket::send( const Address& destination, const void* data, size_t size )
 	_packet.ack = dst->ack;
 	_packet.ack_bitfield = dst->bitfield;
 
-	if (++dst->timeout > 5 * 20) { // timeout after 5 seconds, we send packets at a rate of 20/seconds
+	if (DayCycle::Get()->getGameTicks() - dst->timeout > 5 * 20) { // timeout after 5 seconds
 		// disconnection
 		if (_type == sockets::server) {
-			MAINLOG(LOG("disconnection from " << dst->ip << ", id is " << dst->id));
+			MAINLOG(LOG("disconnection from " << dst->ip << ", id is " << dst->id << " | timeout was " << dst->timeout << " vs " << DayCycle::Get()->getGameTicks()));
 			_packet.data.action = packet_id::server::kick;
 			memmove(&_packet.data.data, "Timeout", 7);
 			sendto(_handle, static_cast<const void*>(&_packet.protocol_id), 9 + settings::consts::network::packet_header_size, 0, (sockaddr*)&addr, sizeof(sockaddr_in));
@@ -261,7 +262,7 @@ ssize_t Socket::receive( Address& sender, void* data, size_t size )
 		MAINLOG(LOG("new connection from " << src->ip << ", id is " << src->id));
 	}
 
-	src->timeout = 0; // reset timeout
+	src->timeout = DayCycle::Get()->getGameTicks(); // reset timeout
 	if (!sequence_greater_than(_packet.sequence, src->ack)) {
 		PACKETLOG(LOGERROR("Socket::receive: packet discarded because sequence smaller than remote"));
 		if (_type == sockets::server) { // update ack_bitfield

@@ -81,6 +81,7 @@ class OpenGL_Manager
 		bool run( void );
 
 		glm::ivec2 getCurrentChunkPos( void );
+		std::vector<t_packet_data> getPacketDatas( void );
 		void setThreadUpdate( bool state );
 		bool getThreadUpdate( void );
 		bool getThreadStop( void );
@@ -99,8 +100,9 @@ class OpenGL_Manager
 		std::vector<t_shaderInput> _entities;
 		std::vector<t_shaderInputPart> _particles;
 		std::vector<t_shaderInputModel> _models;
+		std::vector<t_packet_data> _chunkPackets;
 		std::thread _thread;
-		std::mutex _mtx;
+		std::mutex _mtx, _mtx_packets;
 		t_time _time;
 		t_packet_data _packet;
 		t_counter _counter;
@@ -158,16 +160,19 @@ class OpenGL_Manager
 		void handlePacketLogin( void );
 		void handlePacketPing( char* data );
 		void handlePacketKick( std::string msg );
+		void handlePacketChunk( t_packet_data& packet );
 		void handlePacketChatMsg( char* data );
 
 		// client loop
 		void handlePackets( void );
 		void handleClientInputs( void );
 		void handleClientDraw( void );
+		void handleClientUI( void );
 		void runClient( void );
 
 		// threading
 		void startThread( void );
+		void startClientThread( void );
 		void stopThread( void );
 };
 

@@ -29,6 +29,7 @@
 # define LOADINGLOG(x)  x
 # define PACKETLOG(x)
 # define PENDINGLOG(x)
+# define SERIALLOG(x)	
 
 /**
  * macros used to facilitate coordinates output

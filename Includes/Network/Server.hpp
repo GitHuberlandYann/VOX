@@ -16,12 +16,17 @@ typedef struct s_pending_packet {
 class Server
 {
 	public:
+		std::list<std::shared_ptr<Chunk>> _chunks;
+		std::map<std::pair<int, int>, s_backup> _backups;
+
 		Server( t_time time, std::map<std::pair<int, int>, s_backup>& backups, std::shared_ptr<Socket> socket );
 		~Server( void );
 
+		void pendPacket( t_pending_packet& packet );
 		void run( void );
 
 		// threading
+		void getPlayersChunkPos( std::vector<glm::ivec2>& pos );
 		void setThreadUpdate( bool state );
 		bool getThreadUpdate( void );
 		bool getThreadStop( void );
@@ -29,10 +34,9 @@ class Server
 	private:
 		bool _threadUpdate, _threadStop;
 		std::thread _thread;
-		std::mutex _mtx, _mtx_pend;
+		std::mutex _mtx, _mtx_pend, _mtx_plrs;
 		t_time _time;
 		t_pending_packet _packet;
-		std::map<std::pair<int, int>, s_backup> _backups;
 		std::shared_ptr<Socket> _socket;
 		std::vector<t_pending_packet> _pendingPackets;
 		std::vector<std::unique_ptr<Player>> _players;
