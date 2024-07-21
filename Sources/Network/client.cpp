@@ -133,6 +133,9 @@ void OpenGL_Manager::handleClientInputs( void )
 		_debug_mode = !_debug_mode;
 	}
 
+	_player->setDelta(_time.deltaTime);
+	_player->clientInputUpdate(settings::consts::gamemode::creative);
+
 	if (_player->getResetFovUpdate() || inputs::key_update(inputs::zoom)) {
 		updateCamPerspective();
 	}

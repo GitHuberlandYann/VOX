@@ -288,7 +288,7 @@ menu::ret Menu::multiplayer_menu( void )
 			reset_values();
 			return (main_menu());
 		} else if (_selection == 4) {
-			_world_file = (_selected_world == 0) ? "pathfinder.json" : "localhost";
+			_world_file = (_selected_world == 0) ? "farm.json" : "localhost";
 			return ((_selected_world == 0) ? menu::ret::host_server : menu::ret::join_server);
 		}
 	}

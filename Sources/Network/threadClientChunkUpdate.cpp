@@ -62,13 +62,15 @@ static void thread_client_chunk_update( OpenGL_Manager *render )
 			auto search = std::find_if(render->_chunks.begin(), render->_chunks.end(), [startX, startY](auto& chunk) { return (chunk->getStartX() == startX && chunk->getStartY() == startY); });
 			if (search == render->_chunks.end()) {
 				std::shared_ptr<Chunk> newChunk = std::make_shared<Chunk>(render->_player.get(), render->_inventory.get(), startX, startY, render->_chunks);
+				// newChunk->deserializeSubChunk(packet);
+				newChunk->deserializeChunk(packet);
+
 				mtx.lock();
 				render->_chunks.push_back(newChunk);
 				mtx.unlock();
-
-				newChunk->deserializeSubChunk(packet);
 			} else {
-				(*search)->deserializeSubChunk(packet);
+				// (*search)->deserializeSubChunk(packet);
+				(*search)->deserializeChunk(packet);
 			}
 			
 		}

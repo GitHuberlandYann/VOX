@@ -104,6 +104,7 @@ class Player : public AMob
 
 		bool update( std::vector<t_shaderInputModel>& modArr, float deltaTime ) override;
         void inputUpdate( bool rayCast, int gameMode );
+        void clientInputUpdate( int gameMode );
     
     private:
 		int _id; // multiplayer id

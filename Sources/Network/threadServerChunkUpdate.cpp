@@ -12,7 +12,7 @@ static void thread_server_chunk_update( Server *server )
 	MAINLOG(LOG("thread_server_chunk_update started"));
 	std::vector<glm::ivec2> playersPos;
 	t_pending_packet packet;
-	int render_dist = 1;
+	int render_dist = 10;
 	// Settings* settings = Settings::Get();
 
 	while (!server->getThreadUpdate()) {
@@ -47,10 +47,12 @@ static void thread_server_chunk_update( Server *server )
 					(*it)->checkFillVertices(); // TODO add arg to checkFillVertices to avoid fill_vertex_array on server and light spread on client
 					// newperi_chunks.push_back(*it);
 					packet.id = index;
-					for (int subChunk = 0; subChunk < 16; ++subChunk) {
-						(*it)->serializeSubChunk(packet, subChunk);
-						server->pendPacket(packet);
-					}
+					// for (int subChunk = 0; subChunk < 16; ++subChunk) {
+					// 	(*it)->serializeSubChunk(packet, subChunk);
+					// 	server->pendPacket(packet);
+					// }
+					(*it)->serializeChunk(packet);
+					server->pendPacket(packet);
 					coords.erase({(*it)->getStartX(), (*it)->getStartY()});
 				} /*else if (!(*it)->inPerimeter(pos.x, pos.y, (render_dist << settings::consts::chunk_shift) * 2)) {
 					auto tmp = it;

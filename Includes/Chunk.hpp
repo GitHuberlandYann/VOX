@@ -231,6 +231,8 @@ class Chunk
 		size_t paletteSubChunk( t_palette& palette, int index );
 		void serializeSubChunk( t_pending_packet& packet, int index );
 		void deserializeSubChunk( t_packet_data& packet );
+		void serializeChunk( t_pending_packet& packet );
+		void deserializeChunk( t_packet_data& packet );
 
     private:
 		Buffer _vabo, _vaboWater, _vaboSky;
