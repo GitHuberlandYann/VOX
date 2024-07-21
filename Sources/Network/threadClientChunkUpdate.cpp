@@ -3,6 +3,7 @@
 #include "Server.hpp"
 #include "Settings.hpp"
 #include "logs.hpp"
+#include "zlib.h"
 #include <chrono>
 #include <thread>
 #include <set>
@@ -54,23 +55,28 @@ static void thread_client_chunk_update( OpenGL_Manager *render )
 		for (auto& packet: packetDatas) {
 			// create or fill chunk from server's info
 			render->setThreadUpdate(true);
-			size_t srcOffset = 0;
+			size_t srcOffset = 0, uncompressedSize = settings::consts::network::packet_size_limit, compressedSize = 0;
+			utils::memory::memread(&compressedSize, packet.data, sizeof(size_t), srcOffset);
+
+			t_packet_data uncompressed;
+			uncompress((Byte*)uncompressed.data, &uncompressedSize, (Byte*)&packet.data[srcOffset], compressedSize);
+			LOG("uncompressing packet: " << compressedSize << " -> " << uncompressedSize);
+			
+			srcOffset = 0;
 			int startX = 0, startY = 0;
-			utils::memory::memread(&startX, packet.data, sizeof(GLint), srcOffset);
-			utils::memory::memread(&startY, packet.data, sizeof(GLint), srcOffset);
+			utils::memory::memread(&startX, uncompressed.data, sizeof(GLint), srcOffset);
+			utils::memory::memread(&startY, uncompressed.data, sizeof(GLint), srcOffset);
 
 			auto search = std::find_if(render->_chunks.begin(), render->_chunks.end(), [startX, startY](auto& chunk) { return (chunk->getStartX() == startX && chunk->getStartY() == startY); });
 			if (search == render->_chunks.end()) {
 				std::shared_ptr<Chunk> newChunk = std::make_shared<Chunk>(render->_player.get(), render->_inventory.get(), startX, startY, render->_chunks);
-				// newChunk->deserializeSubChunk(packet);
-				newChunk->deserializeChunk(packet);
+				newChunk->deserializeChunk(uncompressed);
 
 				mtx.lock();
 				render->_chunks.push_back(newChunk);
 				mtx.unlock();
 			} else {
-				// (*search)->deserializeSubChunk(packet);
-				(*search)->deserializeChunk(packet);
+				(*search)->deserializeChunk(uncompressed);
 			}
 			
 		}

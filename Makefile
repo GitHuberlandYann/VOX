@@ -3,7 +3,9 @@ OBJS_DIR	= Objs
 SRCS_DIR	= Sources
 NET_DIR		= Network
 
-FILES		= main blockUpdate callbacks drawPlayer fluids hitbox inputs item2D item3D itemExtrusion light pathfinding physics random redstone redstoneSchedule screenshot textures threadChunkUpdate tickUpdate utils worldGeneration \
+FILES		= main
+
+FILES		+= blockUpdate callbacks drawPlayer fluids hitbox inputs item2D item3D itemExtrusion light pathfinding physics random redstone redstoneSchedule screenshot textures threadChunkUpdate tickUpdate utils worldGeneration \
 				AHostileMob AMob ATag Blocks Buffer Camera Chat ChestInstance Chunk DayCycle Entity FurnaceInstance Inventory JSON Menu OpenGL_Manager Particle Player Settings Shader SignInstance Skeleton Skybox Text Ui WorldEdit Zombie
 
 NET_FILES	= client serialize threadClientChunkUpdate threadServerChunkUpdate \
@@ -18,8 +20,8 @@ OBJS 		= $(addprefix $(OBJS_DIR)/, $(addsuffix .o, $(FILES)))
 CC 			= clang++
 CPPFLAGS 	= -Wall -Wextra -Werror -O3 -std=c++17
 SAN 		= -fsanitize=address -g3
-INCLUDES	= -I Includes -I Includes/Network -I Libs/glm -I Libs/glfw/include -I Libs/glew-2.2.0/include -I Libs/SOIL/build/include
-LDFLAGS		= Libs/glm/glm/libglm.a Libs/glfw/src/libglfw3.a Libs/glew-2.2.0/build/lib/libGLEW.a Libs/SOIL/build/lib/libSOIL.a
+INCLUDES	= -I Includes -I Includes/Network -I Libs/glm -I Libs/glfw/include -I Libs/glew-2.2.0/include -I Libs/SOIL/build/include -I Libs/zlib
+LDFLAGS		= Libs/glm/glm/libglm.a Libs/glfw/src/libglfw3.a Libs/glew-2.2.0/build/lib/libGLEW.a Libs/SOIL/build/lib/libSOIL.a Libs/zlib/libz.a
 
 # ===---===---===---===---===---===---===---===---===---===---===---===---
 
@@ -42,12 +44,14 @@ setup:
 	cd Libs/glew-2.2.0/build && cmake ./cmake && make
 	cd Libs/glfw && cmake . && make
 	cd Libs/SOIL && ./configure && make
+	cd Libs/zlib && ./configure && make
 
 cleanLibs:
-	cd Libs/glm && make clean
-	cd Libs/glew-2.2.0 && make clean
-	cd Libs/glfw && make clean
-	cd Libs/SOIL && make clean
+	make -C Libs/glm clean
+	make -C Libs/glew-2.2.0 clean
+	make -C Libs/glfw clean
+	make -C Libs/SOIL clean
+	make -C Libs/zlib clean
 
 $(NAME): $(OBJS)
 	$(CC) $(CPPFLAGS) $(SAN) $(INCLUDES) $(OBJS) -o $(NAME) $(LDFLAGS)
