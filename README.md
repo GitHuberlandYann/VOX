@@ -130,6 +130,7 @@ kp_+ kp_-          - change player speed in gamemode creative
 * [GLM](https://github.com/g-truc/glm.git) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications.
 * [SOIL](https://github.com/littlstar/soil.git) is a tiny C library used primarily for uploading textures into OpenGL.
 * [siv::PerlinNoise](https://github.com/Reputeless/PerlinNoise.git) is a header-only Perlin noise library for modern C++ (C++17/20). The implementation is based on Ken Perlin's Improved Noise.
+* [zlib](https://github.com/madler/zlib.git) is a general purpose data compression library.  I use it to compress packets sent by server to clients.
 
 ## References
 * The assets used in this project come from https://mcasset.cloud.

@@ -10,3 +10,6 @@
 [submodule "Libs/glew-2.2.0"]
 	path = Libs/glew-2.2.0
 	url = git@github.com:GitHuberlandYann/glew-2.2.0.git
+[submodule "Libs/zlib"]
+	path = Libs/zlib
+	url = https://github.com/madler/zlib.git
