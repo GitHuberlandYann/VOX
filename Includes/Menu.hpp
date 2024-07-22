@@ -107,7 +107,8 @@ class Menu
 		void setState( int state );
 		int getState( void );
 		void changeGuiSize( void );
-		std::string getWorldFile( void );
+		std::string getResetWorldFile( void );
+		std::string getResetServerIP( void );
 		t_sign_info getSignContent( void );
 		menu::ret run( bool animUpdate );
 
@@ -125,7 +126,7 @@ class Menu
 		std::vector<t_item> _drops;
 		std::vector<int> _selection_list;
 		std::vector<std::array<int, 3>> _vertices;
-		std::string _world_file;
+		std::string _world_file, _server_ip;
 		GLFWwindow* _window;
 		Inventory* _inventory;
 		UI* _ui;
@@ -142,7 +143,7 @@ class Menu
 		menu::ret enter_world_select_menu( void );
 		menu::ret world_select_menu( void );
 		menu::ret world_create_menu( bool animUpdate );
-		menu::ret multiplayer_menu( void );
+		menu::ret multiplayer_menu( bool animUpdate );
 		menu::ret error_menu( void );
 		menu::ret waiting_menu( bool animUpdate );
 		menu::ret loading_screen_menu( void );

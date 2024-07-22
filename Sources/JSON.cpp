@@ -26,7 +26,7 @@ void OpenGL_Manager::saveWorld( void )
 		+ ",\n\t\"flat_world\": " + std::to_string(Settings::Get()->getInt(settings::ints::flat_world_block))
 		+ DayCycle::Get()->saveString()
 		+ _player->saveString()
-		+ _inventory->saveString()
+		+ _player->getInventory()->saveString()
 		+ saveBackupString()
 		+ "\n}";
 	try {
@@ -368,7 +368,7 @@ void OpenGL_Manager::loadWorld( std::string file )
 			} else if (!line.compare(0, 10, "\"camera\": ")) {
 				_player->loadWorld(ofs, indata);
 			} else if (!line.compare(0, 13, "\"inventory\": ")) {
-				_inventory->loadWorld(ofs, indata);
+				_player->getInventory()->loadWorld(ofs, indata);
 			} else if (!line.compare(0, 11, "\"backups\": ")) {
 				loadBackups(ofs, indata);
 			} else {
@@ -684,7 +684,7 @@ void Inventory::loadWorld( std::ofstream & ofs, std::ifstream & indata )
 	throw UnclosedBracketException();
 }
 
-void ChestInstance::loadContent( std::ofstream & ofs, std::string &line, int &index )
+void ChestInstance::loadContent( std::ofstream& ofs, std::string& line, int &index )
 {
 	(void)ofs;
 	for (; line[index] && line[index] != '['; ++index);
@@ -703,7 +703,7 @@ void ChestInstance::loadContent( std::ofstream & ofs, std::string &line, int &in
 	}
 }
 
-void OpenGL_Manager::loadBackups( std::ofstream & ofs, std::ifstream & indata )
+void OpenGL_Manager::loadBackups( std::ofstream& ofs, std::ifstream& indata )
 {
 	int index;
 	std::string line;

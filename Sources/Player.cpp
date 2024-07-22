@@ -6,7 +6,7 @@ Player::Player( void )
     : AMob({0.0f, 0.0f, 0.0f}), _id(-1), _flySpeed(settings::consts::speed::fly), _foodLevel(20), _foodTickTimer(0),
     _yaw(settings::defaults::yaw), _pitch(settings::defaults::pitch),
     _smoothCamZ(0.0f), _fovOffset(0.0f), _armAnimTime(0.0f), _breathTime(0.0f), _foodSaturationLevel(20.0f), _foodExhaustionLevel(0.0f),
-    _spawnpoint(0.0f, 0.0f, 0.0f), _lastTp(0.0f, 0.0f, 0.0f),
+    _spawnpoint(0.0f, 0.0f, 0.0f), _lastTp(0.0f, 0.0f, 0.0f), _inventory(std::make_unique<Inventory>()),
     _smoothCam(false), _armAnimation(false), _fallImmunity(false), _sprinting(false), _sneaking(false), _waterHead(false), _waterFeet(false),
     _updateCam(false), _updateFov(false), _updateUI(false)
 {
@@ -254,6 +254,11 @@ bool Player::getResetUIUpdate( void )
 	bool res = _updateUI;
 	_updateUI = false;
 	return (res);
+}
+
+Inventory* Player::getInventory( void )
+{
+	return (_inventory.get());
 }
 
 void Player::updateFlySpeed( GLint key_cam_speed )

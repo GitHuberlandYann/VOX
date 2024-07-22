@@ -110,7 +110,9 @@ void OpenGL_Manager::handlePackets( void )
 
 	if (!_player) {
 		_packet.action = packet_id::client::login;
-		sendPacket(sizeof(unsigned short));
+		size_t usernameSize = 0;
+		utils::memory::memwrite(_packet.data, _world_name.c_str(), _world_name.size(), usernameSize);
+		sendPacket(sizeof(unsigned short) + usernameSize);
 	}
 }
 

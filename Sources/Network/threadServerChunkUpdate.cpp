@@ -76,7 +76,7 @@ static void thread_server_chunk_update( Server *server )
 		for (auto& c: coords) {
 			// create new chunk where at least one player stands
 			server->setThreadUpdate(true);
-			std::shared_ptr<Chunk> newChunk = std::make_shared<Chunk>(nullptr, nullptr, c.first, c.second, server->_chunks);
+			std::shared_ptr<Chunk> newChunk = std::make_shared<Chunk>(nullptr, c.first, c.second, server->_chunks);
 			mtx_backup.lock();
 			std::map<std::pair<int, int>, s_backup>::iterator search = server->_backups.find(std::pair<int, int>(c.first, c.second));
 			if (search != server->_backups.end()) {

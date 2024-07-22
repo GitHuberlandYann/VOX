@@ -76,6 +76,7 @@ class Player : public AMob
         bool getCamUpdate( void );
         bool getResetFovUpdate( void );
         bool getResetUIUpdate( void );
+		Inventory* getInventory( void );
 
         void updateExhaustion( float level );
         void tickUpdate( void );
@@ -84,7 +85,7 @@ class Player : public AMob
         void setChunkPtr( Chunk* chunk );
         std::string getString( int game_mode );
         std::string saveString( void );
-		void loadWorld( std::ofstream & ofs, std::ifstream & indata );
+		void loadWorld( std::ofstream& ofs, std::ifstream& indata );
 
         void setPos( glm::vec3 pos );
 		void setSpawnpoint( glm::vec3 spawnpoint );
@@ -117,6 +118,7 @@ class Player : public AMob
         glm::vec3 _spawnpoint, _lastTp;
         glm::vec2 _front2, _right2;
 		std::string name;
+		std::unique_ptr<Inventory> _inventory;
         bool _smoothCam, _armAnimation, _fallImmunity;
         bool _sprinting, _sneaking;
         bool _waterHead, _waterFeet;

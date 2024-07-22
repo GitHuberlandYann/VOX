@@ -10,6 +10,7 @@ namespace inputs
 	Player* playerPtr = NULL;
 	Menu* menuPtr = NULL;
 	Inventory* scroll_inventory = NULL;
+	UI* scroll_ui = NULL;
 
 	double lastX = WIN_WIDTH / 2.0f, lastY = WIN_HEIGHT / 2.0f;
 	bool backFromMenu = false;
@@ -27,9 +28,10 @@ namespace inputs
 		backFromMenu = true;
 	}
 
-	void set_scroll_callback( Inventory* ptr )
+	void set_scroll_callback( Inventory* ptr, UI* uiPtr )
 	{
 		scroll_inventory = ptr;
+		scroll_ui = uiPtr;
 	}
 
 	void cursor_position_callback( GLFWwindow* window, double xpos, double ypos )
@@ -62,7 +64,7 @@ namespace inputs
 			return ;
 		}
 
-		scroll_inventory->setSlot(scroll_inventory->getSlotNum() + ((yoffset > 0) ? 1 : -1));
+		scroll_ui->inventoryMessage(scroll_inventory->setSlot(scroll_inventory->getSlotNum() + ((yoffset > 0) ? 1 : -1)));
 	}
 
 	std::string message;

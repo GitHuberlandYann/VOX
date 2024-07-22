@@ -33,7 +33,7 @@ class Entity
 		glm::vec3 _pos, _dir;
 		glm::ivec2 _chunk_pos;
 		Chunk* _chunk;
-		Inventory *_inventory;
+		Inventory* _inventory;
 
 	private:
 		bool _thrown;

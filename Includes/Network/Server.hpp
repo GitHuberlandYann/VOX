@@ -25,7 +25,7 @@ class Server
 		void pendPacket( t_pending_packet& packet );
 		void run( void );
 
-		// threading
+		/** @category threading */
 		void getPlayersChunkPos( std::vector<glm::ivec2>& pos );
 		void setThreadUpdate( bool state );
 		bool getThreadUpdate( void );
@@ -50,7 +50,7 @@ class Server
 		void handleTime( void );
 		void handlePackets( void );
 		
-		// threading
+		/** @category threading */
 		void startThread( void );
 		void stopThread( void );
 };

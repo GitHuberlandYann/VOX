@@ -161,7 +161,7 @@ class Inventory
 		t_item getCrafted( void );
 		t_item getAnvilblock( int slot );
 		int getSlotNum( void );
-        void setSlot( int value );
+        std::string setSlot( int value );
 		void shiftBlockAt( std::vector<t_item>& drops, int state, int value, FurnaceInstance* furnace, ChestInstance* chest );
 		t_item getHoveredAt( int state, int value, FurnaceInstance* furnace, ChestInstance* chest );
 		t_item pickBlockAt( int state, int value, FurnaceInstance* furnace, ChestInstance* chest );
@@ -189,7 +189,6 @@ class Inventory
 
 		std::string getSlotString( void );
 		std::string saveString( void );
-		void setUIPtr( UI* ui );
 		void loadWorld( std::ofstream& ofs, std::ifstream& indata );
 
     private:
@@ -201,7 +200,6 @@ class Inventory
 		t_item _crafted;
         int _slot;
 		bool _modif;
-		UI* _ui;
 
 		t_item* getBlockPtr( int value, int& craft_place, FurnaceInstance* furnace, ChestInstance* chest );
 		void changeCraftedAnvil( void );

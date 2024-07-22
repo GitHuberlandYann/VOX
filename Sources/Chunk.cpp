@@ -5,13 +5,13 @@
 
 extern std::mutex mtx_backup;
 
-Chunk::Chunk( Player* player, Inventory* inventory, int posX, int posY, std::list<std::shared_ptr<Chunk>>& chunks )
+Chunk::Chunk( Player* player, int posX, int posY, std::list<std::shared_ptr<Chunk>>& chunks )
 	: _vaoSet(false), _waterVaoSet(false), _waterVaoVIP(false), _skyVaoSet(false), _skyVaoVIP(false),
 	_bufferReady(false), _hasWater(true), _genDone(false), _light_update(false), _vertex_update(false),
 	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
 	_displayed_faces(0), _water_count(0), _sky_count(0),
-	_neighbours({NULL, NULL, NULL, NULL}), _player(player), _inventory(inventory)
+	_neighbours({NULL, NULL, NULL, NULL}), _player(player)
 {
 	int cnt = 0;
 // std::cout << "new chunk at " << posX << ", " << posY << std::endl;
@@ -513,7 +513,7 @@ void Chunk::dropEntities( std::vector<t_item> drops )
 		if (item.type == blocks::air) {
 			return ;
 		}
-		_entities.push_back(std::make_shared<Entity>(this, _inventory, camPos, dir, true, item));
+		_entities.push_back(std::make_shared<Entity>(this, _player->getInventory(), camPos, dir, true, item));
 	}
 }
 
@@ -525,7 +525,7 @@ void Chunk::dropEntity( glm::vec3 dir, t_item item )
 	glm::vec3 camPos = _player->getPos();
 	camPos.z += 1;
 	camPos += dir;
-	_entities.push_back(std::make_shared<Entity>(this, _inventory, camPos, dir, true, item));
+	_entities.push_back(std::make_shared<Entity>(this, _player->getInventory(), camPos, dir, true, item));
 }
 
 void Chunk::addParticle( glm::vec3 pos, int type, float shade, int block )

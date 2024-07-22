@@ -27,11 +27,11 @@ class ChestInstance
 		void setChunk( Chunk* chunk, glm::ivec3 pos );
 		void setState( int state );
 		int getOrientation( void );
-		t_item *getItem( int index );
+		t_item* getItem( int index );
 		void update( std::vector<t_shaderInput>& arr, float deltaTime );
 
 		// std::string getInfoString( void );
-		void loadContent( std::ofstream & ofs, std::string &line, int &index );
+		void loadContent( std::ofstream& ofs, std::string& line, int &index );
 
 	private:
 		int _orientation, _state;
@@ -39,7 +39,7 @@ class ChestInstance
 		glm::ivec3 _pos;
 		glm::ivec2 _chunk_pos;
 		std::array<t_item, 27> _content;
-		Chunk *_chunk;
+		Chunk* _chunk;
 
 		void displayBottomBox( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int itemLight );
 		void displayTopBox( std::vector<t_shaderInput>& arr, std::array<glm::vec3, 8> pts, int itemLight );

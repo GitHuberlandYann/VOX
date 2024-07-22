@@ -65,7 +65,7 @@ void Inventory::changeCraftedAnvil( void )
 		return ;
 	}
 	std::string input = inputs::getCurrentMessage();
-	if (input == "" && (!_anvil[0].tag || _anvil[0].tag->getName() == "")) {
+	if (input.empty() && (!_anvil[0].tag || _anvil[0].tag->getName().empty())) {
 		_crafted = t_item();
 		return ;
 	} else if (_anvil[0].tag && _anvil[0].tag->getName() == input) {
@@ -368,19 +368,22 @@ int Inventory::getSlotNum( void )
 }
 
 /**
- * @brief set _slot to given arg, then display slot's block's name on ui
+ * @brief set _slot to given arg, then return slot's block's name to be displayed on ui
  */
-void Inventory::setSlot( int value )
+std::string Inventory::setSlot( int value )
 {
-	if (value < 0 || value >= 9) {
-		return ;
+	while (value < 0) {
+		value += 9;
+	}
+	while (value > 8) {
+		value -= 9;
 	}
     _slot = value;
 	_modif = true;
 	int type = _content[_slot].type;
-	_ui->inventoryMessage((_content[_slot].tag && _content[_slot].tag->getName() != "")
-							? _content[_slot].tag->getName()
-							: (type != blocks::air) ? s_blocks[type]->name : "");
+	return ((_content[_slot].tag && !_content[_slot].tag->getName().empty())
+				? _content[_slot].tag->getName()
+				: (type != blocks::air) ? s_blocks[type]->name : "");
 }
 
 /**
@@ -850,7 +853,7 @@ std::string Inventory::getAnvilTag( void )
 		if (_anvil[0].type == blocks::air) {
 			return ("");
 		}
-		if (!_anvil[0].tag || _anvil[0].tag->getName() == "") {
+		if (!_anvil[0].tag || _anvil[0].tag->getName().empty()) {
 			return (s_blocks[_anvil[0].type]->name);
 		}
 		return (_anvil[0].tag->getName());
@@ -914,9 +917,4 @@ std::string Inventory::getSlotString( void )
 		res += " (" + std::to_string(_content[_slot].amount) + ')';
 	}
 	return (res);
-}
-
-void Inventory::setUIPtr( UI *ui )
-{
-	_ui = ui;
 }

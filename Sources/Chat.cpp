@@ -266,7 +266,7 @@ void Chat::handle_clear( int argc, std::vector<std::string> &argv )
 			chatMessage("Cleared " + std::to_string(_oglMan->clearParticles()) + " particles");
 			return ;
 		} else if (!argv[1].compare("i") || !argv[1].compare("inventory")) {
-			_oglMan->_inventory->spillInventory(NULL);
+			_oglMan->_player->getInventory()->spillInventory(NULL);
 			chatMessage("Cleared your inventory");
 			return ;
 		}
@@ -341,7 +341,7 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		chatMessage("Wrong usage of /give me <item>");
 		return ;
 	} else if (!argv[2].compare("redstone")) {
-		_oglMan->_inventory->spillInventory(NULL);
+		_oglMan->_player->getInventory()->spillInventory(NULL);
 		const std::array<int, 28> reds = {blocks::observer, blocks::lever, blocks::redstone_dust, blocks::sticky_piston,
 			blocks::repeater, blocks::stone_bricks, blocks::worldedit_wand, blocks::iron_block, blocks::glass,
 
@@ -350,7 +350,7 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 			blocks::oak_stairs, blocks::piston, blocks::comparator, blocks::redstone_torch, blocks::redstone_block,
 			blocks::iron_ore, blocks::target, blocks::item_frame};
 		for (size_t index = 0; index < reds.size(); ++index) {
-			_oglMan->_inventory->absorbItem({reds[index], 1});
+			_oglMan->_player->getInventory()->absorbItem({reds[index], 1});
 		}
 		return ;
 	} else if (!argv[2].compare(0, 8, "blocks::")) {
@@ -363,11 +363,11 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		}
 	} else if (!argv[2].compare(0, 3, "all")) {
 		int start = (argv[2][3]) ? std::atoi(&argv[2][3]) * 36 + 1 : 1;
-		_oglMan->_inventory->spillInventory(NULL);
+		_oglMan->_player->getInventory()->spillInventory(NULL);
 		for (int i = 0; i < 36; ++i) {
 			int index = start + i;
 			if (index > blocks::air && index < S_BLOCKS_SIZE) { // && s_blocks[index]->name.compare("TBD")) {
-				_oglMan->_inventory->absorbItem({index, 1});
+				_oglMan->_player->getInventory()->absorbItem({index, 1});
 			}
 		}
 		return ;
@@ -395,7 +395,7 @@ void Chat::handle_give( int argc, std::vector<std::string> &argv )
 		case blocks::worldedit_brush:
 			return (chatMessage("item " + s_blocks[item]->name + " [" + std::to_string(item) + "] can't be given."));
 	}
-	_oglMan->_inventory->replaceSlot(item, true);
+	_oglMan->_player->getInventory()->replaceSlot(item, true);
 	chatMessage("item " + s_blocks[item]->name + " [" + std::to_string(item) + "] has been added to your inventory.");
 }
 

@@ -64,7 +64,7 @@ static void thread_chunk_update( OpenGL_Manager *render )
 		for (auto& c: coords) {
 			//create new chunk where player stands
 			render->setThreadUpdate(true);
-			std::shared_ptr<Chunk> newChunk = std::make_shared<Chunk>(render->_player.get(), render->_inventory.get(), c.first, c.second, render->_chunks);
+			std::shared_ptr<Chunk> newChunk = std::make_shared<Chunk>(render->_player.get(), c.first, c.second, render->_chunks);
 			mtx_backup.lock();
 			std::map<std::pair<int, int>, s_backup>::iterator search = render->_backups.find(std::pair<int, int>(c.first, c.second));
 			if (search != render->_backups.end()) {

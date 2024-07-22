@@ -12,7 +12,7 @@ Menu::Menu( void ) : _gui_size(3), _state(menu::main), _selection(0), _selected_
 	_textBar(true), _input_world(false), _input_seed(false), _change_to_apply(false), _book_content(NULL),
 	_inventory(NULL), _ui(NULL), _chat(NULL), _text(NULL), _chest(NULL), _furnace(NULL)
 {
-	_world_file = "";
+
 }
 
 Menu::~Menu( void )
@@ -65,7 +65,7 @@ void Menu::reset_values( void )
 	_drop_down_menu = false;
 	_scroll = 0;
 	if (_book_content) {
-		while (_book_content->size() > 1 && _book_content->at(_book_content->size() - 1) == "") {
+		while (_book_content->size() > 1 && _book_content->at(_book_content->size() - 1).empty()) {
 			_book_content->pop_back();
 		}
 		_book_content = NULL;
@@ -82,7 +82,7 @@ menu::ret Menu::main_menu( void )
 		} else if (_selection == 2) { // multiplayer
 			_state = menu::multiplayer;
 			reset_values();
-			return (multiplayer_menu());
+			return (multiplayer_menu(false));
 		} else if (_selection == 5) { // options
 			_state = menu::main_options;
 			reset_values();
@@ -143,7 +143,7 @@ menu::ret Menu::world_select_menu( void )
 			_state = menu::world_create;
 			perlin_seed = 0;
 			reset_values();
-			_world_file = "";
+			_world_file.clear();
 			return (world_create_menu(false));
 		} else if (_selection == 6) { // cancel, go back to main menu
 			_state = menu::main;
@@ -271,7 +271,7 @@ menu::ret Menu::world_create_menu( bool animUpdate )
 	return (menu::ret::no_change);
 }
 
-menu::ret Menu::multiplayer_menu( void )
+menu::ret Menu::multiplayer_menu( bool animUpdate )
 {
 	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
 		_state = menu::main;
@@ -279,18 +279,42 @@ menu::ret Menu::multiplayer_menu( void )
 		return (main_menu());
 	}
 	if (inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) {
+		if (_moving_slider && ((_selection != 5 && _input_world) || (_selection != 6 && _input_seed))) {
+			_input_world = false;
+			_input_seed = false;
+			glfwSetCharCallback(_window, NULL);
+		}
 		if (_selection == 1) { // Host Server
-			_selected_world = 0;
+			_moving_slider = false;
 		} else if (_selection == 2) { // Join Server
-			_selected_world = 1;
+			_moving_slider = true;
 		} else if (_selection == 3) { // Cancel
 			_state = menu::main;
 			reset_values();
 			return (main_menu());
 		} else if (_selection == 4) {
-			_world_file = (_selected_world == 0) ? "farm.json" : "localhost";
-			return ((_selected_world == 0) ? menu::ret::host_server : menu::ret::join_server);
+			_world_file = (!_moving_slider) ? "farm.json" : _world_file;
+			return ((!_moving_slider) ? menu::ret::host_server : menu::ret::join_server);
+		} else if (_moving_slider) {
+			if (_selection == 5) {
+				glfwSetCharCallback(_window, inputs::character_callback);
+				inputs::setCurrentMessage(_world_file);
+				_input_world = true; _textBar = true;
+			} else if (_selection == 6) {
+				glfwSetCharCallback(_window, inputs::character_callback);
+				inputs::setCurrentMessage(_server_ip);
+				_input_seed = true; _textBar = true;
+			}
 		}
+	}
+	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+		inputs::rmLetter(inputs::key_down(inputs::left_control)); _textBar = true;
+	}
+	if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
+		inputs::moveCursor(true, inputs::key_down(inputs::run)); _textBar = true;
+	}
+	if (inputs::key_down(inputs::look_left) && inputs::key_update(inputs::look_left)) {
+		inputs::moveCursor(false, inputs::key_down(inputs::run)); _textBar = true;
 	}
 
 	_text->addCenteredText(WIN_WIDTH / 2, 20 * _gui_size, 0, 0, 7 * _gui_size, argb::white, false, settings::consts::depth::menu::controls::str, "Multiplayer");
@@ -298,7 +322,28 @@ menu::ret Menu::multiplayer_menu( void )
 	_text->addCenteredText(WIN_WIDTH / 2 - 200 * _gui_size, 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::controls::str, "Host Server");
 	_text->addCenteredText(WIN_WIDTH / 2, 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::controls::str, "Join Server");
 
-	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT - 100 * _gui_size, 0, 0, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::controls::str, (_selected_world == 0) ? "Host Server" : "Join Server");
+	if (!_moving_slider) { // Host Server
+
+	} else { // Join Server
+		if (_input_world) {
+			_world_file = inputs::getCurrentMessage();
+			if (animUpdate) { _textBar = !_textBar; }
+			_text->addCenteredCursorText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage()); // Player name
+		} else {
+			_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::str, _world_file); // Player name
+		}
+		if (_input_seed) {
+			_server_ip = inputs::getCurrentMessage(); // TODO cap inputs sizes
+			if (animUpdate) { _textBar = !_textBar; }
+			_text->addCenteredCursorText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage()); // Player name
+		} else {
+			_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::str, _server_ip); // Player name
+		}
+		_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 77 * _gui_size, 6 * _gui_size, argb::white, settings::consts::depth::menu::str, "Name");
+		_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 32 * _gui_size, 6 * _gui_size, argb::white, settings::consts::depth::menu::str, "Server IP (leave empty for localhost)");
+	}
+
+	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT - 100 * _gui_size, 0, 0, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::controls::str, (!_moving_slider) ? "Host Server" : "Join Server");
 	
 	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT - 30 * _gui_size, 0, 0, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::controls::str, "Cancel");
 
@@ -339,7 +384,7 @@ menu::ret Menu::waiting_menu( bool animUpdate )
 	if (animUpdate) {
 		_worlds[1] += '.';
 		if (_worlds[1].size() > 3) {
-			_worlds[1] = "";
+			_worlds[1].clear();
 		}
 	}
 	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT / 2, 0, 0, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::controls::str, _worlds[1]);
@@ -955,7 +1000,7 @@ menu::ret Menu::ingame_menu( void )
 		if (hovered.type != blocks::air) {
 			glm::ivec2 pos = computeScreenPosFromSelection(_selection);
 			int font = 5 * _gui_size;
-			std::string str = (!hovered.tag || hovered.tag->getName() == "") ? s_blocks[hovered.type]->name : hovered.tag->getName();
+			std::string str = (!hovered.tag || hovered.tag->getName().empty()) ? s_blocks[hovered.type]->name : hovered.tag->getName();
 			addUnstretchedQuads(settings::consts::tex::inventory, settings::consts::depth::menu::item_info_back, pos.x + 14 * _gui_size, pos.y + 14 * _gui_size,
 								utils::text::textWidth(font, str) + 10 * _gui_size, utils::text::textHeight(font, str) + 10 * _gui_size, 165, 166, 24, 24, 3);
 			_text->addText(pos.x + 19 * _gui_size, pos.y + 19 * _gui_size, font, argb::gray, settings::consts::depth::menu::item_info_str, str);
@@ -1293,7 +1338,7 @@ void Menu::setup_array_buffer_create( void )
 		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20); // Flat World Block
 	}
 
-	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_world_file == "") ? 71 : (_selection == 5) ? 111 : 91, 200, 20, 3); // Create New World
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_world_file.empty()) ? 71 : (_selection == 5) ? 111 : 91, 200, 20, 3); // Create New World
 	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size, 0, (_selection == 6) ? 111 : 91, 200, 20, 3); // Cancel
 
 	setup_shader();
@@ -1302,10 +1347,17 @@ void Menu::setup_array_buffer_create( void )
 void Menu::setup_array_buffer_multiplayer( void )
 {
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 40 * _gui_size, WIN_WIDTH, WIN_HEIGHT - 105 * _gui_size, 0, 91, 1, 1); // occult central part
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 200 * _gui_size, 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selected_world == 0) ? (_selection == 1) ? 111 : 91 : (_selection == 1) ? 195 : 71, 200, 20); // Host Server
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2, 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selected_world == 1) ? (_selection == 2) ? 111 : 91 : (_selection == 2) ? 195 : 71, 200, 20); // Join Server
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 200 * _gui_size, 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (!_moving_slider) ? (_selection == 1) ? 111 : 91 : (_selection == 1) ? 195 : 71, 200, 20); // Host Server
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2, 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_moving_slider) ? (_selection == 2) ? 111 : 91 : (_selection == 2) ? 195 : 71, 200, 20); // Join Server
 
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20); // Host/Join button
+	if (!_moving_slider) { // host server
+
+		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_selection == 4) ? 111 : 91, 200, 20); // Host button
+	} else { // join server
+		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_input_world) ? 195 : 71, 200, 20); // Name
+		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_input_seed) ? 195 : 71, 200, 20); // Server IP
+		addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::bars, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size, 0, (_world_file.empty()) ? 71 : (_selection == 4) ? 111 : 91, 200, 20); // Join button
+	}
 
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, 0, WIN_WIDTH, 40 * _gui_size, 1, 72, 1, 1); // occult top part
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, WIN_HEIGHT - 60 * _gui_size, WIN_WIDTH, 60 * _gui_size, 1, 72, 1, 1); // occult bottom part
@@ -1317,7 +1369,7 @@ void Menu::setup_array_buffer_multiplayer( void )
 
 void Menu::setup_array_buffer_error( void )
 {
-	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 40 * _gui_size, WIN_WIDTH, WIN_HEIGHT - 105 * _gui_size, 0, 91, 1, 1); // occult central part
+	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::occlusion, 0, 40 * _gui_size, WIN_WIDTH, WIN_HEIGHT - 80 * _gui_size, 0, 91, 1, 1); // occult central part
 
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, 0, WIN_WIDTH, 40 * _gui_size, 1, 72, 1, 1); // occult top part
 	addQuads(settings::consts::tex::ui, settings::consts::depth::menu::controls::occlusion, 0, WIN_HEIGHT - 40 * _gui_size, WIN_WIDTH, 40 * _gui_size, 1, 72, 1, 1); // occult bottom part
@@ -1802,7 +1854,7 @@ void Menu::add_anvil_value( void )
 			addQuads(settings::consts::tex::anvil, settings::consts::depth::menu::container - 5, WIN_WIDTH / 2 - (88 - 99) * _gui_size, WIN_HEIGHT / 2 - (83 - 45) * _gui_size, 28 * _gui_size, 21 * _gui_size, 176, 0, 28, 21);
 			if (_input_world) {
 				_text->addCursorText(WIN_WIDTH / 2 - (88 - 63) * _gui_size - glm::max(0, utils::text::textWidth(6 * _gui_size, inputs::getCurrentMessage()) - 100 * _gui_size), WIN_HEIGHT / 2 - (83 - 25) * _gui_size, 6 * _gui_size, argb::gray, settings::consts::depth::menu::container + 5, true, inputs::getCursor(), inputs::getCurrentMessage());
-			} else if (!item.tag || item.tag->getName() == "") {
+			} else if (!item.tag || item.tag->getName().empty()) {
 				_text->addText(WIN_WIDTH / 2 - (88 - 63) * _gui_size - glm::max(0, utils::text::textWidth(6 * _gui_size, s_blocks[item.type]->name) - 100 * _gui_size), WIN_HEIGHT / 2 - (83 - 25) * _gui_size, 6 * _gui_size, argb::gray, settings::consts::depth::menu::container + 5, s_blocks[item.type]->name);
 			} else {
 				_text->addText(WIN_WIDTH / 2 - (88 - 63) * _gui_size - glm::max(0, utils::text::textWidth(6 * _gui_size, item.tag->getName()) - 100 * _gui_size), WIN_HEIGHT / 2 - (83 - 25) * _gui_size, 6 * _gui_size, argb::gray, settings::consts::depth::menu::container + 5, item.tag->getName());
@@ -2023,7 +2075,7 @@ void Menu::processMouseMovement( float posX, float posY )
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 30 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = (Settings::Get()->getBool(settings::bools::flat_world)) ? 4 : 0;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 155 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size)) {
-			_selection = (_world_file == "") ? 0 : 5;
+			_selection = (_world_file.empty()) ? 0 : 5;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 65 * _gui_size, 150 * _gui_size, 20 * _gui_size)) {
 			_selection = 6;
 		} else {
@@ -2038,7 +2090,11 @@ void Menu::processMouseMovement( float posX, float posY )
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT - 40 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
 			_selection = 3;
 		} else if (inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT - 110 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
-			_selection = 4;
+			_selection = (_moving_slider && _world_file.empty()) ? 0 : 4;
+		} else if (_moving_slider && inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 5;
+		} else if (_moving_slider && inRectangle(posX, posY, WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size)) {
+			_selection = 6;
 		} else {
 			_selection = 0;
 		}
@@ -2460,7 +2516,7 @@ void Menu::setState( int state )
 		}
 	#endif
 	inputs::set_cursor_position_callback(NULL, this);
-	inputs::set_scroll_callback(NULL);
+	inputs::set_scroll_callback(NULL, NULL);
 
 	switch (state) {
 		case menu::chat:
@@ -2490,9 +2546,18 @@ void Menu::changeGuiSize( void )
 	_ui->setGuiSize(_gui_size + 1);
 }
 
-std::string Menu::getWorldFile( void )
+std::string Menu::getResetWorldFile( void )
 {
-	return (_world_file);
+	std::string res =_world_file;
+	_world_file.clear();
+	return (res);
+}
+
+std::string Menu::getResetServerIP( void )
+{
+	std::string res =_server_ip;
+	_server_ip.clear();
+	return (res.empty() ? "localhost" : res);
 }
 
 t_sign_info Menu::getSignContent( void )
@@ -2518,7 +2583,7 @@ menu::ret Menu::run( bool animUpdate )
 		case menu::world_create:
 			return (world_create_menu(animUpdate));
 		case menu::multiplayer:
-			return (multiplayer_menu());
+			return (multiplayer_menu(animUpdate));
 		case menu::error:
 			return (error_menu());
 		case menu::wait:

@@ -63,7 +63,6 @@ class OpenGL_Manager
 		std::vector<std::shared_ptr<Chunk>> _perimeter_chunks, _deleted_chunks;
 		std::map<std::pair<int, int>, s_backup> _backups;
 		std::unique_ptr<Player> _player;
-		std::unique_ptr<Inventory> _inventory;
 
 		OpenGL_Manager( void );
 		~OpenGL_Manager( void );
@@ -128,7 +127,7 @@ class OpenGL_Manager
 		void saveWorld( void );
 		std::string saveBackupString( void );
 		void loadWorld( std::string file );
-		void loadBackups( std::ofstream & ofs, std::ifstream & indata );
+		void loadBackups( std::ofstream& ofs, std::ifstream& indata );
 		void clearChunks( void );
 
 		void addBreakingAnim( void );
@@ -138,12 +137,13 @@ class OpenGL_Manager
 		void drawModels( void );
 		void initWorld( void );
 
+		/** @category setup */
 		void setupWindow( void );
 		void createShaders( void );
 		void setupCommunicationShaders( void );
 		void loadTextures( void );
 
-		// main loop
+		/** @category main loop */
 		void handleEndSetup( void );
 		void initTime( void );
 		void handleTime( bool gamePaused );
@@ -156,7 +156,7 @@ class OpenGL_Manager
 		void handleMenu( bool animUpdate );
 		void handleChunkDeletion( void );
 
-		// client packets
+		/** @category client packets */
 		void sendPacket( size_t size );
 		void handlePacketLogin( void );
 		void handlePacketPing( char* data );
@@ -164,14 +164,14 @@ class OpenGL_Manager
 		void handlePacketChunk( t_packet_data& packet );
 		void handlePacketChatMsg( char* data );
 
-		// client loop
+		/** @category client loop */
 		void handlePackets( void );
 		void handleClientInputs( void );
 		void handleClientDraw( void );
 		void handleClientUI( void );
 		void runClient( void );
 
-		// threading
+		/** @category threading */
 		void startThread( void );
 		void startClientThread( void );
 		void stopThread( void );

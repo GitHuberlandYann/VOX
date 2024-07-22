@@ -13,7 +13,6 @@
 # include "SignInstance.hpp"
 class Player;
 class Menu;
-# include "Inventory.hpp"
 # include "Entity.hpp"
 # include "Particle.hpp"
 # include "Zombie.hpp"
@@ -125,10 +124,10 @@ struct s_backup { // TODO add fluids and entities and mobs to backups
 class Chunk
 {
     public:
-        Chunk( Player* player, Inventory* inventory, int posX, int posY, std::list<std::shared_ptr<Chunk>>& chunks );
+        Chunk( Player* player, int posX, int posY, std::list<std::shared_ptr<Chunk>>& chunks );
         ~Chunk( void );
 
-		// getters
+		/** @category getters */
 		GLint getStartX( void );
 		GLint getStartY( void );
 		Chunk* getChunkAt( int startX, int startY );
@@ -137,7 +136,7 @@ class Chunk
 		bool getSortedOnce( void );
 		void waitGenDone( void );
 
-		// light
+		/** @category light */
 		GLint getCamLightLevel( glm::ivec3 location );
 		int computePosLight( glm::vec3 pos );
 		short getLightLevel( int posX, int posY, int posZ );
@@ -148,7 +147,7 @@ class Chunk
 		int computeSmoothLight( int basefaceLight, int row, int col, int level, std::array<int, 9> offsets );
 		int computeShade( int row, int col, int level, std::array<int, 9> offsets );
 
-		// backups
+		/** @category backups */
 		void setNeighbour( Chunk* neighbour, int index );
 		void setBackup( std::map<std::pair<int, int>, s_backup>& backups );
 		void restoreBackup( s_backup& backup);
@@ -157,7 +156,7 @@ class Chunk
 		FurnaceInstance* getFurnaceInstance( glm::ivec3 pos );
 		void setSignContent( t_sign_info sign );
 
-		// block modif
+		/** @category block modif */
 		GLint getBlockAtAbsolute( glm::ivec3 pos );
 		GLint getBlockAtAbsolute( int posX, int posY, int posZ );
 		GLint getBlockAt( glm::ivec3 pos, bool askNeighbours = true );
@@ -170,7 +169,7 @@ class Chunk
 		void update_adj_block( glm::ivec3 pos, int dir, int source );
 		void turnDirtToGrass( int posX, int posY, int posZ );
 
-		// world generation
+		/** @category world generation */
 		void generation( void );
 		void checkFillVertices( void );
 		void checkFillVerticesServer( void );
@@ -182,13 +181,13 @@ class Chunk
 		void sort_sky( glm::vec3& pos, bool vip );
 		void sort_water( glm::vec3 pos, bool vip );
 
-		// math
+		/** @category math */
 		bool lineOfSight( const glm::vec3 src, const glm::vec3 dst );
 		bool inPerimeter( int posX, int posY, GLint render_dist );
 		int manhattanDist( int posX, int posY );
         bool isInChunk( int posX, int posY );
 
-		// extern interactions
+		/** @category extern interactions */
 		int isHit( glm::ivec3 pos );
 		bool bookedLectern( Menu* menu, glm::ivec3 pos, bool turnPage );
 		AMob* mobHit( const t_hit blockHit );
@@ -205,13 +204,13 @@ class Chunk
 		bool collisionBoxWater( glm::vec3 pos, float width, float height );
 		void applyGravity( AMob* mob );
 
-		// draw
+		/** @category draw */
 		int isLoaded( GLint& counter );
         void drawArray( GLint& counter, GLint& face_counter );
 		void drawSky( GLint& counter, GLint& face_counter );
 		void drawWater( GLint& counter, GLint& face_counter );
 
-		// updates
+		/** @category updates */
 		void updateRedstone( int priority, schedule::t_redstoneTick red );
 		void updatePiston( glm::ivec3 pos, int value );
 		void scheduleRedstoneTick( schedule::t_redstoneTick red );
@@ -229,7 +228,7 @@ class Chunk
 
 		std::string getAddsRmsString( void );
 
-		// networking
+		/** @category networking */
 		size_t paletteSubChunk( t_palette& palette, int index );
 		void serializeSubChunk( t_pending_packet& packet, int index );
 		void deserializeSubChunk( t_packet_data& packet );
@@ -252,7 +251,6 @@ class Chunk
 		std::atomic_size_t _displayed_faces, _water_count, _sky_count;
 		std::array<Chunk*, 4> _neighbours;
 		Player* _player;
-		Inventory* _inventory;
 		std::map<int,int> _added;
 		std::set<int> _removed, _fluids;
 		std::vector<int> _scheduled_to_fall;
@@ -266,7 +264,7 @@ class Chunk
 		std::thread _thread;
 		std::mutex _mtx, _mtx_fluid, _mtx_sky;
 
-		// utils
+		/** @category utils */
 		void gen_ore_blob( int ore_type, int row, int col, int level, int & blob_size, int dir);
 		void collisionWHitbox( t_collision& res, const Block* target, int value, glm::vec3 pos, float width,
 			float height, int bX, int bY, int bZ );
@@ -274,13 +272,13 @@ class Chunk
 		GLint face_count( int type, int row, int col, int level );
 		bool exposed_block( int row, int col, int level, bool isNotLeaves, bool isNotGlass );
 
-		// fluids
+		/** @category fluids */
 		int exposed_water_faces( int row, int col, int level );
 		std::array<int, 4> water_heights( int value, int above, int row, int col, int level );
 		bool endFlow( std::set<int>* newFluids, int &value, int posX, int posY, int posZ );
 		bool addFlow( std::set<int>* newFluids, int posX, int posY, int posZ, int srcWLevel );
 
-		// world gen
+		/** @category world gen */
 		int get_block_type( siv::PerlinNoise perlin, int row, int col, int level, int surface_level,
 			bool poppy, bool dandelion, bool blue_orchid, bool allium, bool cornflower, bool pink_tulip,
 			bool grass, bool tree_gen, std::vector<glm::ivec3> & trees );
@@ -290,7 +288,7 @@ class Chunk
 		void resetDisplayedFaces( void );
 		void generate_sky( void );
 
-		// player-related block update
+		/** @category player-related block update */
 		void regeneration( bool useInventory, int type, glm::ivec3 pos, Modif modif );
 		void entity_block( int posX, int posY, int posZ, int type );
 		void remove_block( bool useInventory, glm::ivec3 pos );
@@ -303,11 +301,11 @@ class Chunk
 		void use_block( bool useInventory, glm::ivec3 pos, int type );
 		void update_block( glm::ivec3 pos, int previous, int value );
 
-		// lights
+		/** @category lights */
 		void light_spread( int posX, int posY, int posZ, bool skySpread, int recurse = settings::consts::light_recurse );
 		void generate_lights( void );
 
-		// redstone
+		/** @category redstone */
 		glm::ivec3 getAttachedDir( int value );
 		int getWeakdyState( glm::ivec3 pos, glm::ivec3 except );
 		int getRedstoneSignalItemFrame( glm::ivec3 pos, glm::ivec3 except );
@@ -330,12 +328,12 @@ class Chunk
 		void retractPiston( glm::ivec3 pos, int value );
 		void connectRedstoneDust( glm::ivec3 pos, int &value, bool placed );
 
-		// pathfinding
+		/** @category pathfinding */
 		void checkNodePathfinding( std::list<std::shared_ptr<t_pathfinding_node>>& open_nodes,
 			std::list<std::shared_ptr<t_pathfinding_node>>& visited_nodes, glm::ivec3 pos, bool* trav,
 			std::shared_ptr<t_pathfinding_node> current, glm::ivec3 start, glm::ivec3 end );
 
-		// block update (20/sec)
+		/** @category block update (20/sec) */
 		void updateCrop( int value, int offset );
 		bool watered_farmland( int posX, int posY, int posZ );
 		void updateFarmland( int value, int offset );
@@ -345,7 +343,7 @@ class Chunk
 		bool spaceForTree( int posX, int posY, int posZ );
 		void growTree( int value, int offset );
 
-		// array buffer
+		/** @category array buffer */
         void fill_vertex_array( void );
         void setup_array_buffer( void );
 		void setup_sky_array_buffer( void );

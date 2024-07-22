@@ -58,7 +58,7 @@ namespace utils::string {
 
 	std::vector<std::string> split( std::string &str, char sep )
 	{
-		std::string tmp = "";
+		std::string tmp;
 		std::vector<std::string> res;
 		
 		for (size_t i = 0; i < str.size(); ++i) {
@@ -66,7 +66,7 @@ namespace utils::string {
 				tmp += std::tolower(str[i]);
 			} else if (tmp[0]) {
 				res.push_back(tmp);
-				tmp = "";
+				tmp.clear();
 			}
 		}
 		if (tmp[0]) {
@@ -936,7 +936,7 @@ namespace utils::network {
 	std::string getEth0( void )
 	{
 		struct ifaddrs * ifAddrStruct = NULL;
-		std::string res = "";
+		std::string res;
 
 		getifaddrs(&ifAddrStruct);
 

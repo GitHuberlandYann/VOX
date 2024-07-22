@@ -5,14 +5,14 @@ class Menu;
 
 namespace inputs
 {
-	// mouse callback
+	/** @category mouse callback */
 	void set_cursor_position_callback( Player* player, Menu* men );
 	void centerMouse( void );
-	void set_scroll_callback( Inventory* ptr );
+	void set_scroll_callback( Inventory* ptr, UI* uiPtr );
 	void cursor_position_callback( GLFWwindow* window, double xpos, double ypos );
 	void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
 
-	// character callback
+	/** @category character callback */
 	void character_callback( GLFWwindow* window, unsigned int codepoint );
 	void moveCursor( bool right, bool control );
 	void resetMessage( void );
@@ -23,7 +23,7 @@ namespace inputs
 	std::string getCurrentMessage( void );
 	void setCurrentMessage( std::string str );
 
-	// key callback
+	/** @category key callback */
 	void key_callback( GLFWwindow* window, int key, int scancode, int action, int mods );
 	void mouse_button_callback( GLFWwindow *window, int button, int action, int mods );
 	bool key_down( int index );

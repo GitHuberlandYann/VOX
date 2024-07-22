@@ -107,8 +107,9 @@ int Socket::send( const Address& destination, const void* data, size_t size )
 			break ;
 		case sockets::client:
 			if (_clients.empty()) {
-				_clients.push_back({destination});
+				_clients.push_back({destination, });
 				_clients[0].timeout = DayCycle::Get()->getGameTicks();
+				_clients[0].id = 0;
 			} else if (_clients[0].ip != destination) {
 				MAINLOG(LOGERROR("Socket::send: address does not match: " << _clients[0].ip << " vs " << destination));
 				return (send_ret::failure);

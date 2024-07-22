@@ -211,7 +211,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 	} else if (type == blocks::book_and_quill) {
 		_paused = true;
 		_menu->setState(menu::book_and_quill);
-		t_item item = _inventory->getSlotBlock(_inventory->getSlotNum());
+		t_item item = _player->getInventory()->getSlotBlock(_player->getInventory()->getSlotNum());
 		if (item.tag && item.tag->getType() == tags::book_tag) {
 			_menu->setBookContent(&static_cast<BookTag*>(item.tag.get())->getContent());
 		}
@@ -219,7 +219,7 @@ void OpenGL_Manager::handleBlockModif( bool adding, bool collect )
 	} else if (type == blocks::written_book) {
 		_paused = true;
 		_menu->setState(menu::book);
-		t_item item = _inventory->getSlotBlock(_inventory->getSlotNum());
+		t_item item = _player->getInventory()->getSlotBlock(_player->getInventory()->getSlotNum());
 		if (item.tag && item.tag->getType() == tags::book_tag) {
 			_menu->setBookContent(&static_cast<BookTag*>(item.tag.get())->getContent());
 		}
@@ -534,7 +534,7 @@ void OpenGL_Manager::userInputs( bool rayCast )
 
 	// add and remove blocks
 	_player->setDelta(_time.deltaTime);
-	_hand_content = _inventory->getCurrentSlot();
+	_hand_content = _player->getInventory()->getCurrentSlot();
 	if (inputs::key_down(inputs::destroy)) {
 		bool firstFrame = inputs::key_update(inputs::destroy);
 		AMob* mobHit = NULL;
@@ -560,7 +560,7 @@ void OpenGL_Manager::userInputs( bool rayCast )
 					_break_frame = _outline;
 					handleBlockModif(false, can_collect);
 					_player->updateExhaustion(settings::consts::exhaustion::breaking_block);
-					_inventory->decrementDurabitilty();
+					_player->getInventory()->decrementDurabitilty();
 				} else {
 					int break_frame = (_break_time < .0f) ? 0 : static_cast<int>(10 * _break_time / break_time) + 2;
 					if (_break_frame != break_frame) {
@@ -588,7 +588,7 @@ void OpenGL_Manager::userInputs( bool rayCast )
 			_eat_timer += _time.deltaTime;
 			if (_eat_timer >= 1.61f) {
 				if (_player->canEatFood(_hand_content)) {
-					_inventory->removeBlock(false);
+					_player->getInventory()->removeBlock(false);
 				}
 				_eat_timer = 0;
 			}
@@ -601,7 +601,7 @@ void OpenGL_Manager::userInputs( bool rayCast )
 	} else if (inputs::key_update(inputs::use)) {
 		if (_hand_content == blocks::bow && _bow_timer && _current_chunk_ptr) {
 			// TODO rm arrow from inventory (once implemented)
-			_inventory->decrementDurabitilty();
+			_player->getInventory()->decrementDurabitilty();
 			_current_chunk_ptr->shootArrow(_player->getEyePos(), _player->getDir(), _bow_timer);
 		}
 		_eat_timer = 0;
@@ -610,7 +610,7 @@ void OpenGL_Manager::userInputs( bool rayCast )
 	// drop item
 	if (inputs::key_down(inputs::drop)) {
 		if (_current_chunk_ptr) {
-			t_item details = _inventory->removeBlock(true);
+			t_item details = _player->getInventory()->removeBlock(true);
 			if (details.type != blocks::air) {
 				mtx.lock();
 				_current_chunk_ptr->dropEntity(_player->getDir(), details);
@@ -620,7 +620,7 @@ void OpenGL_Manager::userInputs( bool rayCast )
 	}
 	if (_block_hit.type != blocks::air
 		&& inputs::key_down(inputs::sample) && inputs::key_update(inputs::sample)) { // pick up in creative mode, or swap
-		_inventory->replaceSlot(_block_hit.type, _game_mode == settings::consts::gamemode::creative);
+		_player->getInventory()->replaceSlot(_block_hit.type, _game_mode == settings::consts::gamemode::creative);
 	}
 
 	// toggle polygon mode fill / lines
@@ -641,7 +641,7 @@ void OpenGL_Manager::userInputs( bool rayCast )
 		_block_hit = block_hit;
 
 		if (!_player->getHealth() && _current_chunk_ptr) { // dead
-			_inventory->spillInventory(_current_chunk_ptr.get());
+			_player->getInventory()->spillInventory(_current_chunk_ptr.get());
 			_paused = true;
 			_menu->setState(menu::death);
 			return ;
@@ -657,31 +657,10 @@ void OpenGL_Manager::userInputs( bool rayCast )
 	}
 
 	// inventory slot selection
-	if (inputs::key_down(inputs::slot_0) && inputs::key_update(inputs::slot_0)) {
-		_inventory->setSlot(0);
-	}
-	if (inputs::key_down(inputs::slot_1) && inputs::key_update(inputs::slot_1)) {
-		_inventory->setSlot(1);
-	}
-	if (inputs::key_down(inputs::slot_2) && inputs::key_update(inputs::slot_2)) {
-		_inventory->setSlot(2);
-	}
-	if (inputs::key_down(inputs::slot_3) && inputs::key_update(inputs::slot_3)) {
-		_inventory->setSlot(3);
-	}
-	if (inputs::key_down(inputs::slot_4) && inputs::key_update(inputs::slot_4)) {
-		_inventory->setSlot(4);
-	}
-	if (inputs::key_down(inputs::slot_5) && inputs::key_update(inputs::slot_5)) {
-		_inventory->setSlot(5);
-	}
-	if (inputs::key_down(inputs::slot_6) && inputs::key_update(inputs::slot_6)) {
-		_inventory->setSlot(6);
-	}
-	if (inputs::key_down(inputs::slot_7) && inputs::key_update(inputs::slot_7)) {
-		_inventory->setSlot(7);
-	}
-	if (inputs::key_down(inputs::slot_8) && inputs::key_update(inputs::slot_8)) {
-		_inventory->setSlot(8);
+	for (int index = 0; index < 8; ++index) {
+		if (inputs::key_down(inputs::slot_0 + index) && inputs::key_update(inputs::slot_0 + index)) {
+			_ui->inventoryMessage(_player->getInventory()->setSlot(index));
+			break ;
+		}
 	}
 }

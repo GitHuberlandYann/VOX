@@ -8,7 +8,7 @@
 BENCHLOG(#include "Benchmark.hpp")
 
 OpenGL_Manager::OpenGL_Manager( void )
-	: _player(std::make_unique<Player>()), _inventory(std::make_unique<Inventory>()),
+	: _player(std::make_unique<Player>()),
 	_window(NULL), _textures({NULL}), _fill(true), _debug_mode(true), _outline(true), _paused(true),
 	_threadUpdate(false), _threadStop(false), _break_time(0), _eat_timer(0), _bow_timer(0),
 	_game_mode(settings::consts::gamemode::creative), _break_frame(0), _world_name("default.json"),
@@ -17,11 +17,10 @@ OpenGL_Manager::OpenGL_Manager( void )
 	_socket(nullptr)
 {
 	MAINLOG(LOG("Constructor of OpenGL_Manager called\n"));
-	_inventory->setUIPtr(_ui.get());
 	_camera->setTarget(_player.get());
-	_ui->setPtrs(this, _inventory.get(), _player.get());
-	_menu->setPtrs(_inventory.get(), _ui.get());
-	WorldEdit::Get()->setPtrs(this, _inventory.get(), _ui->getChatPtr().get());
+	_ui->setPtrs(this, _player->getInventory(), _player.get());
+	_menu->setPtrs(_player->getInventory(), _ui.get());
+	WorldEdit::Get()->setPtrs(this, _player->getInventory(), _ui->getChatPtr().get());
 
 	startThread();
 }
@@ -53,8 +52,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_skybox->deleteBuffers();
 
 	inputs::set_cursor_position_callback(NULL, NULL);
-	inputs::set_scroll_callback(NULL);
-	_inventory->setUIPtr(NULL);
+	inputs::set_scroll_callback(NULL, NULL);
 	_camera->setTarget(NULL);
 	_ui->setPtrs(NULL, NULL, NULL);
 	_menu->setPtrs(NULL, NULL);
@@ -630,7 +628,7 @@ void OpenGL_Manager::handleUI( void )
 			mtx_backup.lock();
 			str += "\nBackups\t> " + std::to_string(_backups.size());
 			mtx_backup.unlock();
-			str += _inventory->getSlotString()
+			str += _player->getInventory()->getSlotString()
 					+ _menu->getInfoString();
 		} else {
 			str = "\n\n\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\nTPS: " + std::to_string(_time.nbTicksLastSecond);
@@ -650,7 +648,7 @@ void OpenGL_Manager::handleBackToGame( void )
 		}
 	#endif
 	inputs::set_cursor_position_callback(_player.get(), NULL);
-	inputs::set_scroll_callback(_inventory.get());
+	inputs::set_scroll_callback(_player->getInventory(), _ui.get());
 	_paused = false;
 	_player->setCamUpdate(true);
 	setThreadUpdate(true);
@@ -683,7 +681,7 @@ void OpenGL_Manager::joinServer( void )
 			return (_menu->setErrorStr({"Failed to connect to the server", "Socket already in use"}));
 		}
 
-		std::string server_ip = _menu->getWorldFile();
+		std::string server_ip = _menu->getResetServerIP();
 		MAINLOG(LOG("joinServer on ip " << server_ip));
 		struct hostent* server = gethostbyname(server_ip.c_str());
 		if (!server) {
@@ -700,10 +698,12 @@ void OpenGL_Manager::joinServer( void )
 
 		Address &addr = _socket->getServerAddress();
 		addr = Address(ntohl(*static_cast<uint32_t*>(static_cast<void*>(server->h_addr))), settings::consts::network::default_port);
+	
+		_world_name = _menu->getResetWorldFile();
+		MAINLOG(LOG("username set to " << _world_name));
 	}
 
 	stopThread();
-	_inventory = nullptr;
 	_player = nullptr;
 	_camera->setTarget(nullptr);
 	_ui->setPtrs(this, nullptr, nullptr);
@@ -714,13 +714,11 @@ void OpenGL_Manager::joinServer( void )
 
 	runClient();
 
-	_inventory = std::make_unique<Inventory>();
-	_inventory->setUIPtr(_ui.get());
 	_player = std::make_unique<Player>();
 	_camera->setTarget(_player.get());
-	_ui->setPtrs(this, _inventory.get(), _player.get());
-	_menu->setPtrs(_inventory.get(), _ui.get());
-	WorldEdit::Get()->setPtrs(this, _inventory.get(), _ui->getChatPtr().get());
+	_ui->setPtrs(this, _player->getInventory(), _player.get());
+	_menu->setPtrs(_player->getInventory(), _ui.get());
+	WorldEdit::Get()->setPtrs(this, _player->getInventory(), _ui->getChatPtr().get());
 	startThread();
 }
 
@@ -738,13 +736,13 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			handleBackToGame();
 			break ;
 		case menu::ret::world_selected: // world selected, go into loading mode
-			_world_name = _menu->getWorldFile();
+			_world_name = _menu->getResetWorldFile();
 			_shader.useProgram(); // used by dayCycle to modif internal light - TODO check if really necessary
 			loadWorld("Worlds/" + _world_name);
 			initWorld();
 			break ;
 		case menu::ret::world_created: // create new world, go into loading mode
-			_world_name = _menu->getWorldFile();
+			_world_name = _menu->getResetWorldFile();
 			_player->setSpawnpoint({0, 0, 256});
 			_player->respawn();
 			_game_mode = settings::consts::gamemode::survival;
@@ -753,7 +751,7 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			break ;
 		case menu::ret::host_server:
 			hostServer();
-			_world_name = _menu->getWorldFile();
+			_world_name = _menu->getResetWorldFile();
 			loadWorld("Worlds/" + _world_name);
 			break ;
 		case menu::ret::join_server:
@@ -794,7 +792,7 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			handleBackToGame();
 			break ;
 		case menu::ret::sign_book:
-			_inventory->signBook(_menu->getWorldFile());
+			_player->getInventory()->signBook(_menu->getResetWorldFile());
 			handleBackToGame();
 			break ;
 		case menu::ret::drop_item:
