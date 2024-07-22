@@ -9,7 +9,7 @@
 
 DayCycle::DayCycle( void )
 	: _gameTime(0), _ticks(0), _gameTicks(0), _day(0), _hour(6), _minute(0), _internalLight(15),
-		_timeMultiplier(1), _gameTimeMultiplier(-1), _forceReset(false)
+		_timeMultiplier(1), _gameTimeMultiplier(-1), _forceReset(false), _shader(nullptr)
 {
 
 }
@@ -65,9 +65,11 @@ void DayCycle::setInternals( void )
 	} else {
 		return ;
 	}
-	glUniform1i(_modelShader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
-	glUniform1i(_particleShader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
-	glUniform1i(_shader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
+	if (_shader) {
+		glUniform1i(_modelShader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
+		glUniform1i(_particleShader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
+		glUniform1i(_shader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
+	}
 }
 
 // ************************************************************************** //
@@ -96,10 +98,13 @@ void DayCycle::Destroy( void )
 void DayCycle::setShaderPtrs( Shader* shader, Shader* particleShader, Shader* modelShader )
 {
 	_shader = shader;
-	glUniform1i(_shader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
 	_particleShader = particleShader;
-	glUniform1i(_particleShader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
 	_modelShader = modelShader;
+	if (!_shader) {
+		return ;
+	}
+	glUniform1i(_shader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
+	glUniform1i(_particleShader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
 	glUniform1i(_modelShader->getUniform(settings::consts::shader::uniform::internal_light), _internalLight);
 }
 

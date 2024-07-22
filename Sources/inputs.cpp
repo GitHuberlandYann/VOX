@@ -523,11 +523,11 @@ void OpenGL_Manager::userInputs( bool rayCast )
 		_outline = !_outline;
 		_break_frame = _outline;
 	}
-	// change time multiplier
-	if (inputs::key_down(inputs::daycycle_up) && inputs::key_update(inputs::daycycle_up)) {
+	// change block atlas
+	if (inputs::key_down(inputs::block_atlas_clean) && inputs::key_update(inputs::block_atlas_clean)) {
 		Settings::Get()->setString(settings::strings::block_atlas, "Resources/Resource_Packs/Clean/Textures/");
 		loadTextures();
-	} else if (inputs::key_down(inputs::daycycle_down) && inputs::key_update(inputs::daycycle_down)) {
+	} else if (inputs::key_down(inputs::block_atlas_default) && inputs::key_update(inputs::block_atlas_default)) {
 		Settings::Get()->setString(settings::strings::block_atlas, "Resources/Textures/");
 		loadTextures();
 	}

@@ -173,6 +173,8 @@ class Chunk
 		// world generation
 		void generation( void );
 		void checkFillVertices( void );
+		void checkFillVerticesServer( void );
+		void checkFillVerticesClient( void );
 		void generate_chunk( void );
 		void dropEntities( std::vector<t_item> drops );
 		void dropEntity( glm::vec3 dir, t_item item );
@@ -232,11 +234,11 @@ class Chunk
 		void serializeSubChunk( t_pending_packet& packet, int index );
 		void deserializeSubChunk( t_packet_data& packet );
 		void serializeChunk( t_pending_packet& packet );
-		void deserializeChunk( t_packet_data& packet );
+		void deserializeChunk( char* packet );
 
     private:
 		Buffer _vabo, _vaboWater, _vaboSky;
-        bool _vaoSet, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP;
+        bool _vaoSet, _waterVaoSet, _waterVaoVIP, _skyVaoSet, _skyVaoVIP, _bufferReady;
 		GLboolean _hasWater;
 		std::atomic_bool _genDone, _light_update, _vertex_update, _vaoReset, _vaoVIP, _waterVaoReset, _skyVaoReset, _sortedOnce;
         GLint _startX, _startY, _nb_neighbours;

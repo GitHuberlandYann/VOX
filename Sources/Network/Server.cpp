@@ -40,7 +40,6 @@ void Server::broadcastPlayersInfo( void )
 		_packet.packet.action = packet_id::server::player_info;
 		memmove(_packet.packet.data, content.c_str(), content.size());
 		pendPacket();
-		// _socket->broadcast(&_packet, sizeof(unsigned short) + content.size());
 	}
 }
 
@@ -97,7 +96,6 @@ void Server::handlePacketLogin( Address& sender, std::string name )
 {
 	_packet = {pendings::useAddr, sizeof(unsigned short), sender, {packet_id::server::login}};
 	pendPacket();
-	// sendPacket(sender, sizeof(unsigned short));
 	int id = _socket->getId(sender);
 	auto search = std::find_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); });
 	if (search == _players.end()) {
@@ -106,13 +104,12 @@ void Server::handlePacketLogin( Address& sender, std::string name )
 		_mtx_plrs.unlock();
 		_players.back()->setId(id);
 		_players.back()->setName(name);
-		_threadUpdate = true;
+		setThreadUpdate(true);
 		name = name + " joined the game. [id:" + std::to_string(id) + "]";
 		_packet = {pendings::broadcast, sizeof(unsigned short) + name.size()};
 		_packet.packet.action = packet_id::server::chat_msg;
 		memmove(_packet.packet.data, name.c_str(), name.size());
 		pendPacket();
-		// _socket->broadcast(&_packet, sizeof(unsigned short) + name.size());
 	}
 }
 
@@ -138,8 +135,7 @@ void Server::handleTime( void )
 		memmove(&_packet.packet.data[sizeof(double)], &_time.nbFramesLastSecond, sizeof(int));
 		memmove(&_packet.packet.data[sizeof(double) + sizeof(int)], &_time.nbTicksLastSecond, sizeof(int));
 		pendPacket();
-		// _socket->broadcast(&_packet, sizeof(_packet.action) + sizeof(double) + sizeof(int) + sizeof(int)); // send time every 20 game ticks (== every second) to players
-		MAINLOG(LOG("FPS: " << _time.nbFramesLastSecond << ", TPS: " << _time.nbTicksLastSecond << ", players: " << _players.size()));
+		MAINLOG(SERVLOG(LOG("FPS: " << _time.nbFramesLastSecond << ", TPS: " << _time.nbTicksLastSecond << ", players: " << _players.size())));
 	}
 	if (_time.currentTime - _time.lastGameTick >= settings::consts::tick) {
 		_time.tickUpdate = true;
@@ -177,7 +173,7 @@ void Server::handlePackets( void )
 			break;
 		}
 		PACKETLOG(LOG("received " << bytes_read << " bytes"));
-		LOG("Packet received with action: " << _packet.packet.action << " [" << bytes_read << " bytes]");
+		SERVLOG(LOG("Packet received with action: " << _packet.packet.action << " [" << bytes_read << " bytes]"));
 
 		// process packet
 		switch (_packet.packet.action & mask::network::action_type) {
@@ -224,7 +220,6 @@ void Server::run( void )
 		handlePackets();
 
 		if (_time.nbFramesLastSecond > 60) {
-			// usleep(50);
 			std::this_thread::sleep_for(std::chrono::microseconds(50));
 		}
 	}

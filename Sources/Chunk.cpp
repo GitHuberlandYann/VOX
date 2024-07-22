@@ -6,8 +6,8 @@
 extern std::mutex mtx_backup;
 
 Chunk::Chunk( Player* player, Inventory* inventory, int posX, int posY, std::list<std::shared_ptr<Chunk>>& chunks )
-	: _vaoSet(false), _waterVaoSet(false), _waterVaoVIP(false),
-	_skyVaoSet(false), _skyVaoVIP(false), _hasWater(true), _genDone(false), _light_update(false), _vertex_update(false),
+	: _vaoSet(false), _waterVaoSet(false), _waterVaoVIP(false), _skyVaoSet(false), _skyVaoVIP(false),
+	_bufferReady(false), _hasWater(true), _genDone(false), _light_update(false), _vertex_update(false),
 	_vaoReset(false), _vaoVIP(false), _waterVaoReset(false), _skyVaoReset(false), _sortedOnce(false),
 	_startX(posX), _startY(posY), _nb_neighbours(0),
 	_displayed_faces(0), _water_count(0), _sky_count(0),
@@ -158,9 +158,6 @@ void Chunk::resetDisplayedFaces( void )
 // we output 1 int and 3 floats to shader
 void Chunk::setup_array_buffer( void )
 {
-	// if (_thread.joinable()) {
-	// 	_thread.join();
-	// }
 
 	if (!_vaoSet) {
 		_vabo.genBuffers();
@@ -419,6 +416,80 @@ void Chunk::checkFillVertices( void )
 			}
 		}
 		resetDisplayedFaces();
+		fill_vertex_array();
+		_vaoVIP = false;
+		_nb_neighbours = cnt; // do this at end to make sure resetDisplayedFaces is called before any light_update shinanigans
+	} else if (cnt < _nb_neighbours) {
+		_nb_neighbours = cnt;
+	} else if (!cnt) {
+		LOGERROR("chunk has no neighbours");
+	}
+}
+
+// fill_vertices uses light emited by neighbours, so had to make sure they are loaded before we fill our own vertices in
+void Chunk::checkFillVerticesServer( void )
+{
+	int cnt = 0;
+	for (int i = 0; i < 4; i++) {
+		if (_neighbours[i]) {
+			_neighbours[i]->waitGenDone();
+			++cnt;
+		}
+	}
+	if (cnt > _nb_neighbours) {
+		if (cnt == 4) {
+			for (auto a: _added) { // update torches == block_light spreading, we do it here because before neighbours might not be ready to accept spread
+				short light = s_blocks[TYPE(a.second)]->light_level;
+				if (light) {
+					if (TYPE(a.second) == blocks::redstone_lamp && !(a.second & mask::redstone::activated)) {
+						continue ;
+					} else if (TYPE(a.second) == blocks::redstone_torch && (a.second & mask::redstone::powered)) {
+						continue ; // red torch is turned off
+					}
+					int level = a.first & (settings::consts::world_height - 1);
+					int col = ((a.first >> settings::consts::world_shift) & (settings::consts::chunk_size - 1));
+					int row = ((a.first >> settings::consts::world_shift) >> settings::consts::chunk_shift);
+					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] &= 0xFF00; // discard previous light value
+					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] += light + (light << 4); // 0xF0 = light source. & 0xF = light level
+					light_spread(row, col, level, false);
+				}
+			}
+			// this time spread sky_light underground
+			for (int row = 0; row < settings::consts::chunk_size; row++) {
+				for (int col = 0; col < settings::consts::chunk_size; col++) {
+					for (int level = settings::consts::world_height - 1; level > 0; level--) {
+						if (!(_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] & 0xF000)) {
+							int value = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level];
+							if (s_blocks[TYPE(value)]->transparent) { // underground hole
+								// spread_light TODO watch out for leaves and water light damping..
+								light_spread(row, col, level, true);
+							}
+						}
+					}
+				}
+			}
+		}
+		resetDisplayedFaces();
+		_vaoVIP = false;
+		_nb_neighbours = cnt; // do this at end to make sure resetDisplayedFaces is called before any light_update shinanigans
+	} else if (cnt < _nb_neighbours) {
+		_nb_neighbours = cnt;
+	} else if (!cnt) {
+		LOGERROR("chunk has no neighbours");
+	}
+}
+
+void Chunk::checkFillVerticesClient( void )
+{
+	int cnt = 0;
+	for (int i = 0; i < 4; i++) {
+		if (_neighbours[i]) {
+			_neighbours[i]->waitGenDone();
+			++cnt;
+		}
+	}
+	if (cnt > _nb_neighbours) {
+		// resetDisplayedFaces();
 		fill_vertex_array();
 		_vaoVIP = false;
 		_nb_neighbours = cnt; // do this at end to make sure resetDisplayedFaces is called before any light_update shinanigans
@@ -710,6 +781,7 @@ void Chunk::drawArray( GLint& counter, GLint& face_counter )
 		fill_vertex_array();
 	}
 	if (!_vaoReset) { // TODO change vaoReset logic (swap true and false)
+		if (!_bufferReady) { return ; }
 		++counter;
 		if (!_vaoVIP && (counter & 63) > 6) { // we don't load more than 5 new chunks per 50 new chunks per frame
 			return ;

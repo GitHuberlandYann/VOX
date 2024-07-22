@@ -145,6 +145,7 @@ class OpenGL_Manager
 
 		// main loop
 		void handleEndSetup( void );
+		void initTime( void );
 		void handleTime( bool gamePaused );
 		void handleUserInputs( int& backFromMenu );
 		void handleDraw( bool gamePaused );

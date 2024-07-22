@@ -30,6 +30,7 @@
 # define PACKETLOG(x)
 # define PENDINGLOG(x)
 # define SERIALLOG(x)	
+# define SERVLOG(x)		x
 
 /**
  * macros used to facilitate coordinates output

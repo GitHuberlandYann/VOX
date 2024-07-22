@@ -17,20 +17,6 @@ class Chat;
 
 class DayCycle
 {
-	private:
-		static DayCycle* _dayCycleInstance;
-		static std::mutex _mtx;
-
-		double _gameTime;
-		int _ticks, _gameTicks, _day, _hour, _minute, _internalLight, _timeMultiplier, _gameTimeMultiplier;
-		bool _forceReset;
-		Shader* _shader, *_particleShader, *_modelShader;
-
-		DayCycle( void );
-		~DayCycle( void );
-
-		void setInternals( void );
-
 	public:
 		DayCycle( DayCycle& other ) = delete;
 		void operator=( const DayCycle& other ) = delete;
@@ -55,6 +41,20 @@ class DayCycle
 		std::string getTime( void );
 		std::string saveString( void );
 		void loadWorld( std::ofstream & ofs, std::string line );
+
+	private:
+		static DayCycle* _dayCycleInstance;
+		static std::mutex _mtx;
+
+		double _gameTime;
+		int _ticks, _gameTicks, _day, _hour, _minute, _internalLight, _timeMultiplier, _gameTimeMultiplier;
+		bool _forceReset;
+		Shader* _shader, *_particleShader, *_modelShader;
+
+		DayCycle( void );
+		~DayCycle( void );
+
+		void setInternals( void );
 };
 
 

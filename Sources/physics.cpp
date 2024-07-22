@@ -811,7 +811,7 @@ void Player::clientInputUpdate( int gameMode )
 		}*/
 	}
 
-	// updateCurrentBlock();
+	updateCurrentBlock();
 
 	GLint key_cam_speed = inputs::key_down(inputs::fly_speed_up) - inputs::key_down(inputs::fly_speed_down);
 	if (key_cam_speed) {

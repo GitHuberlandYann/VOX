@@ -65,9 +65,11 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	glfwMakeContextCurrent(NULL);
     glfwTerminate();
 
-	if (!_socket || _socket->getType() == sockets::client) { // used by server
+	if (!_socket || _socket->getType() == sockets::client) { // DayCycle and Settings still used by server
 		DayCycle::Destroy();
 		Settings::Destroy();
+	} else {
+		DayCycle::Get()->setShaderPtrs(NULL, NULL, NULL);
 	}
 	WorldEdit::Destroy();
 	utils::shader::check_glstate("openGL_Manager destructed", true);
@@ -461,6 +463,16 @@ void OpenGL_Manager::handleEndSetup( void )
 	glfwSetMouseButtonCallback(_window, inputs::mouse_button_callback);
 }
 
+void OpenGL_Manager::initTime( void )
+{
+	// 60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame.
+	_time = t_time();
+	_time.currentTime = glfwGetTime();
+	_time.lastSecondRecorded = _time.currentTime;
+	_time.lastGameTick = _time.currentTime;
+	_time.previousFrame = _time.currentTime;
+}
+
 void OpenGL_Manager::handleTime( bool gamePaused )
 {
 	_time.currentTime = glfwGetTime();
@@ -832,12 +844,7 @@ bool OpenGL_Manager::run( void )
 
 	utils::shader::check_glstate("setup done, entering main loop\n", true);
 
-	// 60fps game is 16.6666 ms/frame; 30fps game is 33.3333 ms/frame.
-	_time = t_time();
-	_time.currentTime = glfwGetTime();
-	_time.lastSecondRecorded = _time.currentTime;
-	_time.lastGameTick = _time.currentTime;
-	_time.previousFrame = _time.currentTime;
+	initTime();
 
 	int backFromMenu = 0; // TODO check this var's shinanigans
 

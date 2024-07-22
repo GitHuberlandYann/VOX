@@ -44,7 +44,7 @@ static void thread_server_chunk_update( Server *server )
 			int index = 0;
 			for (auto pos : playersPos) {
 				if ((*it)->inPerimeter(pos.x, pos.y, render_dist << settings::consts::chunk_shift)) {
-					(*it)->checkFillVertices(); // TODO add arg to checkFillVertices to avoid fill_vertex_array on server and light spread on client
+					(*it)->checkFillVerticesServer();
 					// newperi_chunks.push_back(*it);
 					packet.id = index;
 					// for (int subChunk = 0; subChunk < 16; ++subChunk) {

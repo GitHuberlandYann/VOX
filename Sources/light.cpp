@@ -137,6 +137,7 @@ int Chunk::computeShade( int row, int col, int level, std::array<int, 9> offsets
 void Chunk::fill_vertex_array( void )
 {
 	// std::cout << "filling " << POSXY(_startX, _startY) << "; expecting " << _displayed_faces << std::endl;
+	_bufferReady = false;
 	_mtx.lock();
 	_vertices.clear();
 	for (int row = 0; row < settings::consts::chunk_size; row++) {
@@ -155,6 +156,7 @@ void Chunk::fill_vertex_array( void )
 	_vertex_update = false;
 	_vaoReset = false;
 	_vaoVIP = true;
+	_bufferReady = true;
 }
 
 // ************************************************************************** //

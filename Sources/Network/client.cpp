@@ -2,6 +2,10 @@
 #include "callbacks.hpp"
 #include "logs.hpp"
 
+// ************************************************************************** //
+//                                Packets                                     //
+// ************************************************************************** //
+
 /**
  * @brief send packet stored at this->_packet of given size to this->_socket
  */
@@ -59,18 +63,12 @@ void OpenGL_Manager::handlePacketChunk( t_packet_data& packet )
 	_mtx_packets.lock();
 	_chunkPackets.push_back(packet);
 	_mtx_packets.unlock();
-	_threadUpdate = true;
-	// size_t srcOffset = 0;
-	// int startX = 0, startY = 0;
-	// int index = 0;
-	// utils::memory::memread(&startX, packet.data, sizeof(GLint), srcOffset);
-	// utils::memory::memread(&startY, packet.data, sizeof(GLint), srcOffset);
-	// utils::memory::memread(&index, packet.data, sizeof(char), srcOffset);
-	// LOG("\tchunk_data packet [" << startX << ", " << startY << "] index " << index);
+	setThreadUpdate(true);
 }
 
 void OpenGL_Manager::handlePacketChatMsg( char* data )
 {
+	_ui->chatMessage(data);
 	MAINLOG(LOG("chatMessage: |" << data << "|"));
 }
 
@@ -116,17 +114,114 @@ void OpenGL_Manager::handlePackets( void )
 	}
 }
 
+// ************************************************************************** //
+//                                  Run                                       //
+// ************************************************************************** //
+
 void OpenGL_Manager::handleClientInputs( void )
 {
+	/*
+	// open menu
+	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
+		_paused = true;
+		_menu->setState(menu::pause);
+		return ;
+	}
+	// open inventory
+	if (inputs::key_down(inputs::inventory) && inputs::key_update(inputs::inventory)) {
+		_paused = true;
+		_menu->setState(menu::inventory);
+		return ;
+	}
+	// toggle chat
+	if ((inputs::key_down(inputs::chat) && inputs::key_update(inputs::chat))
+		|| (inputs::key_down(inputs::enter) && inputs::key_update(inputs::enter))) {
+		_paused = true;
+		_menu->setState(menu::chat);
+		return ;
+	}
+	// toggle 'command' chat, ie open chat, with '/' already written
+	if (inputs::key_down(inputs::command) && inputs::key_update(inputs::command)) {
+		_paused = true;
+		_menu->setState(menu::command);
+		return ;
+	}
+
+	// take screenshot
+	if (inputs::key_down(inputs::screenshot) && inputs::key_update(inputs::screenshot)) {
+		screenshot();
+	}
+	// toggle game mode
+	if (inputs::key_down(inputs::gamemode) && inputs::key_update(inputs::gamemode)) {
+		if (inputs::key_down(inputs::debug)) {
+			Settings::Get()->setBool(settings::bools::visible_chunk_border, !Settings::Get()->getBool(settings::bools::visible_chunk_border));
+		} else {
+			setGamemode(!_game_mode);
+		}
+	}
+	// toggle F3 + I == display full info about block hit
+	if (inputs::key_down(inputs::info) && inputs::key_update(inputs::info) && inputs::key_down(inputs::debug)) {
+		t_hit bHit = getBlockHit();
+		_ui->chatMessage("*******************");
+		_ui->chatMessage("Info about " + s_blocks[bHit.type]->name + " at " + std::to_string(bHit.pos.x) + ", " + std::to_string(bHit.pos.y) + ", " + std::to_string(bHit.pos.z));
+		_ui->chatMessage(std::string("visible: ") + ((bHit.value & mask::blocks::notVisible) ? "FALSE" : "TRUE"));
+		_ui->chatMessage(std::string("adventure block: ") + ((bHit.value & mask::adventure_block) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("orientation: ") + std::to_string((bHit.value >> offset::blocks::orientation) & 0x7));
+		_ui->chatMessage(std::string("transparent: ") + ((s_blocks[bHit.type]->isTransparent(bHit.value)) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("powered: ") + ((bHit.value & mask::redstone::powered) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("weakdy powered: ") + ((bHit.value & mask::redstone::weakdy_powered) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("activated: ") + ((bHit.value & mask::redstone::activated) ? "TRUE" : "FALSE"));
+		_ui->chatMessage(std::string("strength: ") + std::to_string((bHit.value >> offset::redstone::strength) & 0xF));
+		_ui->chatMessage(std::string("bitfield: ") + std::to_string(bHit.value >> offset::blocks::bitfield));
+		switch (bHit.type) {
+			case blocks::piston:
+			case blocks::sticky_piston:
+				_ui->chatMessage(std::string("moving piston: ") + ((bHit.value & mask::redstone::piston::moving) ? "TRUE" : "FALSE"));
+			break ;
+		}
+		_ui->chatMessage("*******************");
+	}
+	// toggle hotbar F1
+	if (inputs::key_down(inputs::hotbar) && inputs::key_update(inputs::hotbar)) {
+		_ui->_hideUI = !_ui->_hideUI;
+		Settings::Get()->setBool(settings::bools::hide_ui, _ui->_hideUI);
+		_ui->chatMessage(std::string("UI ") + ((_ui->_hideUI) ? "HIDDEN" : "SHOWN"));
+	}
+	*/
 	// quit program
 	if (inputs::key_down(inputs::quit_program)) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return ;
 	}
+	// toggle F5 mode
+	if (inputs::key_down(inputs::perspective) && inputs::key_update(inputs::perspective)) {
+		_camera->changeCamPlacement();
+	}
+	// toggle outline
+	if (inputs::key_down(inputs::block_highlight) && inputs::key_update(inputs::block_highlight)) {
+		_ui->chatMessage(std::string("outlines ") + ((_outline) ? "HIDDEN" : "SHOWN"));
+		_outline = !_outline;
+		_break_frame = _outline;
+	}
+	// change block atlas
+	if (inputs::key_down(inputs::block_atlas_clean) && inputs::key_update(inputs::block_atlas_clean)) {
+		Settings::Get()->setString(settings::strings::block_atlas, "Resources/Resource_Packs/Clean/Textures/");
+		loadTextures();
+	} else if (inputs::key_down(inputs::block_atlas_default) && inputs::key_update(inputs::block_atlas_default)) {
+		Settings::Get()->setString(settings::strings::block_atlas, "Resources/Textures/");
+		loadTextures();
+	}
 
-	if (!_player) {
+	if (_paused || !_player) {
 		return ;
 	}
+
+	t_hit block_hit = getBlockHit();
+	if (_block_hit.pos != block_hit.pos) {
+		_break_time = 0;
+		_break_frame = _outline;
+	}
+	_block_hit = block_hit;
 
 	// toggle debug mode F3
 	if (inputs::key_down(inputs::debug) && inputs::key_update(inputs::debug)) {
@@ -135,13 +230,14 @@ void OpenGL_Manager::handleClientInputs( void )
 
 	_player->setDelta(_time.deltaTime);
 	_player->clientInputUpdate(settings::consts::gamemode::creative);
+	chunkUpdate();
 
 	if (_player->getResetFovUpdate() || inputs::key_update(inputs::zoom)) {
 		updateCamPerspective();
 	}
 	if (_player->getCamUpdate()) {
 		updateCamView();
-		// updateVisibleChunks();
+		updateVisibleChunks();
 	}
 }
 
@@ -154,9 +250,9 @@ void OpenGL_Manager::handleClientDraw( void )
 	}*/
 	
 	_counter = t_counter();
-	// for (auto& c: _visible_chunks) {
-	mtx_perimeter.lock();
-	for (auto& c: _perimeter_chunks) {
+	for (auto& c: _visible_chunks) {
+	// mtx_perimeter.lock();
+	// for (auto& c: _perimeter_chunks) {
 		c->drawArray(_counter.newVaos, _counter.meshFaces);
 		/*if (!gamePaused) {
 			if (_time.tickUpdate) {
@@ -180,9 +276,9 @@ void OpenGL_Manager::handleClientDraw( void )
 			}
 		}*/
 	}
-	mtx_perimeter.unlock();
+	// mtx_perimeter.unlock();
 
-	/*if (!gamePaused || _menu->getState() >= menu::death) {
+	if (_menu->getState() >= menu::death) {
 		drawParticles();
 		(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
 			? _player->drawHeldItem(_models, _entities, _hand_content, _game_mode)
@@ -197,18 +293,17 @@ void OpenGL_Manager::handleClientDraw( void )
 		_skybox->render(_camera->getCamPos());
 	}
 
-#if 1
 	_skyShader.useProgram();
 	if (_time.animUpdate) {
 		updateAnimFrame();
 	}
 	glDisable(GL_CULL_FACE);
-	DayCycle::Get()->setCloudsColor(_skyShader.getUniform(settings::consts::shader::uniform::color));
+	/*DayCycle::Get()->setCloudsColor(_skyShader.getUniform(settings::consts::shader::uniform::color));
 	if (Settings::Get()->getInt(settings::ints::clouds) != settings::OFF) {
 		for (auto& c: _visible_chunks) {
 			c->drawSky(_counter.newVaos, _counter.skyFaces);
 		}
-	}
+	}*/
 	glUniform3f(_skyShader.getUniform(settings::consts::shader::uniform::color), 0.24705882f, 0.4627451f, 0.89411765f); // water color
 	for (auto&c: _visible_chunks) {
 		c->drawWater(_counter.newVaos, _counter.waterFaces);
@@ -216,7 +311,6 @@ void OpenGL_Manager::handleClientDraw( void )
 	if (Settings::Get()->getBool(settings::bools::face_culling)) {
 		glEnable(GL_CULL_FACE);
 	}
-#endif*/
 }
 
 void OpenGL_Manager::handleClientUI( void )

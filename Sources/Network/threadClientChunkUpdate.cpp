@@ -30,7 +30,7 @@ static void thread_client_chunk_update( OpenGL_Manager *render )
 		auto it = render->_chunks.begin();
 		for (; it != ite;) {
 			// if ((*it)->inPerimeter(pos.x, pos.y, render_dist << settings::consts::chunk_shift)) {
-				(*it)->checkFillVertices(); // TODO add arg to checkFillVertices to avoid fill_vertex_array on server and light spread on client
+				(*it)->checkFillVerticesClient();
 				newperi_chunks.push_back(*it);
 				// coords.erase({(*it)->getStartX(), (*it)->getStartY()});
 			/*/ } else if (!(*it)->inPerimeter(pos.x, pos.y, (render_dist << settings::consts::chunk_shift) * 2)) {
@@ -55,17 +55,17 @@ static void thread_client_chunk_update( OpenGL_Manager *render )
 		for (auto& packet: packetDatas) {
 			// create or fill chunk from server's info
 			render->setThreadUpdate(true);
-			size_t srcOffset = 0, uncompressedSize = settings::consts::network::packet_size_limit, compressedSize = 0;
+			size_t srcOffset = 0, uncompressedSize = settings::consts::network::uncompressed_packet_size_limit, compressedSize = 0;
 			utils::memory::memread(&compressedSize, packet.data, sizeof(size_t), srcOffset);
 
-			t_packet_data uncompressed;
-			uncompress((Byte*)uncompressed.data, &uncompressedSize, (Byte*)&packet.data[srcOffset], compressedSize);
+			char uncompressed[uncompressedSize];
+			uncompress((Byte*)uncompressed, &uncompressedSize, (Byte*)&packet.data[srcOffset], compressedSize);
 			LOG("uncompressing packet: " << compressedSize << " -> " << uncompressedSize);
 			
 			srcOffset = 0;
 			int startX = 0, startY = 0;
-			utils::memory::memread(&startX, uncompressed.data, sizeof(GLint), srcOffset);
-			utils::memory::memread(&startY, uncompressed.data, sizeof(GLint), srcOffset);
+			utils::memory::memread(&startX, uncompressed, sizeof(GLint), srcOffset);
+			utils::memory::memread(&startY, uncompressed, sizeof(GLint), srcOffset);
 
 			auto search = std::find_if(render->_chunks.begin(), render->_chunks.end(), [startX, startY](auto& chunk) { return (chunk->getStartX() == startX && chunk->getStartY() == startY); });
 			if (search == render->_chunks.end()) {
@@ -78,7 +78,6 @@ static void thread_client_chunk_update( OpenGL_Manager *render )
 			} else {
 				(*search)->deserializeChunk(uncompressed);
 			}
-			
 		}
 
 		LOG("thread_client_chunk_update loop end");

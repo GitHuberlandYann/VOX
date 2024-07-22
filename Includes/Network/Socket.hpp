@@ -21,6 +21,7 @@ namespace settings {
 			// for the program ./vox, id is "VOX!" (0x56 0x4F 0x58 0x21)
 			const unsigned int protocol_id = 0x564F5821;
 			const size_t packet_size_limit = 65518;
+			const size_t uncompressed_packet_size_limit = 0x40000;
 			const size_t client_size_limit = 8; // TODO change this
 		};
 

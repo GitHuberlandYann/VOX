@@ -48,24 +48,27 @@ void Chunk::serializeChunk( t_pending_packet& packet )
 	packet.packet.action = packet_id::server::chunk_data;
 	waitGenDone(); // make sure chunk finished generating
 
-	t_packet_data uncompressed;
+	char uncompressed[settings::consts::network::uncompressed_packet_size_limit];
 	size_t uncompressedSize = 0;
-	utils::memory::memwrite(uncompressed.data, &_startX, sizeof(GLint), uncompressedSize);
-	utils::memory::memwrite(uncompressed.data, &_startY, sizeof(GLint), uncompressedSize);
+	utils::memory::memwrite(uncompressed, &_startX, sizeof(GLint), uncompressedSize);
+	utils::memory::memwrite(uncompressed, &_startY, sizeof(GLint), uncompressedSize);
 
 	for (int index = 0; index < 16; ++index) {
 		t_palette palette;
 		size_t nbIds = paletteSubChunk(palette, index);
-		utils::memory::memwrite(uncompressed.data, &nbIds, sizeof(int), uncompressedSize); // writing palette size
+		utils::memory::memwrite(uncompressed, &nbIds, sizeof(int), uncompressedSize); // writing palette size
 
 		if (nbIds == 1) {
 			int value = palette.idToValue[0];
-			utils::memory::memwrite(uncompressed.data, &value, sizeof(int), uncompressedSize);
+			utils::memory::memwrite(uncompressed, &value, sizeof(int), uncompressedSize);
+			short light = _lights[(((8 << settings::consts::chunk_shift) + 8) << settings::consts::world_shift) + (index << settings::consts::chunk_shift) + 8];
+			char lightByte = ((light & 0xF) | ((light >> 4) & 0xF0));
+			utils::memory::memwrite(uncompressed, &lightByte, sizeof(char), uncompressedSize);
 			continue ;
 		}
 
 		for (auto& pair : palette.idToValue) { // writing palette content
-			utils::memory::memwrite(uncompressed.data, &pair.second, sizeof(int), uncompressedSize);
+			utils::memory::memwrite(uncompressed, &pair.second, sizeof(int), uncompressedSize);
 		}
 
 		int bits = (nbIds < 257) ? sizeof(char) : sizeof(short);
@@ -74,18 +77,28 @@ void Chunk::serializeChunk( t_pending_packet& packet )
 				for (int level = (index << settings::consts::chunk_shift); level < ((index + 1) << settings::consts::chunk_shift); level++) {
 					int value = _blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level];
 					int id = palette.valueToId[value];
-					utils::memory::memwrite(uncompressed.data, &id, bits, uncompressedSize); // writing block ids
+					utils::memory::memwrite(uncompressed, &id, bits, uncompressedSize); // writing block ids
+				}
+			}
+		}
+
+		for (int row = 0; row < settings::consts::chunk_size; row++) {
+			for (int col = 0; col < settings::consts::chunk_size; col++) {
+				for (int level = (index << settings::consts::chunk_shift); level < ((index + 1) << settings::consts::chunk_shift); level++) {
+					short light = _lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level];
+					char lightByte = ((light & 0xF) | ((light >> 4) & 0xF0));
+					utils::memory::memwrite(uncompressed, &lightByte, sizeof(char), uncompressedSize); // writing light levels
 				}
 			}
 		}
 	}
 	SERIALLOG(LOG("serializeChunk ended at " << uncompressedSize << " bytes."));
 
-	packet.size = 65518;
-	compress((Byte*)&packet.packet.data[sizeof(size_t)], &packet.size, (const Byte*)uncompressed.data, uncompressedSize);
+	packet.size = settings::consts::network::packet_size_limit;
+	compress((Byte*)&packet.packet.data[sizeof(size_t)], &packet.size, (const Byte*)uncompressed, uncompressedSize);
 	size_t dataSize = 0;
-	utils::memory::memwrite(packet.packet.data, &packet.size, sizeof(size_t), dataSize); // writing compressed size
-	LOGERROR("uncompressed " << uncompressedSize << " -> compressed " << packet.size);
+	utils::memory::memwrite(packet.packet.data, &packet.size, sizeof(size_t), dataSize); // writing compressed size // TODO might prefer to encode as int
+	SERVLOG(LOGERROR("uncompressed " << uncompressedSize << " -> compressed " << packet.size));
 	packet.size += dataSize;
 }
 
@@ -97,7 +110,7 @@ void Chunk::serializeChunk( t_pending_packet& packet )
  * @brief called by client to read 16x16x256 Chunk content from packet.
  * @param packet packet received from server
  */
-void Chunk::deserializeChunk( t_packet_data& packet )
+void Chunk::deserializeChunk( char* packet )
 {
 	_genDone = true; // TODO change this temp mesure
 	size_t packetOffset = sizeof(GLint) + sizeof(GLint);
@@ -105,16 +118,26 @@ void Chunk::deserializeChunk( t_packet_data& packet )
 	for (int index = 0; index < 16; ++index) {
 		t_palette palette;
 		int nbIds;
-		utils::memory::memread(&nbIds, packet.data, sizeof(int), packetOffset);
+		utils::memory::memread(&nbIds, packet, sizeof(int), packetOffset);
 		SERIALLOG(LOG("deserializeChunk index is " << index << ", nbIds " << nbIds));
 
 		if (nbIds == 1) {
 			int value;
-			utils::memory::memread(&value, packet.data, sizeof(int), packetOffset);
+			utils::memory::memread(&value, packet, sizeof(int), packetOffset);
 			for (int row = 0; row < settings::consts::chunk_size; row++) {
 				for (int col = 0; col < settings::consts::chunk_size; col++) {
 					for (int level = (index << settings::consts::chunk_shift); level < ((index + 1) << settings::consts::chunk_shift); level++) {
 						_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = value;
+					}
+				}
+			}
+			char lightLevel;
+			utils::memory::memread(&lightLevel, packet, sizeof(char), packetOffset);
+			short light = (lightLevel & 0xF) | ((lightLevel & 0xF0) << 4);
+			for (int row = 0; row < settings::consts::chunk_size; row++) {
+				for (int col = 0; col < settings::consts::chunk_size; col++) {
+					for (int level = (index << settings::consts::chunk_shift); level < ((index + 1) << settings::consts::chunk_shift); level++) {
+						_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = light;
 					}
 				}
 			}
@@ -123,7 +146,7 @@ void Chunk::deserializeChunk( t_packet_data& packet )
 
 		for (int i = 0; i < nbIds; ++i) { // read palette content
 			int value;
-			utils::memory::memread(&value, packet.data, sizeof(int), packetOffset);
+			utils::memory::memread(&value, packet, sizeof(int), packetOffset);
 			palette.idToValue[i] = value;
 		}
 
@@ -132,9 +155,20 @@ void Chunk::deserializeChunk( t_packet_data& packet )
 			for (int col = 0; col < settings::consts::chunk_size; col++) {
 				for (int level = (index << settings::consts::chunk_shift); level < ((index + 1) << settings::consts::chunk_shift); level++) {
 					int id = 0;
-					utils::memory::memread(&id, packet.data, bits, packetOffset); // reading block id
+					utils::memory::memread(&id, packet, bits, packetOffset); // reading block id
 					int value = palette.idToValue[id];
 					_blocks[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = value;
+				}
+			}
+		}
+
+		for (int row = 0; row < settings::consts::chunk_size; row++) {
+			for (int col = 0; col < settings::consts::chunk_size; col++) {
+				for (int level = (index << settings::consts::chunk_shift); level < ((index + 1) << settings::consts::chunk_shift); level++) {
+					char lightLevel;
+					utils::memory::memread(&lightLevel, packet, sizeof(char), packetOffset);
+					short light = (lightLevel & 0xF) | ((lightLevel & 0xF0) << 4);
+					_lights[(((row << settings::consts::chunk_shift) + col) << settings::consts::world_shift) + level] = light;
 				}
 			}
 		}
