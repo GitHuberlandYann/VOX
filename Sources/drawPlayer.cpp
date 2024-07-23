@@ -171,8 +171,19 @@ void Player::drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_sha
 	spec = speco + 24 + (8 << 6) + (light << 24);
 	utils::shader::addQuads(arr, {p4, p5, p6, p7}, spec, 8, 8);
 
-	// cheecks, top and bottom of head don't need to be displayed as there's no way to see them right now
-	// will get a chance to look at them from inventory once implemented
+	// draw right cheek
+	spec = speco + 0 + (8 << 6) + (light << 24);
+	utils::shader::addQuads(arr, {p5, p0, p7, p2}, spec, 8, 8);
+	// draw left cheek
+	spec = speco + 16 + (8 << 6) + (light << 24);
+	utils::shader::addQuads(arr, {p1, p4, p3, p6}, spec, 8, 8);
+	// up
+	spec = speco + 8 + (0 << 6) + (light << 24);
+	utils::shader::addQuads(arr, {p5, p4, p0, p1}, spec, 8, 8);
+	// down
+	spec = speco + 16 + (0 << 6) + (light << 24);
+	utils::shader::addQuads(arr, {p7, p6, p2, p3}, spec, 8, 8);
+	
 
 // draw torso
 	glm::vec3 bodyFront = {glm::normalize(glm::vec2(_bodyFront)), 0};

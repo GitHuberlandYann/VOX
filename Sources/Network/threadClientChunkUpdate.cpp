@@ -12,6 +12,7 @@ static void thread_client_chunk_update( OpenGL_Manager *render )
 {
 	MAINLOG(LOG("thread_client_chunk_update started"));
 	std::vector<t_packet_data> packetDatas;
+	int render_dist = 10;
 
 	while (!render->getThreadUpdate()) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -28,22 +29,20 @@ static void thread_client_chunk_update( OpenGL_Manager *render )
 		newperi_chunks.reserve(render->_perimeter_chunks.capacity());
 		auto ite = render->_chunks.end();
 		auto it = render->_chunks.begin();
-		for (; it != ite;) {
-			// if ((*it)->inPerimeter(pos.x, pos.y, render_dist << settings::consts::chunk_shift)) {
+		for (; it != ite;) { // TODO check in unloaded chunks and rm chunk found
+			if ((*it)->inPerimeter(render->_player->getPos().x, render->_player->getPos().y, render_dist << settings::consts::chunk_shift)) {
 				(*it)->checkFillVerticesClient();
 				newperi_chunks.push_back(*it);
-				// coords.erase({(*it)->getStartX(), (*it)->getStartY()});
-			/*/ } else if (!(*it)->inPerimeter(pos.x, pos.y, (render_dist << settings::consts::chunk_shift) * 2)) {
+			} else if (render->_player->unloadChunk((*it)->getStartVec())) {
 				auto tmp = it;
 				--it;
-				(*tmp)->setBackup(render->_backups);
 				mtx_deleted_chunks.lock();
 				render->_deleted_chunks.push_back(*tmp); // must be deleted from main thread because of openGL
 				mtx_deleted_chunks.unlock();
 				mtx.lock();
 				render->_chunks.erase(tmp);
 				mtx.unlock();
-			}*/
+			}
 			++it;
 		}
 		utils::math::sort_chunks(render->_player->getPos(), newperi_chunks);

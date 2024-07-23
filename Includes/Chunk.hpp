@@ -130,6 +130,7 @@ class Chunk
 		/** @category getters */
 		GLint getStartX( void );
 		GLint getStartY( void );
+		glm::ivec2 getStartVec( void );
 		Chunk* getChunkAt( int startX, int startY );
 		Player* getPlayer( void );
 		unsigned& getSeed( void );

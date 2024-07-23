@@ -297,15 +297,23 @@ void UI::addFace( std::array<glm::ivec2, 4> pts, int spec, int dx, int dy, bool 
 	_items.push_back(v2);
 }
 
-void UI::drawUserInterface( std::string str, int game_mode, float deltaTime )
+void UI::addDebugStr( std::string str, bool right )
+{
+	if (right) {
+		_text->addTextAlignRight(WIN_WIDTH - 12, 24, _gui_size * 3, argb::white, settings::consts::depth::debug, str);
+	} else {
+		_text->addText(12, 24, _gui_size * 3, argb::white, settings::consts::depth::debug, str);
+	}
+}
+
+void UI::drawUserInterface( int game_mode, float deltaTime )
 {
 	if (_inventoryMessage.timer > .0f) {
 		_inventoryMessage.timer -= deltaTime;
 		_text->addText((WIN_WIDTH - utils::text::textWidth(_gui_size * 3, _inventoryMessage.str)) / 2, WIN_HEIGHT - (35 * _gui_size) * 2, _gui_size * 3, argb::white, settings::consts::depth::debug, _inventoryMessage.str);
 	}
 	_chat->blitMessages(deltaTime);
-	_text->addText(12, 24, _gui_size * 3, argb::white, settings::consts::depth::debug, str);
-	if (_hideUI) {
+	if (_hideUI || !_inventory) {
 		return ;
 	}
 	if (!_vaoSet || _inventory->getModif() || _player->getResetUIUpdate()) {

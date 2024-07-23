@@ -80,6 +80,7 @@ namespace packet_id {
 			pong, // response to ping
 			leave,
 			settings,
+			player_pos,
 		};
 	};
 
@@ -89,7 +90,9 @@ namespace packet_id {
 			ping, // sent once per second to keep connection going
 			kick,
 			chunk_data, // 16x16x16 subChunk content
-			player_info,
+			unload_chunk,
+			player_leave,
+			players_info,
 			chat_msg,
 			destroy_stage, // set breaking anim of a block
 			damage_event,

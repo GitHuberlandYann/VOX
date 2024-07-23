@@ -16,6 +16,7 @@ namespace inputs
 	void character_callback( GLFWwindow* window, unsigned int codepoint );
 	void moveCursor( bool right, bool control );
 	void resetMessage( void );
+	void limitMessageSize( size_t size );
 	void rmLetter( bool control = false );
 	void addLetter( char c );
 	size_t getCursor( void );

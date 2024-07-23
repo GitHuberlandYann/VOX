@@ -9,11 +9,15 @@ Settings::Settings( void )
 	_bools[settings::bools::face_culling] = false;
 	_bools[settings::bools::visible_chunk_border] = false;
 	_bools[settings::bools::flat_world] = false;
+	_bools[settings::bools::hide_ui] = false;
 
 	_ints[settings::ints::render_dist] = settings::defaults::render_distance;
 	_ints[settings::ints::clouds] = settings::FANCY;
 	_ints[settings::ints::flat_world_block] = settings::fw_types[0];
 	_ints[settings::ints::game_mode] = settings::defaults::game_mode;
+	_ints[settings::ints::world_spawn_x] = 0;
+	_ints[settings::ints::world_spawn_y] = 0;
+	_ints[settings::ints::world_spawn_z] = 256;
 
 	_floats[settings::floats::fov] = settings::defaults::fov;
 	_floats[settings::floats::brightness] = settings::defaults::brightness;

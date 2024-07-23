@@ -107,6 +107,16 @@ namespace inputs
 		cursor = 0;
 	}
 
+	void limitMessageSize( size_t size )
+	{
+		if (message.size() > size) {
+			message = message.substr(0, size);
+			if (cursor > size) {
+				cursor = size;
+			}
+		}
+	}
+
 	void rmLetter( bool control )
 	{
 		if (!cursor) return ;

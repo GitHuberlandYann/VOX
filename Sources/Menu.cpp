@@ -325,7 +325,10 @@ menu::ret Menu::multiplayer_menu( bool animUpdate )
 	if (!_moving_slider) { // Host Server
 
 	} else { // Join Server
+		_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 77 * _gui_size, 6 * _gui_size, argb::white, settings::consts::depth::menu::str, "Name");
+		_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 32 * _gui_size, 6 * _gui_size, argb::white, settings::consts::depth::menu::str, "Server IP");
 		if (_input_world) {
+			inputs::limitMessageSize(15);
 			_world_file = inputs::getCurrentMessage();
 			if (animUpdate) { _textBar = !_textBar; }
 			_text->addCenteredCursorText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage()); // Player name
@@ -333,14 +336,15 @@ menu::ret Menu::multiplayer_menu( bool animUpdate )
 			_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::str, _world_file); // Player name
 		}
 		if (_input_seed) {
-			_server_ip = inputs::getCurrentMessage(); // TODO cap inputs sizes
+			inputs::limitMessageSize(15);
+			_server_ip = inputs::getCurrentMessage();
 			if (animUpdate) { _textBar = !_textBar; }
-			_text->addCenteredCursorText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage()); // Player name
+			_text->addCenteredCursorText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage()); // Server ip
+		} else if (_server_ip.empty()) {
+			_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::gray, true, settings::consts::depth::menu::str, "localhost"); // localhost buffer
 		} else {
-			_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::str, _server_ip); // Player name
+			_text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 20 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::str, _server_ip); // Server ip
 		}
-		_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 77 * _gui_size, 6 * _gui_size, argb::white, settings::consts::depth::menu::str, "Name");
-		_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 32 * _gui_size, 6 * _gui_size, argb::white, settings::consts::depth::menu::str, "Server IP (leave empty for localhost)");
 	}
 
 	_text->addCenteredText(WIN_WIDTH / 2, WIN_HEIGHT - 100 * _gui_size, 0, 0, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::controls::str, (!_moving_slider) ? "Host Server" : "Join Server");
@@ -980,9 +984,8 @@ menu::ret Menu::ingame_menu( void )
 			break ;
 		case menu::anvil:
 			if (_input_world) {
-				if (inputs::getCurrentMessage().size() > 50) {
-					inputs::rmLetter();
-				} else if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+				inputs::limitMessageSize(50);
+				if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
 					inputs::rmLetter(inputs::key_down(inputs::left_control));
 				} else if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
 					inputs::moveCursor(true, inputs::key_down(inputs::left_control));
@@ -1072,9 +1075,10 @@ menu::ret Menu::sign_menu( bool animUpdate )
 			inputs::resetMessage();
 		} 
 	}
-	if (utils::text::textWidth(7, inputs::getCurrentMessage()) > 90) {
+	while (utils::text::textWidth(7, inputs::getCurrentMessage()) > 90) {
 		inputs::rmLetter(); _textBar = true;
-	} else if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+	}
+	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
 		inputs::rmLetter(inputs::key_down(inputs::left_control)); _textBar = true;
 	// } else if (inputs::key_down(inputs::look_up) && inputs::key_update(inputs::look_up)) {
 	// 	inputs::setCurrentMessage(_chat->getHistoMsg(true)); _textBar = true;
@@ -1187,9 +1191,10 @@ menu::ret Menu::book_and_quill_menu( bool animUpdate )
 			_textBar = true;
 		} 
 	}
-	if (utils::text::textWidth(6, inputs::getCurrentMessage()) > 114) {
+	while (utils::text::textWidth(6, inputs::getCurrentMessage()) > 114) {
 		inputs::rmLetter(); _textBar = true;
-	} else if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+	}
+	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
 		inputs::rmLetter(inputs::key_down(inputs::left_control)); _textBar = true;
 	// } else if (inputs::key_down(inputs::look_up) && inputs::key_update(inputs::look_up)) {
 	// 	inputs::setCurrentMessage(_chat->getHistoMsg(true)); _textBar = true;
@@ -1234,9 +1239,10 @@ menu::ret Menu::book_sign_menu( bool animUpdate )
 			return (book_and_quill_menu(animUpdate));
 		}
 	}
-	if (utils::text::textWidth(6, inputs::getCurrentMessage()) > 114) {
+	while (utils::text::textWidth(6, inputs::getCurrentMessage()) > 114) {
 		inputs::rmLetter(); _textBar = true;
-	} else if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
+	}
+	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
 		inputs::rmLetter(inputs::key_down(inputs::left_control)); _textBar = true;
 	} else if (inputs::key_down(inputs::look_right) && inputs::key_update(inputs::look_right)) {
 		inputs::moveCursor(true, inputs::key_down(inputs::left_control)); _textBar = true;
@@ -2553,11 +2559,9 @@ std::string Menu::getResetWorldFile( void )
 	return (res);
 }
 
-std::string Menu::getResetServerIP( void )
+std::string Menu::getServerIP( void )
 {
-	std::string res =_server_ip;
-	_server_ip.clear();
-	return (res.empty() ? "localhost" : res);
+	return (_server_ip.empty() ? "localhost" : _server_ip);
 }
 
 t_sign_info Menu::getSignContent( void )

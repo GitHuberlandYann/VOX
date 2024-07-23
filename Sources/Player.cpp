@@ -3,10 +3,10 @@
 #include "logs.hpp"
 
 Player::Player( void )
-    : AMob({0.0f, 0.0f, 0.0f}), _id(-1), _flySpeed(settings::consts::speed::fly), _foodLevel(20), _foodTickTimer(0),
+    : AMob({.0f, .0f, .0f}), _id(-1), _flySpeed(settings::consts::speed::fly), _foodLevel(20), _foodTickTimer(0),
     _yaw(settings::defaults::yaw), _pitch(settings::defaults::pitch),
-    _smoothCamZ(0.0f), _fovOffset(0.0f), _armAnimTime(0.0f), _breathTime(0.0f), _foodSaturationLevel(20.0f), _foodExhaustionLevel(0.0f),
-    _spawnpoint(0.0f, 0.0f, 0.0f), _lastTp(0.0f, 0.0f, 0.0f), _inventory(std::make_unique<Inventory>()),
+    _smoothCamZ(.0f), _fovOffset(.0f), _armAnimTime(.0f), _breathTime(.0f), _foodSaturationLevel(20.0f), _foodExhaustionLevel(.0f),
+    _spawnpoint(.0f, .0f, .0f), _lastTp(.0f, .0f, .0f), _currentChunk(0, 0), _inventory(std::make_unique<Inventory>()),
     _smoothCam(false), _armAnimation(false), _fallImmunity(false), _sprinting(false), _sneaking(false), _waterHead(false), _waterFeet(false),
     _updateCam(false), _updateFov(false), _updateUI(false)
 {
@@ -42,6 +42,15 @@ std::vector<glm::ivec3> Player::computeRayCasting( GLfloat radius )
 	return (utils::math::voxel_traversal(pos, pos + _front * radius));
 }
 
+glm::vec3 Player::getSmoothPos( void )
+{
+	glm::vec3 res = _position;
+    if (_smoothCam) {
+		res.z = _smoothCamZ;
+	}
+	return (res);
+}
+
 glm::vec3 Player::getEyePos( void )
 {
 	glm::vec3 res = _position;
@@ -50,6 +59,16 @@ glm::vec3 Player::getEyePos( void )
 	}
 	res.z += 1 + ((_sneaking) ? settings::consts::eyeLevel::player_sneak : settings::consts::eyeLevel::player);
 	return (res);
+}
+
+glm::ivec2 Player::getChunkPos( void )
+{
+	return (_currentChunk);
+}
+
+Chunk* Player::getChunkPtr( void )
+{
+	return (_chunk);
 }
 
 float Player::getHitbox( void )
@@ -441,6 +460,11 @@ int Player::getId( void )
 void Player::setId( int id )
 {
 	_id = id;
+}
+
+std::string Player::getName( void )
+{
+	return (_name);
 }
 
 void Player::setName( std::string name )

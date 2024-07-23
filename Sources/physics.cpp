@@ -628,6 +628,16 @@ bool Player::updateCurrentBlock( void )
 	return (false);
 }
 
+bool Player::updateCurrentChunk( void )
+{
+	glm::ivec2 current_chunk = {utils::math::chunk_pos(_currentBlock.x), utils::math::chunk_pos(_currentBlock.y)};
+	if (current_chunk != _currentChunk) {
+		_currentChunk = current_chunk;
+		return (true);
+	}
+	return (false);
+}
+
 bool Player::update( std::vector<t_shaderInputModel>& modArr, float deltaTime )
 {
 	(void)modArr, (void)deltaTime;
@@ -757,58 +767,56 @@ void Player::clientInputUpdate( int gameMode )
 	if (gameMode == settings::consts::gamemode::creative) { // no collision check, free to move however you want
 		moveFly(key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown);
 	}
-	else {
-		/*if (gameMode != settings::consts::gamemode::creative && _chunk) { // on first frame -> no _chunk
-			if (_smoothCam) {
-				if (_smoothCamZ < _position.z) {
-					_smoothCamZ += _deltaTime * settings::consts::speed::smooth_cam;
-					_updateCam = true;
-				} else {
-					_smoothCam = false;
-				}
-			}
-			if (_hurtTime < 0) {
-				_hurtTime += _deltaTime;
-				if (_hurtTime >= 0) {
-					_invulnerable = false;
-				}
-			}
-
-			setSneak(key_cam_zdown);
-			setJump(key_cam_zup && inputs::key_update(inputs::jump));
-			move(face_dir::plus_z, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement
-			glm::vec3 originalPos = _position;
-			move(face_dir::plus_x, key_cam_v, key_cam_h, 0); // move on X_AXIS
-			float hitBoxHeight = getHitbox();
-			t_collision coll = _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight);
-			if (coll.type != COLLISION::NONE) {
-				// _ui->chatMessage("xcoll " + std::to_string(coll.type) + ", " + std::to_string(coll.minZ) + " ~ " + std::to_string(coll.maxZ) + " h " + std::to_string(hitBoxHeight));
-				if (!customObstacle(face_dir::plus_x, coll.maxZ)
-					|| _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
-					restorePos(originalPos); // if collision after movement, undo movement + setRun(false)
-				}
-			} else if (key_cam_zdown && _touchGround && _chunk->collisionBox(_position - glm::vec3(0, 0, 0.6f), 0.3f, 0.7f, 0.7f).type == COLLISION::NONE) {
-				// if sneaking and touch ground and after move we have gap of more than 0.6 under our feet, undo movement
-				restorePos(originalPos);
-			}
-			originalPos = _position;
-			move(face_dir::plus_y, key_cam_v, key_cam_h, 0); // move on Y_AXIS
-			coll = _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight);
-			if (coll.type != COLLISION::NONE) {
-				if (!customObstacle(face_dir::plus_y, coll.maxZ)
-					|| _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
-					restorePos(originalPos);
-				}
-			} else if (key_cam_zdown && _touchGround && _chunk->collisionBox(_position - glm::vec3(0, 0, 0.6f), 0.3f, 0.7f, 0.7f).type == COLLISION::NONE) {
-				restorePos(originalPos);
-			}
-			_chunk->applyGravity(this); // move on Z_AXIS
-			setWaterStatus(false, _chunk->collisionBoxWater(_position, 0.3f, 0));
-			setWaterStatus(true, _chunk->collisionBoxWater(getEyePos(), 0.05f, 0));
-			if (!_touchGround) {
+	else if (_chunk) {
+		if (_smoothCam) {
+			if (_smoothCamZ < _position.z) {
+				_smoothCamZ += _deltaTime * settings::consts::speed::smooth_cam;
 				_updateCam = true;
+			} else {
+				_smoothCam = false;
 			}
-		}*/
+		}
+		if (_hurtTime < 0) {
+			_hurtTime += _deltaTime;
+			if (_hurtTime >= 0) {
+				_invulnerable = false;
+			}
+		}
+
+		setSneak(key_cam_zdown);
+		setJump(key_cam_zup && inputs::key_update(inputs::jump));
+		move(face_dir::plus_z, key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown); // used for underwater movement
+		glm::vec3 originalPos = _position;
+		move(face_dir::plus_x, key_cam_v, key_cam_h, 0); // move on X_AXIS
+		float hitBoxHeight = getHitbox();
+		t_collision coll = _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight);
+		if (coll.type != COLLISION::NONE) {
+			// _ui->chatMessage("xcoll " + std::to_string(coll.type) + ", " + std::to_string(coll.minZ) + " ~ " + std::to_string(coll.maxZ) + " h " + std::to_string(hitBoxHeight));
+			if (!customObstacle(face_dir::plus_x, coll.maxZ)
+				|| _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
+				restorePos(originalPos); // if collision after movement, undo movement + setRun(false)
+			}
+		} else if (key_cam_zdown && _touchGround && _chunk->collisionBox(_position - glm::vec3(0, 0, 0.6f), 0.3f, 0.7f, 0.7f).type == COLLISION::NONE) {
+			// if sneaking and touch ground and after move we have gap of more than 0.6 under our feet, undo movement
+			restorePos(originalPos);
+		}
+		originalPos = _position;
+		move(face_dir::plus_y, key_cam_v, key_cam_h, 0); // move on Y_AXIS
+		coll = _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight);
+		if (coll.type != COLLISION::NONE) {
+			if (!customObstacle(face_dir::plus_y, coll.maxZ)
+				|| _chunk->collisionBox(_position, 0.3f, hitBoxHeight, hitBoxHeight).type != COLLISION::NONE) {
+				restorePos(originalPos);
+			}
+		} else if (key_cam_zdown && _touchGround && _chunk->collisionBox(_position - glm::vec3(0, 0, 0.6f), 0.3f, 0.7f, 0.7f).type == COLLISION::NONE) {
+			restorePos(originalPos);
+		}
+		_chunk->applyGravity(this); // move on Z_AXIS
+		setWaterStatus(false, _chunk->collisionBoxWater(_position, 0.3f, 0));
+		setWaterStatus(true, _chunk->collisionBoxWater(getEyePos(), 0.05f, 0));
+		if (!_touchGround) {
+			_updateCam = true;
+		}
 	}
 
 	updateCurrentBlock();

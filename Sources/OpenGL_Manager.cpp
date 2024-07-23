@@ -634,7 +634,8 @@ void OpenGL_Manager::handleUI( void )
 			str = "\n\n\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\nTPS: " + std::to_string(_time.nbTicksLastSecond);
 		}
 
-		_ui->drawUserInterface(str, _game_mode, _time.deltaTime);
+		_ui->addDebugStr(str);
+		_ui->drawUserInterface(_game_mode, _time.deltaTime);
 	}
 }
 
@@ -681,7 +682,7 @@ void OpenGL_Manager::joinServer( void )
 			return (_menu->setErrorStr({"Failed to connect to the server", "Socket already in use"}));
 		}
 
-		std::string server_ip = _menu->getResetServerIP();
+		std::string server_ip = _menu->getServerIP();
 		MAINLOG(LOG("joinServer on ip " << server_ip));
 		struct hostent* server = gethostbyname(server_ip.c_str());
 		if (!server) {

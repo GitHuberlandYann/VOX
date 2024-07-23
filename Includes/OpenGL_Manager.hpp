@@ -102,10 +102,11 @@ class OpenGL_Manager
 		std::vector<t_packet_data> _chunkPackets;
 		std::thread _thread;
 		std::mutex _mtx, _mtx_packets;
-		t_time _time;
+		t_time _time, _serverTime;
 		t_packet_data _packet;
 		t_counter _counter;
 		t_hit _block_hit;
+		std::map<int, std::unique_ptr<Player>> _players;
 		std::shared_ptr<Chunk> _current_chunk_ptr = NULL, _chunk_hit = NULL;
 		std::unique_ptr<Camera> _camera;
 		std::unique_ptr<UI> _ui;
@@ -158,10 +159,14 @@ class OpenGL_Manager
 
 		/** @category client packets */
 		void sendPacket( size_t size );
-		void handlePacketLogin( void );
+		void sendPlayerPos( void );
+		void handlePacketLogin( char* data );
 		void handlePacketPing( char* data );
 		void handlePacketKick( std::string msg );
 		void handlePacketChunk( t_packet_data& packet );
+		void handlePacketChunkUnload( t_packet_data& packet );
+		void handlePacketPlayerLeave( void );
+		void handlePacketPlayersInfo( t_packet_data& packet, size_t size );
 		void handlePacketChatMsg( char* data );
 
 		/** @category client loop */

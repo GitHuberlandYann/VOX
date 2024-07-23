@@ -52,7 +52,10 @@ class Player : public AMob
 		void drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& partArr, int item, int gameMode );
 		void drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& partArr, int item );
 
+		glm::vec3 getSmoothPos( void );
        	glm::vec3 getEyePos( void ) override;
+		glm::ivec2 getChunkPos( void );
+		Chunk* getChunkPtr( void );
        	float getHitbox( void ) override;
         int getOrientation( void );
 		int getOrientation6( void );
@@ -93,9 +96,16 @@ class Player : public AMob
 		glm::vec3 getLastTp( void );
 		void respawn( void );
 
+		/** @category multiplayer */
 		int getId( void );
 		void setId( int id );
+		std::string getName( void );
 		void setName( std::string name );
+		bool isLoaded( glm::ivec2 chunkPos );
+		bool unloadChunk( glm::ivec2 chunkPos );
+		size_t packetPos( t_packet_data& packet );
+		bool handlePacketPos( t_packet_data& packet, size_t& cursor, bool client, Chunk* chunk = NULL );
+		void appendPacketInfo( t_pending_packet& packet );
 
        	void applyGravity( void ) override;
         void applyGravityUnderwater( void );
@@ -117,8 +127,11 @@ class Player : public AMob
         float _foodSaturationLevel, _foodExhaustionLevel;
         glm::vec3 _spawnpoint, _lastTp;
         glm::vec2 _front2, _right2;
+		glm::ivec2 _currentChunk;
 		std::string name;
+		std::set<std::pair<int, int>> _loadedChunks;
 		std::unique_ptr<Inventory> _inventory;
+		std::mutex _mtx;
         bool _smoothCam, _armAnimation, _fallImmunity;
         bool _sprinting, _sneaking;
         bool _waterHead, _waterFeet;
@@ -129,6 +142,7 @@ class Player : public AMob
 		void processYaw( GLint offset );
 
        	bool updateCurrentBlock( void ) override;
+		bool updateCurrentChunk( void );
         void moveFly( GLint v, GLint h, GLint z );
         void moveUnderwater( int direction, GLint v, GLint h, GLint z );
 		float getSpeed( void ) override;

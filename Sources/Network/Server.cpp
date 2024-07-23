@@ -32,15 +32,27 @@ void OpenGL_Manager::createServer( std::unique_ptr<Server>& server )
 //                                Packets                                     //
 // ************************************************************************** //
 
+void Player::appendPacketInfo( t_pending_packet& packet )
+{
+	utils::memory::memwrite(packet.packet.data, &_id, sizeof(int), packet.size);
+	glm::vec3 pos = getSmoothPos();
+	utils::memory::memwrite(packet.packet.data, &pos.x, sizeof(float) * 3, packet.size);
+	utils::memory::memwrite(packet.packet.data, &_yaw, sizeof(float), packet.size);
+	utils::memory::memwrite(packet.packet.data, &_pitch, sizeof(float), packet.size);
+}
+
 void Server::broadcastPlayersInfo( void )
 {
-	for (auto& player : _players) {
-		std::string content = player->getString(false); // TODO custom function instead of this one
-		_packet = {pendings::broadcast, sizeof(unsigned short) + content.size()};
-		_packet.packet.action = packet_id::server::player_info;
-		memmove(_packet.packet.data, content.c_str(), content.size());
-		pendPacket();
+	if (_players.empty()) {
+		return ;
 	}
+	_packet = {pendings::broadcast, 0};
+	_packet.packet.action = packet_id::server::players_info;
+	for (auto& player : _players) {
+		player->appendPacketInfo(_packet);
+	}
+	_packet.size += sizeof(unsigned short);
+	pendPacket();
 }
 
 /**
@@ -73,7 +85,15 @@ void Server::sendPacket( t_pending_packet& pending )
 	}
 	for (auto id : timedout_ids) {
 		_mtx_plrs.lock();
-		_players.erase(std::remove_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); }));
+		auto search = std::remove_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); });
+		if (search != _players.end()) {
+			_packet = {pendings::broadcast, 0};
+			_packet.packet.action = packet_id::server::player_leave;
+			utils::memory::memwrite(_packet.packet.data, &id, sizeof(int), _packet.size);
+			_packet.size += sizeof(unsigned short);
+			_pendingPackets.push_back(_packet); // we can't use pendPacket because of double lock 
+			_players.erase(search);
+		}
 		_mtx_plrs.unlock();
 	}
 }
@@ -94,8 +114,6 @@ void Server::pendPacket( t_pending_packet& packet )
 
 void Server::handlePacketLogin( Address& sender, std::string name )
 {
-	_packet = {pendings::useAddr, sizeof(unsigned short), sender, {packet_id::server::login}};
-	pendPacket();
 	int id = _socket->getId(sender);
 	auto search = std::find_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); });
 	if (search == _players.end()) {
@@ -104,14 +122,51 @@ void Server::handlePacketLogin( Address& sender, std::string name )
 		_mtx_plrs.unlock();
 		_players.back()->setId(id);
 		_players.back()->setName(name);
+		glm::ivec3 worldSpawn = {Settings::Get()->getInt(settings::ints::world_spawn_x),
+								Settings::Get()->getInt(settings::ints::world_spawn_y),
+								Settings::Get()->getInt(settings::ints::world_spawn_z)};
+		_players.back()->setPos(worldSpawn);
 		setThreadUpdate(true);
-		name = name + " joined the game. [id:" + std::to_string(id) + "]";
-		_packet = {pendings::broadcast, sizeof(unsigned short) + name.size()};
+
+		_packet = {pendings::useAddr, 0, sender, {packet_id::server::login}};
+		utils::memory::memwrite(_packet.packet.data, &id, sizeof(int), _packet.size);
+		utils::memory::memwrite(_packet.packet.data, &worldSpawn.x, sizeof(int) * 3, _packet.size);
+		_packet.size += sizeof(unsigned short);
+		pendPacket();
+
+		_packet = {pendings::broadcast, 0};
 		_packet.packet.action = packet_id::server::chat_msg;
-		memmove(_packet.packet.data, name.c_str(), name.size());
+		name.append(" joined the game");
+		utils::memory::memwrite(_packet.packet.data, name.c_str(), name.size(), _packet.size);
+		_packet.size += sizeof(unsigned short);
 		pendPacket();
 	}
 }
+
+bool Player::handlePacketPos( t_packet_data& packet, size_t& cursor, bool client, Chunk* chunk )
+{
+	utils::memory::memread(&_position, packet.data, sizeof(float) * 3, cursor);
+	utils::memory::memread(&_yaw, packet.data, sizeof(float), cursor);
+	utils::memory::memread(&_pitch, packet.data, sizeof(float), cursor);
+	if (client) {
+		updateVectors();
+		_chunk = chunk;
+	}
+	return (updateCurrentBlock() && updateCurrentChunk());
+}
+
+void Server::handlePacketPosition( Address& sender )
+{
+	int id = _socket->getId(sender);
+	auto search = std::find_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); });
+	if (search != _players.end()) {
+		size_t cursor = 0;
+		if ((*search)->handlePacketPos(_packet.packet, cursor, false)) {
+			setThreadUpdate(true);
+		}
+	}
+}
+
 
 // ************************************************************************** //
 //                                  Run                                       //
@@ -129,11 +184,12 @@ void Server::handleTime( void )
 		_time.nbTicksLastSecond = _time.nbTicks;
 		_time.nbTicks = 0;
 		_time.lastSecondRecorded += 1.0;
-		_packet = {pendings::broadcast, sizeof(unsigned short) + sizeof(double) + sizeof(int) + sizeof(int)};
+		_packet = {pendings::broadcast, 0};
 		_packet.packet.action = packet_id::server::ping;
-		memmove(_packet.packet.data, &_time.currentTime, sizeof(double));
-		memmove(&_packet.packet.data[sizeof(double)], &_time.nbFramesLastSecond, sizeof(int));
-		memmove(&_packet.packet.data[sizeof(double) + sizeof(int)], &_time.nbTicksLastSecond, sizeof(int));
+		utils::memory::memwrite(_packet.packet.data, &_time.currentTime, sizeof(double), _packet.size);
+		utils::memory::memwrite(_packet.packet.data, &_time.nbFramesLastSecond, sizeof(int), _packet.size);
+		utils::memory::memwrite(_packet.packet.data, &_time.nbTicksLastSecond, sizeof(int), _packet.size);
+		_packet.size += sizeof(unsigned short);
 		pendPacket();
 		MAINLOG(SERVLOG(LOG("FPS: " << _time.nbFramesLastSecond << ", TPS: " << _time.nbTicksLastSecond << ", players: " << _players.size())));
 	}
@@ -158,15 +214,17 @@ void Server::handlePackets( void )
 {
 	// send pending packets
 	_mtx_pend.lock();
-	for (auto& pending : _pendingPackets) {
-		sendPacket(pending);
+	size_t pendSize = _pendingPackets.size();
+	for (size_t index = 0; index < pendSize; ++index) {
+		sendPacket(_pendingPackets[0]);
+		_pendingPackets.erase(_pendingPackets.begin());
 	}
-	_pendingPackets.clear();
 	_mtx_pend.unlock();
 
 	// read incoming packets
 	Address sender;
 	while (true) {
+		_packet.size = 0;
 		ssize_t bytes_read = _socket->receive(sender, &_packet.packet, sizeof(_packet.packet));
 		
 		if (bytes_read <= 0) {
@@ -184,11 +242,22 @@ void Server::handlePackets( void )
 				break ;
 			case packet_id::client::leave:
 				break ;
+			case packet_id::client::player_pos:
+				handlePacketPosition(sender);
+				break ;
 			default:
 				MAINLOG(LOGERROR("Server::handlePackets: Unrecognised packet action: " << _packet.packet.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << _packet.packet.data << "|"));
 				break ;
 		}
 	}
+}
+
+void Server::handleChunkDeletion( void )
+{
+	mtx_deleted_chunks.lock();
+	schedule::deleteChunkSchedule(_deleted_chunks);
+	_deleted_chunks.clear();
+	mtx_deleted_chunks.unlock();
 }
 
 void Server::run( void )
@@ -215,9 +284,10 @@ void Server::run( void )
 			// _player->tickUpdate();
 			_time.redTickUpdate = DayCycle::Get()->tickUpdate();
 
-			// broadcastPlayersInfo();
+			broadcastPlayersInfo();
 		}
 		handlePackets();
+		handleChunkDeletion();
 
 		if (_time.nbFramesLastSecond > 60) {
 			std::this_thread::sleep_for(std::chrono::microseconds(50));

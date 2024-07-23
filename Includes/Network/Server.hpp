@@ -17,6 +17,7 @@ class Server
 {
 	public:
 		std::list<std::shared_ptr<Chunk>> _chunks;
+		std::vector<std::shared_ptr<Chunk>> _deleted_chunks;
 		std::map<std::pair<int, int>, s_backup> _backups;
 
 		Server( t_time time, std::map<std::pair<int, int>, s_backup>& backups, std::shared_ptr<Socket> socket );
@@ -26,7 +27,9 @@ class Server
 		void run( void );
 
 		/** @category threading */
-		void getPlayersChunkPos( std::vector<glm::ivec2>& pos );
+		void getPlayersChunkPos( std::vector<glm::ivec3>& pos );
+		bool isLoadedForPlayer( int playerId, glm::ivec2 chunkPos );
+		void unloadForPlayer( int playerId, glm::ivec2 chunkPos );
 		void setThreadUpdate( bool state );
 		bool getThreadUpdate( void );
 		bool getThreadStop( void );
@@ -46,9 +49,11 @@ class Server
 		void pendPacket( void );
 
 		void handlePacketLogin( Address& sender, std::string name );
+		void handlePacketPosition( Address& sender );
 
 		void handleTime( void );
 		void handlePackets( void );
+		void handleChunkDeletion( void );
 		
 		/** @category threading */
 		void startThread( void );

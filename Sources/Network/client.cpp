@@ -21,7 +21,31 @@ void OpenGL_Manager::sendPacket( size_t size )
 	}
 }
 
-void OpenGL_Manager::handlePacketLogin( void )
+size_t Player::packetPos( t_packet_data& packet )
+{
+	size_t cursor = 0;
+	glm::vec3 pos = getSmoothPos();
+	utils::memory::memwrite(packet.data, &pos.x, sizeof(float) * 3, cursor);
+	utils::memory::memwrite(packet.data, &_yaw, sizeof(float), cursor);
+	utils::memory::memwrite(packet.data, &_pitch, sizeof(float), cursor);
+	return (cursor + sizeof(unsigned short));
+}
+
+void OpenGL_Manager::sendPlayerPos( void )
+{
+	if (!_player) {
+		_packet.action = packet_id::client::login;
+		size_t usernameSize = 0;
+		utils::memory::memwrite(_packet.data, _world_name.c_str(), _world_name.size(), usernameSize);
+		return (sendPacket(sizeof(unsigned short) + usernameSize));
+	}
+
+	_packet.action = packet_id::client::player_pos;
+	sendPacket(_player->packetPos(_packet));
+}
+
+
+void OpenGL_Manager::handlePacketLogin( char* data )
 {
 	if (_player) {
 		return ;
@@ -29,28 +53,32 @@ void OpenGL_Manager::handlePacketLogin( void )
 	_player = std::make_unique<Player>();
 	_camera->setTarget(_player.get());
 	_player->setCamUpdate(true);
-	_player->setPos({.0f, .0f, 11.f});
-		// "yaw": 61.690426,
-		// "pitch": -25.588861,
+	glm::ivec3 worldSpawn;
+	size_t cursor = 0;
+	int id;
+	utils::memory::memread(&id, data, sizeof(int), cursor);
+	_player->setId(id);
+	utils::memory::memread(&worldSpawn.x, data, sizeof(int) * 3, cursor);
+	_player->setPos(worldSpawn);
 	_menu->setErrorStr({"Succesfully connected to server."});
 	_menu->setState(menu::pause);
+	_ui->setPtrs(this, _player->getInventory(), _player.get());
 	// _paused = false;
 }
 
 void OpenGL_Manager::handlePacketPing( char* data )
 {
-	double serverCurrentTime;
-	memmove(&serverCurrentTime, data, sizeof(double));
-	int server_fps, server_tps;
-	memmove(&server_fps, &data[sizeof(double)], sizeof(int));
-	memmove(&server_tps, &data[sizeof(double) + sizeof(int)], sizeof(int));
-	MAINLOG(LOG("Client::handlePackets: time received: " << serverCurrentTime << " server fps: " << server_fps << ", server tps: " << server_tps));
+	memmove(&_serverTime.currentTime, data, sizeof(double));
+	memmove(&_serverTime.nbFramesLastSecond, &data[sizeof(double)], sizeof(int));
+	memmove(&_serverTime.nbTicksLastSecond, &data[sizeof(double) + sizeof(int)], sizeof(int));
+	MAINLOG(LOG("Client::handlePackets: time received: " << _serverTime.currentTime << " server fps: " << _serverTime.nbFramesLastSecond << ", server tps: " << _serverTime.nbTicksLastSecond));
 	_packet.action = packet_id::client::pong;
 	sendPacket(sizeof(unsigned short));
 }
 
 void OpenGL_Manager::handlePacketKick( std::string msg )
 {
+	_ui->setPtrs(this, NULL, NULL);
 	_player = nullptr;
 	_socket = nullptr;
 	_paused = true;
@@ -66,6 +94,52 @@ void OpenGL_Manager::handlePacketChunk( t_packet_data& packet )
 	setThreadUpdate(true);
 }
 
+void OpenGL_Manager::handlePacketChunkUnload( t_packet_data& packet )
+{
+	glm::ivec2 chunkPos;
+	size_t cursor = 0;
+	utils::memory::memread(&chunkPos.x, packet.data, sizeof(int), cursor);
+	utils::memory::memread(&chunkPos.y, packet.data, sizeof(int), cursor);
+	_player->isLoaded(chunkPos); // set chunk as 'loaded' means chunk should be deleted for client
+	setThreadUpdate(true);
+}
+
+void OpenGL_Manager::handlePacketPlayerLeave( void )
+{
+	int id;
+	size_t cursor = 0;
+	utils::memory::memread(&id, _packet.data, sizeof(int), cursor);
+	auto search = _players.find(id);
+	if (search != _players.end()) {
+		_ui->chatMessage(search->second->getName() + " left the game");
+		MAINLOG(LOG("Player left with name " << search->second->getName() << " and id " << id));
+		_players.erase(id);
+	} else {
+		MAINLOG(LOGERROR("player with id " << id << " left but doesn't exist"));
+	}
+}
+
+void OpenGL_Manager::handlePacketPlayersInfo( t_packet_data& packet, size_t size )
+{
+	size_t cursor = 0;
+	while (cursor < size) {
+		int id;
+		utils::memory::memread(&id, packet.data, sizeof(int), cursor);
+		if (id == _player->getId()) {
+			cursor += sizeof(float) * 5;
+		} else {
+			auto search = _players.find(id);
+			if (search != _players.end()) {
+				search->second->handlePacketPos(packet, cursor, true, _player->getChunkPtr());
+			} else { // new player
+				_players[id] = std::make_unique<Player>();
+				_players[id]->setId(id);
+				_players[id]->handlePacketPos(packet, cursor, true, _player->getChunkPtr());
+			}
+		}
+	}
+}
+
 void OpenGL_Manager::handlePacketChatMsg( char* data )
 {
 	_ui->chatMessage(data);
@@ -74,6 +148,10 @@ void OpenGL_Manager::handlePacketChatMsg( char* data )
 
 void OpenGL_Manager::handlePackets( void )
 {
+	if (!_socket) {
+		return ;
+	}
+
 	Address sender;
 	while (true) { // read incoming packets
 		ssize_t bytes_read = _socket->receive(sender, &_packet, sizeof(_packet));
@@ -87,17 +165,24 @@ void OpenGL_Manager::handlePackets( void )
 		// process packet
 		switch (_packet.action & mask::network::action_type) {
 			case packet_id::server::login: // server confirmed login
-				handlePacketLogin();
+				handlePacketLogin(_packet.data);
 				break ;
 			case packet_id::server::ping:
-				handlePacketPing(_packet.data);
+				handlePacketPing(_packet.data); // TODO remove all those _packets from the arg ...
 				break ;
 			case packet_id::server::kick:
 				return (handlePacketKick(_packet.data));
 			case packet_id::server::chunk_data:
 				handlePacketChunk(_packet);
 				break ;
-			case packet_id::server::player_info:
+			case packet_id::server::unload_chunk:
+				handlePacketChunkUnload(_packet);
+				break ;
+			case packet_id::server::player_leave:
+				handlePacketPlayerLeave();
+				break ;
+			case packet_id::server::players_info:
+				handlePacketPlayersInfo(_packet, bytes_read - sizeof(unsigned short));
 				break ;
 			case packet_id::server::chat_msg:
 				handlePacketChatMsg(_packet.data);
@@ -106,13 +191,6 @@ void OpenGL_Manager::handlePackets( void )
 				MAINLOG(LOGERROR("Client::handlePackets: Unrecognised packet action: " << _packet.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << _packet.data << "|"));
 				break ;
 		}
-	}
-
-	if (!_player) {
-		_packet.action = packet_id::client::login;
-		size_t usernameSize = 0;
-		utils::memory::memwrite(_packet.data, _world_name.c_str(), _world_name.size(), usernameSize);
-		sendPacket(sizeof(unsigned short) + usernameSize);
 	}
 }
 
@@ -149,18 +227,6 @@ void OpenGL_Manager::handleClientInputs( void )
 		return ;
 	}
 
-	// take screenshot
-	if (inputs::key_down(inputs::screenshot) && inputs::key_update(inputs::screenshot)) {
-		screenshot();
-	}
-	// toggle game mode
-	if (inputs::key_down(inputs::gamemode) && inputs::key_update(inputs::gamemode)) {
-		if (inputs::key_down(inputs::debug)) {
-			Settings::Get()->setBool(settings::bools::visible_chunk_border, !Settings::Get()->getBool(settings::bools::visible_chunk_border));
-		} else {
-			setGamemode(!_game_mode);
-		}
-	}
 	// toggle F3 + I == display full info about block hit
 	if (inputs::key_down(inputs::info) && inputs::key_update(inputs::info) && inputs::key_down(inputs::debug)) {
 		t_hit bHit = getBlockHit();
@@ -183,21 +249,33 @@ void OpenGL_Manager::handleClientInputs( void )
 		}
 		_ui->chatMessage("*******************");
 	}
-	// toggle hotbar F1
-	if (inputs::key_down(inputs::hotbar) && inputs::key_update(inputs::hotbar)) {
-		_ui->_hideUI = !_ui->_hideUI;
-		Settings::Get()->setBool(settings::bools::hide_ui, _ui->_hideUI);
-		_ui->chatMessage(std::string("UI ") + ((_ui->_hideUI) ? "HIDDEN" : "SHOWN"));
-	}
 	*/
 	// quit program
 	if (inputs::key_down(inputs::quit_program)) {
 		glfwSetWindowShouldClose(_window, GL_TRUE);
 		return ;
 	}
+	// toggle hotbar F1
+	if (inputs::key_down(inputs::hotbar) && inputs::key_update(inputs::hotbar)) {
+		_ui->_hideUI = !_ui->_hideUI;
+		Settings::Get()->setBool(settings::bools::hide_ui, _ui->_hideUI);
+		_ui->chatMessage(std::string("UI ") + ((_ui->_hideUI) ? "HIDDEN" : "SHOWN"));
+	}
+	// take screenshot F2
+	if (inputs::key_down(inputs::screenshot) && inputs::key_update(inputs::screenshot)) {
+		screenshot();
+	}
 	// toggle F5 mode
 	if (inputs::key_down(inputs::perspective) && inputs::key_update(inputs::perspective)) {
 		_camera->changeCamPlacement();
+	}
+	// toggle game mode
+	if (inputs::key_down(inputs::gamemode) && inputs::key_update(inputs::gamemode)) {
+		if (inputs::key_down(inputs::debug)) {
+			Settings::Get()->setBool(settings::bools::visible_chunk_border, !Settings::Get()->getBool(settings::bools::visible_chunk_border));
+		} else {
+			setGamemode(!_game_mode);
+		}
 	}
 	// toggle outline
 	if (inputs::key_down(inputs::block_highlight) && inputs::key_update(inputs::block_highlight)) {
@@ -231,7 +309,7 @@ void OpenGL_Manager::handleClientInputs( void )
 	}
 
 	_player->setDelta(_time.deltaTime);
-	_player->clientInputUpdate(settings::consts::gamemode::creative);
+	_player->clientInputUpdate(_game_mode);
 	chunkUpdate();
 
 	if (_player->getResetFovUpdate() || inputs::key_update(inputs::zoom)) {
@@ -285,6 +363,9 @@ void OpenGL_Manager::handleClientDraw( void )
 		(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
 			? _player->drawHeldItem(_models, _entities, _hand_content, _game_mode)
 			: _player->drawPlayer(_models, _entities, _hand_content);
+		for (auto& player : _players) {
+			player.second->drawPlayer(_models, _entities, blocks::air);
+		}
 		drawModels();
 		_shader.useProgram();
 		addBreakingAnim();
@@ -318,7 +399,7 @@ void OpenGL_Manager::handleClientDraw( void )
 void OpenGL_Manager::handleClientUI( void )
 {
 	if (_player && _menu->getState() >= menu::pause) {
-		std::string str;
+		std::string str, rightStr;
 		if (_debug_mode) {
 			size_t residentSize, virtualSize;
 			utils::memory::getMemoryUsage(residentSize, virtualSize);
@@ -347,17 +428,28 @@ void OpenGL_Manager::handleClientUI( void )
 					+ "\nWater faces\t> " + std::to_string(_counter.waterFaces)
 					+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(settings::ints::render_dist))
 					+ "\nGame mode\t\t> " + settings::consts::gamemode::str[_game_mode];
+			
+			rightStr = "\n\nServer ip: " + _menu->getServerIP()
+					+ "\nServer rps: " + std::to_string(_serverTime.nbFramesLastSecond)
+					+ "\nServer tps: " + std::to_string(_serverTime.nbTicksLastSecond)
+					+ "\nPing: " + std::to_string(_socket->getPing()) + "ms"
+					+ "\nPackets lost: " + std::to_string(_socket->getPacketLost()) + '/' + std::to_string(_socket->getPacketSent())
+					+ "\nPlayers: " + std::to_string(_players.size());
+			for (auto& player : _players) {
+				rightStr += "\n\tid " + std::to_string(player.first);
+			}
+			_ui->addDebugStr(rightStr, true);
 		} else {
 			str = "\n\n\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\nTPS: " + std::to_string(_time.nbTicksLastSecond);
 		}
 
-		_ui->drawUserInterface(str, _game_mode, _time.deltaTime);
+		_ui->addDebugStr(str);
+		_ui->drawUserInterface(_game_mode, 0);//_time.deltaTime);
 	}
 }
 
 void OpenGL_Manager::runClient( void )
 {
-	_ui->_hideUI = true;
 	startClientThread();
 	DayCycle::Get()->setTicks(12000);
 	utils::shader::check_glstate("entering client loop\n", true);
@@ -369,9 +461,10 @@ void OpenGL_Manager::runClient( void )
 		if (_time.tickUpdate) {
 			_time.redTickUpdate = DayCycle::Get()->tickUpdate();
 
-			handlePackets();
+			sendPlayerPos();
 		}
 
+		handlePackets();
 		handleClientInputs();
 		handleClientDraw();
 		handleClientUI();
@@ -388,5 +481,8 @@ void OpenGL_Manager::runClient( void )
 
 	utils::shader::check_glstate("exiting client loop\n", true);
 	stopThread();
-	_ui->_hideUI = false;
+	_chunks.clear();
+	_perimeter_chunks.clear();
+	_visible_chunks.clear();
+	_players.clear();
 }

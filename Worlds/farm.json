@@ -5,6 +5,7 @@
 	"debug_mode": true,
 	"f5_mode": false,
 	"outline": true,
+	"world_spawn": [1, -2, 166],
 	"flat_world": 0,
 	"dayCycle": {"day": 4, "ticks": 9311},
 	"time_multiplier": 1,

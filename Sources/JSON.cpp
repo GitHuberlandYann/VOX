@@ -23,7 +23,10 @@ void OpenGL_Manager::saveWorld( void )
 		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
 		+ ",\n\t\"f5_mode\": " + ((_ui->_hideUI) ? "true" : "false")
 		+ ",\n\t\"outline\": " + ((_outline) ? "true" : "false")
-		+ ",\n\t\"flat_world\": " + std::to_string(Settings::Get()->getInt(settings::ints::flat_world_block))
+		+ ",\n\t\"world_spawn\": [" + std::to_string(Settings::Get()->getInt(settings::ints::world_spawn_x))
+			+ ", " + std::to_string(Settings::Get()->getInt(settings::ints::world_spawn_y))
+			+ ", " + std::to_string(Settings::Get()->getInt(settings::ints::world_spawn_z))
+		+ "],\n\t\"flat_world\": " + std::to_string(Settings::Get()->getInt(settings::ints::flat_world_block))
 		+ DayCycle::Get()->saveString()
 		+ _player->saveString()
 		+ _player->getInventory()->saveString()
@@ -355,6 +358,18 @@ void OpenGL_Manager::loadWorld( std::string file )
 				LOADINGLOG(ofs << "f5 mode set to " << _ui->_hideUI << std::endl);
 			} else if (!line.compare(0, 11, "\"outline\": ")) {
 				_outline = line.substr(11, 4) == "true";
+			} else if (!line.compare(0, 15, "\"world_spawn\": ")) {
+				int value = std::atoi(&line[16]);
+				Settings::Get()->setInt(settings::ints::world_spawn_x, value);
+				int index = 16;
+				for (; line[index] && line[index] != ','; ++index);
+				value = std::atoi(&line[index + 2]);
+				Settings::Get()->setInt(settings::ints::world_spawn_y, value);
+				for (index = index + 2; line[index] && line[index] != ','; ++index);
+				value = std::atoi(&line[index + 2]);
+				Settings::Get()->setInt(settings::ints::world_spawn_z, value);
+				LOADINGLOG(ofs << "World spawn set to " << POSXYZ(Settings::Get()->getInt(settings::ints::world_spawn_x),
+					Settings::Get()->getInt(settings::ints::world_spawn_y), value) << std::endl);
 			} else if (!line.compare(0, 14, "\"flat_world\": ")) {
 				int value = std::atoi(&line[14]);
 				value = (value >= 0 && value < S_BLOCKS_SIZE) ? value : blocks::air;

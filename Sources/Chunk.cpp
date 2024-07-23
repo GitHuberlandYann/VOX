@@ -230,6 +230,11 @@ GLint Chunk::getStartY( void )
 	return (_startY);
 }
 
+glm::ivec2 Chunk::getStartVec( void )
+{
+	return {_startX, _startY};
+}
+
 /**
  * @brief get ptr to neighbour whose _startX and _startY match args
  */
@@ -287,8 +292,11 @@ void Chunk::setBackup( std::map<std::pair<int, int>, s_backup>& backups )
 		for (auto &sign : _signs) {
 			sign.second->setChunk(NULL);
 		}
-		_entities.erase(std::remove_if(_entities.begin(), _entities.end(),
-			[]( auto e ) { return (e->getType() == entities::none); })); // rm all entities which are not ItemFrameEntities nor lecterns
+		auto search = std::remove_if(_entities.begin(), _entities.end(),
+			[]( auto e ) { return (e->getType() == entities::none); }); // rm all entities which are not ItemFrameEntities nor lecterns
+		if (search != _entities.end()) {
+			_entities.erase(search);
+		}
 		mtx_backup.lock();
 		backups[std::pair<int, int>(_startX, _startY)] = {_added, _removed, _chests, _furnaces, _signs, _entities};
 		mtx_backup.unlock();

@@ -155,6 +155,9 @@ namespace settings {
 			flat_world_block,
 			json_version,
 			game_mode,
+			world_spawn_x,
+			world_spawn_y,
+			world_spawn_z,
 			size
 		};
 	};

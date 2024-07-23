@@ -163,6 +163,15 @@ void Text::addText( int posX, int posY, int font_size, unsigned color, int depth
 	}
 }
 
+void Text::addTextAlignRight( int posX, int posY, int font_size, unsigned color, int depth, std::string str )
+{
+	std::vector<std::string> argv = utils::string::split(str, '\n');
+	for (auto& line : argv) {
+		addText(posX - utils::text::textWidth(font_size, line), posY, font_size, color, depth, line);
+		posY += 1.2f * font_size;
+	}
+}
+
 void Text::addCursorText( int posX, int posY, int font_size, unsigned color, int depth, bool bar, size_t cursor, std::string str )
 {
 	int startX = posX;

@@ -108,7 +108,7 @@ class Menu
 		int getState( void );
 		void changeGuiSize( void );
 		std::string getResetWorldFile( void );
-		std::string getResetServerIP( void );
+		std::string getServerIP( void );
 		t_sign_info getSignContent( void );
 		menu::ret run( bool animUpdate );
 
