@@ -187,6 +187,7 @@ namespace inputs
 		{GLFW_KEY_O, block_highlight},
 		{GLFW_KEY_C, zoom},
 		{GLFW_KEY_I, info},
+		{GLFW_KEY_TAB, tab},
 		{GLFW_KEY_RIGHT_BRACKET, block_atlas_clean},
 		{GLFW_KEY_LEFT_BRACKET, block_atlas_default},
 		{GLFW_MOUSE_BUTTON_LEFT, destroy},

@@ -78,6 +78,7 @@ namespace packet_id {
 		enum {
 			login,
 			pong, // response to ping
+			request_ping_list,
 			leave,
 			settings,
 			player_pos,
@@ -89,11 +90,13 @@ namespace packet_id {
 		enum {
 			login,
 			ping, // sent once per second to keep connection going
+			ping_list, // id + name of all players
 			kick,
 			chunk_data, // 16x16x16 subChunk content
 			unload_chunk,
+			player_join,
 			player_leave,
-			players_info,
+			players_info, // id, pos, deltas, yaw, pitch of all players
 			chat_msg,
 			destroy_stage, // set breaking anim of a block
 			damage_event,

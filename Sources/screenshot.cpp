@@ -13,7 +13,7 @@
 void OpenGL_Manager::screenshot( void )
 {
 	std::vector<GLubyte> pixels;
-	pixels.reserve(SHOT_WIDTH * SHOT_HEIGHT * 3);
+	pixels.resize(SHOT_WIDTH * SHOT_HEIGHT * 3);
 
 	glReadPixels(0, 0, SHOT_WIDTH, SHOT_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, &pixels[0]);
 	// glReadPixels(0, 0, SHOT_WIDTH, SHOT_HEIGHT, GL_BGR, GL_UNSIGNED_BYTE, pixels); // gives cool effect

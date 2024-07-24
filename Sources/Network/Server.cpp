@@ -38,6 +38,7 @@ void Player::appendPacketInfo( t_pending_packet& packet )
 	utils::memory::memwrite(packet.packet.data, &_id, sizeof(int), packet.size);
 	glm::vec3 pos = getSmoothPos();
 	utils::memory::memwrite(packet.packet.data, &pos.x, sizeof(float) * 3, packet.size);
+	utils::memory::memwrite(packet.packet.data, &_knockback, sizeof(float) * 3, packet.size);
 	utils::memory::memwrite(packet.packet.data, &_yaw, sizeof(float), packet.size);
 	utils::memory::memwrite(packet.packet.data, &_pitch, sizeof(float), packet.size);
 }
@@ -49,8 +50,24 @@ void Server::broadcastPlayersInfo( void )
 	}
 	_packet = {pendings::broadcast, 0};
 	_packet.packet.action = packet_id::server::players_info;
-	for (auto& player : _players) {
+	for (auto& player: _players) {
 		player.second->appendPacketInfo(_packet);
+	}
+	_packet.size += sizeof(unsigned short);
+	pendPacket();
+}
+
+void Server::sendPingList( Address& sender )
+{
+	_packet = {pendings::useAddr, 0, sender, {packet_id::server::ping_list}};
+	size_t nbPlayers = _players.size();
+	utils::memory::memwrite(_packet.packet.data, &nbPlayers, sizeof(int), _packet.size);
+	for (auto& player: _players) {
+		utils::memory::memwrite(_packet.packet.data, &player.first, sizeof(int), _packet.size);
+		std::string name = player.second->getName();
+		size_t nameSize = name.size();
+		utils::memory::memwrite(_packet.packet.data, &nameSize, sizeof(int), _packet.size);
+		utils::memory::memwrite(_packet.packet.data, name.c_str(), nameSize, _packet.size);
 	}
 	_packet.size += sizeof(unsigned short);
 	pendPacket();
@@ -90,6 +107,8 @@ void Server::sendPacket( t_pending_packet& pending )
 			_packet = {pendings::broadcast, 0};
 			_packet.packet.action = packet_id::server::player_leave;
 			utils::memory::memwrite(_packet.packet.data, &id, sizeof(int), _packet.size);
+			std::string name = _players[id]->getName();
+			utils::memory::memwrite(_packet.packet.data, name.c_str(), name.size(), _packet.size);
 			_packet.size += sizeof(unsigned short);
 			_pendingPackets.push_back(_packet); // we can't use pendPacket because of double lock 
 			_players.erase(id);
@@ -112,6 +131,11 @@ void Server::pendPacket( t_pending_packet& packet )
 	_mtx_pend.unlock();
 }
 
+// ************************************************************************** //
+//                                Packets                                     //
+//                                Receive                                     //
+// ************************************************************************** //
+
 void Server::handlePacketLogin( Address& sender, std::string name )
 {
 	int id = _socket->getId(sender);
@@ -133,9 +157,11 @@ void Server::handlePacketLogin( Address& sender, std::string name )
 		_packet.size += sizeof(unsigned short);
 		pendPacket();
 
+		sendPingList(sender);
+
 		_packet = {pendings::broadcast, 0};
-		_packet.packet.action = packet_id::server::chat_msg;
-		name.append(" joined the game");
+		_packet.packet.action = packet_id::server::player_join;
+		utils::memory::memwrite(_packet.packet.data, &id, sizeof(int), _packet.size);
 		utils::memory::memwrite(_packet.packet.data, name.c_str(), name.size(), _packet.size);
 		_packet.size += sizeof(unsigned short);
 		pendPacket();
@@ -144,12 +170,20 @@ void Server::handlePacketLogin( Address& sender, std::string name )
 
 bool Player::handlePacketPos( t_packet_data& packet, size_t& cursor, bool client, Chunk* chunk )
 {
-	utils::memory::memread(&_position, packet.data, sizeof(float) * 3, cursor);
-	utils::memory::memread(&_yaw, packet.data, sizeof(float), cursor);
-	utils::memory::memread(&_pitch, packet.data, sizeof(float), cursor);
 	if (client) {
+		utils::memory::memread(&_position, packet.data, sizeof(float) * 3, cursor);
+		utils::memory::memread(&_knockback, packet.data, sizeof(float) * 3, cursor);
+		utils::memory::memread(&_yaw, packet.data, sizeof(float), cursor);
+		utils::memory::memread(&_pitch, packet.data, sizeof(float), cursor);
 		updateVectors();
 		_chunk = chunk;
+	} else {
+		glm::vec3 pos;
+		utils::memory::memread(&pos, packet.data, sizeof(float) * 3, cursor);
+		_knockback = pos - _position;
+		_position = pos;
+		utils::memory::memread(&_yaw, packet.data, sizeof(float), cursor);
+		utils::memory::memread(&_pitch, packet.data, sizeof(float), cursor);
 	}
 	return (updateCurrentBlock() && updateCurrentChunk());
 }
@@ -251,6 +285,9 @@ void Server::handlePackets( void )
 				handlePacketLogin(sender, _packet.packet.data);
 				break ;
 			case packet_id::client::pong:
+				break ;
+			case packet_id::client::request_ping_list:
+				sendPingList(sender);
 				break ;
 			case packet_id::client::leave:
 				break ;

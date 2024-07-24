@@ -67,6 +67,7 @@ namespace inputs
 		block_highlight,
 		zoom,
 		info,
+		tab,
 		hotbar,
 		screenshot,
 		debug,

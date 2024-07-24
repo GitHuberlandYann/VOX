@@ -63,7 +63,6 @@ void OpenGL_Manager::sendMessageServer( void )
 //                                Receive                                     //
 // ************************************************************************** //
 
-
 void OpenGL_Manager::handlePacketLogin( char* data )
 {
 	if (_player) {
@@ -95,6 +94,28 @@ void OpenGL_Manager::handlePacketPing( char* data )
 	sendPacket(sizeof(unsigned short));
 }
 
+void OpenGL_Manager::handlePacketPingList( void )
+{
+	size_t cursor = 0;
+	int nbPlayers;
+
+	utils::memory::memread(&nbPlayers, _packet.data, sizeof(int), cursor);
+	for (int index = 0; index < nbPlayers; ++index) {
+		int id, nameSize;
+		utils::memory::memread(&id, _packet.data, sizeof(int), cursor);
+		utils::memory::memread(&nameSize, _packet.data, sizeof(int), cursor);
+		std::string name;
+		name.resize(nameSize + 1);
+		utils::memory::memread(&name[0], _packet.data, nameSize, cursor);
+		if (id == _player->getId()) {
+		} else if (!_players.count(id)) {
+			_players[id] = std::make_unique<Player>();
+			_players[id]->setId(id);
+			_players[id]->setName(name);
+		}
+	}
+}
+
 void OpenGL_Manager::handlePacketKick( std::string msg )
 {
 	_ui->setPtrs(this, NULL, NULL);
@@ -123,15 +144,32 @@ void OpenGL_Manager::handlePacketChunkUnload( t_packet_data& packet )
 	setThreadUpdate(true);
 }
 
+void OpenGL_Manager::handlePacketPlayerJoin( void )
+{
+	int id;
+	size_t cursor = 0;
+	utils::memory::memread(&id, _packet.data, sizeof(int), cursor);
+	std::string name = &_packet.data[cursor];
+	_ui->chatMessage(name + " joined the game");
+	MAINLOG(LOG("Player joined with name " << name << " and id " << id));
+	if (id == _player->getId()) {
+		_player->setName(name);
+	} else if (!_players.count(id)) {
+		_players[id] = std::make_unique<Player>();
+		_players[id]->setId(id);
+		_players[id]->setName(name);
+	}
+}
+
 void OpenGL_Manager::handlePacketPlayerLeave( void )
 {
 	int id;
 	size_t cursor = 0;
 	utils::memory::memread(&id, _packet.data, sizeof(int), cursor);
-	auto search = _players.find(id);
-	if (search != _players.end()) {
-		_ui->chatMessage(search->second->getName() + " left the game");
-		MAINLOG(LOG("Player left with name " << search->second->getName() << " and id " << id));
+	if (_players.count(id)) {
+		std::string name = &_packet.data[cursor];
+		_ui->chatMessage(name + " left the game");
+		MAINLOG(LOG("Player left with name " << name << " and id " << id));
 		_players.erase(id);
 	} else {
 		MAINLOG(LOGERROR("player with id " << id << " left but doesn't exist"));
@@ -141,21 +179,22 @@ void OpenGL_Manager::handlePacketPlayerLeave( void )
 void OpenGL_Manager::handlePacketPlayersInfo( t_packet_data& packet, size_t size )
 {
 	size_t cursor = 0;
+	bool requestPingList = false;
 	while (cursor < size) {
 		int id;
 		utils::memory::memread(&id, packet.data, sizeof(int), cursor);
-		if (id == _player->getId()) {
-			cursor += sizeof(float) * 5;
+		if (_players.count(id)) {
+			_players[id]->handlePacketPos(packet, cursor, true, _player->getChunkPtr());
+		} else if (id == _player->getId()) {
+			cursor += sizeof(float) * 8;
 		} else {
-			auto search = _players.find(id);
-			if (search != _players.end()) {
-				search->second->handlePacketPos(packet, cursor, true, _player->getChunkPtr());
-			} else { // new player
-				_players[id] = std::make_unique<Player>();
-				_players[id]->setId(id);
-				_players[id]->handlePacketPos(packet, cursor, true, _player->getChunkPtr());
-			}
+			cursor += sizeof(float) * 8;
+			requestPingList = true;
 		}
+	}
+	if (requestPingList) {
+		_packet.action = packet_id::client::request_ping_list;
+		sendPacket(sizeof(unsigned short));
 	}
 }
 
@@ -189,6 +228,9 @@ void OpenGL_Manager::handlePackets( void )
 			case packet_id::server::ping:
 				handlePacketPing(_packet.data); // TODO remove all those _packets from the arg ...
 				break ;
+			case packet_id::server::ping_list:
+				handlePacketPingList();
+				break ;
 			case packet_id::server::kick:
 				return (handlePacketKick(_packet.data));
 			case packet_id::server::chunk_data:
@@ -196,6 +238,9 @@ void OpenGL_Manager::handlePackets( void )
 				break ;
 			case packet_id::server::unload_chunk:
 				handlePacketChunkUnload(_packet);
+				break ;
+			case packet_id::server::player_join:
+				handlePacketPlayerJoin();
 				break ;
 			case packet_id::server::player_leave:
 				handlePacketPlayerLeave();
@@ -388,6 +433,8 @@ void OpenGL_Manager::handleClientDraw( void )
 			? _player->drawHeldItem(_models, _entities, _hand_content, _game_mode)
 			: _player->drawPlayer(_models, _entities, _hand_content);
 		for (auto& player : _players) {
+			player.second->setDelta(_time.deltaTime);
+			player.second->moveClient();
 			player.second->drawPlayer(_models, _entities, blocks::air);
 		}
 		drawModels();
@@ -453,12 +500,12 @@ void OpenGL_Manager::handleClientUI( void )
 					+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(settings::ints::render_dist))
 					+ "\nGame mode\t\t> " + settings::consts::gamemode::str[_game_mode];
 			
-			rightStr = "\n\nServer ip: " + _menu->getServerIP()
+			rightStr = "Server ip: " + _menu->getServerIP()
 					+ "\nServer rps: " + std::to_string(_serverTime.nbFramesLastSecond)
 					+ "\nServer tps: " + std::to_string(_serverTime.nbTicksLastSecond)
 					+ "\nPing: " + std::to_string(_socket->getPing()) + "ms"
 					+ "\nPackets lost: " + std::to_string(_socket->getPacketLost()) + '/' + std::to_string(_socket->getPacketSent())
-					+ "\nPlayers: " + std::to_string(_players.size());
+					+ "\nPlayers: " + std::to_string(_players.size() + 1);
 			for (auto& player : _players) {
 				rightStr += "\n\tid " + std::to_string(player.first);
 			}
@@ -495,6 +542,8 @@ void OpenGL_Manager::runClient( void )
 		handleClientUI();
 		if (_paused) {
 			handleMenu(_time.nbTicks == 1 && _time.tickUpdate);
+		} else if (inputs::key_down(inputs::tab)) {
+			_menu->displayTabList(_player, _players);
 		} else {
 			_ui->textToScreen(_menu->getState() >= menu::pause);
 		}

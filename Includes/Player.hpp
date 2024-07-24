@@ -103,6 +103,7 @@ class Player : public AMob
 		void setName( std::string name );
 		bool isLoaded( glm::ivec2 chunkPos );
 		bool unloadChunk( glm::ivec2 chunkPos );
+		void moveClient( void );
 		size_t packetPos( t_packet_data& packet );
 		bool handlePacketPos( t_packet_data& packet, size_t& cursor, bool client, Chunk* chunk = NULL );
 		void appendPacketInfo( t_pending_packet& packet );

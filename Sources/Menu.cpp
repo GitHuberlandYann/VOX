@@ -1,5 +1,6 @@
 #include "Menu.hpp"
 #include "Ui.hpp"
+#include "Player.hpp"
 #include "Inventory.hpp"
 #include "callbacks.hpp"
 #include "Settings.hpp"
@@ -2582,6 +2583,26 @@ t_sign_info Menu::getSignContent( void )
 	t_sign_info res = {_sign_pos, _sign_content};
 	_sign_content.clear();
 	return (res);
+}
+
+void Menu::displayTabList( std::unique_ptr<Player>& player, std::map<int, std::unique_ptr<Player>>& players )
+{
+	if (!player) {
+		return ;
+	}
+	size_t nbNames = 2UL + players.size();
+	int yTop = WIN_HEIGHT / 2 - (4 + nbNames * 6) * _gui_size;
+
+	addUnstretchedQuads(settings::consts::tex::ui, settings::consts::depth::menu::bars, WIN_WIDTH / 2 - 100 * _gui_size, yTop, 200 * _gui_size, (4 + nbNames * 12) * _gui_size, 0, 71, 200, 20, 3);
+	_text->addCenteredText(WIN_WIDTH / 2, yTop + 4 * _gui_size, 0, 8 * _gui_size, 8 * _gui_size, argb::white, true, settings::consts::depth::menu::str, "Players:");
+	_text->addCenteredText(WIN_WIDTH / 2, yTop + 16 * _gui_size, 0, 8 * _gui_size, 8 * _gui_size, argb::white, true, settings::consts::depth::menu::str, player->getName());
+	int index = 2;
+	for (auto& other: players) {
+		_text->addCenteredText(WIN_WIDTH / 2, yTop + (4 + 12 * index) * _gui_size, 0, 8 * _gui_size, 8 * _gui_size, argb::white, true, settings::consts::depth::menu::str, other.second->getName());
+		++index;
+	}
+	setup_shader();
+	blit_to_screen();
 }
 
 menu::ret Menu::run( bool animUpdate )

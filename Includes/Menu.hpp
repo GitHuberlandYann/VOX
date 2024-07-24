@@ -111,6 +111,7 @@ class Menu
 		std::string getResetWorldFile( void );
 		std::string getServerIP( void );
 		t_sign_info getSignContent( void );
+		void displayTabList( std::unique_ptr<Player>& player, std::map<int, std::unique_ptr<Player>>& players );
 		menu::ret run( bool animUpdate );
 
 		std::string getInfoString( void );

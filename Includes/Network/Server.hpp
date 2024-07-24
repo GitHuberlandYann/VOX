@@ -45,6 +45,7 @@ class Server
 		std::map<int, std::unique_ptr<Player>> _players;
 
 		void broadcastPlayersInfo( void );
+		void sendPingList( Address& sender );
 		void sendPacket( t_pending_packet& pending );
 		void pendPacket( void );
 

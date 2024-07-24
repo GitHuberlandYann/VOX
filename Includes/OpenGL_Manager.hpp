@@ -165,9 +165,11 @@ class OpenGL_Manager
 		/** @category client packets receive */
 		void handlePacketLogin( char* data );
 		void handlePacketPing( char* data );
+		void handlePacketPingList( void );
 		void handlePacketKick( std::string msg );
 		void handlePacketChunk( t_packet_data& packet );
 		void handlePacketChunkUnload( t_packet_data& packet );
+		void handlePacketPlayerJoin( void );
 		void handlePacketPlayerLeave( void );
 		void handlePacketPlayersInfo( t_packet_data& packet, size_t size );
 		void handlePacketChatMsg( char* data );

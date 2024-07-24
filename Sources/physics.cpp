@@ -531,6 +531,20 @@ float Player::getSpeed( void )
 }
 
 /**
+ * @brief move other players on server, by using _knockback
+ */
+void Player::moveClient( void )
+{
+	_position += _knockback * _deltaTime;
+	if (glm::abs(_knockback.x) > 0.001f || glm::abs(_knockback.y) > 0.001f || glm::abs(_knockback.z) > 0.001f) {
+		_walking = true;
+		_bodyFront = _front;
+	} else {
+		_walking = false;
+	}
+}
+
+/**
  * @brief update player's on x OR y axis
  * @param direction movement's axis
  * @param v, h, z user's inputs forwards, sideways, and upwards
@@ -544,11 +558,10 @@ void Player::move( int direction, GLint v, GLint h, GLint z )
 	} else if (!v && !h) {
 		_walking = false;
 		return ;
-	} else {
-		_updateCam = true;
-		_walking = true;
-		_bodyFront = _front;
 	}
+	_updateCam = true;
+	_walking = true;
+	_bodyFront = _front;
 
 	const float speedFrame = _deltaTime * getSpeed();
 	float movement = 0;
