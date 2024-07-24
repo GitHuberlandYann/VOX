@@ -42,7 +42,7 @@ class Server
 		t_pending_packet _packet;
 		std::shared_ptr<Socket> _socket;
 		std::vector<t_pending_packet> _pendingPackets;
-		std::vector<std::unique_ptr<Player>> _players;
+		std::map<int, std::unique_ptr<Player>> _players;
 
 		void broadcastPlayersInfo( void );
 		void sendPacket( t_pending_packet& pending );
@@ -50,6 +50,7 @@ class Server
 
 		void handlePacketLogin( Address& sender, std::string name );
 		void handlePacketPosition( Address& sender );
+		void handlePacketChatMsg( Address& sender, std::string msg );
 
 		void handleTime( void );
 		void handlePackets( void );

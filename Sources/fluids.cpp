@@ -291,6 +291,7 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
                                   });
 	// if (vip)b.stamp("sort");
 
+	_mtx_fluid.lock();
 	_water_vert.clear();
 	for (auto& o: order) {
 		glm::ivec4 start = {o.second[0], o.second[1], o.second[2], 0}, offset0, offset1, offset2, offset3;
@@ -313,10 +314,9 @@ void Chunk::sort_water( glm::vec3 pos, bool vip )
 			offset2 = start + glm::ivec4(0, 0, o.second[5], (1 << 11));
 			offset3 = start + glm::ivec4(o.second[3], o.second[4], o.second[5], (1 << 10) + (1 << 11));
 		}
-		_mtx_fluid.lock();
 		utils::fluid::face_water_vertices(_water_vert, offset0, offset1, offset2, offset3);
-		_mtx_fluid.unlock();
 	}
+	_mtx_fluid.unlock();
 	order.clear();
 	// if (vip)b.stamp("fill vertices");
 

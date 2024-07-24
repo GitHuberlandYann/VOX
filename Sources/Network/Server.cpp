@@ -26,6 +26,7 @@ Server::~Server( void )
 void OpenGL_Manager::createServer( std::unique_ptr<Server>& server )
 {
 	server = std::make_unique<Server>(_time, _backups, _socket);
+	Settings::Get()->setInt(settings::ints::session_type, settings::consts::session::server);
 }
 
 // ************************************************************************** //
@@ -49,7 +50,7 @@ void Server::broadcastPlayersInfo( void )
 	_packet = {pendings::broadcast, 0};
 	_packet.packet.action = packet_id::server::players_info;
 	for (auto& player : _players) {
-		player->appendPacketInfo(_packet);
+		player.second->appendPacketInfo(_packet);
 	}
 	_packet.size += sizeof(unsigned short);
 	pendPacket();
@@ -85,14 +86,13 @@ void Server::sendPacket( t_pending_packet& pending )
 	}
 	for (auto id : timedout_ids) {
 		_mtx_plrs.lock();
-		auto search = std::remove_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); });
-		if (search != _players.end()) {
+		if (_players.count(id)) {
 			_packet = {pendings::broadcast, 0};
 			_packet.packet.action = packet_id::server::player_leave;
 			utils::memory::memwrite(_packet.packet.data, &id, sizeof(int), _packet.size);
 			_packet.size += sizeof(unsigned short);
 			_pendingPackets.push_back(_packet); // we can't use pendPacket because of double lock 
-			_players.erase(search);
+			_players.erase(id);
 		}
 		_mtx_plrs.unlock();
 	}
@@ -115,17 +115,16 @@ void Server::pendPacket( t_pending_packet& packet )
 void Server::handlePacketLogin( Address& sender, std::string name )
 {
 	int id = _socket->getId(sender);
-	auto search = std::find_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); });
-	if (search == _players.end()) {
+	if (!_players.count(id)) {
 		_mtx_plrs.lock();
-		_players.push_back(std::make_unique<Player>());
+		_players[id] = std::make_unique<Player>();
 		_mtx_plrs.unlock();
-		_players.back()->setId(id);
-		_players.back()->setName(name);
+		_players[id]->setId(id);
+		_players[id]->setName(name);
 		glm::ivec3 worldSpawn = {Settings::Get()->getInt(settings::ints::world_spawn_x),
 								Settings::Get()->getInt(settings::ints::world_spawn_y),
 								Settings::Get()->getInt(settings::ints::world_spawn_z)};
-		_players.back()->setPos(worldSpawn);
+		_players[id]->setPos(worldSpawn);
 		setThreadUpdate(true);
 
 		_packet = {pendings::useAddr, 0, sender, {packet_id::server::login}};
@@ -158,15 +157,28 @@ bool Player::handlePacketPos( t_packet_data& packet, size_t& cursor, bool client
 void Server::handlePacketPosition( Address& sender )
 {
 	int id = _socket->getId(sender);
-	auto search = std::find_if(_players.begin(), _players.end(), [id](auto& player) { return (player->getId() == id); });
-	if (search != _players.end()) {
+	if (_players.count(id)) {
 		size_t cursor = 0;
-		if ((*search)->handlePacketPos(_packet.packet, cursor, false)) {
+		if (_players[id]->handlePacketPos(_packet.packet, cursor, false)) {
 			setThreadUpdate(true);
 		}
 	}
 }
 
+void Server::handlePacketChatMsg( Address& sender, std::string msg )
+{
+	// TODO process msg content and handle commands.
+	// TODO implement player 'autority level'
+	int id = _socket->getId(sender);
+	if (_players.count(id)) {
+		_packet = {pendings::broadcast, 0};
+		_packet.packet.action = packet_id::server::chat_msg;
+		msg = "<" + _players[id]->getName() + "> " + msg;
+		utils::memory::memwrite(_packet.packet.data, msg.c_str(), msg.size(), _packet.size);
+		_packet.size += sizeof(unsigned short);
+		pendPacket();
+	}
+}
 
 // ************************************************************************** //
 //                                  Run                                       //
@@ -244,6 +256,9 @@ void Server::handlePackets( void )
 				break ;
 			case packet_id::client::player_pos:
 				handlePacketPosition(sender);
+				break ;
+			case packet_id::client::chat_msg:
+				handlePacketChatMsg(sender, _packet.packet.data);
 				break ;
 			default:
 				MAINLOG(LOGERROR("Server::handlePackets: Unrecognised packet action: " << _packet.packet.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << _packet.packet.data << "|"));

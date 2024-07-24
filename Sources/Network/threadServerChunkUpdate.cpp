@@ -126,7 +126,7 @@ void Server::getPlayersChunkPos( std::vector<glm::ivec3>& pos )
 	pos.clear();
 	_mtx_plrs.lock();
 	for (auto& player : _players) {
-		pos.push_back({player->getChunkPos(), player->getId()});
+		pos.push_back({player.second->getChunkPos(), player.first});
 	}
 	_mtx_plrs.unlock();
 }
@@ -153,9 +153,8 @@ bool Server::isLoadedForPlayer( int playerId, glm::ivec2 chunkPos )
 	bool res = true;
 
 	_mtx_plrs.lock();
-	auto search = std::find_if(_players.begin(), _players.end(), [playerId](auto& player) { return (player->getId() == playerId); });
-	if (search != _players.end()) {
-		res = (*search)->isLoaded(chunkPos);
+	if (_players.count(playerId)) {
+		res = _players[playerId]->isLoaded(chunkPos);
 	}
 	_mtx_plrs.unlock();
 
@@ -176,9 +175,8 @@ bool Player::unloadChunk( glm::ivec2 chunkPos )
 void Server::unloadForPlayer( int playerId, glm::ivec2 chunkPos )
 {
 	_mtx_plrs.lock();
-	auto search = std::find_if(_players.begin(), _players.end(), [playerId](auto& player) { return (player->getId() == playerId); });
-	if (search != _players.end()) {
-		if ((*search)->unloadChunk(chunkPos)) {
+	if (_players.count(playerId)) {
+		if (_players[playerId]->unloadChunk(chunkPos)) {
 			t_pending_packet packet = {playerId};
 			packet.packet.action = packet_id::server::unload_chunk;
 			packet.size = 0;

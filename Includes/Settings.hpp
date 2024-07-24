@@ -36,6 +36,12 @@ namespace settings {
 			const std::array<std::string, 3> str = {"SURVIVAL", "CREATIVE", "ADVENTURE"};
 		};
 
+		namespace session {
+			const int singleplayer = 0;
+			const int server = 1;
+			const int client = 2;
+		};
+
 		namespace tex {
 			const int ui = 0;
 			const int inventory = 1;
@@ -155,6 +161,7 @@ namespace settings {
 			flat_world_block,
 			json_version,
 			game_mode,
+			session_type, // singleplayer-server-client
 			world_spawn_x,
 			world_spawn_y,
 			world_spawn_z,

@@ -186,10 +186,13 @@ std::vector<int> Socket::broadcast( const void* data, size_t size )
 		return (res);
 	}
 
-	for (auto& c : _clients) {
-		int sendRet = send(c.ip, data, size);
+	size_t delCount = 0;
+	size_t clientSize = _clients.size();
+	for (size_t index = 0; index < clientSize; ++index) {
+		int sendRet = send(_clients[index - delCount].ip, data, size);
 		if (sendRet >= send_ret::timeout) {
 			res.push_back(sendRet - send_ret::timeout);
+			++delCount;
 		}
 	}
 	return (res);

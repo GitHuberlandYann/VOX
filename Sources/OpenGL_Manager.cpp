@@ -810,6 +810,10 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 		case menu::ret::page_turned:
 			_chunk_hit->bookedLectern(_menu.get(), _block_hit.pos, true);
 			break ;
+		case menu::ret::send_message_server:
+			sendMessageServer();
+			handleBackToGame();
+			break ;
 		case menu::ret::quit:
 			break ;
 		default:

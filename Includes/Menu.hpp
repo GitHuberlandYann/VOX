@@ -65,6 +65,7 @@ namespace menu
 		sign_book,
 		drop_item,
 		page_turned,
+		send_message_server,
 	};
 
 	const int resolutions_size = 7;

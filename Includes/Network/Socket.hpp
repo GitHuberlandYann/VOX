@@ -81,6 +81,7 @@ namespace packet_id {
 			leave,
 			settings,
 			player_pos,
+			chat_msg,
 		};
 	};
 

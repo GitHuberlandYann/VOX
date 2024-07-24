@@ -157,9 +157,12 @@ class OpenGL_Manager
 		void handleMenu( bool animUpdate );
 		void handleChunkDeletion( void );
 
-		/** @category client packets */
+		/** @category client packets send */
 		void sendPacket( size_t size );
 		void sendPlayerPos( void );
+		void sendMessageServer( void );
+
+		/** @category client packets receive */
 		void handlePacketLogin( char* data );
 		void handlePacketPing( char* data );
 		void handlePacketKick( std::string msg );

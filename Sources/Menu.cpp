@@ -274,9 +274,15 @@ menu::ret Menu::world_create_menu( bool animUpdate )
 menu::ret Menu::multiplayer_menu( bool animUpdate )
 {
 	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
-		_state = menu::main;
-		reset_values();
-		return (main_menu());
+		if (_input_world || _input_seed) {
+			_input_world = false;
+			_input_seed = false;
+			glfwSetCharCallback(_window, NULL);
+		} else {
+			_state = menu::main;
+			reset_values();
+			return (main_menu());
+		}
 	}
 	if (inputs::key_down(inputs::left_click) && inputs::key_update(inputs::left_click)) {
 		if (_moving_slider && ((_selection != 5 && _input_world) || (_selection != 6 && _input_seed))) {
@@ -329,6 +335,7 @@ menu::ret Menu::multiplayer_menu( bool animUpdate )
 		_text->addText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 32 * _gui_size, 6 * _gui_size, argb::white, settings::consts::depth::menu::str, "Server IP");
 		if (_input_world) {
 			inputs::limitMessageSize(15);
+			inputs::rmSpaces();
 			_world_file = inputs::getCurrentMessage();
 			if (animUpdate) { _textBar = !_textBar; }
 			_text->addCenteredCursorText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 - 65 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, true, settings::consts::depth::menu::str, _textBar, inputs::getCursor(), inputs::getCurrentMessage()); // Player name
@@ -1023,12 +1030,18 @@ menu::ret Menu::chat_menu( bool animUpdate )
 		return (menu::ret::back_to_game);
 	}
 	if (inputs::key_down(inputs::enter) && inputs::key_update(inputs::enter)) {
-		bool cmd = _chat->sendMessage(inputs::getCurrentMessage());
-		inputs::resetMessage();
-		if (cmd) {
+		if (Settings::Get()->getInt(settings::ints::session_type) == settings::consts::session::singleplayer) {
+			bool cmd = _chat->sendMessage(inputs::getCurrentMessage());
+			inputs::resetMessage();
+			if (cmd) {
+				glfwSetCharCallback(_window, NULL);
+				_chat->resetHistoCursor();
+				return (menu::ret::back_to_game);
+			}
+		} else {
 			glfwSetCharCallback(_window, NULL);
 			_chat->resetHistoCursor();
-			return (menu::ret::back_to_game);
+			return (menu::ret::send_message_server);
 		}
 	}
 	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {

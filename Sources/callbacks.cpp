@@ -117,6 +117,13 @@ namespace inputs
 		}
 	}
 
+	void rmSpaces( void )
+	{
+		while (cursor && isspace(message[cursor - 1])) {
+			rmLetter(false);
+		}
+	}
+
 	void rmLetter( bool control )
 	{
 		if (!cursor) return ;

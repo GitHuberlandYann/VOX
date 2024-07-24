@@ -4,6 +4,7 @@
 
 // ************************************************************************** //
 //                                Packets                                     //
+//                                  Send                                      //
 // ************************************************************************** //
 
 /**
@@ -43,6 +44,24 @@ void OpenGL_Manager::sendPlayerPos( void )
 	_packet.action = packet_id::client::player_pos;
 	sendPacket(_player->packetPos(_packet));
 }
+
+void OpenGL_Manager::sendMessageServer( void )
+{
+	std::string msg = inputs::getCurrentMessage();
+	if (msg.empty()) {
+		return ;
+	}
+	inputs::resetMessage();
+	_packet.action = packet_id::client::chat_msg;
+	size_t cursor = 0;
+	utils::memory::memwrite(_packet.data, msg.c_str(), msg.size(), cursor);
+	sendPacket(cursor + sizeof(unsigned short));
+}
+
+// ************************************************************************** //
+//                                Packets                                     //
+//                                Receive                                     //
+// ************************************************************************** //
 
 
 void OpenGL_Manager::handlePacketLogin( char* data )
@@ -200,6 +219,19 @@ void OpenGL_Manager::handlePackets( void )
 
 void OpenGL_Manager::handleClientInputs( void )
 {
+	if (_paused) {
+		return ;
+	}
+
+	// quit program
+	if (inputs::key_down(inputs::quit_program)) {
+		glfwSetWindowShouldClose(_window, GL_TRUE);
+		return ;
+	}
+
+	if (!_player) {
+		return ;
+	}
 	/*
 	// open menu
 	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
@@ -211,19 +243,6 @@ void OpenGL_Manager::handleClientInputs( void )
 	if (inputs::key_down(inputs::inventory) && inputs::key_update(inputs::inventory)) {
 		_paused = true;
 		_menu->setState(menu::inventory);
-		return ;
-	}
-	// toggle chat
-	if ((inputs::key_down(inputs::chat) && inputs::key_update(inputs::chat))
-		|| (inputs::key_down(inputs::enter) && inputs::key_update(inputs::enter))) {
-		_paused = true;
-		_menu->setState(menu::chat);
-		return ;
-	}
-	// toggle 'command' chat, ie open chat, with '/' already written
-	if (inputs::key_down(inputs::command) && inputs::key_update(inputs::command)) {
-		_paused = true;
-		_menu->setState(menu::command);
 		return ;
 	}
 
@@ -250,11 +269,7 @@ void OpenGL_Manager::handleClientInputs( void )
 		_ui->chatMessage("*******************");
 	}
 	*/
-	// quit program
-	if (inputs::key_down(inputs::quit_program)) {
-		glfwSetWindowShouldClose(_window, GL_TRUE);
-		return ;
-	}
+
 	// toggle hotbar F1
 	if (inputs::key_down(inputs::hotbar) && inputs::key_update(inputs::hotbar)) {
 		_ui->_hideUI = !_ui->_hideUI;
@@ -283,6 +298,19 @@ void OpenGL_Manager::handleClientInputs( void )
 		_outline = !_outline;
 		_break_frame = _outline;
 	}
+	// toggle chat
+	if ((inputs::key_down(inputs::chat) && inputs::key_update(inputs::chat))
+		|| (inputs::key_down(inputs::enter) && inputs::key_update(inputs::enter))) {
+		_paused = true;
+		_menu->setState(menu::chat);
+		return ;
+	}
+	// toggle 'command' chat, ie open chat, with '/' already written
+	if (inputs::key_down(inputs::command) && inputs::key_update(inputs::command)) {
+		_paused = true;
+		_menu->setState(menu::command);
+		return ;
+	}
 	// change block atlas
 	if (inputs::key_down(inputs::block_atlas_clean) && inputs::key_update(inputs::block_atlas_clean)) {
 		Settings::Get()->setString(settings::strings::block_atlas, "Resources/Resource_Packs/Clean/Textures/");
@@ -290,10 +318,6 @@ void OpenGL_Manager::handleClientInputs( void )
 	} else if (inputs::key_down(inputs::block_atlas_default) && inputs::key_update(inputs::block_atlas_default)) {
 		Settings::Get()->setString(settings::strings::block_atlas, "Resources/Textures/");
 		loadTextures();
-	}
-
-	if (_paused || !_player) {
-		return ;
 	}
 
 	t_hit block_hit = getBlockHit();
@@ -450,6 +474,7 @@ void OpenGL_Manager::handleClientUI( void )
 
 void OpenGL_Manager::runClient( void )
 {
+	Settings::Get()->setInt(settings::ints::session_type, settings::consts::session::client);
 	startClientThread();
 	DayCycle::Get()->setTicks(12000);
 	utils::shader::check_glstate("entering client loop\n", true);
@@ -485,4 +510,5 @@ void OpenGL_Manager::runClient( void )
 	_perimeter_chunks.clear();
 	_visible_chunks.clear();
 	_players.clear();
+	Settings::Get()->setInt(settings::ints::session_type, settings::consts::session::singleplayer);
 }

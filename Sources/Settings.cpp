@@ -15,6 +15,7 @@ Settings::Settings( void )
 	_ints[settings::ints::clouds] = settings::FANCY;
 	_ints[settings::ints::flat_world_block] = settings::fw_types[0];
 	_ints[settings::ints::game_mode] = settings::defaults::game_mode;
+	_ints[settings::ints::session_type] = settings::consts::session::singleplayer;
 	_ints[settings::ints::world_spawn_x] = 0;
 	_ints[settings::ints::world_spawn_y] = 0;
 	_ints[settings::ints::world_spawn_z] = 256;

@@ -205,9 +205,8 @@ void Chunk::setup_water_array_buffer( void )
 	}
 
 	_mtx_fluid.lock();
-	// _vaboWater.uploadData(_water_count * 6, &_water_vert[0][0]);
+	_water_count = _water_vert.size() / 6;
 	_vaboWater.uploadData(_water_vert.size(), &_water_vert[0][0]);
-	// glBufferData(GL_ARRAY_BUFFER, _water_count * 24 * sizeof(GLint), &_water_vert[0][0], GL_STATIC_DRAW);
 	_mtx_fluid.unlock();
 
 	_waterVaoReset = false;
