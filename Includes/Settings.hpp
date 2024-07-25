@@ -142,6 +142,7 @@ namespace settings {
 			skybox,
 			particles,
 			face_culling,
+			outline,
 			visible_chunk_border,
 			smooth_lighting,
 			flat_world,

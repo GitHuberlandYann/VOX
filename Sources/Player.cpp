@@ -1,12 +1,16 @@
 #include "Player.hpp"
 #include "Camera.hpp"
+#include "Ui.hpp"
 #include "logs.hpp"
 
 Player::Player( void )
     : AMob({.0f, .0f, .0f}), _id(-1), _flySpeed(settings::consts::speed::fly), _foodLevel(20), _foodTickTimer(0),
-    _yaw(settings::defaults::yaw), _pitch(settings::defaults::pitch),
-    _smoothCamZ(.0f), _fovOffset(.0f), _armAnimTime(.0f), _breathTime(.0f), _foodSaturationLevel(20.0f), _foodExhaustionLevel(.0f),
-    _spawnpoint(.0f, .0f, .0f), _lastTp(.0f, .0f, .0f), _currentChunk(0, 0), _inventory(std::make_unique<Inventory>()),
+    _gameMode(settings::defaults::game_mode), _breakFrame(0), _handContent(blocks::air),
+	_yaw(settings::defaults::yaw), _pitch(settings::defaults::pitch),
+    _smoothCamZ(.0f), _fovOffset(.0f), _armAnimTime(.0f), _breakTime(.0f), _eatTime(.0f), _bowTime(.0f), _breathTime(.0f),
+	_foodSaturationLevel(20.0f), _foodExhaustionLevel(.0f), _spawnpoint(.0f, .0f, .0f), _lastTp(.0f, .0f, .0f),
+	_blockHit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0}), _currentChunk(0, 0), _chunkHit(NULL), _inventory(std::make_unique<Inventory>()),
+	_oglMan(NULL), _menu(NULL), _ui(NULL),
     _smoothCam(false), _armAnimation(false), _fallImmunity(false), _sprinting(false), _sneaking(false), _waterHead(false), _waterFeet(false),
     _updateCam(false), _updateFov(false), _updateUI(false)
 {
@@ -143,11 +147,6 @@ int Player::getWaterStatus( void )
 	return (res);
 }
 
-bool Player::isUnderwater( void )
-{
-	return (_waterHead);
-}
-
 bool Player::canEatFood( int type )
 {
 	if (_foodLevel == 20 && _foodSaturationLevel == 20) {
@@ -241,6 +240,26 @@ void Player::setUIUpdate( bool state )
 	_updateUI = state;
 }
 
+void Player::setGameMode( int gamemode, bool ingame )
+{
+	if (gamemode < settings::consts::gamemode::survival || gamemode > settings::consts::gamemode::adventure) {
+		return ;
+	}
+	_gameMode = gamemode;
+	Settings::Get()->setInt(settings::ints::game_mode, gamemode);
+	if (ingame) {
+		resetFall();
+		_ui->chatMessage("Gamemode set to " + settings::consts::gamemode::str[gamemode]);
+	}
+}
+
+void Player::setPtrs( OpenGL_Manager* oglMan, Menu* menu, UI* ui )
+{
+	_oglMan = oglMan;
+	_menu = menu;
+	_ui = ui;
+}
+
 float Player::getFovOffset( void )
 {
     return (_fovOffset);
@@ -278,6 +297,26 @@ bool Player::getResetUIUpdate( void )
 Inventory* Player::getInventory( void )
 {
 	return (_inventory.get());
+}
+
+Chunk* Player::getChunkHit( void )
+{
+	return (_chunkHit.get());
+}
+
+t_hit& Player::getBlockHit( void )
+{
+	return (_blockHit);
+}
+
+int Player::getGameMode( void )
+{
+	return (_gameMode);
+}
+
+void Player::outputGameMode( void )
+{
+	_ui->chatMessage("Current gamemode is " + settings::consts::gamemode::str[_gameMode]);
 }
 
 void Player::updateFlySpeed( GLint key_cam_speed )
@@ -345,17 +384,12 @@ void Player::processMouseMovement( float x_offset, float y_offset )
 	updateVectors();
 }
 
-void Player::setChunkPtr( Chunk* chunk )
-{
-    _chunk = chunk;
-}
-
-std::string Player::getString( int game_mode )
+std::string Player::getString( void )
 {
 	const std::string strtrue = "TRUE";
 	const std::string strfalse = "FALSE";
 	int light = (_chunk) ? _chunk->getCamLightLevel(_currentBlock) : 0;
-	std::string str =  ((game_mode == settings::consts::gamemode::creative)
+	std::string str =  ((_gameMode == settings::consts::gamemode::creative)
 		? "\nPos\t\t> x: " + std::to_string(_position.x)
 				+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 				+ "\niPos\t> x:" + std::to_string(_currentBlock.x) // TODO might sometimes want to use current_block instea of _position when dealing with chunks
@@ -367,6 +401,11 @@ std::string Player::getString( int game_mode )
 					? "\nSky Light\t> " + std::to_string((light >> 12) & 0xF) + " $ " + std::to_string((light >> 8) & 0xF)
 						+ "\nBlock Light\t> " + std::to_string((light >> 4) & 0xF) + " $ " + std::to_string(light & 0xF) : "\n\n")
 				+ "\n\n\n\n\n\n\n\n\n\n\n"
+				+ "\nBlock\t> " + s_blocks[_blockHit.type]->name
+				+ ((_blockHit.type != blocks::air) ? "\n\t\t> x: " + std::to_string(_blockHit.pos.x) + " y: " + std::to_string(_blockHit.pos.y) + " z: " + std::to_string(_blockHit.pos.z) : "\n")
+				+ ((_blockHit.type) ? "\nprev\t> x: " + std::to_string(_blockHit.prev_pos.x) + " y: " + std::to_string(_blockHit.prev_pos.y) + " z: " + std::to_string(_blockHit.prev_pos.z) : "\nprev\t> none")
+				+ ((_blockHit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
+				+ "\n\n"
 		: "\nPos\t\t> x: " + std::to_string(_position.x)
 			+ " y: " + std::to_string(_position.y) + " z: " + std::to_string(_position.z)
 			+ "\niPos\t> x:" + std::to_string(_currentBlock.x)
@@ -389,7 +428,12 @@ std::string Player::getString( int game_mode )
 			+ "\n\t\tExhaustion\t> " + std::to_string(_foodExhaustionLevel)
 			+ "\nGounded\t> " + ((_touchGround) ? strtrue : strfalse)
 			+ "\nJumping\t> " + ((_inJump) ? strtrue : strfalse)
-			+ "\nSneaking\t> " + ((_sneaking) ? strtrue : strfalse));
+			+ "\nSneaking\t> " + ((_sneaking) ? strtrue : strfalse))
+			+ "\nBlock\t> " + s_blocks[_blockHit.type]->name
+			+ ((_blockHit.type != blocks::air) ? "\n\t\t> x: " + std::to_string(_blockHit.pos.x) + " y: " + std::to_string(_blockHit.pos.y) + " z: " + std::to_string(_blockHit.pos.z) : "\n")
+			+ ((_blockHit.type) ? "\nprev\t> x: " + std::to_string(_blockHit.prev_pos.x) + " y: " + std::to_string(_blockHit.prev_pos.y) + " z: " + std::to_string(_blockHit.prev_pos.z) : "\nprev\t> none")
+			+ ((_blockHit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
+			+ "\nBreak time\t> " + std::to_string(_breakTime) + "\nBreak frame\t> " + std::to_string(_breakFrame);
 	return (str);
 }
 

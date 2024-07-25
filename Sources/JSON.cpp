@@ -14,15 +14,14 @@ void OpenGL_Manager::saveWorld( void )
 	// first delete chunks, this updates _backups
 	stopThread();
 	clearChunks();
-	_block_hit = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
 
 	// then store everything
 	std::string json = "{\n\t\"version\": \"" + settings::consts::json::versions[settings::consts::json::nbr_versions - 1]
 		+ "\",\n\t\"seed\": " + std::to_string(perlin_seed)
-		+ ",\n\t\"game_mode\": " + std::to_string(_game_mode)
-		+ ",\n\t\"debug_mode\": " + ((_debug_mode) ? "true" : "false")
+		+ ",\n\t\"game_mode\": " + std::to_string(Settings::Get()->getInt(settings::ints::game_mode))
+		+ ",\n\t\"debug_mode\": " + ((_debugMode) ? "true" : "false")
 		+ ",\n\t\"f5_mode\": " + ((_ui->_hideUI) ? "true" : "false")
-		+ ",\n\t\"outline\": " + ((_outline) ? "true" : "false")
+		+ ",\n\t\"outline\": " + ((Settings::Get()->getBool(settings::bools::outline)) ? "true" : "false")
 		+ ",\n\t\"world_spawn\": [" + std::to_string(Settings::Get()->getInt(settings::ints::world_spawn_x))
 			+ ", " + std::to_string(Settings::Get()->getInt(settings::ints::world_spawn_y))
 			+ ", " + std::to_string(Settings::Get()->getInt(settings::ints::world_spawn_z))
@@ -54,6 +53,7 @@ std::string DayCycle::saveString( void )
 
 std::string Player::saveString( void )
 {
+	_blockHit = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0};
 	std::string res = "\"camera\": {\n\t\t\"pos\": {\"x\": "
 		+ std::to_string(_position.x) + ", \"y\": " + std::to_string(_position.y) + ", \"z\": " + std::to_string(_position.z)
 		+ "},\n\t\t\"spawnpoint\": {\"x\": "
@@ -346,18 +346,18 @@ void OpenGL_Manager::loadWorld( std::string file )
 				perlin_seed = std::atoi(&line[8]);
 				LOADINGLOG(ofs << "seed set to " << perlin_seed << std::endl);
 			} else if (!line.compare(0, 13, "\"game_mode\": ")) {
-				_game_mode = std::atoi(&line[13]);
-				Settings::Get()->setInt(settings::ints::game_mode, _game_mode);
-				LOADINGLOG(ofs << "game mode set to " << _game_mode << std::endl);
+				int gameMode = std::atoi(&line[13]);
+				Settings::Get()->setInt(settings::ints::game_mode, gameMode);
+				LOADINGLOG(ofs << "game mode set to " << gameMode << std::endl);
 			} else if (!line.compare(0, 14, "\"debug_mode\": ")) {
-				_debug_mode = line.substr(14, 4) == "true";
-				LOADINGLOG(ofs << "debug mode set to " << _debug_mode << std::endl);
+				_debugMode = line.substr(14, 4) == "true";
+				LOADINGLOG(ofs << "debug mode set to " << _debugMode << std::endl);
 			} else if (!line.compare(0, 11, "\"f5_mode\": ")) {
 				_ui->_hideUI = line.substr(11, 4) == "true";
 				Settings::Get()->setBool(settings::bools::hide_ui, _ui->_hideUI);
 				LOADINGLOG(ofs << "f5 mode set to " << _ui->_hideUI << std::endl);
 			} else if (!line.compare(0, 11, "\"outline\": ")) {
-				_outline = line.substr(11, 4) == "true";
+				Settings::Get()->setBool(settings::bools::outline, line.substr(11, 4) == "true");
 			} else if (!line.compare(0, 15, "\"world_spawn\": ")) {
 				int value = std::atoi(&line[16]);
 				Settings::Get()->setInt(settings::ints::world_spawn_x, value);
@@ -414,6 +414,7 @@ void DayCycle::loadWorld( std::ofstream& ofs, std::string line )
 
 void Player::loadWorld( std::ofstream& ofs, std::ifstream& indata )
 {
+	_gameMode = Settings::Get()->getInt(settings::ints::game_mode);
 	(void)ofs;
 	_lastTp = {0, 0, 0};
 	int index;

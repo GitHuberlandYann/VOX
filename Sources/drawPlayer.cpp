@@ -1,9 +1,9 @@
 #include "Player.hpp"
 #include "utils.h"
 
-void Player::drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& entityArr, int item, int gameMode )
+void Player::drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& entityArr )
 {
-	if (!_chunk || gameMode == settings::consts::gamemode::creative || Settings::Get()->getBool(settings::bools::hide_ui)) {
+	if (!_chunk || _gameMode == settings::consts::gamemode::creative || Settings::Get()->getBool(settings::bools::hide_ui)) {
 		return ;
 	}
 
@@ -12,7 +12,7 @@ void Player::drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_s
 	const float scale = 0.057857142857142864 * 0.5f;
 
 	pos += _right * 8.0f * scale - settings::consts::math::world_up * 9.0f * scale + settings::consts::math::world_up * glm::sin(_walkTime * 7) * 0.03f + _right * glm::cos(_walkTime * 4) * 0.03f;
-	if (item == blocks::air) { // draw arm, only the two visible faces
+	if (_handContent == blocks::air) { // draw arm, only the two visible faces
 		const int speco = settings::consts::shader::texture::player << 12;
 		glm::vec3 armFront = glm::normalize(_front + settings::consts::math::world_up * 0.3f);
 		glm::vec3 armRight = glm::normalize(glm::cross(armFront, settings::consts::math::world_up) - settings::consts::math::world_up * 0.3f);
@@ -42,7 +42,7 @@ void Player::drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_s
 		spec = speco + 52 + (32 << 6) + (light << 24);
 		// utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec, {(1 << 17) + (1 << 18), -4 + (1 << 18), (1 << 17) - (12 << 6), -4 - (12 << 6)}, {1 + (1 << 6), (1 << 6), 1, 0});
 		utils::shader::addQuads(arr, {p0, p1, p2, p3}, spec - 4 - (12 << 6), 4, 12, true, true);
-	} else if (s_blocks[item]->item3D) { //(item < blocks::poppy && item != blocks::oak_door && item != blocks::glass_pane) { // draw block
+	} else if (s_blocks[_handContent]->item3D) { //(item < blocks::poppy && item != blocks::oak_door && item != blocks::glass_pane) { // draw block
 		glm::vec3 itemFront = glm::normalize(glm::vec3(glm::vec2(_front + _right * 0.5f), 0));
 		glm::vec3 itemRight = glm::normalize(glm::cross(itemFront, settings::consts::math::world_up));
 		if (_armAnimation) {
@@ -54,14 +54,14 @@ void Player::drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_s
 		}
 		glm::vec3 itemUp = glm::normalize(glm::cross(itemRight, itemFront));
 
-		if (s_blocks[item]->geometry == geometry::stairs) {
+		if (s_blocks[_handContent]->geometry == geometry::stairs) {
 			// up
 			glm::vec3 p0 = pos + settings::consts::math::world_up * (0.1f + 0.5f * _front.z) + itemFront * 12.0f * scale - itemRight * 0.25f;
 			glm::vec3 p1 = p0 + itemRight * 0.25f;
 			glm::vec3 p2 = p0 - itemFront * 0.125f;
 			glm::vec3 p3 = p1 - itemFront * 0.125f;
 
-			int spec = s_blocks[item]->texture;
+			int spec = s_blocks[_handContent]->texture;
 			utils::shader::addQuads(entityArr, {p0, p1, p2, p3}, spec, light, 16, 8);
 
 			// left
@@ -104,17 +104,17 @@ void Player::drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_s
 		glm::vec3 p2 = p0 - itemFront * 0.25f;
 		glm::vec3 p3 = p1 - itemFront * 0.25f;
 
-		int spec = s_blocks[item]->getTex(face_dir::plus_z);
+		int spec = s_blocks[_handContent]->getTex(face_dir::plus_z);
 		utils::shader::addQuads(entityArr, {p0, p1, p2, p3}, spec, light, 16, 16);
 
-		geometry shape = s_blocks[item]->geometry;
+		geometry shape = s_blocks[_handContent]->geometry;
 		float height = (shape == geometry::slab) ? 0.125f : (shape == geometry::trapdoor) ? 0.046875f : 0.25f;
 		int yoff = (shape == geometry::slab) ? 8 : (shape == geometry::trapdoor) ? 3 : 16;
 		// left
 		p1 = p2;
 		p2 = p0 - itemUp * height;
 		p3 = p1 - itemUp * height;
-		spec = s_blocks[item]->getTex(face_dir::minus_x);
+		spec = s_blocks[_handContent]->getTex(face_dir::minus_x);
 		utils::shader::addQuads(entityArr, {p0, p1, p2, p3}, spec, light, 16, yoff);
 
 		// back
@@ -135,11 +135,11 @@ void Player::drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_s
 			front = glm::normalize(glm::cross(settings::consts::math::world_up, right));
 		}
 		glm::vec3 up = glm::normalize(glm::cross(right, front));
-		utils::extrusion::drawItem3D(entityArr, item, light, pos, front, right, up, 0.5f);
+		utils::extrusion::drawItem3D(entityArr, _handContent, light, pos, front, right, up, 0.5f);
 	}
 }
 
-void Player::drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& entityArr, int item )
+void Player::drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& entityArr )
 {
 	if (!_chunk) {
 		return ;
@@ -260,7 +260,7 @@ void Player::drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_sha
 	utils::shader::addQuads(arr, {p3, p1, p5, p7}, spec, 4, 12);
 
 // draw held item
-	if (item != blocks::air) {
+	if (_handContent != blocks::air) {
 		glm::vec3 itemPos = pos - armUp * 12.0f * scale;
 		p0 = itemPos + armUp * 0.25f;
 		p1 = itemPos + armFront * 0.25f + armUp * 0.25f;
@@ -271,29 +271,29 @@ void Player::drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_sha
 		p5 = itemPos + armFront * 0.25f - armRight * 0.25f + armUp * 0.25f;
 		p6 = itemPos - armRight * 0.25f;
 		p7 = itemPos + armFront * 0.25f - armRight * 0.25f;
-		if (item < blocks::poppy) {
-			int offset = (s_blocks[item]->oriented) ? face_dir::minus_x : 0;
+		if (_handContent < blocks::poppy) {
+			int offset = (s_blocks[_handContent]->oriented) ? face_dir::minus_x : 0;
 
-			spec = s_blocks[item]->getTex(face_dir::minus_x, offset);
+			spec = s_blocks[_handContent]->getTex(face_dir::minus_x, offset);
 			utils::shader::addQuads(entityArr, {p4, p0, p6, p2}, spec, light + (3 << 8), 16, 16);
 
-			spec = s_blocks[item]->getTex(face_dir::plus_x, offset);
+			spec = s_blocks[_handContent]->getTex(face_dir::plus_x, offset);
 			utils::shader::addQuads(entityArr, {p1, p5, p3, p7}, spec, light + (4 << 8), 16, 16);
 
-			spec = s_blocks[item]->getTex(face_dir::minus_y, offset);
+			spec = s_blocks[_handContent]->getTex(face_dir::minus_y, offset);
 			utils::shader::addQuads(entityArr, {p0, p1, p2, p3}, spec, light + (1 << 8), 16, 16);
 
-			spec = s_blocks[item]->getTex(face_dir::plus_y, offset);
+			spec = s_blocks[_handContent]->getTex(face_dir::plus_y, offset);
 			utils::shader::addQuads(entityArr, {p5, p4, p7, p6}, spec, light + (2 << 8), 16, 16);
 
-			spec = s_blocks[item]->getTex(face_dir::plus_z, offset);
+			spec = s_blocks[_handContent]->getTex(face_dir::plus_z, offset);
 			utils::shader::addQuads(entityArr, {p4, p5, p0, p1}, spec, light + (0 << 8), 16, 16);
 
-			spec = s_blocks[item]->getTex(face_dir::minus_z, offset);
+			spec = s_blocks[_handContent]->getTex(face_dir::minus_z, offset);
 			utils::shader::addQuads(entityArr, {p2, p3, p6, p7}, spec, light + (5 << 8), 16, 16);
 		} else { // flowers
-			if (!utils::extrusion::drawItem3D(entityArr, item, light, p1 + armFront * 0.25f, -armRight, -armUp, armFront, 0.5f)) {
-				spec = s_blocks[item]->getTex();
+			if (!utils::extrusion::drawItem3D(entityArr, _handContent, light, p1 + armFront * 0.25f, -armRight, -armUp, armFront, 0.5f)) {
+				spec = s_blocks[_handContent]->getTex();
 				utils::shader::addQuads(entityArr, {p0, p5, p2, p7}, spec, light, 16, 16);
 
 				utils::shader::addQuads(entityArr, {p1, p4, p3, p6}, spec, light, 16, 16);

@@ -314,6 +314,14 @@ menu::ret Menu::multiplayer_menu( bool animUpdate )
 			}
 		}
 	}
+	if (inputs::key_down(inputs::enter) && inputs::key_update(inputs::enter) && _moving_slider && !_world_file.empty()) {
+		if (_input_world || _input_seed) {
+			_input_world = false;
+			_input_seed = false;
+			glfwSetCharCallback(_window, NULL);
+		}
+		return (menu::ret::join_server);
+	}
 	if (inputs::key_down(inputs::del) && inputs::key_update(inputs::del)) {
 		inputs::rmLetter(inputs::key_down(inputs::left_control)); _textBar = true;
 	}

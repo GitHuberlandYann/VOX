@@ -748,19 +748,19 @@ void Chunk::shootArrow( const glm::vec3 start, const glm::vec3 dir, float timer 
 	_entities.push_back(std::make_shared<ArrowEntity>(this, start + dir, dir * timer));
 }
 
-void Chunk::updateBreak( glm::ivec4 block_hit )
+void Chunk::updateBreak( t_hit& blockHit )
 {
-	if (block_hit.w == blocks::air || !_vaoReset) {
+	if (blockHit.type == blocks::air || !_vaoReset) {
 		return ;
 	}
-	glm::ivec3 chunk_pos = {block_hit.x - _startX, block_hit.y - _startY, block_hit.z};
+	glm::ivec3 chunk_pos = {blockHit.pos.x - _startX, blockHit.pos.y - _startY, blockHit.pos.z};
 	if (chunk_pos.x < 0 || chunk_pos.x >= settings::consts::chunk_size || chunk_pos.y < 0 || chunk_pos.y >= settings::consts::chunk_size || chunk_pos.z < 0 || chunk_pos.z > 255) {
 		LOGERROR("block hit out of chunk " << POS(chunk_pos));
 		return ;
 	}
 	for (int index = 0; index < 6; ++index) {
 		const glm::ivec3 delta = adj_blocks[index];
-		addParticle({block_hit.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.x + 0.55f * delta.x, block_hit.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.y + 0.55f * delta.y, block_hit.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.z + 0.55f * delta.z}, particles::breaking, 0, block_hit.w);
+		addParticle({blockHit.pos.x + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.x + 0.55f * delta.x, blockHit.pos.y + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.y + 0.55f * delta.y, blockHit.pos.z + 0.5f + (Random::randomFloat(_seed) - 0.5f) * !delta.z + 0.55f * delta.z}, particles::breaking, 0, blockHit.type);
 	}
 }
 

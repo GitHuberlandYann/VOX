@@ -2,6 +2,7 @@
 # define PLAYER_HPP
 
 # include "Chunk.hpp"
+class OpenGL_Manager;
 
 namespace settings {
 	namespace consts {
@@ -41,6 +42,12 @@ namespace settings {
 	};
 };
 
+typedef struct s_hit {
+	glm::ivec3 pos, prev_pos, water_pos;
+	int value, type;
+	bool water_value;
+}				t_hit;
+
 class Player : public AMob
 {
     public:
@@ -49,30 +56,24 @@ class Player : public AMob
 
         bool chunkInFront( int camPlacement, glm::ivec2 current_chunk, int posX, int posY );
         std::vector<glm::ivec3> computeRayCasting( GLfloat radius );
-		void drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& partArr, int item, int gameMode );
-		void drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& partArr, int item );
+		void drawHeldItem( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& partArr );
+		void drawPlayer( std::vector<t_shaderInputModel>& arr, std::vector<t_shaderInput>& partArr );
 
-		glm::vec3 getSmoothPos( void );
+		/** @category setters */
+		void setDelta( float deltaTime );
+       	void setCamUpdate( bool state );
+       	void setUIUpdate( bool state );
+		void setGameMode( int gamemode, bool ingame = true );
+		void setPtrs( OpenGL_Manager* oglMan, Menu* menu, UI* ui );
+
+		/** @category getters */
        	glm::vec3 getEyePos( void ) override;
 		glm::ivec2 getChunkPos( void );
 		Chunk* getChunkPtr( void );
        	float getHitbox( void ) override;
         int getOrientation( void );
 		int getOrientation6( void );
-
-        void setWaterStatus( bool head, bool underwater );
         int getWaterStatus( void );
-        bool isUnderwater( void );
-        bool canEatFood( int type );
-
-        void setRun( bool state );
-        void setSneak( bool state );
-        void setJump( bool state );
-		void setDelta( float deltaTime );
-        void setArmAnimation( bool state );
-       	void setCamUpdate( bool state );
-       	void setUIUpdate( bool state );
-
        	float getFovOffset( void ) override;
         int getFoodLevel( void );
         float getFoodSaturationLevel( void );
@@ -80,13 +81,15 @@ class Player : public AMob
         bool getResetFovUpdate( void );
         bool getResetUIUpdate( void );
 		Inventory* getInventory( void );
+		Chunk* getChunkHit( void );
+		t_hit& getBlockHit( void );
+		int getGameMode( void );
+		void outputGameMode( void );
 
-        void updateExhaustion( float level );
         void tickUpdate( void );
-        void processMouseMovement( float x_offset, float y_offset );
 
-        void setChunkPtr( Chunk* chunk );
-        std::string getString( int game_mode );
+		void addBreakingAnim( std::vector<t_shaderInput>& entities );
+        std::string getString( void );
         std::string saveString( void );
 		void loadWorld( std::ofstream& ofs, std::ifstream& indata );
 
@@ -108,30 +111,43 @@ class Player : public AMob
 		bool handlePacketPos( t_packet_data& packet, size_t& cursor, bool client, Chunk* chunk = NULL );
 		void appendPacketInfo( t_pending_packet& packet );
 
+		/** @category physics */
        	void applyGravity( void ) override;
         void applyGravityUnderwater( void );
 		void touchGround( float value ) override;
 		void touchCeiling( float value ) override;
         void resetFall( void );
 
+		/** @category inputs */
 		bool update( std::vector<t_shaderInputModel>& modArr, float deltaTime ) override;
-        void inputUpdate( bool rayCast, int gameMode );
-        void clientInputUpdate( int gameMode );
+		void resetInputsPtrs( void );
+		void inputToggle( void );
+		void blockInputUpdate( void );
+        void inputUpdate( bool rayCast );
+		void setItemFrame( bool visible, bool lock );
+        void clientInputUpdate( void );
+        void processMouseMovement( float x_offset, float y_offset );
     
     private:
 		int _id; // multiplayer id
         int _flySpeed;
         int _foodLevel, _foodTickTimer;
+		int _gameMode, _breakFrame, _handContent;
         float _yaw, _pitch;
         float _smoothCamZ, _fovOffset, _armAnimTime;
-        float _breathTime;
+		float _breakTime, _eatTime, _bowTime, _breathTime;
         float _foodSaturationLevel, _foodExhaustionLevel;
         glm::vec3 _spawnpoint, _lastTp;
         glm::vec2 _front2, _right2;
+		t_hit _blockHit;
 		glm::ivec2 _currentChunk;
 		std::string name;
 		std::set<std::pair<int, int>> _loadedChunks;
+		std::shared_ptr<Chunk> _chunkHit;
 		std::unique_ptr<Inventory> _inventory;
+		OpenGL_Manager* _oglMan;
+		Menu* _menu;
+		UI* _ui;
 		std::mutex _mtx;
         bool _smoothCam, _armAnimation, _fallImmunity;
         bool _sprinting, _sneaking;
@@ -142,6 +158,15 @@ class Player : public AMob
         void processPitch( GLint offset );
 		void processYaw( GLint offset );
 
+        void setRun( bool state );
+        void setSneak( bool state );
+        void setJump( bool state );
+        void setArmAnimation( bool state );
+        void setWaterStatus( bool head, bool underwater );
+        void updateExhaustion( float level );
+        bool canEatFood( int type );
+		glm::vec3 getSmoothPos( void );
+
        	bool updateCurrentBlock( void ) override;
 		bool updateCurrentChunk( void );
         void moveFly( GLint v, GLint h, GLint z );
@@ -151,6 +176,10 @@ class Player : public AMob
        	void restorePos( glm::vec3 position ) override;
        	bool customObstacle( int dir, float maxZ ) override;
         void updateFlySpeed( GLint key_cam_speed );
+
+		float getBreakTime( bool canHarvest );
+		t_hit computeBlockHit( void );
+		void handleBlockModif( bool adding, bool collect );
 };
 
 #endif

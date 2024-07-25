@@ -197,7 +197,7 @@ class Chunk
 		void explosion( glm::vec3 pos, int power );
 		void addArrow( ArrowEntity& arrow );
 		void shootArrow( const glm::vec3 start, const glm::vec3 dir, float timer );
-		void updateBreak( glm::ivec4 block_hit );
+		void updateBreak( t_hit& blockHit );
 		void light_try_spread( int posX, int posY, int posZ, short level, bool skySpread, int recurse );
 		bool try_addFlow( std::set<int>* newFluids, int posX, int posY, int posZ, int level );
 		void insertFluidAt( std::set<int>* newFluids, int posX, int posY, int posZ );

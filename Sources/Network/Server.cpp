@@ -180,7 +180,7 @@ bool Player::handlePacketPos( t_packet_data& packet, size_t& cursor, bool client
 	} else {
 		glm::vec3 pos;
 		utils::memory::memread(&pos, packet.data, sizeof(float) * 3, cursor);
-		_knockback = pos - _position;
+		_knockback = (pos - _position) * 20.f; // _knockback is blocks per seconds, packetPos sent 20/s
 		_position = pos;
 		utils::memory::memread(&_yaw, packet.data, sizeof(float), cursor);
 		utils::memory::memread(&_pitch, packet.data, sizeof(float), cursor);

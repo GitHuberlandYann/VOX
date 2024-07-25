@@ -9,17 +9,16 @@ BENCHLOG(#include "Benchmark.hpp")
 
 OpenGL_Manager::OpenGL_Manager( void )
 	: _player(std::make_unique<Player>()),
-	_window(NULL), _textures({NULL}), _fill(true), _debug_mode(true), _outline(true), _paused(true),
-	_threadUpdate(false), _threadStop(false), _break_time(0), _eat_timer(0), _bow_timer(0),
-	_game_mode(settings::consts::gamemode::creative), _break_frame(0), _world_name("default.json"),
-	_block_hit({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0}), _camera(std::make_unique<Camera>()),
-	_ui(std::make_unique<UI>()), _menu(std::make_unique<Menu>()), _skybox(std::make_unique<Skybox>()),
-	_socket(nullptr)
+	_window(NULL), _textures({NULL}), _fill(true), _debugMode(true), _paused(true),
+	_threadUpdate(false), _threadStop(false), _world_name("default.json"),
+	_camera(std::make_unique<Camera>()), _ui(std::make_unique<UI>()), _menu(std::make_unique<Menu>()),
+	_skybox(std::make_unique<Skybox>()), _socket(nullptr)
 {
 	MAINLOG(LOG("Constructor of OpenGL_Manager called\n"));
 	_camera->setTarget(_player.get());
 	_ui->setPtrs(this, _player->getInventory(), _player.get());
 	_menu->setPtrs(_player->getInventory(), _ui.get());
+	_player->setPtrs(this, _menu.get(), _ui.get());
 	WorldEdit::Get()->setPtrs(this, _player->getInventory(), _ui->getChatPtr().get());
 
 	startThread();
@@ -56,6 +55,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 	_camera->setTarget(NULL);
 	_ui->setPtrs(NULL, NULL, NULL);
 	_menu->setPtrs(NULL, NULL);
+	_player->setPtrs(NULL, NULL, NULL);
 	WorldEdit::Get()->setPtrs(NULL, NULL, NULL);
 
 	clearChunks();
@@ -76,8 +76,7 @@ OpenGL_Manager::~OpenGL_Manager( void )
 void OpenGL_Manager::clearChunks( void )
 {
 	_current_chunk_ptr = NULL;
-	_chunk_hit = NULL;
-	_player->setChunkPtr(NULL);
+	_player->resetInputsPtrs();
 	mtx_deleted_chunks.lock();
 	schedule::deleteChunkSchedule(_deleted_chunks);
 	_deleted_chunks.clear();
@@ -98,24 +97,24 @@ void OpenGL_Manager::clearChunks( void )
 //                                Private                                     //
 // ************************************************************************** //
 
-void OpenGL_Manager::addBreakingAnim( void )
+void Player::addBreakingAnim( std::vector<t_shaderInput>& entities )
 {
-	if (_block_hit.type == blocks::air || (_block_hit.value & mask::blocks::notVisible)
-		|| _block_hit.type == blocks::glass || !_break_frame) {
+	if (_blockHit.type == blocks::air || (_blockHit.value & mask::blocks::notVisible)
+		|| _blockHit.type == blocks::glass || !_breakFrame) {
 		return ;
 	}
 
-	glm::vec3 p0 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z + 1.001f};
-	glm::vec3 p1 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z + 1.001f};
-	glm::vec3 p2 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z - 0.001f};
-	glm::vec3 p3 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y - 0.001f, _block_hit.pos.z - 0.001f};
+	glm::vec3 p0 = {_blockHit.pos.x - 0.001f, _blockHit.pos.y - 0.001f, _blockHit.pos.z + 1.001f};
+	glm::vec3 p1 = {_blockHit.pos.x + 1.001f, _blockHit.pos.y - 0.001f, _blockHit.pos.z + 1.001f};
+	glm::vec3 p2 = {_blockHit.pos.x - 0.001f, _blockHit.pos.y - 0.001f, _blockHit.pos.z - 0.001f};
+	glm::vec3 p3 = {_blockHit.pos.x + 1.001f, _blockHit.pos.y - 0.001f, _blockHit.pos.z - 0.001f};
 
-	glm::vec3 p4 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z + 1.001f};
-	glm::vec3 p5 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z + 1.001f};
-	glm::vec3 p6 = {_block_hit.pos.x - 0.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
-	glm::vec3 p7 = {_block_hit.pos.x + 1.001f, _block_hit.pos.y + 1.001f, _block_hit.pos.z - 0.001f};
-	// if (s_blocks[_block_hit.type]->hasHitbox) {
-	// 	glm::vec3 hitCenter = s_blocks[_block_hit.type]->hitboxCenter, hitHalfSize = s_blocks[_block_hit.type]->hitboxHalfSize;
+	glm::vec3 p4 = {_blockHit.pos.x - 0.001f, _blockHit.pos.y + 1.001f, _blockHit.pos.z + 1.001f};
+	glm::vec3 p5 = {_blockHit.pos.x + 1.001f, _blockHit.pos.y + 1.001f, _blockHit.pos.z + 1.001f};
+	glm::vec3 p6 = {_blockHit.pos.x - 0.001f, _blockHit.pos.y + 1.001f, _blockHit.pos.z - 0.001f};
+	glm::vec3 p7 = {_blockHit.pos.x + 1.001f, _blockHit.pos.y + 1.001f, _blockHit.pos.z - 0.001f};
+	// if (s_blocks[_blockHit.type]->hasHitbox) {
+	// 	glm::vec3 hitCenter = s_blocks[_blockHit.type]->hitboxCenter, hitHalfSize = s_blocks[_blockHit.type]->hitboxHalfSize;
 	// 	p0 += glm::vec3(     hitCenter.x - hitHalfSize.x,      hitCenter.y - hitHalfSize.y, -1 + hitCenter.z + hitHalfSize.z);
 	// 	p1 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x,      hitCenter.y - hitHalfSize.y, -1 + hitCenter.z + hitHalfSize.z);
 	// 	p2 += glm::vec3(     hitCenter.x - hitHalfSize.x,      hitCenter.y - hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
@@ -127,13 +126,13 @@ void OpenGL_Manager::addBreakingAnim( void )
 	// 	p7 += glm::vec3(-1 + hitCenter.x + hitHalfSize.x, -1 + hitCenter.y + hitHalfSize.y,      hitCenter.z - hitHalfSize.z);
 	// }
 
-	int spec = settings::consts::shader::block::destroy_stage + _break_frame - 1;
-	utils::shader::addQuads(_entities, {p4, p0, p6, p2}, spec, 0, 16, 16);
-	utils::shader::addQuads(_entities, {p1, p5, p3, p7}, spec, 0, 16, 16);
-	utils::shader::addQuads(_entities, {p0, p1, p2, p3}, spec, 0, 16, 16);
-	utils::shader::addQuads(_entities, {p5, p4, p7, p6}, spec, 0, 16, 16);
-	utils::shader::addQuads(_entities, {p4, p5, p0, p1}, spec, 0, 16, 16);
-	utils::shader::addQuads(_entities, {p2, p3, p6, p7}, spec, 0, 16, 16);
+	int spec = settings::consts::shader::block::destroy_stage + _breakFrame - 1;
+	utils::shader::addQuads(entities, {p4, p0, p6, p2}, spec, 0, 16, 16);
+	utils::shader::addQuads(entities, {p1, p5, p3, p7}, spec, 0, 16, 16);
+	utils::shader::addQuads(entities, {p0, p1, p2, p3}, spec, 0, 16, 16);
+	utils::shader::addQuads(entities, {p5, p4, p7, p6}, spec, 0, 16, 16);
+	utils::shader::addQuads(entities, {p4, p5, p0, p1}, spec, 0, 16, 16);
+	utils::shader::addQuads(entities, {p2, p3, p6, p7}, spec, 0, 16, 16);
 }
 
 void OpenGL_Manager::addLine( glm::vec3 a, glm::vec3 b )
@@ -226,11 +225,6 @@ void OpenGL_Manager::initWorld( void )
 // ************************************************************************** //
 //                                Public                                      //
 // ************************************************************************** //
-
-void OpenGL_Manager::getGamemode( void )
-{
-	_ui->chatMessage("Current gamemode is " + settings::consts::gamemode::str[_game_mode]);
-}
 
 size_t OpenGL_Manager::clearEntities( void )
 {
@@ -422,17 +416,6 @@ void OpenGL_Manager::setupCommunicationShaders( void )
 	utils::shader::check_glstate("\nCommunication with shader program successfully established", true);
 }
 
-void OpenGL_Manager::setGamemode( int gamemode )
-{
-	if (gamemode < settings::consts::gamemode::survival || gamemode > settings::consts::gamemode::adventure) {
-		return ;
-	}
-	_game_mode = gamemode;
-	Settings::Get()->setInt(settings::ints::game_mode, gamemode);
-	_player->resetFall();
-	_ui->chatMessage("Gamemode set to " + settings::consts::gamemode::str[gamemode]);
-}
-
 // ************************************************************************** //
 //                                  Run                                       //
 // ************************************************************************** //
@@ -559,11 +542,11 @@ void OpenGL_Manager::handleDraw( bool gamePaused )
 	if (!gamePaused || _menu->getState() >= menu::death) {
 		drawParticles();
 		(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
-			? _player->drawHeldItem(_models, _entities, _hand_content, _game_mode)
-			: _player->drawPlayer(_models, _entities, _hand_content);
+			? _player->drawHeldItem(_models, _entities)
+			: _player->drawPlayer(_models, _entities);
 		drawModels();
 		_shader.useProgram();
-		addBreakingAnim();
+		_player->addBreakingAnim(_entities);
 		drawEntities();
 	}
 
@@ -597,7 +580,7 @@ void OpenGL_Manager::handleUI( void )
 {
 	if (_menu->getState() >= menu::pause) {
 		std::string str;
-		if (_debug_mode) {
+		if (_debugMode) {
 			size_t residentSize, virtualSize;
 			utils::memory::getMemoryUsage(residentSize, virtualSize);
 			str = "Timer: " + std::to_string(_time.currentTime)
@@ -605,12 +588,7 @@ void OpenGL_Manager::handleUI( void )
 					+ "\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\tframe " + std::to_string((_time.deltaTime) * 1000)
 					+ "\nTPS: " + std::to_string(_time.nbTicksLastSecond)
 					+ "\nMem usage: " + utils::string::toBytes(residentSize)
-					+ '\n' + _player->getString(_game_mode)
-					+ "\nBlock\t> " + s_blocks[_block_hit.type]->name
-					+ ((_block_hit.type != blocks::air) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
-					+ ((_block_hit.type) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
-					+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
-					+ ((_game_mode != settings::consts::gamemode::creative) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
+					+ '\n' + _player->getString()
 					+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 					+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size());
 			
@@ -624,7 +602,7 @@ void OpenGL_Manager::handleUI( void )
 					+ "\nSky faces\t> " + std::to_string(_counter.skyFaces)
 					+ "\nWater faces\t> " + std::to_string(_counter.waterFaces)
 					+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(settings::ints::render_dist))
-					+ "\nGame mode\t\t> " + settings::consts::gamemode::str[_game_mode];
+					+ "\nGame mode\t\t> " + settings::consts::gamemode::str[_player->getGameMode()];
 			mtx_backup.lock();
 			str += "\nBackups\t> " + std::to_string(_backups.size());
 			mtx_backup.unlock();
@@ -635,7 +613,7 @@ void OpenGL_Manager::handleUI( void )
 		}
 
 		_ui->addDebugStr(str);
-		_ui->drawUserInterface(_game_mode, _time.deltaTime);
+		_ui->drawUserInterface(_player->getGameMode(), _time.deltaTime);
 	}
 }
 
@@ -719,6 +697,7 @@ void OpenGL_Manager::joinServer( void )
 	_camera->setTarget(_player.get());
 	_ui->setPtrs(this, _player->getInventory(), _player.get());
 	_menu->setPtrs(_player->getInventory(), _ui.get());
+	_player->setPtrs(this, _menu.get(), _ui.get());
 	WorldEdit::Get()->setPtrs(this, _player->getInventory(), _ui->getChatPtr().get());
 	startThread();
 }
@@ -744,9 +723,9 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			break ;
 		case menu::ret::world_created: // create new world, go into loading mode
 			_world_name = _menu->getResetWorldFile();
+			_player->setGameMode(settings::consts::gamemode::survival, false);
 			_player->setSpawnpoint({0, 0, 256});
 			_player->respawn();
-			_game_mode = settings::consts::gamemode::survival;
 			DayCycle::Get()->setTicks(1000);
 			initWorld();
 			break ;
@@ -789,7 +768,7 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			}
 			break ;
 		case menu::ret::sign_done:
-			_chunk_hit->setSignContent(_menu->getSignContent());
+			_player->getChunkHit()->setSignContent(_menu->getSignContent());
 			handleBackToGame();
 			break ;
 		case menu::ret::sign_book:
@@ -808,7 +787,7 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			handleBackToGame();
 			break ;
 		case menu::ret::page_turned:
-			_chunk_hit->bookedLectern(_menu.get(), _block_hit.pos, true);
+			_player->getChunkHit()->bookedLectern(_menu.get(), _player->getBlockHit().pos, true);
 			break ;
 		case menu::ret::send_message_server:
 			sendMessageServer();

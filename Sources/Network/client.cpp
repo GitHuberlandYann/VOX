@@ -80,8 +80,11 @@ void OpenGL_Manager::handlePacketLogin( char* data )
 	_player->setPos(worldSpawn);
 	_menu->setErrorStr({"Succesfully connected to server."});
 	_menu->setState(menu::pause);
+	_menu->setPtrs(_player->getInventory(), _ui.get());
 	_ui->setPtrs(this, _player->getInventory(), _player.get());
+	_player->setPtrs(this, _menu.get(), _ui.get());
 	// _paused = false;
+
 }
 
 void OpenGL_Manager::handlePacketPing( char* data )
@@ -329,20 +332,6 @@ void OpenGL_Manager::handleClientInputs( void )
 	if (inputs::key_down(inputs::perspective) && inputs::key_update(inputs::perspective)) {
 		_camera->changeCamPlacement();
 	}
-	// toggle game mode
-	if (inputs::key_down(inputs::gamemode) && inputs::key_update(inputs::gamemode)) {
-		if (inputs::key_down(inputs::debug)) {
-			Settings::Get()->setBool(settings::bools::visible_chunk_border, !Settings::Get()->getBool(settings::bools::visible_chunk_border));
-		} else {
-			setGamemode(!_game_mode);
-		}
-	}
-	// toggle outline
-	if (inputs::key_down(inputs::block_highlight) && inputs::key_update(inputs::block_highlight)) {
-		_ui->chatMessage(std::string("outlines ") + ((_outline) ? "HIDDEN" : "SHOWN"));
-		_outline = !_outline;
-		_break_frame = _outline;
-	}
 	// toggle chat
 	if ((inputs::key_down(inputs::chat) && inputs::key_update(inputs::chat))
 		|| (inputs::key_down(inputs::enter) && inputs::key_update(inputs::enter))) {
@@ -364,21 +353,14 @@ void OpenGL_Manager::handleClientInputs( void )
 		Settings::Get()->setString(settings::strings::block_atlas, "Resources/Textures/");
 		loadTextures();
 	}
-
-	t_hit block_hit = getBlockHit();
-	if (_block_hit.pos != block_hit.pos) {
-		_break_time = 0;
-		_break_frame = _outline;
-	}
-	_block_hit = block_hit;
-
 	// toggle debug mode F3
 	if (inputs::key_down(inputs::debug) && inputs::key_update(inputs::debug)) {
-		_debug_mode = !_debug_mode;
+		_debugMode = !_debugMode;
 	}
+	_player->inputToggle();
 
 	_player->setDelta(_time.deltaTime);
-	_player->clientInputUpdate(_game_mode);
+	_player->clientInputUpdate();
 	chunkUpdate();
 
 	if (_player->getResetFovUpdate() || inputs::key_update(inputs::zoom)) {
@@ -430,16 +412,16 @@ void OpenGL_Manager::handleClientDraw( void )
 	if (_menu->getState() >= menu::death) {
 		drawParticles();
 		(_camera->getCamPlacement() == CAMPLACEMENT::DEFAULT)
-			? _player->drawHeldItem(_models, _entities, _hand_content, _game_mode)
-			: _player->drawPlayer(_models, _entities, _hand_content);
+			? _player->drawHeldItem(_models, _entities)
+			: _player->drawPlayer(_models, _entities);
 		for (auto& player : _players) {
 			player.second->setDelta(_time.deltaTime);
 			player.second->moveClient();
-			player.second->drawPlayer(_models, _entities, blocks::air);
+			player.second->drawPlayer(_models, _entities);
 		}
 		drawModels();
 		_shader.useProgram();
-		addBreakingAnim();
+		_player->addBreakingAnim(_entities);
 		drawEntities();
 	}
 
@@ -471,7 +453,7 @@ void OpenGL_Manager::handleClientUI( void )
 {
 	if (_player && _menu->getState() >= menu::pause) {
 		std::string str, rightStr;
-		if (_debug_mode) {
+		if (_debugMode) {
 			size_t residentSize, virtualSize;
 			utils::memory::getMemoryUsage(residentSize, virtualSize);
 			str = "Timer: " + std::to_string(_time.currentTime)
@@ -479,12 +461,7 @@ void OpenGL_Manager::handleClientUI( void )
 					+ "\nFPS: " + std::to_string(_time.nbFramesLastSecond) + "\tframe " + std::to_string((_time.deltaTime) * 1000)
 					+ "\nTPS: " + std::to_string(_time.nbTicksLastSecond)
 					+ "\nMem usage: " + utils::string::toBytes(residentSize)
-					+ '\n' + _player->getString(_game_mode)
-					+ "\nBlock\t> " + s_blocks[_block_hit.type]->name
-					+ ((_block_hit.type != blocks::air) ? "\n\t\t> x: " + std::to_string(_block_hit.pos.x) + " y: " + std::to_string(_block_hit.pos.y) + " z: " + std::to_string(_block_hit.pos.z) : "\n")
-					+ ((_block_hit.type) ? "\nprev\t> x: " + std::to_string(_block_hit.prev_pos.x) + " y: " + std::to_string(_block_hit.prev_pos.y) + " z: " + std::to_string(_block_hit.prev_pos.z) : "\nprev\t> none")
-					+ ((_block_hit.water_value) ? "\n\t\tWATER on the way" : "\n\t\tno water")
-					+ ((_game_mode != settings::consts::gamemode::creative) ? "\nBreak time\t> " + std::to_string(_break_time) + "\nBreak frame\t> " + std::to_string(_break_frame) : "\n\n")
+					+ '\n' + _player->getString()
 					+ "\n\nChunk\t> x: " + std::to_string(_current_chunk.x) + " y: " + std::to_string(_current_chunk.y)
 					+ "\nDisplayed chunks\t> " + std::to_string(_visible_chunks.size());
 			
@@ -498,7 +475,7 @@ void OpenGL_Manager::handleClientUI( void )
 					+ "\nSky faces\t> " + std::to_string(_counter.skyFaces)
 					+ "\nWater faces\t> " + std::to_string(_counter.waterFaces)
 					+ "\n\nRender Distance\t> " + std::to_string(Settings::Get()->getInt(settings::ints::render_dist))
-					+ "\nGame mode\t\t> " + settings::consts::gamemode::str[_game_mode];
+					+ "\nGame mode\t\t> " + settings::consts::gamemode::str[_player->getGameMode()];
 			
 			rightStr = "Server ip: " + _menu->getServerIP()
 					+ "\nServer rps: " + std::to_string(_serverTime.nbFramesLastSecond)
@@ -515,7 +492,7 @@ void OpenGL_Manager::handleClientUI( void )
 		}
 
 		_ui->addDebugStr(str);
-		_ui->drawUserInterface(_game_mode, 0);//_time.deltaTime);
+		_ui->drawUserInterface(Settings::Get()->getInt(settings::ints::game_mode), 0);//_time.deltaTime);
 	}
 }
 

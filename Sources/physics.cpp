@@ -270,7 +270,7 @@ void Player::touchCeiling( float value )
 */
 void Player::resetFall( void )
 {
-	_invulnerable = (Settings::Get()->getInt(settings::ints::game_mode) == settings::consts::gamemode::creative);
+	_invulnerable = (_gameMode == settings::consts::gamemode::creative);
 	_fallImmunity = true;
 	_z0 = _position.z;
 	_fallTime = 0;
@@ -661,7 +661,7 @@ bool Player::update( std::vector<t_shaderInputModel>& modArr, float deltaTime )
 /**
  * @brief use user input to update player's position and handle collision
  */
-void Player::inputUpdate( bool rayCast, int gameMode )
+void Player::inputUpdate( bool rayCast )
 {
 	GLint key_cam_v = inputs::key_down(inputs::move_forwards) - inputs::key_down(inputs::move_backwards);
 	GLint key_cam_h = inputs::key_down(inputs::move_right) - inputs::key_down(inputs::move_left);
@@ -684,12 +684,12 @@ void Player::inputUpdate( bool rayCast, int gameMode )
 		setRun(inputs::key_down(inputs::run));
 	}
 
-	if (gameMode == settings::consts::gamemode::creative) { // no collision check, free to move however you want
+	if (_gameMode == settings::consts::gamemode::creative) { // no collision check, free to move however you want
 		moveFly(key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown);
 	}
 
 	if (rayCast) {
-		if (gameMode != settings::consts::gamemode::creative && _chunk) { // on first frame -> no _chunk
+		if (_gameMode != settings::consts::gamemode::creative && _chunk) { // on first frame -> no _chunk
 			if (_smoothCam) {
 				if (_smoothCamZ < _position.z) {
 					_smoothCamZ += _deltaTime * settings::consts::speed::smooth_cam;
@@ -748,13 +748,22 @@ void Player::inputUpdate( bool rayCast, int gameMode )
 	if (key_cam_speed) {
 		updateFlySpeed(key_cam_speed);
 	}
+
+	t_hit block_hit = computeBlockHit();
+	if (_blockHit.pos != block_hit.pos) {
+		_breakTime = 0;
+		if (_breakFrame > 1) {
+			_breakFrame = Settings::Get()->getBool(settings::bools::outline);
+		}
+	}
+	_blockHit = block_hit;
 }
 
 
 /**
  * @brief use user input to update player's position and handle collision
  */
-void Player::clientInputUpdate( int gameMode )
+void Player::clientInputUpdate( void )
 {
 	GLint key_cam_v = inputs::key_down(inputs::move_forwards) - inputs::key_down(inputs::move_backwards);
 	GLint key_cam_h = inputs::key_down(inputs::move_right) - inputs::key_down(inputs::move_left);
@@ -777,7 +786,7 @@ void Player::clientInputUpdate( int gameMode )
 		setRun(inputs::key_down(inputs::run));
 	}
 
-	if (gameMode == settings::consts::gamemode::creative) { // no collision check, free to move however you want
+	if (_gameMode == settings::consts::gamemode::creative) { // no collision check, free to move however you want
 		moveFly(key_cam_v, key_cam_h, key_cam_zup - key_cam_zdown);
 	}
 	else if (_chunk) {
@@ -838,4 +847,13 @@ void Player::clientInputUpdate( int gameMode )
 	if (key_cam_speed) {
 		updateFlySpeed(key_cam_speed);
 	}
+
+	t_hit block_hit = computeBlockHit();
+	if (_blockHit.pos != block_hit.pos) {
+		_breakTime = 0;
+		if (_breakFrame > 1) {
+			_breakFrame = Settings::Get()->getBool(settings::bools::outline);
+		}
+	}
+	_blockHit = block_hit;
 }

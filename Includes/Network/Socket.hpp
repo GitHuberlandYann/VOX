@@ -73,6 +73,17 @@ typedef struct s_client {
 	unsigned int bitfield = 0;
 }				t_client;
 
+namespace player_action {
+	const unsigned char start_digging = 0;
+	const unsigned char cancel_digging = 1;
+	const unsigned char finish_digging = 2;
+	// const unsigned char drop_item_stack = 3;
+	// const unsigned char drop_item = 4;
+	// const unsigned char shoot_arrow = 5;
+	// const unsigned char finish_eating = shoot_arrow;
+	// const unsigned char swap_item_hand = 6;
+};
+
 namespace packet_id {
 	namespace client { // ids of packets sent by client
 		enum {
@@ -83,6 +94,7 @@ namespace packet_id {
 			settings,
 			player_pos,
 			chat_msg,
+			player_action,
 		};
 	};
 
@@ -98,8 +110,11 @@ namespace packet_id {
 			player_leave,
 			players_info, // id, pos, deltas, yaw, pitch of all players
 			chat_msg,
-			destroy_stage, // set breaking anim of a block
-			damage_event,
+			block_destroy_stage, // set breaking anim of a block
+			block_update,
+			// update_section_blocks, // used when several blocks within one section are changed on same tick
+			// acknowledge_block_change, // will see if I use this
+			// block_action, // will be used for chests and pistons
 		};
 	};
 

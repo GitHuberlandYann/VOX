@@ -122,17 +122,17 @@ void Chat::handle_help( int argc, std::vector<std::string> &argv )
 void Chat::handle_gamemode( int argc, std::vector<std::string> &argv )
 {
 	if (argc == 1) {
-		_oglMan->getGamemode();
+		_oglMan->_player->outputGameMode();
 		return ;
 	} else if (argc == 2) {
 		if (!argv[1].compare("survival") || !argv[1].compare("0")) {
-			_oglMan->setGamemode(settings::consts::gamemode::survival);
+			_oglMan->_player->setGameMode(settings::consts::gamemode::survival);
 			return ;	
 		} else if (!argv[1].compare("creative") || !argv[1].compare("1")) {
-			_oglMan->setGamemode(settings::consts::gamemode::creative);
+			_oglMan->_player->setGameMode(settings::consts::gamemode::creative);
 			return ;
 		} else if (!argv[1].compare("adventure") || !argv[1].compare("2")) {
-			_oglMan->setGamemode(settings::consts::gamemode::adventure);
+			_oglMan->_player->setGameMode(settings::consts::gamemode::adventure);
 			return ;
 		}
 	}

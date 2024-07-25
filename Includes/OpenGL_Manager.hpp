@@ -45,14 +45,7 @@ typedef struct s_counter {
 	GLint meshFaces;
 	GLint waterFaces;
 	GLint skyFaces;
-	
 }				t_counter;
-
-typedef struct s_hit {
-	glm::ivec3 pos, prev_pos, water_pos;
-	int value, type;
-	bool water_value;
-}				t_hit;
 
 class Server;
 
@@ -67,11 +60,12 @@ class OpenGL_Manager
 		OpenGL_Manager( void );
 		~OpenGL_Manager( void );
 
+		void setCurrentChunkPtr( std::shared_ptr<Chunk>& chunk );
 		Chunk* getCurrentChunkPtr( void );
+		std::shared_ptr<Chunk> getChunkAt( int posX, int posY );
 
 		void resetInputsPtrs( void );
-		void setGamemode( int gamemode );
-		void getGamemode( void );
+		void pauseGame( void );
 		void setItemFrame( bool visible, bool lock );
 		size_t clearEntities( void );
 		size_t clearParticles( void );
@@ -91,9 +85,7 @@ class OpenGL_Manager
 		Buffer _vaboEntities, _vaboParticles, _vaboModels;
 		glm::ivec2 _current_chunk;
 		std::array<GLuint, 6> _textures;
-		bool _fill, _debug_mode, _outline, _paused, _threadUpdate, _threadStop;
-		float _break_time, _eat_timer, _bow_timer;
-		int _game_mode, _break_frame, _hand_content;
+		bool _fill, _debugMode, _paused, _threadUpdate, _threadStop;
 		std::string _world_name;
 		std::vector<std::shared_ptr<Chunk>> _visible_chunks;
 		std::vector<t_shaderInput> _entities;
@@ -105,9 +97,8 @@ class OpenGL_Manager
 		t_time _time, _serverTime;
 		t_packet_data _packet;
 		t_counter _counter;
-		t_hit _block_hit;
 		std::map<int, std::unique_ptr<Player>> _players;
-		std::shared_ptr<Chunk> _current_chunk_ptr = NULL, _chunk_hit = NULL;
+		std::shared_ptr<Chunk> _current_chunk_ptr = NULL;
 		std::unique_ptr<Camera> _camera;
 		std::unique_ptr<UI> _ui;
 		std::unique_ptr<Menu> _menu;
@@ -117,10 +108,7 @@ class OpenGL_Manager
 
 		void updateVisibleChunks( void );
 		void chunkUpdate( void );
-		float getBreakTime( bool canHarvest );
 		void userInputs( bool rayCast );
-		t_hit getBlockHit( void );
-		void handleBlockModif( bool adding, bool collect );
 		void updateCamView( void );
 		void updateCamPerspective( void );
 		void updateAnimFrame( void );
@@ -131,7 +119,6 @@ class OpenGL_Manager
 		void loadBackups( std::ofstream& ofs, std::ifstream& indata );
 		void clearChunks( void );
 
-		void addBreakingAnim( void );
 		void addLine( glm::vec3 a, glm::vec3 b );
 		void drawEntities( void );
 		void drawParticles( void );
