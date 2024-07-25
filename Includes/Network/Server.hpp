@@ -50,6 +50,7 @@ class Server
 		void pendPacket( void );
 
 		void handlePacketLogin( Address& sender, std::string name );
+		void handlePacketLeave( Address& sender );
 		void handlePacketPosition( Address& sender );
 		void handlePacketChatMsg( Address& sender, std::string msg );
 

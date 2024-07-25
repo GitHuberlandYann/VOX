@@ -458,6 +458,7 @@ void OpenGL_Manager::handleTime( bool gamePaused )
 {
 	_time.currentTime = glfwGetTime();
 	_time.deltaTime = _time.currentTime - _time.previousFrame;
+	_time.previousFrame = _time.currentTime;
 
 	++_time.nbFrames;
 	if (_time.currentTime - _time.lastSecondRecorded >= 1.0) {
@@ -737,6 +738,9 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 		case menu::ret::join_server:
 			joinServer();
 			break ;
+		case menu::ret::leave_server:
+			leaveServer();
+			break ;
 		case menu::ret::respawn_player: // Respawn player, init world again
 			_player->respawn();
 			initWorld();
@@ -751,10 +755,12 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			updateCamPerspective();
 			break ;
 		case menu::ret::render_dist_update: // render dist change
-			// _ui->chatMessage("Render distance set to " + std::to_string(render_dist));
-			glUniform1f(_skyShader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
-			glUniform1f(_shader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
-			setThreadUpdate(true);
+			if (!_socket) { // for now no render dist change in multi
+				// _ui->chatMessage("Render distance set to " + std::to_string(render_dist));
+				glUniform1f(_skyShader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
+				glUniform1f(_shader.getUniform(settings::consts::shader::uniform::fog), (1 + Settings::Get()->getInt(settings::ints::render_dist)) << settings::consts::chunk_shift);
+				setThreadUpdate(true);
+			}
 			break ;
 		case menu::ret::brightness_update: // brightness change
 			glUniform1f(_particleShader.getUniform(settings::consts::shader::uniform::brightness), Settings::Get()->getFloat(settings::floats::brightness));
@@ -855,7 +861,6 @@ bool OpenGL_Manager::run( void )
 		}
 		handleChunkDeletion();
 		BENCHLOG(b.stamp("chunk deletion"));
-		_time.previousFrame = _time.currentTime;
 		glfwSwapBuffers(_window);
 		BENCHLOG(b.stamp("swap buffer"));
 		glfwPollEvents();

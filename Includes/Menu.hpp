@@ -54,6 +54,7 @@ namespace menu
 		world_created,
 		host_server,
 		join_server,
+		leave_server,
 		save_and_quit,
 		respawn_player,
 		respawn_save_quit,

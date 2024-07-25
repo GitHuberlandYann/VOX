@@ -14,6 +14,7 @@ void OpenGL_Manager::sendPacket( size_t size )
 {
 	int sendRet = _socket->send(_socket->getServerAddress(), &_packet, size);
 	if (sendRet >= send_ret::timeout) {
+		stopThread();
 		_player = nullptr;
 		_socket = nullptr;
 		_paused = true;
@@ -122,6 +123,7 @@ void OpenGL_Manager::handlePacketPingList( void )
 void OpenGL_Manager::handlePacketKick( std::string msg )
 {
 	_ui->setPtrs(this, NULL, NULL);
+	stopThread();
 	_player = nullptr;
 	_socket = nullptr;
 	_paused = true;
@@ -280,23 +282,23 @@ void OpenGL_Manager::handleClientInputs( void )
 	if (!_player) {
 		return ;
 	}
-	/*
+
 	// open menu
 	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
 		_paused = true;
 		_menu->setState(menu::pause);
 		return ;
 	}
+	/*
 	// open inventory
 	if (inputs::key_down(inputs::inventory) && inputs::key_update(inputs::inventory)) {
 		_paused = true;
 		_menu->setState(menu::inventory);
 		return ;
-	}
-
+	}*/
 	// toggle F3 + I == display full info about block hit
 	if (inputs::key_down(inputs::info) && inputs::key_update(inputs::info) && inputs::key_down(inputs::debug)) {
-		t_hit bHit = getBlockHit();
+		t_hit bHit = _player->getBlockHit();
 		_ui->chatMessage("*******************");
 		_ui->chatMessage("Info about " + s_blocks[bHit.type]->name + " at " + std::to_string(bHit.pos.x) + ", " + std::to_string(bHit.pos.y) + ", " + std::to_string(bHit.pos.z));
 		_ui->chatMessage(std::string("visible: ") + ((bHit.value & mask::blocks::notVisible) ? "FALSE" : "TRUE"));
@@ -316,18 +318,16 @@ void OpenGL_Manager::handleClientInputs( void )
 		}
 		_ui->chatMessage("*******************");
 	}
-	*/
-
 	// toggle hotbar F1
 	if (inputs::key_down(inputs::hotbar) && inputs::key_update(inputs::hotbar)) {
 		_ui->_hideUI = !_ui->_hideUI;
 		Settings::Get()->setBool(settings::bools::hide_ui, _ui->_hideUI);
 		_ui->chatMessage(std::string("UI ") + ((_ui->_hideUI) ? "HIDDEN" : "SHOWN"));
 	}
-	// take screenshot F2
+	/*/ take screenshot F2
 	if (inputs::key_down(inputs::screenshot) && inputs::key_update(inputs::screenshot)) {
 		screenshot();
-	}
+	}*/
 	// toggle F5 mode
 	if (inputs::key_down(inputs::perspective) && inputs::key_update(inputs::perspective)) {
 		_camera->changeCamPlacement();
@@ -382,8 +382,6 @@ void OpenGL_Manager::handleClientDraw( void )
 	
 	_counter = t_counter();
 	for (auto& c: _visible_chunks) {
-	// mtx_perimeter.lock();
-	// for (auto& c: _perimeter_chunks) {
 		c->drawArray(_counter.newVaos, _counter.meshFaces);
 		/*if (!gamePaused) {
 			if (_time.tickUpdate) {
@@ -407,7 +405,6 @@ void OpenGL_Manager::handleClientDraw( void )
 			}
 		}*/
 	}
-	// mtx_perimeter.unlock();
 
 	if (_menu->getState() >= menu::death) {
 		drawParticles();
@@ -496,6 +493,18 @@ void OpenGL_Manager::handleClientUI( void )
 	}
 }
 
+void OpenGL_Manager::leaveServer( void )
+{
+	_packet.action = packet_id::client::leave;
+	sendPacket(sizeof(unsigned short));
+	_ui->setPtrs(this, NULL, NULL);
+	stopThread();
+	_player = nullptr;
+	_socket = nullptr;
+	_paused = true;
+	_menu->setState(menu::main);
+}
+
 void OpenGL_Manager::runClient( void )
 {
 	Settings::Get()->setInt(settings::ints::session_type, settings::consts::session::client);
@@ -525,12 +534,12 @@ void OpenGL_Manager::runClient( void )
 			_ui->textToScreen(_menu->getState() >= menu::pause);
 		}
 		handleChunkDeletion();
-		_time.previousFrame = _time.currentTime;
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
 	}
 
 	utils::shader::check_glstate("exiting client loop\n", true);
+	glClearColor(0.f, 0.f, 0.f, 1.f);
 	stopThread();
 	_chunks.clear();
 	_perimeter_chunks.clear();

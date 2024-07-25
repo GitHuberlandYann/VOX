@@ -474,10 +474,10 @@ menu::ret Menu::pause_menu( void )
 			_state = menu::options;
 			reset_values();
 			return (options_menu());
-		} else if (_selection == 8) { //Save and Quit to Title
+		} else if (_selection == 8) { // Save and Quit to Title | Disconnect
 			_state = menu::main;
 			reset_values();
-			return (menu::ret::save_and_quit);
+			return ((Settings::Get()->getInt(settings::ints::session_type) == settings::consts::session::singleplayer) ? menu::ret::save_and_quit : menu::ret::leave_server);
 		}
 	}
 	if (inputs::key_down(inputs::close) && inputs::key_update(inputs::close)) {
@@ -493,7 +493,7 @@ menu::ret Menu::pause_menu( void )
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 35 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::str, "Statistics");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 - 10 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::str, "Report Bugs");
     _text->addCenteredText(WIN_WIDTH / 2 + 5 * _gui_size, WIN_HEIGHT / 2 + 15 * _gui_size, 95 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::str, "Open to LAN");
-    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::str, "Save and Quit to Title");
+    _text->addCenteredText(WIN_WIDTH / 2 - 100 * _gui_size, WIN_HEIGHT / 2 + 40 * _gui_size, 200 * _gui_size, 20 * _gui_size, 7 * _gui_size, argb::white, true, settings::consts::depth::menu::str, (Settings::Get()->getInt(settings::ints::session_type) == settings::consts::session::singleplayer) ? "Save and Quit to Title" : "Disconnect");
 
 	setup_array_buffer_pause();
 	blit_to_screen();

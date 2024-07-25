@@ -168,6 +168,22 @@ void Server::handlePacketLogin( Address& sender, std::string name )
 	}
 }
 
+void Server::handlePacketLeave( Address& sender )
+{
+	int id = _socket->getId(sender);
+	_socket->rmClient(id);
+	if (_players.count(id)) {
+		_packet = {pendings::broadcast, 0};
+		_packet.packet.action = packet_id::server::player_leave;
+		utils::memory::memwrite(_packet.packet.data, &id, sizeof(int), _packet.size);
+		std::string name = _players[id]->getName();
+		utils::memory::memwrite(_packet.packet.data, name.c_str(), name.size(), _packet.size);
+		_packet.size += sizeof(unsigned short);
+		_pendingPackets.push_back(_packet); // we can't use pendPacket because of double lock 
+		_players.erase(id);
+	}
+}
+
 bool Player::handlePacketPos( t_packet_data& packet, size_t& cursor, bool client, Chunk* chunk )
 {
 	if (client) {
@@ -222,6 +238,7 @@ void Server::handleTime( void )
 {
 	_time.currentTime = glfwGetTime();
 	_time.deltaTime = _time.currentTime - _time.previousFrame;
+	_time.previousFrame = _time.currentTime;
 
 	++_time.nbFrames;
 	if (_time.currentTime - _time.lastSecondRecorded >= 1.0) {
@@ -290,6 +307,7 @@ void Server::handlePackets( void )
 				sendPingList(sender);
 				break ;
 			case packet_id::client::leave:
+				handlePacketLeave(sender);
 				break ;
 			case packet_id::client::player_pos:
 				handlePacketPosition(sender);

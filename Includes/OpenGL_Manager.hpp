@@ -141,6 +141,7 @@ class OpenGL_Manager
 		void handleBackToGame( void );
 		void hostServer( void );
 		void joinServer( void );
+		void leaveServer( void );
 		void handleMenu( bool animUpdate );
 		void handleChunkDeletion( void );
 

@@ -2,6 +2,7 @@
 #include "utils.h" // GLuint used in DayCycle.hpp included by logs.hpp
 #include "logs.hpp"
 #include <unistd.h> // close
+#include <algorithm> // std::find_if
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
@@ -324,6 +325,14 @@ ssize_t Socket::receive( Address& sender, void* data, size_t size )
 	memmove(data, &_packet.data.action, bytes + 1); // copy the \0 too
 	PACKETLOG(LOG("received packet with header " << _packet.protocol_id << " - " << _packet.sequence << " - " << _packet.ack << " - " << _packet.ack_bitfield));
 	return (bytes);
+}
+
+void Socket::rmClient( int id )
+{
+	auto search = std::find_if(_clients.begin(), _clients.end(), [id](auto& client) { return (client.id == id); });
+	if (search != _clients.end()) {
+		_clients.erase(search);
+	}
 }
 
 int Socket::getType( void )

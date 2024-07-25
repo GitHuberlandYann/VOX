@@ -139,6 +139,8 @@ class Socket
 		std::vector<int> broadcast( const void* data, size_t size );
         ssize_t receive( Address& sender, void* data, size_t size );
 
+		void rmClient( int id );
+
 		int getType( void );
 		int getId( Address& target );
 		Address* getAddress( int id );
