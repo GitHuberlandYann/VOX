@@ -510,6 +510,13 @@ std::string Chat::getHistoMsg( bool up )
 	return (_historic[_historic.size() - _histo_cursor].str);
 }
 
+void Chat::appendHistoMsg( std::string str )
+{
+	if (!_historic.size() || str != _historic.back().str) {
+		_historic.push_back({str, argb::white}); // used to handle arrow action (ie command history)
+	}
+}
+
 void Chat::chatMessage( std::string str, unsigned color )
 {
 	size_t pxl_width = 0, offset, font_size = 12, limit = CHAT_BOX_WIDTH - CHAT_BOX_X - 2 * CHAT_BOX_OFFSET;
@@ -594,6 +601,9 @@ bool Chat::sendMessage( std::string str )
 							break ;
 						case chat::cmds::give:
 							handle_give(parstr.size(), parstr);
+							break ;
+						case chat::cmds::admin:
+							chatMessage("Command can't be used in singleplayer.");
 							break ;
 						default:
 							chatMessage("Command recognised but behavior not coded yet.");

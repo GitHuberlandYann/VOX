@@ -39,6 +39,11 @@ namespace settings {
 			const float brush = 64;
 			const float attack = 3.0f;
 		};
+
+		namespace permission {
+			const int none = 0;
+			const int admin = 5;
+		};
 	};
 };
 
@@ -65,6 +70,7 @@ class Player : public AMob
        	void setUIUpdate( bool state );
 		void setGameMode( int gamemode, bool ingame = true );
 		void setPtrs( OpenGL_Manager* oglMan, Menu* menu, UI* ui );
+		void setPermissionLevel( int permission );
 
 		/** @category getters */
        	glm::vec3 getEyePos( void ) override;
@@ -84,6 +90,7 @@ class Player : public AMob
 		Chunk* getChunkHit( void );
 		t_hit& getBlockHit( void );
 		int getGameMode( void );
+		int getPermissionLevel( void );
 		void outputGameMode( void );
 
         void tickUpdate( void );
@@ -129,7 +136,7 @@ class Player : public AMob
         void processMouseMovement( float x_offset, float y_offset );
     
     private:
-		int _id; // multiplayer id
+		int _id, _permission; // multiplayer id
         int _flySpeed;
         int _foodLevel, _foodTickTimer;
 		int _gameMode, _breakFrame, _handContent;

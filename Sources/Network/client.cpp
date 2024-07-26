@@ -48,11 +48,12 @@ void OpenGL_Manager::sendPlayerPos( void )
 
 bool OpenGL_Manager::sendMessageServer( void )
 {
-	std::string msg = inputs::getCurrentMessage();
+	std::string msg = utils::string::trim_spaces(inputs::getCurrentMessage());
+	inputs::resetMessage();
 	if (msg.empty()) {
 		return (false);
 	}
-	inputs::resetMessage();
+	_ui->getChatPtr()->appendHistoMsg(msg);
 	_packet.action = (msg[0] == '/') ? packet_id::client::chat_command : packet_id::client::chat_msg;
 	size_t cursor = 0;
 	utils::memory::memwrite(_packet.data, msg.c_str(), msg.size(), cursor);

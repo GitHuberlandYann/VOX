@@ -1,13 +1,15 @@
 #include "OpenGL_Manager.hpp"
 #include "Player.hpp"
 #include "Server.hpp"
+#include "ServerChat.hpp"
 #include "utils.h"
 #include "logs.hpp"
 
 #include <unistd.h> // usleep
 
 Server::Server( t_time time, std::map<std::pair<int, int>, s_backup>& backups, std::shared_ptr<Socket> socket )
-	: _backups(backups), _threadUpdate(false), _threadStop(false), _time(time), _socket(socket)
+	: _backups(backups), _threadUpdate(false), _threadStop(false), _time(time),
+	_socket(socket), _chat(std::make_unique<ServerChat>(this))
 {
 	startThread();
 }
@@ -140,6 +142,9 @@ void Server::handlePacketLogin( Address& sender, std::string name )
 {
 	int id = _socket->getId(sender);
 	if (!_players.count(id)) {
+		if (nameOnServer(name)) {
+			return ;
+		}
 		_mtx_plrs.lock();
 		_players[id] = std::make_unique<Player>();
 		_mtx_plrs.unlock();
@@ -223,6 +228,9 @@ void Server::handlePacketChatMsg( Address& sender, std::string msg )
 		_packet.packet.action = packet_id::server::chat_msg;
 		utils::memory::memwrite(_packet.packet.data, &argb::white, sizeof(uint), _packet.size);
 		msg = "<" + _players[id]->getName() + "> " + msg;
+		if (_players[id]->getPermissionLevel() == settings::consts::permission::admin) {
+			msg = "[ADMIN]" + msg;
+		}
 		utils::memory::memwrite(_packet.packet.data, msg.c_str(), msg.size(), _packet.size);
 		_packet.size += sizeof(unsigned short);
 		pendPacket();
@@ -231,19 +239,40 @@ void Server::handlePacketChatMsg( Address& sender, std::string msg )
 
 void Server::handlePacketChatCommand( Address& sender, std::string msg )
 {
-	// TODO process msg content and handle commands.
-	// TODO implement player 'autority level'
-	(void)msg;
 	int id = _socket->getId(sender);
 	if (_players.count(id)) {
-		_packet = {pendings::useAddr, 0, sender};
-		_packet.packet.action = packet_id::server::chat_msg;
-		utils::memory::memwrite(_packet.packet.data, &argb::red, sizeof(uint), _packet.size);
-		msg = "You do not have permission to use this command";
-		utils::memory::memwrite(_packet.packet.data, msg.c_str(), msg.size(), _packet.size);
-		_packet.size += sizeof(unsigned short);
-		pendPacket();
+		_chat->parseCommand(_players[id], sender, msg);
 	}
+}
+
+// ************************************************************************** //
+//                                Players                                     //
+// ************************************************************************** //
+
+/**
+ * @return true if a player on the server has the given name
+ */
+bool Server::nameOnServer( std::string name )
+{
+	for (auto& player: _players) {
+		if (player.second->getName() == name) {
+			return (true);
+		}
+	}
+	return (false);
+}
+
+/**
+ * @return true if at least one player on the server is admin
+ */
+bool Server::adminedServer( void )
+{
+	for (auto& player: _players) {
+		if (player.second->getPermissionLevel() == settings::consts::permission::admin) {
+			return (true);
+		}
+	}
+	return (false);
 }
 
 // ************************************************************************** //

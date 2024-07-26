@@ -13,6 +13,8 @@ typedef struct s_pending_packet {
 	t_packet_data packet = {};
 }				t_pending_packet;
 
+class ServerChat;
+
 class Server
 {
 	public:
@@ -23,6 +25,8 @@ class Server
 		Server( t_time time, std::map<std::pair<int, int>, s_backup>& backups, std::shared_ptr<Socket> socket );
 		~Server( void );
 
+		bool nameOnServer( std::string name );
+		bool adminedServer( void );
 		void pendPacket( t_pending_packet& packet );
 		void run( void );
 
@@ -43,6 +47,7 @@ class Server
 		std::shared_ptr<Socket> _socket;
 		std::vector<t_pending_packet> _pendingPackets;
 		std::map<int, std::unique_ptr<Player>> _players;
+		std::unique_ptr<ServerChat> _chat;
 
 		void broadcastPlayersInfo( void );
 		void sendPingList( Address& sender );

@@ -25,10 +25,11 @@ namespace chat {
 			sp,
 			spawnpoint,
 			give,
+			admin,
 			size
 		};
 	};
-	const std::array<std::string, cmds::size> commands = {"/help", "/seed", "/gamemode", "/gamerule", "/time", "/clear", "/tp", "/teleport", "/sp", "/spawnpoint", "/give"};
+	const std::array<std::string, cmds::size> commands = {"/help", "/seed", "/gamemode", "/gamerule", "/time", "/clear", "/tp", "/teleport", "/sp", "/spawnpoint", "/give", "/admin"};
 
 	namespace rule {
 		enum {
@@ -66,6 +67,7 @@ class Chat
 
 		void resetHistoCursor( void );
 		std::string getHistoMsg( bool up );
+		void appendHistoMsg( std::string str );
 
 		void chatMessage( std::string str, unsigned color = argb::white );
 		bool sendMessage( std::string str );

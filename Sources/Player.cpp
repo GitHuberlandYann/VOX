@@ -4,7 +4,8 @@
 #include "logs.hpp"
 
 Player::Player( void )
-    : AMob({.0f, .0f, .0f}), _id(-1), _flySpeed(settings::consts::speed::fly), _foodLevel(20), _foodTickTimer(0),
+    : AMob({.0f, .0f, .0f}), _id(-1), _permission(settings::consts::permission::none),
+	_flySpeed(settings::consts::speed::fly), _foodLevel(20), _foodTickTimer(0),
     _gameMode(settings::defaults::game_mode), _breakFrame(0), _handContent(blocks::air),
 	_yaw(settings::defaults::yaw), _pitch(settings::defaults::pitch),
     _smoothCamZ(.0f), _fovOffset(.0f), _armAnimTime(.0f), _breakTime(.0f), _eatTime(.0f), _bowTime(.0f), _breathTime(.0f),
@@ -19,7 +20,7 @@ Player::Player( void )
 
 Player::~Player( void )
 {
-
+	MAINLOG(LOG("Destructor of Player called"));
 }
 
 // ************************************************************************** //
@@ -260,6 +261,11 @@ void Player::setPtrs( OpenGL_Manager* oglMan, Menu* menu, UI* ui )
 	_ui = ui;
 }
 
+void Player::setPermissionLevel( int permission )
+{
+	_permission = permission;
+}
+
 float Player::getFovOffset( void )
 {
     return (_fovOffset);
@@ -312,6 +318,11 @@ t_hit& Player::getBlockHit( void )
 int Player::getGameMode( void )
 {
 	return (_gameMode);
+}
+
+int Player::getPermissionLevel( void )
+{
+	return (_permission);
 }
 
 void Player::outputGameMode( void )
