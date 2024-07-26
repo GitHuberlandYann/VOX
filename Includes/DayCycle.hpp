@@ -29,6 +29,7 @@ class DayCycle
 		bool tickUpdate( void );
 		int getTicks( void );
 		int getGameTicks( void );
+		int getTimeStamp( void );
 		int getGameTimeMultiplier( void );
 		void setTicks( int ticks );
 		void addTicks( int ticks );
@@ -47,7 +48,7 @@ class DayCycle
 		static std::mutex _mtx;
 
 		double _gameTime;
-		int _ticks, _gameTicks, _day, _hour, _minute, _internalLight, _timeMultiplier, _gameTimeMultiplier;
+		int _ticks, _gameTicks, _timeStamp, _day, _hour, _minute, _internalLight, _timeMultiplier, _gameTimeMultiplier;
 		bool _forceReset;
 		Shader* _shader, *_particleShader, *_modelShader;
 

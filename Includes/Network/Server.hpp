@@ -53,6 +53,7 @@ class Server
 		void handlePacketLeave( Address& sender );
 		void handlePacketPosition( Address& sender );
 		void handlePacketChatMsg( Address& sender, std::string msg );
+		void handlePacketChatCommand( Address& sender, std::string msg );
 
 		void handleTime( void );
 		void handlePackets( void );

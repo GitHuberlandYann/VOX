@@ -8,7 +8,7 @@
 // ************************************************************************** //
 
 DayCycle::DayCycle( void )
-	: _gameTime(0), _ticks(0), _gameTicks(0), _day(0), _hour(6), _minute(0), _internalLight(15),
+	: _gameTime(0), _ticks(0), _gameTicks(0), _timeStamp(0), _day(0), _hour(6), _minute(0), _internalLight(15),
 		_timeMultiplier(1), _gameTimeMultiplier(-1), _forceReset(false), _shader(nullptr)
 {
 
@@ -123,6 +123,7 @@ void DayCycle::setCloudsColor( GLint uniform_location )
 
 bool DayCycle::tickUpdate( void )
 {
+	++_timeStamp;
 	_ticks += _timeMultiplier;
 	if (_timeMultiplier || _forceReset) {
 		setInternals();
@@ -146,6 +147,12 @@ int DayCycle::getTicks( void )
 int DayCycle::getGameTicks( void )
 {
 	return (_gameTicks);
+}
+
+// nb of times tickUpdate has been called on this instance of DayCycle
+int DayCycle::getTimeStamp( void )
+{
+	return (_timeStamp);
 }
 
 int DayCycle::getGameTimeMultiplier( void )

@@ -46,17 +46,18 @@ void OpenGL_Manager::sendPlayerPos( void )
 	sendPacket(_player->packetPos(_packet));
 }
 
-void OpenGL_Manager::sendMessageServer( void )
+bool OpenGL_Manager::sendMessageServer( void )
 {
 	std::string msg = inputs::getCurrentMessage();
 	if (msg.empty()) {
-		return ;
+		return (false);
 	}
 	inputs::resetMessage();
-	_packet.action = packet_id::client::chat_msg;
+	_packet.action = (msg[0] == '/') ? packet_id::client::chat_command : packet_id::client::chat_msg;
 	size_t cursor = 0;
 	utils::memory::memwrite(_packet.data, msg.c_str(), msg.size(), cursor);
 	sendPacket(cursor + sizeof(unsigned short));
+	return (true);
 }
 
 // ************************************************************************** //
@@ -64,7 +65,7 @@ void OpenGL_Manager::sendMessageServer( void )
 //                                Receive                                     //
 // ************************************************************************** //
 
-void OpenGL_Manager::handlePacketLogin( char* data )
+void OpenGL_Manager::handlePacketLogin( void )
 {
 	if (_player) {
 		return ;
@@ -75,9 +76,9 @@ void OpenGL_Manager::handlePacketLogin( char* data )
 	glm::ivec3 worldSpawn;
 	size_t cursor = 0;
 	int id;
-	utils::memory::memread(&id, data, sizeof(int), cursor);
+	utils::memory::memread(&id, _packet.data, sizeof(int), cursor);
 	_player->setId(id);
-	utils::memory::memread(&worldSpawn.x, data, sizeof(int) * 3, cursor);
+	utils::memory::memread(&worldSpawn.x, _packet.data, sizeof(int) * 3, cursor);
 	_player->setPos(worldSpawn);
 	_menu->setErrorStr({"Succesfully connected to server."});
 	_menu->setState(menu::pause);
@@ -88,12 +89,15 @@ void OpenGL_Manager::handlePacketLogin( char* data )
 
 }
 
-void OpenGL_Manager::handlePacketPing( char* data )
+void OpenGL_Manager::handlePacketPing( void )
 {
-	memmove(&_serverTime.currentTime, data, sizeof(double));
-	memmove(&_serverTime.nbFramesLastSecond, &data[sizeof(double)], sizeof(int));
-	memmove(&_serverTime.nbTicksLastSecond, &data[sizeof(double) + sizeof(int)], sizeof(int));
-	MAINLOG(LOG("Client::handlePackets: time received: " << _serverTime.currentTime << " server fps: " << _serverTime.nbFramesLastSecond << ", server tps: " << _serverTime.nbTicksLastSecond));
+	size_t cursor = 0;
+	int tick;
+	utils::memory::memread(&tick, _packet.data, sizeof(int), cursor);
+	DayCycle::Get()->setTicks(tick); // TODO might want to avoid forceReset
+	utils::memory::memread(&_serverTime.nbFramesLastSecond, _packet.data, sizeof(int), cursor);
+	utils::memory::memread(&_serverTime.nbTicksLastSecond, _packet.data, sizeof(int), cursor);
+	MAINLOG(LOG("Client::handlePackets: time received: " << tick << " server fps: " << _serverTime.nbFramesLastSecond << ", server tps: " << _serverTime.nbTicksLastSecond));
 	_packet.action = packet_id::client::pong;
 	sendPacket(sizeof(unsigned short));
 }
@@ -131,20 +135,20 @@ void OpenGL_Manager::handlePacketKick( std::string msg )
 	_menu->setErrorStr({"You have been kicked by the server.", "Server msg: " + msg});
 }
 
-void OpenGL_Manager::handlePacketChunk( t_packet_data& packet )
+void OpenGL_Manager::handlePacketChunk( void )
 {
 	_mtx_packets.lock();
-	_chunkPackets.push_back(packet);
+	_chunkPackets.push_back(_packet);
 	_mtx_packets.unlock();
 	setThreadUpdate(true);
 }
 
-void OpenGL_Manager::handlePacketChunkUnload( t_packet_data& packet )
+void OpenGL_Manager::handlePacketChunkUnload( void )
 {
 	glm::ivec2 chunkPos;
 	size_t cursor = 0;
-	utils::memory::memread(&chunkPos.x, packet.data, sizeof(int), cursor);
-	utils::memory::memread(&chunkPos.y, packet.data, sizeof(int), cursor);
+	utils::memory::memread(&chunkPos.x, _packet.data, sizeof(int), cursor);
+	utils::memory::memread(&chunkPos.y, _packet.data, sizeof(int), cursor);
 	_player->isLoaded(chunkPos); // set chunk as 'loaded' means chunk should be deleted for client
 	setThreadUpdate(true);
 }
@@ -181,15 +185,15 @@ void OpenGL_Manager::handlePacketPlayerLeave( void )
 	}
 }
 
-void OpenGL_Manager::handlePacketPlayersInfo( t_packet_data& packet, size_t size )
+void OpenGL_Manager::handlePacketPlayersInfo( size_t size )
 {
 	size_t cursor = 0;
 	bool requestPingList = false;
 	while (cursor < size) {
 		int id;
-		utils::memory::memread(&id, packet.data, sizeof(int), cursor);
+		utils::memory::memread(&id, _packet.data, sizeof(int), cursor);
 		if (_players.count(id)) {
-			_players[id]->handlePacketPos(packet, cursor, true, _player->getChunkPtr());
+			_players[id]->handlePacketPos(_packet, cursor, true, _player->getChunkPtr());
 		} else if (id == _player->getId()) {
 			cursor += sizeof(float) * 8;
 		} else {
@@ -203,10 +207,13 @@ void OpenGL_Manager::handlePacketPlayersInfo( t_packet_data& packet, size_t size
 	}
 }
 
-void OpenGL_Manager::handlePacketChatMsg( char* data )
+void OpenGL_Manager::handlePacketChatMsg( void )
 {
-	_ui->chatMessage(data);
-	MAINLOG(LOG("chatMessage: |" << data << "|"));
+	uint color;
+	size_t cursor = 0;
+	utils::memory::memread(&color, _packet.data, sizeof(uint), cursor);
+	_ui->chatMessage(&_packet.data[cursor], color);
+	MAINLOG(LOG("chatMessage: |" << &_packet.data[cursor] << "|"));
 }
 
 void OpenGL_Manager::handlePackets( void )
@@ -228,10 +235,10 @@ void OpenGL_Manager::handlePackets( void )
 		// process packet
 		switch (_packet.action & mask::network::action_type) {
 			case packet_id::server::login: // server confirmed login
-				handlePacketLogin(_packet.data);
+				handlePacketLogin();
 				break ;
 			case packet_id::server::ping:
-				handlePacketPing(_packet.data); // TODO remove all those _packets from the arg ...
+				handlePacketPing();
 				break ;
 			case packet_id::server::ping_list:
 				handlePacketPingList();
@@ -239,10 +246,10 @@ void OpenGL_Manager::handlePackets( void )
 			case packet_id::server::kick:
 				return (handlePacketKick(_packet.data));
 			case packet_id::server::chunk_data:
-				handlePacketChunk(_packet);
+				handlePacketChunk();
 				break ;
 			case packet_id::server::unload_chunk:
-				handlePacketChunkUnload(_packet);
+				handlePacketChunkUnload();
 				break ;
 			case packet_id::server::player_join:
 				handlePacketPlayerJoin();
@@ -251,10 +258,10 @@ void OpenGL_Manager::handlePackets( void )
 				handlePacketPlayerLeave();
 				break ;
 			case packet_id::server::players_info:
-				handlePacketPlayersInfo(_packet, bytes_read - sizeof(unsigned short));
+				handlePacketPlayersInfo(bytes_read - sizeof(unsigned short));
 				break ;
 			case packet_id::server::chat_msg:
-				handlePacketChatMsg(_packet.data);
+				handlePacketChatMsg();
 				break ;
 			default:
 				MAINLOG(LOGERROR("Client::handlePackets: Unrecognised packet action: " << _packet.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << _packet.data << "|"));

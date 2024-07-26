@@ -796,8 +796,11 @@ void OpenGL_Manager::handleMenu( bool animUpdate )
 			_player->getChunkHit()->bookedLectern(_menu.get(), _player->getBlockHit().pos, true);
 			break ;
 		case menu::ret::send_message_server:
-			sendMessageServer();
-			handleBackToGame();
+			if (sendMessageServer()) {
+				handleBackToGame();
+			} else {
+				_menu->setState(menu::chat);
+			}
 			break ;
 		case menu::ret::quit:
 			break ;

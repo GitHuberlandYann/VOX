@@ -94,6 +94,7 @@ namespace packet_id {
 			settings,
 			player_pos,
 			chat_msg,
+			chat_command,
 			player_action,
 		};
 	};

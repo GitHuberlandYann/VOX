@@ -148,19 +148,19 @@ class OpenGL_Manager
 		/** @category client packets send */
 		void sendPacket( size_t size );
 		void sendPlayerPos( void );
-		void sendMessageServer( void );
+		bool sendMessageServer( void );
 
 		/** @category client packets receive */
-		void handlePacketLogin( char* data );
-		void handlePacketPing( char* data );
+		void handlePacketLogin( void );
+		void handlePacketPing( void );
 		void handlePacketPingList( void );
 		void handlePacketKick( std::string msg );
-		void handlePacketChunk( t_packet_data& packet );
-		void handlePacketChunkUnload( t_packet_data& packet );
+		void handlePacketChunk( void );
+		void handlePacketChunkUnload( void );
 		void handlePacketPlayerJoin( void );
 		void handlePacketPlayerLeave( void );
-		void handlePacketPlayersInfo( t_packet_data& packet, size_t size );
-		void handlePacketChatMsg( char* data );
+		void handlePacketPlayersInfo( size_t size );
+		void handlePacketChatMsg( void );
 
 		/** @category client loop */
 		void handlePackets( void );

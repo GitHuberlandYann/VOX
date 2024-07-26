@@ -217,13 +217,29 @@ void Server::handlePacketPosition( Address& sender )
 
 void Server::handlePacketChatMsg( Address& sender, std::string msg )
 {
-	// TODO process msg content and handle commands.
-	// TODO implement player 'autority level'
 	int id = _socket->getId(sender);
 	if (_players.count(id)) {
 		_packet = {pendings::broadcast, 0};
 		_packet.packet.action = packet_id::server::chat_msg;
+		utils::memory::memwrite(_packet.packet.data, &argb::white, sizeof(uint), _packet.size);
 		msg = "<" + _players[id]->getName() + "> " + msg;
+		utils::memory::memwrite(_packet.packet.data, msg.c_str(), msg.size(), _packet.size);
+		_packet.size += sizeof(unsigned short);
+		pendPacket();
+	}
+}
+
+void Server::handlePacketChatCommand( Address& sender, std::string msg )
+{
+	// TODO process msg content and handle commands.
+	// TODO implement player 'autority level'
+	(void)msg;
+	int id = _socket->getId(sender);
+	if (_players.count(id)) {
+		_packet = {pendings::useAddr, 0, sender};
+		_packet.packet.action = packet_id::server::chat_msg;
+		utils::memory::memwrite(_packet.packet.data, &argb::red, sizeof(uint), _packet.size);
+		msg = "You do not have permission to use this command";
 		utils::memory::memwrite(_packet.packet.data, msg.c_str(), msg.size(), _packet.size);
 		_packet.size += sizeof(unsigned short);
 		pendPacket();
@@ -249,7 +265,8 @@ void Server::handleTime( void )
 		_time.lastSecondRecorded += 1.0;
 		_packet = {pendings::broadcast, 0};
 		_packet.packet.action = packet_id::server::ping;
-		utils::memory::memwrite(_packet.packet.data, &_time.currentTime, sizeof(double), _packet.size);
+		int tick = DayCycle::Get()->getTicks();
+		utils::memory::memwrite(_packet.packet.data, &tick, sizeof(int), _packet.size);
 		utils::memory::memwrite(_packet.packet.data, &_time.nbFramesLastSecond, sizeof(int), _packet.size);
 		utils::memory::memwrite(_packet.packet.data, &_time.nbTicksLastSecond, sizeof(int), _packet.size);
 		_packet.size += sizeof(unsigned short);
@@ -314,6 +331,9 @@ void Server::handlePackets( void )
 				break ;
 			case packet_id::client::chat_msg:
 				handlePacketChatMsg(sender, _packet.packet.data);
+				break ;
+			case packet_id::client::chat_command:
+				handlePacketChatCommand(sender, _packet.packet.data);
 				break ;
 			default:
 				MAINLOG(LOGERROR("Server::handlePackets: Unrecognised packet action: " << _packet.packet.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << _packet.packet.data << "|"));
