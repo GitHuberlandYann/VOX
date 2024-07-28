@@ -117,6 +117,9 @@ class Player : public AMob
 		size_t packetPos( t_packet_data& packet );
 		bool handlePacketPos( t_packet_data& packet, size_t& cursor, bool client, Chunk* chunk = NULL );
 		void appendPacketInfo( t_pending_packet& packet );
+		bool appendPacketBreakingFrame( t_pending_packet& packet );
+		void updateBlockHit( bool destroy, glm::ivec3 pos );
+		void setBreakingFrame( glm::ivec3 pos, int breakFrame );
 
 		/** @category physics */
        	void applyGravity( void ) override;
@@ -132,8 +135,11 @@ class Player : public AMob
 		void blockInputUpdate( void );
         void inputUpdate( bool rayCast );
 		void setItemFrame( bool visible, bool lock );
-        void clientInputUpdate( void );
         void processMouseMovement( float x_offset, float y_offset );
+        
+		/** @category multiplayer inputs */
+		void clientBlockInputUpdate( void );
+		void clientInputUpdate( void );
     
     private:
 		int _id, _permission; // multiplayer id

@@ -435,7 +435,7 @@ void Player::inputToggle( void )
 
 float Player::getBreakTime( bool canHarvest )
 {
-	float speedMultiplier = 1;
+	float speedMultiplier = 1.f;
 	int needed_tool = s_blocks[_blockHit.type]->needed_tool;
 	bool isBestTool = _handContent >= needed_tool && _handContent < needed_tool + 4;
 
@@ -451,30 +451,30 @@ float Player::getBreakTime( bool canHarvest )
 	// if (miningFatigue) // will be used if implemented
 	// 	speedMultiplier *= 0.3 ^ min(miningFatigueLevel, 4)
 	if (_waterHead) { // && !hasAquaAffinity // will be used once implemented
-		speedMultiplier /= 5;
+		speedMultiplier /= 5.f;
 	}
 	if (!_touchGround) {
-		speedMultiplier /= 5;
+		speedMultiplier /= 5.f;
 	}
 
 	float damage = speedMultiplier / s_blocks[_blockHit.type]->hardness;
-	if (damage < 0) { // bedrock and such
+	if (damage < 0.f) { // bedrock and such
 		return (FLT_MAX);
 	}
 	if (canHarvest) {
-		damage /= 30;
+		damage /= 30.f;
 	} else {
-		damage /= 100;
+		damage /= 100.f;
 	}
 
 	// _ui->chatMessage(s_blocks[_blockHit.type]->name + " using " + s_blocks[_hand_content]->name);
 	// Instant breaking
-	if (damage > 1) {
+	if (damage > 1.f) {
 		// _ui->chatMessage("\tINSTANT BREAK");
 		return (0);
 	}
 
-	int ticks = glm::ceil(1 / damage);
+	int ticks = glm::ceil(1.f / damage);
 	float seconds = ticks / 20.0f;
 	// _ui->chatMessage(std::to_string(seconds) + " vs " + std::to_string(s_blocks[_blockHit.type]->getBreakTime(_hand_content)));
 	return (seconds);
@@ -510,12 +510,12 @@ void Player::blockInputUpdate( void )
 					updateExhaustion(settings::consts::exhaustion::breaking_block);
 					_inventory->decrementDurabitilty();
 				} else {
-					int break_frame = (_breakTime < .0f) ? 0 : static_cast<int>(10 * _breakTime / break_time) + 2;
-					if (_breakFrame != break_frame) {
+					int breakFrame = (_breakTime < .0f) ? 0 : static_cast<int>(10 * _breakTime / break_time) + 2;
+					if (_breakFrame != breakFrame) {
 						if (_chunkHit) {
 							_chunkHit->updateBreak(_blockHit);
 						}
-						_breakFrame = break_frame;
+						_breakFrame = breakFrame;
 					}
 				}
 			}

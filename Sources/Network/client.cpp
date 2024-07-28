@@ -61,6 +61,123 @@ bool OpenGL_Manager::sendMessageServer( void )
 	return (true);
 }
 
+void OpenGL_Manager::sendPlayerAction( unsigned char action, glm::ivec3 pos )
+{
+	_packet.action = packet_id::client::player_action;
+	size_t cursor = 0;
+	utils::memory::memwrite(_packet.data, &action, sizeof(unsigned char), cursor);
+	utils::memory::memwrite(_packet.data, &pos.x, sizeof(int) * 3, cursor);
+	sendPacket(cursor + sizeof(unsigned short));
+}
+
+void Player::clientBlockInputUpdate( void )
+{
+	// _handContent = _inventory->getCurrentSlot();
+	if (inputs::key_down(inputs::destroy)) {
+		bool firstFrame = inputs::key_update(inputs::destroy);
+		/*AMob* mobHit = NULL;
+		if (firstFrame && _chunk) { // check if mob hit by punch
+			mobHit = _chunk->mobHit(_blockHit);
+		}
+		if (mobHit) {
+			setArmAnimation(true);
+			mobHit->receiveDamage(6.0f, _front);
+			// TODO set _punch to true to avoid breaking block behind mob
+		} else if (_handContent == blocks::worldedit_brush) {
+			WorldEdit::Get()->useBrush(_blockHit.pos, false);
+		} else */
+		if (_gameMode != settings::consts::gamemode::creative) {
+			if (_blockHit.type == blocks::air) { // || (!firstFrame && TYPE(_blockHit.type) == blocks::item_frame)) {
+				setArmAnimation(firstFrame);
+				// if (firstFrame) {
+				// 	TODO player_action::swing_arm;
+				// }
+			} else {
+				setArmAnimation(true);
+				_breakTime += _deltaTime;
+				bool can_collect = s_blocks[_blockHit.type]->canCollect(_handContent);
+				float break_time = getBreakTime(can_collect);
+				if (_breakTime >= break_time) {
+					_breakTime = (break_time > 0) ? -0.3f : 0;
+					_breakFrame = Settings::Get()->getBool(settings::bools::outline);
+					// TODO implement clientHandleBlockModif(false, can_collect);
+					updateExhaustion(settings::consts::exhaustion::breaking_block);
+					// _inventory->decrementDurabitilty();
+					if (firstFrame) { // insta mine
+						_oglMan->sendPlayerAction(player_action::start_digging, _blockHit.pos);
+					} else {
+						_oglMan->sendPlayerAction(player_action::finish_digging, _blockHit.pos);
+					}
+				} else {
+					if (firstFrame) {
+						_oglMan->sendPlayerAction(player_action::start_digging, _blockHit.pos);
+					}
+					int breakFrame = (_breakTime < .0f) ? 0 : static_cast<int>(10 * _breakTime / break_time) + 2;
+					if (_breakFrame != breakFrame) {
+						if (_chunkHit) {
+							_chunkHit->updateBreak(_blockHit);
+						}
+						_breakFrame = breakFrame;
+					}
+				}
+			}
+		} else if (firstFrame) { // creative insta mine
+			// TODO implement clientHandleBlockModif(false, false);
+			_oglMan->sendPlayerAction(player_action::start_digging, _blockHit.pos);
+		}
+	} else if (inputs::key_update(inputs::destroy)) {
+		setArmAnimation(false);
+		_breakTime = 0;
+		_breakFrame = Settings::Get()->getBool(settings::bools::outline);
+		if (_blockHit.type != blocks::air) {
+			_oglMan->sendPlayerAction(player_action::cancel_digging, _blockHit.pos);
+		}
+	} else {
+		setArmAnimation(false);
+	}
+	/*if (inputs::key_down(inputs::use)) {
+		if (_handContent == blocks::worldedit_brush && _blockHit.pos != glm::ivec3(0)) {
+			WorldEdit::Get()->useBrush(_blockHit.prev_pos, true);
+		} else if (_gameMode != settings::consts::gamemode::creative && s_blocks[_handContent]->isFood) {
+			_eatTime += _deltaTime;
+			if (_eatTime >= 1.61f) {
+				if (canEatFood(_handContent)) {
+					_inventory->removeBlock(false);
+				}
+				_eatTime = 0;
+			}
+		} else if (_handContent == blocks::bow) {
+			_bowTime += _deltaTime;
+		} else if (inputs::key_update(inputs::use)) {
+			handleBlockModif(true, _gameMode != settings::consts::gamemode::creative);
+			setArmAnimation(true);
+		}
+	} else if (inputs::key_update(inputs::use)) {
+		if (_handContent == blocks::bow && _bowTime && _chunk) {
+			// TODO rm arrow from inventory (once implemented)
+			_inventory->decrementDurabitilty();
+			_chunk->shootArrow(getEyePos(), _front, _bowTime);
+		}
+		_eatTime = 0;
+		_bowTime = 0;
+	}
+	// drop item
+	if (inputs::key_down(inputs::drop)) {
+		if (_chunk) {
+			t_item details = _inventory->removeBlock(true);
+			if (details.type != blocks::air) {
+				mtx.lock();
+				_chunk->dropEntity(_front, details);
+				mtx.unlock();
+			}
+		}
+	}
+	if (_blockHit.type != blocks::air
+		&& inputs::key_down(inputs::sample) && inputs::key_update(inputs::sample)) { // pick up in creative mode, or swap
+		_inventory->replaceSlot(_blockHit.type, _gameMode == settings::consts::gamemode::creative);
+	}*/
+}
+
 // ************************************************************************** //
 //                                Packets                                     //
 //                                Receive                                     //
@@ -95,7 +212,7 @@ void OpenGL_Manager::handlePacketPing( void )
 	size_t cursor = 0;
 	int tick;
 	utils::memory::memread(&tick, _packet.data, sizeof(int), cursor);
-	DayCycle::Get()->setTicks(tick); // TODO might want to avoid forceReset
+	DayCycle::Get()->setTicks(tick);
 	utils::memory::memread(&_serverTime.nbFramesLastSecond, _packet.data, sizeof(int), cursor);
 	utils::memory::memread(&_serverTime.nbTicksLastSecond, _packet.data, sizeof(int), cursor);
 	MAINLOG(LOG("Client::handlePackets: time received: " << tick << " server fps: " << _serverTime.nbFramesLastSecond << ", server tps: " << _serverTime.nbTicksLastSecond));
@@ -217,6 +334,27 @@ void OpenGL_Manager::handlePacketChatMsg( void )
 	MAINLOG(LOG("chatMessage: |" << &_packet.data[cursor] << "|"));
 }
 
+void Player::setBreakingFrame( glm::ivec3 pos, int breakFrame )
+{
+	_breakFrame = breakFrame + 2;
+	_blockHit.pos = pos;
+	_blockHit.type = breakFrame;
+}
+
+void OpenGL_Manager::handlePacketDestroyStage( void )
+{
+	int id;
+	size_t cursor = 0;
+	utils::memory::memread(&id, _packet.data, sizeof(int), cursor);
+	if (_players.count(id)) {
+		glm::ivec3 pos;
+		utils::memory::memread(&pos.x, _packet.data, sizeof(int) * 3, cursor);
+		int breakFrame = 0;
+		utils::memory::memread(&breakFrame, _packet.data, sizeof(unsigned char), cursor);
+		_players[id]->setBreakingFrame(pos, breakFrame);
+	}
+}
+
 void OpenGL_Manager::handlePackets( void )
 {
 	if (!_socket) {
@@ -263,6 +401,9 @@ void OpenGL_Manager::handlePackets( void )
 				break ;
 			case packet_id::server::chat_msg:
 				handlePacketChatMsg();
+				break ;
+			case packet_id::server::block_destroy_stage:
+				handlePacketDestroyStage();
 				break ;
 			default:
 				MAINLOG(LOGERROR("Client::handlePackets: Unrecognised packet action: " << _packet.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << _packet.data << "|"));
@@ -368,6 +509,7 @@ void OpenGL_Manager::handleClientInputs( void )
 	_player->inputToggle();
 
 	_player->setDelta(_time.deltaTime);
+	_player->clientBlockInputUpdate();
 	_player->clientInputUpdate();
 	chunkUpdate();
 
@@ -423,6 +565,7 @@ void OpenGL_Manager::handleClientDraw( void )
 			player.second->setDelta(_time.deltaTime);
 			player.second->moveClient();
 			player.second->drawPlayer(_models, _entities);
+			player.second->addBreakingAnim(_entities);
 		}
 		drawModels();
 		_shader.useProgram();

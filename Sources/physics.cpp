@@ -1,4 +1,5 @@
 #include "Player.hpp"
+#include "OpenGL_Manager.hpp"
 #include "callbacks.hpp"
 #include "logs.hpp"
 
@@ -853,6 +854,7 @@ void Player::clientInputUpdate( void )
 		_breakTime = 0;
 		if (_breakFrame > 1) {
 			_breakFrame = Settings::Get()->getBool(settings::bools::outline);
+			_oglMan->sendPlayerAction(player_action::cancel_digging, _blockHit.pos);
 		}
 	}
 	_blockHit = block_hit;

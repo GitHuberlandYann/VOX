@@ -220,13 +220,13 @@ void Player::setArmAnimation( bool state )
 	if (state) {
 		_armAnimation = true;
 		_armAnimTime += _deltaTime;
-		if (_armAnimTime > 0.35) {
-			_armAnimTime -= 0.35;
+		if (_armAnimTime > 0.35f) {
+			_armAnimTime -= 0.35f;
 		}
-	} else if (_armAnimTime > 0.35) {
-		_armAnimation = 0;
-		_armAnimTime = 0;
-	} else if (_armAnimTime > 0) {
+	} else if (_armAnimTime > 0.35f) {
+		_armAnimation = false;
+		_armAnimTime = 0.f;
+	} else if (_armAnimTime > 0.f) {
 		_armAnimTime += _deltaTime;
 	}
 }

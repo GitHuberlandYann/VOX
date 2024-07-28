@@ -73,6 +73,10 @@ class OpenGL_Manager
 		void createServer( std::unique_ptr<Server>& server );
 		bool run( void );
 
+		/** @category multiplayer */
+		void sendPlayerAction( unsigned char action, glm::ivec3 pos );
+
+		/** @category threading */
 		glm::ivec2 getCurrentChunkPos( void );
 		std::vector<t_packet_data> getPacketDatas( void );
 		void setThreadUpdate( bool state );
@@ -161,6 +165,7 @@ class OpenGL_Manager
 		void handlePacketPlayerLeave( void );
 		void handlePacketPlayersInfo( size_t size );
 		void handlePacketChatMsg( void );
+		void handlePacketDestroyStage( void );
 
 		/** @category client loop */
 		void handlePackets( void );

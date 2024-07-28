@@ -49,17 +49,22 @@ class Server
 		std::map<int, std::unique_ptr<Player>> _players;
 		std::unique_ptr<ServerChat> _chat;
 
+		/** @category packet send */
 		void broadcastPlayersInfo( void );
+		void updateBreakingFrames( void );
 		void sendPingList( Address& sender );
 		void sendPacket( t_pending_packet& pending );
 		void pendPacket( void );
 
+		/** @category packet receive */
 		void handlePacketLogin( Address& sender, std::string name );
 		void handlePacketLeave( Address& sender );
 		void handlePacketPosition( Address& sender );
 		void handlePacketChatMsg( Address& sender, std::string msg );
 		void handlePacketChatCommand( Address& sender, std::string msg );
+		void handlePacketPlayerAction( Address& sender );
 
+		/** @category run */
 		void handleTime( void );
 		void handlePackets( void );
 		void handleChunkDeletion( void );

@@ -47,9 +47,6 @@ void Player::appendPacketInfo( t_pending_packet& packet )
 
 void Server::broadcastPlayersInfo( void )
 {
-	if (_players.empty()) {
-		return ;
-	}
 	_packet = {pendings::broadcast, 0};
 	_packet.packet.action = packet_id::server::players_info;
 	for (auto& player: _players) {
@@ -57,6 +54,50 @@ void Server::broadcastPlayersInfo( void )
 	}
 	_packet.size += sizeof(unsigned short);
 	pendPacket();
+}
+
+/**
+ * @return true if server must pend packet
+ */
+bool Player::appendPacketBreakingFrame( t_pending_packet& packet )
+{
+	if (_blockHit.type == blocks::air) {
+		return (false);
+	}
+
+	_breakTime += _deltaTime;
+	bool can_collect = s_blocks[_blockHit.type]->canCollect(_handContent);
+	float break_time = getBreakTime(can_collect);
+	if (_breakTime >= break_time) {
+		// _breakTime = (break_time > 0) ? -0.3f : 0;
+		_breakFrame = 0;
+		// TODO implement serverHandleBlockModif(false, can_collect);
+		// updateExhaustion(settings::consts::exhaustion::breaking_block);
+		// _inventory->decrementDurabitilty();
+		_blockHit.type = blocks::air;
+	} else {
+		int breakFrame = (_breakTime < .0f) ? 0 : static_cast<int>(10 * _breakTime / break_time);
+		if (_breakFrame != breakFrame) {
+			packet.size = 0;
+			utils::memory::memwrite(packet.packet.data, &_id, sizeof(int), packet.size);
+			utils::memory::memwrite(packet.packet.data, &_blockHit.pos.x, sizeof(int) * 3, packet.size);
+			utils::memory::memwrite(packet.packet.data, &breakFrame, sizeof(unsigned char), packet.size);
+			_breakFrame = breakFrame;
+			return (true);
+		}
+	}
+	return (false);
+}
+
+void Server::updateBreakingFrames( void )
+{
+	_packet.id = pendings::broadcast;
+	_packet.packet.action = packet_id::server::block_destroy_stage;
+	for (auto& player: _players) {
+		if (player.second->appendPacketBreakingFrame(_packet)) {
+			pendPacket();
+		}
+	}
 }
 
 void Server::sendPingList( Address& sender )
@@ -143,7 +184,10 @@ void Server::handlePacketLogin( Address& sender, std::string name )
 	int id = _socket->getId(sender);
 	if (!_players.count(id)) {
 		if (nameOnServer(name)) {
-			return ;
+			_packet = {pendings::useAddr, 0, sender, {packet_id::server::kick}};
+			utils::memory::memwrite(_packet.packet.data, "Name already taken", 18, _packet.size);
+			_packet.size += sizeof(unsigned short);
+			return (pendPacket());
 		}
 		_mtx_plrs.lock();
 		_players[id] = std::make_unique<Player>();
@@ -242,6 +286,44 @@ void Server::handlePacketChatCommand( Address& sender, std::string msg )
 	int id = _socket->getId(sender);
 	if (_players.count(id)) {
 		_chat->parseCommand(_players[id], sender, msg);
+	}
+}
+
+void Player::updateBlockHit( bool destroy, glm::ivec3 pos )
+{
+	if (!destroy && _blockHit.pos == pos) {
+		_blockHit.type = blocks::air;
+		_breakTime = 0.f;
+	} else if (destroy) {
+		_breakTime = (_blockHit.type == blocks::air) ? 0.f : -.3f;
+		_blockHit.pos = pos;
+		_blockHit.type = (_chunk) ? _chunk->getBlockAtAbsolute(pos) : blocks::air;
+		_breakFrame = 0;
+	}
+}
+
+void Server::handlePacketPlayerAction( Address& sender )
+{
+	int id = _socket->getId(sender);
+	if (_players.count(id)) {
+		size_t cursor = 0;
+		unsigned char action;
+		utils::memory::memread(&action, _packet.packet.data, sizeof(unsigned char), cursor);
+		glm::ivec3 pos;
+		utils::memory::memread(&pos.x, _packet.packet.data, sizeof(int) * 3, cursor);
+		switch (action) {
+			case player_action::start_digging:
+				_players[id]->updateBlockHit(true, pos);
+				break ;
+			case player_action::cancel_digging:
+				_players[id]->updateBlockHit(false, pos);
+				break ;
+			case player_action::finish_digging: // unused for now, used to synch up block destruction
+				break ;
+			default:
+				MAINLOG(SERVLOG(LOGERROR("handlePacketPlayerAction unrecognised action: " << action)));
+				break ;
+		}
 	}
 }
 
@@ -364,6 +446,9 @@ void Server::handlePackets( void )
 			case packet_id::client::chat_command:
 				handlePacketChatCommand(sender, _packet.packet.data);
 				break ;
+			case packet_id::client::player_action:
+				handlePacketPlayerAction(sender);
+				break ;
 			default:
 				MAINLOG(LOGERROR("Server::handlePackets: Unrecognised packet action: " << _packet.packet.action << " [" << bytes_read << " bytes]" << ", sent with data: |" << _packet.packet.data << "|"));
 				break ;
@@ -403,7 +488,10 @@ void Server::run( void )
 			// _player->tickUpdate();
 			_time.redTickUpdate = DayCycle::Get()->tickUpdate();
 
-			broadcastPlayersInfo();
+			if (!_players.empty()) {
+				broadcastPlayersInfo();
+				updateBreakingFrames();
+			}
 		}
 		handlePackets();
 		handleChunkDeletion();
